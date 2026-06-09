@@ -8,12 +8,12 @@
   </aside>
 
   <main class="content">
-    <p-button icon="pi pi-bars" severity="secondary" [text]="true"
+    <app-sync-status class="content-sync" />
+    <p-button class="menu-toggle" icon="pi pi-bars" severity="secondary" [text]="true"
               ariaLabel="Toggle menu" (onClick)="toggle()" />
     <div class="content-body">
       <router-outlet />
     </div>
-    <app-sync-status class="content-sync" />
   </main>
 </div>
 
