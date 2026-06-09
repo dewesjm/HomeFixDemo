@@ -22,6 +22,18 @@
       <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
       <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
       <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
+      <div>
+        <div class="meta">Code 1</div>
+        <div [pTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
+      </div>
+      <div>
+        <div class="meta">Code 2</div>
+        <div [pTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
+      </div>
+      <div>
+        <div class="meta">Code 3</div>
+        <div [pTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
+      </div>
       <div class="col-span-all">
         <div class="meta">Tags</div>
         <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>

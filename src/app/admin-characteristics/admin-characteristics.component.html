@@ -1,39 +1,33 @@
-<!-- Admin → Steps maintenance table (paired with admin-steps.component.ts). -->
-<h2 class="section-title">Steps</h2>
-<p class="section-sub">Maintain the workflow steps for each trade.</p>
+<!-- Admin → Characteristic Codes maintenance table (paired with the component). -->
+<h2 class="section-title">Characteristic codes</h2>
+<p class="section-sub">Maintain the shared code → description list. A job can carry up to three of these.</p>
 
 <p-table #dt [value]="rows" dataKey="id" editMode="row" styleClass="p-datatable-sm"
-         [globalFilterFields]="['step', 'trade']" [columns]="exportColumns" exportFilename="steps">
+         [globalFilterFields]="['code', 'description']" [columns]="exportColumns" exportFilename="characteristic-codes">
   <ng-template pTemplate="caption">
     <div class="row">
-      <span class="fw-bold">Steps</span>
+      <span class="fw-bold">Characteristic codes</span>
       <span class="spacer"></span>
       <p-iconfield iconPosition="left">
         <p-inputicon class="pi pi-search" />
-        <input #gi pInputText type="text" placeholder="Search steps…"
+        <input #gi pInputText type="text" placeholder="Search codes…"
                (input)="dt.filterGlobal(gi.value, 'contains')" />
       </p-iconfield>
       <p-button label="Export" icon="pi pi-file-excel" size="small" severity="secondary"
                 (onClick)="dt.exportCSV()" />
-      <p-button label="Add step" icon="pi pi-plus" size="small" (onClick)="addRow()" />
+      <p-button label="Add code" icon="pi pi-plus" size="small" (onClick)="addRow()" />
     </div>
   </ng-template>
 
   <ng-template pTemplate="header">
     <tr>
-      <th pSortableColumn="step" class="min-w-14">
-        Step <p-sortIcon field="step" />
-        <p-columnFilter type="text" field="step" matchMode="contains" display="menu" />
+      <th pSortableColumn="code" class="min-w-11">
+        Code <p-sortIcon field="code" />
+        <p-columnFilter type="text" field="code" matchMode="contains" display="menu" />
       </th>
-      <th pSortableColumn="trade" class="min-w-12">
-        Trade <p-sortIcon field="trade" />
-        <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
-          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="tradeOptions"
-                           placeholder="Any" optionLabel="label" optionValue="value"
-                           (onChange)="filter($event.value)" />
-          </ng-template>
-        </p-columnFilter>
+      <th pSortableColumn="description" class="min-w-14">
+        Description <p-sortIcon field="description" />
+        <p-columnFilter type="text" field="description" matchMode="contains" display="menu" />
       </th>
       <th class="min-w-11"></th>
     </tr>
@@ -44,19 +38,17 @@
       <td pEditableColumn>
         <p-cellEditor>
           <ng-template pTemplate="input">
-            <input pInputText [(ngModel)]="row.step" class="w-full" placeholder="Step name" />
+            <input pInputText [(ngModel)]="row.code" class="w-full" placeholder="e.g. 1234" />
           </ng-template>
-          <ng-template pTemplate="output">{{ row.step || '—' }}</ng-template>
+          <ng-template pTemplate="output">{{ row.code || '—' }}</ng-template>
         </p-cellEditor>
       </td>
       <td pEditableColumn>
         <p-cellEditor>
           <ng-template pTemplate="input">
-            <p-select [(ngModel)]="row.trade" [options]="tradeOptions"
-                      optionLabel="label" optionValue="value" appendTo="body"
-                      [style]="{ width: '100%' }" />
+            <input pInputText [(ngModel)]="row.description" class="w-full" placeholder="e.g. Hazardous" />
           </ng-template>
-          <ng-template pTemplate="output">{{ row.trade }}</ng-template>
+          <ng-template pTemplate="output">{{ row.description || '—' }}</ng-template>
         </p-cellEditor>
       </td>
       <td>
@@ -75,6 +67,6 @@
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
-    <tr><td colspan="3" class="empty">No steps defined.</td></tr>
+    <tr><td colspan="3" class="empty">No codes defined.</td></tr>
   </ng-template>
 </p-table>

@@ -9,6 +9,7 @@ import { SyncStatusComponent } from './sync-status/sync-status.component';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
 import { MenuItem } from 'primeng/api';
 
 // How often to ask the SW to check for a new deploy. The browser only auto-checks
@@ -18,7 +19,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule],
+  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -59,6 +60,7 @@ export class AppComponent {
     label: 'Admin', icon: 'pi pi-cog',
     items: [                                   // ← having `items` makes it a collapsible group
       { label: 'Steps', icon: 'pi pi-sitemap', routerLink: '/admin/steps' },
+      { label: 'Characteristic codes', icon: 'pi pi-tag', routerLink: '/admin/characteristics' },
     ]
   },
 ];

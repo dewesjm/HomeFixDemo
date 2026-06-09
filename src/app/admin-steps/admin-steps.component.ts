@@ -1,9 +1,10 @@
 // Admin → Steps: a table-maintenance screen (à la SAP SM30) for the per-trade workflow
 // steps. Uses PrimeNG's editable table (editMode="row" + p-cellEditor). Seeded from
 // STAGE_TEMPLATES; edits live in memory only (no backend wired in this demo).
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -34,11 +35,18 @@ interface StepRow {
 export class AdminStepsComponent {
   tradeOptions = TRADE_OPTIONS;
 
+  // Columns the built-in p-table CSV export uses (exportCSV reads `this.columns`).
+  exportColumns = [
+    { field: 'step', header: 'Step' },
+    { field: 'trade', header: 'Trade' }
+  ];
+
   // Flatten the per-trade templates into editable rows.
   rows: StepRow[] = Object.entries(STAGE_TEMPLATES).flatMap(([trade, templates]) =>
     templates.map(t => ({ id: `${trade}:${t.id}`, step: t.label, trade: trade as Job['trade'] }))
   );
 
+  private messages = inject(MessageService);
   private clonedRows: Record<string, StepRow> = {};
   private seq = 0;
 
@@ -49,6 +57,7 @@ export class AdminStepsComponent {
 
   deleteRow(index: number) {
     this.rows = this.rows.filter((_, i) => i !== index);
+    this.messages.add({ severity: 'info', summary: 'Step deleted', life: 3000 });
   }
 
   onRowEditInit(row: StepRow) {
@@ -57,6 +66,7 @@ export class AdminStepsComponent {
 
   onRowEditSave(row: StepRow) {
     delete this.clonedRows[row.id];
+    this.messages.add({ severity: 'success', summary: 'Step saved', detail: row.step, life: 3000 });
   }
 
   onRowEditCancel(row: StepRow, index: number) {

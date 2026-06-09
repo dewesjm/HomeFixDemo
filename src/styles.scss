@@ -168,6 +168,8 @@ html, body {
 .c-red { color: var(--p-red-500); }
 .c-muted { color: var(--p-text-muted-color); }
 .c-surface-400 { color: var(--p-surface-400); }
+/* Characteristic-code value with a description tooltip — dotted underline hints at hover. */
+.code-cell { text-decoration: underline dotted; text-underline-offset: 2px; cursor: help; width: fit-content; }
 /* ───────── Job detail page ───────── */
 .panel {
   background: var(--app-surface);

@@ -15,6 +15,7 @@ import { TableModule } from 'primeng/table';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 
 import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
+import { characteristicLabel } from '../data/characteristics';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignResult,
@@ -160,6 +161,8 @@ export class JobDetailComponent {
   }
 
   statusLabel(s: Job['status']): string { return toStatusLabel(s); }
+  /** Description for a characteristic code, shown on hover in the details grid. */
+  codeLabel(code: string): string { return characteristicLabel(code); }
   back() {
     this.router.navigate(['/table']);
   }

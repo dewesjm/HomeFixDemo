@@ -2,6 +2,7 @@
 // attachments, sign-off, and the audit-trail history. Every mutation logs a before→after
 // history entry, persists to localStorage, and nudges the sync indicator.
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
+import { MessageService } from 'primeng/api';
 import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
@@ -16,9 +17,14 @@ const LS_KEY = 'homefix:workflows';
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
   private sync = inject(SyncService);
+  private messages = inject(MessageService);
   private store = new Map<number, WritableSignal<JobWorkflow>>();
   private persisted: Record<number, JobWorkflow> = this.load();
   private seq = Date.now();
+
+  private notify(severity: 'success' | 'info' | 'warn', summary: string, detail?: string) {
+    this.messages.add({ severity, summary, detail, life: 3000 });
+  }
 
   /** The reactive workflow for a job, created from the trade template on first access. */
   workflowFor(job: Job): WritableSignal<JobWorkflow> {
@@ -51,6 +57,9 @@ export class WorkflowService {
       });
     });
     this.persist();
+    const label = this.workflowFor(job)().stages.find(s => s.id === stageId)?.label ?? 'Stage';
+    const severity = status === 'done' ? 'success' : status === 'failed' ? 'warn' : 'info';
+    this.notify(severity, 'Stage updated', `${label} → ${status}`);
   }
 
   setStageInput(job: Job, stageId: string, field: StageField, value: string) {
@@ -80,6 +89,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('success', 'Attachment added', name);
   }
 
   removeAttachment(job: Job, id: string) {
@@ -92,6 +102,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('info', 'Attachment removed');
   }
 
   // --- Work Validation (installed components) -----------------------------
@@ -107,6 +118,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('success', 'Component added', name);
   }
 
   removeComponent(job: Job, id: string) {
@@ -120,6 +132,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('info', 'Component removed');
   }
 
   setValidationNotes(job: Job, notes: string) {
@@ -158,6 +171,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('success', 'Inspection signed off');
   }
 
   reopen(job: Job) {
@@ -170,6 +184,7 @@ export class WorkflowService {
       });
     });
     this.persist();
+    this.notify('info', 'Sign-off re-opened');
   }
 
   // --- internals ----------------------------------------------------------

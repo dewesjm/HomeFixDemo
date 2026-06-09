@@ -1,6 +1,8 @@
 // Mock data — the Job model plus a seeded generator that produces 120 sample
 // repair/inspection jobs (incl. a stable 5-char jobNumber). Stands in for a backend;
 // lives in memory. Also exports STATUS_OPTIONS + statusLabel() for value→label display.
+import { CHARACTERISTIC_CODES } from './characteristics';
+
 export interface Job {
   id: number;
   jobNumber: string;   // 5-char human-friendly code, e.g. "K7P2M"
@@ -9,6 +11,9 @@ export interface Job {
   technician: string;
   make: string;              // equipment manufacturer
   model: string;             // equipment model / part designation
+  code1: string;             // characteristic codes — special designations (see characteristics.ts)
+  code2: string;
+  code3: string;
   estimatedCost: number;
   inspectionScore: number;   // 0–5 quality / condition score
   estimatedHours: number;    // labor hours
@@ -58,6 +63,20 @@ function makeJobNumber(seed: number): string {
   return code;
 }
 
+// Up to three distinct characteristic codes per job, drawn from a separate seeded
+// stream (keyed off the id) so adding them doesn't perturb the rest of the data.
+function pickCodes(seed: number): [string, string, string] {
+  const rand = seeded(seed * 17 + 3);
+  const pool = CHARACTERISTIC_CODES.map(c => c.code);
+  const count = 1 + Math.floor(rand() * 3);
+  const chosen: string[] = [];
+  while (chosen.length < count) {
+    const c = pool[Math.floor(rand() * pool.length)];
+    if (!chosen.includes(c)) chosen.push(c);
+  }
+  return [chosen[0] ?? '', chosen[1] ?? '', chosen[2] ?? ''];
+}
+
 export function generateJobs(count = 120): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
@@ -86,6 +105,8 @@ export function generateJobs(count = 120): Job[] {
       if (!tags.includes(t)) tags.push(t);
     }
 
+    const [code1, code2, code3] = pickCodes(i + 1);
+
     out.push({
       id: i + 1,
       jobNumber: makeJobNumber(i + 1),
@@ -94,6 +115,9 @@ export function generateJobs(count = 120): Job[] {
       technician,
       make: equipment.make,
       model: equipment.model,
+      code1,
+      code2,
+      code3,
       estimatedCost,
       inspectionScore,
       estimatedHours,
