@@ -1,0 +1,47 @@
+/* App shell layout — the sidebar drawer (collapses to width 0) and the content area. */
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 260px;
+  flex: 0 0 auto;
+  padding: 1rem;
+  border-right: 1px solid var(--app-border);
+  background: var(--app-surface);
+  overflow: hidden;
+  transition: width .2s ease, padding .2s ease;
+
+  h1 { font-size: 1.25rem; margin: 0 0 1rem; white-space: nowrap; }
+}
+
+/* Drawer closed: sidebar fully collapses away and content reflows to full width. */
+.layout.collapsed .sidebar {
+  width: 0;
+  padding: 0;
+  border: none;
+}
+
+.content { flex: 1; padding: 1.5rem; overflow: auto; display: flex; align-items: flex-start; gap: .75rem; }
+.content-body { flex: 1; min-width: 0; }
+
+/* Sync indicator pinned to the top-right of every page, in line with the header row. */
+.content-sync { flex: 0 0 auto; align-self: flex-start; margin-top: .45rem; white-space: nowrap; }
+
+/* "New version available" prompt — fixed, bottom-center, above all content. */
+.update-banner {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .55rem .5rem .55rem 1rem;
+  background: var(--app-surface);
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
+  font-size: .9rem;
+
+  i { color: var(--p-primary-color); }
+}

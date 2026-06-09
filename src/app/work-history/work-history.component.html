@@ -1,0 +1,75 @@
+<!-- Work history screen template (paired with work-history.component.ts). -->
+<h2 class="section-title">Work history</h2>
+<p class="section-sub">
+  
+</p>
+
+<div class="facet-row">
+  <p-select [ngModel]="person()" (ngModelChange)="person.set($event)"
+            [options]="people()" optionLabel="label" optionValue="value"
+            placeholder="Select a person" [showClear]="true" [filter]="true"
+            [style]="{ minWidth: '16rem' }" />
+
+  <p-iconfield iconPosition="left" class="grow">
+    <p-inputicon class="pi pi-search" />
+    <input pInputText type="text" [ngModel]="query()" (ngModelChange)="query.set($event)"
+           placeholder="Search jobs, changes, steps…" class="w-full" />
+  </p-iconfield>
+
+  <span class="spacer"></span>
+  <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
+            [disabled]="!activity().length" (onClick)="exportCsv()" />
+  <p-button label="Clear" icon="pi pi-filter-slash" severity="secondary"
+            (onClick)="clear()" />
+</div>
+
+<div *ngIf="jobFilterTitle() as t" class="mb-md">
+  <p-tag [value]="'Job: ' + t" severity="info" />
+  <p-button label="Clear job filter" icon="pi pi-times" size="small" severity="secondary"
+            [text]="true" (onClick)="clearJobFilter()" />
+</div>
+
+<!-- Jobs assigned to the selected person -->
+<section *ngIf="person() as p" class="panel">
+  <h3 class="panel-title"><i class="pi pi-user"></i> Jobs assigned to {{ p }}</h3>
+  <div *ngIf="!assignedJobs().length" class="meta">No jobs currently assigned.</div>
+  <div class="result-grid" *ngIf="assignedJobs().length">
+    <a *ngFor="let j of assignedJobs()" class="result-card card-link" [routerLink]="['/jobs', j.id]">
+      <h3>{{ j.title }}</h3>
+      <div class="meta">{{ j.trade }} · {{ j.scheduledFor | date:'mediumDate' }}</div>
+      <div class="mt-xs">
+        <p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" />
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- Activity log -->
+<section class="panel">
+  <h3 class="panel-title">
+    <i class="pi pi-history"></i>
+    Activity {{ person() ? 'by ' + person() : '(all people)' }}
+    <span class="meta fw-normal">· {{ activity().length }} entries</span>
+  </h3>
+
+  <div *ngIf="!activity().length" class="meta">
+    No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
+  </div>
+
+  <ul class="history-list">
+    <li *ngFor="let r of activity()">
+      <div class="history-when">{{ r.when | date:'MMM d, y, h:mm a' }}</div>
+      <div class="history-body">
+        <div class="row">
+          <p-tag [value]="r.section" severity="secondary" />
+          <span>{{ r.change }}</span>
+        </div>
+        <div class="meta">
+          by {{ r.who }} · step: {{ r.step }} ·
+          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobTitle }}</a>
+          ({{ r.trade }})
+        </div>
+      </div>
+    </li>
+  </ul>
+</section>

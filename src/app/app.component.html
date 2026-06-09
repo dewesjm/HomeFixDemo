@@ -1,0 +1,25 @@
+<!-- App shell: sidebar (menu, sync status, theme) on the left; routed page on the right. -->
+<div class="layout" [class.collapsed]="collapsed()">
+  <aside class="sidebar">
+    <h1>HomeFix</h1>
+    <p-panelMenu [model]="menu" styleClass="w-full" />
+    <app-theme-picker />
+  </aside>
+
+  <main class="content">
+    <p-button icon="pi pi-bars" severity="secondary" [text]="true"
+              ariaLabel="Toggle menu" (onClick)="toggle()" />
+    <div class="content-body">
+      <router-outlet />
+    </div>
+    <app-sync-status class="content-sync" />
+  </main>
+</div>
+
+@if (updateReady()) {
+  <div class="update-banner">
+    <i class="pi pi-arrow-circle-up"></i>
+    <span>A new version is available.</span>
+    <p-button label="Reload" icon="pi pi-refresh" size="small" (onClick)="reloadForUpdate()" />
+  </div>
+}

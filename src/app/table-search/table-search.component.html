@@ -1,0 +1,147 @@
+<!-- Work orders table template (paired with table-search.component.ts). -->
+<h2 class="section-title">Jobs</h2>
+<p class="section-sub">
+</p>
+
+<p-table
+  #dt
+  [value]="displayedJobs()"
+  dataKey="id"
+  [rows]="10"
+  [rowsPerPageOptions]="[10, 25, 50]"
+  [paginator]="true"
+  [globalFilterFields]="globalFilterFields"
+  [columns]="exportColumns"
+  [exportFunction]="exportCell"
+  exportFilename="work-orders"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+  sortMode="multiple"
+  [resizableColumns]="true"
+  [scrollable]="true"
+  styleClass="p-datatable-sm"
+>
+  <ng-template pTemplate="caption">
+    <div class="row">
+      <p-button label="Clear filters" icon="pi pi-filter-slash" severity="secondary"
+                (onClick)="clear(dt, globalInput)" />
+      <p-select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
+                [options]="tradeOptions" optionLabel="label" optionValue="value"
+                placeholder="All roles" [showClear]="true"
+                [style]="{ minWidth: '12rem' }" />
+      <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
+                (onClick)="dt.exportCSV()" />
+      <span class="spacer"></span>
+      <p-iconfield iconPosition="left">
+        <p-inputicon class="pi pi-search" />
+        <input #globalInput pInputText type="text"
+               (input)="applyGlobal(dt, globalInput.value)"
+               placeholder="Search job, technician, trade, tag…"
+               class="search-input" />
+      </p-iconfield>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="jobNumber" class="min-w-8">
+        Job # <p-sortIcon field="jobNumber" />
+        <p-columnFilter type="text" field="jobNumber" matchMode="contains" display="menu" />
+      </th>
+      <th pSortableColumn="title" class="min-w-14">
+        Job <p-sortIcon field="title" />
+        <p-columnFilter type="text" field="title" matchMode="contains" display="menu" />
+      </th>
+      <th pSortableColumn="trade" class="min-w-12">
+        Trade <p-sortIcon field="trade" />
+        <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="tradeOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th pSortableColumn="technician" class="min-w-11">
+        Technician <p-sortIcon field="technician" />
+        <p-columnFilter field="technician" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="technicianOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th pSortableColumn="estimatedCost" class="min-w-13">
+        Est. cost <p-sortIcon field="estimatedCost" />
+        <p-columnFilter field="estimatedCost" matchMode="between" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-slider [ngModel]="value ?? [0, 2000]" [range]="true"
+                      [min]="0" [max]="2000" (onSlideEnd)="filter($event.values)"
+                      [style]="{ width: '12rem' }" />
+            <div class="slider-value">
+              ${{ (value && value[0]) ?? 0 }} – ${{ (value && value[1]) ?? 2000 }}
+            </div>
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th class="min-w-13">Current step</th>
+      <th pSortableColumn="status" class="min-w-11">
+        Status <p-sortIcon field="status" />
+        <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-select [ngModel]="value" [options]="statusOptions"
+                      optionLabel="label" optionValue="value"
+                      placeholder="Any" [showClear]="true"
+                      (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th pSortableColumn="scheduledFor" class="min-w-13">
+        Scheduled <p-sortIcon field="scheduledFor" />
+        <p-columnFilter field="scheduledFor" matchMode="between" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-datepicker [ngModel]="value" selectionMode="range"
+                          [readonlyInput]="true" placeholder="Range"
+                          (onSelect)="filter($event)"
+                          appendTo="body" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th class="min-w-11">Tags</th>
+      <th pFrozenColumn alignFrozen="right" class="min-w-12">Actions</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-job>
+    <tr>
+      <td class="mono">{{ job.jobNumber }}</td>
+      <td>{{ job.title }}</td>
+      <td>{{ job.trade }}</td>
+      <td>{{ job.technician }}</td>
+      <td>{{ job.estimatedCost | currency:'USD' }}</td>
+      <td>{{ currentStep(job) }}</td>
+      <td>
+        <p-tag [value]="statusLabel(job.status)" [severity]="statusSeverity(job.status)" />
+      </td>
+      <td>{{ job.scheduledFor | date:'mediumDate' }}</td>
+      <td>
+        <span class="tag-list">
+          <p-tag *ngFor="let t of job.tags" [value]="t" severity="info" />
+        </span>
+      </td>
+      <td pFrozenColumn alignFrozen="right">
+        <div class="row-tight">
+          <p-button icon="pi pi-history" label="History" size="small" severity="secondary"
+                    [text]="true" (onClick)="openHistory(job)" />
+          <p-button icon="pi pi-arrow-up-right" label="Details" size="small"
+                    (onClick)="openDetails(job)" />
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="10" class="empty">No jobs match your filters.</td></tr>
+  </ng-template>
+</p-table>

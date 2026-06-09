@@ -1,0 +1,214 @@
+<!-- Job detail page template (paired with job-detail.component.ts). -->
+<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+          (onClick)="back()" />
+
+<ng-container *ngIf="job as j; else notFound">
+<ng-container *ngIf="wf as wfSig">
+<ng-container *ngIf="wfSig() as w">
+
+  <h2 class="section-title mt-sm">{{ j.title }}</h2>
+  <p class="section-sub">
+    Job #{{ j.id }} · {{ j.trade }} ·
+    <strong>Current step:</strong> {{ currentStep() }}
+  </p>
+
+  <!-- 1 ───────── Job Details (read-only) ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-info-circle"></i> Job details</h3>
+    <div class="detail-grid">
+      <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
+      <div><div class="meta">Status</div><p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" /></div>
+      <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
+      <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
+      <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
+      <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
+      <div class="col-span-all">
+        <div class="meta">Tags</div>
+        <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 ───────── Job Stages (pipeline) ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-sitemap"></i> Job stages</h3>
+    <div class="legend">
+      <span><i class="pi pi-check-circle c-green"></i> Done</span>
+      <span><i class="pi pi-circle c-amber"></i> Current</span>
+      <span><i class="pi pi-lock c-muted"></i> Waiting</span>
+      <span><i class="pi pi-times-circle c-red"></i> Failed</span>
+      <span><i class="pi pi-minus-circle c-surface-400"></i> Not required</span>
+    </div>
+
+    <div class="stage-pipeline">
+      <ng-container *ngFor="let stage of w.stages; let i = index; let last = last">
+        <div [class]="stageClass(stage, i)">
+          <div class="stage-head">
+            <i [class]="stageIcon(stage, i)"></i>
+            <span>{{ stage.label }}</span>
+          </div>
+          <div class="stage-sub">{{ stage.required ? 'Required' : 'Not required' }}</div>
+
+          <div class="stage-actions" *ngIf="!w.signoff.signed">
+            <ng-container *ngIf="actionable(stage, i)">
+              <p-button label="Done" icon="pi pi-check" size="small" severity="success"
+                        (onClick)="markStage(stage, 'done')" />
+              <p-button label="Fail" icon="pi pi-times" size="small" severity="danger" [text]="true"
+                        (onClick)="markStage(stage, 'failed')" />
+            </ng-container>
+            <p-button *ngIf="canUndo(stage, i)" label="Undo" icon="pi pi-replay" size="small"
+                      severity="secondary" [text]="true" (onClick)="markStage(stage, 'pending')" />
+            <p-button *ngIf="stage.status === 'failed' && !locked(i)" label="Retry" icon="pi pi-replay"
+                      size="small" severity="secondary" [text]="true" (onClick)="markStage(stage, 'pending')" />
+          </div>
+        </div>
+        <i *ngIf="!last" class="pi pi-angle-right stage-arrow"></i>
+      </ng-container>
+    </div>
+  </section>
+
+  <!-- 3 ───────── Work Validation ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-box"></i> Work validation</h3>
+    <p class="section-sub">Record the per-step readings, parts installed, and notes before inspection sign-off.</p>
+
+    <div class="validation-stages" *ngIf="stagesWithInputs().length">
+      <div class="validation-stage" *ngFor="let stage of stagesWithInputs()">
+        <div class="validation-stage-label">{{ stage.label }}</div>
+        <div class="stage-inputs">
+          <label class="stage-field" *ngFor="let f of stage.fields">
+            <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+            <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
+                   [placeholder]="f.placeholder || ''" [disabled]="w.signoff.signed"
+                   [ngModel]="stage.inputs[f.key]"
+                   (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <p-table [value]="w.components" styleClass="p-datatable-sm" *ngIf="w.components.length">
+      <ng-template pTemplate="header">
+        <tr><th>Component</th><th>Part #</th><th class="w-5r">Qty</th><th class="w-3r"></th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-c>
+        <tr>
+          <td>{{ c.name }}</td>
+          <td>{{ c.partNumber || '—' }}</td>
+          <td>{{ c.quantity }}</td>
+          <td>
+            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
+                      [disabled]="w.signoff.signed" (onClick)="removeComponent(c.id)" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <div *ngIf="!w.components.length" class="meta mb-xs">No components recorded yet.</div>
+
+    <div class="facet-row mb-0" *ngIf="!w.signoff.signed">
+      <input pInputText placeholder="Component name"
+             [ngModel]="newName()" (ngModelChange)="newName.set($event)" class="f-200" />
+      <input pInputText placeholder="Part # (optional)"
+             [ngModel]="newPart()" (ngModelChange)="newPart.set($event)" class="f-160" />
+      <input type="number" min="1" pInputText placeholder="Qty"
+             [ngModel]="newQty()" (ngModelChange)="newQty.set($event)" class="w-5r" />
+      <p-button label="Add" icon="pi pi-plus" [disabled]="!newName().trim()" (onClick)="addComponent()" />
+    </div>
+
+    <div class="field-block">
+      <div class="meta">Validation notes</div>
+      <textarea rows="3" [disabled]="w.signoff.signed" [ngModel]="w.validationNotes"
+                (blur)="blurValidationNotes($any($event.target).value)"
+                placeholder="Notes on the work performed, deviations, or follow-ups…"
+                class="note-area"></textarea>
+    </div>
+  </section>
+
+  <!-- 3.5 ───────── Attachments ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-paperclip"></i> Attachments</h3>
+    <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
+
+    <p-table [value]="w.attachments" styleClass="p-datatable-sm" *ngIf="w.attachments.length">
+      <ng-template pTemplate="header">
+        <tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-a>
+        <tr>
+          <td><i class="pi pi-file mr-xs"></i>{{ a.name }}</td>
+          <td>{{ a.addedBy }}</td>
+          <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
+          <td>
+            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
+                      [disabled]="w.signoff.signed" (onClick)="removeAttachment(a.id)" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <div *ngIf="!w.attachments.length" class="meta mb-xs">No attachments yet.</div>
+
+    <p-fileUpload #fu mode="basic" chooseLabel="Add files" chooseIcon="pi pi-paperclip"
+                  [multiple]="true" [auto]="true" customUpload
+                  [disabled]="w.signoff.signed" (uploadHandler)="addAttachments($event, fu)" />
+  </section>
+
+  <!-- 4 ───────── Sign-off ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-verified"></i> Inspection sign-off</h3>
+
+    <div *ngIf="!requiredDone() && !w.signoff.signed" class="signoff-warn">
+      <i class="pi pi-exclamation-triangle"></i>
+      All required stages must be done before sign-off. Current step: <strong>{{ currentStep() }}</strong>.
+    </div>
+
+    <div class="detail-grid">
+      <div>
+        <div class="meta">Inspector name</div>
+        <input pInputText [disabled]="w.signoff.signed"
+               [ngModel]="w.signoff.inspectorName" (blur)="blurInspector($any($event.target).value)"
+               class="w-full" />
+      </div>
+      <div>
+        <div class="meta">License #</div>
+        <input pInputText [disabled]="w.signoff.signed"
+               [ngModel]="w.signoff.licenseNo" (blur)="blurLicense($any($event.target).value)"
+               class="w-full" />
+      </div>
+      <div>
+        <div class="meta">Result</div>
+        <p-select [options]="resultOptions" optionLabel="label" optionValue="value"
+                  placeholder="Select" [disabled]="w.signoff.signed"
+                  [ngModel]="w.signoff.result" (onChange)="setResult($event.value)"
+                  [style]="{ width: '100%' }" />
+      </div>
+      <div class="col-span-all">
+        <div class="meta">Notes</div>
+        <textarea rows="3" [disabled]="w.signoff.signed" [ngModel]="w.signoff.notes"
+                  (blur)="blurNotes($any($event.target).value)"
+                  class="note-area"></textarea>
+      </div>
+    </div>
+
+    <div class="signoff-actions">
+      <p-button *ngIf="!w.signoff.signed" label="Sign &amp; lock" icon="pi pi-check-circle"
+                [disabled]="!canSign()" (onClick)="signOff()" />
+      <ng-container *ngIf="w.signoff.signed">
+        <p-tag [value]="(w.signoff.result || '') | uppercase" severity="success" />
+        <span class="meta">
+          Signed by {{ w.signoff.inspectorName }} on {{ w.signoff.date | date:'medium' }}
+        </span>
+        <span class="spacer"></span>
+        <p-button label="Re-open" icon="pi pi-lock-open" severity="secondary" [text]="true"
+                  (onClick)="reopen()" />
+      </ng-container>
+    </div>
+  </section>
+
+
+</ng-container>
+</ng-container>
+</ng-container>
+
+<ng-template #notFound>
+  <div class="empty">No job found for that id.</div>
+</ng-template>

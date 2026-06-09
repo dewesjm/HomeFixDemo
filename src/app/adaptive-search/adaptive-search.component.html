@@ -1,0 +1,173 @@
+<!-- Adaptive filters screen template (paired with adaptive-search.component.ts). -->
+<h2 class="section-title">Adaptive filter bar</h2>
+<p class="section-sub">
+  
+</p>
+
+<!-- Variant toolbar -->
+<div class="facet-row">
+  <span class="fw-bold">Variant</span>
+  <p-button *ngFor="let v of variants()" [label]="v.name" size="small" severity="secondary"
+            (onClick)="applyVariant(v)" />
+  <p-button *ngFor="let v of variants()" icon="pi pi-times" size="small" severity="danger" [text]="true"
+            pTooltip="Delete variant"
+            (onClick)="deleteVariant(v.name)" />
+  <span class="spacer"></span>
+  <input pInputText placeholder="Variant name"
+         [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
+         [style.minWidth.px]="180" />
+  <p-button label="Save variant" icon="pi pi-save" size="small"
+            [disabled]="!variantName().trim()"
+            (onClick)="saveCurrentVariant()" />
+</div>
+
+<!-- Dynamic filter bar -->
+<div class="facet-row">
+  <ng-container *ngFor="let f of visibleFields()">
+    <div class="field-col">
+      <label class="field-label">
+        {{ f.label }} <span *ngIf="f.required" class="required-mark">*</span>
+      </label>
+
+      <ng-container [ngSwitch]="f.type">
+        <input *ngSwitchCase="'text'"
+               pInputText [placeholder]="'Contains…'"
+               [ngModel]="valueOf(f.key)"
+               (ngModelChange)="setValue(f.key, $event)" />
+
+        <p-multiselect *ngSwitchCase="'multiselect'"
+                       [options]="asMulti(f).options"
+                       optionLabel="label" optionValue="value"
+                       display="chip" placeholder="Any"
+                       [ngModel]="valueOf(f.key) || []"
+                       (ngModelChange)="setValue(f.key, $event)" />
+
+        <p-multiselect *ngSwitchCase="'tags'"
+                       [options]="asMulti(f).options"
+                       optionLabel="label" optionValue="value"
+                       display="chip" placeholder="Any tag"
+                       [ngModel]="valueOf(f.key) || []"
+                       (ngModelChange)="setValue(f.key, $event)" />
+
+        <p-select *ngSwitchCase="'select'"
+                  [options]="asMulti(f).options"
+                  optionLabel="label" optionValue="value"
+                  placeholder="Any" [showClear]="true"
+                  [ngModel]="valueOf(f.key)"
+                  (ngModelChange)="setValue(f.key, $event)" />
+
+        <ng-container *ngSwitchCase="'range'">
+          <div class="range-value">
+            {{ (valueOf(f.key) || [])[0] ?? asRange(f).min }} –
+            {{ (valueOf(f.key) || [])[1] ?? asRange(f).max }}
+          </div>
+          <p-slider [range]="true"
+                    [min]="asRange(f).min" [max]="asRange(f).max"
+                    [ngModel]="valueOf(f.key) || [asRange(f).min, asRange(f).max]"
+                    (ngModelChange)="setValue(f.key, $event)"
+                    [style]="{ width: '12rem' }" />
+        </ng-container>
+
+        <p-rating *ngSwitchCase="'rating'"
+                  [ngModel]="valueOf(f.key) || 0"
+                  (ngModelChange)="setValue(f.key, $event)" />
+
+        <p-datepicker *ngSwitchCase="'daterange'"
+                      selectionMode="range" [readonlyInput]="true"
+                      placeholder="Pick range" appendTo="body"
+                      [ngModel]="valueOf(f.key)"
+                      (ngModelChange)="setValue(f.key, $event)" />
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <span class="spacer"></span>
+  <p-button label="Adapt filters" icon="pi pi-sliders-h" severity="secondary"
+            (onClick)="openAdapt()" />
+  <p-button label="Reset" icon="pi pi-filter-slash" severity="secondary" [text]="true"
+            (onClick)="resetAll()" />
+</div>
+
+<!-- Active facet chips -->
+<div *ngIf="activeChips().length" class="chip-row">
+  <p-chip
+    *ngFor="let c of activeChips()"
+    [label]="c.label"
+    [removable]="true"
+    (onRemove)="c.clear()" />
+</div>
+
+<div class="match-count">
+  {{ filtered().length }} of {{ totalJobs }} jobs match
+</div>
+
+<!-- Results -->
+<div class="result-grid">
+  <div *ngFor="let j of filtered() | slice:0:60" class="result-card">
+    <span class="price">{{ j.estimatedCost | currency:'USD' }}</span>
+    <h3>{{ j.title }}</h3>
+    <div class="meta">{{ j.trade }} · {{ j.technician }}</div>
+    <div class="my-sm">
+      <p-rating [ngModel]="j.inspectionScore" [readonly]="true" />
+    </div>
+    <p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" />
+    <span *ngFor="let t of j.tags" class="tag-left">
+      <p-tag [value]="t" severity="info" />
+    </span>
+  </div>
+</div>
+
+<div *ngIf="!filtered().length" class="empty">No jobs match. Try clearing some filters.</div>
+
+<!-- Adapt Filters dialog -->
+<p-dialog header="Adapt filters"
+          [visible]="showAdapt()"
+          (visibleChange)="showAdapt.set($event)"
+          [modal]="true"
+          [style]="{ width: '720px' }"
+          [closable]="true"
+          [draggable]="false">
+  <p class="dialog-hint">
+    Check the fields you want in the bar. Required fields stay on.
+  </p>
+
+  <div class="row mb-sm">
+    <input pInputText placeholder="Filter fields…"
+           [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)"
+           class="flex-1" />
+    <p-button label="Select all" size="small" severity="secondary" [text]="true"
+              (onClick)="selectAll(true)" />
+    <p-button label="Clear" size="small" severity="secondary" [text]="true"
+              (onClick)="selectAll(false)" />
+  </div>
+
+  <div class="field-scroll">
+    <div *ngFor="let g of groupedSchema()" class="mb-md">
+      <div class="group-head">
+        <span class="fw-bold">{{ g.group }}</span>
+        <span class="spacer"></span>
+        <p-button label="all" [text]="true" size="small" (onClick)="selectGroup(g.group, true)" />
+        <p-button label="none" [text]="true" size="small" (onClick)="selectGroup(g.group, false)" />
+      </div>
+
+      <div class="field-grid">
+        <label *ngFor="let f of g.items" class="field-check">
+          <p-checkbox
+            [binary]="true"
+            [disabled]="!!f.required"
+            [ngModel]="isDraftSelected(f.key)"
+            (ngModelChange)="toggleDraft(f.key, $event)" />
+          <span>{{ f.label }}</span>
+          <span *ngIf="f.required" class="required-tag">required</span>
+        </label>
+      </div>
+    </div>
+
+    <div *ngIf="!groupedSchema().length" class="empty">No fields match “{{ adaptFilter() }}”.</div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showAdapt.set(false)" />
+    <p-button label="Apply" icon="pi pi-check" (onClick)="applyAdapt()" />
+  </ng-template>
+</p-dialog>

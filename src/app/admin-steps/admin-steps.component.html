@@ -1,0 +1,79 @@
+<!-- Admin → Steps maintenance table (paired with admin-steps.component.ts). -->
+<h2 class="section-title">Steps</h2>
+<p class="section-sub">Maintain the workflow steps for each trade.</p>
+
+<p-table #dt [value]="rows" dataKey="id" editMode="row" styleClass="p-datatable-sm"
+         [paginator]="true" [rows]="10" [rowsPerPageOptions]="[10, 25, 50]"
+         [globalFilterFields]="['step', 'trade']">
+  <ng-template pTemplate="caption">
+    <div class="row">
+      <span class="fw-bold">Steps</span>
+      <span class="spacer"></span>
+      <p-iconfield iconPosition="left">
+        <p-inputicon class="pi pi-search" />
+        <input #gi pInputText type="text" placeholder="Search steps…"
+               (input)="dt.filterGlobal(gi.value, 'contains')" />
+      </p-iconfield>
+      <p-button label="Add step" icon="pi pi-plus" size="small" (onClick)="addRow()" />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="step" class="min-w-14">
+        Step <p-sortIcon field="step" />
+        <p-columnFilter type="text" field="step" matchMode="contains" display="menu" />
+      </th>
+      <th pSortableColumn="trade" class="min-w-12">
+        Trade <p-sortIcon field="trade" />
+        <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="tradeOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th class="min-w-11"></th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row let-editing="editing" let-ri="rowIndex">
+    <tr [pEditableRow]="row">
+      <td pEditableColumn>
+        <p-cellEditor>
+          <ng-template pTemplate="input">
+            <input pInputText [(ngModel)]="row.step" class="w-full" placeholder="Step name" />
+          </ng-template>
+          <ng-template pTemplate="output">{{ row.step || '—' }}</ng-template>
+        </p-cellEditor>
+      </td>
+      <td pEditableColumn>
+        <p-cellEditor>
+          <ng-template pTemplate="input">
+            <p-select [(ngModel)]="row.trade" [options]="tradeOptions"
+                      optionLabel="label" optionValue="value" appendTo="body"
+                      [style]="{ width: '100%' }" />
+          </ng-template>
+          <ng-template pTemplate="output">{{ row.trade }}</ng-template>
+        </p-cellEditor>
+      </td>
+      <td>
+        <div class="row-tight">
+          <button *ngIf="!editing" pButton pInitEditableRow type="button" icon="pi pi-pencil"
+                  [text]="true" severity="secondary" size="small" (click)="onRowEditInit(row)"></button>
+          <button *ngIf="editing" pButton pSaveEditableRow type="button" icon="pi pi-check"
+                  [text]="true" severity="success" size="small" (click)="onRowEditSave(row)"></button>
+          <button *ngIf="editing" pButton pCancelEditableRow type="button" icon="pi pi-times"
+                  [text]="true" severity="danger" size="small" (click)="onRowEditCancel(row, ri)"></button>
+          <button *ngIf="!editing" pButton type="button" icon="pi pi-trash"
+                  [text]="true" severity="danger" size="small" (click)="deleteRow(ri)"></button>
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="3" class="empty">No steps defined.</td></tr>
+  </ng-template>
+</p-table>
