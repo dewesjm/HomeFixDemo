@@ -84,16 +84,45 @@
     <h3 class="panel-title"><i class="pi pi-box"></i> Work validation</h3>
     <p class="section-sub">Record the per-step readings, parts installed, and notes before inspection sign-off.</p>
 
+    <div class="detail-grid mb-sm">
+      <div>
+        <div class="meta">Build / install</div>
+        <p-select [options]="workTypeOptions" optionLabel="label" optionValue="value"
+                  placeholder="Select" [showClear]="true" [disabled]="w.signoff.signed"
+                  [ngModel]="w.workType" (onChange)="setWorkType($event.value)"
+                  [style]="{ width: '100%' }" />
+      </div>
+      <div>
+        <div class="meta">Condition code</div>
+        <p-select [options]="conditionOptions" optionLabel="label" optionValue="value"
+                  placeholder="None" [showClear]="true" [filter]="true" [disabled]="w.signoff.signed"
+                  [ngModel]="w.conditionCode" (onChange)="setConditionCode($event.value)"
+                  [style]="{ width: '100%' }" />
+      </div>
+      <div>
+        <div class="meta">Number of conditions</div>
+        <input pInputText type="number" min="0" class="w-full" [disabled]="w.signoff.signed"
+               [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
+      </div>
+    </div>
+
     <div class="validation-stages" *ngIf="stagesWithInputs().length">
       <div class="validation-stage" *ngFor="let stage of stagesWithInputs()">
         <div class="validation-stage-label">{{ stage.label }}</div>
         <div class="stage-inputs">
           <label class="stage-field" *ngFor="let f of stage.fields">
             <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-            <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
-                   [placeholder]="f.placeholder || ''" [disabled]="w.signoff.signed"
-                   [ngModel]="stage.inputs[f.key]"
-                   (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+            <p-select *ngIf="f.type === 'select'; else textField"
+                      [options]="f.options || []" optionLabel="label" optionValue="value"
+                      [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
+                      [disabled]="w.signoff.signed" [ngModel]="stage.inputs[f.key]"
+                      (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
+            <ng-template #textField>
+              <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
+                     [placeholder]="f.placeholder || ''" [disabled]="w.signoff.signed"
+                     [ngModel]="stage.inputs[f.key]"
+                     (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+            </ng-template>
           </label>
         </div>
       </div>

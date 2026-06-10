@@ -41,7 +41,10 @@ src/app/
 
   data/                  Plain data & helpers (no UI):
     jobs.ts                Job model + seeded generator (120 mock jobs) + STATUS_OPTIONS + statusLabel()
-    workflow.ts            Inspection workflow model: per-trade stage pipelines, types, stage helpers
+    workflow.ts            Inspection workflow model: per-trade stage pipelines, types, stage helpers, WORK_TYPE_OPTIONS
+    characteristics.ts     Characteristic code → description lookup + options (job special designations)
+    conditions.ts          Condition code → description lookup + options (Work validation condition dropdown)
+    materials.ts           Material list + options (Build/install stage "Material used" dropdown)
     filter-schema.ts       Schema-driven filter engine: field defs + applyFilters() + saved variants
     export-csv.ts          downloadCsv() helper (Excel-friendly CSV download)
 
@@ -62,7 +65,10 @@ src/app/
 | `/history` | Work history | Audit log; `?job=<id>` deep-links filtered to one job |
 | `/adaptive` | Adaptive filters | Schema-driven filter bar |
 | `/jobs/:id` | Job detail | The workflow page for one job |
-| `/admin/*` | — | **Referenced in the sidebar menu but NOT built yet** |
+| `/admin/steps` | Admin → Steps | Editable maintenance table for per-trade workflow steps |
+| `/admin/characteristics` | Admin → Characteristic codes | Editable code → description lookup |
+| `/admin/conditions` | Admin → Condition codes | Editable condition code → description lookup (feeds Work validation) |
+| `/admin/materials` | Admin → Materials | Editable material list (feeds the Build/install "Material used" dropdown) |
 
 ---
 

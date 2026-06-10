@@ -24,7 +24,7 @@ export interface Job {
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 const TRADES: Job['trade'][] = ['Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
-const TAG_POOL = ['urgent', 'warranty', 'follow-up', 'permit-required', 'safety', 'recurring', 'customer-supplied', 'emergency'];
+const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
 // Made-up but trade-appropriate equipment make/model pairs.
 const EQUIPMENT_BY_TRADE: Record<Job['trade'], { make: string; model: string }[]> = {

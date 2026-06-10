@@ -2,6 +2,7 @@
 // (stages w/ per-step inputs, components, attachments, sign-off, history entries) and
 // stage helpers (locking/sequencing, current step). Pure data + functions, no UI.
 import { Job } from './jobs';
+import { MATERIAL_OPTIONS } from './materials';
 
 /** A stage is green (done), red (failed), amber/pending (required, not yet done),
  *  or grey (not-required for this particular job). */
@@ -11,9 +12,10 @@ export type StageStatus = 'done' | 'failed' | 'pending' | 'not-required';
 export interface StageField {
   key: string;
   label: string;
-  type: 'text' | 'number';
+  type: 'text' | 'number' | 'select';
   unit?: string;          // shown alongside the label, e.g. "PSI", "°F"
   placeholder?: string;
+  options?: { label: string; value: string }[];  // dropdown choices for type: 'select'
 }
 
 export interface WorkflowStage {
@@ -41,6 +43,14 @@ export interface Attachment {
 
 export type SignResult = 'pass' | 'fail' | 'conditional';
 
+/** Whether the recorded work (and any defects) arose during the build or the install phase. */
+export type WorkType = 'build' | 'install';
+
+export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
+  { label: 'Build', value: 'build' },
+  { label: 'Install', value: 'install' }
+];
+
 export interface SignOff {
   inspectorName: string;
   licenseNo: string;
@@ -66,6 +76,9 @@ export interface JobWorkflow {
   attachments: Attachment[];
   signoff: SignOff;
   validationNotes: string;   // free-text note for the Work Validation section
+  workType: WorkType | null; // build vs install — set on the Work Validation section
+  conditionCode: string;     // selected condition code (see conditions.ts), '' if none
+  conditionCount: number;    // number of conditions found, pairs with conditionCode
   history: HistoryEntry[];
 }
 
@@ -165,7 +178,7 @@ export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'e.g. 36" × 80"' }
     ] },
     { id: 'build',   label: 'Build / install',              required: true, fields: [
-      { key: 'material', label: 'Material used', type: 'text', placeholder: 'e.g. red oak' }
+      { key: 'material', label: 'Material used', type: 'select', options: MATERIAL_OPTIONS, placeholder: 'Select material' }
     ] },
     { id: 'load',    label: 'Fastening & load check',       required: job => titleHas(job, 'Deck', 'Shelving', 'Cabinet'), fields: [
       { key: 'ratedLoad', label: 'Rated load', type: 'number', unit: 'lbs' }
@@ -225,6 +238,9 @@ export function newWorkflow(job: Job): JobWorkflow {
     attachments: [],
     signoff: { inspectorName: '', licenseNo: '', result: null, notes: '', signed: false, date: null },
     validationNotes: '',
+    workType: null,
+    conditionCode: '',
+    conditionCount: 0,
     history: []
   };
 }

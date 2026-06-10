@@ -61,6 +61,8 @@ export class AppComponent {
     items: [                                   // ← having `items` makes it a collapsible group
       { label: 'Steps', icon: 'pi pi-sitemap', routerLink: '/admin/steps' },
       { label: 'Characteristic codes', icon: 'pi pi-tag', routerLink: '/admin/characteristics' },
+      { label: 'Condition codes', icon: 'pi pi-exclamation-triangle', routerLink: '/admin/conditions' },
+      { label: 'Materials', icon: 'pi pi-box', routerLink: '/admin/materials' },
     ]
   },
 ];

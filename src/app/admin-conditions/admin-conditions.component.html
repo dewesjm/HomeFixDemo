@@ -1,0 +1,72 @@
+<!-- Admin → Condition Codes maintenance table (paired with the component). -->
+<h2 class="section-title">Condition codes</h2>
+<p class="section-sub">Maintain the shared code → description list used by the condition-code dropdown on Work validation.</p>
+
+<p-table #dt [value]="rows" dataKey="id" editMode="row" styleClass="p-datatable-sm"
+         [globalFilterFields]="['code', 'description']" [columns]="exportColumns" exportFilename="condition-codes">
+  <ng-template pTemplate="caption">
+    <div class="row">
+      <span class="fw-bold">Condition codes</span>
+      <span class="spacer"></span>
+      <p-iconfield iconPosition="left">
+        <p-inputicon class="pi pi-search" />
+        <input #gi pInputText type="text" placeholder="Search codes…"
+               (input)="dt.filterGlobal(gi.value, 'contains')" />
+      </p-iconfield>
+      <p-button label="Export" icon="pi pi-file-excel" size="small" severity="secondary"
+                (onClick)="dt.exportCSV()" />
+      <p-button label="Add code" icon="pi pi-plus" size="small" (onClick)="addRow()" />
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="code" class="min-w-11">
+        Code <p-sortIcon field="code" />
+        <p-columnFilter type="text" field="code" matchMode="contains" display="menu" />
+      </th>
+      <th pSortableColumn="description" class="min-w-14">
+        Description <p-sortIcon field="description" />
+        <p-columnFilter type="text" field="description" matchMode="contains" display="menu" />
+      </th>
+      <th class="min-w-11"></th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-row let-editing="editing" let-ri="rowIndex">
+    <tr [pEditableRow]="row">
+      <td pEditableColumn>
+        <p-cellEditor>
+          <ng-template pTemplate="input">
+            <input pInputText [(ngModel)]="row.code" class="w-full" placeholder="e.g. C200" />
+          </ng-template>
+          <ng-template pTemplate="output">{{ row.code || '—' }}</ng-template>
+        </p-cellEditor>
+      </td>
+      <td pEditableColumn>
+        <p-cellEditor>
+          <ng-template pTemplate="input">
+            <input pInputText [(ngModel)]="row.description" class="w-full" placeholder="e.g. Cracked / damaged" />
+          </ng-template>
+          <ng-template pTemplate="output">{{ row.description || '—' }}</ng-template>
+        </p-cellEditor>
+      </td>
+      <td>
+        <div class="row-tight">
+          <button *ngIf="!editing" pButton pInitEditableRow type="button" icon="pi pi-pencil"
+                  [text]="true" severity="secondary" size="small" (click)="onRowEditInit(row)"></button>
+          <button *ngIf="editing" pButton pSaveEditableRow type="button" icon="pi pi-check"
+                  [text]="true" severity="success" size="small" (click)="onRowEditSave(row)"></button>
+          <button *ngIf="editing" pButton pCancelEditableRow type="button" icon="pi pi-times"
+                  [text]="true" severity="danger" size="small" (click)="onRowEditCancel(row, ri)"></button>
+          <button *ngIf="!editing" pButton type="button" icon="pi pi-trash"
+                  [text]="true" severity="danger" size="small" (click)="deleteRow(ri)"></button>
+        </div>
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="3" class="empty">No condition codes defined.</td></tr>
+  </ng-template>
+</p-table>

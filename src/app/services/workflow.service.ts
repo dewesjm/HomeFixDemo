@@ -7,8 +7,9 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, SignOff, StageStatus, StageField,
-  currentStepLabel, newWorkflow, stageFieldsFor
+  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, newWorkflow, stageFieldsFor
 } from '../data/workflow';
+import { conditionLabel } from '../data/conditions';
 
 const dash = (v: string | null | undefined) => (v && v.length ? `“${v}”` : '—');
 
@@ -147,6 +148,54 @@ export class WorkflowService {
     this.persist();
   }
 
+  /** Human-friendly label for a work-type value (e.g. 'build' → 'Build'). */
+  private workTypeLabel(v: WorkType | null): string {
+    return v ? WORK_TYPE_OPTIONS.find(o => o.value === v)?.label ?? v : '—';
+  }
+
+  setWorkType(job: Job, workType: WorkType | null) {
+    this.workflowFor(job).update(wf => {
+      const prev = wf.workType ?? null;
+      return this.withHistory(wf, { ...wf, workType }, {
+        section: 'Work Validation',
+        who: wf.technician,
+        change: `Work type: ${this.workTypeLabel(prev)} → ${this.workTypeLabel(workType)}`
+      });
+    });
+    this.persist();
+  }
+
+  /** Describe a condition code as "C200 (Cracked / damaged)", or "—" when blank. */
+  private conditionDesc(code: string): string {
+    if (!code) return '—';
+    const label = conditionLabel(code);
+    return label ? `${code} (${label})` : code;
+  }
+
+  setConditionCode(job: Job, conditionCode: string) {
+    this.workflowFor(job).update(wf => {
+      const prev = wf.conditionCode ?? '';
+      return this.withHistory(wf, { ...wf, conditionCode }, {
+        section: 'Work Validation',
+        who: wf.technician,
+        change: `Condition code: ${this.conditionDesc(prev)} → ${this.conditionDesc(conditionCode)}`
+      });
+    });
+    this.persist();
+  }
+
+  setConditionCount(job: Job, conditionCount: number) {
+    this.workflowFor(job).update(wf => {
+      const prev = wf.conditionCount ?? 0;
+      return this.withHistory(wf, { ...wf, conditionCount }, {
+        section: 'Work Validation',
+        who: wf.technician,
+        change: `Number of conditions: ${prev} → ${conditionCount}`
+      });
+    });
+    this.persist();
+  }
+
   // --- Sign-off -----------------------------------------------------------
   updateSignoff(job: Job, patch: Partial<SignOff>, change: string) {
     this.workflowFor(job).update(wf => {
@@ -215,6 +264,9 @@ export class WorkflowService {
         wf.attachments ??= [];
         wf.history ??= [];
         wf.validationNotes ??= '';
+        wf.workType ??= null;
+        wf.conditionCode ??= '';
+        wf.conditionCount ??= 0;
         wf.signoff ??= { inspectorName: '', licenseNo: '', result: null, notes: '', signed: false, date: null };
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);

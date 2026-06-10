@@ -16,9 +16,10 @@ import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 
 import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
+import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
 import {
-  WorkflowStage, StageField, SignResult,
+  WorkflowStage, StageField, SignResult, WorkType, WORK_TYPE_OPTIONS,
   isStageLocked, currentStepLabel, allRequiredDone
 } from '../data/workflow';
 
@@ -50,6 +51,9 @@ export class JobDetailComponent {
     { label: 'Conditional', value: 'conditional' },
     { label: 'Fail', value: 'fail' }
   ];
+
+  workTypeOptions = WORK_TYPE_OPTIONS;
+  conditionOptions = CONDITION_OPTIONS;
 
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
   requiredDone = computed(() => (this.wf ? allRequiredDone(this.wf().stages) : false));
@@ -94,6 +98,13 @@ export class JobDetailComponent {
       this.wfService.setStageInput(this.job, stage.id, field, value);
   }
 
+  /** Dropdown (type: 'select') stage fields commit on change; clearing maps to ''. */
+  stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
+    const v = value ?? '';
+    if (this.job && v !== (stage.inputs[field.key] ?? ''))
+      this.wfService.setStageInput(this.job, stage.id, field, v);
+  }
+
   // ---- attachments ----
   addAttachments(event: { files: File[] }, fu: FileUpload) {
     if (!this.job) return;
@@ -118,6 +129,17 @@ export class JobDetailComponent {
   blurValidationNotes(value: string) {
     const old = this.wf!().validationNotes;
     if (this.job && value !== old) this.wfService.setValidationNotes(this.job, value);
+  }
+
+  setWorkType(workType: WorkType | null) {
+    if (this.job && workType !== this.wf!().workType) this.wfService.setWorkType(this.job, workType);
+  }
+  setConditionCode(conditionCode: string) {
+    if (this.job && (conditionCode ?? '') !== this.wf!().conditionCode) this.wfService.setConditionCode(this.job, conditionCode ?? '');
+  }
+  setConditionCount(value: string | number) {
+    const count = Math.max(0, Math.floor(Number(value) || 0));
+    if (this.job && count !== this.wf!().conditionCount) this.wfService.setConditionCount(this.job, count);
   }
 
   private q(v: string | null | undefined): string { return v && v.length ? `“${v}”` : '—'; }
