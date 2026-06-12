@@ -101,7 +101,17 @@ const titleHas = (job: Job, ...words: string[]) =>
  * (e.g. refrigerant inspection only for AC/heat-pump work) appear greyed-out
  * when they don't apply to this job.
  */
-export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
+// Shared stages every trade gets: a safety/prep stage first and a handover stage last.
+const PREP_STAGE: StageTemplate = {
+  id: 'prep', label: 'Site prep & safety', required: true,
+  fields: [{ key: 'ppe', label: 'PPE / safety', type: 'text', placeholder: 'e.g. gloves, eyewear' }]
+};
+const HANDOVER_STAGE: StageTemplate = {
+  id: 'handover', label: 'Cleanup & customer walkthrough', required: true,
+  fields: [{ key: 'walkthrough', label: 'Customer walkthrough', type: 'text', placeholder: 'e.g. confirmed operation' }]
+};
+
+const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   HVAC: [
     { id: 'diagnostic',  label: 'System diagnostic',                 required: true, fields: [
       { key: 'faultCode',  label: 'Fault code',   type: 'text',   placeholder: 'e.g. E4' },
@@ -209,6 +219,11 @@ export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
     ] }
   ]
 };
+
+/** Full per-trade pipelines: shared prep stage first, the trade specifics, then a handover stage. */
+export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
+  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]])
+) as Record<Job['trade'], StageTemplate[]>;
 
 /** Field definitions for a given trade's stage id — used to backfill saved workflows
  *  that were persisted before per-step inputs existed. */

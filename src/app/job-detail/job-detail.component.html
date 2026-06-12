@@ -41,18 +41,13 @@
     </div>
   </section>
 
-  <!-- 2 ───────── Stages & sign-off (each stage IS a sign-off) ───────── -->
+  <!-- 2 ───────── Stages ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages &amp; sign-off</h3>
+    <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages</h3>
     <p class="section-sub">
-      Each stage is signed off in turn — record its readings and an Accept/Reject decision, then
-      sign &amp; lock to advance. The job is complete once the last stage is signed.
+      Work the stages in order — select a step to record its readings. Each stage is signed off in the
+      Sign-off section below; signing advances to the next stage.
     </p>
-
-    <div *ngIf="jobComplete()" class="signoff-done">
-      <i class="pi pi-verified"></i>
-      All stages signed — job complete<ng-container *ngIf="rejectedCount() as rc"> ({{ rc }} rejected)</ng-container>.
-    </div>
 
     <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
              (activeIndexChange)="selectedStep.set($event)" styleClass="mb-md" />
@@ -65,70 +60,23 @@
           <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
         </div>
 
-          <!-- per-stage data inputs -->
-          <div class="stage-inputs" *ngIf="stage.fields.length">
-            <label class="stage-field" *ngFor="let f of stage.fields">
-              <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-              <p-select *ngIf="f.type === 'select'; else textField"
-                        [options]="f.options || []" optionLabel="label" optionValue="value"
-                        [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
-                        [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
-                        (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
-              <ng-template #textField>
-                <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
-                       [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                       [ngModel]="stage.inputs[f.key]"
-                       (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-              </ng-template>
-            </label>
-          </div>
-
-          <!-- per-stage sign-off (required stages) -->
-          <ng-container *ngIf="stage.required; else optionalNote">
-            <div class="detail-grid">
-              <div>
-                <div class="meta">Inspector name</div>
-                <input pInputText class="w-full" [disabled]="!editable(stage)"
-                       [ngModel]="stage.inspectorName" (blur)="blurStageInspector(stage, $any($event.target).value)" />
-              </div>
-              <div>
-                <div class="meta">License #</div>
-                <input pInputText class="w-full" [disabled]="!editable(stage)"
-                       [ngModel]="stage.licenseNo" (blur)="blurStageLicense(stage, $any($event.target).value)" />
-              </div>
-              <div>
-                <div class="meta">Decision <span class="req">*</span></div>
-                <div class="result-radios">
-                  <label *ngFor="let o of resultOptions">
-                    <p-radioButton [name]="'result-' + stage.id" [value]="o.value" [disabled]="!editable(stage)"
-                                   [ngModel]="stage.result" (ngModelChange)="setStageResult(stage, $event)" />
-                    <span>{{ o.label }}</span>
-                  </label>
-                </div>
-              </div>
-              <div class="col-span-all">
-                <div class="meta">Notes</div>
-                <textarea rows="2" class="note-area" [disabled]="!editable(stage)"
-                          [ngModel]="stage.notes" (blur)="blurStageNotes(stage, $any($event.target).value)"></textarea>
-              </div>
-            </div>
-
-            <div class="signoff-actions">
-              <p-button *ngIf="!stage.signed" label="Sign &amp; lock" icon="pi pi-check-circle"
-                        [disabled]="!canSignStage(stage)" (onClick)="signStage(stage)" />
-              <ng-container *ngIf="stage.signed">
-                <p-tag [value]="(stage.result || '') | uppercase"
-                       [severity]="stage.result === 'reject' ? 'danger' : 'success'" />
-                <span class="meta">Signed by {{ stage.inspectorName || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
-                <span class="spacer"></span>
-                <p-button *ngIf="canReopen(stage, selectedStep())" label="Re-open" icon="pi pi-lock-open"
-                          severity="secondary" [text]="true" (onClick)="reopenStage(stage)" />
-              </ng-container>
-            </div>
-          </ng-container>
-          <ng-template #optionalNote>
-            <div class="meta">Optional stage — no sign-off required.</div>
-          </ng-template>
+        <div class="stage-inputs" *ngIf="stage.fields.length">
+          <label class="stage-field" *ngFor="let f of stage.fields">
+            <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+            <p-select *ngIf="f.type === 'select'; else textField"
+                      [options]="f.options || []" optionLabel="label" optionValue="value"
+                      [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
+                      [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
+                      (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
+            <ng-template #textField>
+              <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
+                     [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                     [ngModel]="stage.inputs[f.key]"
+                     (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+            </ng-template>
+          </label>
+        </div>
+        <div *ngIf="!stage.fields.length" class="meta">No readings to record for this stage.</div>
       </div>
     </ng-container>
   </section>
@@ -223,6 +171,69 @@
     <p-fileUpload #fu mode="basic" chooseLabel="Add files" chooseIcon="pi pi-paperclip"
                   [multiple]="true" [auto]="true" customUpload
                   [disabled]="jobComplete()" (uploadHandler)="addAttachments($event, fu)" />
+  </section>
+
+  <!-- 5 ───────── Sign-off (current stage) ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-verified"></i> Sign-off</h3>
+
+    <div *ngIf="jobComplete()" class="signoff-done">
+      <i class="pi pi-verified"></i>
+      All stages signed — job complete<ng-container *ngIf="rejectedCount() as rc"> ({{ rc }} rejected)</ng-container>.
+    </div>
+
+    <ng-container *ngIf="w.stages[selectedStep()] as stage">
+      <p class="section-sub">
+        Signing off: <strong>{{ stage.label }}</strong> ·
+        <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
+      </p>
+
+      <ng-container *ngIf="stage.required; else optionalNote">
+        <div class="detail-grid">
+          <div>
+            <div class="meta">Inspector name</div>
+            <input pInputText class="w-full" [disabled]="!editable(stage)"
+                   [ngModel]="stage.inspectorName" (blur)="blurStageInspector(stage, $any($event.target).value)" />
+          </div>
+          <div>
+            <div class="meta">License #</div>
+            <input pInputText class="w-full" [disabled]="!editable(stage)"
+                   [ngModel]="stage.licenseNo" (blur)="blurStageLicense(stage, $any($event.target).value)" />
+          </div>
+          <div>
+            <div class="meta">Decision <span class="req">*</span></div>
+            <div class="result-radios">
+              <label *ngFor="let o of resultOptions">
+                <p-radioButton [name]="'result-' + stage.id" [value]="o.value" [disabled]="!editable(stage)"
+                               [ngModel]="stage.result" (ngModelChange)="setStageResult(stage, $event)" />
+                <span>{{ o.label }}</span>
+              </label>
+            </div>
+          </div>
+          <div class="col-span-all">
+            <div class="meta">Notes</div>
+            <textarea rows="2" class="note-area" [disabled]="!editable(stage)"
+                      [ngModel]="stage.notes" (blur)="blurStageNotes(stage, $any($event.target).value)"></textarea>
+          </div>
+        </div>
+
+        <div class="signoff-actions">
+          <p-button *ngIf="!stage.signed" label="Sign &amp; lock" icon="pi pi-check-circle"
+                    [disabled]="!canSignStage(stage)" (onClick)="signStage(stage)" />
+          <ng-container *ngIf="stage.signed">
+            <p-tag [value]="(stage.result || '') | uppercase"
+                   [severity]="stage.result === 'reject' ? 'danger' : 'success'" />
+            <span class="meta">Signed by {{ stage.inspectorName || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
+            <span class="spacer"></span>
+            <p-button *ngIf="canReopen(stage, selectedStep())" label="Re-open" icon="pi pi-lock-open"
+                      severity="secondary" [text]="true" (onClick)="reopenStage(stage)" />
+          </ng-container>
+        </div>
+      </ng-container>
+      <ng-template #optionalNote>
+        <div class="meta">Optional stage — no sign-off required.</div>
+      </ng-template>
+    </ng-container>
   </section>
 
 
