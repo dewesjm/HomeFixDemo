@@ -10,10 +10,11 @@
             placeholder="Select a person" [showClear]="true" [filter]="true"
             [style]="{ minWidth: '14rem' }" />
 
-  <p-select [ngModel]="jobFilter()" (ngModelChange)="jobFilter.set($event)"
-            [options]="jobOptions" optionLabel="label" optionValue="value"
-            placeholder="Select a job" [showClear]="true" [filter]="true"
-            [style]="{ minWidth: '14rem' }" />
+  <p-iconfield iconPosition="left">
+    <p-inputicon class="pi pi-briefcase" />
+    <input pInputText type="text" [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)"
+           placeholder="Job # or ID" [style]="{ minWidth: '12rem' }" />
+  </p-iconfield>
 
   <p-iconfield iconPosition="left" class="grow">
     <p-inputicon class="pi pi-search" />

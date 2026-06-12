@@ -54,16 +54,17 @@
       All stages signed — job complete<ng-container *ngIf="rejectedCount() as rc"> ({{ rc }} rejected)</ng-container>.
     </div>
 
-    <p-accordion [value]="openPanel() ?? ''" (valueChange)="openPanel.set($any($event))">
-      <p-accordion-panel *ngFor="let stage of w.stages; let i = index" [value]="stage.id" [disabled]="locked(i)">
-        <p-accordion-header>
-          <span class="stage-acc-head">
-            <i [class]="stageIcon(stage, i)"></i>
-            <span class="stage-acc-label">{{ stage.label }}</span>
-            <p-tag [value]="stageStatusText(stage, i)" [severity]="stageSeverity(stage, i)" />
-          </span>
-        </p-accordion-header>
-        <p-accordion-content>
+    <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
+             (activeIndexChange)="selectedStep.set($event)" styleClass="mb-md" />
+
+    <ng-container *ngIf="w.stages[selectedStep()] as stage">
+      <div class="stage-panel">
+        <div class="stage-panel-head">
+          <i [class]="stageIcon(stage, selectedStep())"></i>
+          <span class="stage-acc-label">{{ stage.label }}</span>
+          <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
+        </div>
+
           <!-- per-stage data inputs -->
           <div class="stage-inputs" *ngIf="stage.fields.length">
             <label class="stage-field" *ngFor="let f of stage.fields">
@@ -71,11 +72,11 @@
               <p-select *ngIf="f.type === 'select'; else textField"
                         [options]="f.options || []" optionLabel="label" optionValue="value"
                         [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
-                        [disabled]="!inputsEditable(stage, i)" [ngModel]="stage.inputs[f.key]"
+                        [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
                         (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
               <ng-template #textField>
                 <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
-                       [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, i)"
+                       [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
                        [ngModel]="stage.inputs[f.key]"
                        (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
               </ng-template>
@@ -120,7 +121,7 @@
                        [severity]="stage.result === 'reject' ? 'danger' : 'success'" />
                 <span class="meta">Signed by {{ stage.inspectorName || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
                 <span class="spacer"></span>
-                <p-button *ngIf="canReopen(stage, i)" label="Re-open" icon="pi pi-lock-open"
+                <p-button *ngIf="canReopen(stage, selectedStep())" label="Re-open" icon="pi pi-lock-open"
                           severity="secondary" [text]="true" (onClick)="reopenStage(stage)" />
               </ng-container>
             </div>
@@ -128,9 +129,8 @@
           <ng-template #optionalNote>
             <div class="meta">Optional stage — no sign-off required.</div>
           </ng-template>
-        </p-accordion-content>
-      </p-accordion-panel>
-    </p-accordion>
+      </div>
+    </ng-container>
   </section>
 
   <!-- 3 ───────── Work Validation (applies across all stages) ───────── -->

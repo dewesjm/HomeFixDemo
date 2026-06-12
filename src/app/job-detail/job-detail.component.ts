@@ -1,11 +1,12 @@
-// Job detail page — sections: Details, Stages (each stage is its own sign-off card, shown
-// one-at-a-time in a PrimeNG accordion), a cross-stage Work validation section, Attachments,
-// plus the per-job history log. All edits go through WorkflowService, which logs
-// before→after to the audit trail.
+// Job detail page — sections: Details, Stages (each stage is its own sign-off, navigated by a
+// PrimeNG Steps indicator showing one stage's sign-off at a time), a cross-stage Work validation
+// section, Attachments, plus the per-job history log. All edits go through WorkflowService, which
+// logs before→after to the audit trail.
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MenuItem } from 'primeng/api';
 
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -13,7 +14,7 @@ import { SelectModule } from 'primeng/select';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
-import { AccordionModule } from 'primeng/accordion';
+import { StepsModule } from 'primeng/steps';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 
@@ -32,7 +33,7 @@ import {
   imports: [
     CommonModule, FormsModule,
     ButtonModule, TagModule, SelectModule, InputTextModule, TooltipModule,
-    TableModule, AccordionModule, RadioButtonModule, FileUploadModule
+    TableModule, StepsModule, RadioButtonModule, FileUploadModule
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -53,17 +54,31 @@ export class JobDetailComponent {
   workTypeOptions = WORK_TYPE_OPTIONS;
   conditionOptions = CONDITION_OPTIONS;
 
-  /** Which accordion panel (stage id) is open. Defaults to the stage awaiting sign-off. */
-  openPanel = signal<string | null>(this.wf ? activeStageId(this.wf().stages) : null);
+  /** Steps indicator model — one entry per stage; locked stages aren't navigable. */
+  stepsModel = computed<MenuItem[]>(() =>
+    this.wf ? this.wf().stages.map((s, i) => ({ label: s.label, disabled: this.locked(i) })) : []);
+  /** Which stage's sign-off panel is shown below the steps. Defaults to the active stage. */
+  selectedStep = signal<number>(this.initialStep());
 
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
   /** Whole job is done once every required stage is signed. */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
   /** Id of the stage currently awaiting sign-off (null when complete). */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
+  /** Index of the stage awaiting sign-off (last stage once the job is complete). */
+  activeIndex = computed(() => this.indexOfActive());
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'reject').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
+
+  /** Index of the first stage awaiting sign-off, or the last stage once all are signed. */
+  private indexOfActive(): number {
+    if (!this.wf) return 0;
+    const stages = this.wf().stages;
+    const idx = stages.findIndex(s => s.required && !s.signed);
+    return idx === -1 ? Math.max(0, stages.length - 1) : idx;
+  }
+  private initialStep(): number { return this.indexOfActive(); }
 
   // ---- stage display helpers ----
   /** A stage is locked until every required stage before it is signed. */
@@ -142,12 +157,13 @@ export class JobDetailComponent {
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
     this.wfService.signStage(this.job, stage.id);
-    this.openPanel.set(this.wf ? activeStageId(this.wf().stages) : null);  // advance to next
+    this.selectedStep.set(this.indexOfActive());   // advance the steps indicator
   }
   reopenStage(stage: WorkflowStage) {
     if (!this.job) return;
     this.wfService.reopenStage(this.job, stage.id);
-    this.openPanel.set(stage.id);
+    const idx = this.wf!().stages.findIndex(s => s.id === stage.id);
+    if (idx >= 0) this.selectedStep.set(idx);
   }
 
   // ---- attachments ----

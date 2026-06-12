@@ -89,7 +89,8 @@ section / what-changed / current-step**. Value edits record **before → after**
 [workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade. **Each stage is its
 own sign-off**: it carries its per-step data inputs plus inspector / license # / an **Accept or Reject
 decision (required)** / notes. A stage is **locked** until every required stage before it is **signed**
-(sequential), only the current stage is editable (shown in a PrimeNG accordion, one open at a time), and
+(sequential), only the current stage is editable (navigated by a PrimeNG **Steps** indicator that shows one
+stage's sign-off at a time), and
 the **job is complete once the last required stage is signed** — there is no separate final sign-off.
 Some stages are **conditionally required** based on the job title (e.g. refrigerant check only for
 AC/heat-pump work). The **Work validation** section is separate and **cross-stage** (build/install,

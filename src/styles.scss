@@ -242,10 +242,14 @@ html, body {
 .stage--locked  { opacity: 0.75; i { color: var(--p-text-muted-color); } }
 .stage--skip    { opacity: 0.5; background: var(--app-muted); i { color: var(--p-surface-400); } }
 
-/* Stages-as-sign-offs accordion (job detail) */
-.stage-acc-head { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+/* Stages-as-sign-offs: Steps indicator + the active stage's panel (job detail) */
+.stage-panel {
+  border: 1px solid var(--app-border); border-radius: 8px;
+  padding: 1rem; background: var(--app-surface);
+}
+.stage-panel-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem; }
 .stage-acc-label { font-weight: 600; }
-.stage-acc-head .p-tag { margin-left: auto; }
+.stage-panel-head .p-tag { margin-left: auto; }
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
 .req { color: var(--p-red-500); }

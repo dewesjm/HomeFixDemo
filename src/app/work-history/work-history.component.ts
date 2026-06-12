@@ -20,6 +20,7 @@ import { downloadCsv } from '../data/export-csv';
 
 interface ActivityRow extends HistoryEntry {
   jobId: number;
+  jobNumber: string;
   jobTitle: string;
   trade: Job['trade'];
 }
@@ -41,13 +42,14 @@ export class WorkHistoryComponent {
 
   person = signal<string | null>(null);
   query = signal<string>('');
-  jobFilter = signal<number | null>(null);
+  /** Free-text job filter — matches a job number (e.g. "K7P2M") or numeric id. */
+  jobQuery = signal<string>('');
 
   constructor() {
     // Seed filters from the URL so deep links (e.g. the row's History button) work.
+    // ?job=<id> arrives as a numeric id from the grid; typed values match a job number too.
     this.route.queryParamMap.subscribe(pm => {
-      const job = pm.get('job');
-      this.jobFilter.set(job ? Number(job) : null);
+      this.jobQuery.set(pm.get('job') ?? '');
       this.person.set(pm.get('person'));
       this.query.set(pm.get('q') ?? '');
     });
@@ -61,15 +63,15 @@ export class WorkHistoryComponent {
     return [...set].sort().map(p => ({ label: p, value: p }));
   });
 
-  /** Every job as a filter option — searchable by id, job number, or title. */
-  jobOptions = JOBS.map(j => ({ label: `#${j.id} · ${j.jobNumber} · ${j.title}`, value: j.id }));
-
   /** Human label for the active scope, shown in the activity header. */
   scopeLabel = computed(() => {
     const parts: string[] = [];
     if (this.person()) parts.push(`by ${this.person()}`);
-    const id = this.jobFilter();
-    if (id) parts.push(this.jobById.get(id)?.title ?? `Job #${id}`);
+    const jq = this.jobQuery().trim();
+    if (jq) {
+      const match = JOBS.find(j => String(j.id) === jq || j.jobNumber.toLowerCase() === jq.toLowerCase());
+      parts.push(match ? match.title : `job “${jq}”`);
+    }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
 
@@ -86,6 +88,7 @@ export class WorkHistoryComponent {
         rows.push({
           ...e,
           jobId: wf.jobId,
+          jobNumber: job?.jobNumber ?? '',
           jobTitle: job?.title ?? `Job #${wf.jobId}`,
           trade: job?.trade ?? 'Inspection'
         });
@@ -97,6 +100,7 @@ export class WorkHistoryComponent {
       rows.push({
         ...m.entry,
         jobId: m.jobId,
+        jobNumber: job?.jobNumber ?? '',
         jobTitle: job?.title ?? `Job #${m.jobId}`,
         trade: job?.trade ?? 'Inspection'
       });
@@ -106,10 +110,10 @@ export class WorkHistoryComponent {
 
   activity = computed<ActivityRow[]>(() => {
     const p = this.person();
-    const job = this.jobFilter();
+    const jq = this.jobQuery().trim().toLowerCase();
     const q = this.query().trim().toLowerCase();
     return this.allActivity().filter(r =>
-      (!job || r.jobId === job) &&
+      (!jq || String(r.jobId) === jq || r.jobNumber.toLowerCase().includes(jq)) &&
       (!p || r.who === p) &&
       (!q || `${r.jobTitle} ${r.change} ${r.section} ${r.step}`.toLowerCase().includes(q))
     );
@@ -117,7 +121,7 @@ export class WorkHistoryComponent {
 
   clear() {
     this.person.set(null);
-    this.jobFilter.set(null);
+    this.jobQuery.set('');
     this.query.set('');
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
