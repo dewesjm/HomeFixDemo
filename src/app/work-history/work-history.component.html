@@ -8,7 +8,12 @@
   <p-select [ngModel]="person()" (ngModelChange)="person.set($event)"
             [options]="people()" optionLabel="label" optionValue="value"
             placeholder="Select a person" [showClear]="true" [filter]="true"
-            [style]="{ minWidth: '16rem' }" />
+            [style]="{ minWidth: '14rem' }" />
+
+  <p-select [ngModel]="jobFilter()" (ngModelChange)="jobFilter.set($event)"
+            [options]="jobOptions" optionLabel="label" optionValue="value"
+            placeholder="Select a job" [showClear]="true" [filter]="true"
+            [style]="{ minWidth: '14rem' }" />
 
   <p-iconfield iconPosition="left" class="grow">
     <p-inputicon class="pi pi-search" />
@@ -23,32 +28,11 @@
             (onClick)="clear()" />
 </div>
 
-<div *ngIf="jobFilterTitle() as t" class="mb-md">
-  <p-tag [value]="'Job: ' + t" severity="info" />
-  <p-button label="Clear job filter" icon="pi pi-times" size="small" severity="secondary"
-            [text]="true" (onClick)="clearJobFilter()" />
-</div>
-
-<!-- Jobs assigned to the selected person -->
-<section *ngIf="person() as p" class="panel">
-  <h3 class="panel-title"><i class="pi pi-user"></i> Jobs assigned to {{ p }}</h3>
-  <div *ngIf="!assignedJobs().length" class="meta">No jobs currently assigned.</div>
-  <div class="result-grid" *ngIf="assignedJobs().length">
-    <a *ngFor="let j of assignedJobs()" class="result-card card-link" [routerLink]="['/jobs', j.id]">
-      <h3>{{ j.title }}</h3>
-      <div class="meta">{{ j.trade }} · {{ j.scheduledFor | date:'mediumDate' }}</div>
-      <div class="mt-xs">
-        <p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" />
-      </div>
-    </a>
-  </div>
-</section>
-
 <!-- Activity log -->
 <section class="panel">
   <h3 class="panel-title">
     <i class="pi pi-history"></i>
-    Activity {{ person() ? 'by ' + person() : '(all people)' }}
+    Activity {{ scopeLabel() }}
     <span class="meta fw-normal">· {{ activity().length }} entries</span>
   </h3>
 

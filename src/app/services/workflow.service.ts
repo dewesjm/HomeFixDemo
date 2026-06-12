@@ -6,7 +6,7 @@ import { MessageService } from 'primeng/api';
 import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
-  JobWorkflow, HistoryEntry, InstalledComponent, Attachment, SignOff, StageStatus, StageField,
+  JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentStepLabel, newWorkflow, stageFieldsFor
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
@@ -45,24 +45,7 @@ export class WorkflowService {
     return [...merged.values()];
   }
 
-  // --- Stages -------------------------------------------------------------
-  setStage(job: Job, stageId: string, status: StageStatus) {
-    this.workflowFor(job).update(wf => {
-      const prev = wf.stages.find(s => s.id === stageId);
-      const stages = wf.stages.map(s => (s.id === stageId ? { ...s, status } : s));
-      const stage = stages.find(s => s.id === stageId)!;
-      return this.withHistory(wf, { ...wf, stages }, {
-        section: 'Stages',
-        who: wf.technician,
-        change: `Stage “${stage.label}” status: ${prev?.status ?? '—'} → ${status}`
-      });
-    });
-    this.persist();
-    const label = this.workflowFor(job)().stages.find(s => s.id === stageId)?.label ?? 'Stage';
-    const severity = status === 'done' ? 'success' : status === 'failed' ? 'warn' : 'info';
-    this.notify(severity, 'Stage updated', `${label} → ${status}`);
-  }
-
+  // --- Stage inputs -------------------------------------------------------
   setStageInput(job: Job, stageId: string, field: StageField, value: string) {
     this.workflowFor(job).update(wf => {
       const prev = wf.stages.find(s => s.id === stageId)?.inputs[field.key] ?? '';
@@ -196,40 +179,48 @@ export class WorkflowService {
     this.persist();
   }
 
-  // --- Sign-off -----------------------------------------------------------
-  updateSignoff(job: Job, patch: Partial<SignOff>, change: string) {
+  // --- Per-stage sign-off -------------------------------------------------
+  /** Patch a stage's sign-off fields (inspector, license, result, notes) and log it. */
+  updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>, change: string) {
     this.workflowFor(job).update(wf => {
-      const signoff = { ...wf.signoff, ...patch };
-      return this.withHistory(wf, { ...wf, signoff }, {
+      const stages = wf.stages.map(s => (s.id === stageId ? { ...s, ...patch } : s));
+      const st = stages.find(s => s.id === stageId)!;
+      return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: signoff.inspectorName || wf.technician,
+        who: st.inspectorName || wf.technician,
         change
       });
     });
     this.persist();
   }
 
-  signOff(job: Job) {
+  /** Lock a stage's sign-off in (Accept/Reject already recorded) and advance the job. */
+  signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
-      const signoff: SignOff = { ...wf.signoff, signed: true, date: new Date().toISOString() };
-      const result = (signoff.result ?? '').toUpperCase();
-      return this.withHistory(wf, { ...wf, signoff }, {
+      const stages = wf.stages.map(s =>
+        s.id === stageId ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
+      const st = stages.find(s => s.id === stageId)!;
+      const decision = (st.result ?? '').toUpperCase();
+      return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: signoff.inspectorName || wf.technician,
-        change: `Signed off — ${result} by ${signoff.inspectorName || 'inspector'}`
+        who: st.inspectorName || wf.technician,
+        change: `Stage “${st.label}” signed — ${decision} by ${st.inspectorName || 'inspector'}`
       });
     });
     this.persist();
-    this.notify('success', 'Inspection signed off');
+    this.notify('success', 'Stage signed off');
   }
 
-  reopen(job: Job) {
+  /** Re-open a signed stage for edits. */
+  reopenStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
-      const signoff: SignOff = { ...wf.signoff, signed: false, date: null };
-      return this.withHistory(wf, { ...wf, signoff }, {
+      const stages = wf.stages.map(s =>
+        s.id === stageId ? { ...s, signed: false, signedAt: null } : s);
+      const st = stages.find(s => s.id === stageId)!;
+      return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: signoff.inspectorName || wf.technician,
-        change: 'Sign-off re-opened for edits'
+        who: st.inspectorName || wf.technician,
+        change: `Stage “${st.label}” sign-off re-opened`
       });
     });
     this.persist();
@@ -267,7 +258,7 @@ export class WorkflowService {
         wf.workType ??= null;
         wf.conditionCode ??= '';
         wf.conditionCount ??= 0;
-        wf.signoff ??= { inspectorName: '', licenseNo: '', result: null, notes: '', signed: false, date: null };
+        delete (wf as unknown as { signoff?: unknown }).signoff;   // old single sign-off removed
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
         wf.stages.forEach(s => {
@@ -275,6 +266,14 @@ export class WorkflowService {
           s.fields ??= [];
           // backfill field definitions for stages saved before per-step inputs existed
           if (!s.fields.length && job) s.fields = stageFieldsFor(job.trade, s.id);
+          // backfill per-stage sign-off fields for stages saved before they existed
+          s.inspectorName ??= '';
+          s.licenseNo ??= '';
+          s.result ??= null;
+          s.notes ??= '';
+          s.signed ??= false;
+          s.signedAt ??= null;
+          delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed
         });
       }
       return parsed;

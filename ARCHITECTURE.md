@@ -35,7 +35,7 @@ src/app/
   table-search/          "Jobs" screen — the main p-table (filters, role selector, Job#, current step, CSV export)
   work-history/          "Work history" screen — the audit-trail activity log (filter by person / by job)
   adaptive-search/       "Adaptive filters" screen — schema-driven filter bar + saved variants
-  job-detail/            Single-job page — Details, Stages, Work validation, Attachments, Sign-off, History
+  job-detail/            Single-job page — Details, Stages (each is its own sign-off), cross-stage Work validation, Attachments, History
   sync-status/           The green/yellow/red sync indicator in the sidebar
   theme-picker/          The "Theme" button: primary + surface color palette switcher
 
@@ -83,12 +83,17 @@ src/app/
 ### The audit trail
 Every change a user can make flows through `WorkflowService` and is logged with **who / when /
 section / what-changed / current-step**. Value edits record **before → after** (e.g.
-`Result: PASS → FAIL`, `Notes: “” → “…”`). Sections: `Stages`, `Work Validation`, `Attachments`, `Sign-off`.
+`Decision: — → ACCEPT`, `Notes: “” → “…”`). Sections: `Stages`, `Work Validation`, `Attachments`, `Sign-off`.
 
-### The stage pipeline (per trade)
-[workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade. A stage is **locked**
-until every required stage before it is `done` (sequential), and some stages are **conditionally
-required** based on the job title (e.g. refrigerant check only for AC/heat-pump work).
+### Stages = sign-offs (per trade)
+[workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade. **Each stage is its
+own sign-off**: it carries its per-step data inputs plus inspector / license # / an **Accept or Reject
+decision (required)** / notes. A stage is **locked** until every required stage before it is **signed**
+(sequential), only the current stage is editable (shown in a PrimeNG accordion, one open at a time), and
+the **job is complete once the last required stage is signed** — there is no separate final sign-off.
+Some stages are **conditionally required** based on the job title (e.g. refrigerant check only for
+AC/heat-pump work). The **Work validation** section is separate and **cross-stage** (build/install,
+condition code + count, installed components, notes for the whole job).
 
 ---
 

@@ -242,6 +242,21 @@ html, body {
 .stage--locked  { opacity: 0.75; i { color: var(--p-text-muted-color); } }
 .stage--skip    { opacity: 0.5; background: var(--app-muted); i { color: var(--p-surface-400); } }
 
+/* Stages-as-sign-offs accordion (job detail) */
+.stage-acc-head { display: flex; align-items: center; gap: 0.5rem; width: 100%; }
+.stage-acc-label { font-weight: 600; }
+.stage-acc-head .p-tag { margin-left: auto; }
+.result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
+.result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
+.req { color: var(--p-red-500); }
+.signoff-done {
+  display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem;
+  padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.9rem;
+  background: color-mix(in srgb, var(--p-green-500) 12%, var(--app-surface));
+  border: 1px solid var(--p-green-400);
+  i { color: var(--p-green-500); }
+}
+
 /* Components table */
 .signoff-warn {
   display: flex;

@@ -12,9 +12,10 @@ import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 
-import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
+import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
 import { HistoryEntry } from '../data/workflow';
+import { MOCK_ACTIVITY } from '../data/mock-history';
 import { downloadCsv } from '../data/export-csv';
 
 interface ActivityRow extends HistoryEntry {
@@ -52,27 +53,35 @@ export class WorkHistoryComponent {
     });
   }
 
-  /** Title of the job we're filtered to, for display (null when not filtered). */
-  jobFilterTitle = computed(() => {
-    const id = this.jobFilter();
-    if (!id) return null;
-    return this.jobById.get(id)?.title ?? `Job #${id}`;
-  });
-
   /** Everyone who is assigned a job or appears in an activity log. */
   people = computed(() => {
     const set = new Set<string>();
     for (const j of JOBS) set.add(j.technician);
-    for (const wf of this.wfService.allWorkflows())
-      for (const e of wf.history) if (e.who) set.add(e.who);
+    for (const r of this.allActivity()) if (r.who) set.add(r.who);
     return [...set].sort().map(p => ({ label: p, value: p }));
   });
 
-  /** Every history entry across every job, flattened and dated newest-first. */
+  /** Every job as a filter option — searchable by id, job number, or title. */
+  jobOptions = JOBS.map(j => ({ label: `#${j.id} · ${j.jobNumber} · ${j.title}`, value: j.id }));
+
+  /** Human label for the active scope, shown in the activity header. */
+  scopeLabel = computed(() => {
+    const parts: string[] = [];
+    if (this.person()) parts.push(`by ${this.person()}`);
+    const id = this.jobFilter();
+    if (id) parts.push(this.jobById.get(id)?.title ?? `Job #${id}`);
+    return parts.length ? parts.join(' · ') : '(all people)';
+  });
+
+  /** Every history entry across every job, flattened and dated newest-first. Real
+   *  (user-created) activity is supplemented with seeded mock activity for jobs the
+   *  user hasn't touched, so the demo screen looks populated. */
   private allActivity = computed<ActivityRow[]>(() => {
     const rows: ActivityRow[] = [];
+    const realJobIds = new Set<number>();
     for (const wf of this.wfService.allWorkflows()) {
       const job = this.jobById.get(wf.jobId);
+      if (wf.history.length) realJobIds.add(wf.jobId);
       for (const e of wf.history) {
         rows.push({
           ...e,
@@ -81,6 +90,16 @@ export class WorkHistoryComponent {
           trade: job?.trade ?? 'Inspection'
         });
       }
+    }
+    for (const m of MOCK_ACTIVITY) {
+      if (realJobIds.has(m.jobId)) continue;   // don't double up with real activity
+      const job = this.jobById.get(m.jobId);
+      rows.push({
+        ...m.entry,
+        jobId: m.jobId,
+        jobTitle: job?.title ?? `Job #${m.jobId}`,
+        trade: job?.trade ?? 'Inspection'
+      });
     }
     return rows.sort((a, b) => b.when.localeCompare(a.when));
   });
@@ -96,22 +115,11 @@ export class WorkHistoryComponent {
     );
   });
 
-  /** Jobs currently assigned to the selected person (regardless of activity). */
-  assignedJobs = computed<Job[]>(() => {
-    const p = this.person();
-    return p ? JOBS.filter(j => j.technician === p) : [];
-  });
-
   clear() {
+    this.person.set(null);
+    this.jobFilter.set(null);
+    this.query.set('');
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
-  }
-
-  clearJobFilter() {
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { job: null },
-      queryParamsHandling: 'merge'
-    });
   }
 
   /** Export the currently filtered activity rows to CSV. */
@@ -129,10 +137,4 @@ export class WorkHistoryComponent {
       { header: 'Trade',   value: r => r.trade }
     ], this.activity());
   }
-
-  statusSeverity(s: Job['status']): 'success' | 'warn' | 'danger' {
-    return s === 'completed' ? 'success' : s === 'in-progress' ? 'warn' : 'danger';
-  }
-
-  statusLabel(s: Job['status']): string { return toStatusLabel(s); }
 }

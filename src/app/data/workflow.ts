@@ -4,9 +4,13 @@
 import { Job } from './jobs';
 import { MATERIAL_OPTIONS } from './materials';
 
-/** A stage is green (done), red (failed), amber/pending (required, not yet done),
- *  or grey (not-required for this particular job). */
-export type StageStatus = 'done' | 'failed' | 'pending' | 'not-required';
+/** Each stage is signed off with an Accept or Reject decision (required to sign). */
+export type StageResult = 'accept' | 'reject';
+
+export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
+  { label: 'Accept', value: 'accept' },
+  { label: 'Reject', value: 'reject' }
+];
 
 /** Definition of one data field a technician records on a given stage. */
 export interface StageField {
@@ -18,13 +22,22 @@ export interface StageField {
   options?: { label: string; value: string }[];  // dropdown choices for type: 'select'
 }
 
+/** A stage is its own sign-off: per-step inputs plus an inspector decision. Stages are
+ *  sequential — a stage stays locked until every required stage before it is signed, and
+ *  the job is complete once the last required stage is signed. */
 export interface WorkflowStage {
   id: string;
   label: string;
   required: boolean;
-  status: StageStatus;
   fields: StageField[];           // per-step input definitions (copied from the template)
   inputs: Record<string, string>; // recorded values, keyed by StageField.key
+  // --- per-stage sign-off ---
+  inspectorName: string;
+  licenseNo: string;
+  result: StageResult | null;     // Accept / Reject — required before signing
+  notes: string;
+  signed: boolean;
+  signedAt: string | null;        // ISO string, set when signed
 }
 
 export interface InstalledComponent {
@@ -41,24 +54,13 @@ export interface Attachment {
   addedAt: string;        // ISO string
 }
 
-export type SignResult = 'pass' | 'fail' | 'conditional';
-
-/** Whether the recorded work (and any defects) arose during the build or the install phase. */
+/** Whether the recorded work (and any conditions) arose during the build or the install phase. */
 export type WorkType = 'build' | 'install';
 
 export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
   { label: 'Build', value: 'build' },
   { label: 'Install', value: 'install' }
 ];
-
-export interface SignOff {
-  inspectorName: string;
-  licenseNo: string;
-  result: SignResult | null;
-  notes: string;
-  signed: boolean;
-  date: string | null;   // ISO string, set when signed
-}
 
 export interface HistoryEntry {
   when: string;          // ISO string
@@ -74,8 +76,7 @@ export interface JobWorkflow {
   stages: WorkflowStage[];
   components: InstalledComponent[];
   attachments: Attachment[];
-  signoff: SignOff;
-  validationNotes: string;   // free-text note for the Work Validation section
+  validationNotes: string;   // free-text note for the cross-stage Work Validation section
   workType: WorkType | null; // build vs install — set on the Work Validation section
   conditionCode: string;     // selected condition code (see conditions.ts), '' if none
   conditionCount: number;    // number of conditions found, pairs with conditionCode
@@ -222,9 +223,14 @@ export function buildStages(job: Job): WorkflowStage[] {
       id: t.id,
       label: t.label,
       required,
-      status: (required ? 'pending' : 'not-required') as StageStatus,
       fields: t.fields,
-      inputs: {}
+      inputs: {},
+      inspectorName: '',
+      licenseNo: '',
+      result: null,
+      notes: '',
+      signed: false,
+      signedAt: null
     };
   });
 }
@@ -236,7 +242,6 @@ export function newWorkflow(job: Job): JobWorkflow {
     stages: buildStages(job),
     components: [],
     attachments: [],
-    signoff: { inspectorName: '', licenseNo: '', result: null, notes: '', signed: false, date: null },
     validationNotes: '',
     workType: null,
     conditionCode: '',
@@ -245,21 +250,26 @@ export function newWorkflow(job: Job): JobWorkflow {
   };
 }
 
-/** A stage is locked until every required stage before it is done. */
+/** A stage is locked until every required stage before it is signed. */
 export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
   for (let i = 0; i < index; i++) {
     const s = stages[i];
-    if (s.required && s.status !== 'done') return true;
+    if (s.required && !s.signed) return true;
   }
   return false;
 }
 
-/** The first required stage that isn't done — i.e. the step the job is on. */
+/** The first required stage that isn't signed yet — i.e. the step the job is on. */
 export function currentStepLabel(stages: WorkflowStage[]): string {
-  const next = stages.find(s => s.required && s.status !== 'done');
+  const next = stages.find(s => s.required && !s.signed);
   return next ? next.label : 'All stages complete';
 }
 
-export function allRequiredDone(stages: WorkflowStage[]): boolean {
-  return stages.every(s => !s.required || s.status === 'done');
+/** The id of the stage currently awaiting sign-off (null once all are signed). */
+export function activeStageId(stages: WorkflowStage[]): string | null {
+  return stages.find(s => s.required && !s.signed)?.id ?? null;
+}
+
+export function allRequiredSigned(stages: WorkflowStage[]): boolean {
+  return stages.every(s => !s.required || s.signed);
 }
