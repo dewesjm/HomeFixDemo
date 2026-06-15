@@ -194,6 +194,15 @@ html, body {
 }
 @media (max-width: 640px) { .detail-grid { grid-template-columns: 1fr 1fr; } }
 
+/* Inline label | value layout (read-only Job details) */
+.detail-grid.inline > div {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+  .meta { margin-bottom: 0; }
+}
+
 /* Stage pipeline */
 .legend {
   display: flex;

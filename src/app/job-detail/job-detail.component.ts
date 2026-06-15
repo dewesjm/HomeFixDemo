@@ -45,6 +45,9 @@ export class JobDetailComponent {
   job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
 
+  /** Whether the auditor/records tier of Job details is expanded. */
+  showAudit = signal(false);
+
   // New-component form model
   newName = signal('');
   newPart = signal('');
@@ -70,6 +73,30 @@ export class JobDetailComponent {
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'reject').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
+
+  /** Records-keeper / audit fields — the 3 unsurfaced real fields plus demo metadata an
+   *  auditor would care about. Derived from the job so values differ per record. */
+  private readonly COST_CENTERS = ['CC-4100 Field Ops', 'CC-4205 Maintenance', 'CC-4310 Inspections'];
+  auditFields = computed<{ label: string; value: string }[]>(() => {
+    const j = this.job;
+    if (!j) return [];
+    const sched = new Date(j.scheduledFor).getTime();
+    const fmt = (msOffset: number) =>
+      new Date(sched + msOffset).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    const DAY = 86_400_000;
+    return [
+      // Real fields the work view doesn't surface
+      { label: 'Job number', value: j.jobNumber },
+      { label: 'Record ID', value: String(j.id) },
+      { label: 'Inspection score', value: `${j.inspectionScore} / 5` },
+      // Demo records/audit metadata
+      { label: 'SAP document #', value: `45${String(j.id).padStart(8, '0')}` },
+      { label: 'Cost center', value: this.COST_CENTERS[j.id % this.COST_CENTERS.length] },
+      { label: 'Created by', value: 'Dispatch (auto)' },
+      { label: 'Created on', value: fmt(-7 * DAY) },
+      { label: 'Last changed', value: fmt(-1 * DAY) },
+    ];
+  });
 
   /** Index of the first stage awaiting sign-off, or the last stage once all are signed. */
   private indexOfActive(): number {

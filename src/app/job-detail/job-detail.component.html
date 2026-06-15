@@ -15,7 +15,7 @@
   <!-- 1 ───────── Job Details (read-only) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-info-circle"></i> Job details</h3>
-    <div class="detail-grid">
+    <div class="detail-grid inline">
       <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
       <div><div class="meta">Status</div><p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" /></div>
       <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
@@ -39,6 +39,17 @@
         <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
       </div>
     </div>
+
+    <!-- Auditor / records-keeper tier — hidden from the technician by default -->
+    <div class="detail-grid inline mt-sm" *ngIf="showAudit()">
+      <div *ngFor="let f of auditFields()">
+        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
+      </div>
+    </div>
+    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
+              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              severity="secondary" [text]="true" size="small" styleClass="mt-xs"
+              (onClick)="showAudit.set(!showAudit())" />
   </section>
 
   <!-- 2 ───────── Stages ───────── -->
