@@ -276,6 +276,65 @@ export function newWorkflow(job: Job): JobWorkflow {
   };
 }
 
+/* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts / mock-history.ts) */
+function seeded(n: number) {
+  let s = n * 9301 + 49297;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
+}
+
+/* how many leading stages are already signed off — varies the "current step" per job */
+function signedStageCount(job: Job, total: number): number {
+  if (total <= 0) return 0;
+  const rand = seeded(job.id * 31 + 7);
+  if (job.status === 'completed') return total;                    // fully signed
+  if (job.status === 'overdue')   return Math.floor(rand() * (total - 1));   // 0..total-2, often stalled early
+  return 1 + Math.floor(rand() * (total - 1));                     // in-progress: 1..total-1
+}
+
+/* plausible recorded value for a seeded, already-signed stage field */
+function seededFieldValue(f: StageField, rand: () => number): string {
+  if (f.type === 'select' && f.options?.length) {
+    return f.options[Math.floor(rand() * f.options.length)].value;
+  }
+  if (f.type === 'number') return String(1 + Math.floor(rand() * 120));
+  if (f.placeholder && f.placeholder.startsWith('e.g. ')) return f.placeholder.slice(5);
+  return 'recorded';
+}
+
+/* a fresh workflow with a deterministic run of leading stages pre-signed (all accepted),
+   so the current stage differs job-to-job. Persisted (real) workflows always override this. */
+export function seededWorkflow(job: Job): JobWorkflow {
+  const wf = newWorkflow(job);
+  const total = wf.stages.length;
+  const k = signedStageCount(job, total);
+  if (k <= 0) return wf;
+
+  const rand = seeded(job.id * 97 + 13);
+  const DAY = 24 * 60 * 60 * 1000, MIN = 60 * 1000;
+  let t = Date.now() - (2 + Math.floor(rand() * 40)) * DAY;
+
+  wf.stages = wf.stages.map((s, i) => {
+    if (i >= k) return s;
+    t += (20 + Math.floor(rand() * 180)) * MIN;
+    const inputs = { ...s.inputs };
+    for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
+    return {
+      ...s,
+      inputs,
+      inspectorName: job.technician,
+      licenseNo: `LIC-${1000 + Math.floor(rand() * 9000)}`,
+      result: 'accept' as StageResult,
+      notes: '',
+      signed: true,
+      signedAt: new Date(t).toISOString()
+    };
+  });
+  return wf;
+}
+
 /* locked until prior required stages signed */
 export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
   for (let i = 0; i < index; i++) {

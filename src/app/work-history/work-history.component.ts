@@ -4,14 +4,16 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
+import { TableModule } from 'primeng/table';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 
-import { JOBS, Job } from '../data/jobs';
+import { JOBS, Job, TRADE_OPTIONS } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
 import { HistoryEntry } from '../data/workflow';
 import { MOCK_ACTIVITY } from '../data/mock-history';
@@ -29,7 +31,8 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    SelectModule, InputTextModule, IconFieldModule, InputIconModule, TagModule, ButtonModule
+    TableModule, SelectModule, MultiSelectModule, InputTextModule,
+    IconFieldModule, InputIconModule, TagModule, ButtonModule
   ],
   templateUrl: './work-history.component.html'
 })
@@ -38,6 +41,14 @@ export class WorkHistoryComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private jobById = new Map<number, Job>(JOBS.map(j => [j.id, j]));
+
+  tradeOptions = TRADE_OPTIONS;
+  sectionOptions = [
+    { label: 'Stages', value: 'Stages' },
+    { label: 'Work Validation', value: 'Work Validation' },
+    { label: 'Sign-off', value: 'Sign-off' },
+    { label: 'Attachments', value: 'Attachments' }
+  ];
 
   person = signal<string | null>(null);
   query = signal<string>('');

@@ -5,7 +5,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, newWorkflow, stageFieldsFor
+  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
@@ -30,7 +30,7 @@ export class WorkflowService {
   workflowFor(job: Job): WritableSignal<JobWorkflow> {
     let sig = this.store.get(job.id);
     if (!sig) {
-      sig = signal(this.persisted[job.id] ?? newWorkflow(job));
+      sig = signal(this.persisted[job.id] ?? seededWorkflow(job));
       this.store.set(job.id, sig);
     }
     return sig;

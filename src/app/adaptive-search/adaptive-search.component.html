@@ -97,27 +97,74 @@
     (onRemove)="c.clear()" />
 </div>
 
-<div class="match-count">
-  {{ filtered().length }} of {{ totalJobs }} jobs match
-</div>
-
 <!-- Results -->
-<div class="result-grid">
-  <div *ngFor="let j of filtered() | slice:0:60" class="result-card">
-    <span class="price">{{ j.estimatedCost | currency:'USD' }}</span>
-    <h3>{{ j.title }}</h3>
-    <div class="meta">{{ j.trade }} · {{ j.technician }}</div>
-    <div class="my-sm">
-      <p-rating [ngModel]="j.inspectionScore" [readonly]="true" />
+<p-table
+  #dt
+  [value]="filtered()"
+  dataKey="id"
+  [rows]="10"
+  [rowsPerPageOptions]="[10, 25, 50, 100]"
+  [paginator]="true"
+  [columns]="exportColumns"
+  [exportFunction]="exportCell"
+  exportFilename="adaptive-search"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+  sortMode="multiple"
+  [resizableColumns]="true"
+  [scrollable]="true"
+  styleClass="p-datatable-sm"
+>
+  <ng-template pTemplate="caption">
+    <div class="row">
+      <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} jobs match</span>
+      <span class="spacer"></span>
+      <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
+                (onClick)="dt.exportCSV()" />
     </div>
-    <p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" />
-    <span *ngFor="let t of j.tags" class="tag-left">
-      <p-tag [value]="t" severity="info" />
-    </span>
-  </div>
-</div>
+  </ng-template>
 
-<div *ngIf="!filtered().length" class="empty">No jobs match. Try clearing some filters.</div>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="jobNumber" class="min-w-8">Job # <p-sortIcon field="jobNumber" /></th>
+      <th pSortableColumn="title" class="min-w-14">Job <p-sortIcon field="title" /></th>
+      <th pSortableColumn="trade" class="min-w-12">Trade <p-sortIcon field="trade" /></th>
+      <th pSortableColumn="technician" class="min-w-11">Technician <p-sortIcon field="technician" /></th>
+      <th pSortableColumn="estimatedCost" class="min-w-13">Est. cost <p-sortIcon field="estimatedCost" /></th>
+      <th pSortableColumn="inspectionScore" class="min-w-11">Score <p-sortIcon field="inspectionScore" /></th>
+      <th pSortableColumn="status" class="min-w-11">Status <p-sortIcon field="status" /></th>
+      <th class="min-w-11">Tags</th>
+      <th pFrozenColumn alignFrozen="right" class="min-w-8">Actions</th>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="body" let-job>
+    <tr>
+      <td class="mono">{{ job.jobNumber }}</td>
+      <td>{{ job.title }}</td>
+      <td>{{ job.trade }}</td>
+      <td>{{ job.technician }}</td>
+      <td>{{ job.estimatedCost | currency:'USD' }}</td>
+      <td><p-rating [ngModel]="job.inspectionScore" [readonly]="true" /></td>
+      <td>
+        <p-tag [value]="statusLabel(job.status)" [severity]="statusSeverity(job.status)" />
+      </td>
+      <td>
+        <span class="tag-list">
+          <p-tag *ngFor="let t of job.tags" [value]="t" severity="info" />
+        </span>
+      </td>
+      <td pFrozenColumn alignFrozen="right">
+        <p-button icon="pi pi-arrow-up-right" label="Details" size="small"
+                  (onClick)="openDetails(job)" />
+      </td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="9" class="empty">No jobs match. Try clearing some filters.</td></tr>
+  </ng-template>
+</p-table>
 
 <!-- Adapt Filters dialog -->
 <p-dialog header="Adapt filters"

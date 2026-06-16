@@ -15,7 +15,6 @@ import { TableModule } from 'primeng/table';
 import { StepsModule } from 'primeng/steps';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
-import { FieldsetModule } from 'primeng/fieldset';
 import { MessageModule } from 'primeng/message';
 
 import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
@@ -33,7 +32,7 @@ import {
   imports: [
     CommonModule, FormsModule,
     ButtonModule, TagModule, SelectModule, InputTextModule, TooltipModule,
-    TableModule, StepsModule, RadioButtonModule, FileUploadModule, FieldsetModule, MessageModule
+    TableModule, StepsModule, RadioButtonModule, FileUploadModule, MessageModule
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -49,6 +48,9 @@ export class JobDetailComponent {
   newName = signal('');
   newPart = signal('');
   newQty = signal(1);
+
+  /* audit/records tier: collapsed by default, toggled by the Show more/less button */
+  showAudit = signal(false);
 
   resultOptions = STAGE_RESULT_OPTIONS;
   workTypeOptions = WORK_TYPE_OPTIONS;
@@ -125,6 +127,7 @@ export class JobDetailComponent {
     return this.editable(stage) && !!stage.result && !!stage.inspectorName.trim();
   }
 
+  //this colors the steps, unsure of implementation so not really used other than green
   stageSeverity(stage: WorkflowStage, i: number): 'success' | 'danger' | 'warn' | 'secondary' {
     if (stage.signed) return stage.result === 'reject' ? 'danger' : 'success';
     if (!stage.required) return 'secondary';

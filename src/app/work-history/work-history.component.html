@@ -30,31 +30,76 @@
 </div>
 
 <!-- Activity log -->
-<section class="panel">
-  <h3 class="panel-title">
-    <i class="pi pi-history"></i>
-    Activity {{ scopeLabel() }}
-    <span class="meta fw-normal">· {{ activity().length }} entries</span>
-  </h3>
+<p-table
+  [value]="activity()"
+  [rows]="15"
+  [rowsPerPageOptions]="[15, 30, 50, 100]"
+  [paginator]="true"
+  [showCurrentPageReport]="true"
+  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
+  sortMode="multiple"
+  [resizableColumns]="true"
+  [scrollable]="true"
+  styleClass="p-datatable-sm"
+>
+  <ng-template pTemplate="caption">
+    <div class="row">
+      <i class="pi pi-history"></i>
+      <span class="fw-bold">Activity {{ scopeLabel() }}</span>
+      <span class="meta fw-normal">· {{ activity().length }} entries</span>
+    </div>
+  </ng-template>
 
-  <div *ngIf="!activity().length" class="meta">
-    No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
-  </div>
+  <ng-template pTemplate="header">
+    <tr>
+      <th pSortableColumn="when" class="min-w-13">When <p-sortIcon field="when" /></th>
+      <th pSortableColumn="who" class="min-w-11">Who <p-sortIcon field="who" /></th>
+      <th pSortableColumn="section" class="min-w-12">
+        Section <p-sortIcon field="section" />
+        <p-columnFilter field="section" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="sectionOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+      <th class="min-w-14">Change</th>
+      <th pSortableColumn="step" class="min-w-12">Step <p-sortIcon field="step" /></th>
+      <th pSortableColumn="jobNumber" class="min-w-13">Job <p-sortIcon field="jobNumber" /></th>
+      <th pSortableColumn="trade" class="min-w-11">
+        Trade <p-sortIcon field="trade" />
+        <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="tradeOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
+    </tr>
+  </ng-template>
 
-  <ul class="history-list">
-    <li *ngFor="let r of activity()">
-      <div class="history-when">{{ r.when | date:'MMM d, y, h:mm a' }}</div>
-      <div class="history-body">
-        <div class="row">
-          <p-tag [value]="r.section" severity="secondary" />
-          <span>{{ r.change }}</span>
-        </div>
-        <div class="meta">
-          by {{ r.who }} · step: {{ r.step }} ·
-          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobTitle }}</a>
-          ({{ r.trade }})
-        </div>
-      </div>
-    </li>
-  </ul>
-</section>
+  <ng-template pTemplate="body" let-r>
+    <tr>
+      <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+      <td>{{ r.who }}</td>
+      <td><p-tag [value]="r.section" severity="secondary" /></td>
+      <td>{{ r.change }}</td>
+      <td>{{ r.step }}</td>
+      <td>
+        <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
+        <div class="meta">{{ r.jobTitle }}</div>
+      </td>
+      <td>{{ r.trade }}</td>
+    </tr>
+  </ng-template>
+
+  <ng-template pTemplate="emptymessage">
+    <tr>
+      <td colspan="7" class="empty">
+        No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

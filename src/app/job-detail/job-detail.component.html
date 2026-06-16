@@ -1,4 +1,4 @@
-<!-- Job detail page template (paired with job-detail.component.ts). -->
+//This is the bulk of the job details page, should some of these be sub-components?
 <p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
           (onClick)="back()" />
 
@@ -40,22 +40,23 @@
       </div>
     </div>
 
-    <!-- Auditor / records-keeper tier — collapsed by default; p-fieldset owns the toggle -->
-    <p-fieldset legend="Audit &amp; records" [toggleable]="true" [collapsed]="true" styleClass="mt-sm">
-      <div class="detail-grid inline">
-        <div *ngFor="let f of auditFields()">
-          <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
-        </div>
+    <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
+    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
+              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              iconPos="right" severity="secondary" [text]="true" size="small"
+              styleClass="mt-sm" (onClick)="showAudit.set(!showAudit())" />
+    <div *ngIf="showAudit()" class="detail-grid inline mt-xs">
+      <div *ngFor="let f of auditFields()">
+        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
       </div>
-    </p-fieldset>
+    </div>
   </section>
 
   <!-- 2 ───────── Stages ───────── -->
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages</h3>
     <p class="section-sub">
-      Work the stages in order — select a step to record its readings. Each stage is signed off in the
-      Sign-off section below; signing advances to the next stage.
+    
     </p>
 
     <div class="steps-scroll">
@@ -95,7 +96,7 @@
   <!-- 3 ───────── Work Validation (applies across all stages) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-box"></i> Work validation</h3>
-    <p class="section-sub">Cross-stage record for the whole job — build/install, conditions, parts installed, and notes.</p>
+    <p class="section-sub">Cross-stage record for the whole job</p>
 
     <div class="detail-grid mb-sm">
       <div>

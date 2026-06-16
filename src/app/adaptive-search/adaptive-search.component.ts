@@ -3,7 +3,9 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
+import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -31,7 +33,7 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    ButtonModule, DialogModule, CheckboxModule, TooltipModule,
+    TableModule, ButtonModule, DialogModule, CheckboxModule, TooltipModule,
     InputTextModule, MultiSelectModule, SelectModule,
     SliderModule, DatePickerModule, RatingModule,
     TagModule, ChipModule
@@ -39,8 +41,35 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
   templateUrl: './adaptive-search.component.html'
 })
 export class AdaptiveSearchComponent {
+  constructor(private router: Router) {}
+
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
+
+  /* columns for built-in p-table csv export */
+  exportColumns = [
+    { field: 'jobNumber',       header: 'Job #' },
+    { field: 'title',           header: 'Job' },
+    { field: 'trade',           header: 'Trade' },
+    { field: 'technician',      header: 'Technician' },
+    { field: 'estimatedCost',   header: 'Est. cost' },
+    { field: 'inspectionScore', header: 'Score' },
+    { field: 'status',          header: 'Status' },
+    { field: 'tags',            header: 'Tags' }
+  ];
+
+  exportCell = (cell: { data: any; field: string }): string => {
+    switch (cell.field) {
+      case 'estimatedCost': return Number(cell.data).toFixed(2);
+      case 'status':        return toStatusLabel(cell.data);
+      case 'tags':          return (cell.data as string[]).join('; ');
+      default:              return cell.data == null ? '' : String(cell.data);
+    }
+  };
+
+  openDetails(job: Job) {
+    this.router.navigate(['/jobs', job.id]);
+  }
 
   visibleKeys = signal<string[]>([...DEFAULT_KEYS]);
   values = signal<FilterValues>(defaultValuesFor(DEFAULT_KEYS));
