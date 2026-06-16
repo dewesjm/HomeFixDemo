@@ -157,28 +157,28 @@ export class JobDetailComponent {
   }
 
   // ---- per-stage sign-off ----
-  private q(v: string | null | undefined): string { return v && v.length ? `“${v}”` : '—'; }
+  private show(v: string | null | undefined): string { return v && v.length ? v : '—'; }
 
   setStageResult(stage: WorkflowStage, result: StageResult) {
     if (!this.job || result === stage.result) return;
     const old = stage.result;
     this.wfService.updateStageSignoff(this.job, stage.id, { result },
-      `Stage “${stage.label}” — Decision: ${old ? old.toUpperCase() : '—'} → ${result.toUpperCase()}`);
+      { action: `${stage.label} — Decision`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
   }
   blurStageInspector(stage: WorkflowStage, value: string) {
     if (this.job && value !== stage.inspectorName)
       this.wfService.updateStageSignoff(this.job, stage.id, { inspectorName: value },
-        `Stage “${stage.label}” — Inspector: ${this.q(stage.inspectorName)} → ${this.q(value)}`);
+        { action: `${stage.label} — Inspector`, from: this.show(stage.inspectorName), to: this.show(value) });
   }
   blurStageLicense(stage: WorkflowStage, value: string) {
     if (this.job && value !== stage.licenseNo)
       this.wfService.updateStageSignoff(this.job, stage.id, { licenseNo: value },
-        `Stage “${stage.label}” — License #: ${this.q(stage.licenseNo)} → ${this.q(value)}`);
+        { action: `${stage.label} — License #`, from: this.show(stage.licenseNo), to: this.show(value) });
   }
   blurStageNotes(stage: WorkflowStage, value: string) {
     if (this.job && value !== stage.notes)
       this.wfService.updateStageSignoff(this.job, stage.id, { notes: value },
-        `Stage “${stage.label}” — Notes: ${this.q(stage.notes)} → ${this.q(value)}`);
+        { action: `${stage.label} — Notes`, from: this.show(stage.notes), to: this.show(value) });
   }
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;

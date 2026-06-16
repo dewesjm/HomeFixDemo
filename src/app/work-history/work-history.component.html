@@ -54,17 +54,9 @@
     <tr>
       <th pSortableColumn="when" class="min-w-13">When <p-sortIcon field="when" /></th>
       <th pSortableColumn="who" class="min-w-11">Who <p-sortIcon field="who" /></th>
-      <th pSortableColumn="section" class="min-w-12">
-        Section <p-sortIcon field="section" />
-        <p-columnFilter field="section" matchMode="in" display="menu" [showMatchModes]="false">
-          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="sectionOptions"
-                           placeholder="Any" optionLabel="label" optionValue="value"
-                           (onChange)="filter($event.value)" />
-          </ng-template>
-        </p-columnFilter>
-      </th>
-      <th class="min-w-14">Change</th>
+      <th pSortableColumn="action" class="min-w-14">Action <p-sortIcon field="action" /></th>
+      <th class="min-w-12">Old value</th>
+      <th class="min-w-12">New value</th>
       <th pSortableColumn="step" class="min-w-12">Step <p-sortIcon field="step" /></th>
       <th pSortableColumn="jobNumber" class="min-w-13">Job <p-sortIcon field="jobNumber" /></th>
       <th pSortableColumn="trade" class="min-w-11">
@@ -84,8 +76,9 @@
     <tr>
       <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
       <td>{{ r.who }}</td>
-      <td><p-tag [value]="r.section" severity="secondary" /></td>
-      <td>{{ r.change }}</td>
+      <td>{{ r.action }}</td>
+      <td class="hist-old">{{ r.from || '—' }}</td>
+      <td class="hist-new">{{ r.to || '—' }}</td>
       <td>{{ r.step }}</td>
       <td>
         <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
@@ -97,7 +90,7 @@
 
   <ng-template pTemplate="emptymessage">
     <tr>
-      <td colspan="7" class="empty">
+      <td colspan="8" class="empty">
         No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
       </td>
     </tr>

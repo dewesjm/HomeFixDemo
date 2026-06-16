@@ -43,12 +43,6 @@ export class WorkHistoryComponent {
   private jobById = new Map<number, Job>(JOBS.map(j => [j.id, j]));
 
   tradeOptions = TRADE_OPTIONS;
-  sectionOptions = [
-    { label: 'Stages', value: 'Stages' },
-    { label: 'Work Validation', value: 'Work Validation' },
-    { label: 'Sign-off', value: 'Sign-off' },
-    { label: 'Attachments', value: 'Attachments' }
-  ];
 
   person = signal<string | null>(null);
   query = signal<string>('');
@@ -122,7 +116,7 @@ export class WorkHistoryComponent {
     return this.allActivity().filter(r =>
       (!jq || String(r.jobId) === jq || r.jobNumber.toLowerCase().includes(jq)) &&
       (!p || r.who === p) &&
-      (!q || `${r.jobTitle} ${r.change} ${r.section} ${r.step}`.toLowerCase().includes(q))
+      (!q || `${r.jobTitle} ${r.action} ${r.from ?? ''} ${r.to ?? ''} ${r.step}`.toLowerCase().includes(q))
     );
   });
 
@@ -138,14 +132,15 @@ export class WorkHistoryComponent {
     const who = this.person();
     const name = who ? `work-history-${who.replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';
     downloadCsv(name, [
-      { header: 'When',    value: r => new Date(r.when).toLocaleString() },
-      { header: 'Who',     value: r => r.who },
-      { header: 'Section', value: r => r.section },
-      { header: 'Change',  value: r => r.change },
-      { header: 'Step',    value: r => r.step },
-      { header: 'Job #',   value: r => r.jobId },
-      { header: 'Job',     value: r => r.jobTitle },
-      { header: 'Trade',   value: r => r.trade }
+      { header: 'When',      value: r => new Date(r.when).toLocaleString() },
+      { header: 'Who',       value: r => r.who },
+      { header: 'Action',    value: r => r.action },
+      { header: 'Old value', value: r => r.from ?? '' },
+      { header: 'New value', value: r => r.to ?? '' },
+      { header: 'Step',      value: r => r.step },
+      { header: 'Job #',     value: r => r.jobId },
+      { header: 'Job',       value: r => r.jobTitle },
+      { header: 'Trade',     value: r => r.trade }
     ], this.activity());
   }
 }

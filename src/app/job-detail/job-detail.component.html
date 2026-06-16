@@ -1,5 +1,6 @@
-//This is the bulk of the job details page, should some of these be sub-components?
-<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+<!--This is the bulk of the job details page, should some of these be sub-components?--
+<!--breadcrumb-->
+><p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
           (onClick)="back()" />
 
 <ng-container *ngIf="job as j; else notFound">

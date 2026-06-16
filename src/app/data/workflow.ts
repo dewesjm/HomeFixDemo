@@ -62,7 +62,9 @@ export interface HistoryEntry {
   when: string;          /* ISO string */
   who: string;
   section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments';
-  change: string;
+  action: string;        /* what was changed/done — field name or event */
+  from?: string;         /* previous value, when the action changed one */
+  to?: string;           /* new value, when the action changed one */
   step: string;          /* step label at time of change */
 }
 

@@ -9,7 +9,8 @@ import {
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
-const dash = (v: string | null | undefined) => (v && v.length ? `“${v}”` : '—');
+/* value as shown in the history Old/New columns; em dash when empty */
+const show = (v: string | null | undefined) => (v && v.length ? v : '—');
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = 'homefix:workflows:v2';
@@ -55,7 +56,9 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Stages',
         who: wf.technician,
-        change: `Stage “${stage.label}” — ${field.label}: ${dash(prev)} → ${dash(value ? value + unit : value)}`
+        action: `${stage.label} — ${field.label}`,
+        from: show(prev),
+        to: show(value ? value + unit : value)
       });
     });
     this.persist();
@@ -68,7 +71,8 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, attachments: [...wf.attachments, att] }, {
         section: 'Attachments',
         who: wf.technician,
-        change: `Attachment added: ${name}`
+        action: 'Attachment added',
+        to: name
       });
     });
     this.persist();
@@ -81,7 +85,8 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, attachments: wf.attachments.filter(a => a.id !== id) }, {
         section: 'Attachments',
         who: wf.technician,
-        change: `Attachment removed: ${att?.name ?? id}`
+        action: 'Attachment removed',
+        to: att?.name ?? id
       });
     });
     this.persist();
@@ -97,7 +102,8 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, components }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Added component: ${name} (×${quantity}${pn})`
+        action: 'Component added',
+        to: `${name} (×${quantity}${pn})`
       });
     });
     this.persist();
@@ -111,7 +117,8 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, components }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Removed component: ${comp?.name ?? id}`
+        action: 'Component removed',
+        to: comp?.name ?? id
       });
     });
     this.persist();
@@ -124,7 +131,9 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, validationNotes: notes }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Validation notes: ${dash(prev)} → ${dash(notes)}`
+        action: 'Validation notes',
+        from: show(prev),
+        to: show(notes)
       });
     });
     this.persist();
@@ -141,7 +150,9 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, workType }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Work type: ${this.workTypeLabel(prev)} → ${this.workTypeLabel(workType)}`
+        action: 'Work type',
+        from: this.workTypeLabel(prev),
+        to: this.workTypeLabel(workType)
       });
     });
     this.persist();
@@ -160,7 +171,9 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, conditionCode }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Condition code: ${this.conditionDesc(prev)} → ${this.conditionDesc(conditionCode)}`
+        action: 'Condition code',
+        from: this.conditionDesc(prev),
+        to: this.conditionDesc(conditionCode)
       });
     });
     this.persist();
@@ -172,7 +185,9 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, conditionCount }, {
         section: 'Work Validation',
         who: wf.technician,
-        change: `Number of conditions: ${prev} → ${conditionCount}`
+        action: 'Number of conditions',
+        from: String(prev),
+        to: String(conditionCount)
       });
     });
     this.persist();
@@ -180,14 +195,15 @@ export class WorkflowService {
 
   // --- Per-stage sign-off -------------------------------------------------
   /* patch a stage's sign-off fields and log it */
-  updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>, change: string) {
+  updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>,
+                     meta: { action: string; from?: string; to?: string }) {
     this.workflowFor(job).update(wf => {
       const stages = wf.stages.map(s => (s.id === stageId ? { ...s, ...patch } : s));
       const st = stages.find(s => s.id === stageId)!;
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.inspectorName || wf.technician,
-        change
+        ...meta
       });
     });
     this.persist();
@@ -203,7 +219,8 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.inspectorName || wf.technician,
-        change: `Stage “${st.label}” signed — ${decision} by ${st.inspectorName || 'inspector'}`
+        action: `${st.label} — Signed off`,
+        to: decision
       });
     });
     this.persist();
@@ -219,7 +236,7 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.inspectorName || wf.technician,
-        change: `Stage “${st.label}” sign-off re-opened`
+        action: `${st.label} — Sign-off re-opened`
       });
     });
     this.persist();

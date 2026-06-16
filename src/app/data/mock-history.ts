@@ -44,8 +44,6 @@ const NOTES = [
   'Area cleared and tested before leaving site.'
 ];
 
-const dash = (v: string) => (v && v.length ? `“${v}”` : '—');
-
 /* plausible recorded value for a stage field */
 function fieldValue(f: StageField, rand: () => number): string {
   if (f.type === 'select' && f.options?.length) {
@@ -70,9 +68,9 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
   const stepAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
-  const push = (section: HistoryEntry['section'], change: string, step: string) => {
+  const push = (section: HistoryEntry['section'], action: string, step: string, from?: string, to?: string) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
-    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, change, step } });
+    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, action, from, to, step } });
   };
 
   /* stages progressed through, completed jobs fully signed */
@@ -85,10 +83,10 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     const stage = stages[k];
     if (stage.fields.length && rand() < 0.85) {
       const f = stage.fields[0];
-      push('Stages', `Stage “${stage.label}” — ${f.label}: — → ${dash(fieldValue(f, rand))}`, stage.label);
+      push('Stages', `${stage.label} — ${f.label}`, stage.label, '—', fieldValue(f, rand));
     }
     const decision = rand() < 0.85 ? 'ACCEPT' : 'REJECT';
-    push('Sign-off', `Stage “${stage.label}” signed — ${decision} by ${who}`, stepAfter(k));
+    push('Sign-off', `${stage.label} — Signed off`, stepAfter(k), undefined, decision);
   }
 
   const restStep = stepAfter(signCount - 1);
@@ -97,21 +95,21 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   if (rand() < 0.6) {
     const c = COMPONENTS[Math.floor(rand() * COMPONENTS.length)];
     const qty = 1 + Math.floor(rand() * 3);
-    push('Work Validation', `Added component: ${c.name} (×${qty}, P/N ${c.part})`, restStep);
+    push('Work Validation', 'Component added', restStep, undefined, `${c.name} (×${qty}, P/N ${c.part})`);
   }
   if (rand() < 0.5) {
     const cc = CONDITION_CODES[Math.floor(rand() * CONDITION_CODES.length)];
     const count = 1 + Math.floor(rand() * 4);
-    push('Work Validation', `Condition code: — → ${cc.code} (${cc.description})`, restStep);
-    push('Work Validation', `Number of conditions: 0 → ${count}`, restStep);
+    push('Work Validation', 'Condition code', restStep, '—', `${cc.code} (${cc.description})`);
+    push('Work Validation', 'Number of conditions', restStep, '0', String(count));
   }
   if (rand() < 0.4) {
-    push('Work Validation', `Validation notes: — → ${dash(NOTES[Math.floor(rand() * NOTES.length)])}`, restStep);
+    push('Work Validation', 'Validation notes', restStep, '—', NOTES[Math.floor(rand() * NOTES.length)]);
   }
 
   /* 3) sometimes an attachment */
   if (rand() < 0.55) {
-    push('Attachments', `Attachment added: ${FILES[Math.floor(rand() * FILES.length)]}`, restStep);
+    push('Attachments', 'Attachment added', restStep, undefined, FILES[Math.floor(rand() * FILES.length)]);
   }
 
   return out;
