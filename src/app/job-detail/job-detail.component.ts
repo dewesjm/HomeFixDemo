@@ -1,7 +1,5 @@
-// Job detail page — sections: Details, Stages (each stage is its own sign-off, navigated by a
-// PrimeNG Steps indicator showing one stage's sign-off at a time), a cross-stage Work validation
-// section, Attachments, plus the per-job history log. All edits go through WorkflowService, which
-// logs before→after to the audit trail.
+//This is the job details page, lot of stuff in here
+
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,6 +15,8 @@ import { TableModule } from 'primeng/table';
 import { StepsModule } from 'primeng/steps';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
+import { FieldsetModule } from 'primeng/fieldset';
+import { MessageModule } from 'primeng/message';
 
 import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
@@ -33,7 +33,7 @@ import {
   imports: [
     CommonModule, FormsModule,
     ButtonModule, TagModule, SelectModule, InputTextModule, TooltipModule,
-    TableModule, StepsModule, RadioButtonModule, FileUploadModule
+    TableModule, StepsModule, RadioButtonModule, FileUploadModule, FieldsetModule, MessageModule
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -45,10 +45,7 @@ export class JobDetailComponent {
   job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
 
-  /** Whether the auditor/records tier of Job details is expanded. */
-  showAudit = signal(false);
-
-  // New-component form model
+  /* new-component form model */
   newName = signal('');
   newPart = signal('');
   newQty = signal(1);
@@ -57,25 +54,24 @@ export class JobDetailComponent {
   workTypeOptions = WORK_TYPE_OPTIONS;
   conditionOptions = CONDITION_OPTIONS;
 
-  /** Steps indicator model — one entry per stage; locked stages aren't navigable. */
+  /* steps model, locked stages disabled */
   stepsModel = computed<MenuItem[]>(() =>
     this.wf ? this.wf().stages.map((s, i) => ({ label: s.label, disabled: this.locked(i) })) : []);
-  /** Which stage's sign-off panel is shown below the steps. Defaults to the active stage. */
+  /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
 
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
-  /** Whole job is done once every required stage is signed. */
+  /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
-  /** Id of the stage currently awaiting sign-off (null when complete). */
+  /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
-  /** Index of the stage awaiting sign-off (last stage once the job is complete). */
+  /* index of stage awaiting sign-off */
   activeIndex = computed(() => this.indexOfActive());
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'reject').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
-  /** Records-keeper / audit fields — the 3 unsurfaced real fields plus demo metadata an
-   *  auditor would care about. Derived from the job so values differ per record. */
+//extra fields when you press show more
   private readonly COST_CENTERS = ['CC-4100 Field Ops', 'CC-4205 Maintenance', 'CC-4310 Inspections'];
   auditFields = computed<{ label: string; value: string }[]>(() => {
     const j = this.job;
@@ -90,15 +86,15 @@ export class JobDetailComponent {
       { label: 'Record ID', value: String(j.id) },
       { label: 'Inspection score', value: `${j.inspectionScore} / 5` },
       // Demo records/audit metadata
-      { label: 'SAP document #', value: `45${String(j.id).padStart(8, '0')}` },
-      { label: 'Cost center', value: this.COST_CENTERS[j.id % this.COST_CENTERS.length] },
+      { label: 'Reference document #', value: `45${String(j.id).padStart(8, '0')}` },
+      { label: 'Department', value: this.COST_CENTERS[j.id % this.COST_CENTERS.length] },
       { label: 'Created by', value: 'Dispatch (auto)' },
       { label: 'Created on', value: fmt(-7 * DAY) },
       { label: 'Last changed', value: fmt(-1 * DAY) },
     ];
   });
 
-  /** Index of the first stage awaiting sign-off, or the last stage once all are signed. */
+  /* first unsigned required stage, or last when done */
   private indexOfActive(): number {
     if (!this.wf) return 0;
     const stages = this.wf().stages;
@@ -108,19 +104,19 @@ export class JobDetailComponent {
   private initialStep(): number { return this.indexOfActive(); }
 
   // ---- stage display helpers ----
-  /** A stage is locked until every required stage before it is signed. */
+  /* locked until prior required stages signed */
   locked(i: number): boolean {
     return this.wf ? isStageLocked(this.wf().stages, i) : true;
   }
-  /** The stage's sign-off fields are editable only while it's the active (current) stage. */
+  /* sign-off editable only on the active stage */
   editable(stage: WorkflowStage): boolean {
     return stage.required && !stage.signed && stage.id === this.activeStage();
   }
-  /** Data inputs are editable on the active stage, or on an unlocked optional stage. */
+  /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
     return !stage.signed && !this.locked(i);
   }
-  /** Allow re-opening only the most recently signed stage. */
+  /* only the last signed stage can reopen */
   canReopen(stage: WorkflowStage, i: number): boolean {
     if (!stage.signed || !this.wf) return false;
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
@@ -150,7 +146,7 @@ export class JobDetailComponent {
     if (this.job && value !== (stage.inputs[field.key] ?? ''))
       this.wfService.setStageInput(this.job, stage.id, field, value);
   }
-  /** Dropdown (type: 'select') stage fields commit on change; clearing maps to ''. */
+  /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
     const v = value ?? '';
     if (this.job && v !== (stage.inputs[field.key] ?? ''))
@@ -230,12 +226,12 @@ export class JobDetailComponent {
     if (this.job && count !== this.wf!().conditionCount) this.wfService.setConditionCount(this.job, count);
   }
 
-  // ---- misc ----
+ 
   statusSeverity(s: Job['status']): 'success' | 'warn' | 'danger' {
     return s === 'completed' ? 'success' : s === 'in-progress' ? 'warn' : 'danger';
   }
   statusLabel(s: Job['status']): string { return toStatusLabel(s); }
-  /** Description for a characteristic code, shown on hover in the details grid. */
+  /* code description, shown on hover */
   codeLabel(code: string): string { return characteristicLabel(code); }
   back() {
     this.router.navigate(['/table']);

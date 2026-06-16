@@ -1,7 +1,7 @@
-// Admin → Materials: table-maintenance screen (like Admin → Condition codes) for the
+// Admin → Materials: table-maintenance screen  for the
 // shared material list that feeds the "Material used" dropdown on the Build/install stage.
-// Uses PrimeNG's editable table (editMode="row"). Seeded from MATERIALS; edits live in
-// memory only (no backend in this demo).
+// Uses PrimeNG's editable table (editMode="row"). Seeded from MATERIALS
+// no backend
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

@@ -1,6 +1,4 @@
-// "Jobs / Work orders" screen — the p-table of jobs: Job# column, menu column filters,
-// role selector, current-step column (from the workflow), History/Details row actions,
-// and CSV export.
+//This is the main search, with filters, keywords, frozen columns, export to excel call
 import { Component, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -50,7 +48,7 @@ export class TableSearchComponent {
 
   globalFilterFields = ['jobNumber', 'title', 'technician', 'trade', 'tags'];
 
-  // Columns the built-in p-table CSV export uses (exportCSV reads `this.columns`).
+  /* columns for built-in p-table csv export */
   exportColumns = [
     { field: 'jobNumber',      header: 'Job #' },
     { field: 'id',             header: 'Internal ID' },
@@ -65,7 +63,7 @@ export class TableSearchComponent {
     { field: 'tags',           header: 'Tags' }
   ];
 
-  /** Per-cell formatting for the CSV export (currency, dates, tag lists). */
+  /** Per-cell formatting for the CSV export for special cases, just to prove we can format stuff */
   exportCell = (cell: { data: any; field: string }): string => {
     switch (cell.field) {
       case 'estimatedCost': return Number(cell.data).toFixed(2);
@@ -77,7 +75,7 @@ export class TableSearchComponent {
 
   totalLoaded = signal(JOBS.length);
 
-  // Role / trade lane selector — narrows the table to one trade.
+  // Role droplist to filter selection
   selectedRole = signal<Job['trade'] | null>(null);
   displayedJobs = computed(() => {
     const role = this.selectedRole();
@@ -90,17 +88,17 @@ export class TableSearchComponent {
 
   statusLabel(s: Job['status']): string { return toStatusLabel(s); }
 
-  /** The workflow step this job is currently on (from its inspection workflow). */
+  //The workflow step 
   currentStep(job: Job): string {
     return currentStepLabel(this.wfService.workflowFor(job)().stages);
   }
 
-  /** Open the read-only Details page for one job. */
+ //nav to details
   openDetails(job: Job) {
     this.router.navigate(['/jobs', job.id]);
   }
 
-  /** Jump to the Work history page filtered to this job. */
+//nav to history with this job pre-filled
   openHistory(job: Job) {
     this.router.navigate(['/history'], { queryParams: { job: job.id } });
   }

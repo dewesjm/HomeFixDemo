@@ -1,5 +1,4 @@
-// "Work history" screen — activity log aggregated across all jobs, filterable by
-// person and by job (job filter arrives via the ?job= query param).
+/* work history screen, activity log across jobs */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,12 +41,11 @@ export class WorkHistoryComponent {
 
   person = signal<string | null>(null);
   query = signal<string>('');
-  /** Free-text job filter — matches a job number (e.g. "K7P2M") or numeric id. */
+  /* job filter: job number or id */
   jobQuery = signal<string>('');
 
   constructor() {
-    // Seed filters from the URL so deep links (e.g. the row's History button) work.
-    // ?job=<id> arrives as a numeric id from the grid; typed values match a job number too.
+    /* seed filters from url for deep links */
     this.route.queryParamMap.subscribe(pm => {
       this.jobQuery.set(pm.get('job') ?? '');
       this.person.set(pm.get('person'));
@@ -55,7 +53,7 @@ export class WorkHistoryComponent {
     });
   }
 
-  /** Everyone who is assigned a job or appears in an activity log. */
+  /* people with a job or activity entry */
   people = computed(() => {
     const set = new Set<string>();
     for (const j of JOBS) set.add(j.technician);
@@ -63,7 +61,7 @@ export class WorkHistoryComponent {
     return [...set].sort().map(p => ({ label: p, value: p }));
   });
 
-  /** Human label for the active scope, shown in the activity header. */
+  /* scope label for the header */
   scopeLabel = computed(() => {
     const parts: string[] = [];
     if (this.person()) parts.push(`by ${this.person()}`);
@@ -75,9 +73,7 @@ export class WorkHistoryComponent {
     return parts.length ? parts.join(' · ') : '(all people)';
   });
 
-  /** Every history entry across every job, flattened and dated newest-first. Real
-   *  (user-created) activity is supplemented with seeded mock activity for jobs the
-   *  user hasn't touched, so the demo screen looks populated. */
+  /* all history flattened newest-first, padded with mock activity */
   private allActivity = computed<ActivityRow[]>(() => {
     const rows: ActivityRow[] = [];
     const realJobIds = new Set<number>();
@@ -126,7 +122,7 @@ export class WorkHistoryComponent {
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 
-  /** Export the currently filtered activity rows to CSV. */
+  /* export filtered rows to csv */
   exportCsv() {
     const who = this.person();
     const name = who ? `work-history-${who.replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';

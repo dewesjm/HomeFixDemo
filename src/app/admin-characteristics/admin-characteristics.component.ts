@@ -1,6 +1,6 @@
-// Admin → Characteristic Codes: table-maintenance screen (like Admin → Steps) for the
+// Admin → Characteristic Codes: table-maintenance screen for the
 // shared code → description lookup. Uses PrimeNG's editable table (editMode="row").
-// Seeded from CHARACTERISTIC_CODES; edits live in memory only (no backend in this demo).
+// in database memory only
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

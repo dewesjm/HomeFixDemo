@@ -1,6 +1,4 @@
-// Sidebar "Theme" button: opens a popover to switch the PrimeNG PRIMARY and SURFACE
-// color palettes at runtime. Uses PrimeNG's theming API (@primeng/themes) and persists
-// the choices to localStorage so they survive reloads.
+/* theme button: switch primary/surface palettes at runtime, persisted */
 import { Component, signal } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { PopoverModule } from 'primeng/popover';
@@ -8,8 +6,7 @@ import { updatePrimaryPalette, updateSurfacePalette } from '@primeng/themes';
 
 const SHADES = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-// Primary = the accent color (buttons, links, active states). These are the colored
-// preset palettes that ship with Aura; the hex is only for painting the swatch dot.
+/* primary = accent color; hex just paints the swatch dot */
 const PRIMARY: { name: string; hex: string }[] = [
   { name: 'red',     hex: '#ef4444' },
   { name: 'orange',  hex: '#f97316' },
@@ -30,7 +27,7 @@ const PRIMARY: { name: string; hex: string }[] = [
   { name: 'rose',    hex: '#f43f5e' },
 ];
 
-// Neutral ramps — the conventional, tasteful background choices.
+/* neutral background ramps */
 const NEUTRALS: { name: string; hex: string }[] = [
   { name: 'slate',   hex: '#64748b' },
   { name: 'gray',    hex: '#6b7280' },
@@ -39,14 +36,13 @@ const NEUTRALS: { name: string; hex: string }[] = [
   { name: 'stone',   hex: '#78716c' },
 ];
 
-// Surface = the page/card background ramp. We expose EVERY palette (neutrals + colors)
-// so the user can pick any background; colored ones give deep tinted backgrounds in dark mode.
+/* surface = background ramp, all palettes offered */
 const SURFACE: { name: string; hex: string }[] = [...NEUTRALS, ...PRIMARY];
 
 const PRIMARY_KEY = 'homefix:primary-color';
 const SURFACE_KEY = 'homefix:surface-color';
 
-/** Build the {color.shade} token map PrimeNG expects, e.g. { 500: '{blue.500}', … }. */
+/* build the {color.shade} token map PrimeNG expects */
 function paletteFor(name: string): Record<number, string> {
   return Object.fromEntries(SHADES.map(s => [s, `{${name}.${s}}`])) as Record<number, string>;
 }
@@ -104,7 +100,7 @@ export class ThemePickerComponent {
   selectedSurface = signal<string | null>(localStorage.getItem(SURFACE_KEY));
 
   constructor() {
-    // Re-apply saved choices on load; leave the preset defaults if nothing was chosen.
+    /* re-apply saved choices, else keep defaults */
     const p = this.selectedPrimary();
     if (p) updatePrimaryPalette(paletteFor(p));
     const s = this.selectedSurface();

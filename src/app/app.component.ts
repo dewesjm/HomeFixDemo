@@ -10,16 +10,16 @@ import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
+import { MessageModule } from 'primeng/message';
 import { MenuItem } from 'primeng/api';
 
-// How often to ask the SW to check for a new deploy. The browser only auto-checks
-// on full reloads (not client-side routing), so a long-open tab needs the nudge.
+// check for version updates periodically, only full refresh will check
 const UPDATE_POLL_MS = 5 * 60 * 1000;
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule],
+  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule, MessageModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -27,12 +27,12 @@ export class AppComponent {
   title = 'primeng-search-demo';
 
   private swUpdate = inject(SwUpdate);
-  /** True once a new deploy has finished installing and is ready to activate. */
+  /* true once a new deploy is ready to activate */
   updateReady = signal(false);
 
   constructor() {
     if (this.swUpdate.isEnabled) {
-      // Flag when a newer version has downloaded and is ready to swap in.
+      // check for updates + button to update now, PWA/offline important
       this.swUpdate.versionUpdates
         .pipe(filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY'))
         .subscribe(() => this.updateReady.set(true));
@@ -47,16 +47,18 @@ export class AppComponent {
     }
   }
 
-  /** Activate the waiting worker and reload onto the new version. */
+  /* activate the waiting worker and reload */
   reloadForUpdate() {
     this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
 
   menu: MenuItem[] = [
+    //Links in the menu go here
   { label: 'Jobs',     icon: 'pi pi-table',      routerLink: '/table' },
   { label: 'History',    icon: 'pi pi-history',    routerLink: '/history' },
-  { label: 'Adaptive filters',icon: 'pi pi-sliders-h',  routerLink: '/adaptive' },
+  { label: 'Advanced Search',icon: 'pi pi-sliders-h',  routerLink: '/adaptive' },
   {
+    //hierarchical links
     label: 'Admin', icon: 'pi pi-cog',
     items: [                                   // ← having `items` makes it a collapsible group
       { label: 'Steps', icon: 'pi pi-sitemap', routerLink: '/admin/steps' },

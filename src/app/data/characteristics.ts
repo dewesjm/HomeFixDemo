@@ -1,9 +1,7 @@
-// Characteristic codes — a shared lookup of special job designations (code → description),
-// e.g. "1234 = Hazardous". A job carries up to three of these (code1/code2/code3).
-// Stands in for a maintainable config/lookup table; lives in memory for the demo.
+/* characteristic code lookup, job carries up to three */
 export interface CharacteristicCode {
-  code: string;          // short numeric designation, e.g. "1234"
-  description: string;   // human-friendly meaning, e.g. "Hazardous"
+  code: string;          /* short numeric code, e.g. 1234 */
+  description: string;   /* meaning, e.g. Hazardous */
 }
 
 export const CHARACTERISTIC_CODES: CharacteristicCode[] = [
@@ -18,13 +16,13 @@ export const CHARACTERISTIC_CODES: CharacteristicCode[] = [
   { code: '9100', description: 'Warranty work' }
 ];
 
-/** Description for a code value (empty string if blank/unknown). */
+/* description for a code, '' if unknown */
 export function characteristicLabel(code: string): string {
   if (!code) return '';
   return CHARACTERISTIC_CODES.find(c => c.code === code)?.description ?? '';
 }
 
-/** Dropdown options: "1234 — Hazardous". */
+/* dropdown options, e.g. "1234 Hazardous" */
 export const CHARACTERISTIC_OPTIONS = CHARACTERISTIC_CODES.map(c => ({
   label: `${c.code} — ${c.description}`,
   value: c.code

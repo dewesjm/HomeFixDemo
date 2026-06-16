@@ -1,6 +1,4 @@
-// State service — holds each job's stages (+ per-step inputs), installed components,
-// attachments, sign-off, and the audit-trail history. Every mutation logs a before→after
-// history entry, persists to localStorage, and nudges the sync indicator.
+/* state for each job's workflow; mutations log history + persist */
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { JOBS, Job } from '../data/jobs';
@@ -13,7 +11,8 @@ import { conditionLabel } from '../data/conditions';
 
 const dash = (v: string | null | undefined) => (v && v.length ? `“${v}”` : '—');
 
-const LS_KEY = 'homefix:workflows';
+/* v2: stage model changed to a 5..15 run, ignore older saved workflows */
+const LS_KEY = 'homefix:workflows:v2';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -27,7 +26,7 @@ export class WorkflowService {
     this.messages.add({ severity, summary, detail, life: 3000 });
   }
 
-  /** The reactive workflow for a job, created from the trade template on first access. */
+  /* reactive workflow for a job, built from trade template */
   workflowFor(job: Job): WritableSignal<JobWorkflow> {
     let sig = this.store.get(job.id);
     if (!sig) {
@@ -37,7 +36,7 @@ export class WorkflowService {
     return sig;
   }
 
-  /** Snapshot of every workflow we know about (persisted + touched this session). */
+  /* all known workflows, persisted + live */
   allWorkflows(): JobWorkflow[] {
     const merged = new Map<number, JobWorkflow>();
     for (const [id, wf] of Object.entries(this.persisted)) merged.set(Number(id), wf);
@@ -131,7 +130,7 @@ export class WorkflowService {
     this.persist();
   }
 
-  /** Human-friendly label for a work-type value (e.g. 'build' → 'Build'). */
+  /* label for a work-type value */
   private workTypeLabel(v: WorkType | null): string {
     return v ? WORK_TYPE_OPTIONS.find(o => o.value === v)?.label ?? v : '—';
   }
@@ -148,7 +147,7 @@ export class WorkflowService {
     this.persist();
   }
 
-  /** Describe a condition code as "C200 (Cracked / damaged)", or "—" when blank. */
+  /* format a condition code for display */
   private conditionDesc(code: string): string {
     if (!code) return '—';
     const label = conditionLabel(code);
@@ -180,7 +179,7 @@ export class WorkflowService {
   }
 
   // --- Per-stage sign-off -------------------------------------------------
-  /** Patch a stage's sign-off fields (inspector, license, result, notes) and log it. */
+  /* patch a stage's sign-off fields and log it */
   updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>, change: string) {
     this.workflowFor(job).update(wf => {
       const stages = wf.stages.map(s => (s.id === stageId ? { ...s, ...patch } : s));
@@ -194,7 +193,7 @@ export class WorkflowService {
     this.persist();
   }
 
-  /** Lock a stage's sign-off in (Accept/Reject already recorded) and advance the job. */
+  /* lock a stage's sign-off and advance */
   signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
       const stages = wf.stages.map(s =>
@@ -211,7 +210,7 @@ export class WorkflowService {
     this.notify('success', 'Stage signed off');
   }
 
-  /** Re-open a signed stage for edits. */
+  /* re-open a signed stage for edits */
   reopenStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
       const stages = wf.stages.map(s =>
@@ -248,8 +247,7 @@ export class WorkflowService {
     try {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<number, JobWorkflow>) : {};
-      // Normalize older / partial saved records so a missing property can't throw
-      // (and blank the page) when the template reads it.
+      /* backfill old/partial records so reads don't throw */
       for (const wf of Object.values(parsed)) {
         wf.components ??= [];
         wf.attachments ??= [];

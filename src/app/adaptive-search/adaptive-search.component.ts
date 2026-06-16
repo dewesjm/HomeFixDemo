@@ -1,5 +1,5 @@
-// "Adaptive filters" screen — a schema-driven filter bar with an "Adapt filters"
-// dialog (choose which fields show) and saved filter variants.
+/* adaptive filters screen, schema-driven */
+//heavily custom
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -201,7 +201,7 @@ export class AdaptiveSearchComponent {
 
   statusLabel(s: Job['status']): string { return toStatusLabel(s); }
 
-  // typed casts so the template can talk to discriminated fields safely
+  /* typed casts for discriminated fields */
   asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'tags' | 'select' }> {
     return f as any;
   }

@@ -1,22 +1,20 @@
-// Mock data — the Job model plus a seeded generator that produces 120 sample
-// repair/inspection jobs (incl. a stable 5-char jobNumber). Stands in for a backend;
-// lives in memory. Also exports STATUS_OPTIONS + statusLabel() for value→label display.
+/* mock Job model + seeded generator, stands in for a backend */
 import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
   id: number;
-  jobNumber: string;   // 5-char human-friendly code, e.g. "K7P2M"
+  jobNumber: string;   /* 5-char code, e.g. K7P2M */
   title: string;
   trade: 'Plumbing' | 'Electrical' | 'HVAC' | 'Roofing' | 'Carpentry' | 'Inspection';
   technician: string;
-  make: string;              // equipment manufacturer
-  model: string;             // equipment model / part designation
-  code1: string;             // characteristic codes — special designations (see characteristics.ts)
+  make: string;              /* equipment manufacturer */
+  model: string;             /* equipment model / part */
+  code1: string;             /* characteristic codes, see characteristics.ts */
   code2: string;
   code3: string;
   estimatedCost: number;
-  inspectionScore: number;   // 0–5 quality / condition score
-  estimatedHours: number;    // labor hours
+  inspectionScore: number;   /* 0-5 quality score */
+  estimatedHours: number;    /* labor hours */
   status: 'completed' | 'in-progress' | 'overdue';
   scheduledFor: Date;
   tags: string[];
@@ -26,7 +24,7 @@ const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Lui
 const TRADES: Job['trade'][] = ['Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
 const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
-// Made-up but trade-appropriate equipment make/model pairs.
+/* made-up but trade-appropriate make/model pairs */
 const EQUIPMENT_BY_TRADE: Record<Job['trade'], { make: string; model: string }[]> = {
   Plumbing:   [{ make: 'Rheem', model: 'Performance 50' }, { make: 'A.O. Smith', model: 'Signature 40' }, { make: 'Kohler', model: 'Cimarron' }, { make: 'Moen', model: '1255 Duralast' }],
   Electrical: [{ make: 'Square D', model: 'QO140M200' }, { make: 'Eaton', model: 'BR2040B200' }, { make: 'Siemens', model: 'P4080B1200' }, { make: 'Leviton', model: 'GFTR1-W' }],
@@ -53,8 +51,7 @@ function seeded(n: number) {
   };
 }
 
-// Stable, random-looking 5-char job code (no ambiguous I/O/0/1). Derived from the id
-// via its own seeded stream so it doesn't perturb the rest of the generated data.
+/* stable 5-char code from id, no ambiguous I/O/0/1, own seed stream */
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function makeJobNumber(seed: number): string {
   const rand = seeded(seed * 31 + 7);
@@ -63,8 +60,7 @@ function makeJobNumber(seed: number): string {
   return code;
 }
 
-// Up to three distinct characteristic codes per job, drawn from a separate seeded
-// stream (keyed off the id) so adding them doesn't perturb the rest of the data.
+/* up to 3 distinct codes per job, own seed stream keyed off id */
 function pickCodes(seed: number): [string, string, string] {
   const rand = seeded(seed * 17 + 3);
   const pool = CHARACTERISTIC_CODES.map(c => c.code);
@@ -139,7 +135,7 @@ export const STATUS_OPTIONS: { label: string; value: Job['status'] }[] = [
 ];
 export const TAG_OPTIONS = TAG_POOL.map(t => ({ label: t, value: t }));
 
-/** Human-friendly label for a status value (e.g. 'in-progress' → 'In progress'). */
+/* label for a status value, e.g. in-progress to In progress */
 export function statusLabel(s: Job['status']): string {
   return STATUS_OPTIONS.find(o => o.value === s)?.label ?? s;
 }

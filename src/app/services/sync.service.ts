@@ -1,28 +1,20 @@
-// State service — tracks online/offline (real, via navigator + events) and a pending-sync
-// count. The actual push to a backend is stubbed (no server in this app).
+/* tracks online/offline and pending-sync count; push is stubbed */
 import { Injectable, NgZone, computed, inject, signal } from '@angular/core';
 
 export type SyncState = 'synced' | 'pending' | 'offline';
 
-/**
- * Tracks two things and combines them into a single status:
- *   1. Connectivity  — real, from the browser's navigator.onLine + online/offline events.
- *   2. Pending sync  — how many local changes haven't been pushed to a backend yet.
- *
- * NOTE: there is no backend in this app, so `flush()` is a stub that simulates a
- * successful push after a short delay. Replace its body with a real API call.
- */
+/* combines connectivity + pending-sync count into one status; flush() is a stub */
 @Injectable({ providedIn: 'root' })
 export class SyncService {
   private zone = inject(NgZone);
 
-  /** True when the browser reports a network connection. */
+  /* true when browser reports a connection */
   online = signal(navigator.onLine);
 
-  /** Count of local changes not yet pushed to the server. */
+  /* local changes not yet pushed */
   pending = signal(0);
 
-  /** Offline wins over everything; otherwise pending vs. fully synced. */
+  /* offline wins, else pending vs synced */
   state = computed<SyncState>(() => {
     if (!this.online()) return 'offline';
     return this.pending() > 0 ? 'pending' : 'synced';
@@ -40,7 +32,7 @@ export class SyncService {
     }));
   }
 
-  /** Call whenever local data is mutated/persisted. */
+  /* call when local data is mutated/persisted */
   markDirty() {
     this.pending.update(n => n + 1);
     this.scheduleFlush();
@@ -55,7 +47,7 @@ export class SyncService {
     }), 1500);
   }
 
-  /** STUB: pretend the pending changes were pushed to a backend successfully. */
+  /* stub: pretend pending changes pushed ok */
   private flush() {
     if (!this.online()) return;
     // TODO: POST/PUT the queued changes to your API here, then on success:

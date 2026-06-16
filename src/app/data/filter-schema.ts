@@ -1,5 +1,4 @@
-// Schema-driven filter engine — field definitions, the generic applyFilters()
-// function, and saved filter "variants" (persisted to localStorage).
+/* schema-driven filter engine + saved variants in localStorage */
 import {
   Job,
   TRADE_OPTIONS, TECHNICIAN_OPTIONS, STATUS_OPTIONS, TAG_OPTIONS

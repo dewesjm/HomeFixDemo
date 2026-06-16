@@ -1,14 +1,10 @@
-// Helper — turns rows into a CSV string and triggers a browser download (opens in Excel).
+/* rows to CSV string, triggers a browser download */
 export interface CsvColumn<T> {
   header: string;
   value: (row: T) => string | number | null | undefined;
 }
 
-/**
- * Build a CSV string and trigger a browser download. Excel-friendly:
- * a UTF-8 BOM is prepended so Excel reads accented characters correctly,
- * and fields containing commas/quotes/newlines are quoted.
- */
+/* CSV download, UTF-8 BOM for Excel, fields quoted as needed */
 export function downloadCsv<T>(filename: string, columns: CsvColumn<T>[], rows: T[]): void {
   const esc = (v: unknown): string => {
     const s = v == null ? '' : String(v);
@@ -17,7 +13,7 @@ export function downloadCsv<T>(filename: string, columns: CsvColumn<T>[], rows: 
 
   const head = columns.map(c => esc(c.header)).join(',');
   const body = rows.map(r => columns.map(c => esc(c.value(r))).join(',')).join('\r\n');
-  const BOM = String.fromCharCode(0xfeff);   // makes Excel read the file as UTF-8
+  const BOM = String.fromCharCode(0xfeff);   /* makes Excel read as UTF-8 */
   const csv = BOM + head + '\r\n' + body;
 
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

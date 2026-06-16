@@ -1,7 +1,7 @@
-// Admin → Condition Codes: table-maintenance screen (like Admin → Characteristic codes) for
+// Admin → Condition Codes: table-maintenance screen for
 // the shared condition code → description lookup that feeds the Work validation dropdown.
-// Uses PrimeNG's editable table (editMode="row"). Seeded from CONDITION_CODES; edits live in
-// memory only (no backend in this demo).
+// Uses PrimeNG's editable table (editMode="row")
+// in memory database only
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

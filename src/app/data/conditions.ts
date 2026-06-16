@@ -1,10 +1,7 @@
-// Condition codes — a shared lookup of inspection/quality conditions (code → description),
-// e.g. "C200 = Cracked / damaged". Recorded on the Work validation section of a job,
-// alongside the number of conditions found and whether they arose during build or install.
-// Stands in for a maintainable config/lookup table; lives in memory for the demo.
+/* condition code lookup, recorded on Work validation */
 export interface ConditionCode {
-  code: string;          // short designation, e.g. "C200"
-  description: string;   // human-friendly meaning, e.g. "Cracked / damaged"
+  code: string;          /* short code, e.g. C200 */
+  description: string;   /* meaning, e.g. Cracked / damaged */
 }
 
 export const CONDITION_CODES: ConditionCode[] = [
@@ -19,13 +16,13 @@ export const CONDITION_CODES: ConditionCode[] = [
   { code: 'C900', description: 'Poor finish' }
 ];
 
-/** Description for a condition code value (empty string if blank/unknown). */
+/* description for a condition code, '' if unknown */
 export function conditionLabel(code: string): string {
   if (!code) return '';
   return CONDITION_CODES.find(c => c.code === code)?.description ?? '';
 }
 
-/** Dropdown options: "C200 — Cracked / damaged". */
+/* dropdown options, e.g. "C200 Cracked" */
 export const CONDITION_OPTIONS = CONDITION_CODES.map(c => ({
   label: `${c.code} — ${c.description}`,
   value: c.code

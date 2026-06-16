@@ -1,8 +1,4 @@
-// Seeded mock activity for the Work history screen — so the demo log looks populated
-// even before anyone has touched a job. Each entry mirrors the exact change-string
-// shapes WorkflowService produces (same sections, same quoting), keyed to real jobs by
-// id. The Work history screen merges these with real activity, skipping any job the
-// user has actually worked (see work-history.component.ts).
+/* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
 import { HistoryEntry, StageField, STAGE_TEMPLATES } from './workflow';
 import { CONDITION_CODES } from './conditions';
@@ -12,7 +8,7 @@ export interface MockActivity {
   entry: HistoryEntry;
 }
 
-// Deterministic PRNG (same approach as jobs.ts) so the log is identical every load.
+/* deterministic PRNG like jobs.ts, identical every load */
 function seeded(n: number) {
   let s = n * 9301 + 49297;
   return () => {
@@ -50,7 +46,7 @@ const NOTES = [
 
 const dash = (v: string) => (v && v.length ? `“${v}”` : '—');
 
-/** A plausible recorded value for a stage field, matching how the UI would store it. */
+/* plausible recorded value for a stage field */
 function fieldValue(f: StageField, rand: () => number): string {
   if (f.type === 'select' && f.options?.length) {
     return f.options[Math.floor(rand() * f.options.length)].value;
@@ -65,13 +61,13 @@ function fieldValue(f: StageField, rand: () => number): string {
   return 'recorded';
 }
 
-/** Build a short, believable activity sequence for one job. */
+/* short believable activity sequence for one job */
 function activityForJob(job: Job, rand: () => number, now: number): MockActivity[] {
   const stages = STAGE_TEMPLATES[job.trade];
   const who = job.technician;
   const out: MockActivity[] = [];
 
-  // Anchor this job's activity to a random moment in the past ~45 days, then step forward.
+  /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
   const stepAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
   const push = (section: HistoryEntry['section'], change: string, step: string) => {
@@ -79,12 +75,12 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, change, step } });
   };
 
-  // How many stages this job has progressed through (completed jobs are fully signed).
+  /* stages progressed through, completed jobs fully signed */
   const signCount = job.status === 'completed'
     ? stages.length
     : 1 + Math.floor(rand() * Math.min(2, stages.length));
 
-  // 1) Walk the stages in order — record a reading, then sign the stage off (Accept/Reject).
+  /* 1) walk stages in order, record reading then sign off */
   for (let k = 0; k < signCount; k++) {
     const stage = stages[k];
     if (stage.fields.length && rand() < 0.85) {
@@ -97,7 +93,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
 
   const restStep = stepAfter(signCount - 1);
 
-  // 2) Cross-stage work validation: a component, and/or a condition code with a count.
+  /* 2) work validation: component and/or condition code with count */
   if (rand() < 0.6) {
     const c = COMPONENTS[Math.floor(rand() * COMPONENTS.length)];
     const qty = 1 + Math.floor(rand() * 3);
@@ -113,7 +109,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     push('Work Validation', `Validation notes: — → ${dash(NOTES[Math.floor(rand() * NOTES.length)])}`, restStep);
   }
 
-  // 3) Sometimes an attachment.
+  /* 3) sometimes an attachment */
   if (rand() < 0.55) {
     push('Attachments', `Attachment added: ${FILES[Math.floor(rand() * FILES.length)]}`, restStep);
   }
@@ -121,11 +117,11 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   return out;
 }
 
-/** Seeded fake activity across a spread of jobs, newest entries dated to roughly now. */
+/* seeded activity across a spread of jobs, newest near now */
 export function generateMockActivity(jobCount = 28): MockActivity[] {
   const rand = seeded(7);
   const now = Date.now();
-  // Stable pseudo-random selection of jobs for variety across trades/people.
+  /* stable pseudo-random job selection for variety */
   const chosen = JOBS.map(j => ({ j, key: rand() }))
     .sort((a, b) => a.key - b.key)
     .slice(0, jobCount)

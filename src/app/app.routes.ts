@@ -1,4 +1,4 @@
-// Route table — maps each URL path to the screen component that renders for it.
+/* route table */
 import { Routes } from '@angular/router';
 import { TableSearchComponent } from './table-search/table-search.component';
 import { WorkHistoryComponent } from './work-history/work-history.component';

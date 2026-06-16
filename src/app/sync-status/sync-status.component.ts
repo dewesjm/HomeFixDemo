@@ -1,5 +1,4 @@
-// Sidebar indicator — a green/yellow/red dot showing synced / pending sync / offline,
-// reading its state from SyncService.
+/* sidebar dot showing synced / pending / offline */
 import { Component, computed, inject } from '@angular/core';
 import { TooltipModule } from 'primeng/tooltip';
 import { SyncService } from '../services/sync.service';

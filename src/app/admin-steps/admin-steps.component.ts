@@ -1,6 +1,7 @@
-// Admin → Steps: a table-maintenance screen (à la SAP SM30) for the per-trade workflow
+// Admin → Steps: a table-maintenance screen for the per-trade workflow
 // steps. Uses PrimeNG's editable table (editMode="row" + p-cellEditor). Seeded from
-// STAGE_TEMPLATES; edits live in memory only (no backend wired in this demo).
+// STAGE_TEMPLATES; edits live in memory only
+//No actual backend
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

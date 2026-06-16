@@ -18,9 +18,8 @@
 </div>
 
 @if (updateReady()) {
-  <div class="update-banner">
-    <i class="pi pi-arrow-circle-up"></i>
+  <p-message severity="info" icon="pi pi-arrow-circle-up" styleClass="update-banner">
     <span>A new version is available.</span>
     <p-button label="Reload" icon="pi pi-refresh" size="small" (onClick)="reloadForUpdate()" />
-  </div>
+  </p-message>
 }

@@ -40,16 +40,14 @@
       </div>
     </div>
 
-    <!-- Auditor / records-keeper tier — hidden from the technician by default -->
-    <div class="detail-grid inline mt-sm" *ngIf="showAudit()">
-      <div *ngFor="let f of auditFields()">
-        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
+    <!-- Auditor / records-keeper tier — collapsed by default; p-fieldset owns the toggle -->
+    <p-fieldset legend="Audit &amp; records" [toggleable]="true" [collapsed]="true" styleClass="mt-sm">
+      <div class="detail-grid inline">
+        <div *ngFor="let f of auditFields()">
+          <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
+        </div>
       </div>
-    </div>
-    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
-              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              severity="secondary" [text]="true" size="small" styleClass="mt-xs"
-              (onClick)="showAudit.set(!showAudit())" />
+    </p-fieldset>
   </section>
 
   <!-- 2 ───────── Stages ───────── -->
@@ -190,10 +188,9 @@
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-verified"></i> Sign-off</h3>
 
-    <div *ngIf="jobComplete()" class="signoff-done">
-      <i class="pi pi-verified"></i>
+    <p-message *ngIf="jobComplete()" severity="success" icon="pi pi-verified" styleClass="mb-sm">
       All stages signed — job complete<ng-container *ngIf="rejectedCount() as rc"> ({{ rc }} rejected)</ng-container>.
-    </div>
+    </p-message>
 
     <ng-container *ngIf="w.stages[selectedStep()] as stage">
       <p class="section-sub">
