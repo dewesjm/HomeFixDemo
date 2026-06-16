@@ -60,8 +60,10 @@
       Sign-off section below; signing advances to the next stage.
     </p>
 
-    <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
-             (activeIndexChange)="selectedStep.set($event)" styleClass="mb-md" />
+    <div class="steps-scroll">
+      <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
+               (activeIndexChange)="selectedStep.set($event)" styleClass="mb-md" />
+    </div>
 
     <ng-container *ngIf="w.stages[selectedStep()] as stage">
       <div class="stage-panel">

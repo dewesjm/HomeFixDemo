@@ -259,6 +259,9 @@ html, body {
 .stage-panel-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem; }
 .stage-acc-label { font-weight: 600; }
 .stage-panel-head .p-tag { margin-left: auto; }
+/* Keep the horizontal Steps indicator legible on narrow viewports: scroll instead of cram. */
+.steps-scroll { overflow-x: auto; }
+.steps-scroll .p-steps { min-width: 34rem; }
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
 .req { color: var(--p-red-500); }

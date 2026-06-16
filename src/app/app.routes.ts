@@ -13,7 +13,7 @@ export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'table' },
   { path: 'table', component: TableSearchComponent, title: 'Job Search' },
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
-  { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Test Adaptive Filters' },
+  { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
   { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Steps' },
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'Characteristic Codes' },
   { path: 'admin/conditions', component: AdminConditionsComponent, title: 'Condition Codes' },
