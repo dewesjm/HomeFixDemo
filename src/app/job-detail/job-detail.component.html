@@ -44,6 +44,14 @@
         <div class="meta">Code 3</div>
         <div [pTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
       </div>
+      <div><div class="meta">Priority</div><div>Normal</div></div>
+      <div><div class="meta">Work order type</div><div>Corrective</div></div>
+      <div><div class="meta">Customer</div><div>Acme Property Mgmt</div></div>
+      <div><div class="meta">Customer phone</div><div>(555) 010-0142</div></div>
+      <div><div class="meta">Service address</div><div>1240 Maple Ave, Springfield</div></div>
+      <div><div class="meta">Region / branch</div><div>Midwest · Branch 12</div></div>
+      <div><div class="meta">Warranty</div><div>In warranty</div></div>
+      <div><div class="meta">Payment terms</div><div>Net 30</div></div>
       <div class="col-span-all">
         <div class="meta">Tags</div>
         <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
@@ -87,6 +95,11 @@
         <input pInputText type="number" min="0" class="w-full" [disabled]="jobComplete()"
                [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
       </div>
+      <!-- placeholder validation fields -->
+      <div><div class="meta">Labor hours</div><input pInputText class="w-full" value="3.5" disabled /></div>
+      <div><div class="meta">Warranty period</div><input pInputText class="w-full" value="90 days" disabled /></div>
+      <div><div class="meta">Disposal method</div><input pInputText class="w-full" value="Recycled" disabled /></div>
+      <div><div class="meta">Follow-up required</div><input pInputText class="w-full" value="No" disabled /></div>
     </div>
 
     <p-table [value]="w.components" styleClass="p-datatable-sm" *ngIf="w.components.length">
@@ -137,11 +150,6 @@
     </p-message>
 
     <ng-container *ngIf="w.stages[selectedStep()] as stage">
-      <p class="section-sub">
-        Signing off: <strong>{{ stage.label }}</strong> ·
-        <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
-      </p>
-
       <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
       <div class="stage-inputs" *ngIf="stage.fields.length">
         <label class="stage-field" *ngFor="let f of stage.fields">
@@ -182,6 +190,14 @@
               </label>
             </div>
           </div>
+          <!-- placeholder sign-off fields -->
+          <div><div class="meta">Inspection date</div><input pInputText class="w-full" value="2026-05-21" disabled /></div>
+          <div><div class="meta">Permit verified</div><input pInputText class="w-full" value="Yes" disabled /></div>
+          <div><div class="meta">Test method</div><input pInputText class="w-full" value="Visual + functional" disabled /></div>
+          <div><div class="meta">Crew size</div><input pInputText class="w-full" value="2" disabled /></div>
+          <div><div class="meta">Safety check</div><input pInputText class="w-full" value="Passed" disabled /></div>
+          <div><div class="meta">Rework needed</div><input pInputText class="w-full" value="No" disabled /></div>
+          <div><div class="meta">Customer signature</div><input pInputText class="w-full" value="On file" disabled /></div>
           <div class="col-span-all">
             <div class="meta">Notes</div>
             <textarea rows="2" class="note-area" [disabled]="!editable(stage)"

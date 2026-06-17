@@ -70,6 +70,7 @@ src/app/
 | `/admin/characteristics` | Admin → Characteristic codes | Editable code → description lookup |
 | `/admin/conditions` | Admin → Condition codes | Editable condition code → description lookup (feeds Work validation) |
 | `/admin/materials` | Admin → Materials | Editable material list (feeds the Build/install "Material used" dropdown) |
+| `/admin/set-step` | Admin → Set step | Admin override: force a job's workflow to a chosen stage (sets the current step) |
 
 ---
 

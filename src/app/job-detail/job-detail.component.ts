@@ -93,6 +93,14 @@ export class JobDetailComponent {
       { label: 'Created by', value: 'Dispatch (auto)' },
       { label: 'Created on', value: fmt(-7 * DAY) },
       { label: 'Last changed', value: fmt(-1 * DAY) },
+      // Placeholder records/finance metadata
+      { label: 'Purchase order #', value: `PO-${String(j.id).padStart(6, '0')}` },
+      { label: 'Invoice #', value: `INV-${1000 + j.id}` },
+      { label: 'GL account', value: '60200 · Repairs & maintenance' },
+      { label: 'Approval status', value: 'Approved' },
+      { label: 'Source system', value: 'SAP PM' },
+      { label: 'External ref #', value: `EXT-${String(j.id).padStart(7, '0')}` },
+      { label: 'Record version', value: 'v3' },
     ];
   });
 
@@ -125,18 +133,6 @@ export class JobDetailComponent {
   }
   canSignStage(stage: WorkflowStage): boolean {
     return this.editable(stage) && !!stage.result && !!stage.inspectorName.trim();
-  }
-
-  //this colors the steps, unsure of implementation so not really used other than green
-  stageSeverity(stage: WorkflowStage, i: number): 'success' | 'danger' | 'warn' | 'secondary' {
-    if (stage.signed) return stage.result === 'reject' ? 'danger' : 'success';
-    if (!stage.required) return 'secondary';
-    return this.locked(i) ? 'secondary' : 'warn';
-  }
-  stageStatusText(stage: WorkflowStage, i: number): string {
-    if (stage.signed) return stage.result === 'reject' ? 'Rejected' : 'Accepted';
-    if (!stage.required) return 'Optional';
-    return this.locked(i) ? 'Locked' : 'Awaiting sign-off';
   }
 
   // ---- stage inputs ----

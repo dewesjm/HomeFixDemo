@@ -243,6 +243,34 @@ export class WorkflowService {
     this.notify('info', 'Sign-off re-opened');
   }
 
+  /* admin override: force a job to a given stage index — everything before it is
+     marked signed/accepted, the chosen stage and everything after are re-opened,
+     so it becomes the current step */
+  forceStep(job: Job, targetIndex: number) {
+    this.workflowFor(job).update(wf => {
+      const when = new Date().toISOString();
+      const stages = wf.stages.map((s, i) => {
+        if (i < targetIndex) {
+          return s.signed ? s : {
+            ...s, signed: true, signedAt: when,
+            result: s.result ?? 'accept',
+            inspectorName: s.inspectorName || wf.technician
+          };
+        }
+        return s.signed ? { ...s, signed: false, signedAt: null } : s;
+      });
+      const target = stages[targetIndex];
+      return this.withHistory(wf, { ...wf, stages }, {
+        section: 'Stages',
+        who: 'Admin',
+        action: 'Step forced (admin)',
+        to: target?.label ?? `#${targetIndex + 1}`
+      });
+    });
+    this.persist();
+    this.notify('success', 'Step updated', `Set to step ${targetIndex + 1}`);
+  }
+
   // --- internals ----------------------------------------------------------
   private withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'step'>): JobWorkflow {
     const entry: HistoryEntry = {

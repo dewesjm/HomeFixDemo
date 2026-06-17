@@ -1,0 +1,34 @@
+<!-- Admin → Set step template (paired with admin-set-step.component.ts). -->
+<h2 class="section-title">Set step</h2>
+<p class="section-sub">
+  Force a job's workflow to a specific stage. Stages before it are marked signed/accepted;
+  the chosen stage and everything after it are re-opened. This is an admin override.
+</p>
+
+<section class="panel">
+  <div class="detail-grid mb-sm">
+    <div>
+      <div class="meta">Job</div>
+      <p-select [options]="jobOptions" optionLabel="label" optionValue="value"
+                placeholder="Select a job" [filter]="true" [showClear]="true"
+                [ngModel]="selectedJobId()" (ngModelChange)="pickJob($event)"
+                [style]="{ width: '100%' }" />
+    </div>
+
+    <div *ngIf="selectedJob()">
+      <div class="meta">Current step</div>
+      <div><p-tag [value]="currentStep()" severity="info" /></div>
+    </div>
+
+    <div *ngIf="selectedJob()">
+      <div class="meta">Target step</div>
+      <p-select [options]="stepOptions()" optionLabel="label" optionValue="value"
+                placeholder="Select a step"
+                [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)"
+                [style]="{ width: '100%' }" />
+    </div>
+  </div>
+
+  <p-button label="Force step" icon="pi pi-step-forward"
+            [disabled]="!selectedJob() || targetIndex() === null" (onClick)="apply()" />
+</section>

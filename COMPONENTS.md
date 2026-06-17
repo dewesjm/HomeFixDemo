@@ -68,6 +68,11 @@ All four share one pattern — **editable reference tables**:
 - **[PrimeNG]** `p-iconField`/`p-inputIcon` search, `p-button` add/delete, `MessageService` -> toast on save
 - **[Angular]** `FormsModule` two-way bindings, `inject()` for the data service
 
+### Admin → Set step (`admin-set-step`)
+An action form, not a reference table — an **admin override** to force a job's workflow to a chosen stage:
+- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-tag` (current step), `p-button` (Force step)
+- **[Angular]** `signal()`/`computed()` state; calls `WorkflowService.forceStep(job, index)` which signs every prior stage (accepted), re-opens the chosen stage onward, and logs a `Step forced (admin)` history entry
+
 ### Smaller pieces
 - **Theme picker** (`theme-picker`) — **[PrimeNG]** `p-popover` + `p-button`
 - **Sync status** (`sync-status`) — **[PrimeNG]** `pTooltip` only

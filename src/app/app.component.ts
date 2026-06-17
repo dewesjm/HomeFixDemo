@@ -65,6 +65,7 @@ export class AppComponent {
       { label: 'Characteristic codes', icon: 'pi pi-tag', routerLink: '/admin/characteristics' },
       { label: 'Condition codes', icon: 'pi pi-exclamation-triangle', routerLink: '/admin/conditions' },
       { label: 'Materials', icon: 'pi pi-box', routerLink: '/admin/materials' },
+      { label: 'Set step', icon: 'pi pi-step-forward', routerLink: '/admin/set-step' },
     ]
   },
 ];
