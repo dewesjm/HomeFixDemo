@@ -138,11 +138,6 @@ export class JobDetailComponent {
     if (!stage.required) return 'Optional';
     return this.locked(i) ? 'Locked' : 'Awaiting sign-off';
   }
-  stageIcon(stage: WorkflowStage, i: number): string {
-    if (stage.signed) return stage.result === 'reject' ? 'pi pi-times-circle' : 'pi pi-check-circle';
-    if (!stage.required) return 'pi pi-minus-circle';
-    return this.locked(i) ? 'pi pi-lock' : 'pi pi-pencil';
-  }
 
   // ---- stage inputs ----
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {

@@ -233,14 +233,7 @@ html, body {
 .stage--locked  { opacity: 0.75; i { color: var(--p-text-muted-color); } }
 .stage--skip    { opacity: 0.5; background: var(--app-muted); i { color: var(--p-surface-400); } }
 
-/* Stages-as-sign-offs: Steps indicator + the active stage's panel (job detail) */
-.stage-panel {
-  border: 1px solid var(--app-border); border-radius: 8px;
-  padding: 1rem; background: var(--app-surface);
-}
-.stage-panel-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem; }
-.stage-acc-label { font-weight: 600; }
-.stage-panel-head .p-tag { margin-left: auto; }
+/* Stages-as-sign-offs: Steps indicator (job detail); readings/sign-off live in the Sign-off panel */
 /* Keep the horizontal Steps indicator legible on narrow viewports: scroll instead of cram. */
 .steps-scroll { overflow-x: auto; }
 .steps-scroll .p-steps { min-width: 34rem; }

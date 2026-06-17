@@ -1,6 +1,6 @@
 <!--This is the bulk of the job details page, should some of these be sub-components?-->
 <!--breadcrumb-->
-`<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
           (onClick)="back()" />
 
 <ng-container *ngIf="job as j; else notFound">
@@ -13,45 +13,13 @@
     <strong>Current step:</strong> {{ currentStep() }}
   </p>
 
-  <!-- 1 ───────── Stages ───────── -->
+  <!-- 1 ───────── Stages (progress only — record & sign in the Sign-off section) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages</h3>
-    <p class="section-sub">
-    
-    </p>
-
     <div class="steps-scroll">
       <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
-               (activeIndexChange)="selectedStep.set($event)" styleClass="mb-md" />
+               (activeIndexChange)="selectedStep.set($event)" />
     </div>
-
-    <ng-container *ngIf="w.stages[selectedStep()] as stage">
-      <div class="stage-panel">
-        <div class="stage-panel-head">
-          <i [class]="stageIcon(stage, selectedStep())"></i>
-          <span class="stage-acc-label">{{ stage.label }}</span>
-          <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
-        </div>
-
-        <div class="stage-inputs" *ngIf="stage.fields.length">
-          <label class="stage-field" *ngFor="let f of stage.fields">
-            <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-            <p-select *ngIf="f.type === 'select'; else textField"
-                      [options]="f.options || []" optionLabel="label" optionValue="value"
-                      [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
-                      [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
-                      (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
-            <ng-template #textField>
-              <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
-                     [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                     [ngModel]="stage.inputs[f.key]"
-                     (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-            </ng-template>
-          </label>
-        </div>
-        <div *ngIf="!stage.fields.length" class="meta">No readings to record for this stage.</div>
-      </div>
-    </ng-container>
   </section>
 
   <!-- 2 ───────── Job Details (read-only) ───────── -->
@@ -158,33 +126,7 @@
     </div>
   </section>
 
-  <!-- 3.5 ───────── Attachments ───────── -->
-  <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-paperclip"></i> Attachments</h3>
-    <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
 
-    <p-table [value]="w.attachments" styleClass="p-datatable-sm" *ngIf="w.attachments.length">
-      <ng-template pTemplate="header">
-        <tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-a>
-        <tr>
-          <td><i class="pi pi-file mr-xs"></i>{{ a.name }}</td>
-          <td>{{ a.addedBy }}</td>
-          <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
-          <td>
-            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
-                      [disabled]="jobComplete()" (onClick)="removeAttachment(a.id)" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <div *ngIf="!w.attachments.length" class="meta mb-xs">No attachments yet.</div>
-
-    <p-fileUpload #fu mode="basic" chooseLabel="Add files" chooseIcon="pi pi-paperclip"
-                  [multiple]="true" [auto]="true" customUpload
-                  [disabled]="jobComplete()" (uploadHandler)="addAttachments($event, fu)" />
-  </section>
 
   <!-- 5 ───────── Sign-off (current stage) ───────── -->
   <section class="panel">
@@ -199,6 +141,24 @@
         Signing off: <strong>{{ stage.label }}</strong> ·
         <p-tag [value]="stageStatusText(stage, selectedStep())" [severity]="stageSeverity(stage, selectedStep())" />
       </p>
+
+      <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
+      <div class="stage-inputs" *ngIf="stage.fields.length">
+        <label class="stage-field" *ngFor="let f of stage.fields">
+          <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+          <p-select *ngIf="f.type === 'select'; else textField"
+                    [options]="f.options || []" optionLabel="label" optionValue="value"
+                    [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
+                    [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
+                    (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
+          <ng-template #textField>
+            <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
+                   [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                   [ngModel]="stage.inputs[f.key]"
+                   (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+          </ng-template>
+        </label>
+      </div>
 
       <ng-container *ngIf="stage.required; else optionalNote">
         <div class="detail-grid">
@@ -249,6 +209,33 @@
   </section>
 
 
+   <!-- 3.5 ───────── Attachments ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-paperclip"></i> Attachments</h3>
+    <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
+
+    <p-table [value]="w.attachments" styleClass="p-datatable-sm" *ngIf="w.attachments.length">
+      <ng-template pTemplate="header">
+        <tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-a>
+        <tr>
+          <td><i class="pi pi-file mr-xs"></i>{{ a.name }}</td>
+          <td>{{ a.addedBy }}</td>
+          <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
+          <td>
+            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
+                      [disabled]="jobComplete()" (onClick)="removeAttachment(a.id)" />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+    <div *ngIf="!w.attachments.length" class="meta mb-xs">No attachments yet.</div>
+
+    <p-fileUpload #fu mode="basic" chooseLabel="Add files" chooseIcon="pi pi-paperclip"
+                  [multiple]="true" [auto]="true" customUpload
+                  [disabled]="jobComplete()" (uploadHandler)="addAttachments($event, fu)" />
+  </section> 
 </ng-container>
 </ng-container>
 </ng-container>
