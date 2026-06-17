@@ -35,13 +35,14 @@ src/app/
   table-search/          "Jobs" screen — the main p-table (filters, role selector, Job#, current step, CSV export)
   work-history/          "Work history" screen — the audit-trail activity log (filter by person / by job)
   adaptive-search/       "Adaptive filters" screen — schema-driven filter bar + saved variants
-  job-detail/            Single-job page — Details, Stages (Steps bar + inputs), cross-stage Work validation, Attachments, Sign-off (per selected stage), History
+  job-detail/            Single-job page — Stages (Steps progress bar, first), Details, cross-stage Work validation, Attachments, Sign-off (per selected stage: readings + decision)
   sync-status/           The green/yellow/red sync indicator in the sidebar
   theme-picker/          The "Theme" button: primary + surface color palette switcher
 
   data/                  Plain data & helpers (no UI):
     jobs.ts                Job model + seeded generator (120 mock jobs) + STATUS_OPTIONS + statusLabel()
-    workflow.ts            Inspection workflow model: per-trade stage pipelines, types, stage helpers, WORK_TYPE_OPTIONS
+    workflow.ts            Inspection workflow model: per-trade stage pipelines, types, stage helpers, WORK_TYPE_OPTIONS, seededWorkflow() (pre-signs a varied run of stages per job)
+    mock-history.ts        Seeded activity entries used to pad the Work history timeline for jobs with no real edits
     characteristics.ts     Characteristic code → description lookup + options (job special designations)
     conditions.ts          Condition code → description lookup + options (Work validation condition dropdown)
     materials.ts           Material list + options (Build/install stage "Material used" dropdown)
@@ -77,21 +78,27 @@ src/app/
 1. **Jobs** are generated once at startup in [jobs.ts](src/app/data/jobs.ts) (seeded → same 120 jobs every load) and held in memory as `JOBS`. Every screen imports this array.
 2. **Per-job workflow** (stages, components, attachments, sign-off, history) lives in
    [WorkflowService](src/app/services/workflow.service.ts), keyed by job id, exposed as **signals**.
-   Every mutation appends a **history entry** and is **persisted to `localStorage`** (`homefix:workflows`).
-3. **Work history** screen aggregates `WorkflowService.allWorkflows()` into one flat, filterable timeline.
+   A never-touched job starts from `seededWorkflow()` (a deterministic, **mid-stream** run of pre-signed
+   stages so the current step varies job-to-job); the first real edit takes over. Every mutation appends a
+   **history entry** and is **persisted to `localStorage`** (`homefix:workflows:v2`).
+3. **Work history** screen aggregates `WorkflowService.allWorkflows()` into one flat, filterable timeline,
+   padded with seeded [mock-history.ts](src/app/data/mock-history.ts) entries for jobs that have no real edits yet.
 
 ### The audit trail
-Every change a user can make flows through `WorkflowService` and is logged with **who / when /
-section / what-changed / current-step**. Value edits record **before → after** (e.g.
-`Decision: — → ACCEPT`, `Notes: “” → “…”`). Sections: `Stages`, `Work Validation`, `Attachments`, `Sign-off`.
+Every change a user can make flows through `WorkflowService` and is logged as a structured entry:
+**who / when / action / from / to / current-step** (plus an internal `section`). The Work history table
+shows **Action / Old value / New value** as their own columns (e.g. action `Diagnose — Decision`,
+from `—`, to `ACCEPT`). `section` (`Stages`, `Work Validation`, `Attachments`, `Sign-off`) is kept on the
+record for grouping but is no longer surfaced in the UI.
 
 ### Stages = sign-offs (per trade)
 [workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade. **Each stage is its
-own sign-off**: it carries its per-step data inputs plus inspector / license # / an **Accept or Reject
+own sign-off**: it carries its per-step data **readings** plus inspector / license # / an **Accept or Reject
 decision (required)** / notes. A stage is **locked** until every required stage before it is **signed**
-(sequential), only the current stage is editable. The **Stages** section shows a PrimeNG **Steps** indicator
-(select a step to record that stage's inputs); the separate **Sign-off** section at the bottom shows the
-selected stage's inspector / license / Accept-Reject / notes + Sign & lock. Every trade also gets a shared
+(sequential), only the current stage is editable. The **Stages** section (first on the page) is a PrimeNG
+**Steps** indicator — **progress only**, click a step to select it. The selected stage's **readings inputs**
+and its inspector / license / Accept-Reject / notes + Sign & lock all live together in the **Sign-off**
+section; signing advances to the next stage. Every trade also gets a shared
 **Site prep & safety** stage first and a **Cleanup & customer walkthrough** stage last. The **job is complete
 once the last required stage is signed** — there is no overall final sign-off.
 Some stages are **conditionally required** based on the job title (e.g. refrigerant check only for
@@ -116,7 +123,7 @@ condition code + count, installed components, notes for the whole job).
 ## Conventions worth knowing
 
 - **PrimeNG components style themselves** (incl. dark mode). Custom CSS exists only for **layout** and
-  **our own non-PrimeNG elements** (cards, panels, stage pipeline, history list).
+  **our own non-PrimeNG elements** (cards, panels, the stage readings/sign-off grid).
 - **Column filters** use `display="menu"` (funnel icon → popup → Apply/Clear).
 - **value vs. label:** store the machine value (`'in-progress'`), display via a label lookup
   (`statusLabel()` in jobs.ts). Don't bind raw values to the screen.

@@ -44,21 +44,23 @@ The heaviest use of the library; one component does most of the work:
 - **[PrimeNG]** `p-dialog` — modal for building a query / picking columns
 - **[PrimeNG]** `p-checkbox`, `p-multiSelect`, `p-select`, `p-slider`, `p-datePicker`, `p-rating` — the filter inputs
 - **[PrimeNG]** `p-chip` — removable "active filter" pills; `p-tag`, `pTooltip`, `pInputText`, `p-button`
+- **[PrimeNG]** `p-table` — the **results list** (sortable columns, paginator, CSV export, frozen "Details" action). The adaptive bar does the filtering; the table just renders the matched rows
 - **[Angular]** `signal()`/`computed()` state, `FormsModule` bindings
 
 ### Work history (`work-history`)
+- **[PrimeNG]** `p-table` — the **activity log** (sortable columns, paginator; per-column **Trade** filter via `p-columnFilter`). Columns: When · Who · Action · Old value · New value · Step · Job · Trade
 - **[PrimeNG]** `p-select` — filter by technician/job; `p-iconField`/`p-inputIcon`/`pInputText` — search
-- **[PrimeNG]** `p-tag` — event type; `p-button` — actions
+- **[PrimeNG]** `p-button` — Export to Excel / clear
 - **[Angular]** `routerLink` — navigation; `ActivatedRoute` — read query params
 
 ### Job detail (`job-detail`) — by section
 | Section | Elements |
 |---|---|
-| **Job details** (read-only) | **[Angular]** plain grid (`*ngFor`) for the label/value pairs (no PrimeNG detail/description component exists — layout is CSS); **[PrimeNG]** `p-tag` (status), `pTooltip` (code hovers), `p-fieldset [toggleable]` for the collapsible "Audit & records" tier |
-| **Stages** indicator | **[PrimeNG]** `p-steps` (wrapped in an **[Angular]**/CSS scroll container for narrow screens) |
+| **Stages** indicator (first section) | **[PrimeNG]** `p-steps` (wrapped in an **[Angular]**/CSS scroll container for narrow screens) — **progress only**; recording + signing happen in the Sign-off section |
+| **Job details** (read-only) | **[Angular]** plain grid (`*ngFor`) for the label/value pairs (no PrimeNG detail/description component exists — layout is CSS); **[PrimeNG]** `p-tag` (status), `pTooltip` (code hovers); the collapsible "Audit & records" tier is a **[PrimeNG]** `p-button` "Show more/less" toggle driving an **[Angular]** `*ngIf` over a `signal()` |
 | **Work validation** | **[PrimeNG]** `p-select` (work type / condition), `pInputText`, `p-table` (components list) |
 | **Attachments** | **[PrimeNG]** `p-fileUpload` (basic/auto mode), `p-table` (file list) |
-| **Sign-off** | **[PrimeNG]** `p-radioButton` (decision), `pInputText`, `p-tag`, `p-button` |
+| **Sign-off** (for the selected stage) | **[PrimeNG]** the stage's **readings inputs** (`pInputText` / `p-select`), then `p-radioButton` (Accept/Reject decision), `pInputText`, `p-tag`, `p-button` (Sign & lock / Re-open) |
 
 ### Admin screens (`admin-steps`, `admin-characteristics`, `admin-conditions`, `admin-materials`)
 All four share one pattern — **editable reference tables**:
