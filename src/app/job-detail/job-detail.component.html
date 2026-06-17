@@ -1,6 +1,6 @@
-<!--This is the bulk of the job details page, should some of these be sub-components?--
+<!--This is the bulk of the job details page, should some of these be sub-components?-->
 <!--breadcrumb-->
-><p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+`<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
           (onClick)="back()" />
 
 <ng-container *ngIf="job as j; else notFound">
@@ -13,47 +13,7 @@
     <strong>Current step:</strong> {{ currentStep() }}
   </p>
 
-  <!-- 1 ───────── Job Details (read-only) ───────── -->
-  <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-info-circle"></i> Job details</h3>
-    <div class="detail-grid inline">
-      <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
-      <div><div class="meta">Status</div><p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" /></div>
-      <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
-      <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
-      <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
-      <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
-      <div>
-        <div class="meta">Code 1</div>
-        <div [pTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
-      </div>
-      <div>
-        <div class="meta">Code 2</div>
-        <div [pTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
-      </div>
-      <div>
-        <div class="meta">Code 3</div>
-        <div [pTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
-      </div>
-      <div class="col-span-all">
-        <div class="meta">Tags</div>
-        <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
-      </div>
-    </div>
-
-    <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
-    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
-              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              iconPos="right" severity="secondary" [text]="true" size="small"
-              styleClass="mt-sm" (onClick)="showAudit.set(!showAudit())" />
-    <div *ngIf="showAudit()" class="detail-grid inline mt-xs">
-      <div *ngFor="let f of auditFields()">
-        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 2 ───────── Stages ───────── -->
+  <!-- 1 ───────── Stages ───────── -->
   <section class="panel">
     <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages</h3>
     <p class="section-sub">
@@ -92,6 +52,46 @@
         <div *ngIf="!stage.fields.length" class="meta">No readings to record for this stage.</div>
       </div>
     </ng-container>
+  </section>
+
+  <!-- 2 ───────── Job Details (read-only) ───────── -->
+  <section class="panel">
+    <h3 class="panel-title"><i class="pi pi-info-circle"></i> Job details</h3>
+    <div class="detail-grid inline">
+      <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
+      <div><div class="meta">Status</div><p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" /></div>
+      <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
+      <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
+      <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
+      <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
+      <div>
+        <div class="meta">Code 1</div>
+        <div [pTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
+      </div>
+      <div>
+        <div class="meta">Code 2</div>
+        <div [pTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
+      </div>
+      <div>
+        <div class="meta">Code 3</div>
+        <div [pTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
+      </div>
+      <div class="col-span-all">
+        <div class="meta">Tags</div>
+        <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
+      </div>
+    </div>
+
+    <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
+    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
+              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+              iconPos="right" severity="secondary" [text]="true" size="small"
+              styleClass="mt-sm" (onClick)="showAudit.set(!showAudit())" />
+    <div *ngIf="showAudit()" class="detail-grid inline mt-xs">
+      <div *ngFor="let f of auditFields()">
+        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
+      </div>
+    </div>
   </section>
 
   <!-- 3 ───────── Work Validation (applies across all stages) ───────── -->
