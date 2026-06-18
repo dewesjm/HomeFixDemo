@@ -73,8 +73,8 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, action, from, to, step } });
   };
 
-  /* stages progressed through, completed jobs fully signed */
-  const signCount = job.status === 'completed'
+  /* stages progressed through; some jobs fully signed, most a step or two in */
+  const signCount = rand() < 0.3
     ? stages.length
     : 1 + Math.floor(rand() * Math.min(2, stages.length));
 

@@ -86,17 +86,6 @@
         </p-columnFilter>
       </th>
       <th class="min-w-13">Current step</th>
-      <th pSortableColumn="status" class="min-w-11">
-        Status <p-sortIcon field="status" />
-        <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false">
-          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-select [ngModel]="value" [options]="statusOptions"
-                      optionLabel="label" optionValue="value"
-                      placeholder="Any" [showClear]="true"
-                      (onChange)="filter($event.value)" />
-          </ng-template>
-        </p-columnFilter>
-      </th>
       <th pSortableColumn="scheduledFor" class="min-w-13">
         Scheduled <p-sortIcon field="scheduledFor" />
         <p-columnFilter field="scheduledFor" matchMode="between" display="menu" [showMatchModes]="false">
@@ -121,9 +110,6 @@
       <td>{{ job.technician }}</td>
       <td>{{ job.estimatedCost | currency:'USD' }}</td>
       <td>{{ currentStep(job) }}</td>
-      <td>
-        <p-tag [value]="statusLabel(job.status)" [severity]="statusSeverity(job.status)" />
-      </td>
       <td>{{ job.scheduledFor | date:'mediumDate' }}</td>
       <td>
         <span class="tag-list">
@@ -142,6 +128,6 @@
   </ng-template>
 
   <ng-template pTemplate="emptymessage">
-    <tr><td colspan="10" class="empty">No jobs match your filters.</td></tr>
+    <tr><td colspan="9" class="empty">No jobs match your filters.</td></tr>
   </ng-template>
 </p-table>

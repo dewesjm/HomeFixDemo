@@ -4,6 +4,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+import { ConfirmationService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -20,6 +21,7 @@ import { currentStepLabel } from '../data/workflow';
 })
 export class AdminSetStepComponent {
   private wfService = inject(WorkflowService);
+  private confirm = inject(ConfirmationService);
 
   jobOptions = JOBS.map(j => ({ label: `${j.jobNumber} · ${j.title}`, value: j.id }));
   selectedJobId = signal<number | null>(null);
@@ -52,7 +54,18 @@ export class AdminSetStepComponent {
     const job = this.selectedJob();
     const idx = this.targetIndex();
     if (!job || idx === null) return;
-    this.wfService.forceStep(job, idx);
-    this.targetIndex.set(null);   // current step now reflects the change
+    const label = this.stepOptions()[idx]?.label ?? `step ${idx + 1}`;
+    this.confirm.confirm({
+      header: 'Force step?',
+      message: `This re-opens “${label}” and every stage after it, discarding their sign-offs on ${job.jobNumber}. Continue?`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Force step',
+      rejectLabel: 'Cancel',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.wfService.forceStep(job, idx);
+        this.targetIndex.set(null);   // current step now reflects the change
+      }
+    });
   }
 }

@@ -4,7 +4,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MenuItem } from 'primeng/api';
+import { MenuItem, ConfirmationService } from 'primeng/api';
 
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -17,7 +17,7 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { MessageModule } from 'primeng/message';
 
-import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
+import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
 import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
@@ -40,6 +40,7 @@ export class JobDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private wfService = inject(WorkflowService);
+  private confirm = inject(ConfirmationService);
 
   job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
@@ -102,6 +103,37 @@ export class JobDetailComponent {
       { label: 'External ref #', value: `EXT-${String(j.id).padStart(7, '0')}` },
       { label: 'Record version', value: 'v3' },
     ];
+  });
+
+  /* deterministic placeholder values, varied per job so the demo doesn't look templated */
+  demo = computed(() => {
+    const j = this.job;
+    if (!j) return null;
+    const id = j.id;
+    const pick = (arr: string[], salt: number) => arr[(id * salt) % arr.length];
+    return {
+      // Job details
+      priority:        pick(['Normal', 'High', 'Low', 'Urgent'], 7),
+      workOrderType:   pick(['Corrective', 'Preventive', 'Inspection', 'Emergency'], 3),
+      customer:        pick(['Acme Property Mgmt', 'Riverside HOA', 'Lakeview Apartments', 'Summit Facilities', 'Oakwood Realty'], 5),
+      customerPhone:   `(555) 0${10 + (id % 89)}-${String(1000 + (id * 37) % 9000)}`,
+      serviceAddress:  `${100 + (id * 13) % 9899} ${pick(['Maple Ave', 'Oak St', 'Cedar Ln', 'Pine Rd', 'Elm Blvd'], 11)}, ${pick(['Springfield', 'Riverton', 'Fairview', 'Madison', 'Clinton'], 17)}`,
+      region:          `${pick(['Midwest', 'Northeast', 'South', 'West', 'Mountain'], 19)} · Branch ${1 + (id % 24)}`,
+      warranty:        pick(['In warranty', 'Out of warranty', 'Extended'], 23),
+      paymentTerms:    pick(['Net 30', 'Net 15', 'Net 60', 'Due on receipt'], 29),
+      // Work validation
+      laborHours:      (1 + (id * 7) % 80 / 10).toFixed(1),
+      warrantyPeriod:  pick(['30 days', '90 days', '1 year', '2 years'], 31),
+      disposalMethod:  pick(['Recycled', 'Landfill', 'Returned to vendor', 'Hazmat'], 37),
+      followUp:        pick(['No', 'Yes'], 41),
+      // Sign-off
+      permitVerified:  pick(['Yes', 'N/A', 'Pending'], 43),
+      testMethod:      pick(['Visual + functional', 'Pressure test', 'Meter reading', 'Load test'], 47),
+      crewSize:        String(1 + (id % 4)),
+      safetyCheck:     pick(['Passed', 'Passed w/ notes', 'N/A'], 53),
+      reworkNeeded:    pick(['No', 'Yes'], 59),
+      customerSignature: pick(['On file', 'Verbal', 'Pending'], 61),
+    };
   });
 
   /* first unsigned required stage, or last when done */
@@ -173,8 +205,18 @@ export class JobDetailComponent {
   }
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
-    this.wfService.signStage(this.job, stage.id);
-    this.selectedStep.set(this.indexOfActive());   // advance the steps indicator
+    const decision = (stage.result ?? '').toUpperCase();
+    this.confirm.confirm({
+      header: 'Confirm sign-off',
+      message: `Sign off “${stage.label}” as ${decision} under ${stage.inspectorName}? This locks the stage and advances the workflow.`,
+      icon: 'pi pi-verified',
+      acceptLabel: 'Sign & lock',
+      rejectLabel: 'Cancel',
+      accept: () => {
+        this.wfService.signStage(this.job!, stage.id);
+        this.selectedStep.set(this.indexOfActive());   // advance the steps indicator
+      }
+    });
   }
   reopenStage(stage: WorkflowStage) {
     if (!this.job) return;
@@ -220,11 +262,6 @@ export class JobDetailComponent {
     if (this.job && count !== this.wf!().conditionCount) this.wfService.setConditionCount(this.job, count);
   }
 
- 
-  statusSeverity(s: Job['status']): 'success' | 'warn' | 'danger' {
-    return s === 'completed' ? 'success' : s === 'in-progress' ? 'warn' : 'danger';
-  }
-  statusLabel(s: Job['status']): string { return toStatusLabel(s); }
   /* code description, shown on hover */
   codeLabel(code: string): string { return characteristicLabel(code); }
   back() {

@@ -18,6 +18,7 @@ These providers must be in place or the components below won't work:
 | `providePrimeNG({ theme: { preset: Aura, ... }, ripple: true })` | **PrimeNG** | Enables PrimeNG + the **Aura** theme; dark mode toggles via a `.app-dark` class on the root |
 | `provideAnimationsAsync()` | **Angular** | **Required by PrimeNG** — overlays (dropdowns, dialogs, tooltips) won't animate/position without it |
 | `MessageService` | **PrimeNG** | Backs the Toast notifications (admin save confirmations) |
+| `ConfirmationService` | **PrimeNG** | Backs the confirm dialogs (stage sign-off + the Set step admin override) |
 | `provideRouter(routes)` | **Angular** | Screen routing (`app.routes.ts`) |
 | `provideHttpClient()` | **Angular** | HTTP (data is currently mock, but the provider is in place for real calls) |
 | `provideServiceWorker(...)` | **Angular** | PWA / offline + update prompt |
@@ -27,6 +28,7 @@ These providers must be in place or the components below won't work:
 ### App shell & navigation (`app.component`)
 - **[PrimeNG]** `p-panelMenu` — collapsible sidebar nav (built from a `MenuItem[]` model)
 - **[PrimeNG]** `p-toast` — global notification host (paired with `MessageService`)
+- **[PrimeNG]** `p-confirmDialog` — global confirmation host (paired with `ConfirmationService`); used by sign-off and Set step
 - **[PrimeNG]** `p-button` — actions (e.g. dark-mode toggle)
 - **[Angular]** `RouterOutlet` — renders the active route
 - **[Angular]** `SwUpdate` — service-worker update prompt
@@ -37,14 +39,15 @@ The heaviest use of the library; one component does most of the work:
 - **[PrimeNG]** `p-iconField` + `p-inputIcon` + `pInputText` — global search box with a leading search icon
 - **[PrimeNG]** `p-multiSelect`, `p-slider`, `p-datePicker` — in-column filters (trade/tech/tags, cost range, date)
 - **[PrimeNG]** `p-select` — the "role / trade lane" dropdown
-- **[PrimeNG]** `p-tag` — status & tag pills; `p-rating` — inspection score stars; `p-button` — row actions
+- **[PrimeNG]** `p-tag` — tag pills; `p-rating` — inspection score stars; `p-button` — row actions
+- **"Current step"** is a derived text column (from the workflow's signed stages) — there is no job-status column
 - **[Angular]** `*ngFor`/`*ngIf` (CommonModule), `[(ngModel)]` (FormsModule), `Router` for row navigation
 
 ### Advanced / adaptive search (`adaptive-search`)
 - **[PrimeNG]** `p-dialog` — modal for building a query / picking columns
 - **[PrimeNG]** `p-checkbox`, `p-multiSelect`, `p-select`, `p-slider`, `p-datePicker`, `p-rating` — the filter inputs
 - **[PrimeNG]** `p-chip` — removable "active filter" pills; `p-tag`, `pTooltip`, `pInputText`, `p-button`
-- **[PrimeNG]** `p-table` — the **results list** (sortable columns, paginator, CSV export, frozen "Details" action). The adaptive bar does the filtering; the table just renders the matched rows
+- **[PrimeNG]** `p-table` — the **results list** (sortable columns incl. a derived **Current step**, paginator, CSV export, frozen "Details" action). The adaptive bar does the filtering; the table just renders the matched rows
 - **[Angular]** `signal()`/`computed()` state, `FormsModule` bindings
 
 ### Work history (`work-history`)
@@ -57,10 +60,10 @@ The heaviest use of the library; one component does most of the work:
 | Section | Elements |
 |---|---|
 | **Stages** indicator (first section) | **[PrimeNG]** `p-steps` (wrapped in an **[Angular]**/CSS scroll container for narrow screens) — **progress only**; recording + signing happen in the Sign-off section |
-| **Job details** (read-only) | **[Angular]** plain grid (`*ngFor`) for the label/value pairs (no PrimeNG detail/description component exists — layout is CSS); **[PrimeNG]** `p-tag` (status), `pTooltip` (code hovers); the collapsible "Audit & records" tier is a **[PrimeNG]** `p-button` "Show more/less" toggle driving an **[Angular]** `*ngIf` over a `signal()` |
+| **Job details** (read-only) | **[Angular]** plain grid for the label/value pairs (current step shown here; no job-status field); **[PrimeNG]** `p-tag` (tags), `pTooltip` (code hovers); the collapsible "Audit & records" tier is a **[PrimeNG]** `p-button` "Show more/less" toggle driving an **[Angular]** `*ngIf` over a `signal()`. Several **placeholder** fields are seeded per job via a `computed()` so the demo doesn't look templated |
 | **Work validation** | **[PrimeNG]** `p-select` (work type / condition), `pInputText`, `p-table` (components list) |
 | **Attachments** | **[PrimeNG]** `p-fileUpload` (basic/auto mode), `p-table` (file list) |
-| **Sign-off** (for the selected stage) | **[PrimeNG]** the stage's **readings inputs** (`pInputText` / `p-select`), then `p-radioButton` (Accept/Reject decision), `pInputText`, `p-tag`, `p-button` (Sign & lock / Re-open) |
+| **Sign-off** (for the selected stage) | **[PrimeNG]** the stage's **readings inputs** (`pInputText` / `p-select`), then `p-radioButton` (Accept/Reject decision), `pInputText`, `p-tag`, `p-button` (Sign & lock / Re-open). **Sign & lock** opens a `ConfirmationService` confirm dialog before locking |
 
 ### Admin screens (`admin-steps`, `admin-characteristics`, `admin-conditions`, `admin-materials`)
 All four share one pattern — **editable reference tables**:
@@ -70,7 +73,7 @@ All four share one pattern — **editable reference tables**:
 
 ### Admin → Set step (`admin-set-step`)
 An action form, not a reference table — an **admin override** to force a job's workflow to a chosen stage:
-- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-tag` (current step), `p-button` (Force step)
+- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-tag` (current step), `p-button` (Force step), `ConfirmationService` confirm dialog before applying (it discards sign-offs)
 - **[Angular]** `signal()`/`computed()` state; calls `WorkflowService.forceStep(job, index)` which signs every prior stage (accepted), re-opens the chosen stage onward, and logs a `Step forced (admin)` history entry
 
 ### Smaller pieces

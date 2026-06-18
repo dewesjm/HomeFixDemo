@@ -18,8 +18,7 @@ import { SelectModule } from 'primeng/select';
 
 import {
   JOBS, Job,
-  TRADE_OPTIONS, TECHNICIAN_OPTIONS, STATUS_OPTIONS, TAG_OPTIONS,
-  statusLabel as toStatusLabel
+  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS
 } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
@@ -43,7 +42,6 @@ export class TableSearchComponent {
   jobs = JOBS;
   tradeOptions = TRADE_OPTIONS;
   technicianOptions = TECHNICIAN_OPTIONS;
-  statusOptions = STATUS_OPTIONS;
   tagOptions = TAG_OPTIONS;
 
   globalFilterFields = ['jobNumber', 'title', 'technician', 'trade', 'tags'];
@@ -58,7 +56,6 @@ export class TableSearchComponent {
     { field: 'estimatedCost',  header: 'Est. cost' },
     { field: 'estimatedHours', header: 'Est. hours' },
     { field: 'inspectionScore',header: 'Score' },
-    { field: 'status',         header: 'Status' },
     { field: 'scheduledFor',   header: 'Scheduled' },
     { field: 'tags',           header: 'Tags' }
   ];
@@ -82,13 +79,7 @@ export class TableSearchComponent {
     return role ? JOBS.filter(j => j.trade === role) : JOBS;
   });
 
-  statusSeverity(s: Job['status']): 'success' | 'warn' | 'danger' {
-    return s === 'completed' ? 'success' : s === 'in-progress' ? 'warn' : 'danger';
-  }
-
-  statusLabel(s: Job['status']): string { return toStatusLabel(s); }
-
-  //The workflow step 
+  //The workflow step
   currentStep(job: Job): string {
     return currentStepLabel(this.wfService.workflowFor(job)().stages);
   }

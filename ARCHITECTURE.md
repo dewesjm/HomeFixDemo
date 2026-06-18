@@ -40,7 +40,7 @@ src/app/
   theme-picker/          The "Theme" button: primary + surface color palette switcher
 
   data/                  Plain data & helpers (no UI):
-    jobs.ts                Job model + seeded generator (120 mock jobs) + STATUS_OPTIONS + statusLabel()
+    jobs.ts                Job model + seeded generator (120 mock jobs) + TRADE/TECHNICIAN/TAG options
     workflow.ts            Inspection workflow model: per-trade stage pipelines, types, stage helpers, WORK_TYPE_OPTIONS, seededWorkflow() (pre-signs a varied run of stages per job)
     mock-history.ts        Seeded activity entries used to pad the Work history timeline for jobs with no real edits
     characteristics.ts     Characteristic code → description lookup + options (job special designations)
@@ -126,8 +126,8 @@ condition code + count, installed components, notes for the whole job).
 - **PrimeNG components style themselves** (incl. dark mode). Custom CSS exists only for **layout** and
   **our own non-PrimeNG elements** (cards, panels, the stage readings/sign-off grid).
 - **Column filters** use `display="menu"` (funnel icon → popup → Apply/Clear).
-- **value vs. label:** store the machine value (`'in-progress'`), display via a label lookup
-  (`statusLabel()` in jobs.ts). Don't bind raw values to the screen.
+- **value vs. label:** store the machine value (e.g. a condition code), display via a label lookup
+  (`conditionLabel()` / `characteristicLabel()`). Don't bind raw codes to the screen.
 - Each source file starts with a one-line header comment describing what it is.
 
 ---
@@ -140,17 +140,16 @@ condition code + count, installed components, notes for the whole job).
 | Workflow data (stages/components/attachments/sign-off/history) | Real, persisted to `localStorage` (this browser only) |
 | Sync indicator | Online/offline is **real**; the "push to server" is a **stub** (`flush()` just clears the pending count) |
 | Attachments | **Filenames only** — files are not uploaded/stored |
-| Auth / roles | None — "Admin" menu items are placeholders |
-| `job.status` | Set by the generator; **does NOT update** when you sign off (known gap) |
+| Auth / roles | None — Admin screens have no access control |
+| Job progress | "Current step" is **real** — derived from the workflow's signed stages; there is no separate job-status field |
 
 ---
 
 ## Known gaps / possible next steps
 
-- **Editable jobs** (reassign technician, reschedule, change cost) — would make `job.status` changes
-  and a fuller audit trail real.
-- **Derive status from workflow** (signed off → Completed) — currently disconnected.
-- **Build the Admin area** (the menu links exist; routes/components don't).
+- **Editable jobs** (reassign technician, reschedule, change cost) — would make a fuller audit trail real.
+- **Auth / access control** — Admin screens (incl. the **Set step** override) are unguarded; a real build
+  would gate them behind authentication/roles (see the YubiKey/Keycloak step-up notes for the sign-off action).
 - **Real persistence/sync** — swap `localStorage` for a backend (the `WorkflowService` and `JOBS` are the
   seams); a tinkered-with option discussed was Dexie/IndexedDB for offline-first storage.
 - **History broadening** — comments-only feed, lifecycle/system events, richer grouping/timeline views.

@@ -19,12 +19,14 @@ import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { JOBS, Job, statusLabel as toStatusLabel } from '../data/jobs';
+import { JOBS, Job } from '../data/jobs';
 import {
   FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
   applyFilters, defaultValuesFor, getField, isEmpty,
   loadVariants, saveVariants
 } from '../data/filter-schema';
+import { WorkflowService } from '../services/workflow.service';
+import { currentStepLabel } from '../data/workflow';
 
 const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
 
@@ -41,7 +43,7 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
   templateUrl: './adaptive-search.component.html'
 })
 export class AdaptiveSearchComponent {
-  constructor(private router: Router) {}
+  constructor(private router: Router, private wfService: WorkflowService) {}
 
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
@@ -54,18 +56,21 @@ export class AdaptiveSearchComponent {
     { field: 'technician',      header: 'Technician' },
     { field: 'estimatedCost',   header: 'Est. cost' },
     { field: 'inspectionScore', header: 'Score' },
-    { field: 'status',          header: 'Status' },
     { field: 'tags',            header: 'Tags' }
   ];
 
   exportCell = (cell: { data: any; field: string }): string => {
     switch (cell.field) {
       case 'estimatedCost': return Number(cell.data).toFixed(2);
-      case 'status':        return toStatusLabel(cell.data);
       case 'tags':          return (cell.data as string[]).join('; ');
       default:              return cell.data == null ? '' : String(cell.data);
     }
   };
+
+  /* current workflow step label for a job */
+  currentStep(job: Job): string {
+    return currentStepLabel(this.wfService.workflowFor(job)().stages);
+  }
 
   openDetails(job: Job) {
     this.router.navigate(['/jobs', job.id]);
@@ -223,12 +228,6 @@ export class AdaptiveSearchComponent {
       }
     }
   }
-
-  statusSeverity(s: Job['status']): 'success' | 'warn' | 'danger' {
-    return s === 'completed' ? 'success' : s === 'in-progress' ? 'warn' : 'danger';
-  }
-
-  statusLabel(s: Job['status']): string { return toStatusLabel(s); }
 
   /* typed casts for discriminated fields */
   asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'tags' | 'select' }> {

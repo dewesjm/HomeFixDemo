@@ -11,6 +11,7 @@ import { PanelMenuModule } from 'primeng/panelmenu';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageModule } from 'primeng/message';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MenuItem } from 'primeng/api';
 
 // check for version updates periodically, only full refresh will check
@@ -19,7 +20,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule, MessageModule],
+  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule, MessageModule, ConfirmDialogModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

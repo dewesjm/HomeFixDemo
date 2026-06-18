@@ -1,7 +1,7 @@
 /* schema-driven filter engine + saved variants in localStorage */
 import {
   Job,
-  TRADE_OPTIONS, TECHNICIAN_OPTIONS, STATUS_OPTIONS, TAG_OPTIONS
+  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS
 } from './jobs';
 
 export type FilterField =
@@ -17,7 +17,6 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'title',         label: 'Title contains', type: 'text',        group: 'Job',        field: 'title', required: true },
   { key: 'trade',         label: 'Trade',          type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
   { key: 'technician',    label: 'Technician',     type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
-  { key: 'status',        label: 'Status',         type: 'select',      group: 'Scheduling', field: 'status',     options: STATUS_OPTIONS },
   { key: 'estimatedHours',label: 'Est. hours',     type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
   { key: 'estimatedCost', label: 'Est. cost ($)',  type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
   { key: 'inspectionScore',label: 'Min score',     type: 'rating',      group: 'Cost',       field: 'inspectionScore' },

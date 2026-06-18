@@ -15,7 +15,6 @@ export interface Job {
   estimatedCost: number;
   inspectionScore: number;   /* 0-5 quality score */
   estimatedHours: number;    /* labor hours */
-  status: 'completed' | 'in-progress' | 'overdue';
   scheduledFor: Date;
   tags: string[];
 }
@@ -86,10 +85,6 @@ export function generateJobs(count = 120): Job[] {
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
     const inspectionScore = Math.round(rand() * 50) / 10;
 
-    const roll = rand();
-    const status: Job['status'] =
-      roll < 0.5 ? 'completed' : roll < 0.82 ? 'in-progress' : 'overdue';
-
     // schedule spread from ~6 months ago to ~6 months ahead
     const dayOffset = Math.floor(rand() * 360) - 180;
     const scheduledFor = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000);
@@ -117,7 +112,6 @@ export function generateJobs(count = 120): Job[] {
       estimatedCost,
       inspectionScore,
       estimatedHours,
-      status,
       scheduledFor,
       tags
     });
@@ -128,14 +122,4 @@ export function generateJobs(count = 120): Job[] {
 export const JOBS: Job[] = generateJobs();
 export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
 export const TECHNICIAN_OPTIONS = TECHNICIANS.map(t => ({ label: t, value: t }));
-export const STATUS_OPTIONS: { label: string; value: Job['status'] }[] = [
-  { label: 'Completed', value: 'completed' },
-  { label: 'In progress', value: 'in-progress' },
-  { label: 'Overdue', value: 'overdue' }
-];
 export const TAG_OPTIONS = TAG_POOL.map(t => ({ label: t, value: t }));
-
-/* label for a status value, e.g. in-progress to In progress */
-export function statusLabel(s: Job['status']): string {
-  return STATUS_OPTIONS.find(o => o.value === s)?.label ?? s;
-}

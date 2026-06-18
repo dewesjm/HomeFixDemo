@@ -287,13 +287,15 @@ function seeded(n: number) {
   };
 }
 
-/* how many leading stages are already signed off — varies the "current step" per job */
+/* how many leading stages are already signed off — varies the "current step" per job.
+   Deterministic per job: a spread of complete / early / mid-stream runs. */
 function signedStageCount(job: Job, total: number): number {
   if (total <= 0) return 0;
   const rand = seeded(job.id * 31 + 7);
-  if (job.status === 'completed') return total;                    // fully signed
-  if (job.status === 'overdue')   return Math.floor(rand() * (total - 1));   // 0..total-2, often stalled early
-  return 1 + Math.floor(rand() * (total - 1));                     // in-progress: 1..total-1
+  const r = rand();
+  if (r < 0.25) return total;                          // ~25% fully signed
+  if (r < 0.45) return Math.floor(rand() * (total - 1)); // ~20% not-started / stalled early
+  return 1 + Math.floor(rand() * (total - 1));         // rest mid-stream
 }
 
 /* plausible recorded value for a seeded, already-signed stage field */
