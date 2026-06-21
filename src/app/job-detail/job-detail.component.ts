@@ -168,15 +168,33 @@ export class JobDetailComponent {
   }
 
   // ---- stage inputs ----
+  /* fields with no showIf always show; conditional ones show when their trigger matches */
+  visibleFields(stage: WorkflowStage): StageField[] {
+    return stage.fields.filter(f =>
+      !f.showIf || stage.inputs[f.showIf.key] === f.showIf.equals);
+  }
+  /* blank any dependent field whose trigger no longer matches, so hidden fields don't keep stale values */
+  private clearHidden(stage: WorkflowStage) {
+    if (!this.job) return;
+    for (const f of stage.fields) {
+      if (f.showIf && stage.inputs[f.showIf.key] !== f.showIf.equals && stage.inputs[f.key])
+        this.wfService.setStageInput(this.job, stage.id, f, '');
+    }
+  }
+
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
-    if (this.job && value !== (stage.inputs[field.key] ?? ''))
+    if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, value);
+      this.clearHidden(stage);
+    }
   }
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
     const v = value ?? '';
-    if (this.job && v !== (stage.inputs[field.key] ?? ''))
+    if (this.job && v !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, v);
+      this.clearHidden(stage);
+    }
   }
 
   // ---- per-stage sign-off ----

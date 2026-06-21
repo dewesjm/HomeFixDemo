@@ -16,8 +16,9 @@ export interface StageField {
   label: string;
   type: 'text' | 'number' | 'select';
   unit?: string;          /* shown by the label, e.g. PSI */
-  placeholder?: string;
-  options?: { label: string; value: string }[];  /* choices for type: 'select' */
+ placeholder?: string;
+  options?: { label: string; value: string }[];
+  showIf?: { key: string; equals: string };   // ← declarative dependency, serializable
 }
 
 /* sequential stages, each its own sign-off */
@@ -101,7 +102,19 @@ const PREP_STAGE: StageTemplate = {
 };
 const HANDOVER_STAGE: StageTemplate = {
   id: 'handover', label: 'Handover', required: true,
-  fields: [{ key: 'walkthrough', label: 'Customer walkthrough', type: 'text', placeholder: 'e.g. confirmed operation' }]
+  fields: [
+    { key: 'walkthrough', label: 'Customer walkthrough', type: 'text', placeholder: 'e.g. confirmed operation' },
+    { key: 'issueReported', label: 'Customer reported an issue?', type: 'select',
+      options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+    // these three appear only when issueReported === 'yes'
+    { key: 'issueDescription', label: 'Issue description', type: 'text', placeholder: 'What did the customer report?',
+      showIf: { key: 'issueReported', equals: 'yes' } },
+    { key: 'issueSeverity', label: 'Severity', type: 'select',
+      options: [{ label: 'Minor', value: 'minor' }, { label: 'Major', value: 'major' }],
+      showIf: { key: 'issueReported', equals: 'yes' } },
+    { key: 'followUpDate', label: 'Follow-up date', type: 'text', placeholder: 'e.g. 2026-07-01',
+      showIf: { key: 'issueReported', equals: 'yes' } },
+  ]
 };
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
