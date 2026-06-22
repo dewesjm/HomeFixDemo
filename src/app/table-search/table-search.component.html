@@ -85,7 +85,16 @@
           </ng-template>
         </p-columnFilter>
       </th>
-      <th class="min-w-13">Current step</th>
+      <th pSortableColumn="currentStep" class="min-w-13">
+        Current step <p-sortIcon field="currentStep" />
+        <p-columnFilter field="currentStep" matchMode="in" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="stepOptions()"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
       <th pSortableColumn="scheduledFor" class="min-w-13">
         Scheduled <p-sortIcon field="scheduledFor" />
         <p-columnFilter field="scheduledFor" matchMode="between" display="menu" [showMatchModes]="false">
@@ -97,7 +106,16 @@
           </ng-template>
         </p-columnFilter>
       </th>
-      <th class="min-w-11">Tags</th>
+      <th class="min-w-11">
+        Tags
+        <p-columnFilter field="tags" matchMode="arrayAny" display="menu" [showMatchModes]="false">
+          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+            <p-multiselect [ngModel]="value" [options]="tagOptions"
+                           placeholder="Any" optionLabel="label" optionValue="value"
+                           (onChange)="filter($event.value)" />
+          </ng-template>
+        </p-columnFilter>
+      </th>
       <th pFrozenColumn alignFrozen="right" class="min-w-12">Actions</th>
     </tr>
   </ng-template>
@@ -109,7 +127,7 @@
       <td>{{ job.trade }}</td>
       <td>{{ job.technician }}</td>
       <td>{{ job.estimatedCost | currency:'USD' }}</td>
-      <td>{{ currentStep(job) }}</td>
+      <td>{{ job.currentStep }}</td>
       <td>{{ job.scheduledFor | date:'mediumDate' }}</td>
       <td>
         <span class="tag-list">

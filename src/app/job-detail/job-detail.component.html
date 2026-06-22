@@ -153,7 +153,7 @@
       <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
 
           <div class="stage-inputs" *ngIf="visibleFields(stage).length">
-  <label class="stage-field" *ngFor="let f of visibleFields(stage)">
+  <label class="stage-field" [class.stage-field--full]="f.showIf" *ngFor="let f of visibleFields(stage)">
           <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
           <p-select *ngIf="f.type === 'select'; else textField"
                     [options]="f.options || []" optionLabel="label" optionValue="value"

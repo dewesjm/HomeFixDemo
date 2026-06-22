@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { TableModule, Table } from 'primeng/table';
+import { FilterService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
@@ -37,7 +38,17 @@ import { currentStepLabel } from '../data/workflow';
 export class TableSearchComponent {
   @ViewChild('dt') dt!: Table;
 
-  constructor(private router: Router, private wfService: WorkflowService) {}
+  constructor(private router: Router, private wfService: WorkflowService,
+              private filterService: FilterService) {
+    // Built-in match modes are scalar-only; register one that matches an array
+    // (job.tags) against any of the selected values, for the Tags column filter.
+    this.filterService.register('arrayAny',
+      (value: string[] | undefined, filter: string[] | undefined): boolean => {
+        if (!filter || filter.length === 0) return true;
+        if (!value || value.length === 0) return false;
+        return filter.some(f => value.includes(f));
+      });
+  }
 
   jobs = JOBS;
   tradeOptions = TRADE_OPTIONS;
@@ -76,8 +87,17 @@ export class TableSearchComponent {
   selectedRole = signal<Job['trade'] | null>(null);
   displayedJobs = computed(() => {
     const role = this.selectedRole();
-    return role ? JOBS.filter(j => j.trade === role) : JOBS;
+    const rows = role ? JOBS.filter(j => j.trade === role) : JOBS;
+    // Materialize the derived "current step" onto each row so the column can
+    // sort and filter on a real field (p-table can't bind those to a method).
+    return rows.map(j => ({ ...j, currentStep: this.currentStep(j) }));
   });
+
+  /* distinct current-step values for that column's multiselect filter */
+  stepOptions = computed(() =>
+    [...new Set(this.displayedJobs().map(r => r.currentStep))]
+      .sort()
+      .map(s => ({ label: s, value: s })));
 
   //The workflow step
   currentStep(job: Job): string {
