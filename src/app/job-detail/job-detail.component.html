@@ -153,7 +153,9 @@
       <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
 
           <div class="stage-inputs" *ngIf="visibleFields(stage).length">
-  <label class="stage-field" [class.stage-field--full]="f.showIf" *ngFor="let f of visibleFields(stage)">
+  <ng-container *ngFor="let f of visibleFields(stage)">
+        <span class="stage-field-break" *ngIf="startsGroup(stage, f)"></span>
+        <label class="stage-field">
           <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
           <p-select *ngIf="f.type === 'select'; else textField"
                     [options]="f.options || []" optionLabel="label" optionValue="value"
@@ -167,6 +169,7 @@
                    (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
           </ng-template>
         </label>
+        </ng-container>
       </div>
 
       <ng-container *ngIf="stage.required; else optionalNote">

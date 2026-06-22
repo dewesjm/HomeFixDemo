@@ -173,6 +173,11 @@ export class JobDetailComponent {
     return stage.fields.filter(f =>
       !f.showIf || stage.inputs[f.showIf.key] === f.showIf.equals);
   }
+  /* a trigger field that currently-visible fields depend on — breaks onto its
+     own row so its dependent fields flow to the right of it */
+  startsGroup(stage: WorkflowStage, field: StageField): boolean {
+    return this.visibleFields(stage).some(f => f.showIf?.key === field.key);
+  }
   /* blank any dependent field whose trigger no longer matches, so hidden fields don't keep stale values */
   private clearHidden(stage: WorkflowStage) {
     if (!this.job) return;
