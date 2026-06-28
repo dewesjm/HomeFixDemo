@@ -1,5 +1,5 @@
-import { Component, ViewChild, computed, signal, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+//This is the main search, with filters, keywords, frozen columns, export to excel call
+import { Component, ViewChild, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,8 +17,10 @@ import { RatingModule } from 'primeng/rating';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 
-import { Job } from '../data/jobs';
-import { JobsApiService } from '../services/jobs-api.service';
+import {
+  JOBS, Job,
+  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS
+} from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
 
@@ -36,10 +38,10 @@ import { currentStepLabel } from '../data/workflow';
 export class TableSearchComponent {
   @ViewChild('dt') dt!: Table;
 
-  private jobsApi = inject(JobsApiService);
-
   constructor(private router: Router, private wfService: WorkflowService,
               private filterService: FilterService) {
+    // Built-in match modes are scalar-only; register one that matches an array
+    // (job.tags) against any of the selected values, for the Tags column filter.
     this.filterService.register('arrayAny',
       (value: string[] | undefined, filter: string[] | undefined): boolean => {
         if (!filter || filter.length === 0) return true;
@@ -48,20 +50,14 @@ export class TableSearchComponent {
       });
   }
 
-  // Fetch all jobs once; p-table handles client-side filtering/sorting/paging from here
-  private _page    = toSignal(this.jobsApi.getJobs({ pageSize: '500' }));
-  private _options = toSignal(this.jobsApi.getOptions());
-
-  private allJobs = computed(() => this._page()?.items ?? []);
-
-  tradeOptions      = computed(() => this._options()?.trades      ?? []);
-  technicianOptions = computed(() => this._options()?.technicians ?? []);
-  tagOptions        = computed(() => this._options()?.tags        ?? []);
-
-  loading = computed(() => this._page() === undefined);
+  jobs = JOBS;
+  tradeOptions = TRADE_OPTIONS;
+  technicianOptions = TECHNICIAN_OPTIONS;
+  tagOptions = TAG_OPTIONS;
 
   globalFilterFields = ['jobNumber', 'title', 'technician', 'trade', 'tags'];
 
+  /* columns for built-in p-table csv export */
   exportColumns = [
     { field: 'jobNumber',      header: 'Job #' },
     { field: 'id',             header: 'Internal ID' },
@@ -75,6 +71,7 @@ export class TableSearchComponent {
     { field: 'tags',           header: 'Tags' }
   ];
 
+  /** Per-cell formatting for the CSV export for special cases, just to prove we can format stuff */
   exportCell = (cell: { data: any; field: string }): string => {
     switch (cell.field) {
       case 'estimatedCost': return Number(cell.data).toFixed(2);
@@ -84,27 +81,35 @@ export class TableSearchComponent {
     }
   };
 
-  selectedRole = signal<string | null>(null);
+  totalLoaded = signal(JOBS.length);
 
+  // Role droplist to filter selection
+  selectedRole = signal<Job['trade'] | null>(null);
   displayedJobs = computed(() => {
     const role = this.selectedRole();
-    const rows = role ? this.allJobs().filter(j => j.trade === role) : this.allJobs();
+    const rows = role ? JOBS.filter(j => j.trade === role) : JOBS;
+    // Materialize the derived "current step" onto each row so the column can
+    // sort and filter on a real field (p-table can't bind those to a method).
     return rows.map(j => ({ ...j, currentStep: this.currentStep(j) }));
   });
 
+  /* distinct current-step values for that column's multiselect filter */
   stepOptions = computed(() =>
     [...new Set(this.displayedJobs().map(r => r.currentStep))]
       .sort()
       .map(s => ({ label: s, value: s })));
 
+  //The workflow step
   currentStep(job: Job): string {
     return currentStepLabel(this.wfService.workflowFor(job)().stages);
   }
 
+ //nav to details
   openDetails(job: Job) {
     this.router.navigate(['/jobs', job.id]);
   }
 
+//nav to history with this job pre-filled
   openHistory(job: Job) {
     this.router.navigate(['/history'], { queryParams: { job: job.id } });
   }

@@ -20,14 +20,13 @@
   [resizableColumns]="true"
   [scrollable]="true"
   styleClass="p-datatable-sm"
-  [loading]="loading()"
 >
   <ng-template pTemplate="caption">
     <div class="row">
       <p-button label="Clear filters" icon="pi pi-filter-slash" severity="secondary"
                 (onClick)="clear(dt, globalInput)" />
       <p-select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)"
-                [options]="tradeOptions()" optionLabel="label" optionValue="value"
+                [options]="tradeOptions" optionLabel="label" optionValue="value"
                 placeholder="All roles" [showClear]="true"
                 [style]="{ minWidth: '12rem' }" />
       <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
@@ -57,7 +56,7 @@
         Trade <p-sortIcon field="trade" />
         <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
           <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="tradeOptions()"
+            <p-multiselect [ngModel]="value" [options]="tradeOptions"
                            placeholder="Any" optionLabel="label" optionValue="value"
                            (onChange)="filter($event.value)" />
           </ng-template>
@@ -67,7 +66,7 @@
         Technician <p-sortIcon field="technician" />
         <p-columnFilter field="technician" matchMode="in" display="menu" [showMatchModes]="false">
           <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="technicianOptions()"
+            <p-multiselect [ngModel]="value" [options]="technicianOptions"
                            placeholder="Any" optionLabel="label" optionValue="value"
                            (onChange)="filter($event.value)" />
           </ng-template>
@@ -111,7 +110,7 @@
         Tags
         <p-columnFilter field="tags" matchMode="arrayAny" display="menu" [showMatchModes]="false">
           <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="tagOptions()"
+            <p-multiselect [ngModel]="value" [options]="tagOptions"
                            placeholder="Any" optionLabel="label" optionValue="value"
                            (onChange)="filter($event.value)" />
           </ng-template>

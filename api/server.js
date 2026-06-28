@@ -1,3 +1,8 @@
+// STANDALONE REFERENCE — not connected to the Angular app.
+// Run independently: cd api && npm install && npm start
+// The Angular app (src/) uses in-memory mock data from src/app/data/jobs.ts instead.
+// See src/app/services/jobs-api.service.ts for what wiring it up would look like.
+
 const express = require('express');
 const cors = require('cors');
 const jobsRouter = require('./routes/jobs');

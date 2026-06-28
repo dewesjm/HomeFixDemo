@@ -1,3 +1,9 @@
+// REFERENCE ONLY — not used by the Angular app.
+// This service shows what connecting to api/server.js would look like.
+// The app reads from src/app/data/jobs.ts (in-memory mock) instead.
+// To wire it up: inject JobsApiService into the components and replace the
+// static JOBS / TRADE_OPTIONS imports with calls to getJobs() / getOptions().
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -42,7 +48,7 @@ export type JobFilterParams = Partial<{
   dir:           'asc' | 'desc';
 }>;
 
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'http://localhost:3000'; //environment file in real life
 
 @Injectable({ providedIn: 'root' })
 export class JobsApiService {

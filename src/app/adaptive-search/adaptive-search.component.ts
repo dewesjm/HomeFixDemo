@@ -1,6 +1,6 @@
-import { Component, computed, signal, inject } from '@angular/core';
-import { toSignal, toObservable } from '@angular/core/rxjs-interop';
-import { debounceTime, switchMap } from 'rxjs';
+/* adaptive filters screen, schema-driven */
+//heavily custom
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -19,49 +19,14 @@ import { TagModule } from 'primeng/tag';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { Job } from '../data/jobs';
-import { JobsApiService, JobFilterParams } from '../services/jobs-api.service';
+import { JOBS, Job } from '../data/jobs';
 import {
   FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
-  defaultValuesFor, getField, isEmpty,
+  applyFilters, defaultValuesFor, getField, isEmpty,
   loadVariants, saveVariants
 } from '../data/filter-schema';
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
-
-// Converts the component's FilterValues shape into query params the API understands.
-// Ranges become two separate params; arrays become comma-separated strings.
-function toApiParams(values: FilterValues): JobFilterParams {
-  const p: JobFilterParams = {};
-
-  if (values['title']) p.title = values['title'];
-
-  const trade = values['trade'] as string[];
-  if (trade?.length) p.trade = trade.join(',');
-
-  const tech = values['technician'] as string[];
-  if (tech?.length) p.technician = tech.join(',');
-
-  const tags = values['tags'] as string[];
-  if (tags?.length) p.tags = tags.join(',');
-
-  const cost = values['estimatedCost'] as [number, number];
-  if (cost?.[0] > 0)    p.costMin = String(cost[0]);
-  if (cost?.[1] < 2000) p.costMax = String(cost[1]);
-
-  const hours = values['estimatedHours'] as [number, number];
-  if (hours?.[0] > 0)  p.hoursMin = String(hours[0]);
-  if (hours?.[1] < 40) p.hoursMax = String(hours[1]);
-
-  const score = values['inspectionScore'] as number;
-  if (score > 0) p.minScore = String(score);
-
-  const dates = values['scheduledFor'] as [Date | null, Date | null];
-  if (dates?.[0]) p.scheduledFrom = (dates[0] as Date).toISOString();
-  if (dates?.[1]) p.scheduledTo   = (dates[1] as Date).toISOString();
-
-  return p;
-}
 
 const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
 
@@ -78,13 +43,12 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
   templateUrl: './adaptive-search.component.html'
 })
 export class AdaptiveSearchComponent {
-  private jobsApi = inject(JobsApiService);
-
   constructor(private router: Router, private wfService: WorkflowService) {}
 
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
 
+  /* columns for built-in p-table csv export */
   exportColumns = [
     { field: 'jobNumber',       header: 'Job #' },
     { field: 'title',           header: 'Job' },
@@ -103,6 +67,7 @@ export class AdaptiveSearchComponent {
     }
   };
 
+  /* current workflow step label for a job */
   currentStep(job: Job): string {
     return currentStepLabel(this.wfService.workflowFor(job)().stages);
   }
@@ -111,9 +76,8 @@ export class AdaptiveSearchComponent {
     this.router.navigate(['/jobs', job.id]);
   }
 
-  // --- Filter state ---
   visibleKeys = signal<string[]>([...DEFAULT_KEYS]);
-  values      = signal<FilterValues>(defaultValuesFor(DEFAULT_KEYS));
+  values = signal<FilterValues>(defaultValuesFor(DEFAULT_KEYS));
 
   visibleFields = computed<FilterField[]>(() =>
     this.visibleKeys()
@@ -121,18 +85,8 @@ export class AdaptiveSearchComponent {
       .filter((f): f is FilterField => !!f)
   );
 
-  // When values changes, wait 300ms then send to the API.
-  // switchMap cancels any in-flight request before issuing the new one.
-  private _result = toSignal(
-    toObservable(this.values).pipe(
-      debounceTime(300),
-      switchMap(v => this.jobsApi.getJobs({ ...toApiParams(v), pageSize: '500' }))
-    )
-  );
-
-  filtered  = computed(() => this._result()?.items ?? []);
-  totalJobs = computed(() => this._result()?.total ?? 0);
-  loading   = computed(() => this._result() === undefined);
+  totalJobs = JOBS.length;
+  filtered = computed<Job[]>(() => applyFilters(JOBS, this.values()));
 
   activeChips = computed(() => {
     const chips: { label: string; clear: () => void }[] = [];
@@ -148,8 +102,8 @@ export class AdaptiveSearchComponent {
   });
 
   // --- Adapt Filters dialog ---
-  showAdapt   = signal(false);
-  draftKeys   = signal<Set<string>>(new Set());
+  showAdapt = signal(false);
+  draftKeys = signal<Set<string>>(new Set());
   adaptFilter = signal<string>('');
 
   groupedSchema = computed(() => {
@@ -170,14 +124,14 @@ export class AdaptiveSearchComponent {
     this.showAdapt.set(true);
   }
 
-  isDraftSelected(key: string): boolean { return this.draftKeys().has(key); }
-
+  isDraftSelected(key: string): boolean {
+    return this.draftKeys().has(key);
+  }
   toggleDraft(key: string, checked: boolean) {
     const next = new Set(this.draftKeys());
     if (checked) next.add(key); else next.delete(key);
     this.draftKeys.set(next);
   }
-
   selectGroup(group: string, selected: boolean) {
     const next = new Set(this.draftKeys());
     for (const f of this.schema) {
@@ -187,7 +141,6 @@ export class AdaptiveSearchComponent {
     }
     this.draftKeys.set(next);
   }
-
   selectAll(selected: boolean) {
     const next = new Set<string>();
     for (const f of this.schema) {
@@ -198,6 +151,7 @@ export class AdaptiveSearchComponent {
 
   applyAdapt() {
     const requiredKeys = this.schema.filter(f => f.required).map(f => f.key);
+    // preserve schema order so the bar is stable
     const draft = this.draftKeys();
     const finalKeys = this.schema
       .map(f => f.key)
@@ -213,7 +167,7 @@ export class AdaptiveSearchComponent {
   }
 
   // --- Variants (presets) ---
-  variants    = signal<FilterVariant[]>(loadVariants());
+  variants = signal<FilterVariant[]>(loadVariants());
   variantName = signal<string>('');
 
   applyVariant(v: FilterVariant) {
@@ -245,8 +199,10 @@ export class AdaptiveSearchComponent {
   }
 
   // --- Field value helpers ---
-  setValue(key: string, val: any) { this.values.set({ ...this.values(), [key]: val }); }
-  valueOf(key: string): any       { return this.values()[key]; }
+  setValue(key: string, val: any) {
+    this.values.set({ ...this.values(), [key]: val });
+  }
+  valueOf(key: string): any { return this.values()[key]; }
 
   clearOne(key: string) {
     const f = getField(key);
@@ -254,7 +210,9 @@ export class AdaptiveSearchComponent {
     this.values.set({ ...this.values(), ...defaultValuesFor([key]) });
   }
 
-  resetAll() { this.values.set(defaultValuesFor(this.visibleKeys())); }
+  resetAll() {
+    this.values.set(defaultValuesFor(this.visibleKeys()));
+  }
 
   chipLabelFor(f: FilterField, v: any): string {
     switch (f.type) {
@@ -271,6 +229,11 @@ export class AdaptiveSearchComponent {
     }
   }
 
-  asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'tags' | 'select' }> { return f as any; }
-  asRange(f: FilterField): Extract<FilterField, { type: 'range' }>                            { return f as any; }
+  /* typed casts for discriminated fields */
+  asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'tags' | 'select' }> {
+    return f as any;
+  }
+  asRange(f: FilterField): Extract<FilterField, { type: 'range' }> {
+    return f as any;
+  }
 }
