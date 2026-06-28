@@ -114,10 +114,11 @@
   [resizableColumns]="true"
   [scrollable]="true"
   styleClass="p-datatable-sm"
+  [loading]="loading()"
 >
   <ng-template pTemplate="caption">
     <div class="row">
-      <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} jobs match</span>
+      <span class="fw-bold">{{ totalJobs() }} jobs match</span>
       <span class="spacer"></span>
       <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
                 (onClick)="dt.exportCSV()" />
