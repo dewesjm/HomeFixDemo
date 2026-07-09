@@ -1,18 +1,15 @@
 // Admin → Condition Codes: table-maintenance screen for
 // the shared condition code → description lookup that feeds the Work validation dropdown.
-// Uses PrimeNG's editable table (editMode="row")
+// Inline row editing via a per-row `editingId` signal.
 // in memory database only
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-
+import { ToastService } from '../shared/toast.service';
+import { TableState } from '../shared/table-state';
+import { downloadCsv } from '../data/export-csv';
 import { CONDITION_CODES } from '../data/conditions';
 
 interface ConditionRow {
@@ -25,46 +22,66 @@ interface ConditionRow {
   selector: 'app-admin-conditions',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule,
-    IconFieldModule, InputIconModule
+    CommonModule, FormsModule,
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-conditions.component.html'
 })
 export class AdminConditionsComponent {
-  rows: ConditionRow[] = CONDITION_CODES.map(c => ({ id: c.code, code: c.code, description: c.description }));
+  rows = signal<ConditionRow[]>(CONDITION_CODES.map(c => ({ id: c.code, code: c.code, description: c.description })));
 
-  // Columns the built-in p-table CSV export uses (exportCSV reads `this.columns`).
-  exportColumns = [
-    { field: 'code', header: 'Code' },
-    { field: 'description', header: 'Description' }
-  ];
+  table = new TableState<ConditionRow>(['code', 'description']);
+  visibleRows = computed(() => this.table.sorted());
 
-  private messages = inject(MessageService);
+  private messages = inject(ToastService);
   private clonedRows: Record<string, ConditionRow> = {};
   private seq = 0;
 
-  addRow() {
-    this.rows = [{ id: `new-${++this.seq}`, code: '', description: '' }, ...this.rows];
+  editingId = signal<string | null>(null);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
   }
 
-  deleteRow(index: number) {
-    this.rows = this.rows.filter((_, i) => i !== index);
+  addRow() {
+    const row: ConditionRow = { id: `new-${++this.seq}`, code: '', description: '' };
+    this.rows.update(r => [row, ...r]);
+    this.editingId.set(row.id);
+  }
+
+  deleteRow(row: ConditionRow) {
+    this.rows.update(r => r.filter(x => x.id !== row.id));
     this.messages.add({ severity: 'info', summary: 'Condition code deleted', life: 3000 });
   }
 
-  onRowEditInit(row: ConditionRow) {
+  startEdit(row: ConditionRow) {
     this.clonedRows[row.id] = { ...row };
+    this.editingId.set(row.id);
   }
 
-  onRowEditSave(row: ConditionRow) {
+  saveEdit(row: ConditionRow) {
     delete this.clonedRows[row.id];
+    this.editingId.set(null);
     this.messages.add({ severity: 'success', summary: 'Condition code saved', detail: row.code, life: 3000 });
   }
 
-  onRowEditCancel(row: ConditionRow, index: number) {
-    if (this.clonedRows[row.id]) {
-      this.rows[index] = this.clonedRows[row.id];
+  cancelEdit(row: ConditionRow) {
+    const original = this.clonedRows[row.id];
+    if (original) {
+      this.rows.update(r => r.map(x => (x.id === row.id ? original : x)));
       delete this.clonedRows[row.id];
     }
+    this.editingId.set(null);
+  }
+
+  updateField(row: ConditionRow, field: 'code' | 'description', value: string) {
+    this.rows.update(r => r.map(x => (x.id === row.id ? { ...x, [field]: value } : x)));
+  }
+
+  exportCsv() {
+    downloadCsv('condition-codes', [
+      { header: 'Code', value: (r: ConditionRow) => r.code },
+      { header: 'Description', value: (r: ConditionRow) => r.description }
+    ], this.visibleRows());
   }
 }

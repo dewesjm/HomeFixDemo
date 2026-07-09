@@ -9,26 +9,35 @@
   <div class="detail-grid mb-sm">
     <div>
       <div class="meta">Job</div>
-      <p-select [options]="jobOptions" optionLabel="label" optionValue="value"
-                placeholder="Select a job" [filter]="true" [showClear]="true"
-                [ngModel]="selectedJobId()" (ngModelChange)="pickJob($event)"
-                [style]="{ width: '100%' }" />
+      <select class="select select-sm select-bordered w-full"
+              [ngModel]="selectedJobId()" (ngModelChange)="pickJob($event)">
+        <option [ngValue]="null">Select a job</option>
+        @for (o of jobOptions; track o.value) {
+          <option [ngValue]="o.value">{{ o.label }}</option>
+        }
+      </select>
     </div>
 
-    <div *ngIf="selectedJob()">
-      <div class="meta">Current step</div>
-      <div><p-tag [value]="currentStep()" severity="info" /></div>
-    </div>
+    @if (selectedJob()) {
+      <div>
+        <div class="meta">Current step</div>
+        <div><span class="badge badge-info badge-sm">{{ currentStep() }}</span></div>
+      </div>
 
-    <div *ngIf="selectedJob()">
-      <div class="meta">Target step</div>
-      <p-select [options]="stepOptions()" optionLabel="label" optionValue="value"
-                placeholder="Select a step"
-                [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)"
-                [style]="{ width: '100%' }" />
-    </div>
+      <div>
+        <div class="meta">Target step</div>
+        <select class="select select-sm select-bordered w-full"
+                [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)">
+          <option [ngValue]="null">Select a step</option>
+          @for (o of stepOptions(); track o.value) {
+            <option [ngValue]="o.value">{{ o.label }}</option>
+          }
+        </select>
+      </div>
+    }
   </div>
 
-  <p-button label="Force step" icon="pi pi-step-forward"
-            [disabled]="!selectedJob() || targetIndex() === null" (onClick)="apply()" />
+  <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetIndex() === null" (click)="apply()">
+    <svg lucideStepForward class="size-4"></svg> Force step
+  </button>
 </section>

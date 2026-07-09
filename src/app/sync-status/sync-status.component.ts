@@ -1,14 +1,14 @@
 /* sidebar dot showing synced / pending / offline */
 import { Component, computed, inject } from '@angular/core';
-import { TooltipModule } from 'primeng/tooltip';
+import { TooltipDirective } from '../shared/tooltip.directive';
 import { SyncService } from '../services/sync.service';
 
 @Component({
   selector: 'app-sync-status',
   standalone: true,
-  imports: [TooltipModule],
+  imports: [TooltipDirective],
   template: `
-    <span class="sync-status" [class]="'sync-status--' + state()" [pTooltip]="tooltip()" tooltipPosition="bottom">
+    <span class="sync-status" [class]="'sync-status--' + state()" [appTooltip]="tooltip()" tooltipPosition="bottom">
       <span class="sync-dot"></span>
       <span class="sync-label">{{ label() }}</span>
     </span>
@@ -16,12 +16,12 @@ import { SyncService } from '../services/sync.service';
   styles: [`
     .sync-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; font-weight: 600; }
     .sync-dot { width: .65rem; height: .65rem; border-radius: 50%; flex: 0 0 auto; }
-    .sync-status--synced  .sync-dot { background: var(--p-green-500); }
-    .sync-status--pending .sync-dot { background: var(--p-amber-500); animation: sync-pulse 1s ease-in-out infinite; }
-    .sync-status--offline .sync-dot { background: var(--p-red-500); }
-    .sync-status--synced  { color: var(--p-green-600); }
-    .sync-status--pending { color: var(--p-amber-600); }
-    .sync-status--offline { color: var(--p-red-600); }
+    .sync-status--synced  .sync-dot { background: var(--color-success); }
+    .sync-status--pending .sync-dot { background: var(--color-warning); animation: sync-pulse 1s ease-in-out infinite; }
+    .sync-status--offline .sync-dot { background: var(--color-error); }
+    .sync-status--synced  { color: var(--color-success); }
+    .sync-status--pending { color: var(--color-warning); }
+    .sync-status--offline { color: var(--color-error); }
     @keyframes sync-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
   `]
 })

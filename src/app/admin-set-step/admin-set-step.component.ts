@@ -3,11 +3,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { LucideStepForward } from '@lucide/angular';
 
-import { ConfirmationService } from 'primeng/api';
-import { SelectModule } from 'primeng/select';
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
+import { ConfirmService } from '../shared/confirm.service';
 
 import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
@@ -16,12 +14,12 @@ import { currentStepLabel } from '../data/workflow';
 @Component({
   selector: 'app-admin-set-step',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, ButtonModule, TagModule],
+  imports: [CommonModule, FormsModule, LucideStepForward],
   templateUrl: './admin-set-step.component.html'
 })
 export class AdminSetStepComponent {
   private wfService = inject(WorkflowService);
-  private confirm = inject(ConfirmationService);
+  private confirm = inject(ConfirmService);
 
   jobOptions = JOBS.map(j => ({ label: `${j.jobNumber} · ${j.title}`, value: j.id }));
   selectedJobId = signal<number | null>(null);
@@ -57,11 +55,9 @@ export class AdminSetStepComponent {
     const label = this.stepOptions()[idx]?.label ?? `step ${idx + 1}`;
     this.confirm.confirm({
       header: 'Force step?',
-      message: `This re-opens “${label}” and every stage after it, discarding their sign-offs on ${job.jobNumber}. Continue?`,
-      icon: 'pi pi-exclamation-triangle',
+      message: `This re-opens "${label}" and every stage after it, discarding their sign-offs on ${job.jobNumber}. Continue?`,
       acceptLabel: 'Force step',
       rejectLabel: 'Cancel',
-      acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
         this.wfService.forceStep(job, idx);
         this.targetIndex.set(null);   // current step now reflects the change

@@ -30,16 +30,14 @@
 .content-body { min-width: 0; }
 
 /* "New version available" prompt — fixed, bottom-center, above all content. */
-/* Position the update prompt; p-message provides the box (bg/border/padding). */
 .update-banner {
   position: fixed;
   bottom: 1rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
+  width: max-content;
   box-shadow: 0 4px 16px rgba(0, 0, 0, .25);
-
-  // keep the projected text + Reload button on one row with breathing room
-  // (::ng-deep reaches into the child p-message's view past style encapsulation)
-  ::ng-deep .p-message-text { display: inline-flex; align-items: center; gap: .75rem; }
 }
+
+.menu-active { background: var(--app-muted); font-weight: 600; }

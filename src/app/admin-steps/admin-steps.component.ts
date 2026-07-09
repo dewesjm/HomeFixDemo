@@ -1,20 +1,15 @@
 // Admin → Steps: a table-maintenance screen for the per-trade workflow
-// steps. Uses PrimeNG's editable table (editMode="row" + p-cellEditor). Seeded from
-// STAGE_TEMPLATES; edits live in memory only
+// steps. Inline row editing via a per-row `editingId` signal; edits live in memory only.
 //No actual backend
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MessageService } from 'primeng/api';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-
+import { ToastService } from '../shared/toast.service';
+import { TableState, inArray } from '../shared/table-state';
+import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
+import { downloadCsv } from '../data/export-csv';
 import { Job, TRADE_OPTIONS } from '../data/jobs';
 import { STAGE_TEMPLATES } from '../data/workflow';
 
@@ -28,52 +23,71 @@ interface StepRow {
   selector: 'app-admin-steps',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, SelectModule,
-    MultiSelectModule, IconFieldModule, InputIconModule
+    CommonModule, FormsModule, MultiselectDropdownComponent,
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-steps.component.html'
 })
 export class AdminStepsComponent {
   tradeOptions = TRADE_OPTIONS;
 
-  // Columns the built-in p-table CSV export uses (exportCSV reads `this.columns`).
-  exportColumns = [
-    { field: 'step', header: 'Step' },
-    { field: 'trade', header: 'Trade' }
-  ];
-
   // Flatten the per-trade templates into editable rows.
-  rows: StepRow[] = Object.entries(STAGE_TEMPLATES).flatMap(([trade, templates]) =>
+  rows = signal<StepRow[]>(Object.entries(STAGE_TEMPLATES).flatMap(([trade, templates]) =>
     templates.map(t => ({ id: `${trade}:${t.id}`, step: t.label, trade: trade as Job['trade'] }))
-  );
+  ));
 
-  private messages = inject(MessageService);
+  table = new TableState<StepRow>(['step', 'trade'], { trade: inArray });
+  visibleRows = computed(() => this.table.sorted());
+
+  private messages = inject(ToastService);
   private clonedRows: Record<string, StepRow> = {};
   private seq = 0;
 
-  addRow() {
-    const row: StepRow = { id: `new-${++this.seq}`, step: '', trade: this.tradeOptions[0].value };
-    this.rows = [row, ...this.rows];
+  editingId = signal<string | null>(null);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
   }
 
-  deleteRow(index: number) {
-    this.rows = this.rows.filter((_, i) => i !== index);
+  addRow() {
+    const row: StepRow = { id: `new-${++this.seq}`, step: '', trade: this.tradeOptions[0].value };
+    this.rows.update(r => [row, ...r]);
+    this.editingId.set(row.id);
+  }
+
+  deleteRow(row: StepRow) {
+    this.rows.update(r => r.filter(x => x.id !== row.id));
     this.messages.add({ severity: 'info', summary: 'Step deleted', life: 3000 });
   }
 
-  onRowEditInit(row: StepRow) {
+  startEdit(row: StepRow) {
     this.clonedRows[row.id] = { ...row };
+    this.editingId.set(row.id);
   }
 
-  onRowEditSave(row: StepRow) {
+  saveEdit(row: StepRow) {
     delete this.clonedRows[row.id];
+    this.editingId.set(null);
     this.messages.add({ severity: 'success', summary: 'Step saved', detail: row.step, life: 3000 });
   }
 
-  onRowEditCancel(row: StepRow, index: number) {
-    if (this.clonedRows[row.id]) {
-      this.rows[index] = this.clonedRows[row.id];
+  cancelEdit(row: StepRow) {
+    const original = this.clonedRows[row.id];
+    if (original) {
+      this.rows.update(r => r.map(x => (x.id === row.id ? original : x)));
       delete this.clonedRows[row.id];
     }
+    this.editingId.set(null);
+  }
+
+  updateField(row: StepRow, field: 'step' | 'trade', value: string) {
+    this.rows.update(r => r.map(x => (x.id === row.id ? { ...x, [field]: value } : x)));
+  }
+
+  exportCsv() {
+    downloadCsv('steps', [
+      { header: 'Step', value: (r: StepRow) => r.step },
+      { header: 'Trade', value: (r: StepRow) => r.trade }
+    ], this.visibleRows());
   }
 }

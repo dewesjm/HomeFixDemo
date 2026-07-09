@@ -4,18 +4,13 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MenuItem, ConfirmationService } from 'primeng/api';
-
-import { ButtonModule } from 'primeng/button';
-import { TagModule } from 'primeng/tag';
-import { SelectModule } from 'primeng/select';
-import { InputTextModule } from 'primeng/inputtext';
-import { TooltipModule } from 'primeng/tooltip';
-import { TableModule } from 'primeng/table';
-import { StepsModule } from 'primeng/steps';
-import { RadioButtonModule } from 'primeng/radiobutton';
-import { FileUpload, FileUploadModule } from 'primeng/fileupload';
-import { MessageModule } from 'primeng/message';
+import { ConfirmService } from '../shared/confirm.service';
+import { TooltipDirective } from '../shared/tooltip.directive';
+import {
+  LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+  LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+  LucideChevronDown, LucideChevronUp
+} from '@lucide/angular';
 
 import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
@@ -30,9 +25,10 @@ import {
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
-    ButtonModule, TagModule, SelectModule, InputTextModule, TooltipModule,
-    TableModule, StepsModule, RadioButtonModule, FileUploadModule, MessageModule
+    CommonModule, FormsModule, TooltipDirective,
+    LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+    LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+    LucideChevronDown, LucideChevronUp
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -40,7 +36,7 @@ export class JobDetailComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private wfService = inject(WorkflowService);
-  private confirm = inject(ConfirmationService);
+  private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
@@ -58,7 +54,7 @@ export class JobDetailComponent {
   conditionOptions = CONDITION_OPTIONS;
 
   /* steps model, locked stages disabled */
-  stepsModel = computed<MenuItem[]>(() =>
+  stepsModel = computed<{ label: string; disabled: boolean }[]>(() =>
     this.wf ? this.wf().stages.map((s, i) => ({ label: s.label, disabled: this.locked(i) })) : []);
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
@@ -232,8 +228,7 @@ export class JobDetailComponent {
     const decision = (stage.result ?? '').toUpperCase();
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off “${stage.label}” as ${decision} under ${stage.inspectorName}? This locks the stage and advances the workflow.`,
-      icon: 'pi pi-verified',
+      message: `Sign off "${stage.label}" as ${decision} under ${stage.inspectorName}? This locks the stage and advances the workflow.`,
       acceptLabel: 'Sign & lock',
       rejectLabel: 'Cancel',
       accept: () => {
@@ -250,10 +245,11 @@ export class JobDetailComponent {
   }
 
   // ---- attachments ----
-  addAttachments(event: { files: File[] }, fu: FileUpload) {
+  addAttachments(event: Event) {
     if (!this.job) return;
-    for (const f of event.files) this.wfService.addAttachment(this.job, f.name);
-    fu.clear();   // reset so the same file can be picked again
+    const input = event.target as HTMLInputElement;
+    for (const f of Array.from(input.files ?? [])) this.wfService.addAttachment(this.job, f.name);
+    input.value = '';   // reset so the same file can be picked again
   }
   removeAttachment(id: string) {
     if (this.job) this.wfService.removeAttachment(this.job, id);

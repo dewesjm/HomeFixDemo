@@ -1,98 +1,111 @@
 <!-- Work history screen template (paired with work-history.component.ts). -->
 <h2 class="section-title">Work history</h2>
 <p class="section-sub">
-  
+
 </p>
 
 <div class="facet-row">
-  <p-select [ngModel]="person()" (ngModelChange)="person.set($event)"
-            [options]="people()" optionLabel="label" optionValue="value"
-            placeholder="Select a person" [showClear]="true" [filter]="true"
-            [style]="{ minWidth: '14rem' }" />
+  <select class="select select-sm select-bordered" style="min-width: 14rem"
+          [ngModel]="person()" (ngModelChange)="person.set($event)">
+    <option [ngValue]="null">Select a person</option>
+    @for (p of people(); track p.value) {
+      <option [ngValue]="p.value">{{ p.label }}</option>
+    }
+  </select>
 
-  <p-iconfield iconPosition="left">
-    <p-inputicon class="pi pi-briefcase" />
-    <input pInputText type="text" [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)"
-           placeholder="Job # or ID" [style]="{ minWidth: '12rem' }" />
-  </p-iconfield>
+  <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">
+    <svg lucideBriefcase class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Job # or ID"
+           [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)" />
+  </label>
 
-  <p-iconfield iconPosition="left" class="grow">
-    <p-inputicon class="pi pi-search" />
-    <input pInputText type="text" [ngModel]="query()" (ngModelChange)="query.set($event)"
-           placeholder="Search jobs, changes, steps…" class="w-full" />
-  </p-iconfield>
+  <label class="input input-sm input-bordered flex items-center gap-2 grow">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search jobs, changes, steps…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+  </label>
 
   <span class="spacer"></span>
-  <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
-            [disabled]="!activity().length" (onClick)="exportCsv()" />
-  <p-button label="Clear" icon="pi pi-filter-slash" severity="secondary"
-            (onClick)="clear()" />
+  <button type="button" class="btn btn-sm btn-outline" [disabled]="!table.sorted().length" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
+  </button>
+  <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
+    <svg lucideListFilter class="size-4"></svg> Clear
+  </button>
 </div>
 
 <!-- Activity log -->
-<p-table
-  [value]="activity()"
-  [rows]="15"
-  [rowsPerPageOptions]="[15, 30, 50, 100]"
-  [paginator]="true"
-  [showCurrentPageReport]="true"
-  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-  sortMode="multiple"
-  [resizableColumns]="true"
-  [scrollable]="true"
-  styleClass="p-datatable-sm"
->
-  <ng-template pTemplate="caption">
-    <div class="row">
-      <i class="pi pi-history"></i>
-      <span class="fw-bold">Activity {{ scopeLabel() }}</span>
-      <span class="meta fw-normal">· {{ activity().length }} entries</span>
-    </div>
-  </ng-template>
+<div class="row">
+  <svg lucideHistory class="size-4"></svg>
+  <span class="fw-bold">Activity {{ scopeLabel() }}</span>
+  <span class="meta fw-normal">· {{ table.total() }} entries</span>
+</div>
 
-  <ng-template pTemplate="header">
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
     <tr>
-      <th pSortableColumn="when" class="min-w-13">When <p-sortIcon field="when" /></th>
-      <th pSortableColumn="who" class="min-w-11">Who <p-sortIcon field="who" /></th>
-      <th pSortableColumn="action" class="min-w-14">Action <p-sortIcon field="action" /></th>
+      <th class="min-w-13">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('when')">
+          When {{ table.sortField() === 'when' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-11">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('who')">
+          Who {{ table.sortField() === 'who' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-14">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('action')">
+          Action {{ table.sortField() === 'action' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
       <th class="min-w-12">Old value</th>
       <th class="min-w-12">New value</th>
-      <th pSortableColumn="step" class="min-w-12">Step <p-sortIcon field="step" /></th>
-      <th pSortableColumn="jobNumber" class="min-w-13">Job <p-sortIcon field="jobNumber" /></th>
-      <th pSortableColumn="trade" class="min-w-11">
-        Trade <p-sortIcon field="trade" />
-        <p-columnFilter field="trade" matchMode="in" display="menu" [showMatchModes]="false">
-          <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-            <p-multiselect [ngModel]="value" [options]="tradeOptions"
-                           placeholder="Any" optionLabel="label" optionValue="value"
-                           (onChange)="filter($event.value)" />
-          </ng-template>
-        </p-columnFilter>
+      <th class="min-w-12">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('step')">
+          Step {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-13">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
+          Job {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-11">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
+          Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+        <app-multiselect-dropdown class="block mt-xs" [options]="tradeOptions"
+          [selected]="table.columnFilters()['trade'] ?? []"
+          (selectedChange)="table.setColumnFilter('trade', $event)" />
       </th>
     </tr>
-  </ng-template>
+  </thead>
+  <tbody>
+    @for (r of table.paged(); track r.jobId + r.when + r.action) {
+      <tr>
+        <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+        <td>{{ r.who }}</td>
+        <td>{{ r.action }}</td>
+        <td class="hist-old">{{ r.from || '—' }}</td>
+        <td class="hist-new">{{ r.to || '—' }}</td>
+        <td>{{ r.step }}</td>
+        <td>
+          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
+          <div class="meta">{{ r.jobTitle }}</div>
+        </td>
+        <td>{{ r.trade }}</td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="8" class="empty">
+          No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>
+</div>
 
-  <ng-template pTemplate="body" let-r>
-    <tr>
-      <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
-      <td>{{ r.who }}</td>
-      <td>{{ r.action }}</td>
-      <td class="hist-old">{{ r.from || '—' }}</td>
-      <td class="hist-new">{{ r.to || '—' }}</td>
-      <td>{{ r.step }}</td>
-      <td>
-        <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
-        <div class="meta">{{ r.jobTitle }}</div>
-      </td>
-      <td>{{ r.trade }}</td>
-    </tr>
-  </ng-template>
-
-  <ng-template pTemplate="emptymessage">
-    <tr>
-      <td colspan="8" class="empty">
-        No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
-      </td>
-    </tr>
-  </ng-template>
-</p-table>
+<app-table-pager [state]="table" [pageSizeOptions]="[15, 30, 50, 100]" />

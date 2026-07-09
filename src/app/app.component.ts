@@ -2,17 +2,17 @@
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
 import { SyncStatusComponent } from './sync-status/sync-status.component';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
-import { PanelMenuModule } from 'primeng/panelmenu';
-import { ButtonModule } from 'primeng/button';
-import { ToastModule } from 'primeng/toast';
-import { MessageModule } from 'primeng/message';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { MenuItem } from 'primeng/api';
+import { ToastHostComponent } from './shared/toast-host.component';
+import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
+import {
+  LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
+  LucideTriangleAlert, LucideBox, LucideStepForward, LucideMenu, LucideCircleArrowUp, LucideRefreshCw
+} from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
 const UPDATE_POLL_MS = 5 * 60 * 1000;
@@ -20,7 +20,13 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SyncStatusComponent, ThemePickerComponent, PanelMenuModule, ButtonModule, ToastModule, MessageModule, ConfirmDialogModule],
+  imports: [
+    RouterOutlet, RouterLink, RouterLinkActive,
+    SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
+    LucideMenu, LucideCircleArrowUp, LucideRefreshCw,
+    LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
+    LucideTriangleAlert, LucideBox, LucideStepForward
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -53,23 +59,7 @@ export class AppComponent {
     this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
 
-  menu: MenuItem[] = [
-    //Links in the menu go here
-  { label: 'Jobs',     icon: 'pi pi-table',      routerLink: '/table' },
-  { label: 'History',    icon: 'pi pi-history',    routerLink: '/history' },
-  { label: 'Advanced Search',icon: 'pi pi-sliders-h',  routerLink: '/adaptive' },
-  {
-    //hierarchical links
-    label: 'Admin', icon: 'pi pi-cog',
-    items: [                                   // ← having `items` makes it a collapsible group
-      { label: 'Steps', icon: 'pi pi-sitemap', routerLink: '/admin/steps' },
-      { label: 'Characteristic codes', icon: 'pi pi-tag', routerLink: '/admin/characteristics' },
-      { label: 'Condition codes', icon: 'pi pi-exclamation-triangle', routerLink: '/admin/conditions' },
-      { label: 'Materials', icon: 'pi pi-box', routerLink: '/admin/materials' },
-      { label: 'Set step', icon: 'pi pi-step-forward', routerLink: '/admin/set-step' },
-    ]
-  },
-];
-collapsed = signal(true);   // true = minimized by default
-toggle() { this.collapsed.update(v => !v); }
+  adminOpen = signal(true);   // Admin submenu expanded by default
+  collapsed = signal(true);   // true = minimized by default
+  toggle() { this.collapsed.update(v => !v); }
 }

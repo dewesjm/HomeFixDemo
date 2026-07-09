@@ -1,11 +1,12 @@
 <!--This is the bulk of the job details page, should some of these be sub-components?-->
 <!--breadcrumb-->
-<p-button label="Back to work orders" icon="pi pi-arrow-left" severity="secondary" [text]="true"
-          (onClick)="back()" />
+<button type="button" class="btn btn-ghost btn-sm" (click)="back()">
+  <svg lucideArrowLeft class="size-4"></svg> Back to work orders
+</button>
 
-<ng-container *ngIf="job as j; else notFound">
-<ng-container *ngIf="wf as wfSig">
-<ng-container *ngIf="wfSig() as w">
+@if (job; as j) {
+@if (wf; as wfSig) {
+@if (wfSig(); as w) {
 
   <h2 class="section-title mt-sm">{{ j.title }}</h2>
   <p class="section-sub">
@@ -15,16 +16,24 @@
 
   <!-- 1 ───────── Stages (progress only — record & sign in the Sign-off section) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-sitemap"></i> Stages</h3>
+    <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Stages</h3>
     <div class="steps-scroll">
-      <p-steps [model]="stepsModel()" [activeIndex]="selectedStep()" [readonly]="false"
-               (activeIndexChange)="selectedStep.set($event)" />
+      <ul class="steps">
+        @for (s of stepsModel(); track $index) {
+          <li class="step" [class.step-primary]="$index <= selectedStep()"
+              [class.opacity-50]="s.disabled"
+              [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
+              (click)="!s.disabled && selectedStep.set($index)">
+            {{ s.label }}
+          </li>
+        }
+      </ul>
     </div>
   </section>
 
   <!-- 2 ───────── Job Details (read-only) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-info-circle"></i> Job details</h3>
+    <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Job details</h3>
     <div class="detail-grid inline">
       <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
       <div><div class="meta">Current step</div><div>{{ currentStep() }}</div></div>
@@ -34,15 +43,15 @@
       <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
       <div>
         <div class="meta">Code 1</div>
-        <div [pTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
+        <div [appTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
       </div>
       <div>
         <div class="meta">Code 2</div>
-        <div [pTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
+        <div [appTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
       </div>
       <div>
         <div class="meta">Code 3</div>
-        <div [pTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
+        <div [appTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
       </div>
       <div><div class="meta">Priority</div><div>{{ demo()?.priority }}</div></div>
       <div><div class="meta">Work order type</div><div>{{ demo()?.workOrderType }}</div></div>
@@ -54,81 +63,98 @@
       <div><div class="meta">Payment terms</div><div>{{ demo()?.paymentTerms }}</div></div>
       <div class="col-span-all">
         <div class="meta">Tags</div>
-        <span class="tag-list"><p-tag *ngFor="let t of j.tags" [value]="t" severity="info" /></span>
+        <span class="tag-list">
+          @for (t of j.tags; track t) { <span class="badge badge-info badge-sm">{{ t }}</span> }
+        </span>
       </div>
     </div>
 
     <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
-    <p-button [label]="showAudit() ? 'Show less' : 'Show more'"
-              [icon]="showAudit() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-              iconPos="right" severity="secondary" [text]="true" size="small"
-              styleClass="mt-sm" (onClick)="showAudit.set(!showAudit())" />
-    <div *ngIf="showAudit()" class="detail-grid inline mt-xs">
-      <div *ngFor="let f of auditFields()">
-        <div class="meta">{{ f.label }}</div><div>{{ f.value }}</div>
+    <button type="button" class="btn btn-ghost btn-sm mt-sm" (click)="showAudit.set(!showAudit())">
+      {{ showAudit() ? 'Show less' : 'Show more' }}
+      @if (showAudit()) { <svg lucideChevronUp class="size-4"></svg> } @else { <svg lucideChevronDown class="size-4"></svg> }
+    </button>
+    @if (showAudit()) {
+      <div class="detail-grid inline mt-xs">
+        @for (f of auditFields(); track f.label) {
+          <div><div class="meta">{{ f.label }}</div><div>{{ f.value }}</div></div>
+        }
       </div>
-    </div>
+    }
   </section>
 
   <!-- 3 ───────── Work Validation (applies across all stages) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-box"></i> Work validation</h3>
+    <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Work validation</h3>
     <p class="section-sub">Cross-stage record for the whole job</p>
 
     <div class="detail-grid mb-sm">
       <div>
         <div class="meta">Build / install</div>
-        <p-select [options]="workTypeOptions" optionLabel="label" optionValue="value"
-                  placeholder="Select" [showClear]="true" [disabled]="jobComplete()"
-                  [ngModel]="w.workType" (onChange)="setWorkType($event.value)"
-                  [style]="{ width: '100%' }" />
+        <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                [ngModel]="w.workType" (ngModelChange)="setWorkType($event)">
+          <option [ngValue]="null">Select</option>
+          @for (o of workTypeOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+        </select>
       </div>
       <div>
         <div class="meta">Condition code</div>
-        <p-select [options]="conditionOptions" optionLabel="label" optionValue="value"
-                  placeholder="None" [showClear]="true" [filter]="true" [disabled]="jobComplete()"
-                  [ngModel]="w.conditionCode" (onChange)="setConditionCode($event.value)"
-                  [style]="{ width: '100%' }" />
+        <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                [ngModel]="w.conditionCode" (ngModelChange)="setConditionCode($event)">
+          <option [ngValue]="''">None</option>
+          @for (o of conditionOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+        </select>
       </div>
       <div>
         <div class="meta">Number of conditions</div>
-        <input pInputText type="number" min="0" class="w-full" [disabled]="jobComplete()"
+        <input type="number" min="0" class="input input-bordered w-full" [disabled]="jobComplete()"
                [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
       </div>
       <!-- placeholder validation fields -->
-      <div><div class="meta">Labor hours</div><input pInputText class="w-full" [value]="demo()?.laborHours" disabled /></div>
-      <div><div class="meta">Warranty period</div><input pInputText class="w-full" [value]="demo()?.warrantyPeriod" disabled /></div>
-      <div><div class="meta">Disposal method</div><input pInputText class="w-full" [value]="demo()?.disposalMethod" disabled /></div>
-      <div><div class="meta">Follow-up required</div><input pInputText class="w-full" [value]="demo()?.followUp" disabled /></div>
+      <div><div class="meta">Labor hours</div><input class="input input-bordered w-full" [value]="demo()?.laborHours" disabled /></div>
+      <div><div class="meta">Warranty period</div><input class="input input-bordered w-full" [value]="demo()?.warrantyPeriod" disabled /></div>
+      <div><div class="meta">Disposal method</div><input class="input input-bordered w-full" [value]="demo()?.disposalMethod" disabled /></div>
+      <div><div class="meta">Follow-up required</div><input class="input input-bordered w-full" [value]="demo()?.followUp" disabled /></div>
     </div>
 
-    <p-table [value]="w.components" styleClass="p-datatable-sm" *ngIf="w.components.length">
-      <ng-template pTemplate="header">
-        <tr><th>Component</th><th>Part #</th><th class="w-5r">Qty</th><th class="w-3r"></th></tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-c>
-        <tr>
-          <td>{{ c.name }}</td>
-          <td>{{ c.partNumber || '—' }}</td>
-          <td>{{ c.quantity }}</td>
-          <td>
-            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
-                      [disabled]="jobComplete()" (onClick)="removeComponent(c.id)" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <div *ngIf="!w.components.length" class="meta mb-xs">No components recorded yet.</div>
+    @if (w.components.length) {
+      <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead><tr><th>Component</th><th>Part #</th><th class="w-5r">Qty</th><th class="w-3r"></th></tr></thead>
+        <tbody>
+          @for (c of w.components; track c.id) {
+            <tr>
+              <td>{{ c.name }}</td>
+              <td>{{ c.partNumber || '—' }}</td>
+              <td>{{ c.quantity }}</td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="jobComplete()"
+                        (click)="removeComponent(c.id)">
+                  <svg lucideTrash2 class="size-4"></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    } @else {
+      <div class="meta mb-xs">No components recorded yet.</div>
+    }
 
-    <div class="facet-row mb-0" *ngIf="!jobComplete()">
-      <input pInputText placeholder="Component name"
-             [ngModel]="newName()" (ngModelChange)="newName.set($event)" class="f-200" />
-      <input pInputText placeholder="Part # (optional)"
-             [ngModel]="newPart()" (ngModelChange)="newPart.set($event)" class="f-160" />
-      <input type="number" min="1" pInputText placeholder="Qty"
-             [ngModel]="newQty()" (ngModelChange)="newQty.set($event)" class="w-5r" />
-      <p-button label="Add" icon="pi pi-plus" [disabled]="!newName().trim()" (onClick)="addComponent()" />
-    </div>
+    @if (!jobComplete()) {
+      <div class="facet-row mb-0">
+        <input type="text" class="input input-bordered f-200" placeholder="Component name"
+               [ngModel]="newName()" (ngModelChange)="newName.set($event)" />
+        <input type="text" class="input input-bordered f-160" placeholder="Part # (optional)"
+               [ngModel]="newPart()" (ngModelChange)="newPart.set($event)" />
+        <input type="number" min="1" class="input input-bordered w-5r" placeholder="Qty"
+               [ngModel]="newQty()" (ngModelChange)="newQty.set($event)" />
+        <button type="button" class="btn btn-primary" [disabled]="!newName().trim()" (click)="addComponent()">
+          <svg lucidePlus class="size-4"></svg> Add
+        </button>
+      </div>
+    }
 
     <div class="field-block">
       <div class="meta">Validation notes</div>
@@ -139,69 +165,78 @@
     </div>
   </section>
 
-
-
   <!-- 5 ───────── Sign-off (current stage) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-verified"></i> Sign-off</h3>
+    <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Sign-off</h3>
 
-    <p-message *ngIf="jobComplete()" severity="success" icon="pi pi-verified" styleClass="mb-sm">
-      All stages signed — job complete<ng-container *ngIf="rejectedCount() as rc"> ({{ rc }} rejected)</ng-container>.
-    </p-message>
+    @if (jobComplete()) {
+      <div class="alert alert-success mb-sm">
+        <svg lucideBadgeCheck class="size-4"></svg>
+        <span>
+          All stages signed — job complete
+          @if (rejectedCount(); as rc) { ({{ rc }} rejected) }.
+        </span>
+      </div>
+    }
 
-    <ng-container *ngIf="w.stages[selectedStep()] as stage">
+    @if (w.stages[selectedStep()]; as stage) {
       <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
 
-          <div class="stage-inputs" *ngIf="visibleFields(stage).length">
-  <ng-container *ngFor="let f of visibleFields(stage)">
-        <span class="stage-field-break" *ngIf="startsGroup(stage, f)"></span>
-        <label class="stage-field">
-          <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-          <p-select *ngIf="f.type === 'select'; else textField"
-                    [options]="f.options || []" optionLabel="label" optionValue="value"
-                    [placeholder]="f.placeholder || 'Select'" [showClear]="true" appendTo="body"
-                    [disabled]="!inputsEditable(stage, selectedStep())" [ngModel]="stage.inputs[f.key]"
-                    (onChange)="stageSelectChange(stage, f, $event.value)" [style]="{ width: '100%' }" />
-          <ng-template #textField>
-            <input pInputText [type]="f.type === 'number' ? 'number' : 'text'"
-                   [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                   [ngModel]="stage.inputs[f.key]"
-                   (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-          </ng-template>
-        </label>
-        </ng-container>
-      </div>
+      @if (visibleFields(stage).length) {
+        <div class="stage-inputs">
+          @for (f of visibleFields(stage); track f.key) {
+            @if (startsGroup(stage, f)) { <span class="stage-field-break"></span> }
+            <label class="stage-field">
+              <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+              @if (f.type === 'select') {
+                <select class="select select-bordered select-sm" [disabled]="!inputsEditable(stage, selectedStep())"
+                        [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
+                  <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
+                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                </select>
+              } @else {
+                <input class="input input-bordered input-sm" [type]="f.type === 'number' ? 'number' : 'text'"
+                       [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                       [ngModel]="stage.inputs[f.key]"
+                       (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+              }
+            </label>
+          }
+        </div>
+      }
 
-      <ng-container *ngIf="stage.required; else optionalNote">
+      @if (stage.required) {
         <div class="detail-grid">
           <div>
             <div class="meta">Inspector name</div>
-            <input pInputText class="w-full" [disabled]="!editable(stage)"
+            <input class="input input-bordered w-full" [disabled]="!editable(stage)"
                    [ngModel]="stage.inspectorName" (blur)="blurStageInspector(stage, $any($event.target).value)" />
           </div>
           <div>
             <div class="meta">License #</div>
-            <input pInputText class="w-full" [disabled]="!editable(stage)"
+            <input class="input input-bordered w-full" [disabled]="!editable(stage)"
                    [ngModel]="stage.licenseNo" (blur)="blurStageLicense(stage, $any($event.target).value)" />
           </div>
           <div>
             <div class="meta">Decision <span class="req">*</span></div>
             <div class="result-radios">
-              <label *ngFor="let o of resultOptions">
-                <p-radioButton [name]="'result-' + stage.id" [value]="o.value" [disabled]="!editable(stage)"
-                               [ngModel]="stage.result" (ngModelChange)="setStageResult(stage, $event)" />
-                <span>{{ o.label }}</span>
-              </label>
+              @for (o of resultOptions; track o.value) {
+                <label>
+                  <input type="radio" class="radio radio-sm" [name]="'result-' + stage.id" [disabled]="!editable(stage)"
+                         [checked]="stage.result === o.value" (change)="setStageResult(stage, o.value)" />
+                  <span>{{ o.label }}</span>
+                </label>
+              }
             </div>
           </div>
           <!-- placeholder sign-off fields -->
-          <div><div class="meta">Inspection date</div><input pInputText class="w-full" [value]="j.scheduledFor | date:'mediumDate'" disabled /></div>
-          <div><div class="meta">Permit verified</div><input pInputText class="w-full" [value]="demo()?.permitVerified" disabled /></div>
-          <div><div class="meta">Test method</div><input pInputText class="w-full" [value]="demo()?.testMethod" disabled /></div>
-          <div><div class="meta">Crew size</div><input pInputText class="w-full" [value]="demo()?.crewSize" disabled /></div>
-          <div><div class="meta">Safety check</div><input pInputText class="w-full" [value]="demo()?.safetyCheck" disabled /></div>
-          <div><div class="meta">Rework needed</div><input pInputText class="w-full" [value]="demo()?.reworkNeeded" disabled /></div>
-          <div><div class="meta">Customer signature</div><input pInputText class="w-full" [value]="demo()?.customerSignature" disabled /></div>
+          <div><div class="meta">Inspection date</div><input class="input input-bordered w-full" [value]="j.scheduledFor | date:'mediumDate'" disabled /></div>
+          <div><div class="meta">Permit verified</div><input class="input input-bordered w-full" [value]="demo()?.permitVerified" disabled /></div>
+          <div><div class="meta">Test method</div><input class="input input-bordered w-full" [value]="demo()?.testMethod" disabled /></div>
+          <div><div class="meta">Crew size</div><input class="input input-bordered w-full" [value]="demo()?.crewSize" disabled /></div>
+          <div><div class="meta">Safety check</div><input class="input input-bordered w-full" [value]="demo()?.safetyCheck" disabled /></div>
+          <div><div class="meta">Rework needed</div><input class="input input-bordered w-full" [value]="demo()?.reworkNeeded" disabled /></div>
+          <div><div class="meta">Customer signature</div><input class="input input-bordered w-full" [value]="demo()?.customerSignature" disabled /></div>
           <div class="col-span-all">
             <div class="meta">Notes</div>
             <textarea rows="2" class="note-area" [disabled]="!editable(stage)"
@@ -210,56 +245,69 @@
         </div>
 
         <div class="signoff-actions">
-          <p-button *ngIf="!stage.signed" label="Sign &amp; lock" icon="pi pi-check-circle"
-                    [disabled]="!canSignStage(stage)" (onClick)="signStage(stage)" />
-          <ng-container *ngIf="stage.signed">
-            <p-tag [value]="(stage.result || '') | uppercase"
-                   [severity]="stage.result === 'reject' ? 'danger' : 'success'" />
+          @if (!stage.signed) {
+            <button type="button" class="btn btn-primary" [disabled]="!canSignStage(stage)" (click)="signStage(stage)">
+              <svg lucideCircleCheck class="size-4"></svg> Sign &amp; lock
+            </button>
+          } @else {
+            <span class="badge" [class.badge-error]="stage.result === 'reject'" [class.badge-success]="stage.result !== 'reject'">
+              {{ (stage.result || '') | uppercase }}
+            </span>
             <span class="meta">Signed by {{ stage.inspectorName || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
             <span class="spacer"></span>
-            <p-button *ngIf="canReopen(stage, selectedStep())" label="Re-open" icon="pi pi-lock-open"
-                      severity="secondary" [text]="true" (onClick)="reopenStage(stage)" />
-          </ng-container>
+            @if (canReopen(stage, selectedStep())) {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="reopenStage(stage)">
+                <svg lucideLockOpen class="size-4"></svg> Re-open
+              </button>
+            }
+          }
         </div>
-      </ng-container>
-      <ng-template #optionalNote>
+      } @else {
         <div class="meta">Optional stage — no sign-off required.</div>
-      </ng-template>
-    </ng-container>
+      }
+    }
   </section>
 
-
-   <!-- 3.5 ───────── Attachments ───────── -->
+  <!-- 3.5 ───────── Attachments ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><i class="pi pi-paperclip"></i> Attachments</h3>
+    <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> Attachments</h3>
     <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
 
-    <p-table [value]="w.attachments" styleClass="p-datatable-sm" *ngIf="w.attachments.length">
-      <ng-template pTemplate="header">
-        <tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-a>
-        <tr>
-          <td><i class="pi pi-file mr-xs"></i>{{ a.name }}</td>
-          <td>{{ a.addedBy }}</td>
-          <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
-          <td>
-            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true"
-                      [disabled]="jobComplete()" (onClick)="removeAttachment(a.id)" />
-          </td>
-        </tr>
-      </ng-template>
-    </p-table>
-    <div *ngIf="!w.attachments.length" class="meta mb-xs">No attachments yet.</div>
+    @if (w.attachments.length) {
+      <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead><tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr></thead>
+        <tbody>
+          @for (a of w.attachments; track a.id) {
+            <tr>
+              <td><svg lucideFile class="size-4 mr-xs inline"></svg>{{ a.name }}</td>
+              <td>{{ a.addedBy }}</td>
+              <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="jobComplete()"
+                        (click)="removeAttachment(a.id)">
+                  <svg lucideTrash2 class="size-4"></svg>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      </div>
+    } @else {
+      <div class="meta mb-xs">No attachments yet.</div>
+    }
 
-    <p-fileUpload #fu mode="basic" chooseLabel="Add files" chooseIcon="pi pi-paperclip"
-                  [multiple]="true" [auto]="true" customUpload
-                  [disabled]="jobComplete()" (uploadHandler)="addAttachments($event, fu)" />
-  </section> 
-</ng-container>
-</ng-container>
-</ng-container>
+    <input type="file" multiple class="file-input file-input-sm" [disabled]="jobComplete()"
+           (change)="addAttachments($event)" />
+  </section>
 
-<ng-template #notFound>
+} @else {
+  <div class="empty">Loading…</div>
+}
+} @else {
+  <div class="empty">Loading…</div>
+}
+} @else {
   <div class="empty">No job found for that id.</div>
-</ng-template>
+}

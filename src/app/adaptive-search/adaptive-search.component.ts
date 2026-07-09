@@ -1,23 +1,21 @@
 /* adaptive filters screen, schema-driven */
 //heavily custom
-import { Component, computed, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import {
+  LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
+  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck
+} from '@lucide/angular';
 
-import { TableModule } from 'primeng/table';
-import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
-import { CheckboxModule } from 'primeng/checkbox';
-import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { SelectModule } from 'primeng/select';
-import { SliderModule } from 'primeng/slider';
-import { DatePickerModule } from 'primeng/datepicker';
-import { RatingModule } from 'primeng/rating';
-import { TagModule } from 'primeng/tag';
-import { ChipModule } from 'primeng/chip';
-import { TooltipModule } from 'primeng/tooltip';
+import { TableState } from '../shared/table-state';
+import { TablePagerComponent } from '../shared/table-pager.component';
+import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
+import { DateRangeComponent } from '../shared/date-range.component';
+import { StarRatingComponent } from '../shared/star-rating.component';
+import { TooltipDirective } from '../shared/tooltip.directive';
+import { downloadCsv } from '../data/export-csv';
 
 import { JOBS, Job } from '../data/jobs';
 import {
@@ -35,37 +33,31 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    TableModule, ButtonModule, DialogModule, CheckboxModule, TooltipModule,
-    InputTextModule, MultiSelectModule, SelectModule,
-    SliderModule, DatePickerModule, RatingModule,
-    TagModule, ChipModule
+    TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent, StarRatingComponent,
+    TooltipDirective,
+    LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
+    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck
   ],
   templateUrl: './adaptive-search.component.html'
 })
 export class AdaptiveSearchComponent {
-  constructor(private router: Router, private wfService: WorkflowService) {}
+  private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
+
+  constructor(private router: Router, private wfService: WorkflowService) {
+    effect(() => this.table.setRows(this.filtered()));
+    effect(() => {
+      const open = this.showAdapt();
+      const el = this.adaptDlg()?.nativeElement;
+      if (!el) return;
+      if (open && !el.open) el.showModal();
+      if (!open && el.open) el.close();
+    });
+  }
 
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
 
-  /* columns for built-in p-table csv export */
-  exportColumns = [
-    { field: 'jobNumber',       header: 'Job #' },
-    { field: 'title',           header: 'Job' },
-    { field: 'trade',           header: 'Trade' },
-    { field: 'technician',      header: 'Technician' },
-    { field: 'estimatedCost',   header: 'Est. cost' },
-    { field: 'inspectionScore', header: 'Score' },
-    { field: 'tags',            header: 'Tags' }
-  ];
-
-  exportCell = (cell: { data: any; field: string }): string => {
-    switch (cell.field) {
-      case 'estimatedCost': return Number(cell.data).toFixed(2);
-      case 'tags':          return (cell.data as string[]).join('; ');
-      default:              return cell.data == null ? '' : String(cell.data);
-    }
-  };
+  table = new TableState<Job>(['jobNumber', 'title', 'trade', 'technician']);
 
   /* current workflow step label for a job */
   currentStep(job: Job): string {
@@ -204,6 +196,25 @@ export class AdaptiveSearchComponent {
   }
   valueOf(key: string): any { return this.values()[key]; }
 
+  rangeValue(key: string, field: Extract<FilterField, { type: 'range' }>): [number, number] {
+    return this.valueOf(key) ?? [field.min, field.max];
+  }
+  setRangeMin(key: string, field: Extract<FilterField, { type: 'range' }>, v: string) {
+    const [, hi] = this.rangeValue(key, field);
+    this.setValue(key, [v === '' ? field.min : Number(v), hi]);
+  }
+  setRangeMax(key: string, field: Extract<FilterField, { type: 'range' }>, v: string) {
+    const [lo] = this.rangeValue(key, field);
+    this.setValue(key, [lo, v === '' ? field.max : Number(v)]);
+  }
+
+  dateRangeValue(key: string): [Date | null, Date | null] {
+    return this.valueOf(key) ?? [null, null];
+  }
+  setDateRange(key: string, range: [Date | null, Date | null]) {
+    this.setValue(key, range[0] || range[1] ? range : null);
+  }
+
   clearOne(key: string) {
     const f = getField(key);
     if (!f) return;
@@ -227,6 +238,18 @@ export class AdaptiveSearchComponent {
         return `${f.label}: ${fmt(v[0])} – ${fmt(v[1])}`;
       }
     }
+  }
+
+  exportCsv() {
+    downloadCsv('adaptive-search', [
+      { header: 'Job #', value: (r: Job) => r.jobNumber },
+      { header: 'Job', value: (r: Job) => r.title },
+      { header: 'Trade', value: (r: Job) => r.trade },
+      { header: 'Technician', value: (r: Job) => r.technician },
+      { header: 'Est. cost', value: (r: Job) => Number(r.estimatedCost).toFixed(2) },
+      { header: 'Score', value: (r: Job) => r.inspectionScore },
+      { header: 'Tags', value: (r: Job) => r.tags.join('; ') }
+    ], this.table.sorted());
   }
 
   /* typed casts for discriminated fields */

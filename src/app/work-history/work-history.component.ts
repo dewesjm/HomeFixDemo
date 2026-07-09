@@ -1,17 +1,13 @@
 /* work history screen, activity log across jobs */
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory } from '@lucide/angular';
 
-import { TableModule } from 'primeng/table';
-import { SelectModule } from 'primeng/select';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
-import { TagModule } from 'primeng/tag';
-import { ButtonModule } from 'primeng/button';
+import { TableState, inArray } from '../shared/table-state';
+import { TablePagerComponent } from '../shared/table-pager.component';
+import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 
 import { JOBS, Job, TRADE_OPTIONS } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
@@ -31,8 +27,8 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    TableModule, SelectModule, MultiSelectModule, InputTextModule,
-    IconFieldModule, InputIconModule, TagModule, ButtonModule
+    TablePagerComponent, MultiselectDropdownComponent,
+    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory
   ],
   templateUrl: './work-history.component.html'
 })
@@ -45,17 +41,23 @@ export class WorkHistoryComponent {
   tradeOptions = TRADE_OPTIONS;
 
   person = signal<string | null>(null);
-  query = signal<string>('');
   /* job filter: job number or id */
   jobQuery = signal<string>('');
 
+  table = new TableState<ActivityRow>(
+    ['jobTitle', 'action', 'from', 'to', 'step'],
+    { trade: inArray }
+  );
+
   constructor() {
+    this.table.setPageSize(15);
     /* seed filters from url for deep links */
     this.route.queryParamMap.subscribe(pm => {
       this.jobQuery.set(pm.get('job') ?? '');
       this.person.set(pm.get('person'));
-      this.query.set(pm.get('q') ?? '');
+      this.table.setGlobalFilter(pm.get('q') ?? '');
     });
+    effect(() => this.table.setRows(this.preFiltered()));
   }
 
   /* people with a job or activity entry */
@@ -73,7 +75,7 @@ export class WorkHistoryComponent {
     const jq = this.jobQuery().trim();
     if (jq) {
       const match = JOBS.find(j => String(j.id) === jq || j.jobNumber.toLowerCase() === jq.toLowerCase());
-      parts.push(match ? match.title : `job “${jq}”`);
+      parts.push(match ? match.title : `job "${jq}"`);
     }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
@@ -109,21 +111,20 @@ export class WorkHistoryComponent {
     return rows.sort((a, b) => b.when.localeCompare(a.when));
   });
 
-  activity = computed<ActivityRow[]>(() => {
+  /* person + job pre-filters, applied before TableState's own sort/search/column filters */
+  private preFiltered = computed<ActivityRow[]>(() => {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
-    const q = this.query().trim().toLowerCase();
     return this.allActivity().filter(r =>
       (!jq || String(r.jobId) === jq || r.jobNumber.toLowerCase().includes(jq)) &&
-      (!p || r.who === p) &&
-      (!q || `${r.jobTitle} ${r.action} ${r.from ?? ''} ${r.to ?? ''} ${r.step}`.toLowerCase().includes(q))
+      (!p || r.who === p)
     );
   });
 
   clear() {
     this.person.set(null);
     this.jobQuery.set('');
-    this.query.set('');
+    this.table.clearFilters();
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 
@@ -132,15 +133,15 @@ export class WorkHistoryComponent {
     const who = this.person();
     const name = who ? `work-history-${who.replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';
     downloadCsv(name, [
-      { header: 'When',      value: r => new Date(r.when).toLocaleString() },
-      { header: 'Who',       value: r => r.who },
-      { header: 'Action',    value: r => r.action },
-      { header: 'Old value', value: r => r.from ?? '' },
-      { header: 'New value', value: r => r.to ?? '' },
-      { header: 'Step',      value: r => r.step },
-      { header: 'Job #',     value: r => r.jobId },
-      { header: 'Job',       value: r => r.jobTitle },
-      { header: 'Trade',     value: r => r.trade }
-    ], this.activity());
+      { header: 'When',      value: (r: ActivityRow) => new Date(r.when).toLocaleString() },
+      { header: 'Who',       value: (r: ActivityRow) => r.who },
+      { header: 'Action',    value: (r: ActivityRow) => r.action },
+      { header: 'Old value', value: (r: ActivityRow) => r.from ?? '' },
+      { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
+      { header: 'Step',      value: (r: ActivityRow) => r.step },
+      { header: 'Job #',     value: (r: ActivityRow) => r.jobId },
+      { header: 'Job',       value: (r: ActivityRow) => r.jobTitle },
+      { header: 'Trade',     value: (r: ActivityRow) => r.trade }
+    ], this.table.sorted());
   }
 }

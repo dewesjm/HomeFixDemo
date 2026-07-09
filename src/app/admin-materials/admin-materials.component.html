@@ -2,59 +2,71 @@
 <h2 class="section-title">Materials</h2>
 <p class="section-sub">Maintain the material list used by the "Material used" dropdown on the Build/install stage.</p>
 
-<p-table #dt [value]="rows" dataKey="id" editMode="row" styleClass="p-datatable-sm"
-         [globalFilterFields]="['name']" [columns]="exportColumns" exportFilename="materials">
-  <ng-template pTemplate="caption">
-    <div class="row">
-      <span class="fw-bold">Materials</span>
-      <span class="spacer"></span>
-      <p-iconfield iconPosition="left">
-        <p-inputicon class="pi pi-search" />
-        <input #gi pInputText type="text" placeholder="Search materials…"
-               (input)="dt.filterGlobal(gi.value, 'contains')" />
-      </p-iconfield>
-      <p-button label="Export" icon="pi pi-file-excel" size="small" severity="secondary"
-                (onClick)="dt.exportCSV()" />
-      <p-button label="Add material" icon="pi pi-plus" size="small" (onClick)="addRow()" />
-    </div>
-  </ng-template>
+<div class="facet-row">
+  <span class="fw-bold">Materials</span>
+  <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search materials…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+  </label>
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
+  </button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
+    <svg lucidePlus class="size-4"></svg> Add material
+  </button>
+</div>
 
-  <ng-template pTemplate="header">
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
     <tr>
-      <th pSortableColumn="name" class="min-w-14">
-        Material <p-sortIcon field="name" />
-        <p-columnFilter type="text" field="name" matchMode="contains" display="menu" />
+      <th class="min-w-14">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('name')">
+          Material {{ table.sortField() === 'name' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+        <input type="text" class="input input-xs input-bordered w-full mt-xs" placeholder="Filter…"
+               [ngModel]="table.columnFilters()['name'] ?? ''"
+               (ngModelChange)="table.setColumnFilter('name', $event)" />
       </th>
       <th class="min-w-11"></th>
     </tr>
-  </ng-template>
-
-  <ng-template pTemplate="body" let-row let-editing="editing" let-ri="rowIndex">
-    <tr [pEditableRow]="row">
-      <td pEditableColumn>
-        <p-cellEditor>
-          <ng-template pTemplate="input">
-            <input pInputText [(ngModel)]="row.name" class="w-full" placeholder="e.g. Red oak" />
-          </ng-template>
-          <ng-template pTemplate="output">{{ row.name || '—' }}</ng-template>
-        </p-cellEditor>
-      </td>
-      <td>
-        <div class="row-tight">
-          <button *ngIf="!editing" pButton pInitEditableRow type="button" icon="pi pi-pencil"
-                  [text]="true" severity="secondary" size="small" (click)="onRowEditInit(row)"></button>
-          <button *ngIf="editing" pButton pSaveEditableRow type="button" icon="pi pi-check"
-                  [text]="true" severity="success" size="small" (click)="onRowEditSave(row)"></button>
-          <button *ngIf="editing" pButton pCancelEditableRow type="button" icon="pi pi-times"
-                  [text]="true" severity="danger" size="small" (click)="onRowEditCancel(row, ri)"></button>
-          <button *ngIf="!editing" pButton type="button" icon="pi pi-trash"
-                  [text]="true" severity="danger" size="small" (click)="deleteRow(ri)"></button>
-        </div>
-      </td>
-    </tr>
-  </ng-template>
-
-  <ng-template pTemplate="emptymessage">
-    <tr><td colspan="2" class="empty">No materials defined.</td></tr>
-  </ng-template>
-</p-table>
+  </thead>
+  <tbody>
+    @for (row of visibleRows(); track row.id) {
+      <tr>
+        <td>
+          @if (editingId() === row.id) {
+            <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Red oak"
+                   [ngModel]="row.name" (ngModelChange)="updateField(row, $event)" />
+          } @else {
+            {{ row.name || '—' }}
+          }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() !== row.id) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs text-success" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="2" class="empty">No materials defined.</td></tr>
+    }
+  </tbody>
+</table>
+</div>

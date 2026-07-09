@@ -1,218 +1,240 @@
 <!-- Adaptive filters screen template (paired with adaptive-search.component.ts). -->
 <h2 class="section-title">Adaptive filter bar</h2>
-<p class="section-sub">
-  
-</p>
+<p class="section-sub"></p>
 
 <!-- Variant toolbar -->
 <div class="facet-row">
   <span class="fw-bold">Variant</span>
-  <p-button *ngFor="let v of variants()" [label]="v.name" size="small" severity="secondary"
-            (onClick)="applyVariant(v)" />
-  <p-button *ngFor="let v of variants()" icon="pi pi-times" size="small" severity="danger" [text]="true"
-            pTooltip="Delete variant"
-            (onClick)="deleteVariant(v.name)" />
+  @for (v of variants(); track v.name) {
+    <div class="join">
+      <button type="button" class="btn btn-sm btn-outline join-item" (click)="applyVariant(v)">{{ v.name }}</button>
+      <button type="button" class="btn btn-sm btn-outline join-item text-error" appTooltip="Delete variant"
+              (click)="deleteVariant(v.name)">
+        <svg lucideX class="size-4"></svg>
+      </button>
+    </div>
+  }
   <span class="spacer"></span>
-  <input pInputText placeholder="Variant name"
-         [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
-         [style.minWidth.px]="180" />
-  <p-button label="Save variant" icon="pi pi-save" size="small"
-            [disabled]="!variantName().trim()"
-            (onClick)="saveCurrentVariant()" />
+  <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="Variant name"
+         [ngModel]="variantName()" (ngModelChange)="variantName.set($event)" />
+  <button type="button" class="btn btn-sm btn-primary" [disabled]="!variantName().trim()"
+          (click)="saveCurrentVariant()">
+    <svg lucideSave class="size-4"></svg> Save variant
+  </button>
 </div>
 
 <!-- Dynamic filter bar -->
 <div class="facet-row">
-  <ng-container *ngFor="let f of visibleFields()">
+  @for (f of visibleFields(); track f.key) {
     <div class="field-col">
       <label class="field-label">
-        {{ f.label }} <span *ngIf="f.required" class="required-mark">*</span>
+        {{ f.label }} @if (f.required) { <span class="required-mark">*</span> }
       </label>
 
-      <ng-container [ngSwitch]="f.type">
-        <input *ngSwitchCase="'text'"
-               pInputText [placeholder]="'Contains…'"
-               [ngModel]="valueOf(f.key)"
-               (ngModelChange)="setValue(f.key, $event)" />
-
-        <p-multiselect *ngSwitchCase="'multiselect'"
-                       [options]="asMulti(f).options"
-                       optionLabel="label" optionValue="value"
-                       display="chip" placeholder="Any"
-                       [ngModel]="valueOf(f.key) || []"
-                       (ngModelChange)="setValue(f.key, $event)" />
-
-        <p-multiselect *ngSwitchCase="'tags'"
-                       [options]="asMulti(f).options"
-                       optionLabel="label" optionValue="value"
-                       display="chip" placeholder="Any tag"
-                       [ngModel]="valueOf(f.key) || []"
-                       (ngModelChange)="setValue(f.key, $event)" />
-
-        <p-select *ngSwitchCase="'select'"
-                  [options]="asMulti(f).options"
-                  optionLabel="label" optionValue="value"
-                  placeholder="Any" [showClear]="true"
-                  [ngModel]="valueOf(f.key)"
-                  (ngModelChange)="setValue(f.key, $event)" />
-
-        <ng-container *ngSwitchCase="'range'">
+      @switch (f.type) {
+        @case ('text') {
+          <input type="text" class="input input-sm input-bordered" placeholder="Contains…"
+                 [ngModel]="valueOf(f.key)" (ngModelChange)="setValue(f.key, $event)" />
+        }
+        @case ('multiselect') {
+          <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any"
+            [selected]="valueOf(f.key) || []" (selectedChange)="setValue(f.key, $event)" />
+        }
+        @case ('tags') {
+          <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any tag"
+            [selected]="valueOf(f.key) || []" (selectedChange)="setValue(f.key, $event)" />
+        }
+        @case ('select') {
+          <select class="select select-sm select-bordered"
+                  [ngModel]="valueOf(f.key)" (ngModelChange)="setValue(f.key, $event)">
+            <option [ngValue]="null">Any</option>
+            @for (o of asMulti(f).options; track o.value) {
+              <option [ngValue]="o.value">{{ o.label }}</option>
+            }
+          </select>
+        }
+        @case ('range') {
           <div class="range-value">
-            {{ (valueOf(f.key) || [])[0] ?? asRange(f).min }} –
-            {{ (valueOf(f.key) || [])[1] ?? asRange(f).max }}
+            {{ rangeValue(f.key, asRange(f))[0] }} – {{ rangeValue(f.key, asRange(f))[1] }}
           </div>
-          <p-slider [range]="true"
-                    [min]="asRange(f).min" [max]="asRange(f).max"
-                    [ngModel]="valueOf(f.key) || [asRange(f).min, asRange(f).max]"
-                    (ngModelChange)="setValue(f.key, $event)"
-                    [style]="{ width: '12rem' }" />
-        </ng-container>
-
-        <p-rating *ngSwitchCase="'rating'"
-                  [ngModel]="valueOf(f.key) || 0"
-                  (ngModelChange)="setValue(f.key, $event)" />
-
-        <p-datepicker *ngSwitchCase="'daterange'"
-                      selectionMode="range" [readonlyInput]="true"
-                      placeholder="Pick range" appendTo="body"
-                      [ngModel]="valueOf(f.key)"
-                      (ngModelChange)="setValue(f.key, $event)" />
-      </ng-container>
+          <div class="row-tight">
+            <input type="number" class="input input-xs input-bordered w-20" placeholder="Min"
+                   [ngModel]="rangeValue(f.key, asRange(f))[0]"
+                   (ngModelChange)="setRangeMin(f.key, asRange(f), $event)" />
+            <input type="number" class="input input-xs input-bordered w-20" placeholder="Max"
+                   [ngModel]="rangeValue(f.key, asRange(f))[1]"
+                   (ngModelChange)="setRangeMax(f.key, asRange(f), $event)" />
+          </div>
+        }
+        @case ('rating') {
+          <app-star-rating [value]="valueOf(f.key) || 0" (valueChange)="setValue(f.key, $event)" />
+        }
+        @case ('daterange') {
+          <app-date-range [from]="dateRangeValue(f.key)[0]" [to]="dateRangeValue(f.key)[1]"
+            (rangeChange)="setDateRange(f.key, $event)" />
+        }
+      }
     </div>
-  </ng-container>
+  }
 
   <span class="spacer"></span>
-  <p-button label="Adapt filters" icon="pi pi-sliders-h" severity="secondary"
-            (onClick)="openAdapt()" />
-  <p-button label="Reset" icon="pi pi-filter-slash" severity="secondary" [text]="true"
-            (onClick)="resetAll()" />
+  <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
+    <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
+  </button>
+  <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
+    <svg lucideListFilter class="size-4"></svg> Reset
+  </button>
 </div>
 
 <!-- Active facet chips -->
-<div *ngIf="activeChips().length" class="chip-row">
-  <p-chip
-    *ngFor="let c of activeChips()"
-    [label]="c.label"
-    [removable]="true"
-    (onRemove)="c.clear()" />
-</div>
+@if (activeChips().length) {
+  <div class="chip-row">
+    @for (c of activeChips(); track c.label) {
+      <span class="badge badge-outline gap-1">
+        {{ c.label }}
+        <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="c.clear()">
+          <svg lucideX class="size-3"></svg>
+        </button>
+      </span>
+    }
+  </div>
+}
 
 <!-- Results -->
-<p-table
-  #dt
-  [value]="filtered()"
-  dataKey="id"
-  [rows]="10"
-  [rowsPerPageOptions]="[10, 25, 50, 100]"
-  [paginator]="true"
-  [columns]="exportColumns"
-  [exportFunction]="exportCell"
-  exportFilename="adaptive-search"
-  [showCurrentPageReport]="true"
-  currentPageReportTemplate="Showing {first} to {last} of {totalRecords}"
-  sortMode="multiple"
-  [resizableColumns]="true"
-  [scrollable]="true"
-  styleClass="p-datatable-sm"
->
-  <ng-template pTemplate="caption">
-    <div class="row">
-      <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} jobs match</span>
-      <span class="spacer"></span>
-      <p-button label="Export to Excel" icon="pi pi-file-excel" severity="secondary"
-                (onClick)="dt.exportCSV()" />
-    </div>
-  </ng-template>
+<div class="row mb-sm">
+  <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} jobs match</span>
+  <span class="spacer"></span>
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
+  </button>
+</div>
 
-  <ng-template pTemplate="header">
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
     <tr>
-      <th pSortableColumn="jobNumber" class="min-w-8">Job # <p-sortIcon field="jobNumber" /></th>
-      <th pSortableColumn="title" class="min-w-14">Job <p-sortIcon field="title" /></th>
-      <th pSortableColumn="trade" class="min-w-12">Trade <p-sortIcon field="trade" /></th>
-      <th pSortableColumn="technician" class="min-w-11">Technician <p-sortIcon field="technician" /></th>
-      <th pSortableColumn="estimatedCost" class="min-w-13">Est. cost <p-sortIcon field="estimatedCost" /></th>
-      <th pSortableColumn="inspectionScore" class="min-w-11">Score <p-sortIcon field="inspectionScore" /></th>
+      <th class="min-w-8">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
+          Job # {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-14">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('title')">
+          Job {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-12">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
+          Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-11">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('technician')">
+          Technician {{ table.sortField() === 'technician' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-13">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('estimatedCost')">
+          Est. cost {{ table.sortField() === 'estimatedCost' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-11">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('inspectionScore')">
+          Score {{ table.sortField() === 'inspectionScore' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
       <th class="min-w-13">Current step</th>
       <th class="min-w-11">Tags</th>
-      <th pFrozenColumn alignFrozen="right" class="min-w-8">Actions</th>
+      <th class="min-w-8 sticky right-0 bg-base-100">Actions</th>
     </tr>
-  </ng-template>
+  </thead>
+  <tbody>
+    @for (job of table.paged(); track job.id) {
+      <tr>
+        <td class="mono">{{ job.jobNumber }}</td>
+        <td>{{ job.title }}</td>
+        <td>{{ job.trade }}</td>
+        <td>{{ job.technician }}</td>
+        <td>{{ job.estimatedCost | currency:'USD' }}</td>
+        <td><app-star-rating [value]="job.inspectionScore" [readonly]="true" /></td>
+        <td>{{ currentStep(job) }}</td>
+        <td>
+          <span class="tag-list">
+            @for (t of job.tags; track t) {
+              <span class="badge badge-info badge-sm">{{ t }}</span>
+            }
+          </span>
+        </td>
+        <td class="sticky right-0 bg-base-100">
+          <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(job)">
+            <svg lucideArrowUpRight class="size-4"></svg> Details
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="9" class="empty">No jobs match. Try clearing some filters.</td></tr>
+    }
+  </tbody>
+</table>
+</div>
 
-  <ng-template pTemplate="body" let-job>
-    <tr>
-      <td class="mono">{{ job.jobNumber }}</td>
-      <td>{{ job.title }}</td>
-      <td>{{ job.trade }}</td>
-      <td>{{ job.technician }}</td>
-      <td>{{ job.estimatedCost | currency:'USD' }}</td>
-      <td><p-rating [ngModel]="job.inspectionScore" [readonly]="true" /></td>
-      <td>{{ currentStep(job) }}</td>
-      <td>
-        <span class="tag-list">
-          <p-tag *ngFor="let t of job.tags" [value]="t" severity="info" />
-        </span>
-      </td>
-      <td pFrozenColumn alignFrozen="right">
-        <p-button icon="pi pi-arrow-up-right" label="Details" size="small"
-                  (onClick)="openDetails(job)" />
-      </td>
-    </tr>
-  </ng-template>
-
-  <ng-template pTemplate="emptymessage">
-    <tr><td colspan="9" class="empty">No jobs match. Try clearing some filters.</td></tr>
-  </ng-template>
-</p-table>
+<app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
 
 <!-- Adapt Filters dialog -->
-<p-dialog header="Adapt filters"
-          [visible]="showAdapt()"
-          (visibleChange)="showAdapt.set($event)"
-          [modal]="true"
-          [style]="{ width: '720px' }"
-          [closable]="true"
-          [draggable]="false">
-  <p class="dialog-hint">
-    Check the fields you want in the bar. Required fields stay on.
-  </p>
+<dialog #adaptDlg class="modal">
+  @if (showAdapt()) {
+    <div class="modal-box max-w-3xl">
+      <h3 class="text-lg font-semibold mb-2">Adapt filters</h3>
+      <p class="dialog-hint">
+        Check the fields you want in the bar. Required fields stay on.
+      </p>
 
-  <div class="row mb-sm">
-    <input pInputText placeholder="Filter fields…"
-           [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)"
-           class="flex-1" />
-    <p-button label="Select all" size="small" severity="secondary" [text]="true"
-              (onClick)="selectAll(true)" />
-    <p-button label="Clear" size="small" severity="secondary" [text]="true"
-              (onClick)="selectAll(false)" />
-  </div>
-
-  <div class="field-scroll">
-    <div *ngFor="let g of groupedSchema()" class="mb-md">
-      <div class="group-head">
-        <span class="fw-bold">{{ g.group }}</span>
-        <span class="spacer"></span>
-        <p-button label="all" [text]="true" size="small" (onClick)="selectGroup(g.group, true)" />
-        <p-button label="none" [text]="true" size="small" (onClick)="selectGroup(g.group, false)" />
+      <div class="row mb-sm">
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Filter fields…"
+               [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)" />
+        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(true)">Select all</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(false)">Clear</button>
       </div>
 
-      <div class="field-grid">
-        <label *ngFor="let f of g.items" class="field-check">
-          <p-checkbox
-            [binary]="true"
-            [disabled]="!!f.required"
-            [ngModel]="isDraftSelected(f.key)"
-            (ngModelChange)="toggleDraft(f.key, $event)" />
-          <span>{{ f.label }}</span>
-          <span *ngIf="f.required" class="required-tag">required</span>
-        </label>
+      <div class="field-scroll">
+        @for (g of groupedSchema(); track g.group) {
+          <div class="mb-md">
+            <div class="group-head">
+              <span class="fw-bold">{{ g.group }}</span>
+              <span class="spacer"></span>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="selectGroup(g.group, true)">all</button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="selectGroup(g.group, false)">none</button>
+            </div>
+
+            <div class="field-grid">
+              @for (f of g.items; track f.key) {
+                <label class="field-check">
+                  <input type="checkbox" class="checkbox checkbox-sm"
+                         [disabled]="!!f.required"
+                         [checked]="isDraftSelected(f.key)"
+                         (change)="toggleDraft(f.key, $any($event.target).checked)" />
+                  <span>{{ f.label }}</span>
+                  @if (f.required) { <span class="required-tag">required</span> }
+                </label>
+              }
+            </div>
+          </div>
+        }
+
+        @if (!groupedSchema().length) {
+          <div class="empty">No fields match "{{ adaptFilter() }}".</div>
+        }
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="showAdapt.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="applyAdapt()">
+          <svg lucideCheck class="size-4"></svg> Apply
+        </button>
       </div>
     </div>
-
-    <div *ngIf="!groupedSchema().length" class="empty">No fields match “{{ adaptFilter() }}”.</div>
-  </div>
-
-  <ng-template pTemplate="footer">
-    <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="showAdapt.set(false)" />
-    <p-button label="Apply" icon="pi pi-check" (onClick)="applyAdapt()" />
-  </ng-template>
-</p-dialog>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="showAdapt.set(false)">close</button>
+    </form>
+  }
+</dialog>

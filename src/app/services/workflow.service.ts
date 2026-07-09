@@ -1,6 +1,6 @@
 /* state for each job's workflow; mutations log history + persist */
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
-import { MessageService } from 'primeng/api';
+import { ToastService } from '../shared/toast.service';
 import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
@@ -18,7 +18,7 @@ const LS_KEY = 'homefix:workflows:v2';
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
   private sync = inject(SyncService);
-  private messages = inject(MessageService);
+  private messages = inject(ToastService);
   private store = new Map<number, WritableSignal<JobWorkflow>>();
   private persisted: Record<number, JobWorkflow> = this.load();
   private seq = Date.now();

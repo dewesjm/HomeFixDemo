@@ -1,17 +1,66 @@
 <!-- App shell: sidebar (menu, sync status, theme) on the left; routed page on the right. -->
-<p-toast />
-<p-confirmdialog />
+<app-toast-host />
+<app-confirm-dialog />
 <div class="layout" [class.collapsed]="collapsed()">
   <aside class="sidebar">
     <h1>HomeFix</h1>
-    <p-panelMenu [model]="menu" styleClass="w-full" />
+    <ul class="menu w-full gap-0.5">
+      <li>
+        <a routerLink="/table" routerLinkActive="menu-active">
+          <svg lucideTable class="size-4"></svg> Jobs
+        </a>
+      </li>
+      <li>
+        <a routerLink="/history" routerLinkActive="menu-active">
+          <svg lucideHistory class="size-4"></svg> History
+        </a>
+      </li>
+      <li>
+        <a routerLink="/adaptive" routerLinkActive="menu-active">
+          <svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search
+        </a>
+      </li>
+      <li>
+        <details [open]="adminOpen()" (toggle)="adminOpen.set($any($event.target).open)">
+          <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+          <ul>
+            <li>
+              <a routerLink="/admin/steps" routerLinkActive="menu-active">
+                <svg lucideWorkflow class="size-4"></svg> Steps
+              </a>
+            </li>
+            <li>
+              <a routerLink="/admin/characteristics" routerLinkActive="menu-active">
+                <svg lucideTag class="size-4"></svg> Characteristic codes
+              </a>
+            </li>
+            <li>
+              <a routerLink="/admin/conditions" routerLinkActive="menu-active">
+                <svg lucideTriangleAlert class="size-4"></svg> Condition codes
+              </a>
+            </li>
+            <li>
+              <a routerLink="/admin/materials" routerLinkActive="menu-active">
+                <svg lucideBox class="size-4"></svg> Materials
+              </a>
+            </li>
+            <li>
+              <a routerLink="/admin/set-step" routerLinkActive="menu-active">
+                <svg lucideStepForward class="size-4"></svg> Set step
+              </a>
+            </li>
+          </ul>
+        </details>
+      </li>
+    </ul>
     <app-theme-picker />
   </aside>
 
   <main class="content">
     <app-sync-status class="content-sync" />
-    <p-button class="menu-toggle" icon="pi pi-bars" severity="secondary" [text]="true"
-              ariaLabel="Toggle menu" (onClick)="toggle()" />
+    <button type="button" class="btn btn-ghost btn-sm menu-toggle" aria-label="Toggle menu" (click)="toggle()">
+      <svg lucideMenu class="size-4"></svg>
+    </button>
     <div class="content-body">
       <router-outlet />
     </div>
@@ -19,8 +68,11 @@
 </div>
 
 @if (updateReady()) {
-  <p-message severity="info" icon="pi pi-arrow-circle-up" styleClass="update-banner">
+  <div class="alert alert-info update-banner">
+    <svg lucideCircleArrowUp class="size-4"></svg>
     <span>A new version is available.</span>
-    <p-button label="Reload" icon="pi pi-refresh" size="small" (onClick)="reloadForUpdate()" />
-  </p-message>
+    <button type="button" class="btn btn-sm btn-primary" (click)="reloadForUpdate()">
+      <svg lucideRefreshCw class="size-4"></svg> Reload
+    </button>
+  </div>
 }
