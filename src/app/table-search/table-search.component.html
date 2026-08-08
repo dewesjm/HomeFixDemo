@@ -33,68 +33,84 @@
   <thead>
     <tr>
       <th class="min-w-8">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-          Job # {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <input type="text" class="input input-xs input-bordered w-full mt-xs" placeholder="Filter…"
-               [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
-               (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
+            Job # {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+                 [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
+                 (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
+        </div>
       </th>
       <th class="min-w-14">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('title')">
-          Job {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <input type="text" class="input input-xs input-bordered w-full mt-xs" placeholder="Filter…"
-               [ngModel]="table.columnFilters()['title'] ?? ''"
-               (ngModelChange)="table.setColumnFilter('title', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('title')">
+            Job {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+                 [ngModel]="table.columnFilters()['title'] ?? ''"
+                 (ngModelChange)="table.setColumnFilter('title', $event)" />
+        </div>
       </th>
       <th class="min-w-12">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
-          Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <app-multiselect-dropdown class="block mt-xs" [options]="tradeOptions"
-          [selected]="table.columnFilters()['trade'] ?? []"
-          (selectedChange)="table.setColumnFilter('trade', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
+            Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
+            [selected]="table.columnFilters()['trade'] ?? []"
+            (selectedChange)="table.setColumnFilter('trade', $event)" />
+        </div>
       </th>
       <th class="min-w-11">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('technician')">
-          Technician {{ table.sortField() === 'technician' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <app-multiselect-dropdown class="block mt-xs" [options]="technicianOptions"
-          [selected]="table.columnFilters()['technician'] ?? []"
-          (selectedChange)="table.setColumnFilter('technician', $event)" />
-      </th>
-      <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('estimatedCost')">
-          Est. cost {{ table.sortField() === 'estimatedCost' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <div class="row-tight mt-xs">
-          <input type="number" class="input input-xs input-bordered w-16" placeholder="Min"
-                 [ngModel]="costMin()" (ngModelChange)="setCostRange($event, costMax())" />
-          <input type="number" class="input input-xs input-bordered w-16" placeholder="Max"
-                 [ngModel]="costMax()" (ngModelChange)="setCostRange(costMin(), $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('technician')">
+            Technician {{ table.sortField() === 'technician' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="technicianOptions"
+            [selected]="table.columnFilters()['technician'] ?? []"
+            (selectedChange)="table.setColumnFilter('technician', $event)" />
         </div>
       </th>
       <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('currentStep')">
-          Current step {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <app-multiselect-dropdown class="block mt-xs" [options]="stepOptions()"
-          [selected]="table.columnFilters()['currentStep'] ?? []"
-          (selectedChange)="table.setColumnFilter('currentStep', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('estimatedCost')">
+            Est. cost {{ table.sortField() === 'estimatedCost' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <div class="row-tight">
+            <input type="number" class="input input-xs input-bordered w-16 min-w-0" placeholder="Min"
+                   [ngModel]="costMin()" (ngModelChange)="setCostRange($event, costMax())" />
+            <input type="number" class="input input-xs input-bordered w-16 min-w-0" placeholder="Max"
+                   [ngModel]="costMax()" (ngModelChange)="setCostRange(costMin(), $event)" />
+          </div>
+        </div>
       </th>
       <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('scheduledFor')">
-          Scheduled {{ table.sortField() === 'scheduledFor' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <app-date-range class="block mt-xs" [from]="scheduledFrom()" [to]="scheduledTo()"
-          (rangeChange)="setScheduledRange($event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('currentStep')">
+            Current step {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="stepOptions()"
+            [selected]="table.columnFilters()['currentStep'] ?? []"
+            (selectedChange)="table.setColumnFilter('currentStep', $event)" />
+        </div>
+      </th>
+      <th class="min-w-13">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('scheduledFor')">
+            Scheduled {{ table.sortField() === 'scheduledFor' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-date-range class="block w-full min-w-0" [from]="scheduledFrom()" [to]="scheduledTo()"
+            (rangeChange)="setScheduledRange($event)" />
+        </div>
       </th>
       <th class="min-w-11">
-        Tags
-        <app-multiselect-dropdown class="block mt-xs" [options]="tagOptions"
-          [selected]="table.columnFilters()['tags'] ?? []"
-          (selectedChange)="table.setColumnFilter('tags', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          Tags
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tagOptions"
+            [selected]="table.columnFilters()['tags'] ?? []"
+            (selectedChange)="table.setColumnFilter('tags', $event)" />
+        </div>
       </th>
       <th class="min-w-12 sticky right-0 bg-base-100">Actions</th>
     </tr>

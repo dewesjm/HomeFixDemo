@@ -10,8 +10,8 @@ export interface SelectOption<T = string> {
   selector: 'app-multiselect-dropdown',
   standalone: true,
   template: `
-    <div class="dropdown">
-      <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full justify-between font-normal">
+    <div class="dropdown w-full min-w-0">
+      <div tabindex="0" role="button" class="btn btn-sm btn-outline w-full min-w-0 justify-between font-normal">
         <span class="truncate">{{ summary() }}</span>
         <span class="opacity-60">▾</span>
       </div>

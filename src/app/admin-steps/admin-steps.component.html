@@ -28,12 +28,14 @@
         </a>
       </th>
       <th class="min-w-12">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
-          Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-        <app-multiselect-dropdown class="block mt-xs" [options]="tradeOptions"
-          [selected]="table.columnFilters()['trade'] ?? []"
-          (selectedChange)="table.setColumnFilter('trade', $event)" />
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
+            Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
+            [selected]="table.columnFilters()['trade'] ?? []"
+            (selectedChange)="table.setColumnFilter('trade', $event)" />
+        </div>
       </th>
       <th class="min-w-11"></th>
     </tr>
@@ -43,7 +45,7 @@
       <tr>
         <td>
           @if (editingId() === row.id) {
-            <input type="text" class="input input-sm input-bordered w-full" placeholder="Step name"
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Step name"
                    [ngModel]="row.step" (ngModelChange)="updateField(row, 'step', $event)" />
           } @else {
             {{ row.step || '—' }}
@@ -51,7 +53,7 @@
         </td>
         <td>
           @if (editingId() === row.id) {
-            <select class="select select-sm select-bordered w-full"
+            <select class="select select-sm select-bordered w-full min-w-0"
                     [ngModel]="row.trade" (ngModelChange)="updateField(row, 'trade', $event)">
               @for (o of tradeOptions; track o.value) {
                 <option [ngValue]="o.value">{{ o.label }}</option>
