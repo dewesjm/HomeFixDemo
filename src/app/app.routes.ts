@@ -10,6 +10,7 @@ import { AdminConditionsComponent } from './admin-conditions/admin-conditions.co
 import { AdminMaterialsComponent } from './admin-materials/admin-materials.component';
 import { AdminSetStepComponent } from './admin-set-step/admin-set-step.component';
 
+
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'table' },
   { path: 'table', component: TableSearchComponent, title: 'Job Search' },
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'admin/conditions', component: AdminConditionsComponent, title: 'Condition Codes' },
   { path: 'admin/materials', component: AdminMaterialsComponent, title: 'Materials' },
   { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Step' },
+
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Job Details' },
   { path: '**', redirectTo: 'table' }
 ];

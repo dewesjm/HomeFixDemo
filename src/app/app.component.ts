@@ -11,7 +11,8 @@ import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-  LucideTriangleAlert, LucideBox, LucideStepForward, LucideMenu, LucideCircleArrowUp, LucideRefreshCw
+  LucideTriangleAlert, LucideBox, LucideStepForward, LucideMenu, LucideCircleArrowUp, LucideRefreshCw,
+  LucideFlaskConical
 } from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
@@ -25,7 +26,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
     LucideMenu, LucideCircleArrowUp, LucideRefreshCw,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-    LucideTriangleAlert, LucideBox, LucideStepForward
+    LucideTriangleAlert, LucideBox, LucideStepForward, LucideFlaskConical
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
