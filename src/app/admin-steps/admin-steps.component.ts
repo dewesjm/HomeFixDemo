@@ -144,7 +144,7 @@ export class AdminStepsComponent {
   addRow() {
     const trade = this.tradeOptions()[0]?.value ?? 'HVAC';
     const maxSeq = Math.max(0, ...this.rows().filter(r => r.trade === trade).map(r => r.sequence));
-    const newId = `custom-${++this.seq}`;
+    const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     const row: StepRow = { id: fullId, step: '', trade, sequence: maxSeq + 1, rejectToStage: '' };
     this.rows.update(r => [...r, row]);
