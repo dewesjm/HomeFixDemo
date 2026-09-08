@@ -235,11 +235,10 @@ export class WorkflowService {
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
 
-      /* routeTo override: on accept, re-open stages between current and target so workflow jumps there */
-      if ((st.routeTo || st.swapStageId) && st.result === 'accept') {
-        const target = st.routeTo || st.swapStageId;
+      /* swapStageId override: on accept, re-open stages between current and swapped target */
+      if (st.swapStageId && st.result === 'accept') {
         const currentIdx = stages.findIndex(s => s.id === stageId);
-        const targetIdx = stages.findIndex(s => s.id === target);
+        const targetIdx = stages.findIndex(s => s.id === st.swapStageId);
         if (targetIdx > currentIdx) {
           for (let i = currentIdx + 1; i < targetIdx; i++) {
             if (stages[i].signed) {

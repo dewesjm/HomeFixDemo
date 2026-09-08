@@ -170,17 +170,11 @@ export class JobDetailComponent {
       });
   }
 
-  remainingStages(stage: WorkflowStage): { label: string; value: string }[] {
-    if (!this.wf) return [];
-    const stages = this.wf().stages;
-    const idx = stages.findIndex(s => s.id === stage.id);
-    return stages.slice(idx + 1).map(s => ({ label: s.label, value: s.id }));
-  }
-  updateRouteTo(stage: WorkflowStage, value: string) {
-    if (!this.wf) return;
+  updateStepType(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
     this.wf.update(wf => ({
       ...wf,
-      stages: wf.stages.map(s => s.id === stage.id ? { ...s, routeTo: value } : s)
+      stages: wf.stages.map(s => s.id === stage.id ? { ...s, stepType: value } : s)
     }));
   }
 
@@ -287,34 +281,19 @@ export class JobDetailComponent {
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
     const decision = (stage.result ?? '').toUpperCase();
-    const routeNote = stage.routeTo
-      ? ` Will jump to "${this.wf?.().stages.find(s => s.id === stage.routeTo)?.label ?? stage.routeTo}".`
-      : '';
     const stepNote = stage.repeatable && stage.stepType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${routeNote}${stepNote}`,
+      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${stepNote}`,
       acceptLabel: 'Sign & lock',
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);
-        const jumpTo = stage.routeTo || stage.swapStageId;
-        if (jumpTo && stage.result === 'accept') {
-          const targetIdx = this.wf?.().stages.findIndex(s => s.id === jumpTo) ?? -1;
-          if (targetIdx >= 0) { this.selectedStep.set(targetIdx); return; }
-        }
         this.selectedStep.set(this.indexOfActive());
       }
     });
-  }
-  updateStepType(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map(s => s.id === stage.id ? { ...s, stepType: value } : s)
-    }));
   }
   reopenStage(stage: WorkflowStage) {
     if (!this.job) return;
