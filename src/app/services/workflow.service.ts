@@ -209,13 +209,27 @@ export class WorkflowService {
     this.persist();
   }
 
-  /* lock a stage's sign-off and advance */
+  /* lock a stage's sign-off and advance (or route back on reject) */
   signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
       const stages = wf.stages.map(s =>
         s.id === stageId ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
+
+      /* on reject: re-open stages from the reject target up to (not including) this stage */
+      if (st.result === 'reject' && st.rejectToStage) {
+        const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
+        const currentIdx = stages.findIndex(s => s.id === stageId);
+        if (targetIdx >= 0 && targetIdx < currentIdx) {
+          for (let i = targetIdx; i < currentIdx; i++) {
+            if (stages[i].signed) {
+              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
+            }
+          }
+        }
+      }
+
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
@@ -325,6 +339,7 @@ export class WorkflowService {
           delete old.licenseNo;
           delete old.notes;
           s.result ??= null;
+          s.rejectToStage ??= '';
           s.signed ??= false;
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed

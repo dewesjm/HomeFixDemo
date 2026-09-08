@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
-  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck
+  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3
 } from '@lucide/angular';
 
 import { TableState } from '../shared/table-state';
@@ -28,6 +28,43 @@ import { currentStepLabel } from '../data/workflow';
 
 const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
 
+/* ── Result column definitions ── */
+export interface ResultColumn {
+  key: string;
+  label: string;
+  field?: keyof Job;
+  sortField?: string;
+  width?: string;
+}
+
+const ALL_COLUMNS: ResultColumn[] = [
+  { key: 'jobNumber',       label: 'Job #',         field: 'jobNumber',       sortField: 'jobNumber',       width: 'min-w-8' },
+  { key: 'title',           label: 'Job',           field: 'title',           sortField: 'title',           width: 'min-w-14' },
+  { key: 'trade',           label: 'Trade',         field: 'trade',           sortField: 'trade',           width: 'min-w-12' },
+  { key: 'technician',      label: 'Technician',    field: 'technician',      sortField: 'technician',      width: 'min-w-11' },
+  { key: 'make',            label: 'Make',          field: 'make',            sortField: 'make',            width: 'min-w-12' },
+  { key: 'model',           label: 'Model',         field: 'model',           sortField: 'model',           width: 'min-w-12' },
+  { key: 'estimatedCost',   label: 'Est. cost',     field: 'estimatedCost',   sortField: 'estimatedCost',   width: 'min-w-13' },
+  { key: 'estimatedHours',  label: 'Est. hours',    field: 'estimatedHours',  sortField: 'estimatedHours',  width: 'min-w-10' },
+  { key: 'inspectionScore', label: 'Score',         field: 'inspectionScore', sortField: 'inspectionScore', width: 'min-w-11' },
+  { key: 'scheduledFor',    label: 'Scheduled',     field: 'scheduledFor',    sortField: 'scheduledFor',    width: 'min-w-13' },
+  { key: 'currentStep',     label: 'Current step',                                          width: 'min-w-13' },
+  { key: 'tags',            label: 'Tags',                                                             width: 'min-w-11' },
+];
+
+const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'trade', 'technician', 'estimatedCost', 'inspectionScore', 'currentStep', 'tags'];
+const COLUMNS_LS_KEY = 'pn-demo:result-columns';
+
+function loadColumnKeys(): string[] {
+  try {
+    const raw = localStorage.getItem(COLUMNS_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_COLUMN_KEYS;
+  } catch { return DEFAULT_COLUMN_KEYS; }
+}
+function saveColumnKeys(keys: string[]) {
+  try { localStorage.setItem(COLUMNS_LS_KEY, JSON.stringify(keys)); } catch { /* */ }
+}
+
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
@@ -36,7 +73,7 @@ const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent, StarRatingComponent,
     TooltipDirective,
     LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
-    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck
+    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3
   ],
   templateUrl: './adaptive-search.component.html'
 })
@@ -188,6 +225,44 @@ export class AdaptiveSearchComponent {
     const merged = this.variants().filter(v => v.name !== name);
     this.variants.set(merged);
     saveVariants(merged);
+  }
+
+  // --- Column picker (results grid) ---
+  allColumns = ALL_COLUMNS;
+  visibleColumnKeys = signal<string[]>(loadColumnKeys());
+  visibleColumns = computed<ResultColumn[]>(() =>
+    this.visibleColumnKeys().map(k => ALL_COLUMNS.find(c => c.key === k)).filter((c): c is ResultColumn => !!c)
+  );
+
+  showColPicker = signal(false);
+  draftColKeys = signal<Set<string>>(new Set());
+  colFilter = signal<string>('');
+
+  groupedColumns = computed(() => {
+    const q = this.colFilter().trim().toLowerCase();
+    return ALL_COLUMNS.filter(c => !q || c.label.toLowerCase().includes(q));
+  });
+
+  openColPicker() {
+    this.draftColKeys.set(new Set(this.visibleColumnKeys()));
+    this.colFilter.set('');
+    this.showColPicker.set(true);
+  }
+
+  isDraftCol(key: string): boolean { return this.draftColKeys().has(key); }
+  toggleDraftCol(key: string, checked: boolean) {
+    const next = new Set(this.draftColKeys());
+    if (checked) next.add(key); else next.delete(key);
+    this.draftColKeys.set(next);
+  }
+  selectAllCols(selected: boolean) {
+    this.draftColKeys.set(selected ? new Set(ALL_COLUMNS.map(c => c.key)) : new Set());
+  }
+  applyColPicker() {
+    const keys = ALL_COLUMNS.map(c => c.key).filter(k => this.draftColKeys().has(k));
+    this.visibleColumnKeys.set(keys);
+    saveColumnKeys(keys);
+    this.showColPicker.set(false);
   }
 
   // --- Field value helpers ---

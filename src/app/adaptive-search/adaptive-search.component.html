@@ -104,6 +104,9 @@
 <div class="row mb-sm">
   <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} jobs match</span>
   <span class="spacer"></span>
+  <button type="button" class="btn btn-sm btn-outline" (click)="openColPicker()">
+    <svg lucideColumns3 class="size-4"></svg> Columns
+  </button>
   <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
     <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
   </button>
@@ -113,58 +116,47 @@
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-8">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-          Job # {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-14">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('title')">
-          Job {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-12">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
-          Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-11">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('technician')">
-          Technician {{ table.sortField() === 'technician' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('estimatedCost')">
-          Est. cost {{ table.sortField() === 'estimatedCost' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-11">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('inspectionScore')">
-          Score {{ table.sortField() === 'inspectionScore' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-13">Current step</th>
-      <th class="min-w-11">Tags</th>
+      @for (col of visibleColumns(); track col.key) {
+        <th [class]="col.width || ''">
+          @if (col.sortField) {
+            <a class="cursor-pointer select-none" (click)="table.toggleSort(col.sortField)">
+              {{ col.label }} {{ table.sortField() === col.sortField ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            </a>
+          } @else {
+            {{ col.label }}
+          }
+        </th>
+      }
       <th class="min-w-8 sticky right-0 bg-base-100">Actions</th>
     </tr>
   </thead>
   <tbody>
     @for (job of table.paged(); track job.id) {
       <tr>
-        <td class="mono">{{ job.jobNumber }}</td>
-        <td>{{ job.title }}</td>
-        <td>{{ job.trade }}</td>
-        <td>{{ job.technician }}</td>
-        <td>{{ job.estimatedCost | currency:'USD' }}</td>
-        <td><app-star-rating [value]="job.inspectionScore" [readonly]="true" /></td>
-        <td>{{ currentStep(job) }}</td>
-        <td>
-          <span class="tag-list">
-            @for (t of job.tags; track t) {
-              <span class="badge badge-info badge-sm">{{ t }}</span>
+        @for (col of visibleColumns(); track col.key) {
+          <td>
+            @switch (col.key) {
+              @case ('jobNumber') { <span class="mono">{{ job.jobNumber }}</span> }
+              @case ('title') { {{ job.title }} }
+              @case ('trade') { {{ job.trade }} }
+              @case ('technician') { {{ job.technician }} }
+              @case ('make') { {{ job.make }} }
+              @case ('model') { {{ job.model }} }
+              @case ('estimatedCost') { {{ job.estimatedCost | currency:'USD' }} }
+              @case ('estimatedHours') { {{ job.estimatedHours }}h }
+              @case ('inspectionScore') { <app-star-rating [value]="job.inspectionScore" [readonly]="true" /> }
+              @case ('scheduledFor') { {{ job.scheduledFor | date:'mediumDate' }} }
+              @case ('currentStep') { {{ currentStep(job) }} }
+              @case ('tags') {
+                <span class="tag-list">
+                  @for (t of job.tags; track t) {
+                    <span class="badge badge-info badge-sm">{{ t }}</span>
+                  }
+                </span>
+              }
             }
-          </span>
-        </td>
+          </td>
+        }
         <td class="sticky right-0 bg-base-100">
           <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(job)">
             <svg lucideArrowUpRight class="size-4"></svg> Details
@@ -172,7 +164,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="9" class="empty">No jobs match. Try clearing some filters.</td></tr>
+      <tr><td [attr.colspan]="visibleColumns().length + 1" class="empty">No jobs match. Try clearing some filters.</td></tr>
     }
   </tbody>
 </table>
@@ -238,3 +230,44 @@
     </form>
   }
 </dialog>
+
+<!-- Column Picker dialog -->
+@if (showColPicker()) {
+  <dialog class="modal" [class.modal-open]="showColPicker()" (close)="showColPicker.set(false)">
+    <div class="modal-box max-w-lg">
+      <h3 class="text-lg font-semibold mb-2">Pick result columns</h3>
+      <p class="dialog-hint">Check the columns you want in the results grid.</p>
+
+      <div class="row mb-sm">
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Filter columns…"
+               [ngModel]="colFilter()" (ngModelChange)="colFilter.set($event)" />
+        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(true)">Select all</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(false)">Clear</button>
+      </div>
+
+      <div class="field-grid">
+        @for (col of groupedColumns(); track col.key) {
+          <label class="field-check">
+            <input type="checkbox" class="checkbox checkbox-sm"
+                   [checked]="isDraftCol(col.key)"
+                   (change)="toggleDraftCol(col.key, $any($event.target).checked)" />
+            <span>{{ col.label }}</span>
+          </label>
+        }
+        @if (!groupedColumns().length) {
+          <div class="empty">No columns match "{{ colFilter() }}".</div>
+        }
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="showColPicker.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="applyColPicker()">
+          <svg lucideCheck class="size-4"></svg> Apply
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="showColPicker.set(false)">close</button>
+    </form>
+  </dialog>
+}

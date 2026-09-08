@@ -1,8 +1,9 @@
 /* schema-driven filter engine + saved variants in localStorage */
 import {
   Job,
-  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS
+  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS, JOBS
 } from './jobs';
+import { CHARACTERISTIC_CODES } from './characteristics';
 
 export type FilterField =
   | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof Job }
@@ -13,15 +14,33 @@ export type FilterField =
   | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job }
   | { key: string; label: string; type: 'tags';        group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] };
 
+/* derive filter options from the seeded job data */
+function makeOptions(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.make))].sort();
+  return vals.map(v => ({ label: v, value: v }));
+}
+function modelOptions(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.model))].sort();
+  return vals.map(v => ({ label: v, value: v }));
+}
+function codeOptions(): { label: string; value: string }[] {
+  return CHARACTERISTIC_CODES.map(c => ({ label: `${c.code} — ${c.description}`, value: c.code }));
+}
+
 export const FILTER_SCHEMA: FilterField[] = [
   { key: 'title',         label: 'Title contains', type: 'text',        group: 'Job',        field: 'title', required: true },
   { key: 'trade',         label: 'Trade',          type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
   { key: 'technician',    label: 'Technician',     type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
+  { key: 'make',          label: 'Make',           type: 'multiselect', group: 'Equipment',  field: 'make',       options: makeOptions() },
+  { key: 'model',         label: 'Model',          type: 'multiselect', group: 'Equipment',  field: 'model',      options: modelOptions() },
   { key: 'estimatedHours',label: 'Est. hours',     type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
   { key: 'estimatedCost', label: 'Est. cost ($)',  type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
   { key: 'inspectionScore',label: 'Min score',     type: 'rating',      group: 'Cost',       field: 'inspectionScore' },
   { key: 'scheduledFor',  label: 'Scheduled',      type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
-  { key: 'tags',          label: 'Tags (any of)',  type: 'tags',        group: 'Job',        field: 'tags',       options: TAG_OPTIONS }
+  { key: 'tags',          label: 'Tags (any of)',  type: 'tags',        group: 'Job',        field: 'tags',       options: TAG_OPTIONS },
+  { key: 'code1',         label: 'Code 1',         type: 'multiselect', group: 'Codes',      field: 'code1',      options: codeOptions() },
+  { key: 'code2',         label: 'Code 2',         type: 'multiselect', group: 'Codes',      field: 'code2',      options: codeOptions() },
+  { key: 'code3',         label: 'Code 3',         type: 'multiselect', group: 'Codes',      field: 'code3',      options: codeOptions() },
 ];
 
 export type FilterValues = Record<string, any>;

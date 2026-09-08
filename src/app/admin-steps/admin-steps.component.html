@@ -1,6 +1,6 @@
-<!-- Admin → Steps maintenance table (paired with admin-steps.component.ts). -->
+<!-- Admin → Steps maintenance table with sequence ordering. -->
 <h2 class="section-title">Steps</h2>
-<p class="section-sub">Maintain the workflow steps for each trade.</p>
+<p class="section-sub">Maintain the workflow steps for each trade. Order determines the stage sequence during sign-off.</p>
 
 <div class="facet-row">
   <span class="fw-bold">Steps</span>
@@ -22,6 +22,7 @@
 <table class="table table-sm">
   <thead>
     <tr>
+      <th class="min-w-8 text-center">#</th>
       <th class="min-w-14">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('step')">
           Step {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
@@ -37,12 +38,19 @@
             (selectedChange)="table.setColumnFilter('trade', $event)" />
         </div>
       </th>
+      <th class="min-w-14">Order</th>
+      <th class="min-w-14">Reject routes to</th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
   <tbody>
     @for (row of visibleRows(); track row.id) {
       <tr>
+        <!-- Sequence display -->
+        <td class="text-center">
+          <span class="badge badge-sm badge-ghost">{{ row.sequence }}</span>
+        </td>
+        <!-- Step name -->
         <td>
           @if (editingId() === row.id) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Step name"
@@ -51,6 +59,7 @@
             {{ row.step || '—' }}
           }
         </td>
+        <!-- Trade -->
         <td>
           @if (editingId() === row.id) {
             <select class="select select-sm select-bordered w-full min-w-0"
@@ -63,6 +72,35 @@
             {{ row.trade }}
           }
         </td>
+        <!-- Order display + move buttons -->
+        <td>
+          <div class="flex items-center gap-1">
+            <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirstInTrade(row)"
+                    (click)="moveUp(row)">
+              <svg lucideArrowUp class="size-3"></svg>
+            </button>
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isLastInTrade(row)"
+                    (click)="moveDown(row)">
+              <svg lucideArrowDown class="size-3"></svg>
+            </button>
+          </div>
+        </td>
+        <!-- Reject routes to -->
+        <td>
+          @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.rejectToStage" (ngModelChange)="updateRejectTo(row, $event)">
+              <option value="">None (no routing)</option>
+              @for (s of stageOptions; track s.id) {
+                <option [value]="s.id">{{ s.label }}</option>
+              }
+            </select>
+          } @else {
+            {{ row.rejectToStage || '—' }}
+          }
+        </td>
+        <!-- Actions -->
         <td>
           <div class="row-tight">
             @if (editingId() !== row.id) {
@@ -84,7 +122,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="3" class="empty">No steps defined.</td></tr>
+      <tr><td colspan="6" class="empty">No steps defined.</td></tr>
     }
   </tbody>
 </table>

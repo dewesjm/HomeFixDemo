@@ -44,6 +44,7 @@ export interface WorkflowStage {
   signoffInputs: Record<string, string>;
   // --- per-stage sign-off ---
   result: StageResult | null;     /* required before signing, kept special */
+  rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
 }
@@ -102,6 +103,8 @@ interface StageTemplate {
   fields: StageField[];
   /* configurable sign-off fields for this stage */
   signoffFields?: SignoffField[];
+  /* stage id to route back to when this stage is rejected (empty = no routing) */
+  rejectToStage?: string;
 }
 
 const titleHas = (job: Job, ...words: string[]) =>
@@ -188,7 +191,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'reworkNeeded', label: 'Rework needed', type: 'select', required: false,
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'diagnostic' },
     { id: 'refrigerant', label: 'Charge',   required: job => titleHas(job, 'AC', 'recharge', 'Heat pump'), fields: [
       { key: 'refrigerantType', label: 'Refrigerant type', type: 'text',   placeholder: 'e.g. R-410A' },
       { key: 'chargePsi',       label: 'Charge',           type: 'number', unit: 'PSI' }
@@ -197,7 +200,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'diagnostic' },
     { id: 'combustion',  label: 'CO check',      required: job => titleHas(job, 'Furnace'), fields: [
       { key: 'coReading', label: 'CO reading', type: 'number', unit: 'ppm' }
     ], signoffFields: [
@@ -205,11 +208,11 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'repair' },
     { id: 'airflow',     label: 'Airflow', required: true, fields: [
       { key: 'airflowCfm', label: 'Airflow',            type: 'number', unit: 'CFM' },
       { key: 'setpoint',   label: 'Thermostat setpoint', type: 'number', unit: '°F' }
-    ], signoffFields: DEFAULT_SIGNOFF_FIELDS } ],
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS, rejectToStage: 'diagnostic' } ],
   Plumbing: [
     { id: 'diagnostic', label: 'Diagnose',                    required: true, fields: [
       { key: 'leakLocation', label: 'Leak location', type: 'text', placeholder: 'e.g. under sink' }
@@ -226,7 +229,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'diagnostic' },
     { id: 'pressure',   label: 'Pressure',                      required: true, fields: [
       { key: 'testPsi',  label: 'Test pressure', type: 'number', unit: 'PSI' },
       { key: 'holdTime', label: 'Hold time',     type: 'number', unit: 'min' }
@@ -235,7 +238,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'permitVerified', label: 'Permit verified', type: 'select', required: false,
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'shutoff' },
     { id: 'backflow',   label: 'Backflow',required: job => titleHas(job, 'Water heater', 'Sump'), fields: [
       { key: 'deviceSerial', label: 'Device serial #', type: 'text' }
     ], signoffFields: [
@@ -243,10 +246,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
+    ], rejectToStage: 'pressure' },
     { id: 'code',       label: 'Code',              required: true, fields: [
       { key: 'codeSection', label: 'Code section', type: 'text', placeholder: 'e.g. UPC 604.3' }
-    ], signoffFields: DEFAULT_SIGNOFF_FIELDS }
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS, rejectToStage: 'diagnostic' }
   ],
   Electrical: [
     { id: 'lockout',    label: 'Lockout',              required: true, fields: [
@@ -460,6 +463,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       signoffFields: sf.map(f => ({ ...f })),
       signoffInputs: {},
       result: null,
+      rejectToStage: t.rejectToStage ?? '',
       signed: false,
       signedAt: null
     };
