@@ -16,6 +16,9 @@
   <button type="button" class="btn btn-sm btn-outline" (click)="openNewTrade()">
     <svg lucidePlus class="size-4"></svg> New trade
   </button>
+  <button type="button" class="btn btn-sm btn-outline" (click)="openTestJobDlg()">
+    <svg lucidePlus class="size-4"></svg> Add test job
+  </button>
   <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
     <svg lucidePlus class="size-4"></svg> Add step
   </button>
@@ -240,6 +243,30 @@
     </div>
     <form method="dialog" class="modal-backdrop">
       <button type="button" (click)="showNewTradeDlg.set(false)">close</button>
+    </form>
+  </dialog>
+
+  <dialog class="modal" [class.modal-open]="showTestJobDlg()" (close)="showTestJobDlg.set(false)">
+    <div class="modal-box max-w-sm">
+      <h3 class="text-lg font-semibold mb-2">Add test job</h3>
+      <p class="text-sm opacity-60 mb-4">Creates a test job for the selected trade and opens it.</p>
+      <label class="stage-field">
+        <span class="stage-field-label">Trade</span>
+        <select class="select select-bordered w-full" [ngModel]="testJobTrade()" (ngModelChange)="testJobTrade.set($event)">
+          @for (o of tradeOptions(); track o.value) {
+            <option [ngValue]="o.value">{{ o.label }}</option>
+          }
+        </select>
+      </label>
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="showTestJobDlg.set(false)">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!testJobTrade()" (click)="createTestJob()">
+          <svg lucideCheck class="size-4"></svg> Create &amp; open
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="showTestJobDlg.set(false)">close</button>
     </form>
   </dialog>
 }

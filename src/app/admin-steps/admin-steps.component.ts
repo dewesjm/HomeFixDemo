@@ -14,7 +14,8 @@ import { TooltipDirective } from '../shared/tooltip.directive';
 import { TableState, inArray } from '../shared/table-state';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { downloadCsv } from '../data/export-csv';
-import { Job } from '../data/jobs';
+import { Job, addTestJob } from '../data/jobs';
+import { Router } from '@angular/router';
 import {
   STAGE_TEMPLATES, StageField, SignoffField, defaultSignoffFields,
   addStageTemplate, updateStageTemplate, deleteStageTemplate, addTrade,
@@ -118,6 +119,11 @@ export class AdminStepsComponent {
   // ── New trade dialog ──
   showNewTradeDlg = signal(false);
   newTradeName = signal('');
+
+  // ── Add test job dialog ──
+  showTestJobDlg = signal(false);
+  testJobTrade = signal('');
+  private router = inject(Router);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));
@@ -359,6 +365,20 @@ export class AdminStepsComponent {
     this.refreshStageOptions();
     this.showNewTradeDlg.set(false);
     this.messages.add({ severity: 'success', summary: 'Trade added', detail: trade, life: 3000 });
+  }
+
+  // ── Add test job dialog ──
+  openTestJobDlg() {
+    this.testJobTrade.set(this.tradeOptions()[0]?.value ?? '');
+    this.showTestJobDlg.set(true);
+  }
+  createTestJob() {
+    const trade = this.testJobTrade();
+    if (!trade) return;
+    const job = addTestJob(trade);
+    this.showTestJobDlg.set(false);
+    this.messages.add({ severity: 'success', summary: 'Test job created', detail: `${job.title} (#${job.id})`, life: 3000 });
+    this.router.navigate(['/jobs', job.id]);
   }
 
   /* ── CSV export ── */

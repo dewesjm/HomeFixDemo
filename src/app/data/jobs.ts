@@ -125,3 +125,28 @@ export const TAG_OPTIONS = TAG_POOL.map(t => ({ label: t, value: t }));
 
 /* static fallback for initial load; components should prefer getTradeOptions() from workflow.ts */
 export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
+
+/* add a test job for a given trade (for testing admin-added trades) */
+let _nextCustomId = 10_000;
+export function addTestJob(trade: string): Job {
+  const id = _nextCustomId++;
+  const job: Job = {
+    id,
+    jobNumber: makeJobNumber(id),
+    title: `${trade} test job`,
+    trade,
+    technician: TECHNICIANS[id % TECHNICIANS.length],
+    make: '',
+    model: '',
+    code1: '',
+    code2: '',
+    code3: '',
+    estimatedCost: 0,
+    inspectionScore: 0,
+    estimatedHours: 0,
+    scheduledFor: new Date(),
+    tags: [],
+  };
+  JOBS.push(job);
+  return job;
+}
