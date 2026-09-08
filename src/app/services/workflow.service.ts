@@ -236,9 +236,10 @@ export class WorkflowService {
       }
 
       /* routeTo override: on accept, re-open stages between current and target so workflow jumps there */
-      if (st.routeTo && st.result === 'accept') {
+      if ((st.routeTo || st.swapStageId) && st.result === 'accept') {
+        const target = st.routeTo || st.swapStageId;
         const currentIdx = stages.findIndex(s => s.id === stageId);
-        const targetIdx = stages.findIndex(s => s.id === st.routeTo);
+        const targetIdx = stages.findIndex(s => s.id === target);
         if (targetIdx > currentIdx) {
           for (let i = currentIdx + 1; i < targetIdx; i++) {
             if (stages[i].signed) {
@@ -377,6 +378,7 @@ export class WorkflowService {
           s.repeatable ??= false;
           s.stepType ??= 'standard';
           s.routeTo ??= '';
+          s.swapStageId ??= '';
         });
         /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
         if (job) {

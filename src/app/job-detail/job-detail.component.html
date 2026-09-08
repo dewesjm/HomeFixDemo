@@ -180,6 +180,21 @@
     }
 
     @if (w.stages[selectedStep()]; as stage) {
+      <!-- Current step override (top of sign-off) -->
+      @if (!stage.signed) {
+        <div class="mb-sm">
+          <label class="stage-field">
+            <span class="stage-field-label font-semibold">Current step</span>
+            <select class="select select-bordered w-full" [ngModel]="stage.swapStageId || stage.id"
+                    (ngModelChange)="updateSwapStage(stage, $event)">
+              @for (s of swapStageOptions(stage); track s.value) {
+                <option [ngValue]="s.value">{{ s.label }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      }
+
       <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
 
       @if (visibleFields(stage).length) {

@@ -48,6 +48,7 @@ export interface WorkflowStage {
   repeatable: boolean;            /* signing with stepType='repeat' inserts another copy */
   stepType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
   routeTo: string;                /* stage id to jump to on sign (empty = next in sequence) */
+  swapStageId: string;            /* which stage template to use for fields (empty = own) */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
 }
@@ -607,6 +608,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       repeatable: t.repeatable ?? false,
       stepType: 'standard',
       routeTo: '',
+      swapStageId: '',
       signed: false,
       signedAt: null
     };

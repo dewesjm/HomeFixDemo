@@ -18,7 +18,7 @@ import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
-  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned
+  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates
 } from '../data/workflow';
 
 @Component({
@@ -184,6 +184,34 @@ export class JobDetailComponent {
     }));
   }
 
+  swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
+    if (!this.job) return [];
+    const templates = getTemplates()[this.job.trade] ?? [];
+    const currentSwap = stage.swapStageId || stage.id;
+    return templates
+      .filter(t => t.id !== 'prep' && t.id !== 'handover')
+      .map(t => ({ label: t.label, value: t.id }));
+  }
+  updateSwapStage(stage: WorkflowStage, swapId: string) {
+    if (!this.job || !this.wf) return;
+    const templates = getTemplates()[this.job.trade] ?? [];
+    const swapTpl = templates.find(t => t.id === swapId);
+    if (!swapTpl) return;
+    const sf = swapTpl.signoffFields ?? [];
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map(s => s.id === stage.id ? {
+        ...s,
+        swapStageId: swapId,
+        fields: swapTpl.fields.map(f => ({ ...f })),
+        signoffFields: sf.map(f => ({ ...f })),
+        inputs: {},
+        signoffInputs: {},
+        result: null,
+      } : s)
+    }));
+  }
+
   // ---- stage inputs ----
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
@@ -272,8 +300,9 @@ export class JobDetailComponent {
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);
-        if (stage.routeTo && stage.result === 'accept') {
-          const targetIdx = this.wf?.().stages.findIndex(s => s.id === stage.routeTo) ?? -1;
+        const jumpTo = stage.routeTo || stage.swapStageId;
+        if (jumpTo && stage.result === 'accept') {
+          const targetIdx = this.wf?.().stages.findIndex(s => s.id === jumpTo) ?? -1;
           if (targetIdx >= 0) { this.selectedStep.set(targetIdx); return; }
         }
         this.selectedStep.set(this.indexOfActive());
