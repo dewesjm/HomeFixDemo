@@ -188,6 +188,7 @@ export class JobDetailComponent {
   }
   updateSwapStage(stage: WorkflowStage, swapId: string) {
     if (!this.job || !this.wf) return;
+    const currentStep = this.selectedStep();
     const templates = getTemplates()[this.job.trade] ?? [];
     const swapTpl = templates.find(t => t.id === swapId);
     if (!swapTpl) return;
@@ -199,11 +200,10 @@ export class JobDetailComponent {
         swapStageId: swapId,
         fields: swapTpl.fields.map(f => ({ ...f })),
         signoffFields: sf.map(f => ({ ...f })),
-        inputs: {},
-        signoffInputs: {},
-        result: null,
       } : s)
     }));
+    // Ensure the step selection doesn't shift during re-render
+    this.selectedStep.set(currentStep);
   }
 
   // ---- stage inputs ----

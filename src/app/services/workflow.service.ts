@@ -235,19 +235,6 @@ export class WorkflowService {
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
 
-      /* swapStageId override: on accept, re-open stages between current and swapped target */
-      if (st.swapStageId && st.result === 'accept') {
-        const currentIdx = stages.findIndex(s => s.id === stageId);
-        const targetIdx = stages.findIndex(s => s.id === st.swapStageId);
-        if (targetIdx > currentIdx) {
-          for (let i = currentIdx + 1; i < targetIdx; i++) {
-            if (stages[i].signed) {
-              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
-            }
-          }
-        }
-      }
-
       /* on reject: re-open stages from the reject target up to (not including) this stage */
       if (st.result === 'reject' && st.rejectToStage) {
         const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
