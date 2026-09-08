@@ -5,7 +5,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor
+  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor, signoffFieldsFor
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
@@ -202,7 +202,7 @@ export class WorkflowService {
       const st = stages.find(s => s.id === stageId)!;
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: st.inspectorName || wf.technician,
+        who: st.signoffInputs['inspectorName'] || wf.technician,
         ...meta
       });
     });
@@ -218,7 +218,7 @@ export class WorkflowService {
       const decision = (st.result ?? '').toUpperCase();
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: st.inspectorName || wf.technician,
+        who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${st.label} — Signed off`,
         to: decision
       });
@@ -235,7 +235,7 @@ export class WorkflowService {
       const st = stages.find(s => s.id === stageId)!;
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
-        who: st.inspectorName || wf.technician,
+        who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${st.label} — Sign-off re-opened`
       });
     });
@@ -254,7 +254,10 @@ export class WorkflowService {
           return s.signed ? s : {
             ...s, signed: true, signedAt: when,
             result: s.result ?? 'accept',
-            inspectorName: s.inspectorName || wf.technician
+            signoffInputs: {
+              ...s.signoffInputs,
+              inspectorName: s.signoffInputs['inspectorName'] || wf.technician
+            }
           };
         }
         return s.signed ? { ...s, signed: false, signedAt: null } : s;
@@ -309,11 +312,19 @@ export class WorkflowService {
           s.fields ??= [];
           // backfill field definitions for stages saved before per-step inputs existed
           if (!s.fields.length && job) s.fields = stageFieldsFor(job.trade, s.id);
-          // backfill per-stage sign-off fields for stages saved before they existed
-          s.inspectorName ??= '';
-          s.licenseNo ??= '';
+          // backfill signoff fields and inputs for stages saved before they existed
+          s.signoffFields ??= [];
+          if (!s.signoffFields.length && job) s.signoffFields = signoffFieldsFor(job.trade, s.id);
+          s.signoffInputs ??= {};
+          // migrate old hardcoded fields into signoffInputs
+          const old = s as unknown as { inspectorName?: string; licenseNo?: string; notes?: string };
+          if (old.inspectorName && !s.signoffInputs['inspectorName']) s.signoffInputs['inspectorName'] = old.inspectorName;
+          if (old.licenseNo && !s.signoffInputs['licenseNo']) s.signoffInputs['licenseNo'] = old.licenseNo;
+          if (old.notes && !s.signoffInputs['notes']) s.signoffInputs['notes'] = old.notes;
+          delete old.inspectorName;
+          delete old.licenseNo;
+          delete old.notes;
           s.result ??= null;
-          s.notes ??= '';
           s.signed ??= false;
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed

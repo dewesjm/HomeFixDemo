@@ -207,16 +207,26 @@
 
       @if (stage.required) {
         <div class="detail-grid">
-          <div>
-            <div class="meta">Inspector name</div>
-            <input class="input input-bordered w-full" [disabled]="!editable(stage)"
-                   [ngModel]="stage.inspectorName" (blur)="blurStageInspector(stage, $any($event.target).value)" />
-          </div>
-          <div>
-            <div class="meta">License #</div>
-            <input class="input input-bordered w-full" [disabled]="!editable(stage)"
-                   [ngModel]="stage.licenseNo" (blur)="blurStageLicense(stage, $any($event.target).value)" />
-          </div>
+          <!-- Dynamic sign-off fields (configured per stage) -->
+          @for (f of visibleSignoffFields(stage); track f.key) {
+            <div>
+              <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
+              @if (f.type === 'select') {
+                <select class="select select-bordered w-full" [disabled]="!editable(stage)"
+                        [ngModel]="stage.signoffInputs[f.key]"
+                        (ngModelChange)="signoffSelectChange(stage, f, $event)">
+                  <option [ngValue]="null">Select</option>
+                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                </select>
+              } @else {
+                <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                       [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                       [ngModel]="stage.signoffInputs[f.key]"
+                       (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
+              }
+            </div>
+          }
+          <!-- Decision (always present — drives workflow logic) -->
           <div>
             <div class="meta">Decision <span class="req">*</span></div>
             <div class="result-radios">
@@ -229,19 +239,6 @@
               }
             </div>
           </div>
-          <!-- placeholder sign-off fields -->
-          <div><div class="meta">Inspection date</div><input class="input input-bordered w-full" [value]="j.scheduledFor | date:'mediumDate'" disabled /></div>
-          <div><div class="meta">Permit verified</div><input class="input input-bordered w-full" [value]="demo()?.permitVerified" disabled /></div>
-          <div><div class="meta">Test method</div><input class="input input-bordered w-full" [value]="demo()?.testMethod" disabled /></div>
-          <div><div class="meta">Crew size</div><input class="input input-bordered w-full" [value]="demo()?.crewSize" disabled /></div>
-          <div><div class="meta">Safety check</div><input class="input input-bordered w-full" [value]="demo()?.safetyCheck" disabled /></div>
-          <div><div class="meta">Rework needed</div><input class="input input-bordered w-full" [value]="demo()?.reworkNeeded" disabled /></div>
-          <div><div class="meta">Customer signature</div><input class="input input-bordered w-full" [value]="demo()?.customerSignature" disabled /></div>
-          <div class="col-span-all">
-            <div class="meta">Notes</div>
-            <textarea rows="2" class="note-area" [disabled]="!editable(stage)"
-                      [ngModel]="stage.notes" (blur)="blurStageNotes(stage, $any($event.target).value)"></textarea>
-          </div>
         </div>
 
         <div class="signoff-actions">
@@ -253,7 +250,7 @@
             <span class="badge" [class.badge-error]="stage.result === 'reject'" [class.badge-success]="stage.result !== 'reject'">
               {{ (stage.result || '') | uppercase }}
             </span>
-            <span class="meta">Signed by {{ stage.inspectorName || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
+            <span class="meta">Signed by {{ stage.signoffInputs['inspectorName'] || '—' }} on {{ stage.signedAt | date:'medium' }}</span>
             <span class="spacer"></span>
             @if (canReopen(stage, selectedStep())) {
               <button type="button" class="btn btn-ghost btn-sm" (click)="reopenStage(stage)">

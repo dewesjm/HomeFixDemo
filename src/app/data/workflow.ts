@@ -16,9 +16,20 @@ export interface StageField {
   label: string;
   type: 'text' | 'number' | 'select';
   unit?: string;          /* shown by the label, e.g. PSI */
- placeholder?: string;
+  placeholder?: string;
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals: string };   // ← declarative dependency, serializable
+}
+
+/* configurable field on the per-stage sign-off panel */
+export interface SignoffField {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'select';
+  required: boolean;
+  placeholder?: string;
+  options?: { label: string; value: string }[];
+  showIf?: { key: string; equals: string };
 }
 
 /* sequential stages, each its own sign-off */
@@ -28,11 +39,11 @@ export interface WorkflowStage {
   required: boolean;
   fields: StageField[];           /* input defs copied from template */
   inputs: Record<string, string>; /* recorded values, keyed by StageField.key */
+  /* configurable sign-off fields (inspector, license, notes, etc.) */
+  signoffFields: SignoffField[];
+  signoffInputs: Record<string, string>;
   // --- per-stage sign-off ---
-  inspectorName: string;
-  licenseNo: string;
-  result: StageResult | null;     /* required before signing */
-  notes: string;
+  result: StageResult | null;     /* required before signing, kept special */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
 }
@@ -89,16 +100,51 @@ interface StageTemplate {
   required: boolean | ((job: Job) => boolean);
   /* fields a tech records on this stage */
   fields: StageField[];
+  /* configurable sign-off fields for this stage */
+  signoffFields?: SignoffField[];
 }
 
 const titleHas = (job: Job, ...words: string[]) =>
   words.some(w => job.title.toLowerCase().includes(w.toLowerCase()));
 
+/* ── Default sign-off fields (pre-populated for admin) ── */
+const DEFAULT_SIGNOFF_FIELDS: SignoffField[] = [
+  { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+  { key: 'licenseNo',     label: 'License #',      type: 'text', required: false },
+  { key: 'permitVerified', label: 'Permit verified', type: 'select', required: false,
+    options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
+  { key: 'testMethod',    label: 'Test method',    type: 'select', required: false,
+    options: [
+      { label: 'Visual + functional', value: 'visual-functional' },
+      { label: 'Pressure test', value: 'pressure' },
+      { label: 'Meter reading', value: 'meter' },
+      { label: 'Load test', value: 'load' }
+    ] },
+  { key: 'crewSize',      label: 'Crew size',      type: 'number', required: false, placeholder: 'e.g. 2' },
+  { key: 'safetyCheck',   label: 'Safety check',   type: 'select', required: false,
+    options: [{ label: 'Passed', value: 'passed' }, { label: 'Passed w/ notes', value: 'passed-notes' }, { label: 'N/A', value: 'na' }] },
+  { key: 'reworkNeeded',  label: 'Rework needed',  type: 'select', required: false,
+    options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+  { key: 'customerSignature', label: 'Customer signature', type: 'select', required: false,
+    options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }, { label: 'Pending', value: 'pending' }] },
+  { key: 'notes',         label: 'Notes',          type: 'text', required: false, placeholder: 'Additional notes…' },
+];
+
+export function defaultSignoffFields(): SignoffField[] {
+  return DEFAULT_SIGNOFF_FIELDS.map(f => ({ ...f }));
+}
+
 /* ordered stage pipelines per trade, some conditional */
 // Shared stages every trade gets: a safety/prep stage first and a handover stage last.
 const PREP_STAGE: StageTemplate = {
   id: 'prep', label: 'Prep', required: true,
-  fields: [{ key: 'ppe', label: 'PPE / safety', type: 'text', placeholder: 'e.g. gloves, eyewear' }]
+  fields: [{ key: 'ppe', label: 'PPE / safety', type: 'text', placeholder: 'e.g. gloves, eyewear' }],
+  signoffFields: [
+    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+    { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+      options: [{ label: 'Passed', value: 'passed' }, { label: 'Passed w/ notes', value: 'passed-notes' }, { label: 'Failed', value: 'failed' }] },
+    { key: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Prep notes…' },
+  ]
 };
 const HANDOVER_STAGE: StageTemplate = {
   id: 'handover', label: 'Handover', required: true,
@@ -114,6 +160,12 @@ const HANDOVER_STAGE: StageTemplate = {
       showIf: { key: 'issueReported', equals: 'yes' } },
     { key: 'followUpDate', label: 'Follow-up date', type: 'text', placeholder: 'e.g. 2026-07-01',
       showIf: { key: 'issueReported', equals: 'yes' } },
+  ],
+  signoffFields: [
+    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+    { key: 'customerSignature', label: 'Customer signature', type: 'select', required: true,
+      options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }, { label: 'Pending', value: 'pending' }] },
+    { key: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Handover notes…' },
   ]
 };
 
@@ -122,106 +174,227 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'diagnostic',  label: 'Diagnose',                 required: true, fields: [
       { key: 'faultCode',  label: 'Fault code',   type: 'text',   placeholder: 'e.g. E4' },
       { key: 'supplyTemp', label: 'Supply temp',  type: 'number', unit: '°F' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Meter reading', value: 'meter' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'repair',      label: 'Repair',         required: true, fields: [
       { key: 'partReplaced', label: 'Part replaced', type: 'text', placeholder: 'e.g. blower motor' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'reworkNeeded', label: 'Rework needed', type: 'select', required: false,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'refrigerant', label: 'Charge',   required: job => titleHas(job, 'AC', 'recharge', 'Heat pump'), fields: [
       { key: 'refrigerantType', label: 'Refrigerant type', type: 'text',   placeholder: 'e.g. R-410A' },
       { key: 'chargePsi',       label: 'Charge',           type: 'number', unit: 'PSI' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'combustion',  label: 'CO check',      required: job => titleHas(job, 'Furnace'), fields: [
       { key: 'coReading', label: 'CO reading', type: 'number', unit: 'ppm' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'airflow',     label: 'Airflow', required: true, fields: [
       { key: 'airflowCfm', label: 'Airflow',            type: 'number', unit: 'CFM' },
       { key: 'setpoint',   label: 'Thermostat setpoint', type: 'number', unit: '°F' }
-    ] }
-  ],
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS } ],
   Plumbing: [
     { id: 'diagnostic', label: 'Diagnose',                    required: true, fields: [
       { key: 'leakLocation', label: 'Leak location', type: 'text', placeholder: 'e.g. under sink' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Pressure test', value: 'pressure' }, { label: 'Visual', value: 'visual' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'shutoff',    label: 'Shutoff',                   required: true, fields: [
       { key: 'valveType', label: 'Shutoff valve type', type: 'text', placeholder: 'e.g. quarter-turn' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'pressure',   label: 'Pressure',                      required: true, fields: [
       { key: 'testPsi',  label: 'Test pressure', type: 'number', unit: 'PSI' },
       { key: 'holdTime', label: 'Hold time',     type: 'number', unit: 'min' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: false,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'backflow',   label: 'Backflow',required: job => titleHas(job, 'Water heater', 'Sump'), fields: [
       { key: 'deviceSerial', label: 'Device serial #', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'code',       label: 'Code',              required: true, fields: [
       { key: 'codeSection', label: 'Code section', type: 'text', placeholder: 'e.g. UPC 604.3' }
-    ] }
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS }
   ],
   Electrical: [
     { id: 'lockout',    label: 'Lockout',              required: true, fields: [
       { key: 'circuitNo', label: 'Breaker / circuit #', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'wiring',     label: 'Wiring',                    required: true, fields: [
       { key: 'wireGauge', label: 'Wire gauge', type: 'number', unit: 'AWG' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: false,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'continuity', label: 'Continuity',         required: true, fields: [
       { key: 'resistance', label: 'Resistance', type: 'number', unit: 'Ω' }
-    ] },
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
     { id: 'gfci',       label: 'GFCI',           required: job => titleHas(job, 'GFCI', 'Outlet'), fields: [
       { key: 'tripTime', label: 'Trip time', type: 'number', unit: 'ms' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Meter reading', value: 'meter' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'panel',      label: 'Panel',       required: job => titleHas(job, 'Panel'), fields: [
       { key: 'groundResistance', label: 'Ground resistance', type: 'number', unit: 'Ω' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] }
   ],
   Roofing: [
     { id: 'surface',  label: 'Surface',          required: true, fields: [
       { key: 'areaInspected', label: 'Area inspected', type: 'number', unit: 'sq ft' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Load test', value: 'load' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'repair',   label: 'Repair',        required: true, fields: [
       { key: 'material', label: 'Material used', type: 'text', placeholder: 'e.g. architectural shingle' }
-    ] },
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
     { id: 'flashing', label: 'Flashing',       required: true, fields: [
       { key: 'sealant', label: 'Sealant type', type: 'text', placeholder: 'e.g. polyurethane' }
-    ] },
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
     { id: 'leaktest', label: 'Leak test',           required: job => titleHas(job, 'Leak', 'patch', 'Skylight'), fields: [
       { key: 'testDuration', label: 'Test duration', type: 'number', unit: 'min' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: true,
+        options: [{ label: 'Pressure test', value: 'pressure' }, { label: 'Visual + functional', value: 'visual-functional' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'cleanup',  label: 'Cleanup',required: true, fields: [
       { key: 'debrisBags', label: 'Debris removed', type: 'number', unit: 'bags' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: false,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'N/A', value: 'na' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] }
   ],
   Carpentry: [
     { id: 'measure', label: 'Measure', required: true, fields: [
       { key: 'dimensions', label: 'Dimensions', type: 'text', placeholder: 'e.g. 36" × 80"' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Load test', value: 'load' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'build',   label: 'Build',              required: true, fields: [
       { key: 'material', label: 'Material used', type: 'select', options: MATERIAL_OPTIONS, placeholder: 'Select material' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'crewSize', label: 'Crew size', type: 'number', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'load',    label: 'Load check',       required: job => titleHas(job, 'Deck', 'Shelving', 'Cabinet'), fields: [
       { key: 'ratedLoad', label: 'Rated load', type: 'number', unit: 'lbs' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: true,
+        options: [{ label: 'Load test', value: 'load' }, { label: 'Visual + functional', value: 'visual-functional' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'finish',  label: 'Finish',                required: true, fields: [
       { key: 'finish', label: 'Finish / stain', type: 'text', placeholder: 'e.g. satin poly' }
-    ] },
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
     { id: 'fit',     label: 'Final fit',         required: true, fields: [
       { key: 'gapTolerance', label: 'Gap tolerance', type: 'number', unit: 'in' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'reworkNeeded', label: 'Rework needed', type: 'select', required: false,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'customerSignature', label: 'Customer signature', type: 'select', required: false,
+        options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] }
   ],
   Inspection: [
     { id: 'docs',       label: 'Docs',      required: true, fields: [
       { key: 'permitNo', label: 'Permit #', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'permitVerified', label: 'Permit verified', type: 'select', required: true,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'visual',     label: 'Visual',         required: true, fields: [
       { key: 'defectsFound', label: 'Defects found', type: 'number' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: true,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }] },
+      { key: 'reworkNeeded', label: 'Rework needed', type: 'select', required: false,
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'functional', label: 'Function',           required: true, fields: [
       { key: 'itemsTested', label: 'Items tested', type: 'number' }
-    ] },
+    ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
     { id: 'hazard',     label: 'Hazards',required: true, fields: [
       { key: 'hazards', label: 'Hazards noted', type: 'text', placeholder: 'e.g. exposed wiring' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'report',     label: 'Report',           required: true, fields: [
       { key: 'rating', label: 'Overall rating (1–5)', type: 'number' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'customerSignature', label: 'Customer signature', type: 'select', required: true,
+        options: [{ label: 'On file', value: 'on-file' }, { label: 'Pending', value: 'pending' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] }
   ]
 };
@@ -236,6 +409,22 @@ export function stageFieldsFor(trade: Job['trade'], stageId: string): StageField
   return STAGE_TEMPLATES[trade].find(t => t.id === stageId)?.fields ?? [];
 }
 
+/* sign-off fields for a trade stage, backfills old saved workflows */
+export function signoffFieldsFor(trade: Job['trade'], stageId: string): SignoffField[] {
+  return STAGE_TEMPLATES[trade].find(t => t.id === stageId)?.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
+}
+
+/* all unique stage ids across all trades (for the admin screen) */
+export function allStageIds(): { id: string; label: string }[] {
+  const seen = new Map<string, string>();
+  for (const templates of Object.values(STAGE_TEMPLATES)) {
+    for (const t of templates) {
+      if (!seen.has(t.id)) seen.set(t.id, t.label);
+    }
+  }
+  return [...seen.entries()].map(([id, label]) => ({ id, label }));
+}
+
 /* deterministic step count 5..15, stable per job */
 function stageCountFor(job: Job): number {
   return 5 + ((job.id * 7 + 3) % 11);
@@ -247,7 +436,8 @@ function fillerStage(n: number): StageTemplate {
     id: `extra-${n}`,
     label: `Check ${n}`,
     required: true,
-    fields: [{ key: `reading${n}`, label: 'Reading', type: 'text', placeholder: 'value' }]
+    fields: [{ key: `reading${n}`, label: 'Reading', type: 'text', placeholder: 'value' }],
+    signoffFields: DEFAULT_SIGNOFF_FIELDS
   };
 }
 
@@ -260,16 +450,16 @@ export function buildStages(job: Job): WorkflowStage[] {
   }
   return [PREP_STAGE, ...middle, HANDOVER_STAGE].map(t => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
+    const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     return {
       id: t.id,
       label: t.label,
       required,
       fields: t.fields,
       inputs: {},
-      inspectorName: '',
-      licenseNo: '',
+      signoffFields: sf.map(f => ({ ...f })),
+      signoffInputs: {},
       result: null,
-      notes: '',
       signed: false,
       signedAt: null
     };
@@ -338,13 +528,17 @@ export function seededWorkflow(job: Job): JobWorkflow {
     t += (20 + Math.floor(rand() * 180)) * MIN;
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
+    const signoffInputs: Record<string, string> = {};
+    for (const f of s.signoffFields) {
+      if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;
+      else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
+      else signoffInputs[f.key] = seededFieldValue(f, rand);
+    }
     return {
       ...s,
       inputs,
-      inspectorName: job.technician,
-      licenseNo: `LIC-${1000 + Math.floor(rand() * 9000)}`,
+      signoffInputs,
       result: 'accept' as StageResult,
-      notes: '',
       signed: true,
       signedAt: new Date(t).toISOString()
     };

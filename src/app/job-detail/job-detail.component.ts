@@ -17,7 +17,7 @@ import { characteristicLabel } from '../data/characteristics';
 import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
 import {
-  WorkflowStage, StageField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
   isStageLocked, currentStepLabel, activeStageId, allRequiredSigned
 } from '../data/workflow';
 
@@ -160,7 +160,14 @@ export class JobDetailComponent {
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
   canSignStage(stage: WorkflowStage): boolean {
-    return this.editable(stage) && !!stage.result && !!stage.inspectorName.trim();
+    if (!this.editable(stage) || !stage.result) return false;
+    // Check all required signoff fields are filled
+    return stage.signoffFields
+      .filter(f => f.required)
+      .every(f => {
+        const val = stage.signoffInputs[f.key] ?? '';
+        return val.trim().length > 0;
+      });
   }
 
   // ---- stage inputs ----
@@ -208,27 +215,39 @@ export class JobDetailComponent {
     this.wfService.updateStageSignoff(this.job, stage.id, { result },
       { action: `${stage.label} — Decision`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
   }
-  blurStageInspector(stage: WorkflowStage, value: string) {
-    if (this.job && value !== stage.inspectorName)
-      this.wfService.updateStageSignoff(this.job, stage.id, { inspectorName: value },
-        { action: `${stage.label} — Inspector`, from: this.show(stage.inspectorName), to: this.show(value) });
+
+  /* generic signoff field blur handler */
+  blurSignoffField(stage: WorkflowStage, field: SignoffField, value: string) {
+    if (!this.job) return;
+    const prev = stage.signoffInputs[field.key] ?? '';
+    if (value === prev) return;
+    this.wfService.updateStageSignoff(this.job, stage.id,
+      { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
+      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(value) });
   }
-  blurStageLicense(stage: WorkflowStage, value: string) {
-    if (this.job && value !== stage.licenseNo)
-      this.wfService.updateStageSignoff(this.job, stage.id, { licenseNo: value },
-        { action: `${stage.label} — License #`, from: this.show(stage.licenseNo), to: this.show(value) });
+
+  /* generic signoff field select change handler */
+  signoffSelectChange(stage: WorkflowStage, field: SignoffField, value: string | null) {
+    const v = value ?? '';
+    if (!this.job) return;
+    const prev = stage.signoffInputs[field.key] ?? '';
+    if (v === prev) return;
+    this.wfService.updateStageSignoff(this.job, stage.id,
+      { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
+      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
   }
-  blurStageNotes(stage: WorkflowStage, value: string) {
-    if (this.job && value !== stage.notes)
-      this.wfService.updateStageSignoff(this.job, stage.id, { notes: value },
-        { action: `${stage.label} — Notes`, from: this.show(stage.notes), to: this.show(value) });
+
+  /* visibility of a signoff field (showIf support) */
+  visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
+    return stage.signoffFields.filter(f =>
+      !f.showIf || stage.signoffInputs[f.showIf.key] === f.showIf.equals);
   }
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
     const decision = (stage.result ?? '').toUpperCase();
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off "${stage.label}" as ${decision} under ${stage.inspectorName}? This locks the stage and advances the workflow.`,
+      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.`,
       acceptLabel: 'Sign & lock',
       rejectLabel: 'Cancel',
       accept: () => {

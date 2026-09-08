@@ -1,0 +1,157 @@
+<!-- Admin → Sign-off Fields maintenance table. -->
+<h2 class="section-title">Sign-off Fields</h2>
+<p class="section-sub">Configure which fields appear on each stage's sign-off panel, and toggle validation requirements.</p>
+
+<div class="facet-row">
+  <span class="fw-bold">Fields</span>
+  <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search fields…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+  </label>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
+    <svg lucidePlus class="size-4"></svg> Add field
+  </button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th class="min-w-12">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
+            Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
+            [selected]="table.columnFilters()['trade'] ?? []"
+            (selectedChange)="table.setColumnFilter('trade', $event)" />
+        </div>
+      </th>
+      <th class="min-w-14">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('stageLabel')">
+            Stage {{ table.sortField() === 'stageLabel' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="stageOptions()"
+            [selected]="table.columnFilters()['stageLabel'] ?? []"
+            (selectedChange)="table.setColumnFilter('stageLabel', $event)" />
+        </div>
+      </th>
+      <th class="min-w-14">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('label')">
+          Field {{ table.sortField() === 'label' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
+      </th>
+      <th class="min-w-10">Type</th>
+      <th class="min-w-10 text-center">Required</th>
+      <th class="min-w-16">Placeholder / Options</th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of visibleRows(); track row.id) {
+      <tr>
+        <!-- Trade -->
+        <td>
+          @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.trade" (ngModelChange)="updateField(row, 'trade', $event)">
+              @for (o of tradeOptions; track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          } @else {
+            {{ row.trade }}
+          }
+        </td>
+        <!-- Stage -->
+        <td>
+          @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.stageId" (ngModelChange)="onStageChange(row, $event)">
+              @for (o of stageOptions(); track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          } @else {
+            {{ row.stageLabel }}
+          }
+        </td>
+        <!-- Field label -->
+        <td>
+          @if (editingId() === row.id) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Field label"
+                   [ngModel]="row.label" (ngModelChange)="updateField(row, 'label', $event)" />
+          } @else {
+            {{ row.label || '—' }}
+          }
+        </td>
+        <!-- Type -->
+        <td>
+          @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.type" (ngModelChange)="updateField(row, 'type', $event)">
+              @for (o of fieldTypes; track o.value) {
+                <option [ngValue]="o.value">{{ o.label }}</option>
+              }
+            </select>
+          } @else {
+            {{ row.type }}
+          }
+        </td>
+        <!-- Required toggle -->
+        <td class="text-center">
+          <input type="checkbox" class="checkbox checkbox-sm"
+                 [checked]="row.required"
+                 [disabled]="editingId() !== row.id"
+                 (change)="toggleRequired(row)" />
+        </td>
+        <!-- Placeholder / Options -->
+        <td>
+          @if (editingId() === row.id) {
+            @if (row.type === 'select') {
+              <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                     placeholder="Label:value, Label:value"
+                     [ngModel]="row.optionsText" (ngModelChange)="updateField(row, 'optionsText', $event)" />
+            } @else {
+              <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                     placeholder="Placeholder text"
+                     [ngModel]="row.placeholder" (ngModelChange)="updateField(row, 'placeholder', $event)" />
+            }
+          } @else {
+            @if (row.type === 'select') {
+              <span class="text-xs">{{ row.optionsText || '—' }}</span>
+            } @else {
+              {{ row.placeholder || '—' }}
+            }
+          }
+        </td>
+        <!-- Actions -->
+        <td>
+          <div class="row-tight">
+            @if (editingId() !== row.id) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs text-success" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="7" class="empty">No sign-off fields defined.</td></tr>
+    }
+  </tbody>
+</table>
+</div>
