@@ -212,10 +212,26 @@ export class WorkflowService {
   /* lock a stage's sign-off and advance (or route back on reject) */
   signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
-      const stages = wf.stages.map(s =>
+      let stages = wf.stages.map(s =>
         s.id === stageId ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
+
+      /* repeatable stage + stepType='repeat': insert a fresh copy after this stage */
+      if (st.repeatable && st.stepType === 'repeat') {
+        const idx = stages.findIndex(s => s.id === stageId);
+        const clone: typeof st = {
+          ...st,
+          id: `${st.id}-r${Date.now()}`,
+          signed: false,
+          signedAt: null,
+          result: null,
+          inputs: {},
+          signoffInputs: {},
+          stepType: 'standard',
+        };
+        stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
+      }
 
       /* on reject: re-open stages from the reject target up to (not including) this stage */
       if (st.result === 'reject' && st.rejectToStage) {

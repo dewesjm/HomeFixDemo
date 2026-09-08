@@ -45,6 +45,8 @@ export interface WorkflowStage {
   // --- per-stage sign-off ---
   result: StageResult | null;     /* required before signing, kept special */
   rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
+  repeatable: boolean;            /* signing with stepType='repeat' inserts another copy */
+  stepType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
 }
@@ -105,6 +107,8 @@ interface StageTemplate {
   signoffFields?: SignoffField[];
   /* stage id to route back to when this stage is rejected (empty = no routing) */
   rejectToStage?: string;
+  /* signing inserts another copy of this stage after itself */
+  repeatable?: boolean;
 }
 
 const titleHas = (job: Job, ...words: string[]) =>
@@ -345,6 +349,16 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Load test', value: 'load' }, { label: 'Visual + functional', value: 'visual-functional' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
+    { id: 'sanding',  label: 'Sanding',              required: true, repeatable: true, fields: [
+      { key: 'grit', label: 'Grit', type: 'select', options: [
+        { label: '80 (rough)', value: '80' }, { label: '120 (medium)', value: '120' },
+        { label: '220 (fine)', value: '220' }, { label: '400 (finish)', value: '400' }
+      ]},
+      { key: 'surface', label: 'Surface condition', type: 'text', placeholder: 'e.g. smooth, raised grain' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
     { id: 'finish',  label: 'Finish',                required: true, fields: [
       { key: 'finish', label: 'Finish / stain', type: 'text', placeholder: 'e.g. satin poly' }
     ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
@@ -555,26 +569,14 @@ export function getTradeOptions(): { label: string; value: string }[] {
   return trades.map(t => ({ label: t, value: t }));
 }
 
-/* deterministic step count 5..15, stable per job */
-function stageCountFor(job: Job): number {
-  return 5 + ((job.id * 7 + 3) % 11);
-}
-
 export function buildStages(job: Job): WorkflowStage[] {
-  /* prep + trade stages (from merged templates) + handover */
+  /* prep + trade stages (from merged templates) + handover — no cycling */
   const templates = getTemplates();
   const tradeStages = templates[job.trade] ?? [];
-  // exclude prep and handover — they're always first and last
-  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-  const count = stageCountFor(job);
-  // take up to `count` middle stages, cycling if the trade has fewer
-  const selected: StageTemplate[] = [];
-  for (let i = 0; i < count - 2; i++) {
-    selected.push(middle[i % middle.length]);
-  }
   const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
   const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
-  return [prep, ...selected, handover].map(t => {
+  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
+  return [prep, ...middle, handover].map(t => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     return {
@@ -587,6 +589,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',
+      repeatable: t.repeatable ?? false,
+      stepType: 'standard',
       signed: false,
       signedAt: null
     };

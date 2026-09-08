@@ -226,6 +226,25 @@
               }
             </div>
           }
+          <!-- Step type (repeatable stages only) -->
+          @if (stage.repeatable && !stage.signed) {
+            <div>
+              <div class="meta">Step type <span class="req">*</span></div>
+              <div class="result-radios">
+                <label>
+                  <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
+                         [checked]="stage.stepType === 'repeat'" (change)="updateStepType(stage, 'repeat')" />
+                  <span>Repeat</span>
+                </label>
+                <label>
+                  <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
+                         [checked]="stage.stepType === 'final' || stage.stepType === 'standard'"
+                         (change)="updateStepType(stage, 'final')" />
+                  <span>Final</span>
+                </label>
+              </div>
+            </div>
+          }
           <!-- Decision (always present — drives workflow logic) -->
           <div>
             <div class="meta">Decision <span class="req">*</span></div>

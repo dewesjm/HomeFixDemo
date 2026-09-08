@@ -161,6 +161,8 @@ export class JobDetailComponent {
   }
   canSignStage(stage: WorkflowStage): boolean {
     if (!this.editable(stage) || !stage.result) return false;
+    // Repeatable stages must have stepType chosen
+    if (stage.repeatable && !stage.stepType) return false;
     // Check all required signoff fields are filled
     return stage.signoffFields
       .filter(f => f.required)
@@ -245,9 +247,12 @@ export class JobDetailComponent {
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
     const decision = (stage.result ?? '').toUpperCase();
+    const stepNote = stage.repeatable && stage.stepType === 'repeat'
+      ? ' Another round will be added after this one.'
+      : '';
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.`,
+      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${stepNote}`,
       acceptLabel: 'Sign & lock',
       rejectLabel: 'Cancel',
       accept: () => {
@@ -255,6 +260,13 @@ export class JobDetailComponent {
         this.selectedStep.set(this.indexOfActive());   // advance the steps indicator
       }
     });
+  }
+  updateStepType(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map(s => s.id === stage.id ? { ...s, stepType: value } : s)
+    }));
   }
   reopenStage(stage: WorkflowStage) {
     if (!this.job) return;
