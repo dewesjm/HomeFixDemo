@@ -20,8 +20,9 @@
   border: none;
 }
 
-/* overflow:auto makes .content a block formatting context so it contains the floats. */
-.content { flex: 1; padding: 1.5rem; overflow: auto; }
+/* overflow:hidden makes .content a block formatting context so it contains floats,
+   without adding its own scrollbar (page content scrolls within route outlets). */
+.content { flex: 1; padding: 1.5rem; overflow: hidden; }
 /* Toggle floats left so the page's <h2> sits beside it on the same line; the content
    below clears it and uses the full width — no reserved column. */
 .menu-toggle { float: left; margin: -.25rem .5rem 0 0; }

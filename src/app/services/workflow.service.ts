@@ -5,7 +5,8 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor, signoffFieldsFor
+  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor, signoffFieldsFor,
+  buildStages
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
@@ -359,7 +360,27 @@ export class WorkflowService {
           s.signed ??= false;
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed
+          s.repeatable ??= false;
+          s.stepType ??= 'standard';
         });
+        /* v3 migration: rebuild stages if any have filler IDs (extra-*, Check N) */
+        if (job && wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label))) {
+          const oldStages = wf.stages;
+          const newStages = buildStages(job);
+          // carry over signed state + inputs for stages whose IDs still exist
+          const oldMap = new Map(oldStages.map(s => [s.id, s]));
+          wf.stages = newStages.map(ns => {
+            const old = oldMap.get(ns.id);
+            return old ? {
+              ...ns,
+              inputs: old.inputs,
+              signoffInputs: old.signoffInputs,
+              result: old.result,
+              signed: old.signed,
+              signedAt: old.signedAt,
+            } : ns;
+          });
+        }
       }
       return parsed;
     } catch {
