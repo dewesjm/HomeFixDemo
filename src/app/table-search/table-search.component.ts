@@ -88,6 +88,7 @@ export class TableSearchComponent {
 
   clear() {
     this.table.clearFilters();
+    this.selectedRole.set(null);
   }
 
   costMin = computed<number | null>(() => this.table.columnFilters()['estimatedCost']?.[0] ?? null);
