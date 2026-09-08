@@ -560,25 +560,21 @@ function stageCountFor(job: Job): number {
   return 5 + ((job.id * 7 + 3) % 11);
 }
 
-/* filler stage so a job can run longer than its trade defines */
-function fillerStage(n: number): StageTemplate {
-  return {
-    id: `extra-${n}`,
-    label: `Check ${n}`,
-    required: true,
-    fields: [{ key: `reading${n}`, label: 'Reading', type: 'text', placeholder: 'value' }],
-    signoffFields: DEFAULT_SIGNOFF_FIELDS
-  };
-}
-
 export function buildStages(job: Job): WorkflowStage[] {
-  /* prep + a 5..15 run (trade stages, then filler) + handover */
-  const trade = TRADE_STAGES[job.trade];
-  const middle: StageTemplate[] = [];
-  for (let i = 0; i < stageCountFor(job) - 2; i++) {
-    middle.push(i < trade.length ? trade[i] : fillerStage(i - trade.length + 1));
+  /* prep + trade stages (from merged templates) + handover */
+  const templates = getTemplates();
+  const tradeStages = templates[job.trade] ?? [];
+  // exclude prep and handover — they're always first and last
+  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
+  const count = stageCountFor(job);
+  // take up to `count` middle stages, cycling if the trade has fewer
+  const selected: StageTemplate[] = [];
+  for (let i = 0; i < count - 2; i++) {
+    selected.push(middle[i % middle.length]);
   }
-  return [PREP_STAGE, ...middle, HANDOVER_STAGE].map(t => {
+  const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
+  const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
+  return [prep, ...selected, handover].map(t => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     return {
