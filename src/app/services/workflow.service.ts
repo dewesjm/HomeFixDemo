@@ -382,6 +382,8 @@ export class WorkflowService {
           });
         }
       }
+      /* persist rebuilt stages so migration only runs once */
+      localStorage.setItem(LS_KEY, JSON.stringify(parsed));
       return parsed;
     } catch {
       return {};
