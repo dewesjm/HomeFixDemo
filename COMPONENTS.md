@@ -44,11 +44,11 @@ The heaviest use of the library; one component does most of the work:
 - **[Angular]** `*ngFor`/`*ngIf` (CommonModule), `[(ngModel)]` (FormsModule), `Router` for row navigation
 
 ### Advanced / adaptive search (`adaptive-search`)
-- **[PrimeNG]** `p-dialog` — modal for building a query / picking columns
-- **[PrimeNG]** `p-checkbox`, `p-multiSelect`, `p-select`, `p-slider`, `p-datePicker`, `p-rating` — the filter inputs
-- **[PrimeNG]** `p-chip` — removable "active filter" pills; `p-tag`, `pTooltip`, `pInputText`, `p-button`
-- **[PrimeNG]** `p-table` — the **results list** (sortable columns incl. a derived **Current step**, paginator, CSV export, frozen "Details" action). The adaptive bar does the filtering; the table just renders the matched rows
-- **[Angular]** `signal()`/`computed()` state, `FormsModule` bindings
+- **Schema-driven filter bar** with saved variants — filters adapt to job data
+- **Filters**: Trade, Technician, Tags, Cost range, Date range, Status, Make, Model, Code 1/2/3 (derived from job data)
+- **Column picker** (`Columns3` icon) — toggle which columns appear in the results table; persisted to localStorage (`pn-demo:result-columns`)
+- **Results table** — dynamic columns based on picker selection, sortable, paginated, CSV export
+- Frozen "Details" action column
 
 ### Work history (`work-history`)
 - **[PrimeNG]** `p-table` — the **activity log** (sortable columns, paginator; per-column **Trade** filter via `p-columnFilter`). Columns: When · Who · Action · Old value · New value · Step · Job · Trade
@@ -59,17 +59,34 @@ The heaviest use of the library; one component does most of the work:
 ### Job detail (`job-detail`) — by section
 | Section | Elements |
 |---|---|
-| **Stages** indicator (first section) | **[PrimeNG]** `p-steps` (wrapped in an **[Angular]**/CSS scroll container for narrow screens) — **progress only**; recording + signing happen in the Sign-off section |
-| **Job details** (read-only) | **[Angular]** plain grid for the label/value pairs (current step shown here; no job-status field); **[PrimeNG]** `p-tag` (tags), `pTooltip` (code hovers); the collapsible "Audit & records" tier is a **[PrimeNG]** `p-button` "Show more/less" toggle driving an **[Angular]** `*ngIf` over a `signal()`. Several **placeholder** fields are seeded per job via a `computed()` so the demo doesn't look templated |
-| **Work validation** | **[PrimeNG]** `p-select` (work type / condition), `pInputText`, `p-table` (components list) |
-| **Attachments** | **[PrimeNG]** `p-fileUpload` (basic/auto mode), `p-table` (file list) |
-| **Sign-off** (for the selected stage) | **[PrimeNG]** the stage's **readings inputs** (`pInputText` / `p-select`), then `p-radioButton` (Accept/Reject decision), `pInputText`, `p-tag`, `p-button` (Sign & lock / Re-open). **Sign & lock** opens a `ConfirmationService` confirm dialog before locking |
+| **Stages** indicator (first section) | Visual progress bar — **progress only**; recording + signing happen in the Sign-off section. Click to select a step |
+| **Job details** (read-only) | Plain grid for label/value pairs; `p-tag` (tags), `pTooltip` (code hovers); collapsible "Audit & records" tier |
+| **Work validation** | `p-select` (work type / condition), text inputs, `p-table` (components list) |
+| **Attachments** | File upload (basic/auto mode), `p-table` (file list) |
+| **Sign-off** (for the selected stage) | **Current step** dropdown (swap to Sanding/Cleaning/etc. — fields swap to match), **readings inputs** (dynamic per swapped stage), **Repeat/Final** radio (repeatable stages only), **Decision** (Accept/Reject), **Sign & lock** button with confirm dialog. Swapping current step loads that stage's readings + sign-off fields dynamically |
 
-### Admin screens (`admin-steps`, `admin-characteristics`, `admin-conditions`, `admin-materials`)
-All four share one pattern — **editable reference tables**:
-- **[PrimeNG]** `p-table` with inline editing, `pInputText` / `p-select` / `p-multiSelect` for cells
-- **[PrimeNG]** `p-iconField`/`p-inputIcon` search, `p-button` add/delete, `MessageService` -> toast on save
-- **[Angular]** `FormsModule` two-way bindings, `inject()` for the data service
+### Admin screens
+
+**Admin → Steps** (`admin-steps`):
+- Editable table of per-trade workflow steps with inline editing
+- **Sequence column** with ▲/▼ reorder buttons
+- **Settings** (⚙️) button opens a **field configuration dialog** — configure readings fields (key, label, type, unit, placeholder) and sign-off fields (key, label, type, required, options) per stage
+- **New trade** button — creates a trade with default Prep + Handover stages
+- **Add step** button — adds a new row, saves to data layer on confirm
+- **Delete** — removes from data layer and localStorage
+- **Reject routing** — dropdown to pick which stage to go back to on reject
+- All changes persist to `localStorage` (`homefix:stage-templates:v1`)
+
+**Admin → Sign-off fields** (`admin-signoff-fields`):
+- Configurable sign-off fields per trade+stage
+- Inline editing of field key, label, type, required, placeholder, options
+- Add/delete fields, filtered by trade+stage
+- Persists to `localStorage` via stage templates
+
+**Admin → Characteristic codes / Condition codes / Materials** (`admin-characteristics`, `admin-conditions`, `admin-materials`):
+- Editable reference tables with inline editing
+- Search, add, delete rows
+- Persists to `localStorage`
 
 ### Admin → Set step (`admin-set-step`)
 An action form, not a reference table — an **admin override** to force a job's workflow to a chosen stage:
@@ -85,10 +102,10 @@ An action form, not a reference table — an **admin override** to force a job's
 - **Standalone components** — no `NgModules`; each component imports what it needs directly in `imports: [...]`
 - **Signals for state** — `signal()` + `computed()` instead of plain fields; `inject()` instead of constructor params (mostly)
 - **Forms** — `FormsModule` with `[(ngModel)]` (or `[ngModel]` + an event handler for controlled updates)
-- **Control flow** — currently the older `CommonModule` `*ngIf`/`*ngFor` (not the new `@if`/`@for`). Pick one convention and keep it consistent
+- **Control flow** — modern `@if`/`@for` syntax (not the older `*ngIf`/`*ngFor`)
 - **Routing** — `provideRouter`, `routerLink`, `ActivatedRoute` (+ query params for cross-screen filtering)
 
-> Note: `[(ngModel)]`, `*ngIf`, `*ngFor` are **Angular**. PrimeNG components are the
+> Note: `[(ngModel)]` is **Angular** (FormsModule). PrimeNG components are the
 > *targets* of those bindings (e.g. `[(ngModel)]` on a `p-select`), but the binding
 > syntax itself is the framework.
 
