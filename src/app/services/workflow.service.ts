@@ -6,7 +6,7 @@ import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, stageFieldsFor, signoffFieldsFor,
-  buildStages
+  buildStages, getTemplates
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
@@ -363,23 +363,27 @@ export class WorkflowService {
           s.repeatable ??= false;
           s.stepType ??= 'standard';
         });
-        /* v3 migration: rebuild stages if any have filler IDs (extra-*, Check N) */
-        if (job && wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label))) {
-          const oldStages = wf.stages;
-          const newStages = buildStages(job);
-          // carry over signed state + inputs for stages whose IDs still exist
-          const oldMap = new Map(oldStages.map(s => [s.id, s]));
-          wf.stages = newStages.map(ns => {
-            const old = oldMap.get(ns.id);
-            return old ? {
-              ...ns,
-              inputs: old.inputs,
-              signoffInputs: old.signoffInputs,
-              result: old.result,
-              signed: old.signed,
-              signedAt: old.signedAt,
-            } : ns;
-          });
+        /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
+        if (job) {
+          const hasFillers = wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label));
+          const currentIds = new Set(buildStages(job).map(s => s.id));
+          const missingStages = !wf.stages.every(s => currentIds.has(s.id));
+          if (hasFillers || missingStages) {
+            const oldStages = wf.stages;
+            const newStages = buildStages(job);
+            const oldMap = new Map(oldStages.map(s => [s.id, s]));
+            wf.stages = newStages.map(ns => {
+              const old = oldMap.get(ns.id);
+              return old ? {
+                ...ns,
+                inputs: old.inputs,
+                signoffInputs: old.signoffInputs,
+                result: old.result,
+                signed: old.signed,
+                signedAt: old.signedAt,
+              } : ns;
+            });
+          }
         }
       }
       /* persist rebuilt stages so migration only runs once */
