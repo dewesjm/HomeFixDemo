@@ -432,6 +432,7 @@ interface SerializedStage {
   fields: StageField[];
   signoffFields: SignoffField[];
   rejectToStage: string;
+  repeatable?: boolean;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -442,11 +443,12 @@ function serializeStage(t: StageTemplate): SerializedStage {
     fields: t.fields,
     signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: t.rejectToStage ?? '',
+    repeatable: t.repeatable ?? false,
   };
 }
 
 function deserializeStage(s: SerializedStage): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage };
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -470,7 +472,16 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
     const overridden = saved[trade];
     if (overridden) {
-      _merged[trade] = overridden.map(deserializeStage);
+      // Merge: start from static defaults, apply admin overrides by stage ID
+      const savedMap = new Map(overridden.map(s => [s.id, s]));
+      const merged = statics.map(s => savedMap.has(s.id) ? deserializeStage(savedMap.get(s.id)!) : s);
+      // Add any admin-created stages not in static defaults
+      for (const s of overridden) {
+        if (!statics.some(st => st.id === s.id)) {
+          merged.push(deserializeStage(s));
+        }
+      }
+      _merged[trade] = merged;
     } else {
       _merged[trade] = statics;
     }
