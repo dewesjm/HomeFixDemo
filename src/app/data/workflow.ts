@@ -403,24 +403,145 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 };
 
 /* prep stage, trade stages, then handover */
-export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
+const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
   (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]])
 ) as Record<Job['trade'], StageTemplate[]>;
 
+/* ── localStorage persistence for stage templates ── */
+const TEMPLATES_LS_KEY = 'homefix:stage-templates:v1';
+
+/* serialized form — required is always a plain boolean (no functions) */
+interface SerializedStage {
+  id: string;
+  label: string;
+  required: boolean;
+  fields: StageField[];
+  signoffFields: SignoffField[];
+  rejectToStage: string;
+}
+
+function serializeStage(t: StageTemplate): SerializedStage {
+  return {
+    id: t.id,
+    label: t.label,
+    required: typeof t.required === 'function' ? true : t.required,
+    fields: t.fields,
+    signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
+    rejectToStage: t.rejectToStage ?? '',
+  };
+}
+
+function deserializeStage(s: SerializedStage): StageTemplate {
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage };
+}
+
+function loadSavedOverrides(): Record<string, SerializedStage[]> {
+  try {
+    const raw = localStorage.getItem(TEMPLATES_LS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveOverrides(overrides: Record<string, SerializedStage[]>) {
+  try { localStorage.setItem(TEMPLATES_LS_KEY, JSON.stringify(overrides)); } catch { /* */ }
+}
+
+/* merged view: static defaults + admin overrides (saved to localStorage) */
+let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
+
+export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
+  if (_merged) return _merged;
+  const saved = loadSavedOverrides();
+  _merged = {} as Record<Job['trade'], StageTemplate[]>;
+  for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
+    const overridden = saved[trade];
+    if (overridden) {
+      _merged[trade] = overridden.map(deserializeStage);
+    } else {
+      _merged[trade] = statics;
+    }
+  }
+  return _merged;
+}
+
+/* invalidate the merged cache so next read re-loads from localStorage */
+export function invalidateTemplateCache() { _merged = null; }
+
+/* ── CRUD for stage templates (called from admin) ── */
+
+export function addStageTemplate(trade: Job['trade'], stage: Omit<StageTemplate, 'required'> & { required?: boolean }) {
+  const templates = getTemplates();
+  const newStage: StageTemplate = {
+    ...stage,
+    required: stage.required ?? true,
+    signoffFields: stage.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
+    rejectToStage: stage.rejectToStage ?? '',
+  };
+  templates[trade] = [...(templates[trade] ?? []), newStage];
+  persistTemplates(templates);
+}
+
+export function updateStageTemplate(trade: Job['trade'], stageId: string, patch: Partial<StageTemplate>) {
+  const templates = getTemplates();
+  const list = templates[trade];
+  if (!list) return;
+  templates[trade] = list.map(s => s.id === stageId ? { ...s, ...patch } : s);
+  persistTemplates(templates);
+}
+
+export function deleteStageTemplate(trade: Job['trade'], stageId: string) {
+  const templates = getTemplates();
+  templates[trade] = (templates[trade] ?? []).filter(s => s.id !== stageId);
+  persistTemplates(templates);
+}
+
+/* add a new trade with default prep + handover stages */
+export function addTrade(trade: string) {
+  const templates = getTemplates();
+  if (templates[trade as Job['trade']]) return; // already exists
+  templates[trade as Job['trade']] = [
+    { ...serializeStage(PREP_STAGE), signoffFields: PREP_STAGE.signoffFields, rejectToStage: '' } as StageTemplate,
+    { ...serializeStage(HANDOVER_STAGE), signoffFields: HANDOVER_STAGE.signoffFields, rejectToStage: '' } as StageTemplate,
+  ];
+  persistTemplates(templates);
+}
+
+function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
+  const serialized: Record<string, SerializedStage[]> = {};
+  for (const [trade, list] of Object.entries(templates)) {
+    serialized[trade] = list.map(serializeStage);
+  }
+  saveOverrides(serialized);
+  invalidateTemplateCache();
+}
+
+/* export the merged templates as the public constant */
+export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = new Proxy({} as Record<Job['trade'], StageTemplate[]>, {
+  get(_target, prop: string) {
+    return (getTemplates() as any)[prop];
+  },
+  ownKeys() {
+    return Object.keys(getTemplates());
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    return { configurable: true, enumerable: true, value: (getTemplates() as any)[prop] };
+  }
+});
+
 /* fields for a trade stage, backfills old saved workflows */
 export function stageFieldsFor(trade: Job['trade'], stageId: string): StageField[] {
-  return STAGE_TEMPLATES[trade].find(t => t.id === stageId)?.fields ?? [];
+  return getTemplates()[trade]?.find(t => t.id === stageId)?.fields ?? [];
 }
 
 /* sign-off fields for a trade stage, backfills old saved workflows */
 export function signoffFieldsFor(trade: Job['trade'], stageId: string): SignoffField[] {
-  return STAGE_TEMPLATES[trade].find(t => t.id === stageId)?.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
+  return getTemplates()[trade]?.find(t => t.id === stageId)?.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
 }
 
 /* all unique stage ids across all trades (for the admin screen) */
 export function allStageIds(): { id: string; label: string }[] {
   const seen = new Map<string, string>();
-  for (const templates of Object.values(STAGE_TEMPLATES)) {
+  for (const templates of Object.values(getTemplates())) {
     for (const t of templates) {
       if (!seen.has(t.id)) seen.set(t.id, t.label);
     }
