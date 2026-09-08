@@ -161,15 +161,27 @@ export class JobDetailComponent {
   }
   canSignStage(stage: WorkflowStage): boolean {
     if (!this.editable(stage) || !stage.result) return false;
-    // Repeatable stages must have stepType chosen
     if (stage.repeatable && !stage.stepType) return false;
-    // Check all required signoff fields are filled
     return stage.signoffFields
       .filter(f => f.required)
       .every(f => {
         const val = stage.signoffInputs[f.key] ?? '';
         return val.trim().length > 0;
       });
+  }
+
+  remainingStages(stage: WorkflowStage): { label: string; value: string }[] {
+    if (!this.wf) return [];
+    const stages = this.wf().stages;
+    const idx = stages.findIndex(s => s.id === stage.id);
+    return stages.slice(idx + 1).map(s => ({ label: s.label, value: s.id }));
+  }
+  updateRouteTo(stage: WorkflowStage, value: string) {
+    if (!this.wf) return;
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map(s => s.id === stage.id ? { ...s, routeTo: value } : s)
+    }));
   }
 
   // ---- stage inputs ----
@@ -247,17 +259,24 @@ export class JobDetailComponent {
   signStage(stage: WorkflowStage) {
     if (!this.job || !this.canSignStage(stage)) return;
     const decision = (stage.result ?? '').toUpperCase();
+    const routeNote = stage.routeTo
+      ? ` Will jump to "${this.wf?.().stages.find(s => s.id === stage.routeTo)?.label ?? stage.routeTo}".`
+      : '';
     const stepNote = stage.repeatable && stage.stepType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${stepNote}`,
+      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${routeNote}${stepNote}`,
       acceptLabel: 'Sign & lock',
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);
-        this.selectedStep.set(this.indexOfActive());   // advance the steps indicator
+        if (stage.routeTo && stage.result === 'accept') {
+          const targetIdx = this.wf?.().stages.findIndex(s => s.id === stage.routeTo) ?? -1;
+          if (targetIdx >= 0) { this.selectedStep.set(targetIdx); return; }
+        }
+        this.selectedStep.set(this.indexOfActive());
       }
     });
   }

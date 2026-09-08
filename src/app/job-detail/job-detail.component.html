@@ -245,6 +245,19 @@
               </div>
             </div>
           }
+          <!-- Next step override -->
+          @if (!stage.signed && remainingStages(stage).length) {
+            <div>
+              <div class="meta">Next step</div>
+              <select class="select select-bordered w-full" [ngModel]="stage.routeTo || ''"
+                      (ngModelChange)="updateRouteTo(stage, $event)">
+                <option value="">Next in sequence</option>
+                @for (s of remainingStages(stage); track s.value) {
+                  <option [ngValue]="s.value">{{ s.label }}</option>
+                }
+              </select>
+            </div>
+          }
           <!-- Decision (always present — drives workflow logic) -->
           <div>
             <div class="meta">Decision <span class="req">*</span></div>

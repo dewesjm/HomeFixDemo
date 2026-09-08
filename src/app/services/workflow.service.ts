@@ -230,8 +230,22 @@ export class WorkflowService {
           inputs: {},
           signoffInputs: {},
           stepType: 'standard',
+          routeTo: '',
         };
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
+      }
+
+      /* routeTo override: on accept, re-open stages between current and target so workflow jumps there */
+      if (st.routeTo && st.result === 'accept') {
+        const currentIdx = stages.findIndex(s => s.id === stageId);
+        const targetIdx = stages.findIndex(s => s.id === st.routeTo);
+        if (targetIdx > currentIdx) {
+          for (let i = currentIdx + 1; i < targetIdx; i++) {
+            if (stages[i].signed) {
+              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
+            }
+          }
+        }
       }
 
       /* on reject: re-open stages from the reject target up to (not including) this stage */
@@ -362,6 +376,7 @@ export class WorkflowService {
           delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed
           s.repeatable ??= false;
           s.stepType ??= 'standard';
+          s.routeTo ??= '';
         });
         /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
         if (job) {
