@@ -469,21 +469,24 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   if (_merged) return _merged;
   const saved = loadSavedOverrides();
   _merged = {} as Record<Job['trade'], StageTemplate[]>;
+  // Start with static defaults, merge admin overrides by stage ID
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
     const overridden = saved[trade];
     if (overridden) {
-      // Merge: start from static defaults, apply admin overrides by stage ID
       const savedMap = new Map(overridden.map(s => [s.id, s]));
       const merged = statics.map(s => savedMap.has(s.id) ? deserializeStage(savedMap.get(s.id)!) : s);
-      // Add any admin-created stages not in static defaults
       for (const s of overridden) {
-        if (!statics.some(st => st.id === s.id)) {
-          merged.push(deserializeStage(s));
-        }
+        if (!statics.some(st => st.id === s.id)) merged.push(deserializeStage(s));
       }
       _merged[trade] = merged;
     } else {
       _merged[trade] = statics;
+    }
+  }
+  // Include trades that exist only in localStorage (added via admin)
+  for (const [trade, stages] of Object.entries(saved)) {
+    if (!_merged[trade as Job['trade']]) {
+      _merged[trade as Job['trade']] = stages.map(deserializeStage);
     }
   }
   return _merged;
