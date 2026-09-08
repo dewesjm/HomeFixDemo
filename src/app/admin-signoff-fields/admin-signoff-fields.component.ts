@@ -8,8 +8,8 @@ import { LucideSearch, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTra
 import { ToastService } from '../shared/toast.service';
 import { TableState, inArray } from '../shared/table-state';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
-import { Job, TRADE_OPTIONS } from '../data/jobs';
-import { STAGE_TEMPLATES, SignoffField, defaultSignoffFields } from '../data/workflow';
+import { Job } from '../data/jobs';
+import { STAGE_TEMPLATES, SignoffField, defaultSignoffFields, getTemplates, getTradeOptions } from '../data/workflow';
 
 interface SignoffFieldRow {
   id: string;
@@ -62,7 +62,7 @@ function flattenTemplates(): SignoffFieldRow[] {
   templateUrl: './admin-signoff-fields.component.html'
 })
 export class AdminSignoffFieldsComponent {
-  tradeOptions = TRADE_OPTIONS;
+  tradeOptions = getTradeOptions();
   fieldTypes = FIELD_TYPES;
 
   rows = signal<SignoffFieldRow[]>(flattenTemplates());

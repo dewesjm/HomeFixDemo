@@ -256,3 +256,12 @@ html, body {
 /* Work-history old/new value columns */
 .hist-old { color: var(--app-text-muted); }
 .hist-new { font-weight: 600; }
+
+/* Highlight flash for newly added rows */
+.row-highlight {
+  animation: row-flash 2s ease-out;
+}
+@keyframes row-flash {
+  0%   { background: color-mix(in oklch, var(--color-info) 25%, transparent); }
+  100% { background: transparent; }
+}

@@ -5,7 +5,7 @@ export interface Job {
   id: number;
   jobNumber: string;   /* 5-char code, e.g. K7P2M */
   title: string;
-  trade: 'Plumbing' | 'Electrical' | 'HVAC' | 'Roofing' | 'Carpentry' | 'Inspection';
+  trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   make: string;              /* equipment manufacturer */
   model: string;             /* equipment model / part */
@@ -120,6 +120,8 @@ export function generateJobs(count = 120): Job[] {
 }
 
 export const JOBS: Job[] = generateJobs();
-export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
 export const TECHNICIAN_OPTIONS = TECHNICIANS.map(t => ({ label: t, value: t }));
 export const TAG_OPTIONS = TAG_POOL.map(t => ({ label: t, value: t }));
+
+/* static fallback for initial load; components should prefer getTradeOptions() from workflow.ts */
+export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));

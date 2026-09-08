@@ -549,6 +549,12 @@ export function allStageIds(): { id: string; label: string }[] {
   return [...seen.entries()].map(([id, label]) => ({ id, label }));
 }
 
+/* dynamic trade options — includes admin-added trades from localStorage */
+export function getTradeOptions(): { label: string; value: string }[] {
+  const trades = Object.keys(getTemplates()).sort();
+  return trades.map(t => ({ label: t, value: t }));
+}
+
 /* deterministic step count 5..15, stable per job */
 function stageCountFor(job: Job): number {
   return 5 + ((job.id * 7 + 3) % 11);

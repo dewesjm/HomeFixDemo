@@ -14,11 +14,11 @@ import { TooltipDirective } from '../shared/tooltip.directive';
 import { TableState, inArray } from '../shared/table-state';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { downloadCsv } from '../data/export-csv';
-import { Job, TRADE_OPTIONS } from '../data/jobs';
+import { Job } from '../data/jobs';
 import {
   STAGE_TEMPLATES, StageField, SignoffField, defaultSignoffFields,
   addStageTemplate, updateStageTemplate, deleteStageTemplate, addTrade,
-  allStageIds, getTemplates
+  allStageIds, getTemplates, getTradeOptions
 } from '../data/workflow';
 
 interface StepRow {
@@ -89,7 +89,7 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
   templateUrl: './admin-steps.component.html'
 })
 export class AdminStepsComponent {
-  tradeOptions = TRADE_OPTIONS;
+  tradeOptions = computed(() => getTradeOptions());
   stageOptions = signal(allStageIds());
 
   rows = signal<StepRow[]>(this.buildInitialRows());
@@ -101,6 +101,7 @@ export class AdminStepsComponent {
   private seq = 0;
 
   editingId = signal<string | null>(null);
+  newRowId = signal<string | null>(null);  // highlights the newly added row
 
   // ── Field config dialog ──
   showFieldDlg = signal(false);
@@ -141,12 +142,15 @@ export class AdminStepsComponent {
   /* ── Row CRUD ── */
 
   addRow() {
-    const trade = this.tradeOptions[0].value;
+    const trade = this.tradeOptions()[0]?.value ?? 'HVAC';
     const maxSeq = Math.max(0, ...this.rows().filter(r => r.trade === trade).map(r => r.sequence));
     const newId = `custom-${++this.seq}`;
-    const row: StepRow = { id: `${trade}:${newId}`, step: '', trade, sequence: maxSeq + 1, rejectToStage: '' };
+    const fullId = `${trade}:${newId}`;
+    const row: StepRow = { id: fullId, step: '', trade, sequence: maxSeq + 1, rejectToStage: '' };
     this.rows.update(r => [...r, row]);
-    this.editingId.set(row.id);
+    this.editingId.set(fullId);
+    this.newRowId.set(fullId);
+    setTimeout(() => this.newRowId.set(null), 2000);
   }
 
   deleteRow(row: StepRow) {

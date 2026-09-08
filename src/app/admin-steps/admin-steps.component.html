@@ -36,7 +36,7 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
             Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
+          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions()"
             [selected]="table.columnFilters()['trade'] ?? []"
             (selectedChange)="table.setColumnFilter('trade', $event)" />
         </div>
@@ -48,7 +48,7 @@
   </thead>
   <tbody>
     @for (row of visibleRows(); track row.id) {
-      <tr>
+      <tr [class.row-highlight]="newRowId() === row.id">
         <td class="text-center">
           <span class="badge badge-sm badge-ghost">{{ row.sequence }}</span>
         </td>
@@ -64,7 +64,7 @@
           @if (editingId() === row.id) {
             <select class="select select-sm select-bordered w-full min-w-0"
                     [ngModel]="row.trade" (ngModelChange)="updateField(row, 'trade', $event)">
-              @for (o of tradeOptions; track o.value) {
+              @for (o of tradeOptions(); track o.value) {
                 <option [ngValue]="o.value">{{ o.label }}</option>
               }
             </select>

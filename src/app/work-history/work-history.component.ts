@@ -9,9 +9,9 @@ import { TableState, inArray } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 
-import { JOBS, Job, TRADE_OPTIONS } from '../data/jobs';
+import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { HistoryEntry } from '../data/workflow';
+import { HistoryEntry, getTradeOptions } from '../data/workflow';
 import { MOCK_ACTIVITY } from '../data/mock-history';
 import { downloadCsv } from '../data/export-csv';
 
@@ -38,7 +38,7 @@ export class WorkHistoryComponent {
   private router = inject(Router);
   private jobById = new Map<number, Job>(JOBS.map(j => [j.id, j]));
 
-  tradeOptions = TRADE_OPTIONS;
+  tradeOptions = getTradeOptions();
 
   person = signal<string | null>(null);
   /* job filter: job number or id */

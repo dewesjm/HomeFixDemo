@@ -16,7 +16,7 @@ import {
   TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS
 } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { currentStepLabel } from '../data/workflow';
+import { currentStepLabel, getTradeOptions } from '../data/workflow';
 
 type Row = Job & { currentStep: string };
 
@@ -35,7 +35,7 @@ export class TableSearchComponent {
     effect(() => this.table.setRows(this.displayedJobs()));
   }
 
-  tradeOptions = TRADE_OPTIONS;
+  tradeOptions = getTradeOptions();
   technicianOptions = TECHNICIAN_OPTIONS;
   tagOptions = TAG_OPTIONS;
 
