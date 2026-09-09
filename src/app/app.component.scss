@@ -42,3 +42,4 @@
 }
 
 .menu-active { background: var(--app-muted); font-weight: 600; }
+.menu-disabled { opacity: 0.4; cursor: not-allowed; }

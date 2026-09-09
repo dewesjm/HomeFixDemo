@@ -177,12 +177,12 @@
 
       @if (stage.required) {
         <div class="detail-grid">
-          <!-- Dynamic signoff fields (configured per stage) -->
+          <!-- Dynamic signoff fields (configured per stage, excluding fullWidth) -->
           @for (f of visibleSignoffFields(stage); track f.key) {
             @if (f.key === '_spacer') {
               <div class="signoff-spacer"></div>
-            } @else {
-              <div [style.grid-column]="f.fullWidth ? '1 / -1' : null">
+            } @else if (!f.fullWidth) {
+              <div>
                 <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
                 @if (f.type === 'select') {
                   <select class="select select-bordered w-full" [disabled]="!editable(stage)"
@@ -219,9 +219,11 @@
               </div>
             </div>
           }
-          <!-- Decision (only on inspection steps with reject routing) -->
-          @if (stage.rejectToStage) {
-          <div>
+        </div>
+
+        <!-- Decision (SAT/UNSAT) — own dedicated line -->
+        @if (stage.rejectToStage) {
+          <div class="mb-sm">
             <div class="meta">Decision <span class="req">*</span></div>
             <div class="result-radios">
               @for (o of resultOptions; track o.value) {
@@ -233,8 +235,20 @@
               }
             </div>
           </div>
+        }
+
+        <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
+        @for (f of visibleSignoffFields(stage); track f.key) {
+          @if (f.fullWidth) {
+            <div class="mb-sm">
+              <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
+              <input class="input input-bordered w-full" type="text"
+                     [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                     [ngModel]="stage.signoffInputs[f.key]"
+                     (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
+            </div>
           }
-        </div>
+        }
 
         <div class="signoff-actions">
           @if (!stage.signed) {

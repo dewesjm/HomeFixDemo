@@ -545,10 +545,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'interpassTemp', label: 'Interpass temp', type: 'number', unit: '°C' },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ] },
     { id: 'root-ndt', label: 'Root NDT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
@@ -558,30 +557,27 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ], rejectToStage: 'root-weld' },
     { id: 'root-layer', label: 'Root Layer', required: true, role: 'Welding', fields: [
       { key: 'layerCount', label: 'Layer count', type: 'number' },
       { key: 'weldingProcess', label: 'Welding process', type: 'select',
         options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
           { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ] },
     { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: [
       { key: 'finalPass', label: 'Final pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'capWidth', label: 'Cap width', type: 'number', unit: 'mm' },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ] },
     { id: 'final-ndt', label: 'Final NDT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
@@ -592,19 +588,17 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ], rejectToStage: 'final-weld' },
     { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
-      { key: 'notes', label: 'Notes', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ], rejectToStage: 'final-ndt' },
     { id: 'sold', label: 'SOLD', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
