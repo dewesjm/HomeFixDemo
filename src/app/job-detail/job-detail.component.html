@@ -11,18 +11,7 @@
   <h2 class="section-title mt-sm">{{ j.title }}</h2>
   <p class="section-sub">
     Job #{{ j.id }} · {{ j.trade }} ·
-    @if (currentStageStepOptions().length > 0) {
-      <strong>Current step:</strong>
-      <select class="select select-sm select-bordered ml-1"
-              [ngModel]="currentStepOptionValue()"
-              (ngModelChange)="setStepOption($event)">
-        @for (opt of currentStageStepOptions(); track opt.value) {
-          <option [ngValue]="opt.value">{{ opt.label }}</option>
-        }
-      </select>
-    } @else {
-      <strong>Current step:</strong> {{ currentStep() }}
-    }
+    <strong>Current step:</strong> {{ currentStep() }}
   </p>
 
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
@@ -162,7 +151,7 @@
         @if (stage.stepOptions && stage.stepOptions.length > 0) {
           <div class="mb-sm">
             <label class="stage-field">
-              <span class="stage-field-label font-semibold">Inspection Type</span>
+              <span class="stage-field-label font-semibold">Type</span>
               <select class="select select-bordered" [ngModel]="stage.inspectionType || defaultStepOption(stage)"
                       (ngModelChange)="setInspectionType($event)">
                 @for (opt of stage.stepOptions; track opt.value) {

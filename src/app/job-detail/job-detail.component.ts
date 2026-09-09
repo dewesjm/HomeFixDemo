@@ -71,30 +71,10 @@ export class JobDetailComponent {
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
-  /* stepOptions for the currently selected stage */
-  currentStageStepOptions = computed(() => {
-    if (!this.wf) return [];
-    const stage = this.wf().stages[this.selectedStep()];
-    return stage?.stepOptions ?? [];
-  });
-
   defaultStepOption(stage: WorkflowStage): string {
     if (!stage.stepOptions?.length) return '';
     return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
   }
-
-  currentStepOptionValue(): string {
-    if (!this.wf) return '';
-    const stage = this.wf().stages[this.selectedStep()];
-    return stage?.inspectionType || this.defaultStepOption(stage!);
-  }
-
-  /* whether the current stage is an NDT stage */
-  isCurrentNdt = computed(() => {
-    if (!this.wf) return false;
-    const stage = this.wf().stages[this.selectedStep()];
-    return stage?.id?.startsWith('root-ndt') || stage?.id?.startsWith('final-ndt');
-  });
 
   /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
   fabFields = computed(() => FABRICATION_FIELDS.map(f =>
@@ -404,17 +384,6 @@ export class JobDetailComponent {
   }
 
   /* step option / inspection type handlers */
-  setStepOption(value: string) {
-    if (!this.job || !this.wf) return;
-    const idx = this.selectedStep();
-    const stage = this.wf().stages[idx];
-    if (!stage) return;
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
-    }));
-  }
-
   setInspectionType(value: string) {
     if (!this.job || !this.wf) return;
     const idx = this.selectedStep();
