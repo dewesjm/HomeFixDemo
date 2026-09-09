@@ -246,14 +246,15 @@ export interface FabricationField {
   placeholder?: string;
   options?: { label: string; value: string }[];
   unit?: string;
+  fullWidth?: boolean;
 }
 
 export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'location', label: 'Location', type: 'select',
     options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-  { key: 'id1', label: 'ID', type: 'text' },
-  { key: 'id2', label: 'ID 2', type: 'text' },
+  { key: 'id1', label: 'ID', type: 'text', fullWidth: true },
+  { key: 'id2', label: 'ID 2', type: 'text', fullWidth: true },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
   { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
 ];

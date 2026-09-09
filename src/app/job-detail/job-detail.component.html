@@ -70,7 +70,7 @@
       <!-- Welding fabrication fields -->
       <div class="detail-grid mb-sm">
         @for (f of fabFields; track f.key) {
-          <div>
+          <div [style.grid-column]="f.fullWidth ? '1 / -1' : null">
             <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
             @if (f.type === 'select') {
               <select class="select select-bordered w-full" [disabled]="jobComplete()"
