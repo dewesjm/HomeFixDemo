@@ -35,6 +35,7 @@ export interface SignoffField {
   placeholder?: string;
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals: string };
+  fullWidth?: boolean;   // spans full grid width (3 columns)
 }
 
 /* sequential stages, each its own sign-off */
@@ -84,7 +85,7 @@ export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
 export interface HistoryEntry {
   when: string;          /* ISO string */
   who: string;
-  section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments';
+  section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments' | 'Fabrication';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -102,6 +103,7 @@ export interface JobWorkflow {
   conditionCode: string;     /* see conditions.ts, '' if none */
   conditionCount: number;    /* pairs with conditionCode */
   history: HistoryEntry[];
+  fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
 }
 
 interface StageTemplate {
@@ -235,6 +237,26 @@ export function getPenetrantTypes(): string[] {
 export function getPenetrantManufacturers(): string[] {
   return [...new Set(getPenetrants().map(p => p.manufacturer))];
 }
+
+/* ── Fabrication cross-stage fields (Welding) ── */
+export interface FabricationField {
+  key: string;
+  label: string;
+  type: 'text' | 'number' | 'select';
+  placeholder?: string;
+  options?: { label: string; value: string }[];
+  unit?: string;
+}
+
+export const FABRICATION_FIELDS: FabricationField[] = [
+  { key: 'location', label: 'Location', type: 'select',
+    options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
+  { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
+  { key: 'id1', label: 'ID', type: 'text' },
+  { key: 'id2', label: 'ID 2', type: 'text' },
+  { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
+  { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
+];
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   HVAC: [
@@ -489,7 +511,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
+      { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
     ] },
     { id: 'tack', label: 'Tack', required: true, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
@@ -574,7 +596,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'final-weld' },
-    { id: 'review', label: 'Review', required: true, role: 'NQC Inspector', fields: [
+    { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
       { key: 'notes', label: 'Notes', type: 'text' }
@@ -582,18 +604,6 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'final-ndt' },
-    { id: 'fabrication', label: 'Fabrication', required: true, role: 'Fitting', fields: [
-      { key: 'id1', label: 'ID', type: 'text' },
-      { key: 'id2', label: 'ID 2', type: 'text' },
-      { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
-      { key: 'location', label: 'Location', type: 'select',
-        options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
-      { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-      { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ] },
     { id: 'sold', label: 'SOLD', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };
@@ -615,6 +625,7 @@ interface SerializedStage {
   signoffFields: SignoffField[];
   rejectToStage: string;
   repeatable?: boolean;
+  role?: string;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -626,11 +637,12 @@ function serializeStage(t: StageTemplate): SerializedStage {
     signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: t.rejectToStage ?? '',
     repeatable: t.repeatable ?? false,
+    role: t.role ?? '',
   };
 }
 
 function deserializeStage(s: SerializedStage): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false };
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '' };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -670,6 +682,10 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     if (!_merged[trade as Job['trade']]) {
       _merged[trade as Job['trade']] = stages.map(deserializeStage);
     }
+  }
+  // Remove fabrication — it's a cross-stage data section, not a workflow step
+  for (const trade of Object.keys(_merged) as Job['trade'][]) {
+    _merged[trade] = _merged[trade].filter(s => s.id !== 'fabrication');
   }
   return _merged;
 }
@@ -821,7 +837,8 @@ export function newWorkflow(job: Job): JobWorkflow {
     workType: null,
     conditionCode: '',
     conditionCount: 0,
-    history: []
+    history: [],
+    fabricationData: {},
   };
 }
 
@@ -902,7 +919,7 @@ export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
 /* first unsigned required stage, the current step */
 export function currentStepLabel(stages: WorkflowStage[]): string {
   const next = stages.find(s => s.required && !s.signed);
-  return next ? next.label : 'All stages complete';
+  return next ? next.label : stages[stages.length - 1]?.label ?? 'Complete';
 }
 
 /* id of stage awaiting sign-off, null when done */

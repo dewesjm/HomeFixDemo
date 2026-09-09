@@ -106,7 +106,7 @@
           @if (editingId() === row.id) {
             <select class="select select-sm select-bordered w-full min-w-0"
                     [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
-              @for (r of roleOptions; track r) {
+              @for (r of roleOptions(); track r) {
                 <option [value]="r">{{ r }}</option>
               }
             </select>

@@ -46,6 +46,22 @@ export class WorkflowService {
     return [...merged.values()];
   }
 
+  // --- Cross-stage fabrication data (Welding) -----------------------------
+  setFabricationData(job: Job, key: string, value: string) {
+    this.workflowFor(job).update(wf => {
+      const prev = wf.fabricationData[key] ?? '';
+      const fabricationData = { ...wf.fabricationData, [key]: value };
+      return this.withHistory(wf, { ...wf, fabricationData }, {
+        section: 'Fabrication',
+        who: wf.technician,
+        action: key,
+        from: show(prev),
+        to: show(value)
+      });
+    });
+    this.persist();
+  }
+
   // --- Stage inputs -------------------------------------------------------
   setStageInput(job: Job, stageId: string, field: StageField, value: string) {
     this.workflowFor(job).update(wf => {
@@ -359,9 +375,18 @@ export class WorkflowService {
         wf.workType ??= null;
         wf.conditionCode ??= '';
         wf.conditionCount ??= 0;
+        wf.fabricationData ??= {};
         delete (wf as unknown as { signoff?: unknown }).signoff;   // old single sign-off removed
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
+
+        /* v4: migrate fabrication stage inputs into fabricationData, then remove the stage */
+        const fabStage = wf.stages.find(s => s.id === 'fabrication');
+        if (fabStage && Object.keys(wf.fabricationData).length === 0) {
+          wf.fabricationData = { ...fabStage.inputs };
+        }
+        wf.stages = wf.stages.filter(s => s.id !== 'fabrication');
+
         wf.stages.forEach(s => {
           s.inputs ??= {};
           s.fields ??= [];

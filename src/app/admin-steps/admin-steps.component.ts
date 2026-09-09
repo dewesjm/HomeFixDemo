@@ -92,7 +92,17 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
 })
 export class AdminStepsComponent {
   tradeOptions = computed(() => getTradeOptions());
-  roleOptions = ROLES;
+  roleOptions = computed(() => {
+    const used = new Set<string>();
+    for (const templates of Object.values(getTemplates())) {
+      for (const t of templates) {
+        if (t.role) used.add(t.role);
+      }
+    }
+    // always include all base roles plus any pipe-delimited combos
+    for (const r of ROLES) used.add(r);
+    return [...used].sort();
+  });
   stageOptions = signal(allStageIds());
 
   rows = signal<StepRow[]>(this.buildInitialRows());
