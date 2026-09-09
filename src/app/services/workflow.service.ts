@@ -384,22 +384,23 @@ export class WorkflowService {
             const templates = getTemplates();
             const tpl = (templates[job.trade] ?? []).find(t => t.id === s.id);
             if (tpl) {
-              // merge new reading fields (keep existing field defs + inputs)
+              // rebuild reading fields from template, preserving existing inputs
               if (tpl.fields.length) {
-                const existingKeys = new Set(s.fields.map(f => f.key));
-                for (const f of tpl.fields) {
-                  if (!existingKeys.has(f.key)) {
-                    s.fields = [...s.fields, { ...f }];
-                  }
+                const inputMap = { ...s.inputs };
+                s.fields = tpl.fields.map(f => ({ ...f }));
+                // keep only inputs for fields that still exist
+                s.inputs = {};
+                for (const f of s.fields) {
+                  if (f.key in inputMap) s.inputs[f.key] = inputMap[f.key];
                 }
               }
-              // merge new signoff fields (keep existing)
+              // merge new signoff fields, drop stale ones
               if (tpl.signoffFields?.length) {
-                const existingKeys = new Set(s.signoffFields.map(f => f.key));
-                for (const f of tpl.signoffFields) {
-                  if (!existingKeys.has(f.key)) {
-                    s.signoffFields = [...s.signoffFields, { ...f }];
-                  }
+                const signoffInputMap = { ...s.signoffInputs };
+                s.signoffFields = tpl.signoffFields.map(f => ({ ...f }));
+                s.signoffInputs = {};
+                for (const f of s.signoffFields) {
+                  if (f.key in signoffInputMap) s.signoffInputs[f.key] = signoffInputMap[f.key];
                 }
               }
               // backfill role
