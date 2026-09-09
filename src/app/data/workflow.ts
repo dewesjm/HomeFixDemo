@@ -236,27 +236,6 @@ export function getPenetrantManufacturers(): string[] {
   return [...new Set(getPenetrants().map(p => p.manufacturer))];
 }
 
-const WELDING_HANDOVER_STAGE: StageTemplate = {
-  id: 'handover', label: 'Fabrication', required: true,
-  fields: [
-    { key: 'jobIdDisplay', label: 'Job ID', type: 'text' },
-    { key: 'drawing', label: 'Drawing', type: 'text' },
-    { key: 'joint', label: 'Joint', type: 'text' },
-    { key: 'location', label: 'Location', type: 'select',
-      options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
-    { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-    { key: 'id1', label: 'ID 1', type: 'text' },
-    { key: 'id2', label: 'ID 2', type: 'text' },
-    { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
-    { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
-    { key: 'actualThickness', label: 'Actual Thickness', type: 'number', unit: 'mm' },
-  ],
-  signoffFields: [
-    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-    { key: 'notes', label: 'Notes', type: 'text', required: false },
-  ]
-};
-
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   HVAC: [
     { id: 'diagnostic',  label: 'Diagnose',                 required: true, fields: [
@@ -524,7 +503,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'fit' },
-    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman', fields: [
+    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
       { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
         options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
           { label: 'Rejected', value: 'rejected' }] },
@@ -603,6 +582,18 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'final-ndt' },
+    { id: 'fabrication', label: 'Fabrication', required: true, role: 'Fitting', fields: [
+      { key: 'id1', label: 'ID', type: 'text' },
+      { key: 'id2', label: 'ID 2', type: 'text' },
+      { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
+      { key: 'location', label: 'Location', type: 'select',
+        options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
+      { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
     { id: 'sold', label: 'SOLD', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };
@@ -810,28 +801,7 @@ export function buildStages(job: Job): WorkflowStage[] {
   // Welding: no prep, no handover — SOLD is the end
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    // Add Fabrication stage before SOLD
-    const fabrication: StageTemplate = {
-      id: 'fabrication', label: 'Fabrication', required: true, role: 'Fitting',
-      fields: [
-        { key: 'id1', label: 'ID', type: 'text' },
-        { key: 'id2', label: 'ID 2', type: 'text' },
-        { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
-        { key: 'location', label: 'Location', type: 'select',
-          options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
-        { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-        { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
-      ],
-      signoffFields: [
-        { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-        { key: 'notes', label: 'Notes', type: 'text', required: false },
-      ]
-    };
-    // Insert Fabrication before SOLD
-    const soldIdx = middle.findIndex(t => t.id === 'sold');
-    const before = soldIdx >= 0 ? middle.slice(0, soldIdx) : middle;
-    const after = soldIdx >= 0 ? middle.slice(soldIdx) : [];
-    return [...before, fabrication, ...after].map(toStage);
+    return middle.map(toStage);
   }
 
   // Other trades: prep + stages + handover

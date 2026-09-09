@@ -66,34 +66,58 @@
     <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Fabrication</h3>
     <p class="section-sub">Cross-stage record for the whole job</p>
 
-    <div class="detail-grid mb-sm">
-      <div>
-        <div class="meta">Build / install</div>
-        <select class="select select-bordered w-full" [disabled]="jobComplete()"
-                [ngModel]="w.workType" (ngModelChange)="setWorkType($event)">
-          <option [ngValue]="null">Select</option>
-          @for (o of workTypeOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-        </select>
+    @if (fabricationStage(); as fab) {
+      <!-- Trade-specific fabrication fields (Welding etc.) -->
+      <div class="detail-grid mb-sm">
+        @for (f of fabricationFields(); track f.key) {
+          <div>
+            <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+            @if (f.type === 'select') {
+              <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                      [ngModel]="fab.inputs[f.key]" (ngModelChange)="fabricationSelectChange(f, $event)">
+                <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
+                @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            } @else {
+              <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                     [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                     [ngModel]="fab.inputs[f.key]"
+                     (blur)="fabricationInputBlur(f, $any($event.target).value)" />
+            }
+          </div>
+        }
       </div>
-      <div>
-        <div class="meta">Condition code</div>
-        <select class="select select-bordered w-full" [disabled]="jobComplete()"
-                [ngModel]="w.conditionCode" (ngModelChange)="setConditionCode($event)">
-          <option [ngValue]="''">None</option>
-          @for (o of conditionOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-        </select>
+    } @else {
+      <!-- Generic fields for non-Welding trades -->
+      <div class="detail-grid mb-sm">
+        <div>
+          <div class="meta">Build / install</div>
+          <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                  [ngModel]="w.workType" (ngModelChange)="setWorkType($event)">
+            <option [ngValue]="null">Select</option>
+            @for (o of workTypeOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+          </select>
+        </div>
+        <div>
+          <div class="meta">Condition code</div>
+          <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                  [ngModel]="w.conditionCode" (ngModelChange)="setConditionCode($event)">
+            <option [ngValue]="''">None</option>
+            @for (o of conditionOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+          </select>
+        </div>
+        <div>
+          <div class="meta">Number of conditions</div>
+          <input type="number" min="0" class="input input-bordered w-full" [disabled]="jobComplete()"
+                 [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
+        </div>
+        <!-- placeholder validation fields -->
+        <div><div class="meta">Labor hours</div><input class="input input-bordered w-full" [value]="demo()?.laborHours" disabled /></div>
+        <div><div class="meta">Warranty period</div><input class="input input-bordered w-full" [value]="demo()?.warrantyPeriod" disabled /></div>
+        <div><div class="meta">Disposal method</div><input class="input input-bordered w-full" [value]="demo()?.disposalMethod" disabled /></div>
+        <div><div class="meta">Follow-up required</div><input class="input input-bordered w-full" [value]="demo()?.followUp" disabled /></div>
       </div>
-      <div>
-        <div class="meta">Number of conditions</div>
-        <input type="number" min="0" class="input input-bordered w-full" [disabled]="jobComplete()"
-               [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
-      </div>
-      <!-- placeholder validation fields -->
-      <div><div class="meta">Labor hours</div><input class="input input-bordered w-full" [value]="demo()?.laborHours" disabled /></div>
-      <div><div class="meta">Warranty period</div><input class="input input-bordered w-full" [value]="demo()?.warrantyPeriod" disabled /></div>
-      <div><div class="meta">Disposal method</div><input class="input input-bordered w-full" [value]="demo()?.disposalMethod" disabled /></div>
-      <div><div class="meta">Follow-up required</div><input class="input input-bordered w-full" [value]="demo()?.followUp" disabled /></div>
-    </div>
+    }
 
     @if (w.components.length) {
       <div class="overflow-x-auto">

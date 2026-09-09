@@ -18,7 +18,7 @@ import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
-  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates
+  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, stageFieldsFor
 } from '../data/workflow';
 
 @Component({
@@ -69,6 +69,17 @@ export class JobDetailComponent {
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
+
+  /* fabrication stage — for showing trade-specific fields in the Fabrication section */
+  fabricationStage = computed(() => {
+    if (!this.wf || !this.job) return null;
+    const stages = this.wf().stages;
+    return stages.find(s => s.id === 'fabrication') ?? null;
+  });
+  fabricationFields = computed(() => {
+    if (!this.job) return [];
+    return stageFieldsFor(this.job.trade, 'fabrication');
+  });
 
 //extra fields when you press show more
   private readonly COST_CENTERS = ['CC-4100 Field Ops', 'CC-4205 Maintenance', 'CC-4310 Inspections'];
@@ -346,6 +357,22 @@ export class JobDetailComponent {
 
   /* code description, shown on hover */
   codeLabel(code: string): string { return characteristicLabel(code); }
+
+  /* fabrication stage input handlers */
+  fabricationInputBlur(field: StageField, value: string) {
+    const fab = this.fabricationStage();
+    if (this.job && fab && value !== (fab.inputs[field.key] ?? '')) {
+      this.wfService.setStageInput(this.job, 'fabrication', field, value);
+    }
+  }
+  fabricationSelectChange(field: StageField, value: string | null) {
+    const fab = this.fabricationStage();
+    const v = value ?? '';
+    if (this.job && fab && v !== (fab.inputs[field.key] ?? '')) {
+      this.wfService.setStageInput(this.job, 'fabrication', field, v);
+    }
+  }
+
   back() {
     this.router.navigate(['/table']);
   }

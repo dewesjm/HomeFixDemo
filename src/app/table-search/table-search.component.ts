@@ -60,7 +60,8 @@ export class TableSearchComponent {
       rows = JOBS.filter(j => {
         const wf = this.wfService.workflowFor(j)();
         const current = wf.stages.find(s => !s.signed);
-        return current?.role === role;
+        const stageRoles = (current?.role ?? '').split('|');
+        return stageRoles.includes(role);
       });
     }
     return rows.map(j => ({ ...j, currentStep: this.currentStep(j) }));
