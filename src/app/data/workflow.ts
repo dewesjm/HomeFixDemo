@@ -418,13 +418,19 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   ],
   Welding: [
     { id: 'fit', label: 'Fit', required: true, fields: [
-      { key: 'jointType', label: 'Joint type', type: 'select',
-        options: [{ label: 'Butt', value: 'butt' }, { label: 'Fillet', value: 'fillet' },
-          { label: 'Lap', value: 'lap' }, { label: 'Corner', value: 'corner' },
-          { label: 'Edge', value: 'edge' }] },
-      { key: 'gap', label: 'Root gap', type: 'number', unit: 'mm' },
-      { key: 'alignment', label: 'Alignment', type: 'select',
-        options: [{ label: 'Flush', value: 'flush' }, { label: 'High-low', value: 'high-low' }] }
+      { key: 'consumableType', label: 'Consumable Type', type: 'select',
+        options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
+          { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
+          { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
+      { key: 'consumableSize', label: 'Consumable Size', type: 'select',
+        options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
+          { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
+          { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
+      { key: 'consumableId', label: 'Consumable ID', type: 'text' },
+      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
+        options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
+          { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
+      { key: 'backingRingId', label: 'Backing Ring ID', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'testMethod', label: 'Test method', type: 'select', required: false,

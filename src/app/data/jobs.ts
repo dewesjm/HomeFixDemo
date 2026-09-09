@@ -21,7 +21,7 @@ export interface Job {
 }
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
-const TRADES: Job['trade'][] = ['Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
+const TRADES: Job['trade'][] = ['Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection', 'Welding'];
 const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
 /* made-up but trade-appropriate make/model pairs */
@@ -31,7 +31,8 @@ const EQUIPMENT_BY_TRADE: Record<Job['trade'], { make: string; model: string }[]
   HVAC:       [{ make: 'Carrier', model: '59TP6' }, { make: 'Trane', model: 'XR16' }, { make: 'Lennox', model: 'EL296V' }, { make: 'Goodman', model: 'GMVC96' }],
   Roofing:    [{ make: 'GAF', model: 'Timberline HDZ' }, { make: 'Owens Corning', model: 'Duration' }, { make: 'CertainTeed', model: 'Landmark Pro' }, { make: 'Malarkey', model: 'Highlander' }],
   Carpentry:  [{ make: 'Simpson Strong-Tie', model: 'LUS28' }, { make: 'Kreg', model: 'K5' }, { make: 'Andersen', model: '400 Series' }, { make: 'Pella', model: 'Lifestyle' }],
-  Inspection: [{ make: 'Honeywell', model: 'T6 Pro' }, { make: 'Generac', model: 'Guardian 24kW' }, { make: 'Kidde', model: 'P4010ACSCO' }, { make: 'First Alert', model: 'SC9120B' }]
+  Inspection: [{ make: 'Honeywell', model: 'T6 Pro' }, { make: 'Generac', model: 'Guardian 24kW' }, { make: 'Kidde', model: 'P4010ACSCO' }, { make: 'First Alert', model: 'SC9120B' }],
+  Welding:    [{ make: 'Lincoln', model: 'Power MIG 260' }, { make: 'Miller', model: 'Multimatic 220' }, { make: 'ESAB', model: 'Rebel 215ic' }, { make: 'Hobart', model: 'Handler 190' }]
 };
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
@@ -40,7 +41,8 @@ const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
   HVAC:       ['Furnace tune-up', 'AC recharge', 'Thermostat install', 'Duct cleaning', 'Filter replacement', 'Heat pump service'],
   Roofing:    ['Shingle repair', 'Gutter cleaning', 'Leak patch', 'Flashing replacement', 'Roof inspection', 'Skylight reseal'],
   Carpentry:  ['Door reframe', 'Deck board repair', 'Cabinet install', 'Trim replacement', 'Window sill repair', 'Shelving build'],
-  Inspection: ['Annual safety inspection', 'Pre-sale inspection', 'Mold assessment', 'Foundation check', 'Radon test', 'Code compliance review']
+  Inspection: ['Annual safety inspection', 'Pre-sale inspection', 'Mold assessment', 'Foundation check', 'Radon test', 'Code compliance review'],
+  Welding:    ['Pipe weld inspection', 'Structural steel weld', 'Tank repair weld', 'Handrail fabrication', 'Flange weld repair', 'Support bracket weld']
 };
 
 function seeded(n: number) {

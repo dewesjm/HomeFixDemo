@@ -260,6 +260,12 @@ export class AdminStepsComponent {
     return tradeRows[tradeRows.length - 1]?.id === row.id;
   }
 
+  getRejectLabel(rejectToStage: string): string {
+    if (!rejectToStage) return '—';
+    const match = this.stageOptions().find(s => s.id === rejectToStage);
+    return match?.label ?? rejectToStage;
+  }
+
   private resequence(trade: Job['trade']) {
     const sorted = this.rows().filter(r => r.trade === trade).sort((a, b) => a.sequence - b.sequence);
     this.rows.update(rows => rows.map(r => {

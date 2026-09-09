@@ -98,7 +98,7 @@
               }
             </select>
           } @else {
-            {{ row.rejectToStage || '—' }}
+            {{ getRejectLabel(row.rejectToStage) }}
           }
         </td>
         <td>
