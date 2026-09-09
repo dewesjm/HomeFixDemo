@@ -201,34 +201,39 @@ export function setShops(shops: string[]) {
   localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
 }
 
-/* ── Penetrant types (admin-configurable via localStorage) ── */
-const PENETRANT_TYPES_LS_KEY = 'homefix:penetrant-types:v1';
-const DEFAULT_PENETRANT_TYPES = ['Type I - Fluorescent', 'Type II - Visible', 'Type III - Water Washable', 'Type IV - Post Emulsifiable'];
+/* ── Penetrant entries (admin-configurable via localStorage) ── */
+export interface PenetrantEntry {
+  type: string;
+  manufacturer: string;
+}
 
+const PENETRANT_LS_KEY = 'homefix:penetrants:v1';
+const DEFAULT_PENETRANTS: PenetrantEntry[] = [
+  { type: 'Type I - Fluorescent', manufacturer: 'Magnaflux' },
+  { type: 'Type II - Visible', manufacturer: 'Sherwin-Williams' },
+  { type: 'Type III - Water Washable', manufacturer: 'NDT Systems' },
+  { type: 'Type IV - Post Emulsifiable', manufacturer: 'Research Institute' },
+  { type: 'Type I - Fluorescent', manufacturer: 'NDT Systems' },
+  { type: 'Type II - Visible', manufacturer: 'Magnaflux' },
+];
+
+export function getPenetrants(): PenetrantEntry[] {
+  try {
+    const raw = localStorage.getItem(PENETRANT_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_PENETRANTS;
+  } catch { return DEFAULT_PENETRANTS; }
+}
+
+export function setPenetrants(entries: PenetrantEntry[]) {
+  localStorage.setItem(PENETRANT_LS_KEY, JSON.stringify(entries));
+}
+
+/** Legacy helpers — delegate to the combined list */
 export function getPenetrantTypes(): string[] {
-  try {
-    const raw = localStorage.getItem(PENETRANT_TYPES_LS_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_PENETRANT_TYPES;
-  } catch { return DEFAULT_PENETRANT_TYPES; }
+  return [...new Set(getPenetrants().map(p => p.type))];
 }
-
-export function setPenetrantTypes(types: string[]) {
-  localStorage.setItem(PENETRANT_TYPES_LS_KEY, JSON.stringify(types));
-}
-
-/* ── Penetrant manufacturers (admin-configurable via localStorage) ── */
-const PENETRANT_MFRS_LS_KEY = 'homefix:penetrant-mfrs:v1';
-const DEFAULT_PENETRANT_MFRS = ['Magnaflux', 'Sherwin-Williams', 'NDT Systems', 'Research Institute'];
-
 export function getPenetrantManufacturers(): string[] {
-  try {
-    const raw = localStorage.getItem(PENETRANT_MFRS_LS_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_PENETRANT_MFRS;
-  } catch { return DEFAULT_PENETRANT_MFRS; }
-}
-
-export function setPenetrantManufacturers(mfrs: string[]) {
-  localStorage.setItem(PENETRANT_MFRS_LS_KEY, JSON.stringify(mfrs));
+  return [...new Set(getPenetrants().map(p => p.manufacturer))];
 }
 
 const WELDING_HANDOVER_STAGE: StageTemplate = {
@@ -546,10 +551,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
           { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' }] },
-      { key: 'penetrantType', label: 'Penetrant type', type: 'select',
-        options: getPenetrantTypes().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
-      { key: 'penetrantManufacturer', label: 'Penetrant manufacturer', type: 'select',
-        options: getPenetrantManufacturers().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'penetrant', label: 'Penetrant', type: 'select',
+        options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
       { key: 'notes', label: 'Notes', type: 'text' }
@@ -582,10 +585,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
           { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' },
           { label: 'Radiographic', value: 'rt' }] },
-      { key: 'penetrantType', label: 'Penetrant type', type: 'select',
-        options: getPenetrantTypes().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
-      { key: 'penetrantManufacturer', label: 'Penetrant manufacturer', type: 'select',
-        options: getPenetrantManufacturers().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'penetrant', label: 'Penetrant', type: 'select',
+        options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
       { key: 'notes', label: 'Notes', type: 'text' }
@@ -806,11 +807,35 @@ export function buildStages(job: Job): WorkflowStage[] {
     };
   };
 
-  // Welding: no prep stage, use Work Validation handover
+  // Welding: no prep, no handover — SOLD is the end
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    const weldingHandover = templates[job.trade]?.find(t => t.id === 'handover') ?? WELDING_HANDOVER_STAGE;
-    return [...middle, weldingHandover].map(toStage);
+    // Add Fabrication stage before SOLD
+    const fabrication: StageTemplate = {
+      id: 'fabrication', label: 'Fabrication', required: true, role: 'Fitting',
+      fields: [
+        { key: 'jobIdDisplay', label: 'Job ID', type: 'text' },
+        { key: 'drawing', label: 'Drawing', type: 'text' },
+        { key: 'joint', label: 'Joint', type: 'text' },
+        { key: 'location', label: 'Location', type: 'select',
+          options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
+        { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
+        { key: 'id1', label: 'ID 1', type: 'text' },
+        { key: 'id2', label: 'ID 2', type: 'text' },
+        { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
+        { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
+        { key: 'actualThickness', label: 'Actual Thickness', type: 'number', unit: 'mm' },
+      ],
+      signoffFields: [
+        { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+        { key: 'notes', label: 'Notes', type: 'text', required: false },
+      ]
+    };
+    // Insert Fabrication before SOLD
+    const soldIdx = middle.findIndex(t => t.id === 'sold');
+    const before = soldIdx >= 0 ? middle.slice(0, soldIdx) : middle;
+    const after = soldIdx >= 0 ? middle.slice(soldIdx) : [];
+    return [...before, fabrication, ...after].map(toStage);
   }
 
   // Other trades: prep + stages + handover
@@ -891,7 +916,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       ...s,
       inputs,
       signoffInputs,
-      result: 'accept' as StageResult,
+      result: 'sat' as StageResult,
       signed: true,
       signedAt: new Date(t).toISOString()
     };

@@ -1,14 +1,11 @@
-<h2 class="section-title">NDT Configuration</h2>
-<p class="section-sub">Manage penetrant types and manufacturers used in Root NDT and Final NDT steps.</p>
+<h2 class="section-title">Penetrant</h2>
+<p class="section-sub">Manage penetrant entries (type + manufacturer pairs) used in Root NDT and Final NDT steps.</p>
 
 <div class="facet-row mb-sm">
-  <button type="button" class="btn btn-sm" [class.btn-primary]="activeTab() === 'types'" [class.btn-ghost]="activeTab() !== 'types'"
-          (click)="activeTab.set('types')">Penetrant Types</button>
-  <button type="button" class="btn btn-sm" [class.btn-primary]="activeTab() === 'manufacturers'" [class.btn-ghost]="activeTab() !== 'manufacturers'"
-          (click)="activeTab.set('manufacturers')">Manufacturers</button>
+  <span class="fw-bold">Penetrants</span>
   <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-outline" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add {{ activeTab() === 'types' ? 'type' : 'manufacturer' }}
+  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
+    <svg lucidePlus class="size-4"></svg> Add penetrant
   </button>
 </div>
 
@@ -16,20 +13,30 @@
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-44">{{ activeTab() === 'types' ? 'Penetrant Type' : 'Manufacturer' }}</th>
+      <th class="min-w-44">Type</th>
+      <th class="min-w-32">Manufacturer</th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
   <tbody>
-    @for (row of currentRows(); track row.uid) {
+    @for (row of rows(); track row.uid) {
       <tr>
         <td>
           @if (editingId() === row.uid) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0"
-                   [ngModel]="row.name" (ngModelChange)="updateField(row, $event)"
-                   placeholder="Enter name…" autofocus />
+                   [ngModel]="row.type" (ngModelChange)="updateField(row, 'type', $event)"
+                   placeholder="e.g. Type I - Fluorescent" autofocus />
           } @else {
-            {{ row.name || '—' }}
+            {{ row.type || '—' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.manufacturer" (ngModelChange)="updateField(row, 'manufacturer', $event)"
+                   placeholder="e.g. Magnaflux" />
+          } @else {
+            {{ row.manufacturer || '—' }}
           }
         </td>
         <td>
@@ -53,7 +60,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="2" class="empty">No {{ activeTab() === 'types' ? 'penetrant types' : 'manufacturers' }} configured.</td></tr>
+      <tr><td colspan="3" class="empty">No penetrant entries configured.</td></tr>
     }
   </tbody>
 </table>
