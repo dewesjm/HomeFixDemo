@@ -72,6 +72,11 @@ export class JobDetailComponent {
 
   /* fabrication cross-stage fields (Welding) */
   fabFields = FABRICATION_FIELDS;
+  isNdtStage = computed(() => {
+    if (!this.wf) return false;
+    const stage = this.wf().stages[this.selectedStep()];
+    return stage?.id === 'root-ndt' || stage?.id === 'final-ndt';
+  });
 
 //extra fields when you press show more
   private readonly COST_CENTERS = ['CC-4100 Field Ops', 'CC-4205 Maintenance', 'CC-4310 Inspections'];

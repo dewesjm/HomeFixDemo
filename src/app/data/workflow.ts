@@ -511,6 +511,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
+      { key: '_spacer', label: '', type: 'text', required: false },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
     ] },
@@ -615,7 +616,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntri
 ) as Record<Job['trade'], StageTemplate[]>;
 
 /* ── localStorage persistence for stage templates ── */
-const TEMPLATES_LS_KEY = 'homefix:stage-templates:v1';
+const TEMPLATES_LS_KEY = 'homefix:stage-templates:v2';
 
 /* serialized form — required is always a plain boolean (no functions) */
 interface SerializedStage {

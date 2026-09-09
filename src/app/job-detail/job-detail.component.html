@@ -179,22 +179,26 @@
         <div class="detail-grid">
           <!-- Dynamic signoff fields (configured per stage) -->
           @for (f of visibleSignoffFields(stage); track f.key) {
-            <div [style.grid-column]="f.fullWidth ? '1 / -1' : null">
-              <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
-              @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [disabled]="!editable(stage)"
-                        [ngModel]="stage.signoffInputs[f.key]"
-                        (ngModelChange)="signoffSelectChange(stage, f, $event)">
-                  <option [ngValue]="null">Select</option>
-                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              } @else {
-                <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
-                       [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
-                       [ngModel]="stage.signoffInputs[f.key]"
-                       (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
-              }
-            </div>
+            @if (f.key === '_spacer') {
+              <div class="signoff-spacer"></div>
+            } @else {
+              <div [style.grid-column]="f.fullWidth ? '1 / -1' : null">
+                <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
+                @if (f.type === 'select') {
+                  <select class="select select-bordered w-full" [disabled]="!editable(stage)"
+                          [ngModel]="stage.signoffInputs[f.key]"
+                          (ngModelChange)="signoffSelectChange(stage, f, $event)">
+                    <option [ngValue]="null">Select</option>
+                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                  </select>
+                } @else {
+                  <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                         [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                         [ngModel]="stage.signoffInputs[f.key]"
+                         (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
+                }
+              </div>
+            }
           }
           <!-- Step type (repeatable stages only) -->
           @if (stage.repeatable && !stage.signed) {
@@ -256,7 +260,8 @@
     }
   </section>
 
-  <!-- 3.5 ───────── Attachments ───────── -->
+  <!-- 3.5 ───────── Attachments (NDT stages only) ───────── -->
+  @if (isNdtStage()) {
   <section class="panel">
     <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> Attachments</h3>
     <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
@@ -289,6 +294,7 @@
     <input type="file" multiple class="file-input file-input-sm" [disabled]="jobComplete()"
            (change)="addAttachments($event)" />
   </section>
+  }
 
 } @else {
   <div class="empty">Loading…</div>
