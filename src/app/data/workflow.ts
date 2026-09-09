@@ -415,6 +415,35 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'On file', value: 'on-file' }, { label: 'Pending', value: 'pending' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] }
+  ],
+  Welding: [
+    { id: 'fit-tack', label: 'Fit Tack', required: true, fields: [
+      { key: 'fitUpType', label: 'Fit-up type', type: 'select',
+        options: [{ label: 'Butt', value: 'butt' }, { label: 'Fillet', value: 'fillet' },
+          { label: 'Lap', value: 'lap' }, { label: 'Corner', value: 'corner' },
+          { label: 'Edge', value: 'edge' }] },
+      { key: 'gap', label: 'Root gap', type: 'number', unit: 'mm' },
+      { key: 'tackCount', label: 'Tack welds', type: 'number' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
+        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Go/No-go gauge', value: 'gauge' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
+    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, fields: [
+      { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
+        options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
+          { label: 'Rejected', value: 'rejected' }] },
+      { key: 'misalignment', label: 'Misalignment', type: 'number', unit: 'mm' },
+      { key: 'fitApproved', label: 'Fit-up approved?', type: 'select',
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No — rework', value: 'no' }] }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'fit-tack' }
   ]
 };
 

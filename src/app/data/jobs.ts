@@ -17,6 +17,7 @@ export interface Job {
   estimatedHours: number;    /* labor hours */
   scheduledFor: Date;
   tags: string[];
+  _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
@@ -146,6 +147,7 @@ export function addTestJob(trade: string): Job {
     estimatedHours: 0,
     scheduledFor: new Date(),
     tags: [],
+    _fresh: true,
   };
   JOBS.push(job);
   return job;
