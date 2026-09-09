@@ -21,9 +21,7 @@
 }
 
 .content { flex: 1; padding: 1.5rem; overflow: hidden; display: flex; flex-direction: column; }
-.content-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-.content-top-left { display: flex; align-items: center; gap: 0.5rem; }
-.content-body { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.content-body { min-width: 0; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
 
 /* "New version available" prompt — fixed, bottom-center, above all content. */
 .update-banner {

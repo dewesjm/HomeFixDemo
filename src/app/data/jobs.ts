@@ -33,7 +33,7 @@ const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW', 'SAW', 'PAW'];
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Cast Iron', 'Titanium', 'Aluminum', 'Copper Nickel', 'Inconel', 'Duplex Stainless'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
-const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + UT + RT'];
+const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {

@@ -1,14 +1,16 @@
 //This is the main search, with filters, keywords, frozen columns, export to excel call
-import { Component, computed, effect, signal } from '@angular/core';
+import { Component, computed, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight } from '@lucide/angular';
+import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu } from '@lucide/angular';
 
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
+import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { TableState, inArray } from '../shared/table-state';
 import { downloadCsv } from '../data/export-csv';
+import { AppComponent } from '../app.component';
 
 import {
   JOBS, Job
@@ -23,15 +25,19 @@ type Row = Job & { currentStep: string };
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    MultiselectDropdownComponent, TablePagerComponent,
-    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight
+    MultiselectDropdownComponent, TablePagerComponent, SyncStatusComponent,
+    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu
   ],
   templateUrl: './table-search.component.html'
 })
 export class TableSearchComponent {
+  private app = inject(AppComponent);
+
   constructor(private router: Router, private wfService: WorkflowService) {
     effect(() => this.table.setRows(this.displayedJobs()));
   }
+
+  toggleMenu() { this.app.toggle(); }
 
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 

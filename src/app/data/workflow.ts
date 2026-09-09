@@ -841,7 +841,16 @@ export function buildStages(job: Job): WorkflowStage[] {
   // Welding: no prep, no handover — SOLD is the end
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    return middle.map(toStage);
+    const ndt = (job.ndt || '').toUpperCase();
+    const hasUTorRT = /\b(UT|RT)\b/.test(ndt);
+    const hasMTorPT = /\b(MT|PT)\b/.test(ndt);
+    const hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL');
+    return middle.filter(t => {
+      if (t.id.endsWith('-utrt')) return hasUTorRT;
+      if (t.id.endsWith('-mtpt')) return hasMTorPT;
+      if (t.id.endsWith('-vt5x')) return hasVT;
+      return true;
+    }).map(toStage);
   }
 
   // Other trades: prep + stages + handover
@@ -876,14 +885,13 @@ function seeded(n: number) {
 }
 
 /* how many leading stages are already signed off — varies the "current step" per job.
-   Deterministic per job: a spread of complete / early / mid-stream runs. */
+   Deterministic per job: ensures coverage of every stage including all NDT types. */
 function signedStageCount(job: Job, total: number): number {
   if (total <= 0) return 0;
-  const rand = seeded(job.id * 31 + 7);
-  const r = rand();
-  if (r < 0.25) return total;                          // ~25% fully signed
-  if (r < 0.45) return Math.floor(rand() * (total - 1)); // ~20% not-started / stalled early
-  return 1 + Math.floor(rand() * (total - 1));         // rest mid-stream
+  // Cycle through all stages so every position gets represented
+  const id = String(job.id);
+  const idx = Math.abs(id.charCodeAt(0) * 7 + id.charCodeAt(1) * 3) % total;
+  return idx;
 }
 
 /* plausible recorded value for a seeded, already-signed stage field */
