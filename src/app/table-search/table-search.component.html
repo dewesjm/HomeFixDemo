@@ -1,5 +1,6 @@
 <!-- Work orders table template (paired with table-search.component.ts). -->
-<h2 class="section-title">Jobs</h2>
+<div class="table-page-wrap">
+<h2 class="section-title">Pipe Welding</h2>
 <p class="section-sub"></p>
 
 <div class="facet-row">
@@ -27,7 +28,7 @@
   </label>
 </div>
 
-<div class="overflow-x-auto">
+<div class="overflow-x-auto flex-1 min-h-0">
 <table class="table table-sm">
   <thead>
     <tr>
@@ -111,3 +112,4 @@
 </div>
 
 <app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
+</div>

@@ -266,3 +266,7 @@ html, body {
   0%   { background: color-mix(in oklch, var(--color-info) 25%, transparent); }
   100% { background: transparent; }
 }
+
+/* Table page fills available height, table scrolls within */
+.table-page-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.table-page-wrap .overflow-x-auto { flex: 1; min-height: 0; overflow-y: auto; }

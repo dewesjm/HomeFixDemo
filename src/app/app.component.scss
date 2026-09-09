@@ -22,13 +22,13 @@
 
 /* overflow:hidden makes .content a block formatting context so it contains floats,
    without adding its own scrollbar (page content scrolls within route outlets). */
-.content { flex: 1; padding: 1.5rem; overflow: hidden; }
+.content { flex: 1; padding: 1.5rem; overflow: hidden; display: flex; flex-direction: column; }
 /* Toggle floats left so the page's <h2> sits beside it on the same line; the content
    below clears it and uses the full width — no reserved column. */
 .menu-toggle { float: left; margin: -.25rem .5rem 0 0; }
 /* Sync indicator floats to the top-right of the page. */
 .content-sync { float: right; margin-top: .35rem; white-space: nowrap; }
-.content-body { min-width: 0; }
+.content-body { min-width: 0; flex: 1; display: flex; flex-direction: column; }
 
 /* "New version available" prompt — fixed, bottom-center, above all content. */
 .update-banner {
