@@ -260,7 +260,8 @@
               </div>
             </div>
           }
-          <!-- Decision (always present — drives workflow logic) -->
+          <!-- Decision (only on inspection steps with reject routing) -->
+          @if (stage.rejectToStage) {
           <div>
             <div class="meta">Decision <span class="req">*</span></div>
             <div class="result-radios">
@@ -273,6 +274,7 @@
               }
             </div>
           </div>
+          }
         </div>
 
         <div class="signoff-actions">
@@ -281,7 +283,7 @@
               <svg lucideCircleCheck class="size-4"></svg> Sign &amp; lock
             </button>
           } @else {
-            <span class="badge" [class.badge-error]="stage.result === 'reject'" [class.badge-success]="stage.result !== 'reject'">
+            <span class="badge" [class.badge-error]="stage.result === 'unsat'" [class.badge-success]="stage.result === 'sat'">
               {{ (stage.result || '') | uppercase }}
             </span>
             <span class="meta">Signed by {{ stage.signoffInputs['inspectorName'] || '—' }} on {{ stage.signedAt | date:'medium' }}</span>

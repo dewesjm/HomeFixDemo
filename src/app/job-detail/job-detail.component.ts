@@ -67,7 +67,7 @@ export class JobDetailComponent {
   /* index of stage awaiting sign-off */
   activeIndex = computed(() => this.indexOfActive());
   rejectedCount = computed(() =>
-    this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'reject').length : 0);
+    this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
 //extra fields when you press show more
@@ -160,7 +160,12 @@ export class JobDetailComponent {
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
   canSignStage(stage: WorkflowStage): boolean {
-    if (!this.editable(stage) || !stage.result) return false;
+    if (!this.editable(stage)) return false;
+    // Non-inspection steps auto-accept (SAT)
+    if (!stage.rejectToStage && !stage.result) {
+      this.setStageResult(stage, 'sat' as StageResult);
+    }
+    if (!stage.result) return false;
     if (stage.repeatable && !stage.stepType) return false;
     return stage.signoffFields
       .filter(f => f.required)

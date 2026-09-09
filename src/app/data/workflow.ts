@@ -3,11 +3,11 @@ import { Job } from './jobs';
 import { MATERIAL_OPTIONS } from './materials';
 
 /* accept/reject, required to sign */
-export type StageResult = 'accept' | 'reject';
+export type StageResult = 'sat' | 'unsat';
 
 export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
-  { label: 'Accept', value: 'accept' },
-  { label: 'Reject', value: 'reject' }
+  { label: 'SAT', value: 'sat' },
+  { label: 'UNSAT', value: 'unsat' }
 ];
 
 /* one field a tech records on a stage */
@@ -175,6 +175,39 @@ const HANDOVER_STAGE: StageTemplate = {
     { key: 'customerSignature', label: 'Customer signature', type: 'select', required: true,
       options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }, { label: 'Pending', value: 'pending' }] },
     { key: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Handover notes…' },
+  ]
+};
+
+/* ── Shop locations (admin-configurable via localStorage) ── */
+const SHOPS_LS_KEY = 'homefix:shops:v1';
+const DEFAULT_SHOPS = ['Shop A', 'Shop B', 'Shop C', 'Field'];
+
+export function getShops(): string[] {
+  try {
+    const raw = localStorage.getItem(SHOPS_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_SHOPS;
+  } catch { return DEFAULT_SHOPS; }
+}
+
+export function setShops(shops: string[]) {
+  localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
+}
+
+const WELDING_HANDOVER_STAGE: StageTemplate = {
+  id: 'handover', label: 'Work Validation', required: true,
+  fields: [
+    { key: 'location', label: 'Location', type: 'select',
+      options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
+    { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
+    { key: 'id1', label: 'ID 1', type: 'text' },
+    { key: 'id2', label: 'ID 2', type: 'text' },
+    { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
+    { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
+    { key: 'actualThickness', label: 'Actual Thickness', type: 'number', unit: 'mm' },
+  ],
+  signoffFields: [
+    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+    { key: 'notes', label: 'Notes', type: 'text', required: false },
   ]
 };
 
@@ -417,24 +450,20 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] }
   ],
   Welding: [
-    { id: 'fit', label: 'Fit', required: true, fields: [
-      { key: 'consumableType', label: 'Consumable Type', type: 'select',
+    { id: 'fit', label: 'Fit', required: true, fields: [], signoffFields: [
+      { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
           { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
-      { key: 'consumableSize', label: 'Consumable Size', type: 'select',
+      { key: 'consumableSize', label: 'Consumable Size', type: 'select', required: true,
         options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
           { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
-      { key: 'consumableId', label: 'Consumable ID', type: 'text' },
-      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
+      { key: 'consumableId', label: 'Consumable ID', type: 'text', required: true },
+      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
-      { key: 'backingRingId', label: 'Backing Ring ID', type: 'text' }
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'testMethod', label: 'Test method', type: 'select', required: false,
-        options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Go/No-go gauge', value: 'gauge' }] },
+      { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
     { id: 'tack', label: 'Tack', required: true, fields: [
@@ -665,10 +694,11 @@ export function buildStages(job: Job): WorkflowStage[] {
     };
   };
 
-  // Welding: no prep stage
+  // Welding: no prep stage, use Work Validation handover
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    return [...middle, handover].map(toStage);
+    const weldingHandover = templates[job.trade]?.find(t => t.id === 'handover') ?? WELDING_HANDOVER_STAGE;
+    return [...middle, weldingHandover].map(toStage);
   }
 
   // Other trades: prep + stages + handover

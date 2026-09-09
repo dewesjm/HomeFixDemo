@@ -213,7 +213,7 @@ export class WorkflowService {
   /* lock a stage's sign-off and advance (or route back on reject) */
   signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
-      let stages = wf.stages.map(s =>
+      let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
@@ -235,8 +235,8 @@ export class WorkflowService {
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
 
-      /* on reject: re-open stages from the reject target up to (not including) this stage */
-      if (st.result === 'reject' && st.rejectToStage) {
+      /* on unsat: re-open stages from the reject target up to (not including) this stage */
+      if (st.result === 'unsat' && st.rejectToStage) {
         const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
         const currentIdx = stages.findIndex(s => s.id === stageId);
         if (targetIdx >= 0 && targetIdx < currentIdx) {
@@ -285,7 +285,7 @@ export class WorkflowService {
         if (i < targetIndex) {
           return s.signed ? s : {
             ...s, signed: true, signedAt: when,
-            result: s.result ?? 'accept',
+            result: s.result ?? 'sat',
             signoffInputs: {
               ...s.signoffInputs,
               inspectorName: s.signoffInputs['inspectorName'] || wf.technician
