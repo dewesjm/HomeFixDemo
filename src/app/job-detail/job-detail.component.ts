@@ -80,7 +80,7 @@ export class JobDetailComponent {
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedStep()];
-    return stage?.id === 'root-ndt' || stage?.id === 'final-ndt';
+    return stage?.id?.startsWith('root-ndt') || stage?.id?.startsWith('final-ndt');
   });
 
 //extra fields when you press show more

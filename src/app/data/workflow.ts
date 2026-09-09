@@ -548,12 +548,27 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ] },
-    { id: 'root-ndt', label: 'Root NDT', required: true, role: 'Inspector', fields: [
+    { id: 'root-ndt-utrt', label: 'NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
-        options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
-          { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' }] },
+        options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
+    ], rejectToStage: 'root-weld' },
+    { id: 'root-ndt-mtpt', label: 'NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
+    ], rejectToStage: 'root-weld' },
+    { id: 'root-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
     ], signoffFields: [
@@ -578,13 +593,27 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ] },
-    { id: 'final-ndt', label: 'Final NDT', required: true, role: 'Inspector', fields: [
+    { id: 'final-ndt-utrt', label: 'NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
-        options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
-          { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' },
-          { label: 'Radiographic', value: 'rt' }] },
+        options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
+    ], rejectToStage: 'final-weld' },
+    { id: 'final-ndt-mtpt', label: 'NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
+    ], rejectToStage: 'final-weld' },
+    { id: 'final-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
     ], signoffFields: [
@@ -598,7 +627,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-ndt' },
+    ], rejectToStage: 'final-ndt-vt5x' },
     { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };

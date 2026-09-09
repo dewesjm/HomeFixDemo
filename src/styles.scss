@@ -22,6 +22,7 @@
 html, body {
   margin: 0;
   padding: 0;
+  height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: var(--app-bg);
   color: var(--app-text);
@@ -274,3 +275,5 @@ html, body {
 /* Signoff fields: one per row, normal width */
 .signoff-fields { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
 .signoff-field-row { display: flex; flex-direction: column; gap: 0.15rem; }
+.signoff-fit-row { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
+.signoff-fit-row > * { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 0; min-width: 0; }
