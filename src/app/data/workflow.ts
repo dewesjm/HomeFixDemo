@@ -641,10 +641,9 @@ export function buildStages(job: Job): WorkflowStage[] {
   /* prep + trade stages (from merged templates) + handover — no cycling */
   const templates = getTemplates();
   const tradeStages = templates[job.trade] ?? [];
-  const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
   const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
-  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-  return [prep, ...middle, handover].map(t => {
+
+  const toStage = (t: StageTemplate): WorkflowStage => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     return {
@@ -664,7 +663,18 @@ export function buildStages(job: Job): WorkflowStage[] {
       signed: false,
       signedAt: null
     };
-  });
+  };
+
+  // Welding: no prep stage
+  if (job.trade === 'Welding') {
+    const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
+    return [...middle, handover].map(toStage);
+  }
+
+  // Other trades: prep + stages + handover
+  const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
+  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
+  return [prep, ...middle, handover].map(toStage);
 }
 
 export function newWorkflow(job: Job): JobWorkflow {
