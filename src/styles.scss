@@ -270,3 +270,7 @@ html, body {
 /* Table page fills available height, table scrolls within */
 .table-page-wrap { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 .table-page-wrap .overflow-x-auto { flex: 1; min-height: 0; overflow-y: auto; }
+
+/* Signoff fields: one per row, normal width */
+.signoff-fields { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
+.signoff-field-row { display: flex; flex-direction: column; gap: 0.15rem; }

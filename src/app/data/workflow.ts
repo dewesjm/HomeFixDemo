@@ -511,7 +511,6 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
-      { key: '_spacer', label: '', type: 'text', required: false },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
     ] },
@@ -600,7 +599,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
     ], rejectToStage: 'final-ndt' },
-    { id: 'sold', label: 'SOLD', required: true, role: 'Records', fields: [], signoffFields: [] }
+    { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };
 

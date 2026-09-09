@@ -20,7 +20,7 @@ export const routes: Routes = [
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
   { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Routing' },
-  { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'Characteristic Codes' },
+  { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'Attribute Codes' },
   { path: 'admin/conditions', component: AdminConditionsComponent, title: 'Condition Codes' },
   { path: 'admin/materials', component: AdminMaterialsComponent, title: 'Materials' },
   { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Step' },

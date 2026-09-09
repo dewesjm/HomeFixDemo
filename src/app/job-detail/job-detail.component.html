@@ -1,7 +1,7 @@
 <!--This is the bulk of the joint details page, should some of these be sub-components?-->
 <!--breadcrumb-->
 <button type="button" class="btn btn-ghost btn-sm" (click)="back()">
-  <svg lucideArrowLeft class="size-4"></svg> Back to work orders
+  <svg lucideArrowLeft class="size-4"></svg> Back to Joints
 </button>
 
 @if (job; as j) {
@@ -64,12 +64,11 @@
   <!-- 3 ───────── Fabrication (applies across all stages) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Fabrication</h3>
-    <p class="section-sub">Cross-stage record for the whole job</p>
 
     @if (job.trade === 'Welding') {
       <!-- Welding fabrication fields -->
       <div class="detail-grid mb-sm">
-        @for (f of fabFields; track f.key) {
+        @for (f of fabFields(); track f.key) {
           <div [style.grid-column]="f.fullWidth ? '1 / -1' : null">
             <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
             @if (f.type === 'select') {
@@ -176,23 +175,21 @@
       }
 
       @if (stage.required) {
-        <div class="detail-grid">
+        <div class="signoff-fields">
           <!-- Dynamic signoff fields (configured per stage, excluding fullWidth) -->
           @for (f of visibleSignoffFields(stage); track f.key) {
-            @if (f.key === '_spacer') {
-              <div class="signoff-spacer"></div>
-            } @else if (!f.fullWidth) {
-              <div>
-                <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
+            @if (f.key !== '_spacer' && !f.fullWidth) {
+              <div class="signoff-field-row">
+                <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
                 @if (f.type === 'select') {
-                  <select class="select select-bordered w-full" [disabled]="!editable(stage)"
+                  <select class="select select-bordered w-64" [disabled]="!editable(stage)"
                           [ngModel]="stage.signoffInputs[f.key]"
                           (ngModelChange)="signoffSelectChange(stage, f, $event)">
                     <option [ngValue]="null">Select</option>
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
-                  <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                  <input class="input input-bordered w-64" [type]="f.type === 'number' ? 'number' : 'text'"
                          [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
                          [ngModel]="stage.signoffInputs[f.key]"
                          (blur)="blurSignoffField(stage, f, $any($event.target).value)" />

@@ -18,7 +18,8 @@ import { CONDITION_OPTIONS } from '../data/conditions';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
-  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS
+  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS,
+  getShops
 } from '../data/workflow';
 
 @Component({
@@ -70,8 +71,12 @@ export class JobDetailComponent {
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
-  /* fabrication cross-stage fields (Welding) */
-  fabFields = FABRICATION_FIELDS;
+  /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
+  fabFields = computed(() => FABRICATION_FIELDS.map(f =>
+    f.key === 'location'
+      ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
+      : f
+  ));
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedStep()];
