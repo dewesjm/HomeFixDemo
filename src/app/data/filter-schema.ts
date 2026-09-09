@@ -1,7 +1,7 @@
 /* schema-driven filter engine + saved variants in localStorage */
 import {
   Job,
-  TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS, JOBS
+  TRADE_OPTIONS, TECHNICIAN_OPTIONS, JOBS
 } from './jobs';
 
 export type FilterField =
@@ -9,8 +9,7 @@ export type FilterField =
   | { key: string; label: string; type: 'multiselect'; group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
   | { key: string; label: string; type: 'select';      group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
   | { key: string; label: string; type: 'range';       group: string; required?: boolean; field: keyof Job; min: number; max: number }
-  | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job }
-  | { key: string; label: string; type: 'tags';        group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] };
+  | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job };
 
 /* derive filter options from the seeded job data */
 function weldTypeOptions(): { label: string; value: string }[] {
@@ -41,7 +40,6 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'estimatedHours',  label: 'Est. hours',       type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
   { key: 'estimatedCost',   label: 'Est. cost ($)',    type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
   { key: 'scheduledFor',    label: 'Scheduled',        type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
-  { key: 'tags',            label: 'Tags (any of)',    type: 'tags',        group: 'Job',        field: 'tags',       options: TAG_OPTIONS },
 ];
 
 export type FilterValues = Record<string, any>;
@@ -54,7 +52,6 @@ export function isEmpty(field: FilterField, value: any): boolean {
   if (value === null || value === undefined || value === '') return true;
   switch (field.type) {
     case 'multiselect':
-    case 'tags':
       return !Array.isArray(value) || value.length === 0;
     case 'range':
       return !Array.isArray(value) || (value[0] === field.min && value[1] === field.max);
@@ -93,11 +90,6 @@ export function applyFilters(rows: Job[], values: FilterValues): Job[] {
           const t = +(cell as Date);
           if (start && t < +start) return false;
           if (end && t > +end + 24 * 3600 * 1000) return false;
-          break;
-        }
-        case 'tags': {
-          const arr = cell as string[];
-          if (!(v as any[]).some(x => arr.includes(x))) return false;
           break;
         }
       }
@@ -144,8 +136,7 @@ export function defaultValuesFor(keys: string[]): FilterValues {
     if (!f) continue;
     switch (f.type) {
       case 'range':       out[key] = [f.min, f.max]; break;
-      case 'multiselect':
-      case 'tags':        out[key] = []; break;
+      case 'multiselect': out[key] = []; break;
       case 'daterange':   out[key] = null; break;
       default:            out[key] = null;
     }

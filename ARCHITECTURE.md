@@ -1,6 +1,6 @@
-# HomeFix — Architecture
+# Welding — Architecture
 
-HomeFix is a **home-repair work-order & inspection manager** (a learning/prototype app,
+Welding is a **welding work-order & inspection manager** (a learning/prototype app,
 rebranded from a PrimeNG search demo). It's a single-page Angular app with **no backend** —
 all data is either generated in memory or saved to the browser's `localStorage`.
 
@@ -35,12 +35,12 @@ src/app/
   table-search/          "Jobs" screen — the main p-table (filters, role selector, Job#, current step, CSV export)
   work-history/          "Work history" screen — the audit-trail activity log (filter by person / by job)
   adaptive-search/       "Adaptive filters" screen — schema-driven filter bar + saved variants + column picker
-  job-detail/            Single-job page — Stages (progress bar), Details, Work validation, Attachments, Sign-off (current step override, readings, next step routing, repeat/final, decision, sign & lock)
+  job-detail/            Single-job page — Routing (progress bar), Joint details, Fabrication, Attachments, Signoff (current step override, readings, next step routing, repeat/final, decision, signoff)
   sync-status/           The green/yellow/red sync indicator in the sidebar
   theme-picker/          The "Theme" button: primary + surface color palette switcher
 
-  admin-steps/           Admin → Steps — per-trade workflow steps (ordering, field config, new trades/steps, reject routing)
-  admin-signoff-fields/  Admin → Sign-off fields — per-trade+stage configurable sign-off fields
+  admin-steps/           Admin → Routing — per-trade workflow steps (ordering, field config, new trades/steps, reject routing, role assignment)
+  admin-signoff-fields/  Admin → Signoff fields — per-trade+stage configurable signoff fields
   admin-characteristics/ Admin → Characteristic codes — editable code → description lookup
   admin-conditions/      Admin → Condition codes — editable condition code → description lookup
   admin-materials/       Admin → Materials — editable material list (Build/install "Material used" dropdown)
@@ -79,8 +79,8 @@ src/app/
 | `/history` | Work history | Audit log; `?job=<id>` deep-links filtered to one job |
 | `/adaptive` | Adaptive filters | Schema-driven filter bar + column picker |
 | `/jobs/:id` | Job detail | The workflow page for one job |
-| `/admin/steps` | Admin → Steps | Editable per-trade workflow steps (ordering, field config, new trades/steps, reject routing) |
-| `/admin/signoff-fields` | Admin → Sign-off fields | Per-trade+stage configurable sign-off fields |
+| `/admin/steps` | Admin → Routing | Editable per-trade workflow steps (ordering, field config, new trades/steps, reject routing, role assignment) |
+| `/admin/signoff-fields` | Admin → Signoff fields | Per-trade+stage configurable signoff fields |
 | `/admin/characteristics` | Admin → Characteristic codes | Editable code → description lookup |
 | `/admin/conditions` | Admin → Condition codes | Editable condition code → description lookup (feeds Work validation) |
 | `/admin/materials` | Admin → Materials | Editable material list (feeds the Build/install "Material used" dropdown) |
@@ -91,7 +91,7 @@ src/app/
 ## Data flow
 
 1. **Jobs** are generated once at startup in [jobs.ts](src/app/data/jobs.ts) (seeded → same 120 jobs every load) and held in memory as `JOBS`. Every screen imports this array. `Job.trade` is now `string` (not a fixed union) so admin-added trades work.
-2. **Stage templates** live in [workflow.ts](src/app/data/workflow.ts) as `STAGE_TEMPLATES`, a `Proxy` that merges static defaults with localStorage overrides (`homefix:stage-templates:v1`). Admin CRUD (`addStageTemplate`, `updateStageTemplate`, `deleteStageTemplate`, `addTrade`) persists to localStorage and invalidates the cache. `getTemplates()` returns the merged view; `getTradeOptions()` derives trade dropdown options from it.
+2. **Stage templates** live in [workflow.ts](src/app/data/workflow.ts) as `STAGE_TEMPLATES`, a `Proxy` that merges static defaults with localStorage overrides (`homefix:stage-templates:v1`). Admin CRUD (`addStageTemplate`, `updateStageTemplate`, `deleteStageTemplate`, `addTrade`) persists to localStorage and invalidates the cache. `getTemplates()` returns the merged view; `getTradeOptions()` derives trade dropdown options from it. Each stage template has an optional `role` field that determines which queue the job appears in.
 3. **Per-job workflow** (stages, components, attachments, sign-off, history) lives in
    [WorkflowService](src/app/services/workflow.service.ts), keyed by job id, exposed as **signals**.
    A never-touched job starts from `seededWorkflow()` (a deterministic, **mid-stream** run of pre-signed
@@ -108,38 +108,41 @@ src/app/
 Every change a user can make flows through `WorkflowService` and is logged as a structured entry:
 **who / when / action / from / to / current-step** (plus an internal `section`). The Work history table
 shows **Action / Old value / New value** as their own columns (e.g. action `Diagnose — Decision`,
-from `—`, to `ACCEPT`). `section` (`Stages`, `Work Validation`, `Attachments`, `Sign-off`) is kept on the
+from `—`, to `ACCEPT`). `section` (`Routing`, `Fabrication`, `Attachments`, `Signoff`) is kept on the
 record for grouping but is no longer surfaced in the UI.
 
-### Stages = sign-offs (per trade)
+### Stages = signoffs (per trade)
 [workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade via `STAGE_TEMPLATES`
-(merged from static defaults + localStorage overrides). **Each stage is its own sign-off**: it carries
-per-step **readings** fields plus configurable **sign-off fields** (inspector, license, notes, etc.) and
-an **Accept or Reject decision (required)**. A stage is **locked** until every required stage before it
+(merged from static defaults + localStorage overrides). **Each stage is its own signoff**: it carries
+per-step **readings** fields plus configurable **signoff fields** (inspector, license, notes, etc.) and
+an **SAT or UNSAT decision (required)**. A stage is **locked** until every required stage before it
 is **signed** (sequential), only the current stage is editable.
 
-**The Stages section** (first on the page) is a visual progress indicator — click a step to select it.
+**The Routing section** (first on the page) is a visual progress indicator — click a step to select it.
 The selected stage's **Current step** override, **readings inputs**, **Next step** routing, **Repeat/Final**
-(for repeatable stages), inspector/decision, and **Sign & lock** all live in the **Sign-off** section.
+(for repeatable stages), inspector/decision, and **Signoff** all live in the **Signoff** section.
 
-**Current step override** (`swapStageId`): a dropdown at the top of sign-off lets you pick a different
-work type (Build, Sanding, Cleaning, etc.) from the trade's stages. The readings and sign-off fields
-swap to match the selected stage's template. On sign, the workflow jumps to that stage.
+**Current step override** (`swapStageId`): a dropdown at the top of signoff lets you pick a different
+work type from the trade's stages. The readings and signoff fields swap to match the selected stage's template.
+On sign, the workflow jumps to that stage.
 
 **Next step routing** (`routeTo`): a dropdown showing all remaining stages, defaulting to "Next in sequence".
-Override it to jump ahead (e.g. skip to Sanding from Prep). On accept, stages between current and target
+Override it to jump ahead (e.g. skip to Final Weld from Root Weld). On accept, stages between current and target
 are re-opened so the workflow jumps there.
 
-**Repeatable stages**: stages with `repeatable: true` show a **Repeat / Final** radio in sign-off.
+**Repeatable stages**: stages with `repeatable: true` show a **Repeat / Final** radio in signoff.
 "Repeat" inserts another copy of the same stage after signing. "Final" advances normally.
 
 **Stage reject routing** (`rejectToStage`): each stage can specify which stage to route back to on reject.
 Rejecting re-opens all stages from the target up to (not including) the current stage.
 
+**Role-based routing**: each stage has a `role` field (e.g. Fitting, Welding, Foreman, Inspector, NQC Inspector, Records).
+The main table's Role dropdown filters jobs by which role their current unsigned step requires.
+`View` shows all jobs. Roles are configured per-stage in Admin → Routing.
+
 Every trade gets a shared **Site prep & safety** stage first and a **Cleanup & customer walkthrough**
 stage last. The **job is complete once the last required stage is signed** — there is no overall final
-sign-off. Some stages are **conditionally required** based on the job title (e.g. refrigerant check
-only for AC/heat-pump work). The **Work validation** section is separate and **cross-stage** (build/install,
+signoff. The **Fabrication** section is separate and **cross-stage** (build/install,
 condition code + count, installed components, notes for the whole job).
 
 ---
@@ -160,7 +163,7 @@ condition code + count, installed components, notes for the whole job).
 ## Conventions worth knowing
 
 - **PrimeNG components style themselves** (incl. dark mode). Custom CSS exists only for **layout** and
-  **our own non-PrimeNG elements** (cards, panels, the stage readings/sign-off grid).
+  **our own non-PrimeNG elements** (cards, panels, the stage readings/signoff grid).
 - **Column filters** use `display="menu"` (funnel icon → popup → Apply/Clear).
 - **value vs. label:** store the machine value (e.g. a condition code), display via a label lookup
   (`conditionLabel()` / `characteristicLabel()`). Don't bind raw codes to the screen.

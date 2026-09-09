@@ -1,4 +1,4 @@
-<!--This is the bulk of the job details page, should some of these be sub-components?-->
+<!--This is the bulk of the joint details page, should some of these be sub-components?-->
 <!--breadcrumb-->
 <button type="button" class="btn btn-ghost btn-sm" (click)="back()">
   <svg lucideArrowLeft class="size-4"></svg> Back to work orders
@@ -14,9 +14,9 @@
     <strong>Current step:</strong> {{ currentStep() }}
   </p>
 
-  <!-- 1 ───────── Stages (progress only — record & sign in the Sign-off section) ───────── -->
+  <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Stages</h3>
+    <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Routing</h3>
     <div class="steps-scroll">
       <ul class="steps">
         @for (s of stepsModel(); track $index) {
@@ -31,29 +31,20 @@
     </div>
   </section>
 
-  <!-- 2 ───────── Job Details (read-only) ───────── -->
+  <!-- 2 ───────── Joint Details (read-only) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Job details</h3>
+    <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
     <div class="detail-grid inline">
-      <div><div class="meta">Technician</div><div>{{ j.technician }}</div></div>
       <div><div class="meta">Current step</div><div>{{ currentStep() }}</div></div>
-      <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
-      <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
-      <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
-      <div><div class="meta">Drawing &amp; joint</div><div>{{ j.drawingAndJoint || '—' }}</div></div>
+      <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
+      <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
       <div><div class="meta">Joint design</div><div>{{ j.jointDesign || '—' }}</div></div>
       <div><div class="meta">Weld type</div><div>{{ j.weldType || '—' }}</div></div>
       <div><div class="meta">Material type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
       <div><div class="meta">Material type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
       <div><div class="meta">WPS</div><div>{{ j.wps || '—' }}</div></div>
-      <div><div class="meta">NDE</div><div>{{ j.nde || '—' }}</div></div>
+      <div><div class="meta">NDT</div><div>{{ j.ndt || '—' }}</div></div>
       <div><div class="meta">PWHT</div><div>{{ j.pwht || '—' }}</div></div>
-      <div class="col-span-all">
-        <div class="meta">Tags</div>
-        <span class="tag-list">
-          @for (t of j.tags; track t) { <span class="badge badge-info badge-sm">{{ t }}</span> }
-        </span>
-      </div>
     </div>
 
     <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
@@ -70,9 +61,9 @@
     }
   </section>
 
-  <!-- 3 ───────── Work Validation (applies across all stages) ───────── -->
+  <!-- 3 ───────── Fabrication (applies across all stages) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Work validation</h3>
+    <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Fabrication</h3>
     <p class="section-sub">Cross-stage record for the whole job</p>
 
     <div class="detail-grid mb-sm">
@@ -152,9 +143,9 @@
     </div>
   </section>
 
-  <!-- 5 ───────── Sign-off (current stage) ───────── -->
+  <!-- 5 ───────── Signoff (current stage) ───────── -->
   <section class="panel">
-    <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Sign-off</h3>
+    <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
     @if (jobComplete()) {
       <div class="alert alert-success mb-sm">
@@ -167,7 +158,7 @@
     }
 
     @if (w.stages[selectedStep()]; as stage) {
-      <!-- Current step override (top of sign-off) -->
+      <!-- Current step override (top of signoff) -->
       @if (!stage.signed) {
         <div class="mb-sm">
           <label class="stage-field">
@@ -182,7 +173,7 @@
         </div>
       }
 
-      <!-- per-stage readings (recorded here; sign-off below advances to the next stage) -->
+      <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
       @if (visibleFields(stage).length) {
         <div class="stage-inputs">
@@ -209,7 +200,7 @@
 
       @if (stage.required) {
         <div class="detail-grid">
-          <!-- Dynamic sign-off fields (configured per stage) -->
+          <!-- Dynamic signoff fields (configured per stage) -->
           @for (f of visibleSignoffFields(stage); track f.key) {
             <div>
               <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
@@ -267,7 +258,7 @@
         <div class="signoff-actions">
           @if (!stage.signed) {
             <button type="button" class="btn btn-primary" [disabled]="!canSignStage(stage)" (click)="signStage(stage)">
-              <svg lucideCircleCheck class="size-4"></svg> Sign &amp; lock
+              <svg lucideCircleCheck class="size-4"></svg> Signoff
             </button>
           } @else {
             <span class="badge" [class.badge-error]="stage.result === 'unsat'" [class.badge-success]="stage.result === 'sat'">
@@ -283,7 +274,7 @@
           }
         </div>
       } @else {
-        <div class="meta">Optional stage — no sign-off required.</div>
+        <div class="meta">Optional stage — no signoff required.</div>
       }
     }
   </section>

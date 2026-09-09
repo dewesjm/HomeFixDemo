@@ -1,6 +1,6 @@
-<!-- Admin → Steps maintenance table with sequence ordering and field config. -->
-<h2 class="section-title">Steps</h2>
-<p class="section-sub">Maintain the workflow steps for each trade. Order determines the stage sequence during sign-off.</p>
+<!-- Admin → Routing maintenance table with sequence ordering and field config. -->
+<h2 class="section-title">Routing</h2>
+<p class="section-sub">Maintain the workflow steps for each trade. Order determines the stage sequence during signoff.</p>
 
 <div class="facet-row">
   <span class="fw-bold">Steps</span>
@@ -46,6 +46,7 @@
       </th>
       <th class="min-w-14">Order</th>
       <th class="min-w-14">Reject routes to</th>
+      <th class="min-w-14">Role</th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
@@ -102,6 +103,18 @@
           }
         </td>
         <td>
+          @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
+              @for (r of roleOptions; track r) {
+                <option [value]="r">{{ r }}</option>
+              }
+            </select>
+          } @else {
+            {{ row.role }}
+          }
+        </td>
+        <td>
           <div class="row-tight">
             @if (editingId() !== row.id) {
               <button type="button" class="btn btn-ghost btn-xs" appTooltip="Configure fields"
@@ -137,7 +150,7 @@
   <dialog class="modal" [class.modal-open]="showFieldDlg()" (close)="showFieldDlg.set(false)">
     <div class="modal-box max-w-2xl max-h-[80vh]">
       <h3 class="text-lg font-semibold mb-1">Configure: {{ fieldDlgStageLabel() }}</h3>
-      <p class="text-sm opacity-60 mb-4">{{ fieldDlgTrade() }} — readings fields + sign-off fields</p>
+      <p class="text-sm opacity-60 mb-4">{{ fieldDlgTrade() }} — readings fields + signoff fields</p>
 
       <!-- Readings fields -->
       <div class="mb-4">
@@ -173,9 +186,9 @@
         </div>
       </div>
 
-      <!-- Sign-off fields -->
+      <!-- Signoff fields -->
       <div class="mb-4">
-        <h4 class="font-semibold text-sm mb-2">Sign-off fields (inspector records)</h4>
+        <h4 class="font-semibold text-sm mb-2">Signoff fields (inspector records)</h4>
         @for (f of signoffFields(); track f.uid) {
           <div class="flex items-center gap-2 mb-1">
             <input type="text" class="input input-xs input-bordered w-24" placeholder="Key"

@@ -40,10 +40,6 @@
           <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any"
             [selected]="valueOf(f.key) || []" (selectedChange)="setValue(f.key, $event)" />
         }
-        @case ('tags') {
-          <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any tag"
-            [selected]="valueOf(f.key) || []" (selectedChange)="setValue(f.key, $event)" />
-        }
         @case ('select') {
           <select class="select select-sm select-bordered"
                   [ngModel]="valueOf(f.key)" (ngModelChange)="setValue(f.key, $event)">
@@ -137,25 +133,19 @@
               @case ('title') { {{ job.title }} }
               @case ('trade') { {{ job.trade }} }
               @case ('technician') { {{ job.technician }} }
-              @case ('drawingAndJoint') { {{ job.drawingAndJoint }} }
+              @case ('drawing') { {{ job.drawing }} }
+              @case ('joint') { {{ job.joint }} }
               @case ('jointDesign') { {{ job.jointDesign }} }
               @case ('weldType') { {{ job.weldType }} }
               @case ('materialType1') { {{ job.materialType1 }} }
               @case ('materialType2') { {{ job.materialType2 }} }
               @case ('wps') { {{ job.wps }} }
-              @case ('nde') { {{ job.nde }} }
+              @case ('ndt') { {{ job.ndt }} }
               @case ('pwht') { {{ job.pwht }} }
               @case ('estimatedCost') { {{ job.estimatedCost | currency:'USD' }} }
               @case ('estimatedHours') { {{ job.estimatedHours }}h }
               @case ('scheduledFor') { {{ job.scheduledFor | date:'mediumDate' }} }
               @case ('currentStep') { {{ currentStep(job) }} }
-              @case ('tags') {
-                <span class="tag-list">
-                  @for (t of job.tags; track t) {
-                    <span class="badge badge-info badge-sm">{{ t }}</span>
-                  }
-                </span>
-              }
             }
           </td>
         }

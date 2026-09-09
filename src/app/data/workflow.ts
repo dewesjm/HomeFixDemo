@@ -2,6 +2,11 @@
 import { Job } from './jobs';
 import { MATERIAL_OPTIONS } from './materials';
 
+/* ── Role-based queue routing ── */
+export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records', 'View'] as const;
+export type Role = typeof ROLES[number];
+export const DEFAULT_ROLE: Role = 'View';
+
 /* accept/reject, required to sign */
 export type StageResult = 'sat' | 'unsat';
 
@@ -51,6 +56,7 @@ export interface WorkflowStage {
   swapStageId: string;            /* which stage template to use for fields (empty = own) */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
+  role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
 }
 
 export interface InstalledComponent {
@@ -111,6 +117,8 @@ interface StageTemplate {
   rejectToStage?: string;
   /* signing inserts another copy of this stage after itself */
   repeatable?: boolean;
+  /* role that this stage routes to */
+  role?: string;
 }
 
 const titleHas = (job: Job, ...words: string[]) =>
@@ -224,8 +232,11 @@ export function setPenetrantManufacturers(mfrs: string[]) {
 }
 
 const WELDING_HANDOVER_STAGE: StageTemplate = {
-  id: 'handover', label: 'Work Validation', required: true,
+  id: 'handover', label: 'Fabrication', required: true,
   fields: [
+    { key: 'jobIdDisplay', label: 'Job ID', type: 'text' },
+    { key: 'drawing', label: 'Drawing', type: 'text' },
+    { key: 'joint', label: 'Joint', type: 'text' },
     { key: 'location', label: 'Location', type: 'select',
       options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
     { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
@@ -480,7 +491,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] }
   ],
   Welding: [
-    { id: 'fit', label: 'Fit', required: true, fields: [], signoffFields: [
+    { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
       { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
@@ -496,7 +507,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'tack', label: 'Tack', required: true, fields: [
+    { id: 'tack', label: 'Tack', required: true, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
       { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
       { key: 'tackCondition', label: 'Tack condition', type: 'select',
@@ -508,7 +519,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'fit' },
-    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, fields: [
+    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman', fields: [
       { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
         options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
           { label: 'Rejected', value: 'rejected' }] },
@@ -522,7 +533,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'tack' },
-    { id: 'root-weld', label: 'Root Weld', required: true, fields: [
+    { id: 'root-weld', label: 'Root Weld', required: true, role: 'Welding', fields: [
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'interpassTemp', label: 'Interpass temp', type: 'number', unit: '°C' },
@@ -531,7 +542,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'root-ndt', label: 'Root NDT', required: true, fields: [
+    { id: 'root-ndt', label: 'Root NDT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
           { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' }] },
@@ -547,7 +558,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'root-weld' },
-    { id: 'root-layer', label: 'Root Layer', required: true, fields: [
+    { id: 'root-layer', label: 'Root Layer', required: true, role: 'Welding', fields: [
       { key: 'layerCount', label: 'Layer count', type: 'number' },
       { key: 'weldingProcess', label: 'Welding process', type: 'select',
         options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
@@ -557,7 +568,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'final-weld', label: 'Final Weld', required: true, fields: [
+    { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: [
       { key: 'finalPass', label: 'Final pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'capWidth', label: 'Cap width', type: 'number', unit: 'mm' },
@@ -566,7 +577,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'final-ndt', label: 'Final NDT', required: true, fields: [
+    { id: 'final-ndt', label: 'Final NDT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
           { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' },
@@ -583,7 +594,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'final-weld' },
-    { id: 'review', label: 'Review', required: true, fields: [
+    { id: 'review', label: 'Review', required: true, role: 'NQC Inspector', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
       { key: 'notes', label: 'Notes', type: 'text' }
@@ -591,7 +602,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'final-ndt' },
-    { id: 'sold', label: 'SOLD', required: true, fields: [], signoffFields: [] }
+    { id: 'sold', label: 'SOLD', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };
 
@@ -779,6 +790,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       id: t.id,
       label: t.label,
       required,
+      role: t.role ?? '',
       fields: t.fields,
       inputs: {},
       signoffFields: sf.map(f => ({ ...f })),

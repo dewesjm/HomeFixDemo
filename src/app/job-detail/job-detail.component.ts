@@ -290,8 +290,8 @@ export class JobDetailComponent {
       : '';
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `Sign off "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${stepNote}`,
-      acceptLabel: 'Sign & lock',
+      message: `Signoff "${stage.label}" as ${decision} under ${stage.signoffInputs['inspectorName'] || '—'}? This locks the stage and advances the workflow.${stepNote}`,
+      acceptLabel: 'Signoff',
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);

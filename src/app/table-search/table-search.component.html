@@ -9,8 +9,7 @@
 
   <select class="select select-sm select-bordered" style="min-width: 12rem"
           [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)">
-    <option [ngValue]="null">All trades</option>
-    @for (o of tradeOptions; track o.value) {
+    @for (o of roleOptions; track o.value) {
       <option [ngValue]="o.value">{{ o.label }}</option>
     }
   </select>
@@ -52,14 +51,6 @@
             (selectedChange)="table.setColumnFilter('currentStep', $event)" />
         </div>
       </th>
-      <th class="min-w-11">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          Tags
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tagOptions"
-            [selected]="table.columnFilters()['tags'] ?? []"
-            (selectedChange)="table.setColumnFilter('tags', $event)" />
-        </div>
-      </th>
       <th class="min-w-12 sticky right-0 bg-base-100">Actions</th>
     </tr>
   </thead>
@@ -68,20 +59,13 @@
       <tr>
         <td>{{ job.title }}</td>
         <td>{{ job.currentStep }}</td>
-        <td>
-          <span class="tag-list">
-            @for (t of job.tags; track t) {
-              <span class="badge badge-info badge-sm">{{ t }}</span>
-            }
-          </span>
-        </td>
         <td class="sticky right-0 bg-base-100">
           <div class="row-tight">
             <button type="button" class="btn btn-ghost btn-xs" (click)="openHistory(job)">
-              <svg lucideHistory class="size-4"></svg> History
+              <svg lucideHistory class="size-3"></svg>
             </button>
-            <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(job)">
-              <svg lucideArrowUpRight class="size-4"></svg> Details
+            <button type="button" class="btn btn-ghost btn-xs" (click)="openDetails(job)">
+              <svg lucideArrowUpRight class="size-3"></svg>
             </button>
           </div>
         </td>

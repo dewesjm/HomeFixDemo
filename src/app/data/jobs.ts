@@ -7,33 +7,33 @@ export interface Job {
   title: string;
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
-  drawingAndJoint: string;   /* drawing number / joint reference */
+  drawing: string;           /* drawing number */
+  joint: string;             /* joint reference */
   jointDesign: string;       /* e.g. Butt, Fillet, Lap */
   weldType: string;          /* e.g. SMAW, GMAW, GTAW, FCAW */
   materialType1: string;     /* base material 1 */
   materialType2: string;     /* base material 2 / filler */
   wps: string;               /* Welding Procedure Specification */
-  nde: string;               /* Non-Destructive Examination requirement */
+  ndt: string;               /* Non-Destructive Examination requirement */
   pwht: string;              /* Post Weld Heat Treatment */
   estimatedCost: number;
   estimatedHours: number;    /* labor hours */
   scheduledFor: Date;
-  tags: string[];
   _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
-const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
 /* welding-specific seed pools */
 const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
+const JOINTS = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 const JOINT_DESIGNS = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW', 'SAW', 'PAW'];
-const MATERIALS_1 = ['A36 Carbon Steel', '304 Stainless', '316 Stainless', 'A516 Gr.70', 'A106 Gr.B', 'API 5L X52'];
-const MATERIALS_2 = ['E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3'];
+const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Cast Iron', 'Titanium', 'Aluminum', 'Copper Nickel', 'Inconel', 'Duplex Stainless'];
+const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
-const NDE_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + UT + RT'];
+const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + UT + RT'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
@@ -91,13 +91,6 @@ export function generateJobs(count = 120): Job[] {
     const dayOffset = Math.floor(rand() * 360) - 180;
     const scheduledFor = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000);
 
-    const tagCount = 1 + Math.floor(rand() * 3);
-    const tags: string[] = [];
-    while (tags.length < tagCount) {
-      const t = TAG_POOL[Math.floor(rand() * TAG_POOL.length)];
-      if (!tags.includes(t)) tags.push(t);
-    }
-
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
     out.push({
@@ -106,18 +99,18 @@ export function generateJobs(count = 120): Job[] {
       title,
       trade,
       technician,
-      drawingAndJoint: pick(DRAWINGS),
+      drawing: pick(DRAWINGS),
+      joint: pick(JOINTS),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
       materialType1: pick(MATERIALS_1),
       materialType2: pick(MATERIALS_2),
       wps: pick(WPS_POOL),
-      nde: pick(NDE_POOL),
+      ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
       estimatedCost,
       estimatedHours,
-      scheduledFor,
-      tags
+      scheduledFor
     });
   }
   return out;
@@ -125,7 +118,6 @@ export function generateJobs(count = 120): Job[] {
 
 export const JOBS: Job[] = generateJobs();
 export const TECHNICIAN_OPTIONS = TECHNICIANS.map(t => ({ label: t, value: t }));
-export const TAG_OPTIONS = TAG_POOL.map(t => ({ label: t, value: t }));
 
 /* static fallback for initial load; components should prefer getTradeOptions() from workflow.ts */
 export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
@@ -140,18 +132,18 @@ export function addTestJob(trade: string): Job {
     title: `${trade} test job`,
     trade,
     technician: TECHNICIANS[id % TECHNICIANS.length],
-    drawingAndJoint: '',
+    drawing: '',
+    joint: '',
     jointDesign: '',
     weldType: '',
     materialType1: '',
     materialType2: '',
     wps: '',
-    nde: '',
+    ndt: '',
     pwht: '',
     estimatedCost: 0,
     estimatedHours: 0,
     scheduledFor: new Date(),
-    tags: [],
     _fresh: true,
   };
   JOBS.push(job);

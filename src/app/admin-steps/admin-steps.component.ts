@@ -19,7 +19,7 @@ import { Router } from '@angular/router';
 import {
   STAGE_TEMPLATES, StageField, SignoffField, defaultSignoffFields,
   addStageTemplate, updateStageTemplate, deleteStageTemplate, addTrade,
-  allStageIds, getTemplates, getTradeOptions
+  allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../data/workflow';
 
 interface StepRow {
@@ -28,6 +28,7 @@ interface StepRow {
   trade: Job['trade'];
   sequence: number;
   rejectToStage: string;
+  role: Role;
 }
 
 /* lightweight row model for field config */
@@ -91,6 +92,7 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
 })
 export class AdminStepsComponent {
   tradeOptions = computed(() => getTradeOptions());
+  roleOptions = ROLES;
   stageOptions = signal(allStageIds());
 
   rows = signal<StepRow[]>(this.buildInitialRows());
@@ -139,6 +141,7 @@ export class AdminStepsComponent {
           trade: trade as Job['trade'],
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
+          role: (t.role as Role) ?? 'View',
         });
       });
     }
@@ -152,7 +155,7 @@ export class AdminStepsComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: StepRow = { id: fullId, step: '', trade, sequence: -1, rejectToStage: '' };
+    const row: StepRow = { id: fullId, step: '', trade, sequence: -1, rejectToStage: '', role: 'View' };
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
     this.newRowId.set(fullId);
@@ -182,7 +185,7 @@ export class AdminStepsComponent {
     if (isNew) {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
-        id: newId, label: row.step, required: true,
+        id: newId, label: row.step, required: true, role: row.role,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
       });
       const newFullId = `${row.trade}:${newId}`;
@@ -192,6 +195,7 @@ export class AdminStepsComponent {
       updateStageTemplate(row.trade, stageId, {
         label: row.step,
         rejectToStage: row.rejectToStage,
+        role: row.role,
       });
     }
 
@@ -210,7 +214,7 @@ export class AdminStepsComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: StepRow, field: 'step' | 'trade', value: string) {
+  updateField(row: StepRow, field: 'step' | 'trade' | 'role', value: string) {
     if (field === 'trade') {
       const oldTrade = row.trade;
       this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value as Job['trade'] } : x));
@@ -365,6 +369,7 @@ export class AdminStepsComponent {
       trade,
       sequence: i + 1,
       rejectToStage: t.rejectToStage ?? '',
+      role: (t.role as Role) ?? 'View',
     }));
     this.rows.update(r => [...r, ...newRows]);
     this.refreshStageOptions();

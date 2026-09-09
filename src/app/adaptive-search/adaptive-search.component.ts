@@ -41,22 +41,22 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'title',            label: 'Job',              field: 'title',            sortField: 'title',            width: 'min-w-14' },
   { key: 'trade',            label: 'Trade',            field: 'trade',            sortField: 'trade',            width: 'min-w-12' },
   { key: 'technician',       label: 'Technician',       field: 'technician',       sortField: 'technician',       width: 'min-w-11' },
-  { key: 'drawingAndJoint',  label: 'Drawing & joint',  field: 'drawingAndJoint',  sortField: 'drawingAndJoint',  width: 'min-w-14' },
+  { key: 'drawing',          label: 'Drawing',          field: 'drawing',          sortField: 'drawing',          width: 'min-w-12' },
+  { key: 'joint',            label: 'Joint',            field: 'joint',            sortField: 'joint',            width: 'min-w-11' },
   { key: 'jointDesign',      label: 'Joint design',     field: 'jointDesign',      sortField: 'jointDesign',      width: 'min-w-12' },
   { key: 'weldType',         label: 'Weld type',        field: 'weldType',         sortField: 'weldType',         width: 'min-w-11' },
   { key: 'materialType1',    label: 'Material 1',       field: 'materialType1',    sortField: 'materialType1',    width: 'min-w-14' },
   { key: 'materialType2',    label: 'Material 2',       field: 'materialType2',    sortField: 'materialType2',    width: 'min-w-14' },
   { key: 'wps',              label: 'WPS',              field: 'wps',              sortField: 'wps',              width: 'min-w-11' },
-  { key: 'nde',              label: 'NDE',              field: 'nde',              sortField: 'nde',              width: 'min-w-12' },
+  { key: 'ndt',              label: 'NDT',              field: 'ndt',              sortField: 'ndt',              width: 'min-w-12' },
   { key: 'pwht',             label: 'PWHT',             field: 'pwht',             sortField: 'pwht',             width: 'min-w-14' },
   { key: 'estimatedCost',    label: 'Est. cost',        field: 'estimatedCost',    sortField: 'estimatedCost',    width: 'min-w-13' },
   { key: 'estimatedHours',   label: 'Est. hours',       field: 'estimatedHours',   sortField: 'estimatedHours',   width: 'min-w-10' },
   { key: 'scheduledFor',     label: 'Scheduled',        field: 'scheduledFor',     sortField: 'scheduledFor',     width: 'min-w-13' },
   { key: 'currentStep',      label: 'Current step',                                                                  width: 'min-w-13' },
-  { key: 'tags',             label: 'Tags',                                                                            width: 'min-w-11' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawingAndJoint', 'jointDesign', 'weldType', 'materialType1', 'currentStep', 'tags'];
+const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'currentStep'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -307,8 +307,7 @@ export class AdaptiveSearchComponent {
   chipLabelFor(f: FilterField, v: any): string {
     switch (f.type) {
       case 'text':        return `${f.label}: "${v}"`;
-      case 'multiselect':
-      case 'tags':        return `${f.label}: ${(v as any[]).join(', ')}`;
+      case 'multiselect': return `${f.label}: ${(v as any[]).join(', ')}`;
       case 'select':      return `${f.label}: ${v}`;
       case 'range':       return `${f.label}: ${v[0]}–${v[1]}`;
       case 'daterange': {
@@ -324,21 +323,21 @@ export class AdaptiveSearchComponent {
       { header: 'Job', value: (r: Job) => r.title },
       { header: 'Trade', value: (r: Job) => r.trade },
       { header: 'Technician', value: (r: Job) => r.technician },
-      { header: 'Drawing & joint', value: (r: Job) => r.drawingAndJoint },
+      { header: 'Drawing', value: (r: Job) => r.drawing },
+      { header: 'Joint', value: (r: Job) => r.joint },
       { header: 'Joint design', value: (r: Job) => r.jointDesign },
       { header: 'Weld type', value: (r: Job) => r.weldType },
       { header: 'Material 1', value: (r: Job) => r.materialType1 },
       { header: 'Material 2', value: (r: Job) => r.materialType2 },
       { header: 'WPS', value: (r: Job) => r.wps },
-      { header: 'NDE', value: (r: Job) => r.nde },
+      { header: 'NDT', value: (r: Job) => r.ndt },
       { header: 'PWHT', value: (r: Job) => r.pwht },
-      { header: 'Est. cost', value: (r: Job) => Number(r.estimatedCost).toFixed(2) },
-      { header: 'Tags', value: (r: Job) => r.tags.join('; ') }
+      { header: 'Est. cost', value: (r: Job) => Number(r.estimatedCost).toFixed(2) }
     ], this.table.sorted());
   }
 
   /* typed casts for discriminated fields */
-  asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'tags' | 'select' }> {
+  asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'select' }> {
     return f as any;
   }
   asRange(f: FilterField): Extract<FilterField, { type: 'range' }> {

@@ -1,4 +1,4 @@
-# HomeFix — Component & Pattern Reference
+# Welding — Component & Pattern Reference
 
 A team reference for the elements used in this app, organized by feature. Each
 element is tagged **[PrimeNG]** (v19 component library) or **[Angular]** (v19
@@ -28,7 +28,7 @@ These providers must be in place or the components below won't work:
 ### App shell & navigation (`app.component`)
 - **[PrimeNG]** `p-panelMenu` — collapsible sidebar nav (built from a `MenuItem[]` model)
 - **[PrimeNG]** `p-toast` — global notification host (paired with `MessageService`)
-- **[PrimeNG]** `p-confirmDialog` — global confirmation host (paired with `ConfirmationService`); used by sign-off and Set step
+- **[PrimeNG]** `p-confirmDialog` — global confirmation host (paired with `ConfirmationService`); used by signoff and Set step
 - **[PrimeNG]** `p-button` — actions (e.g. dark-mode toggle)
 - **[Angular]** `RouterOutlet` — renders the active route
 - **[Angular]** `SwUpdate` — service-worker update prompt
@@ -37,15 +37,15 @@ These providers must be in place or the components below won't work:
 The heaviest use of the library; one component does most of the work:
 - **[PrimeNG]** `p-table` — the whole grid: **paginator** (`[paginator]` + `[rows]` + `[rowsPerPageOptions]`), **multi-sort** (`sortMode="multiple"`), **column resize** (`[resizableColumns]`), **horizontal scroll** (`[scrollable]`), and **CSV export** (`dt.exportCSV()` + `[columns]`/`[exportFunction]` config)
 - **[PrimeNG]** `p-iconField` + `p-inputIcon` + `pInputText` — global search box with a leading search icon
-- **[PrimeNG]** `p-multiSelect`, `p-slider`, `p-datePicker` — in-column filters (trade/tech/tags, cost range, date)
-- **[PrimeNG]** `p-select` — the "role / trade lane" dropdown
+- **[PrimeNG]** `p-multiSelect`, `p-slider`, `p-datePicker` — in-column filters (cost range, date)
+- **[PrimeNG]** `p-select` — the **Role** dropdown (filters jobs by current step's role: Fitting, Welding, Foreman, Inspector, NQC Inspector, Records, View)
 - **[PrimeNG]** `p-tag` — tag pills; `p-rating` — inspection score stars; `p-button` — row actions
 - **"Current step"** is a derived text column (from the workflow's signed stages) — there is no job-status column
 - **[Angular]** `*ngFor`/`*ngIf` (CommonModule), `[(ngModel)]` (FormsModule), `Router` for row navigation
 
 ### Advanced / adaptive search (`adaptive-search`)
 - **Schema-driven filter bar** with saved variants — filters adapt to job data
-- **Filters**: Trade, Technician, Tags, Cost range, Date range, Status, Make, Model, Code 1/2/3 (derived from job data)
+- **Filters**: Trade, Technician, Weld type, Joint design, Material 1/2, Cost range, Date range, NDT, PWHT
 - **Column picker** (`Columns3` icon) — toggle which columns appear in the results table; persisted to localStorage (`pn-demo:result-columns`)
 - **Results table** — dynamic columns based on picker selection, sortable, paginated, CSV export
 - Frozen "Details" action column
@@ -59,26 +59,27 @@ The heaviest use of the library; one component does most of the work:
 ### Job detail (`job-detail`) — by section
 | Section | Elements |
 |---|---|
-| **Stages** indicator (first section) | Visual progress bar — **progress only**; recording + signing happen in the Sign-off section. Click to select a step |
-| **Job details** (read-only) | Plain grid for label/value pairs; `p-tag` (tags), `pTooltip` (code hovers); collapsible "Audit & records" tier |
-| **Work validation** | `p-select` (work type / condition), text inputs, `p-table` (components list) |
+| **Routing** indicator (first section) | Visual progress bar — **progress only**; recording + signing happen in the Signoff section. Click to select a step |
+| **Joint details** (read-only) | Plain grid for label/value pairs; collapsible "Audit & records" tier |
+| **Fabrication** | `p-select` (work type / condition), text inputs, `p-table` (components list) |
 | **Attachments** | File upload (basic/auto mode), `p-table` (file list) |
-| **Sign-off** (for the selected stage) | **Current step** dropdown (swap to Sanding/Cleaning/etc. — fields swap to match), **readings inputs** (dynamic per swapped stage), **Repeat/Final** radio (repeatable stages only), **Decision** (Accept/Reject), **Sign & lock** button with confirm dialog. Swapping current step loads that stage's readings + sign-off fields dynamically |
+| **Signoff** (for the selected stage) | **Current step** dropdown (swap stages — fields swap to match), **readings inputs** (dynamic per swapped stage), **Repeat/Final** radio (repeatable stages only), **Decision** (SAT/UNSAT), **Signoff** button with confirm dialog. Swapping current step loads that stage's readings + signoff fields dynamically |
 
 ### Admin screens
 
-**Admin → Steps** (`admin-steps`):
+**Admin → Routing** (`admin-steps`):
 - Editable table of per-trade workflow steps with inline editing
 - **Sequence column** with ▲/▼ reorder buttons
-- **Settings** (⚙️) button opens a **field configuration dialog** — configure readings fields (key, label, type, unit, placeholder) and sign-off fields (key, label, type, required, options) per stage
+- **Role column** — assign which role (Fitting, Welding, Foreman, Inspector, NQC Inspector, Records, View) each stage routes to
+- **Settings** (⚙️) button opens a **field configuration dialog** — configure readings fields (key, label, type, unit, placeholder) and signoff fields (key, label, type, required, options) per stage
 - **New trade** button — creates a trade with default Prep + Handover stages
 - **Add step** button — adds a new row, saves to data layer on confirm
 - **Delete** — removes from data layer and localStorage
 - **Reject routing** — dropdown to pick which stage to go back to on reject
 - All changes persist to `localStorage` (`homefix:stage-templates:v1`)
 
-**Admin → Sign-off fields** (`admin-signoff-fields`):
-- Configurable sign-off fields per trade+stage
+**Admin → Signoff fields** (`admin-signoff-fields`):
+- Configurable signoff fields per trade+stage
 - Inline editing of field key, label, type, required, placeholder, options
 - Add/delete fields, filtered by trade+stage
 - Persists to `localStorage` via stage templates
@@ -90,8 +91,8 @@ The heaviest use of the library; one component does most of the work:
 
 ### Admin → Set step (`admin-set-step`)
 An action form, not a reference table — an **admin override** to force a job's workflow to a chosen stage:
-- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-tag` (current step), `p-button` (Force step), `ConfirmationService` confirm dialog before applying (it discards sign-offs)
-- **[Angular]** `signal()`/`computed()` state; calls `WorkflowService.forceStep(job, index)` which signs every prior stage (accepted), re-opens the chosen stage onward, and logs a `Step forced (admin)` history entry
+- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-button` (Force step), `ConfirmationService` confirm dialog before applying (it discards signoffs)
+- **[Angular]** `signal()`/`computed()` state; calls `WorkflowService.forceStep(job, index)` which signs every prior stage, re-opens the chosen stage onward, and logs a `Step forced (admin)` history entry
 
 ### Smaller pieces
 - **Theme picker** (`theme-picker`) — **[PrimeNG]** `p-popover` + `p-button`

@@ -7,15 +7,14 @@ import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, L
 
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
-import { TableState, arrayAny, inArray } from '../shared/table-state';
+import { TableState, inArray } from '../shared/table-state';
 import { downloadCsv } from '../data/export-csv';
 
 import {
-  JOBS, Job,
-  TAG_OPTIONS
+  JOBS, Job
 } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { currentStepLabel, getTradeOptions } from '../data/workflow';
+import { currentStepLabel, ROLES, DEFAULT_ROLE, type Role } from '../data/workflow';
 
 type Row = Job & { currentStep: string };
 
@@ -34,27 +33,33 @@ export class TableSearchComponent {
     effect(() => this.table.setRows(this.displayedJobs()));
   }
 
-  tradeOptions = getTradeOptions();
-  tagOptions = TAG_OPTIONS;
+  roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
   table = new TableState<Row>(
-    ['title', 'tags'],
+    ['title'],
     {
       title: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
       currentStep: inArray,
-      tags: arrayAny,
     }
   );
 
   totalLoaded = signal(JOBS.length);
 
   // Role droplist to filter selection
-  selectedRole = signal<Job['trade'] | null>(null);
+  selectedRole = signal<Role>(DEFAULT_ROLE);
   displayedJobs = computed<Row[]>(() => {
     const role = this.selectedRole();
-    const rows = role ? JOBS.filter(j => j.trade === role) : JOBS;
-    // Materialize the derived "current step" onto each row so the column can
-    // sort and filter on a real field.
+    let rows: Job[];
+    if (role === 'View') {
+      rows = JOBS;
+    } else {
+      // Filter jobs where the current unsignoff'd step has matching role
+      rows = JOBS.filter(j => {
+        const wf = this.wfService.workflowFor(j)();
+        const current = wf.stages.find(s => !s.signed);
+        return current?.role === role;
+      });
+    }
     return rows.map(j => ({ ...j, currentStep: this.currentStep(j) }));
   });
 
@@ -81,14 +86,13 @@ export class TableSearchComponent {
 
   clear() {
     this.table.clearFilters();
-    this.selectedRole.set(null);
+    this.selectedRole.set('View');
   }
 
   exportCsv() {
     downloadCsv('work-orders', [
       { header: 'Title', value: (r: Row) => r.title },
-      { header: 'Current step', value: (r: Row) => r.currentStep },
-      { header: 'Tags', value: (r: Row) => r.tags.join('; ') }
+      { header: 'Current step', value: (r: Row) => r.currentStep }
     ], this.table.sorted());
   }
 }
