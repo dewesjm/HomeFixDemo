@@ -629,7 +629,11 @@ export function allStageIds(): { id: string; label: string }[] {
 
 /* dynamic trade options — includes admin-added trades from localStorage */
 export function getTradeOptions(): { label: string; value: string }[] {
-  const trades = Object.keys(getTemplates()).sort();
+  const trades = Object.keys(getTemplates()).sort((a, b) => {
+    if (a === 'Welding') return -1;
+    if (b === 'Welding') return 1;
+    return a.localeCompare(b);
+  });
   return trades.map(t => ({ label: t, value: t }));
 }
 

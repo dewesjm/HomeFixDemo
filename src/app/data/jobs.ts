@@ -21,7 +21,7 @@ export interface Job {
 }
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
-const TRADES: Job['trade'][] = ['Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection', 'Welding'];
+const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
 const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
 /* made-up but trade-appropriate make/model pairs */
@@ -79,7 +79,7 @@ export function generateJobs(count = 120): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
   for (let i = 0; i < count; i++) {
-    const trade = TRADES[Math.floor(rand() * TRADES.length)];
+    const trade = 'Welding';
     const titlePool = TITLES_BY_TRADE[trade];
     const title = titlePool[Math.floor(rand() * titlePool.length)];
     const technician = TECHNICIANS[Math.floor(rand() * TECHNICIANS.length)];
