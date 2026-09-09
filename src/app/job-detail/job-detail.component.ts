@@ -83,7 +83,6 @@ export class JobDetailComponent {
       // Real fields the work view doesn't surface
       { label: 'Job number', value: j.jobNumber },
       { label: 'Record ID', value: String(j.id) },
-      { label: 'Inspection score', value: `${j.inspectionScore} / 5` },
       // Demo records/audit metadata
       { label: 'Reference document #', value: `45${String(j.id).padStart(8, '0')}` },
       { label: 'Department', value: this.COST_CENTERS[j.id % this.COST_CENTERS.length] },

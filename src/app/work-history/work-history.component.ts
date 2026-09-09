@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory } from '@lucide/angular';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw } from '@lucide/angular';
 
 import { TableState, inArray } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
@@ -28,7 +28,7 @@ interface ActivityRow extends HistoryEntry {
   imports: [
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent, MultiselectDropdownComponent,
-    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory
+    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw
   ],
   templateUrl: './work-history.component.html'
 })
@@ -120,6 +120,19 @@ export class WorkHistoryComponent {
       (!p || r.who === p)
     );
   });
+
+  /* check if this is the latest entry for a given job */
+  isLatestEntry(r: ActivityRow): boolean {
+    const jobEntries = this.table.sorted().filter(e => e.jobId === r.jobId);
+    return jobEntries.length > 0 && jobEntries[0] === r;
+  }
+
+  /* go back one step for a job */
+  goBack(jobId: number) {
+    const job = this.jobById.get(jobId);
+    if (!job) return;
+    this.wfService.goBackStep(job);
+  }
 
   clear() {
     this.person.set(null);

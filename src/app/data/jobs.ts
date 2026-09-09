@@ -7,13 +7,15 @@ export interface Job {
   title: string;
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
-  make: string;              /* equipment manufacturer */
-  model: string;             /* equipment model / part */
-  code1: string;             /* characteristic codes, see characteristics.ts */
-  code2: string;
-  code3: string;
+  drawingAndJoint: string;   /* drawing number / joint reference */
+  jointDesign: string;       /* e.g. Butt, Fillet, Lap */
+  weldType: string;          /* e.g. SMAW, GMAW, GTAW, FCAW */
+  materialType1: string;     /* base material 1 */
+  materialType2: string;     /* base material 2 / filler */
+  wps: string;               /* Welding Procedure Specification */
+  nde: string;               /* Non-Destructive Examination requirement */
+  pwht: string;              /* Post Weld Heat Treatment */
   estimatedCost: number;
-  inspectionScore: number;   /* 0-5 quality score */
   estimatedHours: number;    /* labor hours */
   scheduledFor: Date;
   tags: string[];
@@ -24,16 +26,15 @@ const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Lui
 const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
 const TAG_POOL = ['Urgent', 'Warranty', 'Follow-up', 'Permit required', 'Safety', 'Recurring', 'Customer supplied', 'Emergency'];
 
-/* made-up but trade-appropriate make/model pairs */
-const EQUIPMENT_BY_TRADE: Record<Job['trade'], { make: string; model: string }[]> = {
-  Plumbing:   [{ make: 'Rheem', model: 'Performance 50' }, { make: 'A.O. Smith', model: 'Signature 40' }, { make: 'Kohler', model: 'Cimarron' }, { make: 'Moen', model: '1255 Duralast' }],
-  Electrical: [{ make: 'Square D', model: 'QO140M200' }, { make: 'Eaton', model: 'BR2040B200' }, { make: 'Siemens', model: 'P4080B1200' }, { make: 'Leviton', model: 'GFTR1-W' }],
-  HVAC:       [{ make: 'Carrier', model: '59TP6' }, { make: 'Trane', model: 'XR16' }, { make: 'Lennox', model: 'EL296V' }, { make: 'Goodman', model: 'GMVC96' }],
-  Roofing:    [{ make: 'GAF', model: 'Timberline HDZ' }, { make: 'Owens Corning', model: 'Duration' }, { make: 'CertainTeed', model: 'Landmark Pro' }, { make: 'Malarkey', model: 'Highlander' }],
-  Carpentry:  [{ make: 'Simpson Strong-Tie', model: 'LUS28' }, { make: 'Kreg', model: 'K5' }, { make: 'Andersen', model: '400 Series' }, { make: 'Pella', model: 'Lifestyle' }],
-  Inspection: [{ make: 'Honeywell', model: 'T6 Pro' }, { make: 'Generac', model: 'Guardian 24kW' }, { make: 'Kidde', model: 'P4010ACSCO' }, { make: 'First Alert', model: 'SC9120B' }],
-  Welding:    [{ make: 'Lincoln', model: 'Power MIG 260' }, { make: 'Miller', model: 'Multimatic 220' }, { make: 'ESAB', model: 'Rebel 215ic' }, { make: 'Hobart', model: 'Handler 190' }]
-};
+/* welding-specific seed pools */
+const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
+const JOINT_DESIGNS = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
+const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW', 'SAW', 'PAW'];
+const MATERIALS_1 = ['A36 Carbon Steel', '304 Stainless', '316 Stainless', 'A516 Gr.70', 'A106 Gr.B', 'API 5L X52'];
+const MATERIALS_2 = ['E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3'];
+const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
+const NDE_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + UT + RT'];
+const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
   Plumbing:   ['Leaking faucet repair', 'Water heater replacement', 'Clogged drain clearing', 'Pipe leak inspection', 'Toilet reseal', 'Sump pump service'],
@@ -83,10 +84,8 @@ export function generateJobs(count = 120): Job[] {
     const titlePool = TITLES_BY_TRADE[trade];
     const title = titlePool[Math.floor(rand() * titlePool.length)];
     const technician = TECHNICIANS[Math.floor(rand() * TECHNICIANS.length)];
-    const equipment = EQUIPMENT_BY_TRADE[trade][Math.floor(rand() * EQUIPMENT_BY_TRADE[trade].length)];
     const estimatedCost = Math.round((75 + rand() * 1925) * 100) / 100;
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
-    const inspectionScore = Math.round(rand() * 50) / 10;
 
     // schedule spread from ~6 months ago to ~6 months ahead
     const dayOffset = Math.floor(rand() * 360) - 180;
@@ -99,7 +98,7 @@ export function generateJobs(count = 120): Job[] {
       if (!tags.includes(t)) tags.push(t);
     }
 
-    const [code1, code2, code3] = pickCodes(i + 1);
+    const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
     out.push({
       id: i + 1,
@@ -107,13 +106,15 @@ export function generateJobs(count = 120): Job[] {
       title,
       trade,
       technician,
-      make: equipment.make,
-      model: equipment.model,
-      code1,
-      code2,
-      code3,
+      drawingAndJoint: pick(DRAWINGS),
+      jointDesign: pick(JOINT_DESIGNS),
+      weldType: pick(WELD_TYPES),
+      materialType1: pick(MATERIALS_1),
+      materialType2: pick(MATERIALS_2),
+      wps: pick(WPS_POOL),
+      nde: pick(NDE_POOL),
+      pwht: pick(PWHT_POOL),
       estimatedCost,
-      inspectionScore,
       estimatedHours,
       scheduledFor,
       tags
@@ -139,13 +140,15 @@ export function addTestJob(trade: string): Job {
     title: `${trade} test job`,
     trade,
     technician: TECHNICIANS[id % TECHNICIANS.length],
-    make: '',
-    model: '',
-    code1: '',
-    code2: '',
-    code3: '',
+    drawingAndJoint: '',
+    jointDesign: '',
+    weldType: '',
+    materialType1: '',
+    materialType2: '',
+    wps: '',
+    nde: '',
+    pwht: '',
     estimatedCost: 0,
-    inspectionScore: 0,
     estimatedHours: 0,
     scheduledFor: new Date(),
     tags: [],

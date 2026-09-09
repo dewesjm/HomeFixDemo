@@ -306,6 +306,29 @@ export class WorkflowService {
     this.notify('success', 'Step updated', `Set to step ${targetIndex + 1}`);
   }
 
+  /* go back one step — re-opens the current stage and the one before it */
+  goBackStep(job: Job) {
+    this.workflowFor(job).update(wf => {
+      const currentIdx = wf.stages.findIndex(s => !s.signed);
+      if (currentIdx <= 0) return wf; // already at first step
+      const stages = wf.stages.map((s, i) => {
+        if (i === currentIdx - 1 || i === currentIdx) {
+          return { ...s, signed: false, signedAt: null, result: null };
+        }
+        return s;
+      });
+      return this.withHistory(wf, { ...wf, stages }, {
+        section: 'Stages',
+        who: 'Admin',
+        action: 'Step reversed (admin)',
+        from: wf.stages[currentIdx]?.label ?? '',
+        to: wf.stages[currentIdx - 1]?.label ?? ''
+      });
+    });
+    this.persist();
+    this.notify('info', 'Step reversed');
+  }
+
   // --- internals ----------------------------------------------------------
   private withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'step'>): JobWorkflow {
     const entry: HistoryEntry = {

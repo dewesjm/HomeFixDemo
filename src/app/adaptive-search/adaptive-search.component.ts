@@ -13,7 +13,6 @@ import { TableState } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { DateRangeComponent } from '../shared/date-range.component';
-import { StarRatingComponent } from '../shared/star-rating.component';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { downloadCsv } from '../data/export-csv';
 
@@ -38,21 +37,26 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'jobNumber',       label: 'Job #',         field: 'jobNumber',       sortField: 'jobNumber',       width: 'min-w-8' },
-  { key: 'title',           label: 'Job',           field: 'title',           sortField: 'title',           width: 'min-w-14' },
-  { key: 'trade',           label: 'Trade',         field: 'trade',           sortField: 'trade',           width: 'min-w-12' },
-  { key: 'technician',      label: 'Technician',    field: 'technician',      sortField: 'technician',      width: 'min-w-11' },
-  { key: 'make',            label: 'Make',          field: 'make',            sortField: 'make',            width: 'min-w-12' },
-  { key: 'model',           label: 'Model',         field: 'model',           sortField: 'model',           width: 'min-w-12' },
-  { key: 'estimatedCost',   label: 'Est. cost',     field: 'estimatedCost',   sortField: 'estimatedCost',   width: 'min-w-13' },
-  { key: 'estimatedHours',  label: 'Est. hours',    field: 'estimatedHours',  sortField: 'estimatedHours',  width: 'min-w-10' },
-  { key: 'inspectionScore', label: 'Score',         field: 'inspectionScore', sortField: 'inspectionScore', width: 'min-w-11' },
-  { key: 'scheduledFor',    label: 'Scheduled',     field: 'scheduledFor',    sortField: 'scheduledFor',    width: 'min-w-13' },
-  { key: 'currentStep',     label: 'Current step',                                          width: 'min-w-13' },
-  { key: 'tags',            label: 'Tags',                                                             width: 'min-w-11' },
+  { key: 'jobNumber',        label: 'Job #',            field: 'jobNumber',        sortField: 'jobNumber',        width: 'min-w-8' },
+  { key: 'title',            label: 'Job',              field: 'title',            sortField: 'title',            width: 'min-w-14' },
+  { key: 'trade',            label: 'Trade',            field: 'trade',            sortField: 'trade',            width: 'min-w-12' },
+  { key: 'technician',       label: 'Technician',       field: 'technician',       sortField: 'technician',       width: 'min-w-11' },
+  { key: 'drawingAndJoint',  label: 'Drawing & joint',  field: 'drawingAndJoint',  sortField: 'drawingAndJoint',  width: 'min-w-14' },
+  { key: 'jointDesign',      label: 'Joint design',     field: 'jointDesign',      sortField: 'jointDesign',      width: 'min-w-12' },
+  { key: 'weldType',         label: 'Weld type',        field: 'weldType',         sortField: 'weldType',         width: 'min-w-11' },
+  { key: 'materialType1',    label: 'Material 1',       field: 'materialType1',    sortField: 'materialType1',    width: 'min-w-14' },
+  { key: 'materialType2',    label: 'Material 2',       field: 'materialType2',    sortField: 'materialType2',    width: 'min-w-14' },
+  { key: 'wps',              label: 'WPS',              field: 'wps',              sortField: 'wps',              width: 'min-w-11' },
+  { key: 'nde',              label: 'NDE',              field: 'nde',              sortField: 'nde',              width: 'min-w-12' },
+  { key: 'pwht',             label: 'PWHT',             field: 'pwht',             sortField: 'pwht',             width: 'min-w-14' },
+  { key: 'estimatedCost',    label: 'Est. cost',        field: 'estimatedCost',    sortField: 'estimatedCost',    width: 'min-w-13' },
+  { key: 'estimatedHours',   label: 'Est. hours',       field: 'estimatedHours',   sortField: 'estimatedHours',   width: 'min-w-10' },
+  { key: 'scheduledFor',     label: 'Scheduled',        field: 'scheduledFor',     sortField: 'scheduledFor',     width: 'min-w-13' },
+  { key: 'currentStep',      label: 'Current step',                                                                  width: 'min-w-13' },
+  { key: 'tags',             label: 'Tags',                                                                            width: 'min-w-11' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'trade', 'technician', 'estimatedCost', 'inspectionScore', 'currentStep', 'tags'];
+const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawingAndJoint', 'jointDesign', 'weldType', 'materialType1', 'currentStep', 'tags'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -70,7 +74,7 @@ function saveColumnKeys(keys: string[]) {
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent, StarRatingComponent,
+    TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
     LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3
@@ -307,7 +311,6 @@ export class AdaptiveSearchComponent {
       case 'tags':        return `${f.label}: ${(v as any[]).join(', ')}`;
       case 'select':      return `${f.label}: ${v}`;
       case 'range':       return `${f.label}: ${v[0]}–${v[1]}`;
-      case 'rating':      return `${f.label}: ≥ ${v}`;
       case 'daterange': {
         const fmt = (d: Date) => d ? d.toLocaleDateString() : '…';
         return `${f.label}: ${fmt(v[0])} – ${fmt(v[1])}`;
@@ -321,8 +324,15 @@ export class AdaptiveSearchComponent {
       { header: 'Job', value: (r: Job) => r.title },
       { header: 'Trade', value: (r: Job) => r.trade },
       { header: 'Technician', value: (r: Job) => r.technician },
+      { header: 'Drawing & joint', value: (r: Job) => r.drawingAndJoint },
+      { header: 'Joint design', value: (r: Job) => r.jointDesign },
+      { header: 'Weld type', value: (r: Job) => r.weldType },
+      { header: 'Material 1', value: (r: Job) => r.materialType1 },
+      { header: 'Material 2', value: (r: Job) => r.materialType2 },
+      { header: 'WPS', value: (r: Job) => r.wps },
+      { header: 'NDE', value: (r: Job) => r.nde },
+      { header: 'PWHT', value: (r: Job) => r.pwht },
       { header: 'Est. cost', value: (r: Job) => Number(r.estimatedCost).toFixed(2) },
-      { header: 'Score', value: (r: Job) => r.inspectionScore },
       { header: 'Tags', value: (r: Job) => r.tags.join('; ') }
     ], this.table.sorted());
   }

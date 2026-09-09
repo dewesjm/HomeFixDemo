@@ -82,6 +82,7 @@
             (selectedChange)="table.setColumnFilter('trade', $event)" />
         </div>
       </th>
+      <th class="min-w-11">Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -98,10 +99,17 @@
           <div class="meta">{{ r.jobTitle }}</div>
         </td>
         <td>{{ r.trade }}</td>
+        <td>
+          @if (isLatestEntry(r)) {
+            <button type="button" class="btn btn-ghost btn-xs text-warning" (click)="goBack(r.jobId)" title="Reverse to previous step">
+              <svg lucideRotateCcw class="size-3"></svg> Reverse
+            </button>
+          }
+        </td>
       </tr>
     } @empty {
       <tr>
-        <td colspan="8" class="empty">
+        <td colspan="9" class="empty">
           No matching activity. Activity is recorded when stages, components, or sign-offs change on a job's Details page.
         </td>
       </tr>

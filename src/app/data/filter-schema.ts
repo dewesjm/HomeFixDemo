@@ -3,44 +3,45 @@ import {
   Job,
   TRADE_OPTIONS, TECHNICIAN_OPTIONS, TAG_OPTIONS, JOBS
 } from './jobs';
-import { CHARACTERISTIC_CODES } from './characteristics';
 
 export type FilterField =
   | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof Job }
   | { key: string; label: string; type: 'multiselect'; group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
   | { key: string; label: string; type: 'select';      group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
   | { key: string; label: string; type: 'range';       group: string; required?: boolean; field: keyof Job; min: number; max: number }
-  | { key: string; label: string; type: 'rating';      group: string; required?: boolean; field: keyof Job }
   | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job }
   | { key: string; label: string; type: 'tags';        group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] };
 
 /* derive filter options from the seeded job data */
-function makeOptions(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.make))].sort();
+function weldTypeOptions(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.weldType))].sort();
   return vals.map(v => ({ label: v, value: v }));
 }
-function modelOptions(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.model))].sort();
+function jointDesignOptions(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.jointDesign))].sort();
   return vals.map(v => ({ label: v, value: v }));
 }
-function codeOptions(): { label: string; value: string }[] {
-  return CHARACTERISTIC_CODES.map(c => ({ label: `${c.code} — ${c.description}`, value: c.code }));
+function material1Options(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.materialType1))].sort();
+  return vals.map(v => ({ label: v, value: v }));
+}
+function material2Options(): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(j => j.materialType2))].sort();
+  return vals.map(v => ({ label: v, value: v }));
 }
 
 export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'title',         label: 'Title contains', type: 'text',        group: 'Job',        field: 'title', required: true },
-  { key: 'trade',         label: 'Trade',          type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
-  { key: 'technician',    label: 'Technician',     type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
-  { key: 'make',          label: 'Make',           type: 'multiselect', group: 'Equipment',  field: 'make',       options: makeOptions() },
-  { key: 'model',         label: 'Model',          type: 'multiselect', group: 'Equipment',  field: 'model',      options: modelOptions() },
-  { key: 'estimatedHours',label: 'Est. hours',     type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
-  { key: 'estimatedCost', label: 'Est. cost ($)',  type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
-  { key: 'inspectionScore',label: 'Min score',     type: 'rating',      group: 'Cost',       field: 'inspectionScore' },
-  { key: 'scheduledFor',  label: 'Scheduled',      type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
-  { key: 'tags',          label: 'Tags (any of)',  type: 'tags',        group: 'Job',        field: 'tags',       options: TAG_OPTIONS },
-  { key: 'code1',         label: 'Code 1',         type: 'multiselect', group: 'Codes',      field: 'code1',      options: codeOptions() },
-  { key: 'code2',         label: 'Code 2',         type: 'multiselect', group: 'Codes',      field: 'code2',      options: codeOptions() },
-  { key: 'code3',         label: 'Code 3',         type: 'multiselect', group: 'Codes',      field: 'code3',      options: codeOptions() },
+  { key: 'title',           label: 'Title contains',   type: 'text',        group: 'Job',        field: 'title', required: true },
+  { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
+  { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
+  { key: 'jointDesign',     label: 'Joint design',     type: 'multiselect', group: 'Welding',    field: 'jointDesign', options: jointDesignOptions() },
+  { key: 'weldType',        label: 'Weld type',        type: 'multiselect', group: 'Welding',    field: 'weldType',    options: weldTypeOptions() },
+  { key: 'materialType1',   label: 'Material 1',       type: 'multiselect', group: 'Welding',    field: 'materialType1', options: material1Options() },
+  { key: 'materialType2',   label: 'Material 2',       type: 'multiselect', group: 'Welding',    field: 'materialType2', options: material2Options() },
+  { key: 'estimatedHours',  label: 'Est. hours',       type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
+  { key: 'estimatedCost',   label: 'Est. cost ($)',    type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
+  { key: 'scheduledFor',    label: 'Scheduled',        type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
+  { key: 'tags',            label: 'Tags (any of)',    type: 'tags',        group: 'Job',        field: 'tags',       options: TAG_OPTIONS },
 ];
 
 export type FilterValues = Record<string, any>;
@@ -57,8 +58,6 @@ export function isEmpty(field: FilterField, value: any): boolean {
       return !Array.isArray(value) || value.length === 0;
     case 'range':
       return !Array.isArray(value) || (value[0] === field.min && value[1] === field.max);
-    case 'rating':
-      return Number(value) <= 0;
     case 'daterange':
       return !Array.isArray(value) || !value[0];
     default:
@@ -89,9 +88,6 @@ export function applyFilters(rows: Job[], values: FilterValues): Job[] {
           if ((cell as number) < lo || (cell as number) > hi) return false;
           break;
         }
-        case 'rating':
-          if ((cell as number) < Number(v)) return false;
-          break;
         case 'daterange': {
           const [start, end] = v as Date[];
           const t = +(cell as Date);
@@ -150,7 +146,6 @@ export function defaultValuesFor(keys: string[]): FilterValues {
       case 'range':       out[key] = [f.min, f.max]; break;
       case 'multiselect':
       case 'tags':        out[key] = []; break;
-      case 'rating':      out[key] = 0; break;
       case 'daterange':   out[key] = null; break;
       default:            out[key] = null;
     }

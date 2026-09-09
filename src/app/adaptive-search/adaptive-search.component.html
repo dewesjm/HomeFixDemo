@@ -66,9 +66,6 @@
                    (ngModelChange)="setRangeMax(f.key, asRange(f), $event)" />
           </div>
         }
-        @case ('rating') {
-          <app-star-rating [value]="valueOf(f.key) || 0" (valueChange)="setValue(f.key, $event)" />
-        }
         @case ('daterange') {
           <app-date-range [from]="dateRangeValue(f.key)[0]" [to]="dateRangeValue(f.key)[1]"
             (rangeChange)="setDateRange(f.key, $event)" />
@@ -140,11 +137,16 @@
               @case ('title') { {{ job.title }} }
               @case ('trade') { {{ job.trade }} }
               @case ('technician') { {{ job.technician }} }
-              @case ('make') { {{ job.make }} }
-              @case ('model') { {{ job.model }} }
+              @case ('drawingAndJoint') { {{ job.drawingAndJoint }} }
+              @case ('jointDesign') { {{ job.jointDesign }} }
+              @case ('weldType') { {{ job.weldType }} }
+              @case ('materialType1') { {{ job.materialType1 }} }
+              @case ('materialType2') { {{ job.materialType2 }} }
+              @case ('wps') { {{ job.wps }} }
+              @case ('nde') { {{ job.nde }} }
+              @case ('pwht') { {{ job.pwht }} }
               @case ('estimatedCost') { {{ job.estimatedCost | currency:'USD' }} }
               @case ('estimatedHours') { {{ job.estimatedHours }}h }
-              @case ('inspectionScore') { <app-star-rating [value]="job.inspectionScore" [readonly]="true" /> }
               @case ('scheduledFor') { {{ job.scheduledFor | date:'mediumDate' }} }
               @case ('currentStep') { {{ currentStep(job) }} }
               @case ('tags') {

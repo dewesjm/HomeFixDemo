@@ -40,27 +40,14 @@
       <div><div class="meta">Scheduled</div><div>{{ j.scheduledFor | date:'fullDate' }}</div></div>
       <div><div class="meta">Estimated cost</div><div>{{ j.estimatedCost | currency:'USD' }}</div></div>
       <div><div class="meta">Estimated hours</div><div>{{ j.estimatedHours }}h</div></div>
-      <div><div class="meta">Make / model</div><div>{{ j.make }} {{ j.model }}</div></div>
-      <div>
-        <div class="meta">Code 1</div>
-        <div [appTooltip]="codeLabel(j.code1)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code1)">{{ j.code1 || '—' }}</div>
-      </div>
-      <div>
-        <div class="meta">Code 2</div>
-        <div [appTooltip]="codeLabel(j.code2)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code2)">{{ j.code2 || '—' }}</div>
-      </div>
-      <div>
-        <div class="meta">Code 3</div>
-        <div [appTooltip]="codeLabel(j.code3)" tooltipPosition="top" [class.code-cell]="!!codeLabel(j.code3)">{{ j.code3 || '—' }}</div>
-      </div>
-      <div><div class="meta">Priority</div><div>{{ demo()?.priority }}</div></div>
-      <div><div class="meta">Work order type</div><div>{{ demo()?.workOrderType }}</div></div>
-      <div><div class="meta">Customer</div><div>{{ demo()?.customer }}</div></div>
-      <div><div class="meta">Customer phone</div><div>{{ demo()?.customerPhone }}</div></div>
-      <div><div class="meta">Service address</div><div>{{ demo()?.serviceAddress }}</div></div>
-      <div><div class="meta">Region / branch</div><div>{{ demo()?.region }}</div></div>
-      <div><div class="meta">Warranty</div><div>{{ demo()?.warranty }}</div></div>
-      <div><div class="meta">Payment terms</div><div>{{ demo()?.paymentTerms }}</div></div>
+      <div><div class="meta">Drawing &amp; joint</div><div>{{ j.drawingAndJoint || '—' }}</div></div>
+      <div><div class="meta">Joint design</div><div>{{ j.jointDesign || '—' }}</div></div>
+      <div><div class="meta">Weld type</div><div>{{ j.weldType || '—' }}</div></div>
+      <div><div class="meta">Material type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
+      <div><div class="meta">Material type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
+      <div><div class="meta">WPS</div><div>{{ j.wps || '—' }}</div></div>
+      <div><div class="meta">NDE</div><div>{{ j.nde || '—' }}</div></div>
+      <div><div class="meta">PWHT</div><div>{{ j.pwht || '—' }}</div></div>
       <div class="col-span-all">
         <div class="meta">Tags</div>
         <span class="tag-list">

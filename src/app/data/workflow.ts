@@ -193,6 +193,36 @@ export function setShops(shops: string[]) {
   localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
 }
 
+/* ── Penetrant types (admin-configurable via localStorage) ── */
+const PENETRANT_TYPES_LS_KEY = 'homefix:penetrant-types:v1';
+const DEFAULT_PENETRANT_TYPES = ['Type I - Fluorescent', 'Type II - Visible', 'Type III - Water Washable', 'Type IV - Post Emulsifiable'];
+
+export function getPenetrantTypes(): string[] {
+  try {
+    const raw = localStorage.getItem(PENETRANT_TYPES_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_PENETRANT_TYPES;
+  } catch { return DEFAULT_PENETRANT_TYPES; }
+}
+
+export function setPenetrantTypes(types: string[]) {
+  localStorage.setItem(PENETRANT_TYPES_LS_KEY, JSON.stringify(types));
+}
+
+/* ── Penetrant manufacturers (admin-configurable via localStorage) ── */
+const PENETRANT_MFRS_LS_KEY = 'homefix:penetrant-mfrs:v1';
+const DEFAULT_PENETRANT_MFRS = ['Magnaflux', 'Sherwin-Williams', 'NDT Systems', 'Research Institute'];
+
+export function getPenetrantManufacturers(): string[] {
+  try {
+    const raw = localStorage.getItem(PENETRANT_MFRS_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_PENETRANT_MFRS;
+  } catch { return DEFAULT_PENETRANT_MFRS; }
+}
+
+export function setPenetrantManufacturers(mfrs: string[]) {
+  localStorage.setItem(PENETRANT_MFRS_LS_KEY, JSON.stringify(mfrs));
+}
+
 const WELDING_HANDOVER_STAGE: StageTemplate = {
   id: 'handover', label: 'Work Validation', required: true,
   fields: [
@@ -491,7 +521,77 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ], rejectToStage: 'tack' }
+    ], rejectToStage: 'tack' },
+    { id: 'root-weld', label: 'Root Weld', required: true, fields: [
+      { key: 'rootPass', label: 'Root pass completed', type: 'select',
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'interpassTemp', label: 'Interpass temp', type: 'number', unit: '°C' },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
+    { id: 'root-ndt', label: 'Root NDT', required: true, fields: [
+      { key: 'ndtMethod', label: 'NDT method', type: 'select',
+        options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
+          { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' }] },
+      { key: 'penetrantType', label: 'Penetrant type', type: 'select',
+        options: getPenetrantTypes().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'penetrantManufacturer', label: 'Penetrant manufacturer', type: 'select',
+        options: getPenetrantManufacturers().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'root-weld' },
+    { id: 'root-layer', label: 'Root Layer', required: true, fields: [
+      { key: 'layerCount', label: 'Layer count', type: 'number' },
+      { key: 'weldingProcess', label: 'Welding process', type: 'select',
+        options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
+          { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
+    { id: 'final-weld', label: 'Final Weld', required: true, fields: [
+      { key: 'finalPass', label: 'Final pass completed', type: 'select',
+        options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
+      { key: 'capWidth', label: 'Cap width', type: 'number', unit: 'mm' },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ] },
+    { id: 'final-ndt', label: 'Final NDT', required: true, fields: [
+      { key: 'ndtMethod', label: 'NDT method', type: 'select',
+        options: [{ label: 'Visual', value: 'visual' }, { label: 'Penetrant', value: 'penetrant' },
+          { label: 'Magnetic Particle', value: 'mp' }, { label: 'Ultrasonic', value: 'ut' },
+          { label: 'Radiographic', value: 'rt' }] },
+      { key: 'penetrantType', label: 'Penetrant type', type: 'select',
+        options: getPenetrantTypes().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'penetrantManufacturer', label: 'Penetrant manufacturer', type: 'select',
+        options: getPenetrantManufacturers().map(p => ({ label: p, value: p.toLowerCase().replace(/\s+/g, '-') })) },
+      { key: 'ndtResult', label: 'NDT result', type: 'select',
+        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'final-weld' },
+    { id: 'review', label: 'Review', required: true, fields: [
+      { key: 'reviewStatus', label: 'Review status', type: 'select',
+        options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
+      { key: 'notes', label: 'Notes', type: 'text' }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'final-ndt' },
+    { id: 'sold', label: 'SOLD', required: true, fields: [], signoffFields: [] }
   ]
 };
 
