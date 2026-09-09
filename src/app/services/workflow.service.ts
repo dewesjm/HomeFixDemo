@@ -365,29 +365,47 @@ export class WorkflowService {
         wf.stages.forEach(s => {
           s.inputs ??= {};
           s.fields ??= [];
-          // backfill field definitions for stages saved before per-step inputs existed
-          if (!s.fields.length && job) s.fields = stageFieldsFor(job.trade, s.id);
-          // backfill signoff fields and inputs for stages saved before they existed
           s.signoffFields ??= [];
-          if (!s.signoffFields.length && job) s.signoffFields = signoffFieldsFor(job.trade, s.id);
           s.signoffInputs ??= {};
-          // migrate old hardcoded fields into signoffInputs
-          const old = s as unknown as { inspectorName?: string; licenseNo?: string; notes?: string };
-          if (old.inspectorName && !s.signoffInputs['inspectorName']) s.signoffInputs['inspectorName'] = old.inspectorName;
-          if (old.licenseNo && !s.signoffInputs['licenseNo']) s.signoffInputs['licenseNo'] = old.licenseNo;
-          if (old.notes && !s.signoffInputs['notes']) s.signoffInputs['notes'] = old.notes;
-          delete old.inspectorName;
-          delete old.licenseNo;
-          delete old.notes;
           s.result ??= null;
           s.rejectToStage ??= '';
           s.signed ??= false;
           s.signedAt ??= null;
-          delete (s as unknown as { status?: unknown }).status;   // old per-stage status removed
+          delete (s as unknown as { status?: unknown }).status;
           s.repeatable ??= false;
           s.stepType ??= 'standard';
           s.routeTo ??= '';
           s.swapStageId ??= '';
+          s.role ??= '';
+
+          /* auto-backfill: merge current template fields/signoffFields/role
+             so future schema changes propagate without hand-written migrations */
+          if (job) {
+            const templates = getTemplates();
+            const tpl = (templates[job.trade] ?? []).find(t => t.id === s.id);
+            if (tpl) {
+              // merge new reading fields (keep existing field defs + inputs)
+              if (tpl.fields.length) {
+                const existingKeys = new Set(s.fields.map(f => f.key));
+                for (const f of tpl.fields) {
+                  if (!existingKeys.has(f.key)) {
+                    s.fields = [...s.fields, { ...f }];
+                  }
+                }
+              }
+              // merge new signoff fields (keep existing)
+              if (tpl.signoffFields?.length) {
+                const existingKeys = new Set(s.signoffFields.map(f => f.key));
+                for (const f of tpl.signoffFields) {
+                  if (!existingKeys.has(f.key)) {
+                    s.signoffFields = [...s.signoffFields, { ...f }];
+                  }
+                }
+              }
+              // backfill role
+              if (!s.role) s.role = tpl.role ?? '';
+            }
+          }
         });
         /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
         if (job) {

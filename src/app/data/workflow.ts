@@ -814,17 +814,13 @@ export function buildStages(job: Job): WorkflowStage[] {
     const fabrication: StageTemplate = {
       id: 'fabrication', label: 'Fabrication', required: true, role: 'Fitting',
       fields: [
-        { key: 'jobIdDisplay', label: 'Job ID', type: 'text' },
-        { key: 'drawing', label: 'Drawing', type: 'text' },
-        { key: 'joint', label: 'Joint', type: 'text' },
+        { key: 'id1', label: 'ID', type: 'text' },
+        { key: 'id2', label: 'ID 2', type: 'text' },
+        { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
         { key: 'location', label: 'Location', type: 'select',
           options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
         { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-        { key: 'id1', label: 'ID 1', type: 'text' },
-        { key: 'id2', label: 'ID 2', type: 'text' },
-        { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
         { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
-        { key: 'actualThickness', label: 'Actual Thickness', type: 'number', unit: 'mm' },
       ],
       signoffFields: [
         { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
