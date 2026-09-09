@@ -149,10 +149,10 @@ export class AdminStepsComponent {
 
   addRow() {
     const trade = this.tradeOptions()[0]?.value ?? 'HVAC';
-    const maxSeq = Math.max(0, ...this.rows().filter(r => r.trade === trade).map(r => r.sequence));
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
-    const row: StepRow = { id: fullId, step: '', trade, sequence: maxSeq + 1, rejectToStage: '' };
+    // negative sequence keeps it at the top until saved
+    const row: StepRow = { id: fullId, step: '', trade, sequence: -1, rejectToStage: '' };
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
     this.newRowId.set(fullId);
@@ -180,15 +180,14 @@ export class AdminStepsComponent {
     const isNew = stageId.startsWith('new-');
 
     if (isNew) {
-      // add to data layer
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
         id: newId, label: row.step, required: true,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
       });
-      // update the row id
       const newFullId = `${row.trade}:${newId}`;
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId } : x));
+      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId, sequence: 0 } : x));
+      this.resequence(row.trade);
     } else {
       updateStageTemplate(row.trade, stageId, {
         label: row.step,
