@@ -417,19 +417,32 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] }
   ],
   Welding: [
-    { id: 'fit-tack', label: 'Fit Tack', required: true, fields: [
-      { key: 'fitUpType', label: 'Fit-up type', type: 'select',
+    { id: 'fit', label: 'Fit', required: true, fields: [
+      { key: 'jointType', label: 'Joint type', type: 'select',
         options: [{ label: 'Butt', value: 'butt' }, { label: 'Fillet', value: 'fillet' },
           { label: 'Lap', value: 'lap' }, { label: 'Corner', value: 'corner' },
           { label: 'Edge', value: 'edge' }] },
       { key: 'gap', label: 'Root gap', type: 'number', unit: 'mm' },
-      { key: 'tackCount', label: 'Tack welds', type: 'number' }
+      { key: 'alignment', label: 'Alignment', type: 'select',
+        options: [{ label: 'Flush', value: 'flush' }, { label: 'High-low', value: 'high-low' }] }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'testMethod', label: 'Test method', type: 'select', required: false,
         options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Go/No-go gauge', value: 'gauge' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
+    { id: 'tack', label: 'Tack', required: true, fields: [
+      { key: 'tackCount', label: 'Tack welds', type: 'number' },
+      { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
+      { key: 'tackCondition', label: 'Tack condition', type: 'select',
+        options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
+          { label: 'Incomplete', value: 'incomplete' }] }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'fit' },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, fields: [
       { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
         options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
@@ -443,7 +456,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ], rejectToStage: 'fit-tack' }
+    ], rejectToStage: 'tack' }
   ]
 };
 
