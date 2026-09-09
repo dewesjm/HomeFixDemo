@@ -12,6 +12,7 @@ import { AdminSetStepComponent } from './admin-set-step/admin-set-step.component
 import { AdminSignoffFieldsComponent } from './admin-signoff-fields/admin-signoff-fields.component';
 import { AdminNdtComponent } from './admin-ndt/admin-ndt.component';
 import { AdminLocationsComponent } from './admin-locations/admin-locations.component';
+import { AdminStepOptionsComponent } from './admin-step-options/admin-step-options.component';
 
 
 export const routes: Routes = [
@@ -26,7 +27,8 @@ export const routes: Routes = [
   { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Step' },
   { path: 'admin/signoff-fields', component: AdminSignoffFieldsComponent, title: 'Signoff Fields' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'NDT Configuration' },
-  { path: 'admin/locations', component: AdminLocationsComponent, title: 'Locations' },
+  { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'Locations' },
+  { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Job Details' },
   { path: '**', redirectTo: 'table' }

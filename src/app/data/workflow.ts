@@ -55,6 +55,8 @@ export interface WorkflowStage {
   stepType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
   routeTo: string;                /* stage id to jump to on sign (empty = next in sequence) */
   swapStageId: string;            /* which stage template to use for fields (empty = own) */
+  inspectionType: string;         /* admin-managed sub-type (e.g. MT/PT on NDT MT/PT stage) */
+  stepOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
@@ -106,6 +108,12 @@ export interface JobWorkflow {
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
 }
 
+interface StageOption {
+  label: string;
+  value: string;
+  default?: boolean;
+}
+
 interface StageTemplate {
   id: string;
   label: string;
@@ -121,6 +129,8 @@ interface StageTemplate {
   repeatable?: boolean;
   /* role that this stage routes to */
   role?: string;
+  /* admin-managed step options (e.g. Fit/Weld Build up, MT/PT) */
+  stepOptions?: StageOption[];
 }
 
 const titleHas = (job: Job, ...words: string[]) =>
@@ -203,6 +213,25 @@ export function setShops(shops: string[]) {
   localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
 }
 
+/* ── Step options per stage (admin-configurable via localStorage) ── */
+export type { StageOption };
+
+const STEP_OPTIONS_LS_KEY = 'homefix:step-options:v1';
+
+export function setStageStepOptions(trade: string, stageId: string, options: StageOption[]) {
+  const raw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
+  const all: Record<string, StageOption[]> = raw ? JSON.parse(raw) : {};
+  all[`${trade}:${stageId}`] = options;
+  localStorage.setItem(STEP_OPTIONS_LS_KEY, JSON.stringify(all));
+}
+
+export function getStageStepOptions(trade: string, stageId: string): StageOption[] | undefined {
+  const raw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
+  if (!raw) return undefined;
+  const all: Record<string, StageOption[]> = JSON.parse(raw);
+  return all[`${trade}:${stageId}`];
+}
+
 /* ── Penetrant entries (admin-configurable via localStorage) ── */
 export interface PenetrantEntry {
   type: string;
@@ -253,8 +282,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'location', label: 'Location', type: 'select',
     options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-  { key: 'id1', label: 'ID', type: 'text', fullWidth: true },
-  { key: 'id2', label: 'ID 2', type: 'text', fullWidth: true },
+  { key: 'id1', label: 'ID', type: 'text' },
+  { key: 'id2', label: 'ID 2', type: 'text' },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
   { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
 ];
@@ -513,6 +542,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
+    ], stepOptions: [
+      { label: 'Fit', value: 'fit', default: true },
+      { label: 'Weld Build up', value: 'weld-buildup' },
     ] },
     { id: 'tack', label: 'Tack', required: true, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
@@ -557,7 +589,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld' },
+    ], rejectToStage: 'root-weld', stepOptions: [
+      { label: 'UT', value: 'ut', default: true },
+      { label: 'RT', value: 'rt' },
+    ] },
     { id: 'root-ndt-mtpt', label: 'NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
@@ -567,7 +602,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld' },
+    ], rejectToStage: 'root-weld', stepOptions: [
+      { label: 'MT', value: 'mt', default: true },
+      { label: 'PT', value: 'pt' },
+    ] },
     { id: 'root-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
@@ -575,7 +613,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld' },
+    ], rejectToStage: 'root-weld', stepOptions: [
+      { label: 'VT', value: 'vt', default: true },
+      { label: '5X', value: '5x' },
+    ] },
     { id: 'root-layer', label: 'Root Layer', required: true, role: 'Welding', fields: [
       { key: 'layerCount', label: 'Layer count', type: 'number' },
       { key: 'weldingProcess', label: 'Welding process', type: 'select',
@@ -602,7 +643,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld' },
+    ], rejectToStage: 'final-weld', stepOptions: [
+      { label: 'UT', value: 'ut', default: true },
+      { label: 'RT', value: 'rt' },
+    ] },
     { id: 'final-ndt-mtpt', label: 'NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
@@ -612,7 +656,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld' },
+    ], rejectToStage: 'final-weld', stepOptions: [
+      { label: 'MT', value: 'mt', default: true },
+      { label: 'PT', value: 'pt' },
+    ] },
     { id: 'final-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
@@ -620,7 +667,10 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'licenseNo', label: 'License #', type: 'text', required: true },
       { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld' },
+    ], rejectToStage: 'final-weld', stepOptions: [
+      { label: 'VT', value: 'vt', default: true },
+      { label: '5X', value: '5x' },
+    ] },
     { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
@@ -650,6 +700,7 @@ interface SerializedStage {
   rejectToStage: string;
   repeatable?: boolean;
   role?: string;
+  stepOptions?: StageOption[];
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -662,11 +713,12 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectToStage: t.rejectToStage ?? '',
     repeatable: t.repeatable ?? false,
     role: t.role ?? '',
+    stepOptions: t.stepOptions,
   };
 }
 
 function deserializeStage(s: SerializedStage): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '' };
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', stepOptions: s.stepOptions };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -686,6 +738,8 @@ let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
 export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   if (_merged) return _merged;
   const saved = loadSavedOverrides();
+  const stepOptsRaw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
+  const stepOptsAll: Record<string, StageOption[]> = stepOptsRaw ? JSON.parse(stepOptsRaw) : {};
   _merged = {} as Record<Job['trade'], StageTemplate[]>;
   // Start with static defaults, merge admin overrides by stage ID
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
@@ -699,6 +753,11 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
       _merged[trade] = merged;
     } else {
       _merged[trade] = statics;
+    }
+    // Merge stepOptions from separate localStorage key
+    for (const s of _merged[trade]) {
+      const key = `${trade}:${s.id}`;
+      if (stepOptsAll[key]) s.stepOptions = stepOptsAll[key];
     }
   }
   // Include trades that exist only in localStorage (added via admin)
@@ -833,6 +892,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       stepType: 'standard',
       routeTo: '',
       swapStageId: '',
+      inspectionType: '',
+      stepOptions: t.stepOptions,
       signed: false,
       signedAt: null
     };

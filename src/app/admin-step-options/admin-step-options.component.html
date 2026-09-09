@@ -1,0 +1,76 @@
+<h2 class="section-title">Step Options</h2>
+<p class="section-sub">Manage per-stage dropdown options (e.g. Fit / Weld Build up, MT / PT).</p>
+
+<div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Trade</th>
+        <th>Stage</th>
+        <th>Options</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.uid) {
+        <tr>
+          <td>{{ row.trade }}</td>
+          <td>{{ row.stageLabel }}</td>
+          <td>
+            @if (editingUid() === row.uid) {
+              <div class="flex flex-col gap-1">
+                @for (opt of row.options; track $index; let i = $index) {
+                  <div class="flex items-center gap-1">
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(row, i)" [disabled]="i === 0">
+                      <svg lucideChevronUp class="size-3"></svg>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(row, i)" [disabled]="i === row.options.length - 1">
+                      <svg lucideChevronDown class="size-3"></svg>
+                    </button>
+                    <input class="input input-sm input-bordered w-32" placeholder="Label"
+                           [ngModel]="opt.label" (ngModelChange)="opt.label = $event" />
+                    <input class="input input-sm input-bordered w-24" placeholder="Value"
+                           [ngModel]="opt.value" (ngModelChange)="opt.value = $event" />
+                    <label class="flex items-center gap-1 text-xs cursor-pointer">
+                      <input type="radio" class="radio radio-xs" [name]="'default-' + row.uid"
+                             [checked]="opt.default" (change)="setDefault(row, i)" />
+                      Default
+                    </label>
+                    <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeOption(row, i)">
+                      <svg lucideTrash2 class="size-3"></svg>
+                    </button>
+                  </div>
+                }
+                <button type="button" class="btn btn-ghost btn-xs w-fit" (click)="addOption(row)">
+                  <svg lucidePlus class="size-3"></svg> Add option
+                </button>
+              </div>
+            } @else {
+              @if (row.options.length === 0) {
+                <span class="text-muted text-sm">No options</span>
+              } @else {
+                @for (opt of row.options; track $index) {
+                  <span class="badge badge-sm me-1">{{ opt.label }}{{ opt.default ? ' (default)' : '' }}</span>
+                }
+              }
+            }
+          </td>
+          <td class="text-right whitespace-nowrap">
+            @if (editingUid() === row.uid) {
+              <button type="button" class="btn btn-ghost btn-sm text-success" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-sm" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

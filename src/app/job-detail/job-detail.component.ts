@@ -71,6 +71,31 @@ export class JobDetailComponent {
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
+  /* stepOptions for the currently selected stage */
+  currentStageStepOptions = computed(() => {
+    if (!this.wf) return [];
+    const stage = this.wf().stages[this.selectedStep()];
+    return stage?.stepOptions ?? [];
+  });
+
+  defaultStepOption(stage: WorkflowStage): string {
+    if (!stage.stepOptions?.length) return '';
+    return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
+  }
+
+  currentStepOptionValue(): string {
+    if (!this.wf) return '';
+    const stage = this.wf().stages[this.selectedStep()];
+    return stage?.inspectionType || this.defaultStepOption(stage!);
+  }
+
+  /* whether the current stage is an NDT stage */
+  isCurrentNdt = computed(() => {
+    if (!this.wf) return false;
+    const stage = this.wf().stages[this.selectedStep()];
+    return stage?.id?.startsWith('root-ndt') || stage?.id?.startsWith('final-ndt');
+  });
+
   /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
   fabFields = computed(() => FABRICATION_FIELDS.map(f =>
     f.key === 'location'
@@ -226,8 +251,13 @@ export class JobDetailComponent {
   // ---- stage inputs ----
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
-    return stage.fields.filter(f =>
-      !f.showIf || stage.inputs[f.showIf.key] === f.showIf.equals);
+    return stage.fields.filter(f => {
+      if (f.showIf && stage.inputs[f.showIf.key] !== f.showIf.equals) return false;
+      // Hide penetrant field when inspection type is MT (not PT)
+      if (f.key === 'penetrant' && (stage.id === 'root-ndt-mtpt' || stage.id === 'final-ndt-mtpt')
+          && stage.inspectionType === 'mt') return false;
+      return true;
+    });
   }
   /* a trigger field that other fields declare a showIf against — always breaks
      onto its own row (even before a selection) so its dependent fields can flow
@@ -371,6 +401,29 @@ export class JobDetailComponent {
     if (this.job && this.wf && v !== (this.wf().fabricationData[key] ?? '')) {
       this.wfService.setFabricationData(this.job, key, v);
     }
+  }
+
+  /* step option / inspection type handlers */
+  setStepOption(value: string) {
+    if (!this.job || !this.wf) return;
+    const idx = this.selectedStep();
+    const stage = this.wf().stages[idx];
+    if (!stage) return;
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
+    }));
+  }
+
+  setInspectionType(value: string) {
+    if (!this.job || !this.wf) return;
+    const idx = this.selectedStep();
+    const stage = this.wf().stages[idx];
+    if (!stage) return;
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
+    }));
   }
 
   back() {

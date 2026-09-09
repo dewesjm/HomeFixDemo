@@ -11,7 +11,18 @@
   <h2 class="section-title mt-sm">{{ j.title }}</h2>
   <p class="section-sub">
     Job #{{ j.id }} · {{ j.trade }} ·
-    <strong>Current step:</strong> {{ currentStep() }}
+    @if (currentStageStepOptions().length > 0) {
+      <strong>Current step:</strong>
+      <select class="select select-sm select-bordered ml-1"
+              [ngModel]="currentStepOptionValue()"
+              (ngModelChange)="setStepOption($event)">
+        @for (opt of currentStageStepOptions(); track opt.value) {
+          <option [ngValue]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    } @else {
+      <strong>Current step:</strong> {{ currentStep() }}
+    }
   </p>
 
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
@@ -147,6 +158,20 @@
             </select>
           </label>
         </div>
+        <!-- Inspection Type (NDT stages only) -->
+        @if (stage.stepOptions && stage.stepOptions.length > 0) {
+          <div class="mb-sm">
+            <label class="stage-field">
+              <span class="stage-field-label font-semibold">Inspection Type</span>
+              <select class="select select-bordered" [ngModel]="stage.inspectionType || defaultStepOption(stage)"
+                      (ngModelChange)="setInspectionType($event)">
+                @for (opt of stage.stepOptions; track opt.value) {
+                  <option [ngValue]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+        }
       }
 
       <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
@@ -202,7 +227,7 @@
             </div>
             <div class="signoff-fit-row">
               @for (f of visibleSignoffFields(stage); track f.key) {
-                @if (f.key === 'backingRingType' || f.key === 'backingRingId') {
+                @if (f.key === 'backingRingType') {
                   <div>
                     <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
                     @if (f.type === 'select') {
@@ -218,6 +243,18 @@
                              [ngModel]="stage.signoffInputs[f.key]"
                              (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
                     }
+                  </div>
+                }
+              }
+              <div></div>
+              @for (f of visibleSignoffFields(stage); track f.key) {
+                @if (f.key === 'backingRingId') {
+                  <div>
+                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                    <input class="input input-bordered w-full" type="text"
+                           [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                           [ngModel]="stage.signoffInputs[f.key]"
+                           (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
                   </div>
                 }
               }
