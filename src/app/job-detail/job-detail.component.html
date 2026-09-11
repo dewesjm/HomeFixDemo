@@ -266,14 +266,39 @@
               <div class="font-semibold text-sm mb-1">PH/IP Requirements</div>
               <div class="flex gap-4">
                 @for (f of visibleFields(stage); track f.key) {
-                  @if (f.key === 'phMin' || f.key === 'phMax' || f.key === 'ipMin' || f.key === 'ipMax') {
+                  @if (f.key === 'phMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }} (mm)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="3.2" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'phMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="true" value="6.4" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'ipMin') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="true" value="1.6" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'ipMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="true" value="4.8" />
                       </label>
                     </div>
                   }
@@ -285,7 +310,40 @@
               <div class="font-semibold text-sm mb-1">Override Requirements</div>
               <div class="flex gap-4">
                 @for (f of visibleFields(stage); track f.key) {
-                  @if (f.key === 'overridePhMin' || f.key === 'overridePhMax' || f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
+                  @if (f.key === 'overridePhMin') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'overridePhMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'overrideIpMin') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'overrideIpMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }} (mm)</span>
@@ -297,17 +355,19 @@
                     </div>
                   }
                 }
+              </div>
+              <!-- Override Note (dedicated line) -->
+              <div class="mt-1">
                 @for (f of visibleFields(stage); track f.key) {
                   @if (f.key === 'overrideNote') {
-                    <div class="flex-1 max-w-[200px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
-                        <input class="input input-bordered input-sm w-full" type="text"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                      </label>
-                    </div>
+                    <label class="stage-field">
+                      <span class="stage-field-label">{{ f.label }}</span>
+                      <input class="input input-bordered input-sm w-full" type="text"
+                             maxlength="200" placeholder="Enter override note (max 200 characters)"
+                             [disabled]="!inputsEditable(stage, selectedStep())"
+                             [ngModel]="stage.inputs[f.key]"
+                             (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                    </label>
                   }
                 }
               </div>
@@ -317,14 +377,21 @@
               <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>
               <div class="flex gap-4">
                 @for (f of visibleFields(stage); track f.key) {
-                  @if (f.key === 'actualPh' || f.key === 'actualIp') {
+                  @if (f.key === 'actualPh') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }} (mm)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="4.5" />
+                      </label>
+                    </div>
+                  }
+                  @if (f.key === 'actualIp') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="true" value="2.8" />
                       </label>
                     </div>
                   }
@@ -369,9 +436,7 @@
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
                     <input class="input input-bordered input-sm w-full" type="text"
-                           [disabled]="!inputsEditable(stage, selectedStep())"
-                           [ngModel]="stage.inputs[f.key]"
-                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                           [disabled]="true" value="Joint fit-up verified, all dimensions within spec" />
                   </label>
                 }
               }

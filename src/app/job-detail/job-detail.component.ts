@@ -261,12 +261,24 @@ export class JobDetailComponent {
       this.clearHidden(stage);
     }
   }
+  /* WTN → Weld Process mapping */
+  private readonly WTN_PROCESS_MAP: Record<string, string> = {
+    'wtn-101': 'smaw', 'wtn-102': 'gtaw', 'wtn-103': 'gmaw', 'wtn-201': 'fcaw'
+  };
+
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
     const v = value ?? '';
     if (this.job && v !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, v);
       this.clearHidden(stage);
+      /* Auto-set Weld Process when WTN changes */
+      if (field.key === 'wtn' && stage.id === 'tack' && this.WTN_PROCESS_MAP[v]) {
+        const weldProcessField = stage.fields.find(f => f.key === 'weldProcess');
+        if (weldProcessField) {
+          this.wfService.setStageInput(this.job, stage.id, weldProcessField, this.WTN_PROCESS_MAP[v]);
+        }
+      }
     }
   }
 
