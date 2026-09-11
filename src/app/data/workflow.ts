@@ -44,6 +44,7 @@ export interface WorkflowStage {
   id: string;
   label: string;
   displayName?: string;  /* override label shown on routing table */
+  decisionLabel?: string; /* override 'Decision' label */
   required: boolean;
   fields: StageField[];           /* input defs copied from template */
   inputs: Record<string, string>; /* recorded values, keyed by StageField.key */
@@ -120,6 +121,7 @@ interface StageTemplate {
   id: string;
   label: string;
   displayName?: string;  /* override label shown on routing table (e.g. 'Tack' for both 'tack' and 'deferred-tack') */
+  decisionLabel?: string; /* override 'Decision' label (e.g. 'Inspection Results') */
   /* bool or predicate keyed off the job */
   required: boolean | ((job: Job) => boolean);
   /* fields a tech records on this stage */
@@ -582,8 +584,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
-      { key: 'deferTack', label: 'Defer Tack', type: 'select', required: false,
-        options: [{ label: 'No', value: 'no' }, { label: 'Yes', value: 'yes' }] },
+      { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
     ], stepOptions: [
       { label: 'Fit', value: 'fit', default: true },
       { label: 'Weld Build up', value: 'weld-buildup' },
@@ -612,12 +613,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'text' },
       { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
-        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ], rejectToStage: 'fit' },
+    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
       { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
         options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
@@ -638,12 +634,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'tackCondition', label: 'Tack condition', type: 'select',
         options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
           { label: 'Incomplete', value: 'incomplete' }] }
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
-        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ], rejectToStage: 'fitup-insp' },
+    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fitup-insp' },
     { id: 'root-weld', label: 'Root Weld', required: true, role: 'Welding', fields: [
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },

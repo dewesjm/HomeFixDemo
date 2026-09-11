@@ -8,7 +8,10 @@
 @if (wf; as wfSig) {
 @if (wfSig(); as w) {
 
-  <h2 class="section-title mt-sm">{{ j.title }}</h2>
+  <div class="flex items-center gap-2 mt-sm">
+    <h2 class="section-title">{{ j.title }}</h2>
+    <app-sync-status />
+  </div>
   <p class="section-sub">
     Job #{{ j.id }} · {{ j.trade }} ·
     <strong>Current step:</strong> {{ currentStep() }}
@@ -219,108 +222,124 @@
       @if (visibleFields(stage).length) {
         @if (stage.id === 'tack') {
           <!-- Tack stage: custom layout with subsections -->
-          <div class="stage-inputs">
-            @for (f of visibleFields(stage); track f.key) {
-              @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
-                <label class="stage-field">
-                  <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                  @if (f.type === 'select') {
-                    <select class="select select-bordered select-sm" [disabled]="!inputsEditable(stage, selectedStep())"
-                            [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                      <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
-                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                    </select>
-                  } @else {
-                    <input class="input input-bordered input-sm" type="text"
-                           [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                           [ngModel]="stage.inputs[f.key]"
-                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                  }
-                </label>
-              }
-            }
-            @for (f of visibleFields(stage); track f.key) {
-              @if (f.key === 'qualificationCheck') {
-                <label class="stage-field">
-                  <span class="stage-field-label">{{ f.label }}</span>
-                  <input class="input input-bordered input-sm" type="text" [disabled]="true"
-                         [ngModel]="stage.inputs[f.key]" />
-                </label>
-              }
-            }
-            <!-- PH/IP Requirements -->
-            <div class="mt-2 mb-1"><span class="font-semibold text-sm">PH/IP Requirements</span></div>
+          <div class="flex flex-col gap-3 stage-inputs">
+            <!-- Row 1: Weld Procedure, WTN, Weld Process -->
             <div class="flex gap-4">
               @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'phMin' || f.key === 'phMax' || f.key === 'ipMin' || f.key === 'ipMax') {
-                  <div class="flex-1 max-w-[120px]">
+                @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
+                  <div class="flex-1 max-w-[200px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                      <input class="input input-bordered input-sm w-full" type="number"
-                             [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                             [ngModel]="stage.inputs[f.key]"
-                             (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      <span class="stage-field-label">{{ f.label }}</span>
+                      @if (f.type === 'select') {
+                        <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                                [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
+                          <option [ngValue]="null">Select</option>
+                          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                        </select>
+                      } @else {
+                        <input class="input input-bordered input-sm w-full" type="text"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      }
                     </label>
                   </div>
                 }
               }
+            </div>
+            <!-- Row 2: Qualification Check (yellow, disabled) -->
+            <div class="flex gap-4">
+              @for (f of visibleFields(stage); track f.key) {
+                @if (f.key === 'qualificationCheck') {
+                  <div class="flex-1 max-w-[400px]">
+                    <label class="stage-field">
+                      <span class="stage-field-label">{{ f.label }}</span>
+                      <input class="input input-bordered input-sm w-full bg-warning/20 border-warning" type="text"
+                             [disabled]="true" value="Failed — Missing XYZ, ABC" />
+                    </label>
+                  </div>
+                }
+              }
+            </div>
+            <!-- PH/IP Requirements -->
+            <div>
+              <div class="font-semibold text-sm mb-1">PH/IP Requirements</div>
+              <div class="flex gap-4">
+                @for (f of visibleFields(stage); track f.key) {
+                  @if (f.key === 'phMin' || f.key === 'phMax' || f.key === 'ipMin' || f.key === 'ipMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                }
+              </div>
             </div>
             <!-- Override Requirements -->
-            <div class="mt-2 mb-1"><span class="font-semibold text-sm">Override Requirements</span></div>
-            <div class="flex gap-4">
-              @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'overridePhMin' || f.key === 'overridePhMax' || f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                      <input class="input input-bordered input-sm w-full" type="number"
-                             [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                             [ngModel]="stage.inputs[f.key]"
-                             (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                    </label>
-                  </div>
+            <div>
+              <div class="font-semibold text-sm mb-1">Override Requirements</div>
+              <div class="flex gap-4">
+                @for (f of visibleFields(stage); track f.key) {
+                  @if (f.key === 'overridePhMin' || f.key === 'overridePhMax' || f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
                 }
-              }
-            </div>
-            <div class="mt-1">
-              @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'overrideNote') {
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}</span>
-                    <input class="input input-bordered input-sm w-full" type="text"
-                           [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                           [ngModel]="stage.inputs[f.key]"
-                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                  </label>
+                @for (f of visibleFields(stage); track f.key) {
+                  @if (f.key === 'overrideNote') {
+                    <div class="flex-1 max-w-[200px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered input-sm w-full" type="text"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
                 }
-              }
+              </div>
             </div>
             <!-- PH/IP Actuals -->
-            <div class="mt-2 mb-1"><span class="font-semibold text-sm">PH/IP Actuals</span></div>
-            <div class="flex gap-4">
-              @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'actualPh' || f.key === 'actualIp') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                      <input class="input input-bordered input-sm w-full" type="number"
-                             [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                             [ngModel]="stage.inputs[f.key]"
-                             (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                    </label>
-                  </div>
+            <div>
+              <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>
+              <div class="flex gap-4">
+                @for (f of visibleFields(stage); track f.key) {
+                  @if (f.key === 'actualPh' || f.key === 'actualIp') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <input class="input input-bordered input-sm w-full" type="number"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
                 }
-              }
+              </div>
             </div>
             <!-- Weld Position -->
-            <div class="mt-2">
+            <div>
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'weldPosition') {
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
-                    <select class="select select-bordered select-sm" [disabled]="!inputsEditable(stage, selectedStep())"
+                    <select class="select select-bordered select-sm w-full max-w-[200px]" [disabled]="!inputsEditable(stage, selectedStep())"
                             [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                      <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
+                      <option [ngValue]="null">Select</option>
                       @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                     </select>
                   </label>
@@ -328,14 +347,14 @@
               }
             </div>
             <!-- Filler Metal -->
-            <div class="flex gap-4 mt-2">
+            <div class="flex gap-4">
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize' || f.key === 'fillerMetalMic') {
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
                       <input class="input input-bordered input-sm w-full" type="text"
-                             [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                             [disabled]="!inputsEditable(stage, selectedStep())"
                              [ngModel]="stage.inputs[f.key]"
                              (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                     </label>
@@ -344,13 +363,13 @@
               }
             </div>
             <!-- Comments -->
-            <div class="mt-2">
+            <div>
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'comments') {
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
                     <input class="input input-bordered input-sm w-full" type="text"
-                           [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                           [disabled]="!inputsEditable(stage, selectedStep())"
                            [ngModel]="stage.inputs[f.key]"
                            (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                   </label>
@@ -490,7 +509,7 @@
         <!-- Decision (SAT/UNSAT) — own dedicated line -->
         @if (stage.rejectToStage) {
           <div class="mb-sm">
-            <div class="meta">Decision <span class="req">*</span></div>
+            <div class="meta">{{ stage.decisionLabel || 'Decision' }} <span class="req">*</span></div>
             <div class="result-radios">
               @for (o of resultOptions; track o.value) {
                 <label>
@@ -521,14 +540,11 @@
           @for (f of visibleSignoffFields(stage); track f.key) {
             @if (f.key === 'deferTack') {
               <div class="mb-sm">
-                <label class="stage-field">
-                  <span class="stage-field-label font-semibold">{{ f.label }}</span>
-                  <select class="select select-bordered" [disabled]="!editable(stage)"
-                          [ngModel]="stage.signoffInputs[f.key]"
-                          (ngModelChange)="signoffSelectChange(stage, f, $event)">
-                    <option [ngValue]="null">No</option>
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!editable(stage)"
+                         [checked]="stage.signoffInputs[f.key] === 'yes'"
+                         (change)="signoffCheckboxChange(stage, f, $any($event.target).checked)" />
+                  <span class="font-semibold">{{ f.label }}</span>
                 </label>
               </div>
             }

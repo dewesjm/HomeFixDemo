@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../shared/confirm.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
+import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import {
   LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
   LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
@@ -26,7 +27,7 @@ import {
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective,
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent,
     LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
     LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
     LucideChevronDown, LucideChevronUp
@@ -292,6 +293,17 @@ export class JobDetailComponent {
   /* generic signoff field select change handler */
   signoffSelectChange(stage: WorkflowStage, field: SignoffField, value: string | null) {
     const v = value ?? '';
+    if (!this.job) return;
+    const prev = stage.signoffInputs[field.key] ?? '';
+    if (v === prev) return;
+    this.wfService.updateStageSignoff(this.job, stage.id,
+      { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
+      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
+  }
+
+  /* generic signoff checkbox change handler */
+  signoffCheckboxChange(stage: WorkflowStage, field: SignoffField, checked: boolean) {
+    const v = checked ? 'yes' : '';
     if (!this.job) return;
     const prev = stage.signoffInputs[field.key] ?? '';
     if (v === prev) return;
