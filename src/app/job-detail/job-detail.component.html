@@ -35,6 +35,7 @@
   <section class="panel">
     <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
     <div class="detail-grid inline">
+      <div><div class="meta">Current step</div><div>{{ currentStep() }}</div></div>
       <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
       <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
       <div><div class="meta">Joint design</div><div>{{ j.jointDesign || '—' }}</div></div>
@@ -198,22 +199,9 @@
     }
 
     @if (w.stages[selectedStep()]; as stage) {
-      <!-- Current step override (top of signoff) -->
-      @if (!stage.signed) {
+      <!-- Inspection Type (NDT stages only) -->
+      @if (stage.stepOptions && stage.stepOptions.length > 0) {
         <div class="mb-sm">
-          <label class="stage-field">
-            <span class="stage-field-label font-semibold">Current step</span>
-            <select class="select select-bordered" [ngModel]="stage.swapStageId || stage.id"
-                    (ngModelChange)="updateSwapStage(stage, $event)">
-              @for (s of swapStageOptions(stage); track s.value) {
-                <option [ngValue]="s.value">{{ s.label }}</option>
-              }
-            </select>
-          </label>
-        </div>
-        <!-- Inspection Type (NDT stages only) -->
-        @if (stage.stepOptions && stage.stepOptions.length > 0) {
-          <div class="mb-sm">
             <label class="stage-field">
               <span class="stage-field-label font-semibold">Type</span>
               <select class="select select-bordered" [ngModel]="stage.inspectionType || defaultStepOption(stage)"
@@ -225,7 +213,6 @@
             </label>
           </div>
         }
-      }
 
       <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
@@ -423,18 +410,6 @@
               }
             </div>
             <div class="signoff-fit-row">
-              @for (f of visibleSignoffFields(stage); track f.key) {
-                @if (f.key === 'consumableInsertType') {
-                  <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
-                    <select class="select select-bordered w-full" [disabled]="true"
-                            [ngModel]="stage.signoffInputs[f.key]">
-                      <option [ngValue]="null">Select</option>
-                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                    </select>
-                  </div>
-                }
-              }
               @for (f of visibleSignoffFields(stage); track f.key) {
                 @if (f.key === 'backingRingType') {
                   <div>

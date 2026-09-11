@@ -311,15 +311,17 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'location', label: 'Location', type: 'select', row: 1,
     options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
-  // Line 2: Deck Frame P/S/CL and Usage
-  { key: 'deckFrame', label: 'Deck Frame P/S/CL', type: 'text', row: 2 },
+  // Line 2: Deck, Frame, P/S/CL, and Usage
+  { key: 'deck', label: 'Deck', type: 'text', row: 2 },
+  { key: 'frame', label: 'Frame', type: 'text', row: 2 },
+  { key: 'pscl', label: 'P/S/CL', type: 'text', row: 2 },
   { key: 'usage', label: 'Usage', type: 'text', row: 2 },
   // Line 3: ID 1 and ID 2
   { key: 'id1', label: 'ID 1', type: 'text', row: 3 },
   { key: 'id2', label: 'ID 2', type: 'text', row: 3 },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
-  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'mm', row: 4 },
+  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', placeholder: 'IN', row: 4 },
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text', row: 5 },
@@ -575,9 +577,6 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
           { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
       { key: 'consumableId', label: 'Consumable ID', type: 'text', required: true },
-      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: false,
-        options: [{ label: 'None', value: 'none' }, { label: 'Ceramic', value: 'ceramic' },
-          { label: 'Copper', value: 'copper' }, { label: 'Steel', value: 'steel' }] },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
