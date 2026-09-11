@@ -56,7 +56,7 @@ export class JobDetailComponent {
 
   /* steps model, locked stages disabled */
   stepsModel = computed<{ label: string; disabled: boolean }[]>(() =>
-    this.wf ? this.wf().stages.map((s, i) => ({ label: s.label, disabled: this.locked(i) })) : []);
+    this.wf ? this.wf().stages.map((s, i) => ({ label: s.displayName || s.label, disabled: this.locked(i) })) : []);
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
 

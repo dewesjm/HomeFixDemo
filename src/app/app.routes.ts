@@ -13,6 +13,7 @@ import { AdminSignoffFieldsComponent } from './admin-signoff-fields/admin-signof
 import { AdminNdtComponent } from './admin-ndt/admin-ndt.component';
 import { AdminLocationsComponent } from './admin-locations/admin-locations.component';
 import { AdminStepOptionsComponent } from './admin-step-options/admin-step-options.component';
+import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-positions.component';
 
 
 export const routes: Routes = [
@@ -29,6 +30,7 @@ export const routes: Routes = [
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'NDT Configuration' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'Locations' },
   { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
+  { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Job Details' },
   { path: '**', redirectTo: 'table' }

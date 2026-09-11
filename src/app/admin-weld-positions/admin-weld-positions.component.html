@@ -1,0 +1,67 @@
+<h2 class="section-title">Weld Positions</h2>
+<p class="section-sub">Manage weld position codes used in the Tack stage.</p>
+
+<div class="facet-row mb-sm">
+  <span class="fw-bold">Weld Positions</span>
+  <span class="spacer"></span>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
+    <svg lucidePlus class="size-4"></svg> Add position
+  </button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th class="min-w-20">Code</th>
+      <th class="min-w-44">Description</th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.uid) {
+      <tr>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
+                   placeholder="e.g. O" maxlength="2" autofocus />
+          } @else {
+            {{ row.code || '—' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.description" (ngModelChange)="updateDescription(row, $event)"
+                   placeholder="e.g. Overhead" />
+          } @else {
+            {{ row.description || '—' }}
+          }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() === row.uid) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="3" class="empty">No weld positions configured.</td></tr>
+    }
+  </tbody>
+</table>
+</div>

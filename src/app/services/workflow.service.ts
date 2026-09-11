@@ -234,6 +234,19 @@ export class WorkflowService {
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
 
+      /* Defer Tack logic: when fit stage signs with deferTack='yes', activate deferred-tack and skip regular tack */
+      if (stageId === 'fit' && st.signoffInputs['deferTack'] === 'yes') {
+        stages = stages.map(s => {
+          if (s.id === 'tack') {
+            return { ...s, required: false };  // Skip regular tack
+          }
+          if (s.id === 'deferred-tack') {
+            return { ...s, required: true };   // Activate deferred tack
+          }
+          return s;
+        });
+      }
+
       /* repeatable stage + stepType='repeat': insert a fresh copy after this stage */
       if (st.repeatable && st.stepType === 'repeat') {
         const idx = stages.findIndex(s => s.id === stageId);

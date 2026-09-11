@@ -24,6 +24,7 @@ export interface StageField {
   placeholder?: string;
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals: string };   // ← declarative dependency, serializable
+  fullWidth?: boolean;   /* spans full grid width */
 }
 
 /* configurable field on the per-stage sign-off panel */
@@ -42,6 +43,7 @@ export interface SignoffField {
 export interface WorkflowStage {
   id: string;
   label: string;
+  displayName?: string;  /* override label shown on routing table */
   required: boolean;
   fields: StageField[];           /* input defs copied from template */
   inputs: Record<string, string>; /* recorded values, keyed by StageField.key */
@@ -117,6 +119,7 @@ interface StageOption {
 interface StageTemplate {
   id: string;
   label: string;
+  displayName?: string;  /* override label shown on routing table (e.g. 'Tack' for both 'tack' and 'deferred-tack') */
   /* bool or predicate keyed off the job */
   required: boolean | ((job: Job) => boolean);
   /* fields a tech records on this stage */
@@ -213,6 +216,30 @@ export function setShops(shops: string[]) {
   localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
 }
 
+/* ── Weld Positions (admin-configurable via localStorage) ── */
+export interface WeldPosition {
+  code: string;
+  description: string;
+}
+
+const WELD_POSITIONS_LS_KEY = 'homefix:weld-positions:v1';
+const DEFAULT_WELD_POSITIONS: WeldPosition[] = [
+  { code: 'O', description: 'Overhead' },
+  { code: 'V', description: 'Vertical' },
+  { code: 'F', description: 'Flat' },
+];
+
+export function getWeldPositions(): WeldPosition[] {
+  try {
+    const raw = localStorage.getItem(WELD_POSITIONS_LS_KEY);
+    return raw ? JSON.parse(raw) : DEFAULT_WELD_POSITIONS;
+  } catch { return DEFAULT_WELD_POSITIONS; }
+}
+
+export function setWeldPositions(positions: WeldPosition[]) {
+  localStorage.setItem(WELD_POSITIONS_LS_KEY, JSON.stringify(positions));
+}
+
 /* ── Step options per stage (admin-configurable via localStorage) ── */
 export type { StageOption };
 
@@ -276,16 +303,27 @@ export interface FabricationField {
   options?: { label: string; value: string }[];
   unit?: string;
   fullWidth?: boolean;
+  row: 1 | 2 | 3 | 4 | 5;
 }
 
 export const FABRICATION_FIELDS: FabricationField[] = [
-  { key: 'location', label: 'Location', type: 'select',
+  // Line 1: Location and Specific Location
+  { key: 'location', label: 'Location', type: 'select', row: 1,
     options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
-  { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12' },
-  { key: 'id1', label: 'ID', type: 'text' },
-  { key: 'id2', label: 'ID 2', type: 'text' },
-  { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text' },
-  { key: 'weldMemo', label: 'Weld Memo', type: 'text' },
+  { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
+  // Line 2: Deck Frame P/S/CL and Usage
+  { key: 'deckFrame', label: 'Deck Frame P/S/CL', type: 'text', row: 2 },
+  { key: 'usage', label: 'Usage', type: 'text', row: 2 },
+  // Line 3: ID 1 and ID 2
+  { key: 'id1', label: 'ID 1', type: 'text', row: 3 },
+  { key: 'id2', label: 'ID 2', type: 'text', row: 3 },
+  // Line 4: Drawing Rev (Execution) and Actual Thickness
+  { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
+  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'mm', row: 4 },
+  // Line 5: W.E. Memo, Revised Joint Design, and Change Number
+  { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
+  { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text', row: 5 },
+  { key: 'changeNumber', label: 'Change Number', type: 'text', row: 5 },
 ];
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
@@ -537,21 +575,44 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
           { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
       { key: 'consumableId', label: 'Consumable ID', type: 'text', required: true },
+      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: false,
+        options: [{ label: 'None', value: 'none' }, { label: 'Ceramic', value: 'ceramic' },
+          { label: 'Copper', value: 'copper' }, { label: 'Steel', value: 'steel' }] },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
+      { key: 'deferTack', label: 'Defer Tack', type: 'select', required: false,
+        options: [{ label: 'No', value: 'no' }, { label: 'Yes', value: 'yes' }] },
     ], stepOptions: [
       { label: 'Fit', value: 'fit', default: true },
       { label: 'Weld Build up', value: 'weld-buildup' },
     ] },
-    { id: 'tack', label: 'Tack', required: true, role: 'Welding', fields: [
-      { key: 'tackCount', label: 'Tack welds', type: 'number' },
-      { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
-      { key: 'tackCondition', label: 'Tack condition', type: 'select',
-        options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
-          { label: 'Incomplete', value: 'incomplete' }] }
+    { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: [
+      { key: 'weldProcedure', label: 'Weld Procedure', type: 'text' },
+      { key: 'wtn', label: 'WTN', type: 'text' },
+      { key: 'weldProcess', label: 'Weld Process', type: 'select',
+        options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
+          { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
+      { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
+      { key: 'phMin', label: 'PH Min', type: 'number', unit: 'mm', placeholder: 'PH/IP Requirements' },
+      { key: 'phMax', label: 'PH Max', type: 'number', unit: 'mm' },
+      { key: 'ipMin', label: 'IP Min', type: 'number', unit: 'mm' },
+      { key: 'ipMax', label: 'IP Max', type: 'number', unit: 'mm' },
+      { key: 'overridePhMin', label: 'Override PH Min', type: 'number', unit: 'mm', placeholder: 'Override Requirements' },
+      { key: 'overridePhMax', label: 'Override PH Max', type: 'number', unit: 'mm' },
+      { key: 'overrideIpMin', label: 'Override IP Min', type: 'number', unit: 'mm' },
+      { key: 'overrideIpMax', label: 'Override IP Max', type: 'number', unit: 'mm' },
+      { key: 'overrideNote', label: 'Override Note', type: 'text' },
+      { key: 'actualPh', label: 'Actual PH', type: 'number', unit: 'mm', placeholder: 'PH/IP Actuals' },
+      { key: 'actualIp', label: 'Actual IP', type: 'number', unit: 'mm' },
+      { key: 'weldPosition', label: 'Weld Position', type: 'select',
+        options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
+      { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'text' },
+      { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'text' },
+      { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
+      { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
@@ -572,6 +633,18 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'tack' },
+    { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: [
+      { key: 'tackCount', label: 'Tack welds', type: 'number' },
+      { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
+      { key: 'tackCondition', label: 'Tack condition', type: 'select',
+        options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
+          { label: 'Incomplete', value: 'incomplete' }] }
+    ], signoffFields: [
+      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
+      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
+        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
+      { key: 'notes', label: 'Notes', type: 'text', required: false },
+    ], rejectToStage: 'fitup-insp' },
     { id: 'root-weld', label: 'Root Weld', required: true, role: 'Welding', fields: [
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
@@ -694,6 +767,7 @@ const TEMPLATES_LS_KEY = 'homefix:stage-templates:v2';
 interface SerializedStage {
   id: string;
   label: string;
+  displayName?: string;
   required: boolean;
   fields: StageField[];
   signoffFields: SignoffField[];
@@ -707,6 +781,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
   return {
     id: t.id,
     label: t.label,
+    displayName: t.displayName,
     required: typeof t.required === 'function' ? true : t.required,
     fields: t.fields,
     signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
