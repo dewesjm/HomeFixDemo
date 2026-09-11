@@ -19,7 +19,7 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 export interface StageField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'checkbox';
   unit?: string;          /* shown by the label, e.g. PSI */
   placeholder?: string;
   options?: { label: string; value: string }[];
@@ -31,7 +31,7 @@ export interface StageField {
 export interface SignoffField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'checkbox';
   required: boolean;
   placeholder?: string;
   options?: { label: string; value: string }[];
@@ -90,7 +90,7 @@ export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
 export interface HistoryEntry {
   when: string;          /* ISO string */
   who: string;
-  section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments' | 'Fabrication';
+  section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -300,7 +300,7 @@ export function getPenetrantManufacturers(): string[] {
 export interface FabricationField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'checkbox';
   placeholder?: string;
   options?: { label: string; value: string }[];
   unit?: string;
@@ -318,9 +318,9 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'text', row: 2 },
   { key: 'pscl', label: 'P/S/CL', type: 'text', row: 2 },
   { key: 'usage', label: 'Usage', type: 'text', row: 2 },
-  // Line 3: ID 1 and ID 2
-  { key: 'id1', label: 'ID 1', type: 'text', row: 3 },
-  { key: 'id2', label: 'ID 2', type: 'text', row: 3 },
+  // Line 3: MIC 1 and MIC 2
+  { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
+  { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', placeholder: 'IN', row: 4 },
@@ -600,38 +600,32 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
           { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
       { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
-      { key: 'phMin', label: 'PH Min', type: 'number', unit: 'mm' },
-      { key: 'phMax', label: 'PH Max', type: 'number', unit: 'mm' },
-      { key: 'ipMin', label: 'IP Min', type: 'number', unit: 'mm' },
-      { key: 'ipMax', label: 'IP Max', type: 'number', unit: 'mm' },
-      { key: 'overridePhMin', label: 'Override PH Min', type: 'number', unit: 'mm' },
-      { key: 'overridePhMax', label: 'Override PH Max', type: 'number', unit: 'mm' },
-      { key: 'overrideIpMin', label: 'Override IP Min', type: 'number', unit: 'mm' },
-      { key: 'overrideIpMax', label: 'Override IP Max', type: 'number', unit: 'mm' },
+      { key: 'phMin', label: 'PH Min', type: 'number', unit: '°' },
+      { key: 'phMax', label: 'PH Max', type: 'number', unit: '°' },
+      { key: 'ipMin', label: 'IP Min', type: 'number', unit: '°' },
+      { key: 'ipMax', label: 'IP Max', type: 'number', unit: '°' },
+      { key: 'overridePhMin', label: 'Override PH Min', type: 'number', unit: '°' },
+      { key: 'overridePhMax', label: 'Override PH Max', type: 'number', unit: '°' },
+      { key: 'overrideIpMin', label: 'Override IP Min', type: 'number', unit: '°' },
+      { key: 'overrideIpMax', label: 'Override IP Max', type: 'number', unit: '°' },
       { key: 'overrideNote', label: 'Override Note', type: 'text' },
-      { key: 'actualPh', label: 'Actual PH', type: 'number', unit: 'mm' },
-      { key: 'actualIp', label: 'Actual IP', type: 'number', unit: 'mm' },
+      { key: 'actualPh', label: 'Actual PH', type: 'number', unit: '°' },
+      { key: 'actualIp', label: 'Actual IP', type: 'number', unit: '°' },
       { key: 'weldPosition', label: 'Weld Position', type: 'select',
         options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
-      { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'text' },
-      { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'text' },
+      { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select',
+        options: [{ label: 'ER70S-6', value: 'er70s-6' }, { label: 'ER80S-D2', value: 'er80s-d2' },
+          { label: 'E6010', value: 'e6010' }, { label: 'E7018', value: 'e7018' }] },
+      { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select',
+        options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
+          { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' }] },
       { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
-      { key: 'jointPrep', label: 'Joint prep condition', type: 'select',
-        options: [{ label: 'Clean', value: 'clean' }, { label: 'Needs grinding', value: 'needs-grinding' },
-          { label: 'Rejected', value: 'rejected' }] },
-      { key: 'misalignment', label: 'Misalignment', type: 'number', unit: 'mm' },
-      { key: 'fitApproved', label: 'Fit-up approved?', type: 'select',
-        options: [{ label: 'Yes', value: 'yes' }, { label: 'No — rework', value: 'no' }] }
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
-        options: [{ label: 'Passed', value: 'passed' }, { label: 'Failed', value: 'failed' }] },
-      { key: 'notes', label: 'Notes', type: 'text', required: false },
-    ], rejectToStage: 'tack' },
+      { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },
+    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
+    { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
       { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
@@ -643,20 +637,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'interpassTemp', label: 'Interpass temp', type: 'number', unit: '°C' },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ] },
+    ], signoffFields: [] },
     { id: 'root-ndt-utrt', label: 'NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -665,22 +652,14 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -689,28 +668,18 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'weldingProcess', label: 'Welding process', type: 'select',
         options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
           { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ] },
+    ], signoffFields: [] },
     { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: [
       { key: 'finalPass', label: 'Final pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'capWidth', label: 'Cap width', type: 'number', unit: 'mm' },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ] },
+    ], signoffFields: [] },
     { id: 'final-ndt-utrt', label: 'NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -719,32 +688,21 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'licenseNo', label: 'License #', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
     { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
-    ], signoffFields: [
-      { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-      { key: 'notes', label: 'Notes', type: 'text', required: false, fullWidth: true },
-    ], rejectToStage: 'final-ndt-vt5x' },
+    ], signoffFields: [], rejectToStage: 'final-ndt-vt5x' },
     { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };

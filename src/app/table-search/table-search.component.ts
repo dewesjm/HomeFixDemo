@@ -3,7 +3,7 @@ import { Component, computed, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu } from '@lucide/angular';
+import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck } from '@lucide/angular';
 
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
@@ -26,7 +26,7 @@ type Row = Job & { currentStep: string };
   imports: [
     CommonModule, FormsModule,
     MultiselectDropdownComponent, TablePagerComponent, SyncStatusComponent,
-    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu
+    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck
   ],
   templateUrl: './table-search.component.html'
 })
@@ -53,6 +53,45 @@ export class TableSearchComponent {
   );
 
   totalLoaded = signal(JOBS.length);
+
+  // Row selection
+  selectedIds = signal<Set<number>>(new Set());
+
+  toggleSelectAll() {
+    const all = this.table.paged();
+    const current = this.selectedIds();
+    const allSelected = all.every(r => current.has(r.id));
+    if (allSelected) {
+      const next = new Set(current);
+      all.forEach(r => next.delete(r.id));
+      this.selectedIds.set(next);
+    } else {
+      const next = new Set(current);
+      all.forEach(r => next.add(r.id));
+      this.selectedIds.set(next);
+    }
+  }
+
+  toggleSelect(id: number) {
+    const next = new Set(this.selectedIds());
+    if (next.has(id)) next.delete(id); else next.add(id);
+    this.selectedIds.set(next);
+  }
+
+  allSelected(): boolean {
+    const all = this.table.paged();
+    return all.length > 0 && all.every(r => this.selectedIds().has(r.id));
+  }
+
+  releaseSelected() {
+    const ids = this.selectedIds();
+    for (const job of this.table.paged()) {
+      if (ids.has(job.id)) {
+        this.wfService.releaseFitUp(job);
+      }
+    }
+    this.selectedIds.set(new Set());
+  }
 
   // Role droplist to filter selection
   selectedRole = signal<Role>(DEFAULT_ROLE);

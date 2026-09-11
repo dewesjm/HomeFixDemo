@@ -36,7 +36,7 @@ interface FieldRow {
   uid: string;
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'checkbox';
   required: boolean;
   placeholder: string;
   unit: string;

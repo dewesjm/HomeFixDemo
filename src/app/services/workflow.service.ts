@@ -247,6 +247,16 @@ export class WorkflowService {
         });
       }
 
+      /* Fit-Up Release logic: when fitup-insp signs with releaseToWelding='yes', activate fitup-release */
+      if (stageId === 'fitup-insp' && st.inputs['releaseToWelding'] === 'yes') {
+        stages = stages.map(s => {
+          if (s.id === 'fitup-release') {
+            return { ...s, required: true };
+          }
+          return s;
+        });
+      }
+
       /* repeatable stage + stepType='repeat': insert a fresh copy after this stage */
       if (st.repeatable && st.stepType === 'repeat') {
         const idx = stages.findIndex(s => s.id === stageId);
@@ -302,6 +312,21 @@ export class WorkflowService {
     });
     this.persist();
     this.notify('info', 'Sign-off re-opened');
+  }
+
+  /* Release a job past the Fit-Up Release stage */
+  releaseFitUp(job: Job) {
+    this.workflowFor(job).update(wf => {
+      const stages = wf.stages.map(s =>
+        s.id === 'fitup-release' ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
+      return this.withHistory(wf, { ...wf, stages }, {
+        section: 'Release',
+        who: wf.technician,
+        action: 'Fit-Up Release — Released to Welding'
+      });
+    });
+    this.persist();
+    this.notify('success', 'Released to Welding');
   }
 
   /* admin override: force a job to a given stage index — everything before it is

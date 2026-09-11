@@ -25,6 +25,12 @@
     <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
   </button>
 
+  @if (selectedIds().size > 0) {
+    <button type="button" class="btn btn-sm btn-primary" (click)="releaseSelected()">
+      <svg lucideCheck class="size-4"></svg> Release to Welding ({{ selectedIds().size }})
+    </button>
+  }
+
   <span class="spacer"></span>
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
@@ -38,6 +44,9 @@
 <table class="table table-sm">
   <thead>
     <tr>
+      <th class="w-8">
+        <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
+      </th>
       <th class="min-w-16">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
@@ -94,6 +103,9 @@
   <tbody>
     @for (job of table.paged(); track job.id) {
       <tr>
+        <td class="w-8">
+          <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
+        </td>
         <td class="font-mono text-xs">{{ job.jobNumber }}</td>
         <td>{{ job.title }}</td>
         <td>{{ job.drawing || '—' }}</td>
@@ -111,7 +123,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="6" class="empty">No jobs match your filters.</td></tr>
+      <tr><td colspan="7" class="empty">No jobs match your filters.</td></tr>
     }
   </tbody>
 </table>

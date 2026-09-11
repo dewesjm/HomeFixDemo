@@ -281,3 +281,11 @@ html, body {
 .signoff-field-row { display: flex; flex-direction: column; gap: 0.15rem; }
 .signoff-fit-row { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
 .signoff-fit-row > * { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 0; min-width: 0; }
+
+/* Hide number input spinners */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] { -moz-appearance: textfield; }

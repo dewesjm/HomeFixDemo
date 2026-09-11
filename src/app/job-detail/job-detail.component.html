@@ -8,8 +8,9 @@
 @if (wf; as wfSig) {
 @if (wfSig(); as w) {
 
-  <div class="flex items-center gap-2 mt-sm">
+  <div class="page-header mt-sm">
     <h2 class="section-title">{{ j.title }}</h2>
+    <span class="spacer"></span>
     <app-sync-status />
   </div>
   <p class="section-sub">
@@ -269,7 +270,7 @@
                   @if (f.key === 'phMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
                                [disabled]="true" value="3.2" />
                       </label>
@@ -278,7 +279,7 @@
                   @if (f.key === 'phMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
                                [disabled]="true" value="6.4" />
                       </label>
@@ -287,7 +288,7 @@
                   @if (f.key === 'ipMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
                                [disabled]="true" value="1.6" />
                       </label>
@@ -296,7 +297,7 @@
                   @if (f.key === 'ipMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
                                [disabled]="true" value="4.8" />
                       </label>
@@ -313,44 +314,36 @@
                   @if (f.key === 'overridePhMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="0" />
                       </label>
                     </div>
                   }
                   @if (f.key === 'overridePhMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="0" />
                       </label>
                     </div>
                   }
                   @if (f.key === 'overrideIpMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="0" />
                       </label>
                     </div>
                   }
                   @if (f.key === 'overrideIpMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="!inputsEditable(stage, selectedStep())"
-                               [ngModel]="stage.inputs[f.key]"
-                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                               [disabled]="true" value="0" />
                       </label>
                     </div>
                   }
@@ -380,18 +373,22 @@
                   @if (f.key === 'actualPh') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="true" value="4.5" />
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                       </label>
                     </div>
                   }
                   @if (f.key === 'actualIp') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (mm)</span>
+                        <span class="stage-field-label">{{ f.label }} (°)</span>
                         <input class="input input-bordered input-sm w-full" type="number"
-                               [disabled]="true" value="2.8" />
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [ngModel]="stage.inputs[f.key]"
+                               (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                       </label>
                     </div>
                   }
@@ -416,7 +413,31 @@
             <!-- Filler Metal -->
             <div class="flex gap-4">
               @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize' || f.key === 'fillerMetalMic') {
+                @if (f.key === 'fillerMetalType') {
+                  <div class="flex-1 max-w-[160px]">
+                    <label class="stage-field">
+                      <span class="stage-field-label">{{ f.label }}</span>
+                      <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                              [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
+                        <option [ngValue]="null">Select</option>
+                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                      </select>
+                    </label>
+                  </div>
+                }
+                @if (f.key === 'fillerMetalSize') {
+                  <div class="flex-1 max-w-[160px]">
+                    <label class="stage-field">
+                      <span class="stage-field-label">{{ f.label }}</span>
+                      <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                              [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
+                        <option [ngValue]="null">Select</option>
+                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                      </select>
+                    </label>
+                  </div>
+                }
+                @if (f.key === 'fillerMetalMic') {
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
@@ -436,7 +457,9 @@
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
                     <input class="input input-bordered input-sm w-full" type="text"
-                           [disabled]="true" value="Joint fit-up verified, all dimensions within spec" />
+                           [disabled]="!inputsEditable(stage, selectedStep())"
+                           [ngModel]="stage.inputs[f.key]"
+                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                   </label>
                 }
               }
@@ -449,7 +472,12 @@
               @if (startsGroup(stage, f)) { <span class="stage-field-break"></span> }
               <label class="stage-field">
                 <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                @if (f.type === 'select') {
+                @if (f.type === 'checkbox') {
+                  <input type="checkbox" class="checkbox checkbox-sm"
+                         [disabled]="!inputsEditable(stage, selectedStep())"
+                         [checked]="stage.inputs[f.key] === 'yes'"
+                         (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
+                } @else if (f.type === 'select') {
                   <select class="select select-bordered select-sm" [disabled]="!inputsEditable(stage, selectedStep())"
                           [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                     <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
