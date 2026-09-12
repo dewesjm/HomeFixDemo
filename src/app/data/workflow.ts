@@ -622,7 +622,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [] },
-    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [],
+    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
+      { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
+      { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
+      { key: 'verifyDrawingRev', label: 'Drawing Rev verified', type: 'checkbox' },
+      { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
+      { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
+    ],
       signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
     { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: [

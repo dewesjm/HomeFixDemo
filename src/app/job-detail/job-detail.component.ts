@@ -199,6 +199,11 @@ export class JobDetailComponent {
     }
     if (!stage.result) return false;
     if (stage.repeatable && !stage.stepType) return false;
+    // Fit-Up Insp: all verification checkboxes must be checked
+    if (stage.id === 'fitup-insp') {
+      const allVerified = stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes');
+      if (!allVerified) return false;
+    }
     return stage.signoffFields
       .filter(f => f.required)
       .every(f => {
@@ -253,6 +258,17 @@ export class JobDetailComponent {
       }
       return true;
     });
+  }
+
+  /* map fitup-insp verification field keys to fabrication data keys */
+  private readonly FAB_VERIFY_MAP: Record<string, string> = {
+    verifyMic1: 'id1', verifyMic2: 'id2', verifyDrawingRev: 'drawingRev',
+    verifyActualThickness: 'actualThickness', verifyRevisedJointDesign: 'revisedJointDesign',
+  };
+  getFabValue(fieldKey: string): string {
+    const fabKey = this.FAB_VERIFY_MAP[fieldKey];
+    if (!fabKey || !this.wf) return '';
+    return this.wf().fabricationData[fabKey] ?? '';
   }
   /* a trigger field that other fields declare a showIf against — always breaks
      onto its own row (even before a selection) so its dependent fields can flow

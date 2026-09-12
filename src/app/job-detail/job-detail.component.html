@@ -225,7 +225,35 @@
       <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
       @if (visibleFields(stage).length) {
-        @if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld') {
+        @if (stage.id === 'fitup-insp') {
+          <!-- Fit-Up Insp: verification grid against fabrication data -->
+          <div class="stage-inputs">
+            <div class="font-semibold text-sm mb-2">Verify fitting values</div>
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Field</th>
+                  <th>Fabrication Value</th>
+                  <th class="w-20">Verified</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of visibleFields(stage); track f.key) {
+                  <tr>
+                    <td>{{ f.label }}</td>
+                    <td>{{ getFabValue(f.key) || '—' }}</td>
+                    <td>
+                      <input type="checkbox" class="checkbox checkbox-sm"
+                             [disabled]="!inputsEditable(stage, selectedStep())"
+                             [checked]="stage.inputs[f.key] === 'yes'"
+                             (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld') {
           <!-- Tack stage: custom layout with subsections -->
           <div class="flex flex-col gap-3 stage-inputs">
             <!-- Row 1: Weld Procedure, WTN, Weld Process -->
