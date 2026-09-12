@@ -632,7 +632,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'tackCondition', label: 'Tack condition', type: 'select',
         options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
           { label: 'Incomplete', value: 'incomplete' }] }
-    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fitup-insp' },
+    ], signoffFields: [] },
     { id: 'root-weld', label: 'Root Weld', required: true, role: 'Welding', fields: [
       { key: 'rootPass', label: 'Root pass completed', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
