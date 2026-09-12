@@ -21,22 +21,17 @@
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Routing</h3>
-    <div class="dot-progress">
-      <div class="dot-track">
-        @for (s of stepsModel(); track $index; let last = $last) {
-          <div class="dp-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
-               [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
-               (click)="!s.disabled && selectedStep.set(s.stageIndex)"
-               [attr.data-label]="s.label">
-            <div class="dp-dot"></div>
-          </div>
-          @if (!last) {
-            <div class="dp-line" [class.done]="s.stageIndex < selectedStep()"></div>
-          }
-        }
-      </div>
-      <div class="dot-label">{{ activeStepLabel() }}</div>
+    <div class="routing-scroll">
+      @for (s of stepsModel(); track $index) {
+        <div class="routing-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
+             [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
+             (click)="!s.disabled && selectedStep.set(s.stageIndex)">
+          <div class="routing-num" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()">{{ $index + 1 }}</div>
+          <div class="routing-label">{{ s.label }}</div>
+        </div>
+      }
     </div>
+    <div class="routing-active-label">{{ activeStepLabel() }}</div>
   </section>
 
   <!-- 2 ───────── Joint Details (read-only) ───────── -->
