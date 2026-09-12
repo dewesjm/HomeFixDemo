@@ -1026,6 +1026,22 @@ export function buildStages(job: Job): WorkflowStage[] {
 }
 
 export function newWorkflow(job: Job): JobWorkflow {
+  /* pre-populate fabrication data for welding demo */
+  const fabData: Record<string, string> = job.trade === 'Welding' ? {
+    location: 'shop-a',
+    specificLocation: 'Bay 3, Rack 12',
+    deck: 'D2',
+    frame: 'F14',
+    pscl: 'PS',
+    usage: 'Structural',
+    id1: 'MIC-4410',
+    id2: 'MIC-4411',
+    drawingRev: 'Rev C',
+    actualThickness: '0.75',
+    weldMemo: 'Standard weld procedure',
+    revisedJointDesign: 'bj-g',
+    changeNumber: 'ER-0042',
+  } : {};
   return {
     jobId: job.id,
     technician: job.technician,
@@ -1037,7 +1053,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     conditionCode: '',
     conditionCount: 0,
     history: [],
-    fabricationData: {},
+    fabricationData: fabData,
   };
 }
 
