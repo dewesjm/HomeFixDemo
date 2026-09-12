@@ -206,6 +206,12 @@ export class JobDetailComponent {
     }
     if (!stage.result) return false;
     if (stage.repeatable && !stage.stepType) return false;
+    // Fit: fabrication data must have MIC 1, MIC 2, Drawing Rev, Actual Thickness
+    if (stage.id === 'fit' && this.wf) {
+      const fab = this.wf().fabricationData;
+      const required = ['id1', 'id2', 'drawingRev', 'actualThickness'];
+      if (!required.every(k => fab[k]?.trim())) return false;
+    }
     // Fit-Up Insp: all verification checkboxes must be checked
     if (stage.id === 'fitup-insp') {
       const allVerified = stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes');
