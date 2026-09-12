@@ -1,10 +1,12 @@
 /* Renders the pending confirm request, if any, as a native <dialog> + DaisyUI modal. */
 import { Component, ElementRef, effect, inject, viewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ConfirmService } from './confirm.service';
 
 @Component({
   selector: 'app-confirm-dialog',
   standalone: true,
+  imports: [FormsModule],
   template: `
     <dialog #dlg class="modal">
       @if (confirm.request(); as req) {
@@ -13,11 +15,23 @@ import { ConfirmService } from './confirm.service';
             <h3 class="text-lg font-semibold">{{ req.header }}</h3>
           }
           <p class="py-4">{{ req.message }}</p>
+          @if (req.password) {
+            <div class="mb-4">
+              <label class="meta mb-1 block">Password</label>
+              <input type="password" class="input input-bordered w-full"
+                     placeholder="Enter password to confirm"
+                     [ngModel]="confirm.password()"
+                     (ngModelChange)="confirm.password.set($event)"
+                     (keydown.enter)="respond(true)" />
+            </div>
+          }
           <div class="modal-action">
             <button type="button" class="btn btn-ghost" (click)="respond(false)">
               {{ req.rejectLabel ?? 'Cancel' }}
             </button>
-            <button type="button" class="btn btn-primary" (click)="respond(true)">
+            <button type="button" class="btn btn-primary"
+                    [disabled]="req.password && !confirm.password()"
+                    (click)="respond(true)">
               {{ req.acceptLabel ?? 'Confirm' }}
             </button>
           </div>

@@ -6,23 +6,28 @@ export interface ConfirmRequest {
   message: string;
   acceptLabel?: string;
   rejectLabel?: string;
-  accept: () => void;
+  password?: boolean;
+  accept: (password?: string) => void;
   reject?: () => void;
 }
 
 @Injectable({ providedIn: 'root' })
 export class ConfirmService {
   request = signal<ConfirmRequest | null>(null);
+  password = signal('');
 
   confirm(req: ConfirmRequest) {
+    this.password.set('');
     this.request.set(req);
   }
 
   resolve(accepted: boolean) {
     const req = this.request();
+    const pw = this.password();
     this.request.set(null);
+    this.password.set('');
     if (!req) return;
-    if (accepted) req.accept();
+    if (accepted) req.accept(pw);
     else req.reject?.();
   }
 }

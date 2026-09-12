@@ -85,7 +85,7 @@
                 @if (f.type === 'select') {
                   <select class="select select-bordered w-full" [disabled]="jobComplete()"
                           [ngModel]="w.fabricationData[f.key]" (ngModelChange)="fabSelectChange(f.key, $event)">
-                    <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
+
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
@@ -266,7 +266,7 @@
                       @if (f.type === 'select') {
                         <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                                 [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                          <option [ngValue]="null">Select</option>
+
                           @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                         </select>
                       } @else {
@@ -432,7 +432,7 @@
                     <span class="stage-field-label">{{ f.label }}</span>
                     <select class="select select-bordered w-full max-w-[200px]" [disabled]="!inputsEditable(stage, selectedStep())"
                             [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                      <option [ngValue]="null">Select</option>
+  
                       @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                     </select>
                   </label>
@@ -448,7 +448,7 @@
                       <span class="stage-field-label">{{ f.label }}</span>
                       <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                        <option [ngValue]="null">Select</option>
+    
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     </label>
@@ -460,7 +460,7 @@
                       <span class="stage-field-label">{{ f.label }}</span>
                       <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                        <option [ngValue]="null">Select</option>
+    
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     </label>
@@ -509,7 +509,7 @@
                 } @else if (f.type === 'select') {
                   <select class="select select-bordered" [disabled]="!inputsEditable(stage, selectedStep())"
                           [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
-                    <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
+
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
@@ -537,7 +537,7 @@
                       <select class="select select-bordered w-full" [disabled]="!editable(stage)"
                               [ngModel]="stage.signoffInputs[f.key]"
                               (ngModelChange)="signoffSelectChange(stage, f, $event)">
-                        <option [ngValue]="null">Select</option>
+    
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     } @else {
@@ -559,7 +559,7 @@
                       <select class="select select-bordered w-full" [disabled]="!editable(stage)"
                               [ngModel]="stage.signoffInputs[f.key]"
                               (ngModelChange)="signoffSelectChange(stage, f, $event)">
-                        <option [ngValue]="null">Select</option>
+    
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     } @else {
@@ -594,7 +594,7 @@
                     <select class="select select-bordered w-64" [disabled]="!editable(stage)"
                             [ngModel]="stage.signoffInputs[f.key]"
                             (ngModelChange)="signoffSelectChange(stage, f, $event)">
-                      <option [ngValue]="null">Select</option>
+  
                       @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                     </select>
                   } @else {
