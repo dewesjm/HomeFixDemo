@@ -55,8 +55,16 @@ export class AppComponent {
     }
   }
 
-  /* activate the waiting worker and reload */
+  /* activate the waiting worker, clear stale caches, and reload */
   reloadForUpdate() {
+    // Clear persisted workflow & template caches so new stage definitions take effect
+    const keysToClear = [
+      'homefix:workflows:v2',
+      'homefix:stage-templates:v2',
+      'homefix:penetrants',
+      'homefix:weld-positions',
+    ];
+    keysToClear.forEach(k => localStorage.removeItem(k));
     this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
 

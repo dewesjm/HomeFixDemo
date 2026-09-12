@@ -644,6 +644,18 @@
           }
         }
 
+        <!-- Release to welding checkbox (fitup-insp stage only) -->
+        @if (stage.id === 'fitup-insp') {
+          <div class="mb-sm">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!editable(stage)"
+                     [checked]="stage.inputs['releaseToWelding'] === 'yes'"
+                     (change)="stage.inputs['releaseToWelding'] = $any($event.target).checked ? 'yes' : ''" />
+              <span class="font-semibold">Release to welding upon inspection</span>
+            </label>
+          </div>
+        }
+
         <div class="signoff-actions">
           @if (!stage.signed) {
             <button type="button" class="btn btn-primary" [disabled]="!canSignStage(stage)" (click)="signStage(stage)">
