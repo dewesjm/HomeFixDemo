@@ -3,7 +3,7 @@ import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
   id: number;
-  jobNumber: string;   /* 5-char code, e.g. K7P2M */
+  jobNumber: string;   /* 5-char code: letter + 4 digits, e.g. K7234 */
   title: string;
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
@@ -54,13 +54,13 @@ function seeded(n: number) {
   };
 }
 
-/* stable 5-char code from id, no ambiguous I/O/0/1, own seed stream */
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+/* stable 5-char code from id: letter (no I/O) + 4 digits */
+const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 function makeJobNumber(seed: number): string {
   const rand = seeded(seed * 31 + 7);
-  let code = '';
-  for (let k = 0; k < 5; k++) code += CODE_CHARS[Math.floor(rand() * CODE_CHARS.length)];
-  return code;
+  const letter = CODE_LETTERS[Math.floor(rand() * CODE_LETTERS.length)];
+  const digits = String(Math.floor(rand() * 10000)).padStart(4, '0');
+  return letter + digits;
 }
 
 /* up to 3 distinct codes per job, own seed stream keyed off id */

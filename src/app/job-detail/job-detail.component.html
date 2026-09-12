@@ -24,10 +24,10 @@
     <div class="steps-scroll">
       <ul class="steps">
         @for (s of stepsModel(); track $index) {
-          <li class="step" [class.step-primary]="$index <= selectedStep()"
+          <li class="step" [class.step-primary]="s.stageIndex <= selectedStep()"
               [class.opacity-50]="s.disabled"
               [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
-              (click)="!s.disabled && selectedStep.set($index)">
+              (click)="!s.disabled && selectedStep.set(s.stageIndex)">
             {{ s.label }}
           </li>
         }

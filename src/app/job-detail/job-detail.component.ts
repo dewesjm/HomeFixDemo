@@ -55,9 +55,16 @@ export class JobDetailComponent {
   workTypeOptions = WORK_TYPE_OPTIONS;
   conditionOptions = CONDITION_OPTIONS;
 
-  /* steps model, locked stages disabled */
-  stepsModel = computed<{ label: string; disabled: boolean }[]>(() =>
-    this.wf ? this.wf().stages.map((s, i) => ({ label: s.displayName || s.label, disabled: this.locked(i) })) : []);
+  /* steps model: only show stages that are signed, required, or the current active stage */
+  stepsModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
+    if (!this.wf) return [];
+    const stages = this.wf().stages;
+    const activeIdx = stages.findIndex(s => !s.signed);
+    return stages
+      .map((s, i) => ({ label: s.displayName || s.label, disabled: this.locked(i), signed: s.signed, required: s.required, stageIndex: i }))
+      .filter(s => s.signed || s.required || s.stageIndex === activeIdx)
+      .map(s => ({ label: s.label, disabled: s.disabled, stageIndex: s.stageIndex }));
+  });
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
 

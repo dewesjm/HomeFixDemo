@@ -18,6 +18,8 @@ import {
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel, ROLES, DEFAULT_ROLE, type Role } from '../data/workflow';
 
+const SEARCH_STATE_KEY = 'homefix:search-state:v1';
+
 type Row = Job & { currentStep: string };
 
 @Component({
@@ -34,7 +36,36 @@ export class TableSearchComponent {
   private app = inject(AppComponent);
 
   constructor(private router: Router, private wfService: WorkflowService) {
+    // Restore saved state
+    const saved = this.loadState();
+    if (saved['globalFilter']) this.table['globalFilter'].set(saved['globalFilter']);
+    if (saved['columnFilters']) this.table['columnFilters'].set(saved['columnFilters']);
+    if (saved['sortField']) this.table['sortField'].set(saved['sortField']);
+    if (saved['sortOrder']) this.table['sortOrder'].set(saved['sortOrder']);
+    if (saved['pageSize']) this.table['pageSize'].set(saved['pageSize']);
+    if (saved['page'] != null) this.table['page'].set(saved['page']);
+
     effect(() => this.table.setRows(this.displayedJobs()));
+    // Persist filter/sort state on every change
+    effect(() => {
+      const state = {
+        globalFilter: this.table['globalFilter'](),
+        columnFilters: this.table['columnFilters'](),
+        sortField: this.table['sortField'](),
+        sortOrder: this.table['sortOrder'](),
+        pageSize: this.table['pageSize'](),
+        page: this.table['page'](),
+        selectedRole: this.selectedRole(),
+      };
+      try { localStorage.setItem(SEARCH_STATE_KEY, JSON.stringify(state)); } catch { /* */ }
+    });
+  }
+
+  private loadState(): Record<string, any> {
+    try {
+      const raw = localStorage.getItem(SEARCH_STATE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
   }
 
   toggleMenu() { this.app.toggle(); }
@@ -103,7 +134,7 @@ export class TableSearchComponent {
   }
 
   // Role droplist to filter selection
-  selectedRole = signal<Role>(DEFAULT_ROLE);
+  selectedRole = signal<Role>((this.loadState()['selectedRole'] as Role) ?? DEFAULT_ROLE);
   displayedJobs = computed<Row[]>(() => {
     const role = this.selectedRole();
     let rows: Job[];
