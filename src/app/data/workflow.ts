@@ -310,7 +310,7 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true,
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
-  { key: 'qualificationCheck', label: 'Qualification Check', type: 'text', required: true },
+  { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
   { key: 'phMin', label: 'PH Min', type: 'number' },
   { key: 'phMax', label: 'PH Max', type: 'number' },
   { key: 'ipMin', label: 'IP Min', type: 'number' },
