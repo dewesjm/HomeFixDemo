@@ -256,7 +256,8 @@
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
                       @if (f.type === 'select') {
-                        <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                        <select class="select select-bordered w-full"
+                                [disabled]="f.key === 'weldProcess' || !inputsEditable(stage, selectedStep())"
                                 [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
 
                           @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }

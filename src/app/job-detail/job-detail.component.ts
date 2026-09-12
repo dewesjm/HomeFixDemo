@@ -328,6 +328,14 @@ export class JobDetailComponent {
         const weldProcessField = stage.fields.find(f => f.key === 'weldProcess');
         if (weldProcessField) {
           this.wfService.setStageInput(this.job, stage.id, weldProcessField, this.WTN_PROCESS_MAP[v]);
+          /* clear weld process error */
+          const wpKey = `${stage.id}:weldProcess`;
+          const prev = this.fieldErrors();
+          if (prev[wpKey]) {
+            const next = { ...prev };
+            delete next[wpKey];
+            this.fieldErrors.set(next);
+          }
         }
       }
     }
