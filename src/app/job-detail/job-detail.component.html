@@ -24,14 +24,14 @@
     <div class="dot-progress">
       <div class="dot-track">
         @for (s of stepsModel(); track $index; let last = $last) {
-          <div class="dot-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
+          <div class="dp-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
                [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
                (click)="!s.disabled && selectedStep.set(s.stageIndex)"
                [attr.data-label]="s.label">
-            <div class="dot"></div>
+            <div class="dp-dot"></div>
           </div>
           @if (!last) {
-            <div class="dot-line" [class.done]="s.stageIndex < selectedStep()"></div>
+            <div class="dp-line" [class.done]="s.stageIndex < selectedStep()"></div>
           }
         }
       </div>
