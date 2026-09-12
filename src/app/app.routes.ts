@@ -18,7 +18,7 @@ import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-p
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'table' },
-  { path: 'table', component: TableSearchComponent, title: 'Job Search' },
+  { path: 'table', component: TableSearchComponent, title: 'Project Search' },
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
   { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Routing' },
@@ -32,6 +32,6 @@ export const routes: Routes = [
   { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
 
-  { path: 'jobs/:id', component: JobDetailComponent, title: 'Job Details' },
+  { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details' },
   { path: '**', redirectTo: 'table' }
 ];

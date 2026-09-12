@@ -37,8 +37,8 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'jobNumber',        label: 'Job #',            field: 'jobNumber',        sortField: 'jobNumber',        width: 'min-w-8' },
-  { key: 'title',            label: 'Job',              field: 'title',            sortField: 'title',            width: 'min-w-14' },
+      { key: 'jobNumber',  label: 'Project #',  field: 'jobNumber', sortField: 'jobNumber', width: 'min-w-8' },
+      { key: 'title',      label: 'Project',    field: 'title',     sortField: 'title',     width: 'min-w-14' },
   { key: 'trade',            label: 'Trade',            field: 'trade',            sortField: 'trade',            width: 'min-w-12' },
   { key: 'technician',       label: 'Technician',       field: 'technician',       sortField: 'technician',       width: 'min-w-11' },
   { key: 'drawing',          label: 'Drawing',          field: 'drawing',          sortField: 'drawing',          width: 'min-w-12' },
@@ -319,8 +319,8 @@ export class AdaptiveSearchComponent {
 
   exportCsv() {
     downloadCsv('adaptive-search', [
-      { header: 'Job #', value: (r: Job) => r.jobNumber },
-      { header: 'Job', value: (r: Job) => r.title },
+      { header: 'Project #', value: (r: Job) => r.jobNumber },
+      { header: 'Project', value: (r: Job) => r.title },
       { header: 'Trade', value: (r: Job) => r.trade },
       { header: 'Technician', value: (r: Job) => r.technician },
       { header: 'Drawing', value: (r: Job) => r.drawing },

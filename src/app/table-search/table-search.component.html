@@ -60,7 +60,7 @@
       <th class="min-w-44">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('title')">
-            Job {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            Project {{ table.sortField() === 'title' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
           <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
                  [ngModel]="table.columnFilters()['title'] ?? ''"

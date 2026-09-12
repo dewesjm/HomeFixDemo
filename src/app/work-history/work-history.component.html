@@ -1,4 +1,7 @@
 <!-- Work history screen template (paired with work-history.component.ts). -->
+<button type="button" class="btn btn-ghost btn-sm" (click)="back()">
+  <svg lucideArrowLeft class="size-4"></svg> Back
+</button>
 <h2 class="section-title">Work history</h2>
 <p class="section-sub">
 
@@ -15,13 +18,13 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">
     <svg lucideBriefcase class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Job # or ID"
+    <input type="text" class="grow"            placeholder="Project # or ID"
            [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)" />
   </label>
 
   <label class="input input-sm input-bordered flex items-center gap-2 grow">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search jobs, changes, steps…"
+    <input type="text" class="grow"            placeholder="Search projects, changes, steps…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
 
@@ -69,7 +72,7 @@
       </th>
       <th class="min-w-13">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-          Job {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
       <th class="min-w-11">

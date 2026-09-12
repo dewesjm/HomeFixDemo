@@ -262,8 +262,8 @@
 
   <dialog class="modal" [class.modal-open]="showTestJobDlg()" (close)="showTestJobDlg.set(false)">
     <div class="modal-box max-w-sm">
-      <h3 class="text-lg font-semibold mb-2">Add test job</h3>
-      <p class="text-sm opacity-60 mb-4">Creates a test job for the selected trade and opens it.</p>
+      <h3 class="text-lg font-semibold mb-2">Add test project</h3>
+      <p class="text-sm opacity-60 mb-4">Creates a test project for the selected trade and opens it.</p>
       <label class="stage-field">
         <span class="stage-field-label">Trade</span>
         <select class="select select-bordered w-full" [ngModel]="testJobTrade()" (ngModelChange)="testJobTrade.set($event)">

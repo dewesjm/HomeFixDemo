@@ -107,7 +107,7 @@ export class JobDetailComponent {
     const DAY = 86_400_000;
     return [
       // Real fields the work view doesn't surface
-      { label: 'Job number', value: j.jobNumber },
+      { label: 'Project number', value: j.jobNumber },
       { label: 'Record ID', value: String(j.id) },
       // Demo records/audit metadata
       { label: 'Reference document #', value: `45${String(j.id).padStart(8, '0')}` },

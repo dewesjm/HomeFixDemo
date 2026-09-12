@@ -397,7 +397,7 @@ export class AdminStepsComponent {
     if (!trade) return;
     const job = addTestJob(trade);
     this.showTestJobDlg.set(false);
-    this.messages.add({ severity: 'success', summary: 'Test job created', detail: `${job.title} (#${job.id})`, life: 3000 });
+      this.messages.add({ severity: 'success', summary: 'Test project created', detail: `${job.title} (#${job.id})`, life: 3000 });
     this.router.navigate(['/jobs', job.id]);
   }
 

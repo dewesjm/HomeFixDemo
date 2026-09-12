@@ -14,7 +14,7 @@
     <app-sync-status />
   </div>
   <p class="section-sub">
-    Job #{{ j.id }} · {{ j.trade }} ·
+    Project #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
     <strong>Current step:</strong> {{ currentStep() }}
   </p>
 
@@ -196,7 +196,7 @@
       <div class="alert alert-success mb-sm">
         <svg lucideBadgeCheck class="size-4"></svg>
         <span>
-          All stages signed — job complete
+          All stages signed — project complete
           @if (rejectedCount(); as rc) { ({{ rc }} rejected) }.
         </span>
       </div>
@@ -720,5 +720,5 @@
   <div class="empty">Loading…</div>
 }
 } @else {
-  <div class="empty">No job found for that id.</div>
+        <div class="empty">No project found for that id.</div>
 }
