@@ -668,8 +668,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'root-ndt-utrt', label: 'Root NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
@@ -677,15 +677,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'root-ndt-mtpt', label: 'Root NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'Root NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
@@ -699,8 +699,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'layer-ndt-utrt', label: 'Layer NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
@@ -708,15 +708,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'layer-ndt-mtpt', label: 'Layer NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'layer-ndt-vt5x', label: 'Layer NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
@@ -757,8 +757,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'final-ndt-utrt', label: 'Final NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
@@ -766,15 +766,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'final-ndt-mtpt', label: 'Final NDT MT/PT', required: true, role: 'Inspector', fields: [
       { key: 'penetrant', label: 'Penetrant', type: 'select',
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'Final NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'ndtResult', label: 'NDT result', type: 'select',
-        options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
