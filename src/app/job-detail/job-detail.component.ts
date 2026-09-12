@@ -325,6 +325,30 @@ export class JobDetailComponent {
     }
   }
 
+  /* Consumable Insert: when Yes, auto-populate filler fields from fit stage consumable data and lock them */
+  onConsumableInsertChange(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
+    const field = stage.fields.find(f => f.key === 'consumableInsertOnly');
+    if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
+    if (value !== 'yes') {
+      /* clearing: unlock filler fields (they'll revert to normal editable) */
+      return;
+    }
+    /* find the fit stage's consumable signoff data */
+    const fitStage = this.wf().stages.find(s => s.id === 'fit');
+    if (!fitStage) return;
+    const consumableType = fitStage.signoffInputs['consumableType'] ?? '';
+    const consumableSize = fitStage.signoffInputs['consumableSize'] ?? '';
+    const consumableId = fitStage.signoffInputs['consumableId'] ?? '';
+    /* auto-populate filler fields */
+    const fillerType = stage.fields.find(f => f.key === 'fillerMetalType');
+    const fillerSize = stage.fields.find(f => f.key === 'fillerMetalSize');
+    const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
+    if (fillerType && consumableType) this.wfService.setStageInput(this.job, stage.id, fillerType, consumableType);
+    if (fillerSize && consumableSize) this.wfService.setStageInput(this.job, stage.id, fillerSize, consumableSize);
+    if (fillerMic && consumableId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableId);
+  }
+
   /* 5X inspection dropdown: when Yes, auto-sign the corresponding 5X NDT stage */
   on5xChange(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
@@ -528,6 +552,41 @@ export class JobDetailComponent {
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) return;
     if (!this.canSignStage(stage)) return;
+    /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
+    if (stage.id === 'root-layer' && stage.stepType === 'interim') {
+      this.confirm.confirm({
+        header: 'Confirm sign-off',
+        message: 'By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.',
+        acceptLabel: 'Signoff',
+        rejectLabel: 'Cancel',
+        password: true,
+        accept: () => {
+          this.wfService.signStage(this.job!, stage.id);
+          /* insert a fresh layer copy after this one */
+          if (this.wf) {
+            const wf = this.wf();
+            const idx = wf.stages.findIndex(s => s.id === stage.id);
+            const fresh: WorkflowStage = {
+              ...stage,
+              id: `root-layer-${Date.now()}`,
+              signed: false,
+              signedAt: null,
+              result: null,
+              inputs: {},
+              signoffInputs: {},
+              stepType: 'standard',
+              routeTo: '',
+            };
+            this.wf.update(w => ({
+              ...w,
+              stages: [...w.stages.slice(0, idx + 1), fresh, ...w.stages.slice(idx + 1)]
+            }));
+            this.selectedStep.set(idx + 1);
+          }
+        }
+      });
+      return;
+    }
     const decision = (stage.result ?? '').toUpperCase();
     const stepNote = stage.repeatable && stage.stepType === 'repeat'
       ? ' Another round will be added after this one.'

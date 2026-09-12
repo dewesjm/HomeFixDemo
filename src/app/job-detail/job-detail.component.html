@@ -246,7 +246,7 @@
               </tbody>
             </table>
           </div>
-        } @else if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld' || (stage.id === 'fit' && stage.stepType === 'weld-buildup')) {
+        } @else if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld' || stage.id === 'root-layer' || (stage.id === 'fit' && stage.stepType === 'weld-buildup')) {
           <!-- Tack stage: custom layout with subsections -->
           <div class="flex flex-col gap-3 stage-inputs">
             <!-- Row 1: Weld Procedure, WTN, Weld Process -->
@@ -456,7 +456,7 @@
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep()) || stage.inputs['consumableInsertOnly'] === 'yes'"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
     
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -471,7 +471,7 @@
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep()) || stage.inputs['consumableInsertOnly'] === 'yes'"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
     
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -487,7 +487,7 @@
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <input class="input input-bordered w-full" type="text"
-                             [disabled]="!inputsEditable(stage, selectedStep())"
+                             [disabled]="!inputsEditable(stage, selectedStep()) || stage.inputs['consumableInsertOnly'] === 'yes'"
                              [ngModel]="stage.inputs[f.key]"
                              (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                     </label>
@@ -498,6 +498,22 @@
                 }
               }
             </div>
+            <!-- Consumable Insert (Layer only) -->
+            @if (stage.id === 'root-layer') {
+            <div>
+              @for (f of visibleFields(stage); track f.key) {
+                @if (f.key === 'consumableInsertOnly') {
+                  <label class="stage-field">
+                    <span class="stage-field-label">{{ f.label }}</span>
+                    <select class="select select-bordered w-full max-w-[400px]" [disabled]="!inputsEditable(stage, selectedStep())"
+                            [ngModel]="stage.inputs[f.key]" (ngModelChange)="onConsumableInsertChange(stage, $event)">
+                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                    </select>
+                  </label>
+                }
+              }
+            </div>
+            }
             <!-- 5X Inspection (Root / Final Weld only) -->
             @if (stage.id === 'root-weld' || stage.id === 'final-weld') {
             <div>

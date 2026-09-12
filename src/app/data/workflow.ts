@@ -688,12 +688,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
-    { id: 'root-layer', label: 'Layer', required: true, role: 'Welding', fields: [
-      { key: 'layerCount', label: 'Layer count', type: 'number' },
-      { key: 'weldingProcess', label: 'Welding process', type: 'select',
-        options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
-          { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
-    ], signoffFields: [] },
+    { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
+      fields: [...WELD_STAGE_FIELDS,
+        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'select',
+          options: [{ label: 'No', value: 'no' }, { label: 'Yes', value: 'yes' }] },
+      ],
+      signoffFields: [], stepOptions: [
+        { label: 'Interim Layer', value: 'interim', default: true },
+        { label: 'Final Layer', value: 'final' },
+      ] },
     { id: 'layer-ndt-utrt', label: 'Layer NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
