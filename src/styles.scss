@@ -235,8 +235,8 @@ html, body {
 /* Stages-as-sign-offs: Steps indicator (job detail); readings/sign-off live in the Sign-off panel */
 /* Keep the horizontal Steps indicator legible on narrow viewports: scroll instead of cram. */
 .steps-scroll { width: 100%; }
-.steps-scroll .steps { display: flex; width: 100%; flex-wrap: wrap; gap: 0.25rem; }
-.steps-scroll .steps .step { flex: 1 1 auto; min-width: 5rem; }
+.steps-scroll .steps { display: flex; width: 100%; flex-wrap: nowrap; gap: 0.125rem; }
+.steps-scroll .steps .step { flex: 1 1 0; min-width: 0; font-size: 0.7rem; padding: 0.35rem 0.25rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
 .req { color: var(--color-error); }
