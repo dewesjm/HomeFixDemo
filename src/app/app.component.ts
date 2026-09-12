@@ -11,7 +11,7 @@ import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-  LucideTriangleAlert, LucideBox, LucideStepForward, LucideMenu, LucideCircleArrowUp, LucideRefreshCw,
+  LucideTriangleAlert, LucideBox, LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget
 } from '@lucide/angular';
 
@@ -24,7 +24,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
     SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
-    LucideMenu, LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
+    LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
     LucideTriangleAlert, LucideBox, LucideStepForward
   ],
@@ -69,6 +69,4 @@ export class AppComponent {
   }
 
   adminOpen = signal(true);   // Admin submenu expanded by default
-  collapsed = signal(true);   // true = minimized by default
-  toggle() { this.collapsed.update(v => !v); }
 }

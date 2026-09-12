@@ -227,6 +227,25 @@ export class JobDetailComponent {
 
   updateStepType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
+    const templates = getTemplates()[this.job.trade] ?? [];
+    /* Fit stage: swap fields when switching between Fit and Weld Build up */
+    if (stage.id === 'fit') {
+      const fitTpl = templates.find(t => t.id === 'fit');
+      const tackTpl = templates.find(t => t.id === 'tack');
+      const newFields = value === 'weld-buildup' && tackTpl
+        ? [...tackTpl.fields.map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
+        : (fitTpl?.fields ?? []).map(f => ({ ...f }));
+      const newSignoff = value === 'weld-buildup'
+        ? []
+        : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
+      this.wf.update(wf => ({
+        ...wf,
+        stages: wf.stages.map(s => s.id === stage.id ? {
+          ...s, stepType: value, fields: newFields, signoffInputs: {}, signoffFields: newSignoff
+        } : s)
+      }));
+      return;
+    }
     this.wf.update(wf => ({
       ...wf,
       stages: wf.stages.map(s => s.id === stage.id ? { ...s, stepType: value } : s)

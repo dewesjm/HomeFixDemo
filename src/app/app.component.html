@@ -1,91 +1,54 @@
-<!-- App shell: sidebar (menu, sync status, theme) on the left; routed page on the right. -->
+<!-- App shell: top nav bar with horizontal menu; routed page below. -->
 <app-toast-host />
 <app-confirm-dialog />
-<div class="layout" [class.collapsed]="collapsed()">
-  <aside class="sidebar">
-    <h1>Welding</h1>
-    <ul class="menu w-full gap-0.5">
-      <li>
-        <a routerLink="/table" routerLinkActive="menu-active">
-          <svg lucideTable class="size-4"></svg> Pipe Welding
-        </a>
-      </li>
-      <li>
-        <a class="menu-disabled">
-          <svg lucideTable class="size-4"></svg> Structural Welding
-        </a>
-      </li>
-      <li>
-        <a routerLink="/history" routerLinkActive="menu-active">
-          <svg lucideHistory class="size-4"></svg> History
-        </a>
-      </li>
-      <li>
-        <a routerLink="/adaptive" routerLinkActive="menu-active">
-          <svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search
-        </a>
-      </li>
-      <li>
-        <details [open]="adminOpen()" (toggle)="adminOpen.set($any($event.target).open)">
-          <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
-          <ul>
-            <li>
-              <a routerLink="/admin/steps" routerLinkActive="menu-active">
-                <svg lucideWorkflow class="size-4"></svg> Routing
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/characteristics" routerLinkActive="menu-active">
-                <svg lucideTag class="size-4"></svg> Attribute codes
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/conditions" routerLinkActive="menu-active">
-                <svg lucideTriangleAlert class="size-4"></svg> Condition codes
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/materials" routerLinkActive="menu-active">
-                <svg lucideBox class="size-4"></svg> Materials
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/set-step" routerLinkActive="menu-active">
-                <svg lucideStepForward class="size-4"></svg> Set step
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/signoff-fields" routerLinkActive="menu-active">
-                <svg lucideBadgeCheck class="size-4"></svg> Signoff fields
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/ndt" routerLinkActive="menu-active">
-                <svg lucideSettings class="size-4"></svg> Penetrant
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/locations" routerLinkActive="menu-active">
-                <svg lucideMapPin class="size-4"></svg> Locations
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/step-options" routerLinkActive="menu-active">
-                <svg lucideStepForward class="size-4"></svg> Step Options
-              </a>
-            </li>
-            <li>
-              <a routerLink="/admin/weld-positions" routerLinkActive="menu-active">
-                <svg lucideTarget class="size-4"></svg> Weld Positions
-              </a>
-            </li>
-
-          </ul>
-        </details>
-      </li>
-    </ul>
-    <app-theme-picker />
-  </aside>
+<div class="layout">
+  <nav class="topnav">
+    <div class="topnav-left">
+      <span class="topnav-brand">Welding</span>
+      <ul class="topnav-menu">
+        <li>
+          <a routerLink="/table" routerLinkActive="menu-active">
+            <svg lucideTable class="size-4"></svg> Pipe Welding
+          </a>
+        </li>
+        <li>
+          <a class="menu-disabled">
+            <svg lucideTable class="size-4"></svg> Structural Welding
+          </a>
+        </li>
+        <li>
+          <a routerLink="/history" routerLinkActive="menu-active">
+            <svg lucideHistory class="size-4"></svg> History
+          </a>
+        </li>
+        <li>
+          <a routerLink="/adaptive" routerLinkActive="menu-active">
+            <svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search
+          </a>
+        </li>
+        <li class="dropdown-wrapper">
+          <details [open]="adminOpen()" (toggle)="adminOpen.set($any($event.target).open)">
+            <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+            <ul class="dropdown-menu">
+              <li><a routerLink="/admin/steps" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
+              <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute codes</a></li>
+              <li><a routerLink="/admin/conditions" routerLinkActive="menu-active"><svg lucideTriangleAlert class="size-4"></svg> Condition codes</a></li>
+              <li><a routerLink="/admin/materials" routerLinkActive="menu-active"><svg lucideBox class="size-4"></svg> Materials</a></li>
+              <li><a routerLink="/admin/set-step" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set step</a></li>
+              <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff fields</a></li>
+              <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
+              <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+              <li><a routerLink="/admin/step-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Step Options</a></li>
+              <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
+            </ul>
+          </details>
+        </li>
+      </ul>
+    </div>
+    <div class="topnav-right">
+      <app-theme-picker />
+    </div>
+  </nav>
 
   <main class="content">
     <div class="content-body">

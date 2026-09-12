@@ -246,7 +246,7 @@
               </tbody>
             </table>
           </div>
-        } @else if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld') {
+        } @else if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld' || (stage.id === 'fit' && stage.stepType === 'weld-buildup')) {
           <!-- Tack stage: custom layout with subsections -->
           <div class="flex flex-col gap-3 stage-inputs">
             <!-- Row 1: Weld Procedure, WTN, Weld Process -->
@@ -512,6 +512,25 @@
                 }
               }
             </div>
+            <!-- Affected Item (weld build-up only) -->
+            @if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+            <div>
+              @for (f of visibleFields(stage); track f.key) {
+                @if (f.key === 'affectedItem') {
+                  <label class="stage-field">
+                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                    <input class="input input-bordered w-full" type="text"
+                           [disabled]="!inputsEditable(stage, selectedStep())"
+                           [ngModel]="stage.inputs[f.key]"
+                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                  </label>
+                  @if (fieldError(stage.id, f.key); as err) {
+                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                  }
+                }
+              }
+            </div>
+            }
           </div>
         } @else {
           <!-- Default: generic field rendering -->

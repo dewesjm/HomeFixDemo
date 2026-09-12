@@ -68,8 +68,6 @@ export class TableSearchComponent {
     } catch { return {}; }
   }
 
-  toggleMenu() { this.app.toggle(); }
-
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
   table = new TableState<Row>(
