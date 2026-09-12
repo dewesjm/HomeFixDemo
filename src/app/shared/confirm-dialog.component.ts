@@ -19,6 +19,7 @@ import { ConfirmService } from './confirm.service';
             <div class="mb-4">
               <label class="meta mb-1 block">Password</label>
               <input type="password" class="input input-bordered w-full"
+                     autocomplete="off" data-lpignore="true" data-1p-ignore="true"
                      placeholder="Enter password to confirm"
                      [ngModel]="confirm.password()"
                      (ngModelChange)="confirm.password.set($event)"
