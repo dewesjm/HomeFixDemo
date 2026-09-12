@@ -243,10 +243,10 @@ html, body {
 .routing-step { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; min-width: 3.5rem; cursor: pointer; }
 .routing-step.disabled { opacity: 0.35; cursor: not-allowed; }
 .routing-num { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; background: #334155; color: #94a3b8; transition: all 0.15s; flex-shrink: 0; }
-.routing-num.active { background: #6366f1; color: #fff; transform: scale(1.1); box-shadow: 0 0 0 3px rgba(99,102,241,0.3); }
+.routing-num.active { background: #22c55e; color: #fff; transform: scale(1.15); box-shadow: 0 0 0 3px rgba(34,197,94,0.35); }
 .routing-num.done { background: #6366f1; color: #fff; }
 .routing-label { font-size: 0.65rem; text-align: center; margin-top: 0.3rem; white-space: nowrap; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; }
-.routing-step.active .routing-label { color: #e2e8f0; font-weight: 600; }
+.routing-step.active .routing-label { color: #22c55e; font-weight: 700; }
 .routing-step.done .routing-label { color: #cbd5e1; }
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
