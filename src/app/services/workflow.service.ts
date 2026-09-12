@@ -19,7 +19,7 @@ const APP_VERSION_KEY = 'homefix:app-version';
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.1.3';
+const CURRENT_VERSION = '1.1.4';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -263,8 +263,8 @@ export class WorkflowService {
         });
       }
 
-      /* Fit-Up Release logic: when fitup-insp signs with releaseToWelding='yes', activate fitup-release */
-      if (stageId === 'fitup-insp' && st.inputs['releaseToWelding'] === 'yes') {
+      /* Fit-Up Release logic: when fitup-insp signs WITHOUT releaseToWelding (unchecked), activate fitup-release */
+      if (stageId === 'fitup-insp' && st.inputs['releaseToWelding'] !== 'yes') {
         stages = stages.map(s => {
           if (s.id === 'fitup-release') {
             return { ...s, required: true };

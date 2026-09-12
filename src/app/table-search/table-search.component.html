@@ -25,7 +25,7 @@
     <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
   </button>
 
-  @if (selectedIds().size > 0) {
+  @if (canReleaseSelected()) {
     <button type="button" class="btn btn-sm btn-primary" (click)="releaseSelected()">
       <svg lucideCheck class="size-4"></svg> Release to Welding ({{ selectedIds().size }})
     </button>

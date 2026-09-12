@@ -83,6 +83,15 @@ export class TableSearchComponent {
     return all.length > 0 && all.every(r => this.selectedIds().has(r.id));
   }
 
+  canReleaseSelected = computed(() => {
+    if (this.selectedRole() !== 'Foreman') return false;
+    const ids = this.selectedIds();
+    if (ids.size === 0) return false;
+    return this.table.paged()
+      .filter(r => ids.has(r.id))
+      .every(r => r.currentStep === 'Fit-Up Release');
+  });
+
   releaseSelected() {
     const ids = this.selectedIds();
     for (const job of this.table.paged()) {

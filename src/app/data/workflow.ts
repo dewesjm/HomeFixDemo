@@ -622,8 +622,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [] },
-    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [],
-      signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
+    { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
+      { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' }
+    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
     { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
@@ -642,7 +643,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -651,14 +652,14 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'root-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -678,7 +679,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -687,21 +688,21 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'ndtResult', label: 'NDT result', type: 'select',
         options: [{ label: 'Accept', value: 'accept' }, { label: 'Reject', value: 'reject' }] },
-    ], signoffFields: [], rejectToStage: 'final-weld', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
     { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
       { key: 'reviewStatus', label: 'Review status', type: 'select',
         options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
-    ], signoffFields: [], rejectToStage: 'final-ndt-vt5x' },
+    ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
     { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
 };
@@ -903,13 +904,14 @@ export function buildStages(job: Job): WorkflowStage[] {
   const toStage = (t: StageTemplate): WorkflowStage => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
+    const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
     return {
       id: t.id,
       label: t.label,
       required,
       role: t.role ?? '',
       fields: t.fields,
-      inputs: {},
+      inputs,
       signoffFields: sf.map(f => ({ ...f })),
       signoffInputs: {},
       result: null,
