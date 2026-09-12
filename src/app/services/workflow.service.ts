@@ -15,12 +15,25 @@ const show = (v: string | null | undefined) => (v && v.length ? v : '—');
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = 'homefix:workflows:v2';
+const APP_VERSION_KEY = 'homefix:app-version';
+const CURRENT_VERSION = '1.1.0';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
   private sync = inject(SyncService);
   private messages = inject(ToastService);
   private store = new Map<number, WritableSignal<JobWorkflow>>();
+
+  /* Clear stale caches when the app version changes */
+  private static clearStaleCachesIfNeeded() {
+    const stored = localStorage.getItem(APP_VERSION_KEY);
+    if (stored !== CURRENT_VERSION) {
+      ['homefix:workflows:v2', 'homefix:stage-templates:v2', 'homefix:penetrants', 'homefix:weld-positions']
+        .forEach(k => localStorage.removeItem(k));
+      localStorage.setItem(APP_VERSION_KEY, CURRENT_VERSION);
+    }
+  }
+
   private persisted: Record<number, JobWorkflow> = this.load();
   private seq = Date.now();
 
@@ -401,6 +414,7 @@ export class WorkflowService {
   }
 
   private load(): Record<number, JobWorkflow> {
+    WorkflowService.clearStaleCachesIfNeeded();
     try {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<number, JobWorkflow>) : {};
