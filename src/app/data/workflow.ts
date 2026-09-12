@@ -978,11 +978,14 @@ export function buildStages(job: Job): WorkflowStage[] {
         Object.assign(inputs, { overridePhMin: '2.8', overridePhMax: '7.0', overrideIpMin: '1.2', overrideIpMax: '5.2', overrideNote: 'Approved deviation per WPS-001' });
       }
     }
+    /* route NDT inspections to NQC Inspection when N Ind. is 1 or 2 */
+    const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
+      ? 'NQC Inspection' : (t.role ?? '');
     return {
       id: t.id,
       label: t.label,
       required,
-      role: t.role ?? '',
+      role,
       fields: t.fields,
       inputs,
       signoffFields: sf.map(f => ({ ...f })),
