@@ -24,6 +24,17 @@ Test the PWA/offline behavior by serving the prod build:
 
 ---
 
+## Version bumps & cache clearing
+
+The app stores workflow data in `localStorage`. When stage definitions change (fields, signoff fields, stage order, etc.), old cached data becomes stale. To handle this automatically:
+
+- A `CURRENT_VERSION` constant lives in `src/app/services/workflow.service.ts` (line ~22).
+- On every app load, the version is checked. If it doesn't match what's stored in `localStorage`, all workflow/template caches are cleared.
+- **Bump `CURRENT_VERSION`** whenever you change stage definitions, field names, or any data model persisted in localStorage.
+- The "Update now" button (service worker) also clears caches before reloading.
+
+---
+
 ## Folder map
 
 ```

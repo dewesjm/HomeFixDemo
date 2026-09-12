@@ -16,6 +16,9 @@ const show = (v: string | null | undefined) => (v && v.length ? v : '—');
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = 'homefix:workflows:v2';
 const APP_VERSION_KEY = 'homefix:app-version';
+// IMPORTANT: Bump this version whenever you change stage definitions, field names,
+// or any data model that is persisted in localStorage. The app auto-clears stale
+// caches when this version changes.
 const CURRENT_VERSION = '1.1.0';
 
 @Injectable({ providedIn: 'root' })
