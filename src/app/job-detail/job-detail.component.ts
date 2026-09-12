@@ -268,7 +268,15 @@ export class JobDetailComponent {
   getFabValue(fieldKey: string): string {
     const fabKey = this.FAB_VERIFY_MAP[fieldKey];
     if (!fabKey || !this.wf) return '';
-    return this.wf().fabricationData[fabKey] ?? '';
+    const val = this.wf().fabricationData[fabKey] ?? '';
+    if (!val) return '';
+    // Resolve select field labels
+    const fabField = FABRICATION_FIELDS.find(f => f.key === fabKey);
+    if (fabField?.type === 'select' && fabField.options) {
+      const match = fabField.options.find(o => o.value === val);
+      return match?.label ?? val;
+    }
+    return val;
   }
   /* a trigger field that other fields declare a showIf against — always breaks
      onto its own row (even before a selection) so its dependent fields can flow

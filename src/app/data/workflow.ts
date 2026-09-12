@@ -326,8 +326,16 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', placeholder: 'IN', row: 4 },
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
-  { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'text', row: 5 },
-  { key: 'changeNumber', label: 'Change Number', type: 'text', row: 5 },
+  { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
+    options: [
+      { label: 'BJ-G', value: 'bj-g' }, { label: 'BJ-S', value: 'bj-s' },
+      { label: 'FJ-G', value: 'fj-g' }, { label: 'FJ-S', value: 'fj-s' },
+      { label: 'LJ-G', value: 'lj-g' }, { label: 'LJ-S', value: 'lj-s' },
+      { label: 'CJ-G', value: 'cj-g' }, { label: 'CJ-S', value: 'cj-s' },
+      { label: 'EJ-G', value: 'ej-g' }, { label: 'EJ-S', value: 'ej-s' },
+      { label: 'TJ-G', value: 'tj-g' }, { label: 'TJ-S', value: 'tj-s' },
+    ] },
+  { key: 'changeNumber', label: 'ER/IR', type: 'text', row: 5 },
 ];
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
