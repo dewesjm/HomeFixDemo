@@ -684,6 +684,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'Root NDT VT/5X', required: true, role: 'Inspector', fields: [
+      { key: 'weldColor', label: 'Weld Color', type: 'select',
+        options: [
+          { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
+          { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },
+          { label: 'Brown', value: 'brown' }, { label: 'Light blue', value: 'light-blue' },
+          { label: 'Dark blue', value: 'dark-blue' }, { label: 'Grey', value: 'grey' },
+          { label: 'Black', value: 'black' }, { label: 'White', value: 'white' },
+          { label: 'Green', value: 'green' }, { label: 'No color', value: 'none' },
+        ] },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
@@ -715,6 +724,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'layer-ndt-vt5x', label: 'Layer NDT VT/5X', required: true, role: 'Inspector', fields: [
+      { key: 'weldColor', label: 'Weld Color', type: 'select',
+        options: [
+          { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
+          { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },
+          { label: 'Brown', value: 'brown' }, { label: 'Light blue', value: 'light-blue' },
+          { label: 'Dark blue', value: 'dark-blue' }, { label: 'Grey', value: 'grey' },
+          { label: 'Black', value: 'black' }, { label: 'White', value: 'white' },
+          { label: 'Green', value: 'green' }, { label: 'No color', value: 'none' },
+        ] },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
@@ -773,6 +791,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'Final NDT VT/5X', required: true, role: 'Inspector', fields: [
+      { key: 'weldColor', label: 'Weld Color', type: 'select',
+        options: [
+          { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
+          { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },
+          { label: 'Brown', value: 'brown' }, { label: 'Light blue', value: 'light-blue' },
+          { label: 'Dark blue', value: 'dark-blue' }, { label: 'Grey', value: 'grey' },
+          { label: 'Black', value: 'black' }, { label: 'White', value: 'white' },
+          { label: 'Green', value: 'green' }, { label: 'No color', value: 'none' },
+        ] },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
     ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
