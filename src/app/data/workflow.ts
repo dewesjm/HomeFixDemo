@@ -675,7 +675,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'root-ndt-mtpt', label: 'Root NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'penetrant', label: 'Penetrant', type: 'select',
+      { key: 'penetrant', label: 'Penetrant', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
@@ -684,7 +684,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'Root NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'weldColor', label: 'Weld Color', type: 'select',
+      { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
           { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },
@@ -715,7 +715,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'layer-ndt-mtpt', label: 'Layer NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'penetrant', label: 'Penetrant', type: 'select',
+      { key: 'penetrant', label: 'Penetrant', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
@@ -724,7 +724,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'layer-ndt-vt5x', label: 'Layer NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'weldColor', label: 'Weld Color', type: 'select',
+      { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
           { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },
@@ -782,7 +782,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'final-ndt-mtpt', label: 'Final NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'penetrant', label: 'Penetrant', type: 'select',
+      { key: 'penetrant', label: 'Penetrant', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
@@ -791,7 +791,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'Final NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'weldColor', label: 'Weld Color', type: 'select',
+      { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
           { label: 'Light yellow', value: 'light-yellow' }, { label: 'Dark yellow', value: 'dark-yellow' },

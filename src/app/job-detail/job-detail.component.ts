@@ -247,10 +247,10 @@ export class JobDetailComponent {
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
     return stage.fields.filter(f => {
-      if (f.showIf && stage.inputs[f.showIf.key] !== f.showIf.equals) return false;
-      // Hide penetrant field when inspection type is MT (not PT)
-      if (f.key === 'penetrant' && (stage.id === 'root-ndt-mtpt' || stage.id === 'final-ndt-mtpt')
-          && stage.inspectionType === 'mt') return false;
+      if (f.showIf) {
+        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType : stage.inputs[f.showIf.key];
+        if (checkVal !== f.showIf.equals) return false;
+      }
       return true;
     });
   }
