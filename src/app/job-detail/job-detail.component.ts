@@ -80,6 +80,11 @@ export class JobDetailComponent {
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
+  /* fabrication fields locked after fit-up inspection signed */
+  fabLocked = computed(() => {
+    if (!this.wf) return false;
+    return this.wf().stages.some(s => s.id === 'fitup-insp' && s.signed);
+  });
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
   /* index of stage awaiting sign-off */

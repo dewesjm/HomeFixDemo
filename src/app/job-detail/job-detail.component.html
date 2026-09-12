@@ -75,14 +75,14 @@
               <div class="flex-1 max-w-xs">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 @if (f.type === 'select') {
-                  <select class="select select-bordered w-full" [disabled]="jobComplete()"
+                  <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
                           [ngModel]="w.fabricationData[f.key]" (ngModelChange)="fabSelectChange(f.key, $event)">
 
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
                   <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
-                         [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                         [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                          [ngModel]="w.fabricationData[f.key]"
                          (blur)="fabInputBlur(f.key, $any($event.target).value)" />
                 }
@@ -98,7 +98,7 @@
               <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
-                       [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                       [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
                        (blur)="fabInputBlur(f.key, $any($event.target).value)" />
               </div>
@@ -113,7 +113,7 @@
               <div class="flex-1 max-w-xs">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
-                       [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                       [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
                        (blur)="fabInputBlur(f.key, $any($event.target).value)" />
               </div>
@@ -128,7 +128,7 @@
               <div class="flex-1 max-w-xs">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
-                       [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                       [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
                        (blur)="fabInputBlur(f.key, $any($event.target).value)" />
               </div>
@@ -143,7 +143,7 @@
               <div class="flex-1 max-w-xs">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
-                       [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
+                       [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
                        (blur)="fabInputBlur(f.key, $any($event.target).value)" />
               </div>
@@ -156,7 +156,7 @@
       <div class="detail-grid mb-sm">
         <div>
           <div class="meta">Build / install</div>
-          <select class="select select-bordered w-full" [disabled]="jobComplete()"
+          <select class="select select-bordered w-full"                          [disabled]="fabLocked() || jobComplete()"
                   [ngModel]="w.workType" (ngModelChange)="setWorkType($event)">
             <option [ngValue]="null">Select</option>
             @for (o of workTypeOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -164,7 +164,7 @@
         </div>
         <div>
           <div class="meta">Condition code</div>
-          <select class="select select-bordered w-full" [disabled]="jobComplete()"
+          <select class="select select-bordered w-full"                          [disabled]="fabLocked() || jobComplete()"
                   [ngModel]="w.conditionCode" (ngModelChange)="setConditionCode($event)">
             <option [ngValue]="''">None</option>
             @for (o of conditionOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -172,7 +172,7 @@
         </div>
         <div>
           <div class="meta">Number of conditions</div>
-          <input type="number" min="0" class="input input-bordered w-full" [disabled]="jobComplete()"
+          <input type="number" min="0" class="input input-bordered w-full"                          [disabled]="fabLocked() || jobComplete()"
                  [ngModel]="w.conditionCount" (blur)="setConditionCount($any($event.target).value)" />
         </div>
         <!-- placeholder validation fields -->
@@ -743,7 +743,7 @@
               <td>{{ a.addedBy }}</td>
               <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
               <td>
-                <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="jobComplete()"
+                <button type="button" class="btn btn-ghost btn-xs text-error"                          [disabled]="jobComplete()"
                         (click)="removeAttachment(a.id)">
                   <svg lucideTrash2 class="size-4"></svg>
                 </button>
@@ -757,7 +757,7 @@
       <div class="meta mb-xs">No attachments yet.</div>
     }
 
-    <input type="file" multiple class="file-input" [disabled]="jobComplete()"
+    <input type="file" multiple class="file-input"                          [disabled]="jobComplete()"
            (change)="addAttachments($event)" />
   </section>
   }
