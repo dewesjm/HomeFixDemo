@@ -349,7 +349,11 @@ export class JobDetailComponent {
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);
-        this.selectedStep.set(this.indexOfActive());
+        if (this.jobComplete()) {
+          this.router.navigate(['/table']);
+        } else {
+          this.selectedStep.set(this.indexOfActive());
+        }
       }
     });
   }
