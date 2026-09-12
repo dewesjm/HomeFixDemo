@@ -968,6 +968,10 @@ export function buildStages(job: Job): WorkflowStage[] {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
+    /* pre-populate PH/IP requirement fake data for weld stages */
+    if (['tack', 'root-weld', 'final-weld'].includes(t.id)) {
+      Object.assign(inputs, { phMin: '3.2', phMax: '6.4', ipMin: '1.6', ipMax: '4.8' });
+    }
     return {
       id: t.id,
       label: t.label,

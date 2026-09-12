@@ -430,18 +430,26 @@ export class JobDetailComponent {
     return errors;
   }
 
-  /** Called on blur of a single field — validates range and clears if OK */
+  /** Called on blur of a single field — validates required + range */
   onFieldBlur(stage: WorkflowStage, field: StageField) {
     const key = `${stage.id}:${field.key}`;
-    const val = stage.inputs?.[field.key];
+    /* read current values from live signal (stage param may be stale) */
+    const curStage = this.wf ? this.wf().stages.find(s => s.id === stage.id) : undefined;
+    const val = curStage?.inputs?.[field.key];
     const empty = val === undefined || val === null || val === '';
     const prev = { ...this.fieldErrors() };
-    // clear existing error for this field first
     delete prev[key];
+    /* required check on blur */
+    const nInd = this.job?.nInd;
+    const isRequired = field.key === 'weldPosition' ? nInd === '1' : field.required;
+    if (isRequired && empty) {
+      prev[key] = `${field.label} is required`;
+    }
+    /* range check */
     if (!empty && field.type === 'number' && (field.minField || field.maxField)) {
       const num = Number(val);
-      const minVal = field.minField ? Number(stage.inputs?.[field.minField]) : NaN;
-      const maxVal = field.maxField ? Number(stage.inputs?.[field.maxField]) : NaN;
+      const minVal = field.minField ? Number(curStage?.inputs?.[field.minField]) : NaN;
+      const maxVal = field.maxField ? Number(curStage?.inputs?.[field.maxField]) : NaN;
       const belowMin = !isNaN(minVal) && num < minVal;
       const aboveMax = !isNaN(maxVal) && num > maxVal;
       if (belowMin || aboveMax) {
