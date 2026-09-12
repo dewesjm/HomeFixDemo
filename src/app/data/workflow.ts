@@ -66,6 +66,7 @@ export interface WorkflowStage {
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
+  showOverride?: boolean;         /* show Override Requirements section (weld stages only) */
 }
 
 export interface InstalledComponent {
@@ -968,9 +969,14 @@ export function buildStages(job: Job): WorkflowStage[] {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
-    /* pre-populate PH/IP requirement fake data for weld stages */
-    if (['tack', 'root-weld', 'final-weld'].includes(t.id)) {
-      Object.assign(inputs, { phMin: '3.2', phMax: '6.4', ipMin: '1.6', ipMax: '4.8' });
+    const isWeldStage = ['tack', 'root-weld', 'final-weld'].includes(t.id);
+    /* 50/50 chance of override requirements */
+    let showOverride = false;
+    if (isWeldStage) {
+      showOverride = Math.random() < 0.5;
+      if (showOverride) {
+        Object.assign(inputs, { overridePhMin: '2.8', overridePhMax: '7.0', overrideIpMin: '1.2', overrideIpMax: '5.2', overrideNote: 'Approved deviation per WPS-001' });
+      }
     }
     return {
       id: t.id,
@@ -990,7 +996,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       inspectionType: '',
       stepOptions: t.stepOptions,
       signed: false,
-      signedAt: null
+      signedAt: null,
+      showOverride
     };
   };
 

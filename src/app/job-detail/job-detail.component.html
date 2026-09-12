@@ -335,7 +335,8 @@
                 }
               </div>
             </div>
-            <!-- Override Requirements -->
+            <!-- Override Requirements (only when present) -->
+            @if (stage.showOverride) {
             <div>
               <div class="font-semibold text-sm mb-1">Override Requirements</div>
               <div class="flex gap-4">
@@ -345,7 +346,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="0" />
+                               [disabled]="true" [value]="stage.inputs['overridePhMin'] || '0'" />
                       </label>
                     </div>
                   }
@@ -354,7 +355,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="0" />
+                               [disabled]="true" [value]="stage.inputs['overridePhMax'] || '0'" />
                       </label>
                     </div>
                   }
@@ -363,7 +364,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="0" />
+                               [disabled]="true" [value]="stage.inputs['overrideIpMin'] || '0'" />
                       </label>
                     </div>
                   }
@@ -372,7 +373,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="0" />
+                               [disabled]="true" [value]="stage.inputs['overrideIpMax'] || '0'" />
                       </label>
                     </div>
                   }
@@ -391,6 +392,7 @@
                 }
               </div>
             </div>
+            }
             <!-- PH/IP Actuals -->
             <div>
               <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>

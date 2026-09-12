@@ -321,6 +321,13 @@ export class JobDetailComponent {
   private readonly WTN_PROCESS_MAP: Record<string, string> = {
     'wtn-101': 'smaw', 'wtn-102': 'gtaw', 'wtn-103': 'gmaw', 'wtn-201': 'fcaw'
   };
+  /* WTN → PH/IP requirements mapping */
+  private readonly WTN_PHIP_MAP: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string }> = {
+    'wtn-101': { phMin: '3.2', phMax: '6.4', ipMin: '1.6', ipMax: '4.8' },
+    'wtn-102': { phMin: '2.8', phMax: '5.8', ipMin: '1.4', ipMax: '4.2' },
+    'wtn-103': { phMin: '3.0', phMax: '6.0', ipMin: '1.5', ipMax: '4.5' },
+    'wtn-201': { phMin: '3.5', phMax: '7.0', ipMin: '1.8', ipMax: '5.0' },
+  };
 
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
@@ -341,6 +348,14 @@ export class JobDetailComponent {
             delete next[wpKey];
             this.fieldErrors.set(next);
           }
+        }
+      }
+      /* Auto-set PH/IP requirements when WTN changes */
+      if (field.key === 'wtn' && this.WTN_PHIP_MAP[v]) {
+        const phip = this.WTN_PHIP_MAP[v];
+        for (const [k, val] of Object.entries(phip)) {
+          const f = stage.fields.find(ff => ff.key === k);
+          if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
         }
       }
     }
