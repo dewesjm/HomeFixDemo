@@ -330,7 +330,7 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true,
     options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
       { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' }] },
-  { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
+  { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', required: true },
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];
 

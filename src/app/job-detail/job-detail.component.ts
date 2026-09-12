@@ -409,17 +409,13 @@ export class JobDetailComponent {
       }
       if (!empty && f.type === 'number' && (f.minField || f.maxField)) {
         const num = Number(val);
-        if (f.minField) {
-          const minVal = Number(stage.inputs?.[f.minField]);
-          if (!isNaN(minVal) && num < minVal) {
-            errors[`${stage.id}:${f.key}`] = `${f.label} must be ≥ ${minVal}`;
-          }
-        }
-        if (f.maxField) {
-          const maxVal = Number(stage.inputs?.[f.maxField]);
-          if (!isNaN(maxVal) && num > maxVal) {
-            errors[`${stage.id}:${f.key}`] = `${f.label} must be ≤ ${maxVal}`;
-          }
+        const minVal = f.minField ? Number(stage.inputs?.[f.minField]) : NaN;
+        const maxVal = f.maxField ? Number(stage.inputs?.[f.maxField]) : NaN;
+        const belowMin = !isNaN(minVal) && num < minVal;
+        const aboveMax = !isNaN(maxVal) && num > maxVal;
+        if (belowMin || aboveMax) {
+          const label = f.key === 'actualPh' ? 'Actual PH' : 'Actual IP';
+          errors[`${stage.id}:${f.key}`] = `${label} Out of Range`;
         }
       }
     }
@@ -436,17 +432,13 @@ export class JobDetailComponent {
     delete prev[key];
     if (!empty && field.type === 'number' && (field.minField || field.maxField)) {
       const num = Number(val);
-      if (field.minField) {
-        const minVal = Number(stage.inputs?.[field.minField]);
-        if (!isNaN(minVal) && num < minVal) {
-          prev[key] = `${field.label} must be ≥ ${minVal}`;
-        }
-      }
-      if (field.maxField) {
-        const maxVal = Number(stage.inputs?.[field.maxField]);
-        if (!isNaN(maxVal) && num > maxVal) {
-          prev[key] = `${field.label} must be ≤ ${maxVal}`;
-        }
+      const minVal = field.minField ? Number(stage.inputs?.[field.minField]) : NaN;
+      const maxVal = field.maxField ? Number(stage.inputs?.[field.maxField]) : NaN;
+      const belowMin = !isNaN(minVal) && num < minVal;
+      const aboveMax = !isNaN(maxVal) && num > maxVal;
+      if (belowMin || aboveMax) {
+        const label = field.key === 'actualPh' ? 'Actual PH' : 'Actual IP';
+        prev[key] = `${label} Out of Range`;
       }
     }
     this.fieldErrors.set(prev);
