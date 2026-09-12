@@ -703,15 +703,6 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
-    { id: 'layer-ndt-mtpt', label: 'Layer NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'penetrant', label: 'Penetrant', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
-        options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
-    ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
-      { label: 'MT', value: 'mt', default: true },
-      { label: 'PT', value: 'pt' },
-    ] },
     { id: 'layer-ndt-vt5x', label: 'Layer NDT VT/5X', required: true, role: 'Inspector', fields: [
       { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
@@ -727,6 +718,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
+    ] },
+    { id: 'layer-ndt-mtpt', label: 'Layer NDT MT/PT', required: true, role: 'Inspector', fields: [
+      { key: 'penetrant', label: 'Penetrant', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
+        options: getPenetrants().map(p => ({ label: `${p.type} — ${p.manufacturer}`, value: `${p.type}|||${p.manufacturer}` })) },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text' },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text' },
+    ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
+      { label: 'MT', value: 'mt', default: true },
+      { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
     { id: 'final-ndt-utrt', label: 'Final NDT UT/RT', required: true, role: 'Inspector', fields: [
