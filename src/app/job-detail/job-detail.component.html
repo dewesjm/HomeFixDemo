@@ -1,15 +1,14 @@
 <!--This is the bulk of the joint details page, should some of these be sub-components?-->
-<!--breadcrumb-->
-<button type="button" class="btn btn-ghost btn-sm" (click)="back()">
-  <svg lucideArrowLeft class="size-4"></svg> Back to Joints
-</button>
 
 @if (job; as j) {
 @if (wf; as wfSig) {
 @if (wfSig(); as w) {
 
   <div class="page-header mt-sm">
-    <h2 class="section-title">{{ j.title }}</h2>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="back()">
+      <svg lucideArrowLeft class="size-4"></svg> Back
+    </button>
+    <h2 class="section-title m-0">{{ j.title }}</h2>
     <span class="spacer"></span>
     <app-sync-status />
   </div>
