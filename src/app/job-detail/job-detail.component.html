@@ -23,9 +23,7 @@
     <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Routing</h3>
     <div class="routing-scroll">
       @for (s of stepsModel(); track $index) {
-        <div class="routing-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
-             [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
-             (click)="!s.disabled && selectedStep.set(s.stageIndex)">
+        <div class="routing-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled">
           <div class="routing-num" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()">{{ $index + 1 }}</div>
           <div class="routing-label">{{ s.label }}</div>
         </div>
