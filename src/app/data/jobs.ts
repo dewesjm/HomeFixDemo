@@ -16,6 +16,7 @@ export interface Job {
   wps: string;               /* Welding Procedure Specification */
   ndt: string;               /* Non-Destructive Examination requirement */
   pwht: string;              /* Post Weld Heat Treatment */
+  nInd: string;              /* N Ind.: 1, 2, or 3 */
   estimatedCost: number;
   estimatedHours: number;    /* labor hours */
   scheduledFor: Date;
@@ -35,6 +36,7 @@ const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
+const N_IND_POOL = ['1', '2', '3'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
   Plumbing:   ['Leaking faucet repair', 'Water heater replacement', 'Clogged drain clearing', 'Pipe leak inspection', 'Toilet reseal', 'Sump pump service'],
@@ -108,6 +110,7 @@ export function generateJobs(count = 120): Job[] {
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
+      nInd: pick(N_IND_POOL),
       estimatedCost,
       estimatedHours,
       scheduledFor
@@ -141,6 +144,7 @@ export function addTestJob(trade: string): Job {
     wps: '',
     ndt: '',
     pwht: '',
+    nInd: '1',
     estimatedCost: 0,
     estimatedHours: 0,
     scheduledFor: new Date(),

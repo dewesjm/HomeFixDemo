@@ -405,11 +405,14 @@ export class JobDetailComponent {
   private validateStageFields(stage: WorkflowStage): Record<string, string> {
     const errors: Record<string, string> = {};
     const fields = stage.fields ?? [];
+    const nInd = this.job?.nInd;
     for (const f of fields) {
       if (f.key === 'comments') continue;
       const val = stage.inputs?.[f.key];
       const empty = val === undefined || val === null || val === '';
-      if (f.required && empty) {
+      /* weldPosition required only when N Ind. is 1 */
+      const isRequired = f.key === 'weldPosition' ? nInd === '1' : f.required;
+      if (isRequired && empty) {
         errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
       }
       if (!empty && f.type === 'number' && (f.minField || f.maxField)) {

@@ -45,6 +45,7 @@
       <div><div class="meta">WPS</div><div>{{ j.wps || '—' }}</div></div>
       <div><div class="meta">NDT</div><div>{{ j.ndt || '—' }}</div></div>
       <div><div class="meta">PWHT</div><div>{{ j.pwht || '—' }}</div></div>
+      <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
     </div>
 
     <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
@@ -426,7 +427,8 @@
                 }
               </div>
             </div>
-            <!-- Weld Position -->
+            <!-- Weld Position (only when N Ind. = 1) -->
+            @if (j.nInd === '1') {
             <div>
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'weldPosition') {
@@ -444,6 +446,7 @@
                 }
               }
             </div>
+            }
             <!-- Filler Metal -->
             <div class="flex gap-4">
               @for (f of visibleFields(stage); track f.key) {

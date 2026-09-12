@@ -322,7 +322,7 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'overrideNote', label: 'Override Note', type: 'text' },
   { key: 'actualPh', label: 'Actual PH', type: 'number', required: true, minField: 'phMin', maxField: 'phMax' },
   { key: 'actualIp', label: 'Actual IP', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
-  { key: 'weldPosition', label: 'Weld Position', type: 'select', required: true,
+  { key: 'weldPosition', label: 'Weld Position', type: 'select',
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true,
     options: [{ label: 'ER70S-6', value: 'er70s-6' }, { label: 'ER80S-D2', value: 'er80s-d2' },
