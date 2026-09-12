@@ -49,7 +49,7 @@ function toFieldRow(f: StageField | SignoffField, idx: number): FieldRow {
     key: f.key,
     label: f.label,
     type: f.type,
-    required: 'required' in f ? f.required : false,
+    required: 'required' in f ? (f.required ?? false) : false,
     placeholder: f.placeholder ?? ('placeholder' in f ? f.placeholder ?? '' : ''),
     unit: 'unit' in f ? (f as any).unit ?? '' : '',
     optionsText: f.options?.map(o => `${o.label}:${o.value}`).join(', ') ?? '',

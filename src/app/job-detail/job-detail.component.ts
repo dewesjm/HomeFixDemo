@@ -67,6 +67,8 @@ export class JobDetailComponent {
   });
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
+  /* inline field validation errors: key = `${stageId}:${fieldKey}` */
+  fieldErrors = signal<Record<string, string>>({});
 
   activeStepLabel = computed(() => {
     const steps = this.stepsModel();
@@ -298,6 +300,17 @@ export class JobDetailComponent {
       this.wfService.setStageInput(this.job, stage.id, field, value);
       this.clearHidden(stage);
     }
+    this.onFieldBlur(stage, field);
+    /* clear required error if now filled */
+    if (field.required && value) {
+      const key = `${stage.id}:${field.key}`;
+      const prev = this.fieldErrors();
+      if (prev[key]) {
+        const next = { ...prev };
+        delete next[key];
+        this.fieldErrors.set(next);
+      }
+    }
   }
   /* WTN → Weld Process mapping */
   private readonly WTN_PROCESS_MAP: Record<string, string> = {
@@ -311,12 +324,20 @@ export class JobDetailComponent {
       this.wfService.setStageInput(this.job, stage.id, field, v);
       this.clearHidden(stage);
       /* Auto-set Weld Process when WTN changes */
-      if (field.key === 'wtn' && stage.id === 'tack' && this.WTN_PROCESS_MAP[v]) {
+      if (field.key === 'wtn' && this.WTN_PROCESS_MAP[v]) {
         const weldProcessField = stage.fields.find(f => f.key === 'weldProcess');
         if (weldProcessField) {
           this.wfService.setStageInput(this.job, stage.id, weldProcessField, this.WTN_PROCESS_MAP[v]);
         }
       }
+    }
+    /* clear validation error for this field */
+    const key = `${stage.id}:${field.key}`;
+    const prev = this.fieldErrors();
+    if (prev[key]) {
+      const next = { ...prev };
+      delete next[key];
+      this.fieldErrors.set(next);
     }
   }
 
@@ -367,8 +388,73 @@ export class JobDetailComponent {
     return stage.signoffFields.filter(f =>
       !f.showIf || stage.signoffInputs[f.showIf.key] === f.showIf.equals);
   }
+  /* ── inline field validation ── */
+  private validateStageFields(stage: WorkflowStage): Record<string, string> {
+    const errors: Record<string, string> = {};
+    const fields = stage.fields ?? [];
+    for (const f of fields) {
+      if (f.key === 'comments') continue;
+      const val = stage.inputs?.[f.key];
+      const empty = val === undefined || val === null || val === '';
+      if (f.required && empty) {
+        errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
+      }
+      if (!empty && f.type === 'number' && (f.minField || f.maxField)) {
+        const num = Number(val);
+        if (f.minField) {
+          const minVal = Number(stage.inputs?.[f.minField]);
+          if (!isNaN(minVal) && num < minVal) {
+            errors[`${stage.id}:${f.key}`] = `${f.label} must be ≥ ${minVal}`;
+          }
+        }
+        if (f.maxField) {
+          const maxVal = Number(stage.inputs?.[f.maxField]);
+          if (!isNaN(maxVal) && num > maxVal) {
+            errors[`${stage.id}:${f.key}`] = `${f.label} must be ≤ ${maxVal}`;
+          }
+        }
+      }
+    }
+    return errors;
+  }
+
+  /** Called on blur of a single field — validates range and clears if OK */
+  onFieldBlur(stage: WorkflowStage, field: StageField) {
+    const key = `${stage.id}:${field.key}`;
+    const val = stage.inputs?.[field.key];
+    const empty = val === undefined || val === null || val === '';
+    const prev = { ...this.fieldErrors() };
+    // clear existing error for this field first
+    delete prev[key];
+    if (!empty && field.type === 'number' && (field.minField || field.maxField)) {
+      const num = Number(val);
+      if (field.minField) {
+        const minVal = Number(stage.inputs?.[field.minField]);
+        if (!isNaN(minVal) && num < minVal) {
+          prev[key] = `${field.label} must be ≥ ${minVal}`;
+        }
+      }
+      if (field.maxField) {
+        const maxVal = Number(stage.inputs?.[field.maxField]);
+        if (!isNaN(maxVal) && num > maxVal) {
+          prev[key] = `${field.label} must be ≤ ${maxVal}`;
+        }
+      }
+    }
+    this.fieldErrors.set(prev);
+  }
+
+  fieldError(stageId: string, fieldKey: string): string | undefined {
+    return this.fieldErrors()[`${stageId}:${fieldKey}`];
+  }
+
   signStage(stage: WorkflowStage) {
-    if (!this.job || !this.canSignStage(stage)) return;
+    if (!this.job) return;
+    /* validate required fields + range constraints */
+    const errors = this.validateStageFields(stage);
+    this.fieldErrors.set(errors);
+    if (Object.keys(errors).length > 0) return;
+    if (!this.canSignStage(stage)) return;
     const decision = (stage.result ?? '').toUpperCase();
     const stepNote = stage.repeatable && stage.stepType === 'repeat'
       ? ' Another round will be added after this one.'

@@ -268,6 +268,9 @@
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                       }
                     </label>
+                    @if (fieldError(stage.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                    }
                   </div>
                 }
               }
@@ -400,6 +403,9 @@
                                [ngModel]="stage.inputs[f.key]"
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                       </label>
+                      @if (fieldError(stage.id, f.key); as err) {
+                        <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                      }
                     </div>
                   }
                   @if (f.key === 'actualIp') {
@@ -411,6 +417,9 @@
                                [ngModel]="stage.inputs[f.key]"
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                       </label>
+                      @if (fieldError(stage.id, f.key); as err) {
+                        <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                      }
                     </div>
                   }
                 }
@@ -428,6 +437,9 @@
                       @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                     </select>
                   </label>
+                  @if (fieldError(stage.id, f.key); as err) {
+                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                  }
                 }
               }
             </div>
@@ -444,6 +456,9 @@
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     </label>
+                    @if (fieldError(stage.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                    }
                   </div>
                 }
                 @if (f.key === 'fillerMetalSize') {
@@ -456,6 +471,9 @@
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     </label>
+                    @if (fieldError(stage.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                    }
                   </div>
                 }
                 @if (f.key === 'fillerMetalMic') {
@@ -467,6 +485,9 @@
                              [ngModel]="stage.inputs[f.key]"
                              (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                     </label>
+                    @if (fieldError(stage.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                    }
                   </div>
                 }
               }
@@ -511,6 +532,9 @@
                          (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                 }
               </label>
+              @if (fieldError(stage.id, f.key); as err) {
+                <div class="text-error text-xs mt-0.5">{{ err }}</div>
+              }
             }
           </div>
         }
