@@ -6,7 +6,7 @@ import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, newWorkflow, stageFieldsFor, signoffFieldsFor,
-  buildStages, getTemplates
+  buildStages, getTemplates, REPAIR_STAGE
 } from '../data/workflow';
 import { conditionLabel } from '../data/conditions';
 
@@ -300,6 +300,33 @@ export class WorkflowService {
               stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
             }
           }
+        }
+        /* NDT UNSAT: insert repair stage after this stage if not already present */
+        const isNdtStage = stageId.includes('ndt');
+        const hasRepairAlready = stages.some(s => s.id === 'repair');
+        if (isNdtStage && !hasRepairAlready) {
+          const repairStage: WorkflowStage = {
+            id: 'repair',
+            label: REPAIR_STAGE.label,
+            required: true,
+            role: REPAIR_STAGE.role ?? '',
+            fields: REPAIR_STAGE.fields.map(f => ({ ...f })),
+            inputs: { allowableThickness: 'Allowable thickness: 3/16 inch or 20% of material thickness, whichever is less' },
+            signoffFields: [],
+            signoffInputs: {},
+            result: null,
+            rejectToStage: '',
+            repeatable: false,
+            stepType: 'standard',
+            routeTo: '',
+            swapStageId: '',
+            inspectionType: '',
+            stepOptions: [],
+            signed: false,
+            signedAt: null,
+            decisionLabel: REPAIR_STAGE.decisionLabel,
+          };
+          stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
         }
       }
 

@@ -867,6 +867,16 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   ]
 };
 
+/* Repair stage template — inserted dynamically when NDT is UNSAT */
+export const REPAIR_STAGE: StageTemplate = {
+  id: 'repair', label: 'Repair', required: true, role: 'Welding', fields: [
+    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text' },
+    { key: 'repairType', label: 'Repair Type', type: 'select',
+      options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair Required', value: 'weld-repair' }] },
+    { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
+  ], signoffFields: [], decisionLabel: 'Inspection Results',
+};
+
 /* prep stage, trade stages, then handover */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
   (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]])
