@@ -981,12 +981,17 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* route NDT inspections to NQC Inspection when N Ind. is 1 or 2 */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspection' : (t.role ?? '');
+    /* Root and Final Weld get a 5X inspection field */
+    const fields = (t.id === 'root-weld' || t.id === 'final-weld')
+      ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
+          options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
+      : t.fields;
     return {
       id: t.id,
       label: t.label,
       required,
       role,
-      fields: t.fields,
+      fields,
       inputs,
       signoffFields: sf.map(f => ({ ...f })),
       signoffInputs: {},

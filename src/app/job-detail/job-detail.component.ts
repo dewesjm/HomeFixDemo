@@ -325,6 +325,23 @@ export class JobDetailComponent {
     }
   }
 
+  /* 5X inspection dropdown: when Yes, auto-sign the corresponding 5X NDT stage */
+  on5xChange(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
+    /* save the value to the stage input */
+    const field = stage.fields.find(f => f.key === 'performed5x');
+    if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
+    if (value !== 'yes') return;
+    /* determine which 5X stage to auto-sign based on parent stage */
+    const ndt5xId = stage.id === 'root-weld' ? 'root-ndt-vt5x'
+      : stage.id === 'final-weld' ? 'final-ndt-vt5x' : '';
+    if (!ndt5xId) return;
+    const ndtStage = this.wf().stages.find(s => s.id === ndt5xId);
+    if (!ndtStage || ndtStage.signed) return;
+    /* auto-sign the 5X stage */
+    this.wfService.signStage(this.job, ndt5xId);
+  }
+
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, value);

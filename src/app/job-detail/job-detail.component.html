@@ -498,6 +498,22 @@
                 }
               }
             </div>
+            <!-- 5X Inspection (Root / Final Weld only) -->
+            @if (stage.id === 'root-weld' || stage.id === 'final-weld') {
+            <div>
+              @for (f of visibleFields(stage); track f.key) {
+                @if (f.key === 'performed5x') {
+                  <label class="stage-field">
+                    <span class="stage-field-label">{{ f.label }}</span>
+                    <select class="select select-bordered w-full max-w-[400px]" [disabled]="!inputsEditable(stage, selectedStep())"
+                            [ngModel]="stage.inputs[f.key]" (ngModelChange)="on5xChange(stage, $event)">
+                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                    </select>
+                  </label>
+                }
+              }
+            </div>
+            }
             <!-- Comments -->
             <div>
               @for (f of visibleFields(stage); track f.key) {
