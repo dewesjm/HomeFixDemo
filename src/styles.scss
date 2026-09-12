@@ -237,6 +237,27 @@ html, body {
 .steps-scroll { width: 100%; }
 .steps-scroll .steps { display: flex; width: 100%; flex-wrap: nowrap; gap: 0.125rem; }
 .steps-scroll .steps .step { flex: 1 1 0; min-width: 0; font-size: 0.7rem; padding: 0.35rem 0.25rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Dot progress bar */
+.dot-progress { padding: 0.5rem 0; }
+.dot-track { display: flex; align-items: center; width: 100%; }
+.dot-step { display: flex; align-items: center; justify-content: center; flex: 0 0 auto; position: relative; }
+.dot { width: 0.75rem; height: 0.75rem; border-radius: 50%; background: oklch(var(--p)); opacity: 0.3; transition: all 0.2s; }
+.dot-step.active .dot { opacity: 1; transform: scale(1.3); box-shadow: 0 0 0 3px oklch(var(--p) / 0.25); }
+.dot-step.done .dot { opacity: 1; background: oklch(var(--p)); }
+.dot-step.disabled { cursor: not-allowed; }
+.dot-step.disabled .dot { opacity: 0.15; }
+.dot-line { flex: 1; height: 2px; background: oklch(var(--p)); opacity: 0.2; min-width: 0.5rem; }
+.dot-line.done { opacity: 0.8; }
+.dot-label { text-align: center; margin-top: 0.5rem; font-size: 0.85rem; font-weight: 600; }
+.dot-step:not(.disabled):hover .dot { transform: scale(1.3); }
+.dot-step[data-label]:not(.disabled):hover::after {
+  content: attr(data-label);
+  position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+  background: oklch(var(--n)); color: oklch(var(--nc));
+  padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.7rem; white-space: nowrap;
+  pointer-events: none; margin-bottom: 4px; z-index: 10;
+}
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
 .req { color: var(--color-error); }

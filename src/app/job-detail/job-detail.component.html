@@ -21,17 +21,21 @@
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Routing</h3>
-    <div class="steps-scroll">
-      <ul class="steps">
-        @for (s of stepsModel(); track $index) {
-          <li class="step" [class.step-primary]="s.stageIndex <= selectedStep()"
-              [class.opacity-50]="s.disabled"
-              [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
-              (click)="!s.disabled && selectedStep.set(s.stageIndex)">
-            {{ s.label }}
-          </li>
+    <div class="dot-progress">
+      <div class="dot-track">
+        @for (s of stepsModel(); track $index; let last = $last) {
+          <div class="dot-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled"
+               [style.cursor]="s.disabled ? 'not-allowed' : 'pointer'"
+               (click)="!s.disabled && selectedStep.set(s.stageIndex)"
+               [attr.data-label]="s.label">
+            <div class="dot"></div>
+          </div>
+          @if (!last) {
+            <div class="dot-line" [class.done]="s.stageIndex < selectedStep()"></div>
+          }
         }
-      </ul>
+      </div>
+      <div class="dot-label">{{ activeStepLabel() }}</div>
     </div>
   </section>
 
@@ -99,7 +103,7 @@
         <div class="flex gap-4">
           @for (f of fabFields(); track f.key) {
             @if (f.row === 2) {
-              <div class="flex-1 max-w-xs">
+              <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
                        [placeholder]="f.placeholder || ''" [disabled]="jobComplete()"
@@ -221,7 +225,7 @@
       <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
       @if (visibleFields(stage).length) {
-        @if (stage.id === 'tack') {
+        @if (stage.id === 'tack' || stage.id === 'root-weld' || stage.id === 'final-weld') {
           <!-- Tack stage: custom layout with subsections -->
           <div class="flex flex-col gap-3 stage-inputs">
             <!-- Row 1: Weld Procedure, WTN, Weld Process -->

@@ -68,6 +68,13 @@ export class JobDetailComponent {
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
 
+  activeStepLabel = computed(() => {
+    const steps = this.stepsModel();
+    const idx = this.selectedStep();
+    const match = steps.find(s => s.stageIndex === idx);
+    return match?.label ?? '';
+  });
+
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
