@@ -225,7 +225,7 @@ html, body {
 .stage-field { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 160px; }
 .stage-field-break { flex-basis: 100%; height: 0; }   /* forces a wrap so a trigger field starts a fresh row */
 .stage-field-label { font-size: 0.78rem; color: var(--app-text-muted); }
-.stage-field input { width: 100%; font-size: 0.8rem; }
+.stage-field input { width: 100%; }
 .stage--done    { border-color: var(--color-success); background: color-mix(in oklch, var(--color-success) 12%, var(--app-surface)); i, svg { color: var(--color-success); } }
 .stage--fail    { border-color: var(--color-error);   background: color-mix(in oklch, var(--color-error) 12%, var(--app-surface));   i, svg { color: var(--color-error); } }
 .stage--current { border-color: var(--color-warning); background: color-mix(in oklch, var(--color-warning) 14%, var(--app-surface)); box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-warning) 40%, transparent); i, svg { color: var(--color-warning); } }
