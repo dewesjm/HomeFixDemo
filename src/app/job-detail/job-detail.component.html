@@ -232,13 +232,13 @@
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
                       @if (f.type === 'select') {
-                        <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                        <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                                 [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                           <option [ngValue]="null">Select</option>
                           @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                         </select>
                       } @else {
-                        <input class="input input-bordered input-sm w-full" type="text"
+                        <input class="input input-bordered w-full" type="text"
                                [disabled]="!inputsEditable(stage, selectedStep())"
                                [ngModel]="stage.inputs[f.key]"
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -255,8 +255,8 @@
                   <div class="flex-1 max-w-[400px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
-                      <input class="input input-bordered input-sm w-full bg-warning/20 border-warning" type="text"
-                             [disabled]="true" value="Failed — qualifications XYZ, ABC missing" />
+                      <input class="input input-bordered w-full bg-warning/20 border-warning" type="text"
+                             [disabled]="true" value="Failed. Input disabled, qualifications XYZ, ABC missing" />
                     </label>
                   </div>
                 }
@@ -270,8 +270,8 @@
                   @if (f.key === 'phMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="3.2" />
                       </label>
                     </div>
@@ -279,8 +279,8 @@
                   @if (f.key === 'phMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="6.4" />
                       </label>
                     </div>
@@ -288,8 +288,8 @@
                   @if (f.key === 'ipMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="1.6" />
                       </label>
                     </div>
@@ -297,8 +297,8 @@
                   @if (f.key === 'ipMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="4.8" />
                       </label>
                     </div>
@@ -314,8 +314,8 @@
                   @if (f.key === 'overridePhMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
                     </div>
@@ -323,8 +323,8 @@
                   @if (f.key === 'overridePhMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
                     </div>
@@ -332,8 +332,8 @@
                   @if (f.key === 'overrideIpMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
                     </div>
@@ -341,8 +341,8 @@
                   @if (f.key === 'overrideIpMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
                     </div>
@@ -355,7 +355,7 @@
                   @if (f.key === 'overrideNote') {
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
-                      <input class="input input-bordered input-sm w-full bg-base-200" type="text"
+                      <input class="input input-bordered w-full bg-base-200" type="text"
                              [disabled]="true" value="Override approved by Engineering — WPS-003, dated 2026-08-12" />
                     </label>
                   }
@@ -370,8 +370,8 @@
                   @if (f.key === 'actualPh') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="!inputsEditable(stage, selectedStep())"
                                [ngModel]="stage.inputs[f.key]"
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -381,8 +381,8 @@
                   @if (f.key === 'actualIp') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }} (°)</span>
-                        <input class="input input-bordered input-sm w-full" type="number"
+                        <span class="stage-field-label">{{ f.label }}</span>
+                        <input class="input input-bordered w-full" type="number"
                                [disabled]="!inputsEditable(stage, selectedStep())"
                                [ngModel]="stage.inputs[f.key]"
                                (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -398,7 +398,7 @@
                 @if (f.key === 'weldPosition') {
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
-                    <select class="select select-bordered select-sm w-full max-w-[200px]" [disabled]="!inputsEditable(stage, selectedStep())"
+                    <select class="select select-bordered w-full max-w-[200px]" [disabled]="!inputsEditable(stage, selectedStep())"
                             [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                       <option [ngValue]="null">Select</option>
                       @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -414,7 +414,7 @@
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
-                      <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                         <option [ngValue]="null">Select</option>
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -426,7 +426,7 @@
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
-                      <select class="select select-bordered select-sm w-full" [disabled]="!inputsEditable(stage, selectedStep())"
+                      <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                         <option [ngValue]="null">Select</option>
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -438,7 +438,7 @@
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
                       <span class="stage-field-label">{{ f.label }}</span>
-                      <input class="input input-bordered input-sm w-full" type="text"
+                      <input class="input input-bordered w-full" type="text"
                              [disabled]="!inputsEditable(stage, selectedStep())"
                              [ngModel]="stage.inputs[f.key]"
                              (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -453,7 +453,7 @@
                 @if (f.key === 'comments') {
                   <label class="stage-field">
                     <span class="stage-field-label">{{ f.label }}</span>
-                    <input class="input input-bordered input-sm w-full" type="text"
+                    <input class="input input-bordered w-full" type="text"
                            [disabled]="!inputsEditable(stage, selectedStep())"
                            [ngModel]="stage.inputs[f.key]"
                            (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -475,13 +475,13 @@
                          [checked]="stage.inputs[f.key] === 'yes'"
                          (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                 } @else if (f.type === 'select') {
-                  <select class="select select-bordered select-sm" [disabled]="!inputsEditable(stage, selectedStep())"
+                  <select class="select select-bordered" [disabled]="!inputsEditable(stage, selectedStep())"
                           [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
                     <option [ngValue]="null">{{ f.placeholder || 'Select' }}</option>
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
-                  <input class="input input-bordered input-sm" [type]="f.type === 'number' ? 'number' : 'text'"
+                  <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
                          [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
                          [ngModel]="stage.inputs[f.key]"
                          (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
@@ -708,7 +708,7 @@
       <div class="meta mb-xs">No attachments yet.</div>
     }
 
-    <input type="file" multiple class="file-input file-input-sm" [disabled]="jobComplete()"
+    <input type="file" multiple class="file-input" [disabled]="jobComplete()"
            (change)="addAttachments($event)" />
   </section>
   }
