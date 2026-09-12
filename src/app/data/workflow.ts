@@ -621,7 +621,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' }] },
       { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
-    ], signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
+    ], signoffFields: [] },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [],
       signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
     { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
