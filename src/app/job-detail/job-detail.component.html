@@ -254,7 +254,7 @@
                 @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
                   <div class="flex-1 max-w-[200px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       @if (f.type === 'select') {
                         <select class="select select-bordered w-full"
                                 [disabled]="f.key === 'weldProcess' || !inputsEditable(stage, selectedStep())"
@@ -282,7 +282,7 @@
                 @if (f.key === 'qualificationCheck') {
                   <div class="flex-1 max-w-[400px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <input class="input input-bordered w-full bg-warning/20 border-warning" type="text"
                              [disabled]="true" value="Failed. Input disabled, qualifications XYZ, ABC missing" />
                     </label>
@@ -298,7 +298,7 @@
                   @if (f.key === 'phMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="3.2" />
                       </label>
@@ -307,7 +307,7 @@
                   @if (f.key === 'phMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="6.4" />
                       </label>
@@ -316,7 +316,7 @@
                   @if (f.key === 'ipMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="1.6" />
                       </label>
@@ -325,7 +325,7 @@
                   @if (f.key === 'ipMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="4.8" />
                       </label>
@@ -342,7 +342,7 @@
                   @if (f.key === 'overridePhMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
@@ -351,7 +351,7 @@
                   @if (f.key === 'overridePhMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
@@ -360,7 +360,7 @@
                   @if (f.key === 'overrideIpMin') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
@@ -369,7 +369,7 @@
                   @if (f.key === 'overrideIpMax') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="true" value="0" />
                       </label>
@@ -382,7 +382,7 @@
                 @for (f of visibleFields(stage); track f.key) {
                   @if (f.key === 'overrideNote') {
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <input class="input input-bordered w-full bg-base-200" type="text"
                              [disabled]="true" value="Override permitted when base material thickness exceeds 1.5x nominal and preheat is verified" />
                     </label>
@@ -398,7 +398,7 @@
                   @if (f.key === 'actualPh') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="!inputsEditable(stage, selectedStep())"
                                [ngModel]="stage.inputs[f.key]"
@@ -412,7 +412,7 @@
                   @if (f.key === 'actualIp') {
                     <div class="flex-1 max-w-[120px]">
                       <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}</span>
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
                                [disabled]="!inputsEditable(stage, selectedStep())"
                                [ngModel]="stage.inputs[f.key]"
@@ -431,7 +431,7 @@
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'weldPosition') {
                   <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}</span>
+                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                     <select class="select select-bordered w-full max-w-[200px]" [disabled]="!inputsEditable(stage, selectedStep())"
                             [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
   
@@ -450,7 +450,7 @@
                 @if (f.key === 'fillerMetalType') {
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
     
@@ -465,7 +465,7 @@
                 @if (f.key === 'fillerMetalSize') {
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <select class="select select-bordered w-full" [disabled]="!inputsEditable(stage, selectedStep())"
                               [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
     
@@ -480,7 +480,7 @@
                 @if (f.key === 'fillerMetalMic') {
                   <div class="flex-1 max-w-[160px]">
                     <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}</span>
+                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                       <input class="input input-bordered w-full" type="text"
                              [disabled]="!inputsEditable(stage, selectedStep())"
                              [ngModel]="stage.inputs[f.key]"
@@ -498,7 +498,7 @@
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'comments') {
                   <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}</span>
+                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                     <input class="input input-bordered w-full" type="text"
                            [disabled]="!inputsEditable(stage, selectedStep())"
                            [ngModel]="stage.inputs[f.key]"
@@ -514,7 +514,7 @@
             @for (f of visibleFields(stage); track f.key) {
               @if (startsGroup(stage, f)) { <span class="stage-field-break"></span> }
               <label class="stage-field">
-                <span class="stage-field-label">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+                <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
                 @if (f.type === 'checkbox') {
                   <input type="checkbox" class="checkbox checkbox-sm"
                          [disabled]="!inputsEditable(stage, selectedStep())"
