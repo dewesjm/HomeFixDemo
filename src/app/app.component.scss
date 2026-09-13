@@ -77,8 +77,8 @@
   li a:hover { background: var(--app-muted); }
 }
 
-.content { flex: 1; padding: 1.5rem; overflow: hidden; display: flex; flex-direction: column; }
-.content-body { min-width: 0; flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.content { flex: 1; padding: 1.5rem; display: flex; flex-direction: column; min-height: 0; }
+.content-body { min-width: 0; flex: 1; display: flex; flex-direction: column; min-height: 0; overflow-y: auto; }
 .content-body router-outlet { display: contents; }
 
 /* "New version available" prompt — fixed, bottom-center, above all content. */
