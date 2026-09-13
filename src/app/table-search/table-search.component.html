@@ -54,21 +54,21 @@
   </label>
 </div>
 
-<div class="overflow-x-auto flex-1 min-h-0">
+<div class="flex-1 min-h-0">
 <table class="table table-sm">
   <thead>
     <tr>
       <th class="w-8">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
-      <th class="w-12">
+      <th class="min-w-16">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
             ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
         </div>
       </th>
-      <th class="w-24">
+      <th class="min-w-32">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
             Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
@@ -85,7 +85,7 @@
           </div>
         </div>
       </th>
-      <th class="w-28">
+      <th class="min-w-24">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('drawing')">
             Drawing {{ table.sortField() === 'drawing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
@@ -102,7 +102,7 @@
           </div>
         </div>
       </th>
-      <th class="w-20">
+      <th class="min-w-20">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('joint')">
             Joint {{ table.sortField() === 'joint' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
@@ -119,7 +119,7 @@
           </div>
         </div>
       </th>
-      <th class="w-36">
+      <th class="min-w-36">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('currentStep')">
             Current step {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
