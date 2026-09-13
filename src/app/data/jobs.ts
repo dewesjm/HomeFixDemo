@@ -121,7 +121,7 @@ function pickCodes(seed: number): [string, string, string] {
   return [chosen[0] ?? '', chosen[1] ?? '', chosen[2] ?? ''];
 }
 
-export function generateJobs(count = 120): Job[] {
+export function generateJobs(count = 240): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
   for (let i = 0; i < count; i++) {
