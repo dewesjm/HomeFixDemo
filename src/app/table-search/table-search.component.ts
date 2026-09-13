@@ -202,8 +202,8 @@ export class TableSearchComponent {
 
   exportCsv() {
     downloadCsv('work-orders', [
-      { header: 'ID', value: (r: Row) => r.jobNumber },
-      { header: 'Title', value: (r: Row) => r.title },
+      { header: 'ID', value: (r: Row) => r.id },
+      { header: 'Project', value: (r: Row) => r.jobNumber },
       { header: 'Drawing', value: (r: Row) => r.drawing },
       { header: 'Joint', value: (r: Row) => r.joint },
       { header: 'Current step', value: (r: Row) => r.currentStep }

@@ -31,7 +31,7 @@
   </select>
 
   <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
   </button>
 
   @if (canReleaseSelected()) {
@@ -60,6 +60,13 @@
     <tr>
       <th class="w-8">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
+      </th>
+      <th class="min-w-16">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
+            ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+        </div>
       </th>
       <th class="min-w-44">
         <div class="flex flex-col items-start gap-1 min-w-0">
@@ -110,6 +117,7 @@
         <td class="w-8">
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
+        <td class="text-xs">{{ job.id }}</td>
         <td>{{ job.jobNumber }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>
