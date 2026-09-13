@@ -12,7 +12,7 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideTriangleAlert, LucideBox, LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
-  LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone
+  LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList
 } from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
@@ -26,7 +26,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-    LucideTriangleAlert, LucideBox, LucideStepForward, LucideMegaphone
+    LucideTriangleAlert, LucideBox, LucideStepForward, LucideMegaphone, LucideClipboardList
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -37,8 +37,15 @@ export class AppComponent {
   private swUpdate = inject(SwUpdate);
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
+  adminOpen = signal(false);
 
   constructor() {
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (this.adminOpen() && !(e.target as HTMLElement).closest('.dropdown-wrapper')) {
+        this.adminOpen.set(false);
+      }
+    });
+
     if (this.swUpdate.isEnabled) {
       // check for updates + button to update now, PWA/offline important
       this.swUpdate.versionUpdates
@@ -67,6 +74,4 @@ export class AppComponent {
     keysToClear.forEach(k => localStorage.removeItem(k));
     this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
-
-  adminOpen = signal(true);   // Admin submenu expanded by default
 }
