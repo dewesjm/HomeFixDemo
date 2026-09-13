@@ -283,6 +283,22 @@ export class JobDetailComponent {
     }
     return val;
   }
+
+  /* map review verification field keys to job data values */
+  private readonly REVIEW_VERIFY_MAP: Record<string, string> = {
+    verifyDrawing: 'drawing', verifyDrawingRev: 'drawingRev',
+    verifyJoint: 'joint', verifyJointDesign: 'jointDesign',
+    verifyWeldType: 'weldType', verifyPipeSize: 'pipeSize',
+    verifyWallThickness: 'wallThickness', verifyMaterial1: 'materialType1',
+    verifyMaterial2: 'materialType2', verifyMcl1: 'mcl1', verifyMcl2: 'mcl2',
+    verifyNdt: 'ndt', verifyPwht: 'pwht', verifyNInd: 'nInd',
+    verifyWps: 'wps', verifyOrder: 'order', verifyWorkPackage: 'workPackage',
+  };
+  getReviewValue(fieldKey: string): string {
+    const jobKey = this.REVIEW_VERIFY_MAP[fieldKey];
+    if (!jobKey || !this.job) return '';
+    return (this.job as any)[jobKey] ?? '';
+  }
   /* a trigger field that other fields declare a showIf against — always breaks
      onto its own row (even before a selection) so its dependent fields can flow
      to the right of it once they appear */

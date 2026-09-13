@@ -616,6 +616,22 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] }
   ],
   Welding: [
+    { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [
+      { key: 'consumableType', label: 'Consumable Type', type: 'select',
+        options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
+          { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
+          { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
+      { key: 'consumableSize', label: 'Consumable Size', type: 'select',
+        options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
+          { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
+          { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
+      { key: 'consumableId', label: 'Consumable ID', type: 'text' },
+      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
+        options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
+          { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
+      { key: 'backingRingId', label: 'Backing Ring ID', type: 'text' },
+      { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
+    ], signoffFields: [] },
     { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
       { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
@@ -860,8 +876,24 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: '5X', value: '5x' },
     ] },
     { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
-      { key: 'reviewStatus', label: 'Review status', type: 'select',
-        options: [{ label: 'Approved', value: 'approved' }, { label: 'Requires revision', value: 'revision' }] },
+      { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
+      { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
+      { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
+      { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },
+      { key: 'verifyWeldType', label: 'Weld Type', type: 'checkbox' },
+      { key: 'verifyPipeSize', label: 'Pipe Size', type: 'checkbox' },
+      { key: 'verifyWallThickness', label: 'Wall Thickness', type: 'checkbox' },
+      { key: 'verifyMaterial1', label: 'Material Type 1', type: 'checkbox' },
+      { key: 'verifyMaterial2', label: 'Material Type 2', type: 'checkbox' },
+      { key: 'verifyMcl1', label: 'MCL 1', type: 'checkbox' },
+      { key: 'verifyMcl2', label: 'MCL 2', type: 'checkbox' },
+      { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
+      { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
+      { key: 'verifyNInd', label: 'N Ind', type: 'checkbox' },
+      { key: 'verifyWps', label: 'WPS', type: 'checkbox' },
+      { key: 'verifyOrder', label: 'Order', type: 'checkbox' },
+      { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
+      { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
     { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
   ]
@@ -1124,6 +1156,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     const hasMTorPT = /\b(MT|PT)\b/.test(ndt);
     const hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL');
     return middle.filter(t => {
+      if (t.id === 'pre-fit') return job.nInd === '1' || job.nInd === '2';
       if (t.id.endsWith('-utrt')) return hasUTorRT;
       if (t.id.endsWith('-mtpt')) return hasMTorPT;
       if (t.id.endsWith('-vt5x')) return hasVT;
