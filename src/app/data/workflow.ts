@@ -1243,6 +1243,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const DAY = 24 * 60 * 60 * 1000, MIN = 60 * 1000;
   let t = Date.now() - (2 + Math.floor(rand() * 40)) * DAY;
 
+  const names = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
   wf.stages = wf.stages.map((s, i) => {
     if (i >= k) return s;
     t += (20 + Math.floor(rand() * 180)) * MIN;
@@ -1254,6 +1255,16 @@ export function seededWorkflow(job: Job): JobWorkflow {
       else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
       else signoffInputs[f.key] = seededFieldValue(f, rand);
     }
+    const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
+    wf.history.push({
+      when: new Date(t).toISOString(),
+      who,
+      section: 'Sign-off',
+      action: s.label,
+      from: '',
+      to: 'SAT',
+      step: s.label,
+    });
     return {
       ...s,
       inputs,
