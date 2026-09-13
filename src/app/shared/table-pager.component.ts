@@ -6,11 +6,11 @@ import { TableState } from './table-state';
   selector: 'app-table-pager',
   standalone: true,
   template: `
-    <div class="flex items-center justify-between gap-3 py-2 text-sm">
-      <span class="opacity-70">
+    <div class="flex items-center gap-3 py-2 text-sm min-w-0">
+      <span class="opacity-70 whitespace-nowrap">
         Showing {{ state().rangeStart() }} to {{ state().rangeEnd() }} of {{ state().total() }}
       </span>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 ml-auto">
         <select class="select select-sm select-bordered"
                 [value]="state().pageSize()"
                 (change)="state().setPageSize(+$any($event.target).value)">
