@@ -6,7 +6,7 @@ import { TableState } from './table-state';
   selector: 'app-table-pager',
   standalone: true,
   template: `
-    <div class="flex items-center gap-3 py-2 text-sm min-w-0">
+    <div class="flex items-center gap-3 py-2 pr-16 text-sm min-w-0">
       <span class="opacity-70 whitespace-nowrap">
         Showing {{ state().rangeStart() }} to {{ state().rangeEnd() }} of {{ state().total() }}
       </span>
