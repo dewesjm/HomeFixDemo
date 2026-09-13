@@ -73,12 +73,12 @@
     <div class="mt-sm">
       <div class="font-semibold text-sm mb-1">NDT Data</div>
       <div class="detail-grid inline">
-        <div><div class="meta">RT Root</div><div>{{ j.rtRoot || '—' }}</div></div>
-        <div><div class="meta">RT Final</div><div>{{ j.rtFinal || '—' }}</div></div>
-        <div><div class="meta">NDT Root</div><div>{{ j.ndtRoot || '—' }}</div></div>
-        <div><div class="meta">NDT Each</div><div>{{ j.ndtEach || '—' }}</div></div>
-        <div><div class="meta">NDT Final</div><div>{{ j.ndtFinal || '—' }}</div></div>
-        <div><div class="meta">UT</div><div>{{ j.ut || '—' }}</div></div>
+        <div><div class="meta">RT Root</div><div>{{ ndtLabel('rtRoot') }}</div></div>
+        <div><div class="meta">RT Final</div><div>{{ ndtLabel('rtFinal') }}</div></div>
+        <div><div class="meta">NDT Root</div><div>{{ ndtLabel('ndtRoot') }}</div></div>
+        <div><div class="meta">NDT Each</div><div>{{ ndtLabel('ndtEach') }}</div></div>
+        <div><div class="meta">NDT Final</div><div>{{ ndtLabel('ndtFinal') }}</div></div>
+        <div><div class="meta">UT</div><div>{{ ndtLabel('ut') }}</div></div>
       </div>
     </div>
 

@@ -112,6 +112,19 @@ export class JobDetailComponent {
       || id === 'repair';
   });
 
+  ndtLabel(method: string): string {
+    const ndt = (this.job?.ndt || '').toUpperCase();
+    const has = (m: string) => ndt.includes(m);
+    if (method === 'rtRoot' || method === 'rtFinal') return has('RT') ? 'X' : '—';
+    if (method === 'ut') return has('UT') ? 'X' : '—';
+    if (method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
+      if (has('5X')) return '5X';
+      if (has('UT') || has('RT') || has('MT') || has('PT') || has('VISUAL') || has('VT')) return 'X';
+      return '—';
+    }
+    return '—';
+  }
+
 //extra fields when you press show more
   /* deterministic placeholder values, varied per job so the demo doesn't look templated */
   demo = computed(() => {
