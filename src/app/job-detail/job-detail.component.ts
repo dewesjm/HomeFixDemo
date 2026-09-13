@@ -10,7 +10,7 @@ import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import {
   LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
   LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
-  LucideChevronDown, LucideChevronUp
+  LucideChevronDown, LucideChevronUp, LucideCopy
 } from '@lucide/angular';
 
 import { JOBS, Job } from '../data/jobs';
@@ -30,7 +30,7 @@ import {
     CommonModule, FormsModule, TooltipDirective, SyncStatusComponent,
     LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
     LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
-    LucideChevronDown, LucideChevronUp
+    LucideChevronDown, LucideChevronUp, LucideCopy
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -98,9 +98,15 @@ export class JobDetailComponent {
     return this.wf().stages
       .filter(s => s.signed)
       .map(s => {
-        const fields: Record<string, string> = {};
-        for (const [k, v] of Object.entries(s.inputs)) if (v) fields[k] = v;
-        for (const [k, v] of Object.entries(s.signoffInputs)) if (v) fields[k] = v;
+        /* build label map from field definitions */
+        const labelMap: Record<string, string> = {};
+        for (const f of s.fields) labelMap[f.key] = f.label;
+        for (const f of s.signoffFields) labelMap[f.key] = f.label;
+        labelMap['result'] = 'Decision';
+        labelMap['inspectorName'] = 'Inspector Name';
+        const fields: { key: string; label: string; value: string }[] = [];
+        for (const [k, v] of Object.entries(s.inputs)) if (v) fields.push({ key: k, label: labelMap[k] || k, value: v });
+        for (const [k, v] of Object.entries(s.signoffInputs)) if (v && !fields.some(f => f.key === k)) fields.push({ key: k, label: labelMap[k] || k, value: v });
         return { label: s.label, result: s.result, who: s.signoffInputs['inspectorName'] || '', signedAt: s.signedAt, fields };
       });
   });
@@ -692,5 +698,23 @@ export class JobDetailComponent {
 
   back() {
     this.router.navigate(['/table']);
+  }
+
+  copySignoffHistory() {
+    const stages = this.signedStages();
+    if (!stages.length) return;
+    const rows: string[] = ['Stage\tResult\tField\tValue\tSigned By\tDate'];
+    for (const s of stages) {
+      const result = s.result === 'sat' ? 'SAT' : s.result === 'unsat' ? 'UNSAT' : '—';
+      const date = s.signedAt ? new Date(s.signedAt).toLocaleDateString() : '—';
+      if (s.fields.length) {
+        for (const f of s.fields) {
+          rows.push(`${s.label}\t${result}\t${f.label}\t${f.value}\t${s.who}\t${date}`);
+        }
+      } else {
+        rows.push(`${s.label}\t${result}\t—\t—\t${s.who}\t${date}`);
+      }
+    }
+    navigator.clipboard.writeText(rows.join('\n'));
   }
 }

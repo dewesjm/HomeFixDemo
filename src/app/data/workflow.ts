@@ -1223,12 +1223,25 @@ function signedStageCount(job: Job, total: number): number {
 
 /* plausible recorded value for a seeded, already-signed stage field */
 function seededFieldValue(f: StageField, rand: () => number): string {
+  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   if (f.type === 'select' && f.options?.length) {
     return f.options[Math.floor(rand() * f.options.length)].value;
   }
   if (f.type === 'number') return String(1 + Math.floor(rand() * 120));
   if (f.placeholder && f.placeholder.startsWith('e.g. ')) return f.placeholder.slice(5);
-  return 'recorded';
+  /* fallback realistic values based on key patterns */
+  const key = f.key.toLowerCase();
+  if (key.includes('name') || key.includes('inspector')) return pick(['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen']);
+  if (key.includes('license') || key.includes('lic')) return `LIC-${1000 + Math.floor(rand() * 9000)}`;
+  if (key.includes('brand') || key.includes('penetrant')) return pick(['Magnaflux', 'Sherwin', 'NDT Systems', 'Spotcheck']);
+  if (key.includes('manufacturer')) return pick(['Magnaflux Corp', 'Sherwin Williams', 'NDT Systems Inc']);
+  if (key.includes('procedure') || key.includes('method')) return pick(['ASME V', 'AWS D1.1', 'ISO 17636', 'ISO 3452']);
+  if (key.includes('thickness')) return pick(['3/8"', '1/2"', '5/8"', '3/4"', '1"']);
+  if (key.includes('wps')) return pick(['WPS-001', 'WPS-002', 'WPS-003']);
+  if (key.includes('date')) return new Date(Date.now() - Math.floor(rand() * 30) * 86400000).toISOString().slice(0, 10);
+  if (key.includes('note') || key.includes('comment')) return pick(['Standard procedure followed', 'No issues noted', 'Completed per spec', 'All criteria met']);
+  if (key.includes('mic')) return pick(['MIC-4410', 'MIC-4411', 'MIC-4412']);
+  return pick(['Completed', 'Verified', 'Accepted', 'Passed']);
 }
 
 /* a fresh workflow with a deterministic run of leading stages pre-signed (all accepted),
