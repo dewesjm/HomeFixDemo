@@ -2,20 +2,21 @@
 <div class="table-page-wrap">
 <div class="page-header">
   <h2 class="section-title">Pipe Welding</h2>
+  @if (banner(); as b) {
+    <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
+          [ngClass]="{
+            'bg-info/20 text-info': b.type === 'info',
+            'bg-warning/20 text-warning': b.type === 'warning',
+            'bg-error/20 text-error': b.type === 'error',
+            'bg-success/20 text-success': b.type === 'success'
+          }">
+      <svg lucideMegaphone class="size-3"></svg>
+      <span>{{ b.message }}</span>
+    </span>
+  }
   <span class="spacer"></span>
   <app-sync-status />
 </div>
-
-@if (banner(); as b) {
-  <div class="alert text-sm mb-sm"
-       [class.alert-info]="b.type === 'info'"
-       [class.alert-warning]="b.type === 'warning'"
-       [class.alert-error]="b.type === 'error'"
-       [class.alert-success]="b.type === 'success'">
-    <svg lucideMegaphone class="size-4"></svg>
-    <span>{{ b.message }}</span>
-  </div>
-}
 
 <div class="facet-row">
   <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
@@ -45,6 +46,11 @@
     <svg lucideSearch class="size-4 opacity-60"></svg>
     <input type="text" class="grow" placeholder="ID, drawing, joint…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
   </label>
 </div>
 

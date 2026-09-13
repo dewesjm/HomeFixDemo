@@ -19,7 +19,7 @@ const APP_VERSION_KEY = 'homefix:app-version';
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.1.9';
+const CURRENT_VERSION = '1.2.1';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -326,6 +326,12 @@ export class WorkflowService {
             signedAt: null,
             decisionLabel: REPAIR_STAGE.decisionLabel,
           };
+          /* reopen all stages after the rejected NDT so repair becomes the active stage */
+          for (let i = currentIdx + 1; i < stages.length; i++) {
+            if (stages[i].signed) {
+              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
+            }
+          }
           stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
         }
       }

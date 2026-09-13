@@ -46,13 +46,8 @@
       <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
       <div><div class="meta">Sequence #</div><div>{{ j.sequenceNumber || '—' }}</div></div>
       <div><div class="meta">Current Step</div><div>{{ currentStep() }}</div></div>
+      <div class="col-span-3"><div class="meta">Engineering Notes</div><div>{{ j.engineeringNotes || '—' }}</div></div>
     </div>
-    @if (j.engineeringNotes) {
-      <div class="mt-xs">
-        <div class="meta">Engineering Notes</div>
-        <div>{{ j.engineeringNotes }}</div>
-      </div>
-    }
 
     <!-- Joining Item -->
     <div class="mt-sm">
@@ -632,7 +627,7 @@
           <!-- Default: generic field rendering -->
           <div class="stage-inputs">
             @for (f of visibleFields(stage); track f.key) {
-              @if (startsGroup(stage, f)) { <span class="stage-field-break"></span> }
+              @if (startsGroup(stage, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
               @if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-sm"

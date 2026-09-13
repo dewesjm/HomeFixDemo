@@ -672,7 +672,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -693,7 +693,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -715,7 +715,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'root-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -746,7 +746,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -768,7 +768,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -789,7 +789,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'root-layer', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -812,7 +812,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -833,7 +833,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -855,7 +855,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'final-weld', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -1107,7 +1107,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       stepType: 'standard',
       routeTo: '',
       swapStageId: '',
-      inspectionType: '',
+      inspectionType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? '',
       decisionLabel: t.decisionLabel ?? '',
       stepOptions: t.stepOptions,
       signed: false,
