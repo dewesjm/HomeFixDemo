@@ -93,6 +93,18 @@ export class JobDetailComponent {
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
+  signedStages = computed(() => {
+    if (!this.wf) return [];
+    return this.wf().stages
+      .filter(s => s.signed)
+      .map(s => {
+        const fields: Record<string, string> = {};
+        for (const [k, v] of Object.entries(s.inputs)) if (v) fields[k] = v;
+        for (const [k, v] of Object.entries(s.signoffInputs)) if (v) fields[k] = v;
+        return { label: s.label, result: s.result, who: s.signoffInputs['inspectorName'] || '', signedAt: s.signedAt, fields };
+      });
+  });
+
   defaultStepOption(stage: WorkflowStage): string {
     if (!stage.stepOptions?.length) return '';
     return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
