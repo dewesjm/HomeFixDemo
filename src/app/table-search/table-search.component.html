@@ -73,9 +73,16 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
             Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
-                 [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
+          <div class="relative">
+            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
+                   [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
+                   (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
+            @if (table.columnFilters()['jobNumber']) {
+              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('jobNumber', '')">
+                <svg lucideX class="size-3 opacity-60"></svg>
+              </button>
+            }
+          </div>
         </div>
       </th>
       <th class="min-w-20">
@@ -83,9 +90,16 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('drawing')">
             Drawing {{ table.sortField() === 'drawing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
-                 [ngModel]="table.columnFilters()['drawing'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('drawing', $event)" />
+          <div class="relative">
+            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
+                   [ngModel]="table.columnFilters()['drawing'] ?? ''"
+                   (ngModelChange)="table.setColumnFilter('drawing', $event)" />
+            @if (table.columnFilters()['drawing']) {
+              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('drawing', '')">
+                <svg lucideX class="size-3 opacity-60"></svg>
+              </button>
+            }
+          </div>
         </div>
       </th>
       <th class="min-w-16">
@@ -93,9 +107,16 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('joint')">
             Joint {{ table.sortField() === 'joint' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
-                 [ngModel]="table.columnFilters()['joint'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('joint', $event)" />
+          <div class="relative">
+            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
+                   [ngModel]="table.columnFilters()['joint'] ?? ''"
+                   (ngModelChange)="table.setColumnFilter('joint', $event)" />
+            @if (table.columnFilters()['joint']) {
+              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('joint', '')">
+                <svg lucideX class="size-3 opacity-60"></svg>
+              </button>
+            }
+          </div>
         </div>
       </th>
       <th class="min-w-13">
