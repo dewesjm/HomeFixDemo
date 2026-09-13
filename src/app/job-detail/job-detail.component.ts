@@ -113,35 +113,6 @@ export class JobDetailComponent {
   });
 
 //extra fields when you press show more
-  private readonly COST_CENTERS = ['CC-4100 Field Ops', 'CC-4205 Maintenance', 'CC-4310 Inspections'];
-  auditFields = computed<{ label: string; value: string }[]>(() => {
-    const j = this.job;
-    if (!j) return [];
-    const sched = new Date(j.scheduledFor).getTime();
-    const fmt = (msOffset: number) =>
-      new Date(sched + msOffset).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-    const DAY = 86_400_000;
-    return [
-      // Real fields the work view doesn't surface
-      { label: 'Project number', value: j.jobNumber },
-      { label: 'Record ID', value: String(j.id) },
-      // Demo records/audit metadata
-      { label: 'Reference document #', value: `45${String(j.id).padStart(8, '0')}` },
-      { label: 'Department', value: this.COST_CENTERS[j.id % this.COST_CENTERS.length] },
-      { label: 'Created by', value: 'Dispatch (auto)' },
-      { label: 'Created on', value: fmt(-7 * DAY) },
-      { label: 'Last changed', value: fmt(-1 * DAY) },
-      // Placeholder records/finance metadata
-      { label: 'Purchase order #', value: `PO-${String(j.id).padStart(6, '0')}` },
-      { label: 'Invoice #', value: `INV-${1000 + j.id}` },
-      { label: 'GL account', value: '60200 · Repairs & maintenance' },
-      { label: 'Approval status', value: 'Approved' },
-      { label: 'Source system', value: 'SAP PM' },
-      { label: 'External ref #', value: `EXT-${String(j.id).padStart(7, '0')}` },
-      { label: 'Record version', value: 'v3' },
-    ];
-  });
-
   /* deterministic placeholder values, varied per job so the demo doesn't look templated */
   demo = computed(() => {
     const j = this.job;

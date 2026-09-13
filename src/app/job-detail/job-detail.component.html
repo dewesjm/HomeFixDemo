@@ -34,29 +34,94 @@
   <section class="panel">
     <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
     <div class="detail-grid inline">
-      <div><div class="meta">Current step</div><div>{{ currentStep() }}</div></div>
+      <div><div class="meta">ID</div><div>{{ j.id }}</div></div>
+      <div><div class="meta">Project</div><div>{{ j.jobNumber }}</div></div>
       <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
+      <div><div class="meta">Drawing Rev</div><div>{{ j.drawingRev || '—' }}</div></div>
       <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
-      <div><div class="meta">Joint design</div><div>{{ j.jointDesign || '—' }}</div></div>
-      <div><div class="meta">Weld type</div><div>{{ j.weldType || '—' }}</div></div>
-      <div><div class="meta">Material type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
-      <div><div class="meta">Material type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
-      <div><div class="meta">WPS</div><div>{{ j.wps || '—' }}</div></div>
-      <div><div class="meta">NDT</div><div>{{ j.ndt || '—' }}</div></div>
-      <div><div class="meta">PWHT</div><div>{{ j.pwht || '—' }}</div></div>
+      <div><div class="meta">Joint Design</div><div>{{ j.jointDesign || '—' }}</div></div>
+      <div><div class="meta">Weld Type</div><div>{{ j.weldType || '—' }}</div></div>
+      <div><div class="meta">Pipe Size</div><div>{{ j.pipeSize || '—' }}</div></div>
+      <div><div class="meta">Wall Thickness</div><div>{{ j.wallThickness || '—' }}</div></div>
       <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
+      <div><div class="meta">Sequence #</div><div>{{ j.sequenceNumber || '—' }}</div></div>
+      <div><div class="meta">Current Step</div><div>{{ currentStep() }}</div></div>
+    </div>
+    @if (j.engineeringNotes) {
+      <div class="mt-xs">
+        <div class="meta">Engineering Notes</div>
+        <div>{{ j.engineeringNotes }}</div>
+      </div>
+    }
+
+    <!-- Joining Item -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Joining Item</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">MCL 1</div><div>{{ j.mcl1 || '—' }}</div></div>
+        <div><div class="meta">Material Type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
+        <div><div class="meta">Joining Item</div><div>{{ j.joiningItem || '—' }}</div></div>
+      </div>
     </div>
 
-    <!-- Auditor / records-keeper tier — collapsed by default; Show more/less button owns the toggle -->
+    <!-- Join To -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Join To</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">MCL 2</div><div>{{ j.mcl2 || '—' }}</div></div>
+        <div><div class="meta">Material Type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
+        <div><div class="meta">Join To Item</div><div>{{ j.joinToItem || '—' }}</div></div>
+      </div>
+    </div>
+
+    <!-- NDT Data -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">NDT Data</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">RT Root</div><div>{{ j.rtRoot || '—' }}</div></div>
+        <div><div class="meta">RT Final</div><div>{{ j.rtFinal || '—' }}</div></div>
+        <div><div class="meta">NDT Root</div><div>{{ j.ndtRoot || '—' }}</div></div>
+        <div><div class="meta">NDT Each</div><div>{{ j.ndtEach || '—' }}</div></div>
+        <div><div class="meta">NDT Final</div><div>{{ j.ndtFinal || '—' }}</div></div>
+        <div><div class="meta">UT</div><div>{{ j.ut || '—' }}</div></div>
+      </div>
+    </div>
+
+    <!-- Show more / less -->
     <button type="button" class="btn btn-ghost btn-sm mt-sm" (click)="showAudit.set(!showAudit())">
       {{ showAudit() ? 'Show less' : 'Show more' }}
       @if (showAudit()) { <svg lucideChevronUp class="size-4"></svg> } @else { <svg lucideChevronDown class="size-4"></svg> }
     </button>
     @if (showAudit()) {
-      <div class="detail-grid inline mt-xs">
-        @for (f of auditFields(); track f.label) {
-          <div><div class="meta">{{ f.label }}</div><div>{{ f.value }}</div></div>
-        }
+      <!-- Additional Data -->
+      <div class="mt-sm">
+        <div class="font-semibold text-sm mb-1">Additional Data</div>
+        <div class="detail-grid inline">
+          <div><div class="meta">Order</div><div>{{ j.order || '—' }}</div></div>
+          <div><div class="meta">Work Package</div><div>{{ j.workPackage || '—' }}</div></div>
+          <div><div class="meta">Work Permit</div><div>{{ j.workPermit || '—' }}</div></div>
+          <div><div class="meta">WAFF</div><div>{{ j.waff || '—' }}</div></div>
+          <div><div class="meta">Serial Number</div><div>{{ j.serialNumber || '—' }}</div></div>
+          <div><div class="meta">Refit #</div><div>{{ j.refitNumber || '—' }}</div></div>
+          <div><div class="meta">Repair #</div><div>{{ j.repairNumber || '—' }}</div></div>
+          <div><div class="meta">SS</div><div>{{ j.ss || '—' }}</div></div>
+          <div><div class="meta">SFFF</div><div>{{ j.sfff || '—' }}</div></div>
+          <div><div class="meta">DSS-AAA</div><div>{{ j.dssAaa || '—' }}</div></div>
+          <div><div class="meta">ER1</div><div>{{ j.er1 || '—' }}</div></div>
+          <div><div class="meta">ER2</div><div>{{ j.er2 || '—' }}</div></div>
+          <div><div class="meta">ER3</div><div>{{ j.er3 || '—' }}</div></div>
+          <div><div class="meta">ER4</div><div>{{ j.er4 || '—' }}</div></div>
+        </div>
+      </div>
+      <!-- Attribute Codes -->
+      <div class="mt-sm">
+        <div class="font-semibold text-sm mb-1">Attribute Codes</div>
+        <div class="detail-grid inline">
+          <div><div class="meta">Attribute Code 1</div><div>{{ j.attributeCode1 || '—' }}</div></div>
+          <div><div class="meta">Attribute Code 2</div><div>{{ j.attributeCode2 || '—' }}</div></div>
+          <div><div class="meta">Attribute Code 3</div><div>{{ j.attributeCode3 || '—' }}</div></div>
+          <div><div class="meta">Attribute Code 4</div><div>{{ j.attributeCode4 || '—' }}</div></div>
+        </div>
       </div>
     }
   </section>
@@ -568,26 +633,31 @@
           <div class="stage-inputs">
             @for (f of visibleFields(stage); track f.key) {
               @if (startsGroup(stage, f)) { <span class="stage-field-break"></span> }
-              <label class="stage-field">
-                <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                @if (f.type === 'checkbox') {
+              @if (f.type === 'checkbox') {
+                <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-sm"
                          [disabled]="!inputsEditable(stage, selectedStep())"
                          [checked]="stage.inputs[f.key] === 'yes'"
                          (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
-                } @else if (f.type === 'select') {
-                  <select class="select select-bordered" [disabled]="!inputsEditable(stage, selectedStep())"
-                          [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
+                  <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                </label>
+              } @else {
+                <label class="stage-field">
+                  <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+                  @if (f.type === 'select') {
+                    <select class="select select-bordered" [disabled]="!inputsEditable(stage, selectedStep())"
+                            [ngModel]="stage.inputs[f.key]" (ngModelChange)="stageSelectChange(stage, f, $event)">
 
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
-                } @else {
-                  <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
-                         [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
-                         [ngModel]="stage.inputs[f.key]"
-                         (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
-                }
-              </label>
+                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                    </select>
+                  } @else {
+                    <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
+                           [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                           [ngModel]="stage.inputs[f.key]"
+                           (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
+                  }
+                </label>
+              }
               @if (fieldError(stage.id, f.key); as err) {
                 <div class="text-error text-xs mt-0.5">{{ err }}</div>
               }

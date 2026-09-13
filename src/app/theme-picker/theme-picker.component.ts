@@ -20,7 +20,7 @@ const THEME_KEY = 'homefix:theme';
   standalone: true,
   imports: [LucidePalette],
   template: `
-    <div class="dropdown dropdown-top w-full">
+    <div class="dropdown dropdown-bottom w-full">
       <div tabindex="0" role="button" class="btn btn-ghost btn-sm w-full justify-start">
         <svg lucidePalette class="size-4"></svg> Theme
       </div>

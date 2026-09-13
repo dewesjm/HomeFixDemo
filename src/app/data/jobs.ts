@@ -8,15 +8,50 @@ export interface Job {
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   drawing: string;           /* drawing number */
+  drawingRev: string;        /* drawing revision */
   joint: string;             /* joint reference */
   jointDesign: string;       /* e.g. Butt, Fillet, Lap */
   weldType: string;          /* e.g. SMAW, GMAW, GTAW, FCAW */
+  pipeSize: string;          /* pipe size */
+  wallThickness: string;     /* wall thickness */
   materialType1: string;     /* base material 1 */
   materialType2: string;     /* base material 2 / filler */
+  mcl1: string;              /* MCL 1 */
+  mcl2: string;              /* MCL 2 */
+  joiningItem: string;       /* joining item */
+  joinToItem: string;        /* join to item */
+  sequenceNumber: string;    /* sequence # */
+  engineeringNotes: string;  /* engineering notes */
   wps: string;               /* Welding Procedure Specification */
   ndt: string;               /* Non-Destructive Examination requirement */
   pwht: string;              /* Post Weld Heat Treatment */
   nInd: string;              /* N Ind.: 1, 2, or 3 */
+  /* NDT data */
+  rtRoot: string;
+  rtFinal: string;
+  ndtRoot: string;
+  ndtEach: string;
+  ndtFinal: string;
+  ut: string;
+  /* additional data (show more) */
+  order: string;
+  workPackage: string;
+  workPermit: string;
+  waff: string;
+  serialNumber: string;
+  refitNumber: string;
+  repairNumber: string;
+  ss: string;
+  sfff: string;
+  dssAaa: string;
+  er1: string;
+  er2: string;
+  er3: string;
+  er4: string;
+  attributeCode1: string;
+  attributeCode2: string;
+  attributeCode3: string;
+  attributeCode4: string;
   estimatedCost: number;
   estimatedHours: number;    /* labor hours */
   scheduledFor: Date;
@@ -28,15 +63,23 @@ const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Ro
 
 /* welding-specific seed pools */
 const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
+const DRAWING_REVS = ['Rev A', 'Rev B', 'Rev C', 'Rev D', 'Rev 0', 'Rev 1', 'Rev 2'];
 const JOINTS = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 const JOINT_DESIGNS = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW', 'SAW', 'PAW'];
+const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
+const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Cast Iron', 'Titanium', 'Aluminum', 'Copper Nickel', 'Inconel', 'Duplex Stainless'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
+const MCL_POOL = ['MCL-100', 'MCL-200', 'MCL-300', 'MCL-400', 'MCL-500'];
+const JOINING_ITEMS = ['Spool A', 'Spool B', 'Pipe Section 1', 'Pipe Section 2', 'Elbow 90', 'Tee', 'Reducer', 'Flange'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
+const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
+const WORK_PACKAGES = ['WP-001', 'WP-002', 'WP-003', 'WP-004', 'WP-005'];
+const ATTR_CODES = ['AT-100', 'AT-200', 'AT-300', 'AT-400', 'AT-500', 'AT-600', 'AT-700', 'AT-800'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
   Plumbing:   ['Leaking faucet repair', 'Water heater replacement', 'Clogged drain clearing', 'Pipe leak inspection', 'Toilet reseal', 'Sump pump service'],
@@ -102,15 +145,48 @@ export function generateJobs(count = 120): Job[] {
       trade,
       technician,
       drawing: pick(DRAWINGS),
+      drawingRev: pick(DRAWING_REVS),
       joint: pick(JOINTS),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
+      pipeSize: pick(PIPE_SIZES),
+      wallThickness: pick(WALL_THICKNESSES),
       materialType1: pick(MATERIALS_1),
       materialType2: pick(MATERIALS_2),
+      mcl1: pick(MCL_POOL),
+      mcl2: pick(MCL_POOL),
+      joiningItem: pick(JOINING_ITEMS),
+      joinToItem: pick(JOINING_ITEMS),
+      sequenceNumber: `SEQ-${1000 + i}`,
+      engineeringNotes: i % 3 === 0 ? 'Standard weld procedure per WPS' : '',
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
       nInd: pick(N_IND_POOL),
+      rtRoot: pick(NDT_RESULTS),
+      rtFinal: pick(NDT_RESULTS),
+      ndtRoot: pick(NDT_RESULTS),
+      ndtEach: pick(NDT_RESULTS),
+      ndtFinal: pick(NDT_RESULTS),
+      ut: pick(NDT_RESULTS),
+      order: `ORD-${10000 + i}`,
+      workPackage: pick(WORK_PACKAGES),
+      workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
+      waff: i % 5 === 0 ? 'Required' : '',
+      serialNumber: `SN-${30000 + i}`,
+      refitNumber: i % 6 === 0 ? `RF-${4000 + i}` : '',
+      repairNumber: i % 7 === 0 ? `RP-${5000 + i}` : '',
+      ss: i % 8 === 0 ? 'Yes' : '',
+      sfff: i % 9 === 0 ? 'Yes' : '',
+      dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
+      er1: i % 3 === 0 ? `ER-${6000 + i}` : '',
+      er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
+      er3: i % 5 === 0 ? `ER-${8000 + i}` : '',
+      er4: i % 6 === 0 ? `ER-${9000 + i}` : '',
+      attributeCode1: pick(ATTR_CODES),
+      attributeCode2: i % 2 === 0 ? pick(ATTR_CODES) : '',
+      attributeCode3: i % 3 === 0 ? pick(ATTR_CODES) : '',
+      attributeCode4: i % 4 === 0 ? pick(ATTR_CODES) : '',
       estimatedCost,
       estimatedHours,
       scheduledFor
@@ -136,15 +212,48 @@ export function addTestJob(trade: string): Job {
     trade,
     technician: TECHNICIANS[id % TECHNICIANS.length],
     drawing: '',
+    drawingRev: '',
     joint: '',
     jointDesign: '',
     weldType: '',
+    pipeSize: '',
+    wallThickness: '',
     materialType1: '',
     materialType2: '',
+    mcl1: '',
+    mcl2: '',
+    joiningItem: '',
+    joinToItem: '',
+    sequenceNumber: '',
+    engineeringNotes: '',
     wps: '',
     ndt: '',
     pwht: '',
     nInd: '1',
+    rtRoot: '',
+    rtFinal: '',
+    ndtRoot: '',
+    ndtEach: '',
+    ndtFinal: '',
+    ut: '',
+    order: '',
+    workPackage: '',
+    workPermit: '',
+    waff: '',
+    serialNumber: '',
+    refitNumber: '',
+    repairNumber: '',
+    ss: '',
+    sfff: '',
+    dssAaa: '',
+    er1: '',
+    er2: '',
+    er3: '',
+    er4: '',
+    attributeCode1: '',
+    attributeCode2: '',
+    attributeCode3: '',
+    attributeCode4: '',
     estimatedCost: 0,
     estimatedHours: 0,
     scheduledFor: new Date(),

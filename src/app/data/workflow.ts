@@ -645,7 +645,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
     ],
       signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
-    { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
+    { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Welding', fields: [], signoffFields: [] },
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: [
       { key: 'tackCount', label: 'Tack welds', type: 'number' },
       { key: 'tackSize', label: 'Tack size', type: 'number', unit: 'mm' },
@@ -655,12 +655,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ], signoffFields: [] },
     { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
     { id: 'root-ndt-utrt', label: 'Root NDT UT/RT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
@@ -677,12 +677,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'root-ndt-mtpt', label: 'Root NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'penetrantBrand', label: 'Penetrant Brand', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: [{ label: 'Magnaflux', value: 'magnaflux' }, { label: 'Sherwin-Williams', value: 'sherwin-williams' },
           { label: 'NDT Systems', value: 'ndt-systems' }, { label: 'Research Institute', value: 'research-institute' }] },
@@ -698,12 +698,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'root-ndt-vt5x', label: 'Root NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
@@ -729,12 +729,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         { label: 'Final Layer', value: 'final' },
       ] },
     { id: 'layer-ndt-utrt', label: 'Layer NDT UT/RT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
@@ -751,12 +751,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'layer-ndt-vt5x', label: 'Layer NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
@@ -773,12 +773,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: '5X', value: '5x' },
     ] },
     { id: 'layer-ndt-mtpt', label: 'Layer NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'penetrantBrand', label: 'Penetrant Brand', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: [{ label: 'Magnaflux', value: 'magnaflux' }, { label: 'Sherwin-Williams', value: 'sherwin-williams' },
           { label: 'NDT Systems', value: 'ndt-systems' }, { label: 'Research Institute', value: 'research-institute' }] },
@@ -795,12 +795,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] },
     { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
     { id: 'final-ndt-utrt', label: 'Final NDT UT/RT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
         options: [{ label: 'Ultrasonic', value: 'ut' }, { label: 'Radiographic', value: 'rt' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
@@ -817,12 +817,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'RT', value: 'rt' },
     ] },
     { id: 'final-ndt-mtpt', label: 'Final NDT MT/PT', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'penetrantBrand', label: 'Penetrant Brand', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
         options: [{ label: 'Magnaflux', value: 'magnaflux' }, { label: 'Sherwin-Williams', value: 'sherwin-williams' },
           { label: 'NDT Systems', value: 'ndt-systems' }, { label: 'Research Institute', value: 'research-institute' }] },
@@ -838,12 +838,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'PT', value: 'pt' },
     ] },
     { id: 'final-ndt-vt5x', label: 'Final NDT VT/5X', required: true, role: 'Inspector', fields: [
-      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
           { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+      { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
+      { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+      { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Straw', value: 'straw' }, { label: 'Gold', value: 'gold' },
@@ -1084,9 +1084,9 @@ export function buildStages(job: Job): WorkflowStage[] {
         Object.assign(inputs, { overridePhMin: '2.8', overridePhMax: '7.0', overrideIpMin: '1.2', overrideIpMax: '5.2', overrideNote: 'Approved deviation per WPS-001' });
       }
     }
-    /* route NDT inspections to NQC Inspection when N Ind. is 1 or 2 */
+    /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
-      ? 'NQC Inspection' : (t.role ?? '');
+      ? 'NQC Inspector' : (t.role ?? '');
     /* Root and Final Weld get a 5X inspection field */
     const fields = (t.id === 'root-weld' || t.id === 'final-weld')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
@@ -1108,6 +1108,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       routeTo: '',
       swapStageId: '',
       inspectionType: '',
+      decisionLabel: t.decisionLabel ?? '',
       stepOptions: t.stepOptions,
       signed: false,
       signedAt: null,
