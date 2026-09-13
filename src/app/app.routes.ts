@@ -14,6 +14,7 @@ import { AdminNdtComponent } from './admin-ndt/admin-ndt.component';
 import { AdminLocationsComponent } from './admin-locations/admin-locations.component';
 import { AdminStepOptionsComponent } from './admin-step-options/admin-step-options.component';
 import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-positions.component';
+import { AdminBannerComponent } from './admin-banner/admin-banner.component';
 
 
 export const routes: Routes = [
@@ -31,6 +32,7 @@ export const routes: Routes = [
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'Locations' },
   { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
+  { path: 'admin/banner', component: AdminBannerComponent, title: 'Banner Message' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details' },
   { path: '**', redirectTo: 'table' }

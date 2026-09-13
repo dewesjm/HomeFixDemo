@@ -6,6 +6,17 @@
   <app-sync-status />
 </div>
 
+@if (banner(); as b) {
+  <div class="alert text-sm mb-sm"
+       [class.alert-info]="b.type === 'info'"
+       [class.alert-warning]="b.type === 'warning'"
+       [class.alert-error]="b.type === 'error'"
+       [class.alert-success]="b.type === 'success'">
+    <svg lucideMegaphone class="size-4"></svg>
+    <span>{{ b.message }}</span>
+  </div>
+}
+
 <div class="facet-row">
   <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
     <svg lucideListFilter class="size-4"></svg> Clear filters

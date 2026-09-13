@@ -1,0 +1,52 @@
+<!-- Admin → Banner Message: set a banner that displays on the main list. -->
+<h2 class="section-title">Banner Message</h2>
+<p class="section-sub">Configure a banner message that appears at the top of the project list for all users.</p>
+
+<div class="flex flex-col gap-4 max-w-xl">
+  <label class="stage-field">
+    <span class="stage-field-label">Banner Message</span>
+    <textarea class="textarea textarea-bordered w-full" rows="3" placeholder="e.g. Scheduled maintenance tonight — all records will be locked after 6 PM"
+              [ngModel]="message()" (ngModelChange)="message.set($event)"></textarea>
+  </label>
+
+  <div class="flex gap-4 items-end">
+    <label class="stage-field flex-1 max-w-[200px]">
+      <span class="stage-field-label">Type</span>
+      <select class="select select-bordered w-full" [ngModel]="type()" (ngModelChange)="type.set($event)">
+        @for (t of types; track t.value) {
+          <option [ngValue]="t.value">{{ t.label }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="flex items-center gap-2 cursor-pointer mb-1">
+      <input type="checkbox" class="checkbox checkbox-sm"
+             [checked]="enabled()" (change)="enabled.set($any($event.target).checked)" />
+      <span>Enabled</span>
+    </label>
+  </div>
+
+  <!-- Preview -->
+  @if (message()) {
+    <div>
+      <div class="font-semibold text-sm mb-1">Preview</div>
+      <div class="alert text-sm"
+           [class.alert-info]="type() === 'info'"
+           [class.alert-warning]="type() === 'warning'"
+           [class.alert-error]="type() === 'error'"
+           [class.alert-success]="type() === 'success'">
+        <svg lucideMegaphone class="size-4"></svg>
+        <span>{{ message() }}</span>
+      </div>
+    </div>
+  }
+
+  <div class="flex gap-2">
+    <button type="button" class="btn btn-primary btn-sm" (click)="save()">
+      <svg lucideCheck class="size-4"></svg> Save
+    </button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="clear()">
+      <svg lucideX class="size-4"></svg> Clear
+    </button>
+  </div>
+</div>

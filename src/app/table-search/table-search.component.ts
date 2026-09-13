@@ -3,7 +3,7 @@ import { Component, computed, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck } from '@lucide/angular';
+import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck, LucideMegaphone } from '@lucide/angular';
 
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
@@ -28,7 +28,7 @@ type Row = Job & { currentStep: string };
   imports: [
     CommonModule, FormsModule,
     MultiselectDropdownComponent, TablePagerComponent, SyncStatusComponent,
-    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck
+    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck, LucideMegaphone
   ],
   templateUrl: './table-search.component.html'
 })
@@ -44,6 +44,9 @@ export class TableSearchComponent {
     if (saved['sortOrder']) this.table['sortOrder'].set(saved['sortOrder']);
     if (saved['pageSize']) this.table['pageSize'].set(saved['pageSize']);
     if (saved['page'] != null) this.table['page'].set(saved['page']);
+
+    // Load admin banner
+    this.loadBanner();
 
     effect(() => this.table.setRows(this.displayedJobs()));
     // Persist filter/sort state on every change
@@ -67,6 +70,9 @@ export class TableSearchComponent {
       return raw ? JSON.parse(raw) : {};
     } catch { return {}; }
   }
+
+  /* Admin banner — read from localStorage, re-read on construction */
+  banner = signal<{ message: string; type: string; enabled: boolean } | null>(null);
 
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
@@ -169,6 +175,24 @@ export class TableSearchComponent {
 //nav to history with this job pre-filled
   openHistory(job: Job) {
     this.router.navigate(['/history'], { queryParams: { job: job.id } });
+  }
+
+  private loadBanner() {
+    try {
+      const raw = localStorage.getItem('homefix:banner');
+      if (raw) {
+        const data = JSON.parse(raw);
+        if (data.enabled && data.message) {
+          this.banner.set(data);
+        } else {
+          this.banner.set(null);
+        }
+      } else {
+        this.banner.set(null);
+      }
+    } catch {
+      this.banner.set(null);
+    }
   }
 
   clear() {
