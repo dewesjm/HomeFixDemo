@@ -869,7 +869,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 
 /* Repair stage template — inserted dynamically when NDT is UNSAT */
 export const REPAIR_STAGE: StageTemplate = {
-  id: 'repair', label: 'Repair', required: true, role: 'Welding', fields: [
+  id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text' },
     { key: 'repairType', label: 'Repair Type', type: 'select',
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair Required', value: 'weld-repair' }] },
