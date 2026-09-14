@@ -765,6 +765,7 @@
           <div class="stage-inputs">
             @for (f of visibleFields(stage); track f.key) {
               @if (startsGroup(stage, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
+              <div class="w-full">
               @if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-sm"
@@ -809,6 +810,7 @@
               @if (fieldError(stage.id, f.key); as err) {
                 <div class="text-error text-xs mt-0.5">{{ err }}</div>
               }
+              </div>
             }
           </div>
         }
@@ -978,7 +980,7 @@
         <div class="signoff-actions">
           @if (!stage.signed) {
             <button type="button" class="btn btn-primary" [disabled]="!canSignStage(stage)" (click)="signStage(stage)">
-              <svg lucideCircleCheck class="size-4"></svg> Signoff
+              <svg lucideCheck class="size-4"></svg> Signoff
             </button>
           } @else {
             <span class="badge" [class.badge-error]="stage.result === 'unsat'" [class.badge-success]="stage.result === 'sat'">

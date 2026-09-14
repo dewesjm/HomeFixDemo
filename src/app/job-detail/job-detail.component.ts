@@ -9,7 +9,7 @@ import { TooltipDirective } from '../shared/tooltip.directive';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import {
   LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
-  LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+  LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
   LucideChevronDown, LucideChevronUp, LucideCopy
 } from '@lucide/angular';
 
@@ -29,7 +29,7 @@ import {
   imports: [
     CommonModule, FormsModule, TooltipDirective, SyncStatusComponent,
     LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
-    LucideBadgeCheck, LucideCircleCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+    LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
     LucideChevronDown, LucideChevronUp, LucideCopy
   ],
   templateUrl: './job-detail.component.html'

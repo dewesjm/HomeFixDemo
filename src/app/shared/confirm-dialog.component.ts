@@ -18,7 +18,7 @@ import { ConfirmService } from './confirm.service';
           @if (req.password) {
             <div class="mb-4">
               <label class="meta mb-1 block">Password</label>
-              <input type="password" class="input input-bordered w-full"
+              <input #pwInput type="password" class="input input-bordered w-full"
                      autocomplete="off" data-lpignore="true" data-1p-ignore="true"
                      placeholder="Enter password to confirm"
                      [ngModel]="confirm.password()"
@@ -47,6 +47,7 @@ import { ConfirmService } from './confirm.service';
 export class ConfirmDialogComponent {
   confirm = inject(ConfirmService);
   private dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
+  private pwInput = viewChild<ElementRef<HTMLInputElement>>('pwInput');
 
   constructor() {
     effect(() => {
@@ -54,6 +55,10 @@ export class ConfirmDialogComponent {
       const el = this.dlg().nativeElement;
       if (open && !el.open) el.showModal();
       if (!open && el.open) el.close();
+    });
+    effect(() => {
+      const pw = this.pwInput();
+      if (pw) pw.nativeElement.focus();
     });
   }
 
