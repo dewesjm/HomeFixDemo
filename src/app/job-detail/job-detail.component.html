@@ -819,62 +819,66 @@
         <div class="signoff-fields">
           <!-- Fit stage: consumable row + consumable insert + backing ring row + comments + defer tack -->
           @if (stage.id === 'fit') {
-            <div class="signoff-fit-row">
-              @for (f of visibleSignoffFields(stage); track f.key) {
-                @if (f.key === 'consumableType' || f.key === 'consumableSize' || f.key === 'consumableId') {
-                  <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
-                    @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [disabled]="!editable(stage)"
-                              [ngModel]="stage.signoffInputs[f.key]"
-                              (ngModelChange)="signoffSelectChange(stage, f, $event)">
+            @if (jointDesignRequiresInsert()) {
+              <div class="signoff-fit-row">
+                @for (f of visibleSignoffFields(stage); track f.key) {
+                  @if (f.key === 'consumableType' || f.key === 'consumableSize' || f.key === 'consumableId') {
+                    <div>
+                      <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                      @if (f.type === 'select') {
+                        <select class="select select-bordered w-full" [disabled]="!editable(stage)"
+                                [ngModel]="stage.signoffInputs[f.key]"
+                                (ngModelChange)="signoffSelectChange(stage, f, $event)">
     
-                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                      </select>
-                    } @else {
-                      <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                        </select>
+                      } @else {
+                        <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                               [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                               [ngModel]="stage.signoffInputs[f.key]"
+                               (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+            @if (jointDesignRequiresBackingRing()) {
+              <div class="signoff-fit-row">
+                @for (f of visibleSignoffFields(stage); track f.key) {
+                  @if (f.key === 'backingRingType') {
+                    <div>
+                      <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                      @if (f.type === 'select') {
+                        <select class="select select-bordered w-full" [disabled]="!editable(stage)"
+                                [ngModel]="stage.signoffInputs[f.key]"
+                                (ngModelChange)="signoffSelectChange(stage, f, $event)">
+    
+                          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                        </select>
+                      } @else {
+                        <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                               [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
+                               [ngModel]="stage.signoffInputs[f.key]"
+                               (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
+                      }
+                    </div>
+                  }
+                }
+                <div></div>
+                @for (f of visibleSignoffFields(stage); track f.key) {
+                  @if (f.key === 'backingRingId') {
+                    <div>
+                      <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                      <input class="input input-bordered w-full" type="text"
                              [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
                              [ngModel]="stage.signoffInputs[f.key]"
                              (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
-                    }
-                  </div>
+                    </div>
+                  }
                 }
-              }
-            </div>
-            <div class="signoff-fit-row">
-              @for (f of visibleSignoffFields(stage); track f.key) {
-                @if (f.key === 'backingRingType') {
-                  <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
-                    @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [disabled]="!editable(stage)"
-                              [ngModel]="stage.signoffInputs[f.key]"
-                              (ngModelChange)="signoffSelectChange(stage, f, $event)">
-    
-                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                      </select>
-                    } @else {
-                      <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
-                             [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
-                             [ngModel]="stage.signoffInputs[f.key]"
-                             (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
-                    }
-                  </div>
-                }
-              }
-              <div></div>
-              @for (f of visibleSignoffFields(stage); track f.key) {
-                @if (f.key === 'backingRingId') {
-                  <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
-                    <input class="input input-bordered w-full" type="text"
-                           [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
-                           [ngModel]="stage.signoffInputs[f.key]"
-                           (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
-                  </div>
-                }
-              }
-            </div>
+              </div>
+            }
           } @else {
             <!-- Default: one per row -->
             @for (f of visibleSignoffFields(stage); track f.key) {

@@ -16,6 +16,7 @@ import {
 import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
 import { CONDITION_OPTIONS } from '../data/conditions';
+import { getJointDesign } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
@@ -236,7 +237,17 @@ export class JobDetailComponent {
       if (!allVerified) return false;
     }
     return stage.signoffFields
-      .filter(f => f.required)
+      .filter(f => {
+        if (!f.required) return false;
+        // For fit stage, make consumable and backing ring fields conditionally required
+        if (stage.id === 'fit') {
+          const isConsumable = ['consumableType', 'consumableSize', 'consumableId'].includes(f.key);
+          const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
+          if (isConsumable && !this.jointDesignRequiresInsert()) return false;
+          if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
+        }
+        return true;
+      })
       .every(f => {
         const val = stage.signoffInputs[f.key] ?? '';
         return val.trim().length > 0;
@@ -308,6 +319,23 @@ export class JobDetailComponent {
       }
       return true;
     });
+  }
+
+  /* check if the current joint design requires consumable insert or backing ring */
+  jointDesignRequiresInsert(): boolean {
+    if (!this.job) return false;
+    const jd = getJointDesign(this.job.jointDesign);
+    return jd?.requiresConsumableInsert || false;
+  }
+
+  jointDesignRequiresBackingRing(): boolean {
+    if (!this.job) return false;
+    const jd = getJointDesign(this.job.jointDesign);
+    return jd?.requiresBackingRing || false;
+  }
+
+  jointDesignRequiresEither(): boolean {
+    return this.jointDesignRequiresInsert() || this.jointDesignRequiresBackingRing();
   }
 
   /* map fitup-insp verification field keys to fabrication data keys */
@@ -518,8 +546,17 @@ export class JobDetailComponent {
 
   /* visibility of a signoff field (showIf support) */
   visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
-    return stage.signoffFields.filter(f =>
-      !f.showIf || stage.signoffInputs[f.showIf.key] === f.showIf.equals);
+    return stage.signoffFields.filter(f => {
+      if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return false;
+      // For fit stage, hide consumable and backing ring fields when not required
+      if (stage.id === 'fit') {
+        const isConsumable = ['consumableType', 'consumableSize', 'consumableId'].includes(f.key);
+        const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
+        if (isConsumable && !this.jointDesignRequiresInsert()) return false;
+        if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
+      }
+      return true;
+    });
   }
   /* ── inline field validation ── */
   private validateStageFields(stage: WorkflowStage): Record<string, string> {

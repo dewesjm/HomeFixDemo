@@ -16,6 +16,7 @@ import { AdminLocationsComponent } from './admin-locations/admin-locations.compo
 import { AdminStepOptionsComponent } from './admin-step-options/admin-step-options.component';
 import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './admin-banner/admin-banner.component';
+import { AdminJointDesignsComponent } from './admin-joint-designs/admin-joint-designs.component';
 
 
 export const routes: Routes = [
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'Banner Message' },
+  { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'Joint Designs' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details', canDeactivate: [canDeactivateGuard] },
   { path: '**', redirectTo: 'table' }

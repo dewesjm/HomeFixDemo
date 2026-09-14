@@ -1,0 +1,123 @@
+<h2 class="section-title">Joint Designs</h2>
+<p class="section-sub">Define joint design codes and whether each requires a consumable insert or backing ring.</p>
+
+<div class="facet-row">
+  <span class="fw-bold">Joint designs</span>
+  <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search codes…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+  </label>
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
+  </button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
+    <svg lucidePlus class="size-4"></svg> Add joint design
+  </button>
+</div>
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th class="min-w-11">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('code')">
+            Code {{ table.sortField() === 'code' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+                 [ngModel]="table.columnFilters()['code'] ?? ''"
+                 (ngModelChange)="table.setColumnFilter('code', $event)" />
+        </div>
+      </th>
+      <th class="min-w-14">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('label')">
+            Label {{ table.sortField() === 'label' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+                 [ngModel]="table.columnFilters()['label'] ?? ''"
+                 (ngModelChange)="table.setColumnFilter('label', $event)" />
+        </div>
+      </th>
+      <th class="min-w-14">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('requiresConsumableInsert')">
+            Consumable Insert {{ table.sortField() === 'requiresConsumableInsert' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+        </div>
+      </th>
+      <th class="min-w-14">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('requiresBackingRing')">
+            Backing Ring {{ table.sortField() === 'requiresBackingRing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+        </div>
+      </th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of visibleRows(); track row.code) {
+      <tr>
+        <td>
+          @if (editingId() === row.code) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. BJ-G"
+                   [ngModel]="row.code" (ngModelChange)="updateField(row, 'code', $event)" />
+          } @else {
+            {{ row.code || '—' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.code) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. BJ-G"
+                   [ngModel]="row.label" (ngModelChange)="updateField(row, 'label', $event)" />
+          } @else {
+            {{ row.label || '—' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.code) {
+            <input type="checkbox" class="checkbox checkbox-sm"
+                   [ngModel]="row.requiresConsumableInsert"
+                   (ngModelChange)="updateField(row, 'requiresConsumableInsert', $event)" />
+          } @else {
+            {{ row.requiresConsumableInsert ? 'Yes' : 'No' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.code) {
+            <input type="checkbox" class="checkbox checkbox-sm"
+                   [ngModel]="row.requiresBackingRing"
+                   (ngModelChange)="updateField(row, 'requiresBackingRing', $event)" />
+          } @else {
+            {{ row.requiresBackingRing ? 'Yes' : 'No' }}
+          }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() !== row.code) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs text-success" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="5" class="empty">No joint designs defined.</td></tr>
+    }
+  </tbody>
+</table>
+</div>

@@ -12,7 +12,7 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideTriangleAlert, LucideBox, LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
-  LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList
+  LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers
 } from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
@@ -26,7 +26,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-    LucideTriangleAlert, LucideBox, LucideStepForward, LucideMegaphone, LucideClipboardList
+    LucideTriangleAlert, LucideBox, LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

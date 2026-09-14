@@ -1,6 +1,7 @@
 /* workflow model + stage helpers, no UI */
 import { Job } from './jobs';
 import { MATERIAL_OPTIONS } from './materials';
+import { jointDesignOptions, getJointDesign } from './joint-designs';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records', 'View'] as const;
@@ -367,14 +368,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
-    options: [
-      { label: 'BJ-G', value: 'bj-g' }, { label: 'BJ-S', value: 'bj-s' },
-      { label: 'FJ-G', value: 'fj-g' }, { label: 'FJ-S', value: 'fj-s' },
-      { label: 'LJ-G', value: 'lj-g' }, { label: 'LJ-S', value: 'lj-s' },
-      { label: 'CJ-G', value: 'cj-g' }, { label: 'CJ-S', value: 'cj-s' },
-      { label: 'EJ-G', value: 'ej-g' }, { label: 'EJ-S', value: 'ej-s' },
-      { label: 'TJ-G', value: 'tj-g' }, { label: 'TJ-S', value: 'tj-s' },
-    ] },
+    get options() { return jointDesignOptions(); } },
   { key: 'changeNumber', label: 'ER/IR', type: 'text', row: 5 },
 ];
 
@@ -1157,7 +1151,12 @@ export function buildStages(job: Job): WorkflowStage[] {
     const hasMTorPT = /\b(MT|PT)\b/.test(ndt);
     const hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL');
     return middle.filter(t => {
-      if (t.id === 'pre-fit') return job.nInd === '1' || job.nInd === '2';
+      if (t.id === 'pre-fit') {
+        const needsInsertOrRing = job.nInd === '1' || job.nInd === '2';
+        const jd = getJointDesign(job.jointDesign);
+        const jdRequires = jd?.requiresConsumableInsert || jd?.requiresBackingRing || false;
+        return needsInsertOrRing || jdRequires;
+      }
       if (t.id.endsWith('-utrt')) return hasUTorRT;
       if (t.id.endsWith('-mtpt')) return hasMTorPT;
       if (t.id.endsWith('-vt5x')) return hasVT;
