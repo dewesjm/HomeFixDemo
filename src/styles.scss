@@ -183,6 +183,20 @@ html, body {
   .meta { margin-bottom: 0; }
 }
 
+/* Vertical label | value rows for multi-column detail layouts */
+.detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.detail-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  .meta { flex-shrink: 0; width: 8.5rem; font-size: 0.78rem; color: var(--app-text-muted); }
+  span:last-child { min-width: 0; }
+}
+
 /* Stage pipeline */
 .legend {
   display: flex;

@@ -36,37 +36,37 @@
     <div class="flex gap-6">
       <!-- Column 1: Job Info -->
       <div class="flex-1 min-w-0">
-        <div class="detail-grid inline">
-          <div><div class="meta">ID</div><div>{{ j.id }}</div></div>
-          <div><div class="meta">Project</div><div>{{ j.jobNumber }}</div></div>
-          <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
-          <div><div class="meta">Drawing Rev</div><div>{{ j.drawingRev || '—' }}</div></div>
-          <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
-          <div><div class="meta">Joint Design</div><div>{{ j.jointDesign || '—' }}</div></div>
-          <div><div class="meta">Weld Type</div><div>{{ j.weldType || '—' }}</div></div>
-          <div><div class="meta">Pipe Size</div><div>{{ j.pipeSize || '—' }}</div></div>
-          <div><div class="meta">Wall Thickness</div><div>{{ j.wallThickness || '—' }}</div></div>
-          <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
-          <div><div class="meta">Sequence #</div><div>{{ j.sequenceNumber || '—' }}</div></div>
-          <div><div class="meta">Routing Step</div><div>{{ currentStep() }}</div></div>
-          <div class="col-span-3"><div class="meta">Engineering Notes</div><div>{{ j.engineeringNotes || '—' }}</div></div>
+        <div class="detail-col">
+          <div class="detail-row"><span class="meta">ID</span><span>{{ j.id }}</span></div>
+          <div class="detail-row"><span class="meta">Project</span><span>{{ j.jobNumber }}</span></div>
+          <div class="detail-row"><span class="meta">Drawing</span><span>{{ j.drawing || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Drawing Rev</span><span>{{ j.drawingRev || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Joint</span><span>{{ j.joint || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Joint Design</span><span>{{ j.jointDesign || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Weld Type</span><span>{{ j.weldType || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Pipe Size</span><span>{{ j.pipeSize || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Wall Thickness</span><span>{{ j.wallThickness || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">N Ind.</span><span>{{ j.nInd || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Sequence #</span><span>{{ j.sequenceNumber || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Routing Step</span><span>{{ currentStep() }}</span></div>
+          <div class="detail-row"><span class="meta">Engineering Notes</span><span>{{ j.engineeringNotes || '—' }}</span></div>
         </div>
       </div>
 
       <!-- Column 2: Joining -->
       <div class="flex-1 min-w-0">
         <div class="font-semibold text-sm mb-1">Joining Item</div>
-        <div class="detail-grid inline">
-          <div><div class="meta">MCL 1</div><div>{{ j.mcl1 || '—' }}</div></div>
-          <div><div class="meta">Material Type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
-          <div><div class="meta">Joining Item</div><div>{{ j.joiningItem || '—' }}</div></div>
+        <div class="detail-col">
+          <div class="detail-row"><span class="meta">MCL 1</span><span>{{ j.mcl1 || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Material Type 1</span><span>{{ j.materialType1 || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Joining Item</span><span>{{ j.joiningItem || '—' }}</span></div>
         </div>
         <div class="mt-sm">
           <div class="font-semibold text-sm mb-1">Join To</div>
-          <div class="detail-grid inline">
-            <div><div class="meta">MCL 2</div><div>{{ j.mcl2 || '—' }}</div></div>
-            <div><div class="meta">Material Type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
-            <div><div class="meta">Join To Item</div><div>{{ j.joinToItem || '—' }}</div></div>
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">MCL 2</span><span>{{ j.mcl2 || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Material Type 2</span><span>{{ j.materialType2 || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Join To Item</span><span>{{ j.joinToItem || '—' }}</span></div>
           </div>
         </div>
       </div>
@@ -74,13 +74,13 @@
       <!-- Column 3: NDT Data -->
       <div class="flex-1 min-w-0">
         <div class="font-semibold text-sm mb-1">NDT Data</div>
-        <div class="detail-grid inline">
-          <div><div class="meta">RT Root</div><div>{{ ndtLabel('rtRoot') }}</div></div>
-          <div><div class="meta">RT Final</div><div>{{ ndtLabel('rtFinal') }}</div></div>
-          <div><div class="meta">NDT Root</div><div>{{ ndtLabel('ndtRoot') }}</div></div>
-          <div><div class="meta">NDT Each</div><div>{{ ndtLabel('ndtEach') }}</div></div>
-          <div><div class="meta">NDT Final</div><div>{{ ndtLabel('ndtFinal') }}</div></div>
-          <div><div class="meta">UT</div><div>{{ ndtLabel('ut') }}</div></div>
+        <div class="detail-col">
+          <div class="detail-row"><span class="meta">RT Root</span><span>{{ ndtLabel('rtRoot') }}</span></div>
+          <div class="detail-row"><span class="meta">RT Final</span><span>{{ ndtLabel('rtFinal') }}</span></div>
+          <div class="detail-row"><span class="meta">NDT Root</span><span>{{ ndtLabel('ndtRoot') }}</span></div>
+          <div class="detail-row"><span class="meta">NDT Each</span><span>{{ ndtLabel('ndtEach') }}</span></div>
+          <div class="detail-row"><span class="meta">NDT Final</span><span>{{ ndtLabel('ndtFinal') }}</span></div>
+          <div class="detail-row"><span class="meta">UT</span><span>{{ ndtLabel('ut') }}</span></div>
         </div>
       </div>
     </div>
