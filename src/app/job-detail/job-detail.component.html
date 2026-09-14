@@ -758,6 +758,21 @@
                          (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                 </label>
+              } @else if (f.type === 'radio') {
+                <div>
+                  <div class="meta mb-1">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
+                  <div class="flex gap-4">
+                    @for (o of f.options || []; track o.value) {
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" class="radio radio-sm" [name]="'field-' + stage.id + '-' + f.key"
+                               [disabled]="!inputsEditable(stage, selectedStep())"
+                               [checked]="stage.inputs[f.key] === o.value"
+                               (change)="stageInputBlur(stage, f, o.value)" />
+                        <span>{{ o.label }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
               } @else {
                 <label class="stage-field">
                   <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
@@ -769,7 +784,8 @@
                     </select>
                   } @else {
                     <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
-                           [placeholder]="f.placeholder || ''" [disabled]="!inputsEditable(stage, selectedStep())"
+                           [placeholder]="f.placeholder || ''"
+                           [disabled]="f.disabled || !inputsEditable(stage, selectedStep())"
                            [ngModel]="stage.inputs[f.key]"
                            (blur)="stageInputBlur(stage, f, $any($event.target).value)" />
                   }

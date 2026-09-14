@@ -18,7 +18,7 @@ interface SignoffFieldRow {
   stageLabel: string;
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
   required: boolean;
   placeholder: string;
   optionsText: string;   // comma-separated for inline editing

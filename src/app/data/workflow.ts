@@ -19,13 +19,14 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 export interface StageField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
   unit?: string;          /* shown by the label, e.g. PSI */
   placeholder?: string;
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals: string };   // ← declarative dependency, serializable
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */
+  disabled?: boolean;    /* read-only / information only */
   minField?: string;     /* cross-field: value must be >= this field's value */
   maxField?: string;     /* cross-field: value must be <= this field's value */
 }
@@ -34,7 +35,7 @@ export interface StageField {
 export interface SignoffField {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
   required: boolean;
   placeholder?: string;
   options?: { label: string; value: string }[];
@@ -902,9 +903,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 /* Repair stage template — inserted dynamically when NDT is UNSAT */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
-    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text' },
-    { key: 'repairType', label: 'Repair Type', type: 'select',
+    { key: 'repairType', label: 'Repair Type', type: 'radio',
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair Required', value: 'weld-repair' }] },
+    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [], decisionLabel: 'Inspection Results',
 };
