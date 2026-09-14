@@ -20,7 +20,7 @@ import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
-  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS,
+  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   getShops
 } from '../data/workflow';
 
@@ -362,6 +362,12 @@ export class JobDetailComponent {
 
   jointDesignRequiresEither(): boolean {
     return this.jointDesignRequiresInsert() || this.jointDesignRequiresBackingRing();
+  }
+
+  fabFieldRequired(f: FabricationField): boolean {
+    if (!f.requiredWhen || !this.wf) return false;
+    const val = (this.wf().fabricationData[f.requiredWhen.key] ?? '').trim();
+    return f.requiredWhen.notEmpty ? val.length > 0 : val.length === 0;
   }
 
   /* map fitup-insp verification field keys to fabrication data keys */

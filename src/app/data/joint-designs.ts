@@ -21,7 +21,7 @@ const DEFAULTS: JointDesignEntry[] = [
   { code: 'cj-s', label: 'CJ-S', requiresConsumableInsert: false, requiresBackingRing: false },
   { code: 'ej-g', label: 'EJ-G', requiresConsumableInsert: false, requiresBackingRing: true },
   { code: 'ej-s', label: 'EJ-S', requiresConsumableInsert: false, requiresBackingRing: false },
-  { code: 'tj-g', label: 'TJ-G', requiresConsumableInsert: true,  requiresBackingRing: true },
+  { code: 'tj-g', label: 'TJ-G', requiresConsumableInsert: false, requiresBackingRing: true },
   { code: 'tj-s', label: 'TJ-S', requiresConsumableInsert: false, requiresBackingRing: false },
 ];
 

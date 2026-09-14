@@ -218,7 +218,7 @@
           @for (f of fabFields(); track f.key) {
             @if (f.row === 5) {
               <div class="flex-1 max-w-xs">
-                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}{{ f.requiredWhen ? ' *' : '' }}</div>
+                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}{{ fabFieldRequired(f) ? ' *' : '' }}</div>
                 @if (f.type === 'select') {
                   <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
                           [ngModel]="w.fabricationData[f.key]" (ngModelChange)="fabSelectChange(f.key, $event)">
@@ -857,7 +857,7 @@
             @if (jointDesignRequiresBackingRing()) {
               <div class="signoff-fit-row">
                 @for (f of visibleSignoffFields(stage); track f.key) {
-                  @if (f.key === 'backingRingType') {
+                  @if (f.key === 'backingRingType' || f.key === 'backingRingId') {
                     <div>
                       <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
                       @if (f.type === 'select') {
@@ -868,23 +868,11 @@
                           @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                         </select>
                       } @else {
-                        <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                        <input class="input input-bordered w-full" type="text"
                                [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
                                [ngModel]="stage.signoffInputs[f.key]"
                                (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
                       }
-                    </div>
-                  }
-                }
-                <div></div>
-                @for (f of visibleSignoffFields(stage); track f.key) {
-                  @if (f.key === 'backingRingId') {
-                    <div>
-                      <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
-                      <input class="input input-bordered w-full" type="text"
-                             [placeholder]="f.placeholder || ''" [disabled]="!editable(stage)"
-                             [ngModel]="stage.signoffInputs[f.key]"
-                             (blur)="blurSignoffField(stage, f, $any($event.target).value)" />
                     </div>
                   }
                 }
