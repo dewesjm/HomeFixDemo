@@ -195,6 +195,13 @@ export class JobDetailComponent {
   editable(stage: WorkflowStage): boolean {
     return stage.required && !stage.signed && stage.id === this.activeStage();
   }
+  canDeactivate(): boolean {
+    if (!this.wf) return true;
+    const stage = this.wf().stages[this.selectedStep()];
+    if (!stage || stage.signed) return true;
+    const hasSignoffData = Object.values(stage.signoffInputs).some(v => v);
+    return !hasSignoffData;
+  }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
     return !stage.signed && !this.locked(i);

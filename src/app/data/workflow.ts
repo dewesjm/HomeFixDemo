@@ -632,7 +632,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [] },
-    { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
+    { id: 'fit', label: 'Fit', required: true, role: 'Fitting', repeatable: true, fields: [], signoffFields: [
       { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
@@ -688,7 +688,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -709,7 +709,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -731,7 +731,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -762,7 +762,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -784,7 +784,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -805,7 +805,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -828,7 +828,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'UT', value: 'ut', default: true },
       { label: 'RT', value: 'rt' },
     ] },
@@ -849,7 +849,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
@@ -871,7 +871,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         ] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-    ], signoffFields: [], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
+    ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }], rejectToStage: 'repair', decisionLabel: 'Inspection Results', stepOptions: [
       { label: 'VT', value: 'vt', default: true },
       { label: '5X', value: '5x' },
     ] },
@@ -1136,7 +1136,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       result: null,
       rejectToStage: t.rejectToStage ?? '',
       repeatable: t.repeatable ?? false,
-      stepType: 'standard',
+      stepType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? 'standard',
       routeTo: '',
       swapStageId: '',
       inspectionType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? '',

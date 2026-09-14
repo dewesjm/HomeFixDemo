@@ -1,5 +1,6 @@
 /* route table */
 import { Routes } from '@angular/router';
+import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { TableSearchComponent } from './table-search/table-search.component';
 import { WorkHistoryComponent } from './work-history/work-history.component';
 import { AdaptiveSearchComponent } from './adaptive-search/adaptive-search.component';
@@ -34,6 +35,6 @@ export const routes: Routes = [
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'Banner Message' },
 
-  { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details' },
+  { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details', canDeactivate: [canDeactivateGuard] },
   { path: '**', redirectTo: 'table' }
 ];
