@@ -632,7 +632,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingId', label: 'Backing Ring ID', type: 'text' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [] },
-    { id: 'fit', label: 'Fit', required: true, role: 'Fitting', repeatable: true, fields: [], signoffFields: [
+    { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
       { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },

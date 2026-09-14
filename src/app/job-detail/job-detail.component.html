@@ -259,13 +259,14 @@
     }
 
     @if (w.stages[selectedStep()]; as stage) {
-      <!-- Inspection Type (NDT stages only) -->
+      <!-- Inspection Type / Step Type dropdown -->
       @if (stage.stepOptions && stage.stepOptions.length > 0) {
         <div class="mb-sm">
             <label class="stage-field">
               <span class="stage-field-label font-semibold">Type</span>
-              <select class="select select-bordered" [ngModel]="stage.inspectionType || defaultStepOption(stage)"
-                      (ngModelChange)="setInspectionType($event)">
+              <select class="select select-bordered"
+                      [ngModel]="stage.id === 'fit' ? (stage.stepType || defaultStepOption(stage)) : (stage.inspectionType || defaultStepOption(stage))"
+                      (ngModelChange)="stage.id === 'fit' ? updateStepType(stage, $event) : setInspectionType($event)">
                 @for (opt of stage.stepOptions; track opt.value) {
                   <option [ngValue]="opt.value">{{ opt.label }}</option>
                 }
@@ -867,27 +868,17 @@
             <div>
               <div class="meta">Step type <span class="req">*</span></div>
               <div class="result-radios">
-                @if (stage.stepOptions && stage.stepOptions.length > 0) {
-                  @for (opt of stage.stepOptions; track opt.value) {
-                    <label>
-                      <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
-                             [checked]="stage.stepType === opt.value" (change)="updateStepType(stage, opt.value)" />
-                      <span>{{ opt.label }}</span>
-                    </label>
-                  }
-                } @else {
-                  <label>
-                    <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
-                           [checked]="stage.stepType === 'repeat'" (change)="updateStepType(stage, 'repeat')" />
-                    <span>Repeat</span>
-                  </label>
-                  <label>
-                    <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
-                           [checked]="stage.stepType === 'final' || stage.stepType === 'standard'"
-                           (change)="updateStepType(stage, 'final')" />
-                    <span>Final</span>
-                  </label>
-                }
+                <label>
+                  <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
+                         [checked]="stage.stepType === 'repeat'" (change)="updateStepType(stage, 'repeat')" />
+                  <span>Repeat</span>
+                </label>
+                <label>
+                  <input type="radio" class="radio radio-sm" [name]="'step-' + stage.id"
+                         [checked]="stage.stepType === 'final' || stage.stepType === 'standard'"
+                         (change)="updateStepType(stage, 'final')" />
+                  <span>Final</span>
+                </label>
               </div>
             </div>
           }
