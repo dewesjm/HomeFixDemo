@@ -359,9 +359,9 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'text', row: 2 },
   { key: 'pscl', label: 'P/S/CL', type: 'text', row: 2 },
   { key: 'usage', label: 'Usage', type: 'text', row: 2 },
-  // Line 3: MIC 1 and MIC 2
-  { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
-  { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },
+  // Line 3: MCL 1 and MCL 2
+  { key: 'id1', label: 'MCL 1', type: 'text', row: 3 },
+  { key: 'id2', label: 'MCL 2', type: 'text', row: 3 },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', placeholder: 'IN', row: 4 },
@@ -649,8 +649,8 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] },
     { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
-      { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
-      { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
+      { key: 'verifyMic1', label: 'MCL 1 verified', type: 'checkbox' },
+      { key: 'verifyMic2', label: 'MCL 2 verified', type: 'checkbox' },
       { key: 'verifyDrawingRev', label: 'Drawing Rev verified', type: 'checkbox' },
       { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
       { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },

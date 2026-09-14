@@ -219,9 +219,9 @@ export class JobDetailComponent {
   }
   canSignStage(stage: WorkflowStage): boolean {
     if (!this.editable(stage)) return false;
-    // Non-inspection steps auto-accept (SAT)
+    // Auto-accept non-inspection steps
     if (!stage.rejectToStage && !stage.result) {
-      this.setStageResult(stage, 'sat' as StageResult);
+      return true;
     }
     if (!stage.result) return false;
     if (stage.repeatable && !stage.stepType) return false;
@@ -627,6 +627,10 @@ export class JobDetailComponent {
     const errors = this.validateStageFields(stage);
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) return;
+    // Auto-accept non-inspection steps
+    if (!stage.rejectToStage && !stage.result) {
+      this.setStageResult(stage, 'sat' as StageResult);
+    }
     if (!this.canSignStage(stage)) return;
     /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
     if (stage.id === 'root-layer' && stage.stepType === 'interim') {
