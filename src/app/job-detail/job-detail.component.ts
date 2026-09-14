@@ -16,7 +16,7 @@ import {
 import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
 import { CONDITION_OPTIONS } from '../data/conditions';
-import { getJointDesign } from '../data/joint-designs';
+import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
@@ -125,6 +125,8 @@ export class JobDetailComponent {
   fabFields = computed(() => FABRICATION_FIELDS.map(f =>
     f.key === 'location'
       ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
+      : f.key === 'revisedJointDesign'
+      ? { ...f, options: jointDesignOptions() }
       : f
   ));
   isNdtStage = computed(() => {

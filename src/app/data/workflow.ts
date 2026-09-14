@@ -368,7 +368,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
-    get options() { return jointDesignOptions(); } },
+    options: [] },
   { key: 'changeNumber', label: 'ER/IR', type: 'text', row: 5 },
 ];
 
