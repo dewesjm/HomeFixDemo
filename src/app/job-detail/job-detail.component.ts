@@ -129,6 +129,20 @@ export class JobDetailComponent {
       ? { ...f, options: jointDesignOptions() }
       : f
   ));
+  fabErrors = computed(() => {
+    if (!this.wf) return {};
+    const fab = this.wf().fabricationData;
+    const errors: Record<string, string> = {};
+    for (const f of FABRICATION_FIELDS) {
+      if (f.requiredWhen) {
+        const triggerVal = fab[f.requiredWhen.key] ?? '';
+        if (f.requiredWhen.notEmpty && triggerVal.trim() && !(fab[f.key] ?? '').trim()) {
+          errors[f.key] = `${f.label} is required when ${FABRICATION_FIELDS.find(ff => ff.key === f.requiredWhen!.key)?.label ?? f.requiredWhen.key} is set`;
+        }
+      }
+    }
+    return errors;
+  });
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedStep()];
@@ -237,6 +251,7 @@ export class JobDetailComponent {
     if (stage.id === 'fitup-insp') {
       const allVerified = stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes');
       if (!allVerified) return false;
+      if (Object.keys(this.fabErrors()).length > 0) return false;
     }
     return stage.signoffFields
       .filter(f => {

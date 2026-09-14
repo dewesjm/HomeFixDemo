@@ -347,6 +347,7 @@ export interface FabricationField {
   unit?: string;
   fullWidth?: boolean;
   row: 1 | 2 | 3 | 4 | 5;
+  requiredWhen?: { key: string; notEmpty: boolean };
 }
 
 export const FABRICATION_FIELDS: FabricationField[] = [
@@ -369,7 +370,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
     options: [] },
-  { key: 'changeNumber', label: 'ER/IR', type: 'text', row: 5 },
+  { key: 'changeNumber', label: 'ER/IR Number', type: 'text', row: 5,
+    requiredWhen: { key: 'revisedJointDesign', notEmpty: true } },
 ];
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
