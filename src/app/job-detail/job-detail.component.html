@@ -33,52 +33,55 @@
   <!-- 2 ───────── Joint Details (read-only) ───────── -->
   <section class="panel">
     <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
-    <div class="detail-grid inline">
-      <div><div class="meta">ID</div><div>{{ j.id }}</div></div>
-      <div><div class="meta">Project</div><div>{{ j.jobNumber }}</div></div>
-      <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
-      <div><div class="meta">Drawing Rev</div><div>{{ j.drawingRev || '—' }}</div></div>
-      <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
-      <div><div class="meta">Joint Design</div><div>{{ j.jointDesign || '—' }}</div></div>
-      <div><div class="meta">Weld Type</div><div>{{ j.weldType || '—' }}</div></div>
-      <div><div class="meta">Pipe Size</div><div>{{ j.pipeSize || '—' }}</div></div>
-      <div><div class="meta">Wall Thickness</div><div>{{ j.wallThickness || '—' }}</div></div>
-      <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
-      <div><div class="meta">Sequence #</div><div>{{ j.sequenceNumber || '—' }}</div></div>
-      <div><div class="meta">Current Step</div><div>{{ currentStep() }}</div></div>
-      <div class="col-span-3"><div class="meta">Engineering Notes</div><div>{{ j.engineeringNotes || '—' }}</div></div>
-    </div>
-
-    <!-- Joining Item -->
-    <div class="mt-sm">
-      <div class="font-semibold text-sm mb-1">Joining Item</div>
-      <div class="detail-grid inline">
-        <div><div class="meta">MCL 1</div><div>{{ j.mcl1 || '—' }}</div></div>
-        <div><div class="meta">Material Type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
-        <div><div class="meta">Joining Item</div><div>{{ j.joiningItem || '—' }}</div></div>
+    <div class="flex gap-6">
+      <!-- Column 1: Job Info -->
+      <div class="flex-1 min-w-0">
+        <div class="detail-grid inline">
+          <div><div class="meta">ID</div><div>{{ j.id }}</div></div>
+          <div><div class="meta">Project</div><div>{{ j.jobNumber }}</div></div>
+          <div><div class="meta">Drawing</div><div>{{ j.drawing || '—' }}</div></div>
+          <div><div class="meta">Drawing Rev</div><div>{{ j.drawingRev || '—' }}</div></div>
+          <div><div class="meta">Joint</div><div>{{ j.joint || '—' }}</div></div>
+          <div><div class="meta">Joint Design</div><div>{{ j.jointDesign || '—' }}</div></div>
+          <div><div class="meta">Weld Type</div><div>{{ j.weldType || '—' }}</div></div>
+          <div><div class="meta">Pipe Size</div><div>{{ j.pipeSize || '—' }}</div></div>
+          <div><div class="meta">Wall Thickness</div><div>{{ j.wallThickness || '—' }}</div></div>
+          <div><div class="meta">N Ind.</div><div>{{ j.nInd || '—' }}</div></div>
+          <div><div class="meta">Sequence #</div><div>{{ j.sequenceNumber || '—' }}</div></div>
+          <div><div class="meta">Routing Step</div><div>{{ currentStep() }}</div></div>
+          <div class="col-span-3"><div class="meta">Engineering Notes</div><div>{{ j.engineeringNotes || '—' }}</div></div>
+        </div>
       </div>
-    </div>
 
-    <!-- Join To -->
-    <div class="mt-sm">
-      <div class="font-semibold text-sm mb-1">Join To</div>
-      <div class="detail-grid inline">
-        <div><div class="meta">MCL 2</div><div>{{ j.mcl2 || '—' }}</div></div>
-        <div><div class="meta">Material Type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
-        <div><div class="meta">Join To Item</div><div>{{ j.joinToItem || '—' }}</div></div>
+      <!-- Column 2: Joining -->
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm mb-1">Joining Item</div>
+        <div class="detail-grid inline">
+          <div><div class="meta">MCL 1</div><div>{{ j.mcl1 || '—' }}</div></div>
+          <div><div class="meta">Material Type 1</div><div>{{ j.materialType1 || '—' }}</div></div>
+          <div><div class="meta">Joining Item</div><div>{{ j.joiningItem || '—' }}</div></div>
+        </div>
+        <div class="mt-sm">
+          <div class="font-semibold text-sm mb-1">Join To</div>
+          <div class="detail-grid inline">
+            <div><div class="meta">MCL 2</div><div>{{ j.mcl2 || '—' }}</div></div>
+            <div><div class="meta">Material Type 2</div><div>{{ j.materialType2 || '—' }}</div></div>
+            <div><div class="meta">Join To Item</div><div>{{ j.joinToItem || '—' }}</div></div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- NDT Data -->
-    <div class="mt-sm">
-      <div class="font-semibold text-sm mb-1">NDT Data</div>
-      <div class="detail-grid inline">
-        <div><div class="meta">RT Root</div><div>{{ ndtLabel('rtRoot') }}</div></div>
-        <div><div class="meta">RT Final</div><div>{{ ndtLabel('rtFinal') }}</div></div>
-        <div><div class="meta">NDT Root</div><div>{{ ndtLabel('ndtRoot') }}</div></div>
-        <div><div class="meta">NDT Each</div><div>{{ ndtLabel('ndtEach') }}</div></div>
-        <div><div class="meta">NDT Final</div><div>{{ ndtLabel('ndtFinal') }}</div></div>
-        <div><div class="meta">UT</div><div>{{ ndtLabel('ut') }}</div></div>
+      <!-- Column 3: NDT Data -->
+      <div class="flex-1 min-w-0">
+        <div class="font-semibold text-sm mb-1">NDT Data</div>
+        <div class="detail-grid inline">
+          <div><div class="meta">RT Root</div><div>{{ ndtLabel('rtRoot') }}</div></div>
+          <div><div class="meta">RT Final</div><div>{{ ndtLabel('rtFinal') }}</div></div>
+          <div><div class="meta">NDT Root</div><div>{{ ndtLabel('ndtRoot') }}</div></div>
+          <div><div class="meta">NDT Each</div><div>{{ ndtLabel('ndtEach') }}</div></div>
+          <div><div class="meta">NDT Final</div><div>{{ ndtLabel('ndtFinal') }}</div></div>
+          <div><div class="meta">UT</div><div>{{ ndtLabel('ut') }}</div></div>
+        </div>
       </div>
     </div>
 
