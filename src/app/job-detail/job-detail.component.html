@@ -219,10 +219,17 @@
             @if (f.row === 5) {
               <div class="flex-1 max-w-xs">
                 <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-                <input class="input input-bordered w-full" type="text"
-                       [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
-                       [ngModel]="w.fabricationData[f.key]"
-                       (blur)="fabInputBlur(f.key, $any($event.target).value)" />
+                @if (f.type === 'select') {
+                  <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
+                          [ngModel]="w.fabricationData[f.key]" (ngModelChange)="fabSelectChange(f.key, $event)">
+                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                  </select>
+                } @else {
+                  <input class="input input-bordered w-full" type="text"
+                         [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
+                         [ngModel]="w.fabricationData[f.key]"
+                         (blur)="fabInputBlur(f.key, $any($event.target).value)" />
+                }
               </div>
             }
           }
