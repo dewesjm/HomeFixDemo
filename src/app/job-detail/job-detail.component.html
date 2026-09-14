@@ -8,14 +8,13 @@
     <button type="button" class="btn btn-ghost btn-sm" (click)="back()">
       <svg lucideArrowLeft class="size-4"></svg> Back
     </button>
-    <h2 class="section-title m-0">{{ j.title }}</h2>
+    <span class="section-sub m-0">
+      Project #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
+      <strong>Routing Step:</strong> {{ currentStep() }}
+    </span>
     <span class="spacer"></span>
     <app-sync-status />
   </div>
-  <p class="section-sub">
-    Project #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
-    <strong>Current step:</strong> {{ currentStep() }}
-  </p>
 
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
   <section class="panel">
