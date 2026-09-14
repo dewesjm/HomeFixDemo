@@ -42,7 +42,11 @@ export class TableSearchComponent {
     if (saved['columnFilters']) this.table['columnFilters'].set(saved['columnFilters']);
     if (saved['sortField']) this.table['sortField'].set(saved['sortField']);
     if (saved['sortOrder']) this.table['sortOrder'].set(saved['sortOrder']);
-    if (saved['pageSize']) this.table['pageSize'].set(saved['pageSize']);
+    if (saved['pageSize']) {
+      const valid = [10, 25, 50, 100];
+      const ps = Number(saved['pageSize']);
+      this.table['pageSize'].set(valid.includes(ps) ? ps : 10);
+    }
     if (saved['page'] != null) this.table['page'].set(saved['page']);
 
     // Load admin banner

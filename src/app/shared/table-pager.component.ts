@@ -1,10 +1,12 @@
 /* Pagination bar (rows-per-page + prev/next + range report) for TableState-backed tables. */
 import { Component, input } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TableState } from './table-state';
 
 @Component({
   selector: 'app-table-pager',
   standalone: true,
+  imports: [FormsModule],
   template: `
     <div class="flex items-center gap-3 py-2 pr-16 text-sm min-w-0">
       <span class="opacity-70 whitespace-nowrap">
@@ -12,10 +14,10 @@ import { TableState } from './table-state';
       </span>
       <div class="flex items-center gap-2 ml-auto">
         <select class="select select-sm select-bordered"
-                [value]="state().pageSize()"
-                (change)="state().setPageSize(+$any($event.target).value)">
+                [ngModel]="state().pageSize()"
+                (ngModelChange)="state().setPageSize($event)">
           @for (n of pageSizeOptions(); track n) {
-            <option [value]="n">{{ n }} / page</option>
+            <option [ngValue]="n">{{ n }} / page</option>
           }
         </select>
         <div class="join">
