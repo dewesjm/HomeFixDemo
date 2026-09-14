@@ -1,6 +1,6 @@
 //This is the job details page, lot of stuff in here
 
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,6 +40,18 @@ export class JobDetailComponent {
   private router = inject(Router);
   private wfService = inject(WorkflowService);
   private confirm = inject(ConfirmService);
+
+  /** Auto-scroll the routing bar so the active step is centered */
+  private _scrollActiveIntoView = effect(() => {
+    const idx = this.selectedStep();
+    const steps = this.stepsModel();
+    const pos = steps.findIndex(s => s.stageIndex === idx);
+    if (pos < 0) return;
+    queueMicrotask(() => {
+      const el = document.querySelectorAll('.routing-step')[pos];
+      el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+    });
+  });
 
   job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
