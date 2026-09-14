@@ -67,6 +67,8 @@ export class JobDetailComponent {
   });
   /* which stage's sign-off shows; defaults to active */
   selectedStep = signal<number>(this.initialStep());
+  /* index of the last stage the user modified inputs/signoff on */
+  lastModifiedStageIdx = signal<number>(-1);
   /* inline field validation errors: key = `${stageId}:${fieldKey}` */
   fieldErrors = signal<Record<string, string>>({});
 
@@ -197,10 +199,13 @@ export class JobDetailComponent {
   }
   canDeactivate(): boolean {
     if (!this.wf) return true;
-    const stage = this.wf().stages[this.selectedStep()];
+    const idx = this.lastModifiedStageIdx();
+    if (idx < 0) return true;
+    const stage = this.wf().stages[idx];
     if (!stage || stage.signed) return true;
+    const hasInputData = Object.values(stage.inputs).some(v => v);
     const hasSignoffData = Object.values(stage.signoffInputs).some(v => v);
-    return !hasSignoffData;
+    return !hasInputData && !hasSignoffData;
   }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
@@ -399,6 +404,7 @@ export class JobDetailComponent {
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, value);
       this.clearHidden(stage);
+      if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
     }
     this.onFieldBlur(stage, field);
     /* clear required error if now filled */
@@ -430,6 +436,7 @@ export class JobDetailComponent {
     if (this.job && v !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, v);
       this.clearHidden(stage);
+      if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
       /* Auto-set Weld Process when WTN changes */
       if (field.key === 'wtn' && this.WTN_PROCESS_MAP[v]) {
         const weldProcessField = stage.fields.find(f => f.key === 'weldProcess');
@@ -482,6 +489,7 @@ export class JobDetailComponent {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(value) });
+    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* generic signoff field select change handler */
@@ -493,6 +501,7 @@ export class JobDetailComponent {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
+    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* generic signoff checkbox change handler */
@@ -504,6 +513,7 @@ export class JobDetailComponent {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
+    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* visibility of a signoff field (showIf support) */
