@@ -1,121 +1,141 @@
 # Welding — Component & Pattern Reference
 
-A team reference for the elements used in this app, organized by feature. Each
-element is tagged **[PrimeNG]** (v19 component library) or **[Angular]** (v19
-framework built-in) so it's clear what comes from where.
+## Stack
 
-The recurring theme: **the PrimeNG component does the heavy lifting (rendering,
-sorting, paging, filtering, export, overlays); Angular provides the structure
-(components, state, routing, forms); you only supply data + config objects.** The
-only hand-written CSS is layout polish, never a re-implemented widget.
+- **Angular 19** — standalone components, signals, modern control flow
+- **DaisyUI 5.6.16** (on Tailwind CSS 4.3.2) — all UI components
+- **Lucide Angular** — icon library
+- **No PrimeNG** — fully migrated away from PrimeNG
 
-## A. One-time app setup (`src/app/app.config.ts`)
+---
 
-These providers must be in place or the components below won't work:
+## App shell (`app.component`)
 
-| Provider | Source | Why it's needed |
-|---|---|---|
-| `providePrimeNG({ theme: { preset: Aura, ... }, ripple: true })` | **PrimeNG** | Enables PrimeNG + the **Aura** theme; dark mode toggles via a `.app-dark` class on the root |
-| `provideAnimationsAsync()` | **Angular** | **Required by PrimeNG** — overlays (dropdowns, dialogs, tooltips) won't animate/position without it |
-| `MessageService` | **PrimeNG** | Backs the Toast notifications (admin save confirmations) |
-| `ConfirmationService` | **PrimeNG** | Backs the confirm dialogs (stage sign-off + the Set step admin override) |
-| `provideRouter(routes)` | **Angular** | Screen routing (`app.routes.ts`) |
-| `provideHttpClient()` | **Angular** | HTTP (data is currently mock, but the provider is in place for real calls) |
-| `provideServiceWorker(...)` | **Angular** | PWA / offline + update prompt |
+- Top nav bar with horizontal menu: Pipe Welding, Structural Welding, My Assignments (placeholder), History, Advanced Search, Admin (dropdown)
+- Admin dropdown: closes on outside click via document listener; defaults collapsed
+- Theme picker in top-right corner
+- `<router-outlet>` with `display: contents` for proper flex layout
 
-## B. By feature
+## Table search (`table-search`)
 
-### App shell & navigation (`app.component`)
-- **[PrimeNG]** `p-panelMenu` — collapsible sidebar nav (built from a `MenuItem[]` model)
-- **[PrimeNG]** `p-toast` — global notification host (paired with `MessageService`)
-- **[PrimeNG]** `p-confirmDialog` — global confirmation host (paired with `ConfirmationService`); used by signoff and Set step
-- **[PrimeNG]** `p-button` — actions (e.g. dark-mode toggle)
-- **[Angular]** `RouterOutlet` — renders the active route
-- **[Angular]** `SwUpdate` — service-worker update prompt
+Main jobs table:
+- **TableState** class (`shared/table-state.ts`) handles sorting, filtering, paging
+- **Role filter** dropdown (Records, Welding, Fitting, Foreman, Inspector, NQC Inspector, View)
+- **Column filters**: text inputs with X clear buttons on Project, Drawing, Joint columns; multiselect dropdown on Current step
+- **Global search** with X clear button
+- **Banner**: inline pill badge between title and sync status (admin-configurable)
+- **CSV export** with column mapping
+- **Page-size selector** + prev/next pager (TablePagerComponent)
+- Table uses `min-w-0` on wrapper div to prevent horizontal overflow
+- Columns: checkbox, ID (numeric), Project (jobNumber), Drawing, Joint, Current step, Actions
 
-### Jobs table — the main grid (`table-search`)
-The heaviest use of the library; one component does most of the work:
-- **[PrimeNG]** `p-table` — the whole grid: **paginator** (`[paginator]` + `[rows]` + `[rowsPerPageOptions]`), **multi-sort** (`sortMode="multiple"`), **column resize** (`[resizableColumns]`), **horizontal scroll** (`[scrollable]`), and **CSV export** (`dt.exportCSV()` + `[columns]`/`[exportFunction]` config)
-- **[PrimeNG]** `p-iconField` + `p-inputIcon` + `pInputText` — global search box with a leading search icon
-- **[PrimeNG]** `p-multiSelect`, `p-slider`, `p-datePicker` — in-column filters (cost range, date)
-- **[PrimeNG]** `p-select` — the **Role** dropdown (filters jobs by current step's role: Fitting, Welding, Foreman, Inspector, NQC Inspector, Records, View)
-- **[PrimeNG]** `p-tag` — tag pills; `p-rating` — inspection score stars; `p-button` — row actions
-- **"Current step"** is a derived text column (from the workflow's signed stages) — there is no job-status column
-- **[Angular]** `*ngFor`/`*ngIf` (CommonModule), `[(ngModel)]` (FormsModule), `Router` for row navigation
+## Job detail (`job-detail`)
 
-### Advanced / adaptive search (`adaptive-search`)
-- **Schema-driven filter bar** with saved variants — filters adapt to job data
-- **Filters**: Trade, Technician, Weld type, Joint design, Material 1/2, Cost range, Date range, NDT, PWHT
-- **Column picker** (`Columns3` icon) — toggle which columns appear in the results table; persisted to localStorage (`pn-demo:result-columns`)
-- **Results table** — dynamic columns based on picker selection, sortable, paginated, CSV export
-- Frozen "Details" action column
+The workflow page for one job. Sections from top to bottom:
 
-### Work history (`work-history`)
-- **[PrimeNG]** `p-table` — the **activity log** (sortable columns, paginator; per-column **Trade** filter via `p-columnFilter`). Columns: When · Who · Action · Old value · New value · Step · Job · Trade
-- **[PrimeNG]** `p-select` — filter by technician/job; `p-iconField`/`p-inputIcon`/`pInputText` — search
-- **[PrimeNG]** `p-button` — Export to Excel / clear
-- **[Angular]** `routerLink` — navigation; `ActivatedRoute` — read query params
+### Routing (numbered step pills)
+- Horizontal scrollable row of numbered pills
+- Active = green glow, completed = indigo, upcoming = default
+- Read-only — click to select/view, not to sign
 
-### Job detail (`job-detail`) — by section
-| Section | Elements |
-|---|---|
-| **Routing** indicator (first section) | Visual progress bar — **progress only**; recording + signing happen in the Signoff section. Click to select a step |
-| **Joint details** (read-only) | Plain grid for label/value pairs; collapsible "Audit & records" tier |
-| **Fabrication** | `p-select` (work type / condition), text inputs, `p-table` (components list) |
-| **Attachments** | File upload (basic/auto mode), `p-table` (file list) |
-| **Signoff** (for the selected stage) | **Current step** dropdown (swap stages — fields swap to match), **readings inputs** (dynamic per swapped stage), **Repeat/Final** radio (repeatable stages only), **Decision** (SAT/UNSAT), **Signoff** button with confirm dialog. Swapping current step loads that stage's readings + signoff fields dynamically |
+### Joint Details
+- Structured sections: General Info, Pipe Details, Joint Design, NDT Data, Additional Data
+- NDT Data shows requirement indicators (X/5X/—) based on `job.ndt`, not SAT/UNSAT
+- "Show more/less" toggle for audit/records fields
 
-### Admin screens
+### Fabrication (cross-stage)
+- Location, Specific Location, Deck, Frame, PSCL, Usage
+- MIC 1, MIC 2, Drawing Rev, Actual Thickness
+- Weld Memo, Revised Joint Design, Change Number
+- Fabrication data is **locked after Fit-Up Inspection** signs off
+- WTN auto-sets Weld Process (disabled) + PH/IP requirements
+- Override Requirements 50/50 chance on weld stages
 
-**Admin → Routing** (`admin-steps`):
-- Editable table of per-trade workflow steps with inline editing
-- **Sequence column** with ▲/▼ reorder buttons
-- **Role column** — assign which role (Fitting, Welding, Foreman, Inspector, NQC Inspector, Records, View) each stage routes to
-- **Settings** (⚙️) button opens a **field configuration dialog** — configure readings fields (key, label, type, unit, placeholder) and signoff fields (key, label, type, required, options) per stage
-- **New trade** button — creates a trade with default Prep + Handover stages
-- **Add step** button — adds a new row, saves to data layer on confirm
-- **Delete** — removes from data layer and localStorage
-- **Reject routing** — dropdown to pick which stage to go back to on reject
-- All changes persist to `localStorage` (`homefix:stage-templates:v1`)
+### Stage signoff (for the selected stage)
+- **Step type** dropdown (standard, repeat, etc.)
+- **Stage inputs** — dynamic fields per stage template
+- **Signoff fields** — inspector name, license, notes, etc.
+- **Decision** — SAT/UNSAT (or "Inspection Results" on NDT stages via `decisionLabel`)
+- **Required field validation** — inline red errors on signoff click
+- **Range validation** — Actual PH/IP validated on blur
 
-**Admin → Signoff fields** (`admin-signoff-fields`):
-- Configurable signoff fields per trade+stage
-- Inline editing of field key, label, type, required, placeholder, options
-- Add/delete fields, filtered by trade+stage
-- Persists to `localStorage` via stage templates
+### Custom layouts
+- **Fit, Root Weld, Final Weld**: custom layout with subsections (Material, Dimensions, Welding, etc.)
+- **Tack / Deferred Tack**: custom layout with subsections
+- **NDT stages**: fields with `showIf.key === 'inspectionType'` force line breaks (`<span class="stage-field-break">`)
+- **5X inspection**: Root Weld and Final Weld have a `performed5x` dropdown; "Yes" auto-signs the corresponding VT/5X NDT stage
+- **Layer**: Interim/Final Layer, consumable insert auto-fills filler fields, interim loops
+- **Repair**: triggered on NDT rejection; role is Foreman; has attachment field
 
-**Admin → Characteristic codes / Condition codes / Materials** (`admin-characteristics`, `admin-conditions`, `admin-materials`):
-- Editable reference tables with inline editing
-- Search, add, delete rows
-- Persists to `localStorage`
+### Records Review (`stage.id === 'review'`)
+- **Verify record fields** table with checkboxes (17 fields mapped to job data)
+- **Signoff History** table — pulls directly from signed stages (not history entries)
+  - Columns: Stage, Result, Field, Value, Signed By, Date
+  - Stage name + result use `rowspan` for multi-field stages
+  - **Copy button** — copies as tab-delimited text (paste-friendly for Excel/Sheets)
+  - Field labels from stage definitions (not raw keys)
+  - Signed By falls back to `job.technician` → seeded name
 
-### Admin → Set step (`admin-set-step`)
-An action form, not a reference table — an **admin override** to force a job's workflow to a chosen stage:
-- **[PrimeNG]** `p-select` (filterable job picker + target-step picker), `p-button` (Force step), `ConfirmationService` confirm dialog before applying (it discards signoffs)
-- **[Angular]** `signal()`/`computed()` state; calls `WorkflowService.forceStep(job, index)` which signs every prior stage, re-opens the chosen stage onward, and logs a `Step forced (admin)` history entry
+### Signoff dialog
+- Certification checkbox + password prompt
+- Required field validation before signoff
 
-### Smaller pieces
-- **Theme picker** (`theme-picker`) — **[PrimeNG]** `p-popover` + `p-button`
-- **Sync status** (`sync-status`) — **[PrimeNG]** `pTooltip` only
+### Back button
+- Inline with page title (LucideArrowLeft)
 
-## C. Angular patterns used everywhere (all [Angular])
+## Work history (`work-history`)
 
-- **Standalone components** — no `NgModules`; each component imports what it needs directly in `imports: [...]`
-- **Signals for state** — `signal()` + `computed()` instead of plain fields; `inject()` instead of constructor params (mostly)
-- **Forms** — `FormsModule` with `[(ngModel)]` (or `[ngModel]` + an event handler for controlled updates)
-- **Control flow** — modern `@if`/`@for` syntax (not the older `*ngIf`/`*ngFor`)
-- **Routing** — `provideRouter`, `routerLink`, `ActivatedRoute` (+ query params for cross-screen filtering)
+- Activity log with columns: When, Who, Action, Old value, New value, Step, Project, Trade, Actions
+- Filter by person (select) and by job (text input)
+- Global search
+- Trade multiselect filter
+- CSV export
+- "Reverse" button on latest entry per job
+- Wrapped in `table-page-wrap` for proper pager positioning
 
-> Note: `[(ngModel)]` is **Angular** (FormsModule). PrimeNG components are the
-> *targets* of those bindings (e.g. `[(ngModel)]` on a `p-select`), but the binding
-> syntax itself is the framework.
+## Adaptive search (`adaptive-search`)
 
-## D. Client-side vs. server-side (pagination, export)
+- Schema-driven filter bar with saved variants
+- Column picker toggle
+- Results table with dynamic columns
+- CSV export
 
-The table runs **client-side** today: the full row set is loaded and `p-table`
-(PrimeNG) pages/sorts/filters it in memory. Moving a table to **server-side** later
-is a config change, not a rewrite — same `p-table`, add `[lazy]="true"` +
-`[totalRecords]` and fill in an `(onLazyLoad)` handler that fetches one page per
-request. The paginator UI, sort, and filter controls stay identical. Note that
-`exportCSV()` only exports the rows currently in memory, so a server-side table
-needs a separate fetch-all to export everything.
+## Theme picker
+
+- DaisyUI theme switching via `data-theme` attribute
+- Persists to localStorage
+
+## Table pager (`shared/table-pager.component`)
+
+- Uses `ngModel` for page-size select (proper two-way binding)
+- Shows: "Showing X to Y of Z", page-size selector, prev/next buttons
+- `pr-16` padding to prevent right-edge clipping
+
+---
+
+## Key data patterns
+
+### Seeded workflows (`seededWorkflow()`)
+- Deterministic per job ID (PRNG seeded)
+- Pre-signs a random number of leading stages
+- Populates fields with realistic values via `seededFieldValue()` (selects from pools, falls back to key-based heuristics)
+- Generates `HistoryEntry` for each signed stage
+- `inspectorName` falls back to `job.technician`
+
+### N Ind. field (`job.nInd`)
+- '1', '2', or '3' — randomly seeded
+- Impacts: weldPosition visibility, pre-fit stage visibility, NDT role routing
+
+### Stage filtering by `job.ndt`
+- `buildStages()` filters NDT stages using regex on `job.ndt` string
+- Pattern: `hasUTorRT`, `hasMTorPT`, `hasVT` — determines which NDT stages appear
+
+---
+
+## Build
+
+```powershell
+cd "C:\Users\dewes\primeng-search-demo"; npx ng build 2>&1
+```
+
+Warnings (246 CSS selector rules skipped) are expected from Tailwind/DaisyUI and are harmless.

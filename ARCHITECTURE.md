@@ -1,37 +1,33 @@
 # Welding — Architecture
 
-Welding is a **welding work-order & inspection manager** (a learning/prototype app,
-rebranded from a PrimeNG search demo). It's a single-page Angular app with **no backend** —
-all data is either generated in memory or saved to the browser's `localStorage`.
+Welding is a **welding work-order & inspection manager** (prototype app). It's a single-page Angular app with **no backend** — all data is generated in memory or saved to the browser's `localStorage`.
 
 ---
 
 ## Stack
 
 - **Angular 19** — standalone components, signals, the router.
-- **PrimeNG 19** with the **Aura** theme — all UI widgets (table, menu, buttons, dialogs, etc.).
-- **PWA** — service worker via `@angular/pwa` (precaches the app shell for offline; production build only).
-- **No server / no database.** See "Real vs. stubbed" below.
+- **DaisyUI 5** (on Tailwind CSS 4) — UI components (buttons, tables, badges, dialogs, dropdowns, etc.).
+- **Lucide Angular** — icons.
+- **No server / no database.** All data is mock or localStorage.
 
 ## Run / build
 
 ```
-npm start                 # dev server at http://localhost:4200 (service worker OFF here)
-npm run build             # production build (service worker ON; needs HTTPS/localhost to test)
+npm start                 # dev server at http://localhost:4200
+npm run build             # production build
+cd "C:\Users\dewes\primeng-search-demo"; npx ng build 2>&1  # build (PowerShell)
 ```
-Test the PWA/offline behavior by serving the prod build:
-`npx http-server -p 8080 -c-1 dist/primeng-search-demo/browser`.
 
 ---
 
 ## Version bumps & cache clearing
 
-The app stores workflow data in `localStorage`. When stage definitions change (fields, signoff fields, stage order, etc.), old cached data becomes stale. To handle this automatically:
+The app stores workflow data in `localStorage`. When stage definitions change, old cached data becomes stale.
 
-- A `CURRENT_VERSION` constant lives in `src/app/services/workflow.service.ts` (line ~22).
-- On every app load, the version is checked. If it doesn't match what's stored in `localStorage`, all workflow/template caches are cleared.
-- **Bump `CURRENT_VERSION`** whenever you change stage definitions, field names, or any data model persisted in localStorage.
-- The "Update now" button (service worker) also clears caches before reloading.
+- A `CURRENT_VERSION` constant lives in `src/app/services/workflow.service.ts` (line ~22). Current: `1.3.1`.
+- On every app load, the version is checked against localStorage. If it doesn't match, all workflow/template caches are cleared.
+- **Bump `CURRENT_VERSION`** whenever you change stage definitions, field names, data models, or seed data structure.
 
 ---
 
@@ -39,46 +35,50 @@ The app stores workflow data in `localStorage`. When stage definitions change (f
 
 ```
 src/app/
-  app.component.*        Root shell: collapsible sidebar (PanelMenu + sync status + theme) + <router-outlet>
-  app.config.ts          App-wide providers: router, animations, PrimeNG/Aura theme, service worker
+  app.component.*        Root shell: top nav bar (Pipe Welding, Structural Welding, My Assignments, History, Advanced Search, Admin) + <router-outlet>
   app.routes.ts          URL → screen mapping
 
-  table-search/          "Jobs" screen — the main p-table (filters, role selector, Job#, current step, CSV export)
-  work-history/          "Work history" screen — the audit-trail activity log (filter by person / by job)
-  adaptive-search/       "Adaptive filters" screen — schema-driven filter bar + saved variants + column picker
-  job-detail/            Single-job page — Routing (progress bar), Joint details, Fabrication, Attachments, Signoff (current step override, readings, next step routing, repeat/final, decision, signoff)
-  sync-status/           The green/yellow/red sync indicator in the sidebar
-  theme-picker/          The "Theme" button: primary + surface color palette switcher
+  table-search/          "Pipe Welding" screen — main job table (filters, role selector, page-size, CSV export, banner)
+  work-history/          "History" screen — audit-trail activity log (filter by person / by job)
+  adaptive-search/       "Advanced Search" screen — schema-driven filter bar + saved variants + column picker
+  job-detail/            Single-job page — Routing (numbered step pills), Joint Details, Fabrication, Attachments, NDT, Signoff, Records Review
+  sync-status/           Green/yellow/red sync indicator
+  theme-picker/          "Theme" button — DaisyUI theme switcher
 
-  admin-steps/           Admin → Routing — per-trade workflow steps (ordering, field config, new trades/steps, reject routing, role assignment)
+  admin-steps/           Admin → Routing — per-trade workflow steps
   admin-signoff-fields/  Admin → Signoff fields — per-trade+stage configurable signoff fields
-  admin-characteristics/ Admin → Characteristic codes — editable code → description lookup
-  admin-conditions/      Admin → Condition codes — editable condition code → description lookup
-  admin-materials/       Admin → Materials — editable material list (Build/install "Material used" dropdown)
+  admin-characteristics/ Admin → Characteristic codes
+  admin-conditions/      Admin → Condition codes
+  admin-materials/       Admin → Materials
+  admin-ndt/             Admin → Penetrant / NDT settings
+  admin-locations/       Admin → Locations
+  admin-step-options/    Admin → Step Options
+  admin-weld-positions/  Admin → Weld Positions
+  admin-banner/          Admin → Banner (info/warning/error banner across top)
+  admin-set-step/        Admin → Set step (force a job's workflow to a chosen stage)
 
   data/                  Plain data & helpers (no UI):
-    jobs.ts                Job model + seeded generator (120 mock jobs) + dynamic TRADE_OPTIONS
-    workflow.ts            Inspection workflow model: stage pipelines, types, STAGE_TEMPLATES (Proxy merging static defaults + localStorage), CRUD functions, buildStages(), getTemplates(), getTradeOptions()
-    mock-history.ts        Seeded activity entries used to pad the Work history timeline for jobs with no real edits
-    characteristics.ts     Characteristic code → description lookup + options (job special designations)
-    conditions.ts          Condition code → description lookup + options (Work validation condition dropdown)
-    materials.ts           Material list + options (Build/install stage "Material used" dropdown)
-    filter-schema.ts       Schema-driven filter engine: field defs + applyFilters() + saved variants
-    export-csv.ts          downloadCsv() helper (Excel-friendly CSV download)
+    jobs.ts                Job model + seeded generator (240 mock jobs) + static seed data pools
+    workflow.ts            Inspection workflow model: stage pipelines, types, buildStages(), seededWorkflow(), stage templates
+    mock-history.ts        Seeded activity entries for Work history
+    characteristics.ts     Characteristic code → description lookup
+    conditions.ts          Condition code → description lookup
+    materials.ts           Material list + options
+    filter-schema.ts       Schema-driven filter engine
+    export-csv.ts          downloadCsv() helper
 
   services/              Shared state (injected into components):
     workflow.service.ts    Per-job stages/components/attachments/sign-off + history; persists to localStorage; migrations
-    sync.service.ts        Online/offline (real) + pending-sync count (sync itself is stubbed)
+    sync.service.ts        Online/offline + pending-sync count (stubbed)
 
   shared/                Shared UI pieces:
+    table-state.ts         TableState class: sorting, filtering, paging (used by table-search, work-history, adaptive-search)
+    table-pager.component  Pagination bar (page size selector, prev/next, range display)
     multiselect-dropdown.component   Reusable multi-select filter dropdown
-    tooltip.directive                Tooltip wrapper
-    toast.service                    Toast notification service
-    confirm.service                  Confirmation dialog service
-    table-state.ts                   Table state management (sorting, filtering, paging)
+    tooltip.directive      Tooltip wrapper
+    toast.service          Toast notification service
+    confirm.service        Confirmation dialog service
 ```
-
-**Rule of thumb:** folders are features/screens; `data/` is logic with no UI; `services/` is shared state.
 
 ---
 
@@ -86,125 +86,120 @@ src/app/
 
 | Route | Screen | Notes |
 |---|---|---|
-| `/table` | Jobs (work orders) | Main table; default route |
-| `/history` | Work history | Audit log; `?job=<id>` deep-links filtered to one job |
-| `/adaptive` | Adaptive filters | Schema-driven filter bar + column picker |
+| `/table` | Pipe Welding | Main job table; default route |
+| `/history` | History | Audit log; `?job=<id>` deep-links filtered to one job |
+| `/adaptive` | Advanced Search | Schema-driven filter bar + column picker |
 | `/jobs/:id` | Job detail | The workflow page for one job |
-| `/admin/steps` | Admin → Routing | Editable per-trade workflow steps (ordering, field config, new trades/steps, reject routing, role assignment) |
+| `/admin/steps` | Admin → Routing | Editable per-trade workflow steps |
 | `/admin/signoff-fields` | Admin → Signoff fields | Per-trade+stage configurable signoff fields |
 | `/admin/characteristics` | Admin → Characteristic codes | Editable code → description lookup |
-| `/admin/conditions` | Admin → Condition codes | Editable condition code → description lookup (feeds Work validation) |
-| `/admin/materials` | Admin → Materials | Editable material list (feeds the Build/install "Material used" dropdown) |
-| `/admin/set-step` | Admin → Set step | Admin override: force a job's workflow to a chosen stage (sets the current step) |
+| `/admin/conditions` | Admin → Condition codes | Editable condition code → description lookup |
+| `/admin/materials` | Admin → Materials | Editable material list |
+| `/admin/ndt` | Admin → Penetrant | NDT settings |
+| `/admin/locations` | Admin → Locations | Location management |
+| `/admin/step-options` | Admin → Step Options | Step option management |
+| `/admin/weld-positions` | Admin → Weld Positions | Weld position management |
+| `/admin/banner` | Admin → Banner | Info/warning/error banner across top |
+| `/admin/set-step` | Admin → Set step | Admin override: force a job's workflow to a chosen stage |
 
 ---
 
 ## Data flow
 
-1. **Jobs** are generated once at startup in [jobs.ts](src/app/data/jobs.ts) (seeded → same 120 jobs every load) and held in memory as `JOBS`. Every screen imports this array. `Job.trade` is now `string` (not a fixed union) so admin-added trades work.
-2. **Stage templates** live in [workflow.ts](src/app/data/workflow.ts) as `STAGE_TEMPLATES`, a `Proxy` that merges static defaults with localStorage overrides (`homefix:stage-templates:v1`). Admin CRUD (`addStageTemplate`, `updateStageTemplate`, `deleteStageTemplate`, `addTrade`) persists to localStorage and invalidates the cache. `getTemplates()` returns the merged view; `getTradeOptions()` derives trade dropdown options from it. Each stage template has an optional `role` field that determines which queue the job appears in.
+1. **Jobs** are generated in [jobs.ts](src/app/data/jobs.ts) — 240 seeded jobs with deterministic data (same every load). Every screen imports the `JOBS` array.
+
+2. **Stage templates** live in [workflow.ts](src/app/data/workflow.ts). Admin CRUD persists to localStorage (`homefix:stage-templates:v1`). `getTemplates()` returns the merged view. Each stage has a `role` field that determines which queue the job appears in.
+
 3. **Per-job workflow** (stages, components, attachments, sign-off, history) lives in
    [WorkflowService](src/app/services/workflow.service.ts), keyed by job id, exposed as **signals**.
-   A never-touched job starts from `seededWorkflow()` (a deterministic, **mid-stream** run of pre-signed
+   A never-touched job starts from `seededWorkflow()` (deterministic mid-stream run of pre-signed
    stages so the current step varies job-to-job); the first real edit takes over. Every mutation appends a
-   **history entry** and is **persisted to `localStorage`** (`homefix:workflows:v2`).
-4. **Migrations** run in `WorkflowService.load()` on every page load:
-   - Backfill missing fields (`inputs`, `fields`, `signoffFields`, `signoffInputs`, `result`, `signed`, `repeatable`, `stepType`, `routeTo`, `swapStageId`)
-   - Migrate old hardcoded fields (`inspectorName`, `licenseNo`, `notes`) into `signoffInputs`
-   - v3: Rebuild stages if they have filler IDs (`extra-*`, `Check N`) or are missing current template stages (e.g. Sanding added after job was created); preserves signed state for stages that still exist
-5. **Work history** screen aggregates `WorkflowService.allWorkflows()` into one flat, filterable timeline,
-   padded with seeded [mock-history.ts](src/app/data/mock-history.ts) entries for jobs that have no real edits yet.
+   history entry and is persisted to `localStorage`.
 
-### The audit trail
-Every change a user can make flows through `WorkflowService` and is logged as a structured entry:
-**who / when / action / from / to / current-step** (plus an internal `section`). The Work history table
-shows **Action / Old value / New value** as their own columns (e.g. action `Diagnose — Decision`,
-from `—`, to `ACCEPT`). `section` (`Routing`, `Fabrication`, `Attachments`, `Signoff`) is kept on the
-record for grouping but is no longer surfaced in the UI.
+4. **Seeded workflows** (`seededWorkflow()`) pre-sign a random number of leading stages with realistic
+   field values and signoff history entries. The count varies per job for diversity.
 
-### Stages = signoffs (per trade)
-[workflow.ts](src/app/data/workflow.ts) defines an ordered stage list per trade via `STAGE_TEMPLATES`
-(merged from static defaults + localStorage overrides). **Each stage is its own signoff**: it carries
-per-step **readings** fields plus configurable **signoff fields** (inspector, license, notes, etc.) and
-an **SAT or UNSAT decision (required)**. A stage is **locked** until every required stage before it
-is **signed** (sequential), only the current stage is editable.
+5. **Work history** screen aggregates `WorkflowService.allWorkflows()` into one flat, filterable timeline.
 
-**The Routing section** (first on the page) is a visual progress indicator — click a step to select it.
-The selected stage's **Current step** override, **readings inputs**, **Next step** routing, **Repeat/Final**
-(for repeatable stages), inspector/decision, and **Signoff** all live in the **Signoff** section.
+### Welding trade stages (in order)
 
-**Current step override** (`swapStageId`): a dropdown at the top of signoff lets you pick a different
-work type from the trade's stages. The readings and signoff fields swap to match the selected stage's template.
-On sign, the workflow jumps to that stage.
+1. **Pre-fit** — NQC Inspector; only when N Ind. = 1 or 2
+2. **Fit** — NQC Inspector; requires MIC 1, MIC 2, Drawing Rev, Actual Thickness
+3. **Fit-Up Insp** — Inspector; releaseToWelding checkbox + release button
+4. **Fit-Up Release** — Foreman; activated only when fit-up inspection rejects release
+5. **Tack** — Welding; swapable to Deferred Tack
+6. **Deferred Tack** — Welding; activated by Fit stage's deferTack option
+7. **Root Weld** — Welding; includes 5X inspection option (auto-signs Root NDT VT/5X)
+8. **Root NDT UT/RT** — Inspector/NQC Inspector; conditional on `job.ndt` having UT or RT
+9. **Root NDT MT/PT** — Inspector/NQC Inspector; conditional on MT or PT
+10. **Root NDT VT/5X** — Inspector/NQC Inspector; conditional on VT or 5X; auto-signed by Root Weld
+11. **Layer** — Welding; Interim/Final Layer, consumable insert
+12. **Layer NDT stages** — same pattern as Root NDT
+13. **Final Weld** — Welding; includes 5X inspection option
+14. **Final NDT stages** — same pattern as Root NDT
+15. **Repair** — Foreman; inserted dynamically when any NDT rejects (UNSAT)
+16. **Review** — Records; verification grid with all job fields, signoff history table
 
-**Next step routing** (`routeTo`): a dropdown showing all remaining stages, defaulting to "Next in sequence".
-Override it to jump ahead (e.g. skip to Final Weld from Root Weld). On accept, stages between current and target
-are re-opened so the workflow jumps there.
+### NDT routing logic
 
-**Repeatable stages**: stages with `repeatable: true` show a **Repeat / Final** radio in signoff.
-"Repeat" inserts another copy of the same stage after signing. "Final" advances normally.
+`job.ndt` contains a string like "VT + UT", "VT + RT + 5X", etc. The `buildStages()` function filters NDT stages based on regex matching:
+- `hasUTorRT = /\b(UT|RT)\b/.test(ndt)` — shows UT/RT stages
+- `hasMTorPT = /\b(MT|PT)\b/.test(ndt)` — shows MT/PT stages
+- `hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL')` — shows VT/5X stages
 
-**Stage reject routing** (`rejectToStage`): each stage can specify which stage to route back to on reject.
-Rejecting re-opens all stages from the target up to (not including) the current stage.
+### N Ind. (NDE Indication) field
 
-**Role-based routing**: each stage has a `role` field (e.g. Fitting, Welding, Foreman, Inspector, NQC Inspector, Records).
-The main table's Role dropdown filters jobs by which role their current unsigned step requires.
-`View` shows all jobs. Roles are configured per-stage in Admin → Routing.
+`job.nInd` is '1', '2', or '3' (randomly seeded):
+- **1 or 2**: Pre-fit stage appears; NDT routes to "NQC Inspector" role; weldPosition hidden unless nInd='1'
+- **3**: No pre-fit; NDT uses "Inspector" role
 
-Every trade gets a shared **Site prep & safety** stage first and a **Cleanup & customer walkthrough**
-stage last. The **job is complete once the last required stage is signed** — there is no overall final
-signoff. The **Fabrication** section is separate and **cross-stage** (build/install,
-condition code + count, installed components, notes for the whole job).
+### Signoff rejection → repair
+
+When any NDT stage is rejected (UNSAT), a **Repair** stage is dynamically inserted after it. All subsequent stages are reopened. The Repair stage role is **Foreman**.
+
+### NDT Data display
+
+The NDT Data section on Joint Details shows requirement indicators (not results):
+- "X" if that NDT type is required for the job (based on `job.ndt`)
+- "5X" if 5X is the required method
+- "—" if not required
+
+---
+
+## Layout / scrolling
+
+- `.layout` — `height: 100vh; display: flex; flex-direction: column`
+- `.topnav` — fixed 3rem height
+- `.content` — `flex: 1; display: flex; flex-direction: column; overflow-x: hidden`
+- `.content-body` — `flex: 1; overflow-y: auto; overflow-x: hidden` — the scroll container for page content
+- `router-outlet` — `display: contents` (children become direct flex items of content-body)
+- `.table-page-wrap` — `height: 100%; max-width: 100%; overflow-x: hidden` — constrains table pages so pager stays in viewport
+- Table wrapper divs use `min-w-0` to prevent table min-widths from expanding the container
 
 ---
 
 ## Theming
 
-- Configured in [app.config.ts](src/app/app.config.ts) with Aura + `darkModeSelector: '.app-dark'`.
-- **Dark mode is the default** (`class="app-dark"` on `<html>` in `index.html`).
-- The **Theme** button ([theme-picker](src/app/theme-picker/theme-picker.component.ts)) switches the
-  **primary** and **surface** palettes at runtime via PrimeNG's `updatePrimaryPalette` /
-  `updateSurfacePalette`, persisted to `localStorage`.
-- **Scheme-aware variables:** custom (non-PrimeNG) elements must use `--app-bg` / `--app-surface` /
-  `--app-border` (defined in [styles.scss](src/styles.scss)), NOT the raw `--p-surface-0/50` — the raw
-  primitives don't flip between light/dark, which previously caused white-in-dark-mode bugs.
+- **DaisyUI 5** themes via `data-theme` attribute on `<html>`
+- Dark mode is default
+- Theme picker persists to localStorage
 
 ---
 
-## Conventions worth knowing
+## Conventions
 
-- **PrimeNG components style themselves** (incl. dark mode). Custom CSS exists only for **layout** and
-  **our own non-PrimeNG elements** (cards, panels, the stage readings/signoff grid).
-- **Column filters** use `display="menu"` (funnel icon → popup → Apply/Clear).
-- **value vs. label:** store the machine value (e.g. a condition code), display via a label lookup
-  (`conditionLabel()` / `characteristicLabel()`). Don't bind raw codes to the screen.
-- Each source file starts with a one-line header comment describing what it is.
-
----
-
-## Real vs. stubbed (important)
-
-| Thing | Reality |
-|---|---|
-| Jobs | Generated in memory (seeded); not editable; regenerate identically each load |
-| Stage templates | Static defaults merged with localStorage overrides; admin CRUD persists to localStorage |
-| Workflow data (stages/components/attachments/sign-off/history) | Real, persisted to `localStorage` (this browser only) |
-| Stage routing | Current step override, next step routing, repeatable stages, reject routing — all real, persisted in workflow |
-| Configurable sign-off fields | Real, per-trade+stage, persisted in stage templates |
-| Sync indicator | Online/offline is **real**; the "push to server" is a **stub** (`flush()` just clears the pending count) |
-| Attachments | **Filenames only** — files are not uploaded/stored |
-| Auth / roles | None — Admin screens have no access control |
-| Job progress | "Current step" is **real** — derived from the workflow's signed stages; there is no separate job-status field |
+- **DaisyUI components** for all UI (tables, buttons, badges, dialogs, dropdowns, inputs).
+- **Lucide icons** — `svg lucideXxx` pattern with `class="size-4"`.
+- **Signals** for state — `signal()` + `computed()`.
+- **Modern control flow** — `@if`/`@for` syntax (not `*ngIf`/`*ngFor`).
+- **Standalone components** — no NgModules.
+- Build command (PowerShell): `cd "C:\Users\dewes\primeng-search-demo"; npx ng build 2>&1`
 
 ---
 
-## Known gaps / possible next steps
+## Known gaps / next steps
 
-- **Editable jobs** (reassign technician, reschedule, change cost) — would make a fuller audit trail real.
-- **Auth / access control** — Admin screens (incl. the **Set step** override) are unguarded; a real build
-  would gate them behind authentication/roles.
-- **Real persistence/sync** — swap `localStorage` for a backend (the `WorkflowService` and `JOBS` are the
-  seams); a tinkered-with option discussed was Dexie/IndexedDB for offline-first storage.
-- **History broadening** — comments-only feed, lifecycle/system events, richer grouping/timeline views.
-- **Stage field defaults** — when swapping current step, fields reset to empty; could pre-fill from previous values.
-- **Repeatable stage limits** — no max-repeat cap; could add a configurable limit per stage.
+- **Editable jobs** — reassign technician, reschedule, change cost
+- **Auth / access control** — Admin screens are unguarded
+- **Real persistence/sync** — swap localStorage for a backend
+- **My Assignments** — placeholder nav item, not yet implemented
