@@ -126,7 +126,7 @@ export class JobDetailComponent {
     f.key === 'location'
       ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
       : f.key === 'revisedJointDesign'
-      ? { ...f, options: jointDesignOptions() }
+      ? { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] }
       : f
   ));
   fabErrors = computed(() => {
