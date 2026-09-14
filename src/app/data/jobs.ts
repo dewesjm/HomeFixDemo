@@ -63,10 +63,10 @@ const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Ro
 
 /* welding-specific seed pools */
 const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
-const DRAWING_REVS = ['Rev A', 'Rev B', 'Rev C', 'Rev D', 'Rev 0', 'Rev 1', 'Rev 2'];
+const DRAWING_REVS = ['A', 'B', 'C', 'D', 'E', 'A-2', 'B-1'];
 const JOINTS = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
-const JOINT_DESIGNS = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
-const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW', 'SAW', 'PAW'];
+const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
+const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Cast Iron', 'Titanium', 'Aluminum', 'Copper Nickel', 'Inconel', 'Duplex Stainless'];
@@ -99,13 +99,15 @@ function seeded(n: number) {
   };
 }
 
-/* stable 5-char code from id: letter (no I/O) + 4 digits */
-const CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+/* stable 5-char code from id: random alphanumeric jumble */
+const ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function makeJobNumber(seed: number): string {
   const rand = seeded(seed * 31 + 7);
-  const letter = CODE_LETTERS[Math.floor(rand() * CODE_LETTERS.length)];
-  const digits = String(Math.floor(rand() * 10000)).padStart(4, '0');
-  return letter + digits;
+  let code = '';
+  for (let j = 0; j < 5; j++) {
+    code += ID_CHARS[Math.floor(rand() * ID_CHARS.length)];
+  }
+  return code;
 }
 
 /* up to 3 distinct codes per job, own seed stream keyed off id */
@@ -157,7 +159,7 @@ export function generateJobs(count = 240): Job[] {
       mcl2: pick(MCL_POOL),
       joiningItem: pick(JOINING_ITEMS),
       joinToItem: pick(JOINING_ITEMS),
-      sequenceNumber: `SEQ-${1000 + i}`,
+      sequenceNumber: '1',
       engineeringNotes: i % 3 === 0 ? 'Standard weld procedure per WPS' : '',
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
@@ -174,8 +176,8 @@ export function generateJobs(count = 240): Job[] {
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: i % 5 === 0 ? 'Required' : '',
       serialNumber: `SN-${30000 + i}`,
-      refitNumber: i % 6 === 0 ? `RF-${4000 + i}` : '',
-      repairNumber: i % 7 === 0 ? `RP-${5000 + i}` : '',
+      refitNumber: '00',
+      repairNumber: '00',
       ss: i % 8 === 0 ? 'Yes' : '',
       sfff: i % 9 === 0 ? 'Yes' : '',
       dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
