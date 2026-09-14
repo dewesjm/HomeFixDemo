@@ -94,21 +94,36 @@
       <!-- Additional Data -->
       <div class="mt-sm">
         <div class="font-semibold text-sm mb-1">Additional Data</div>
-        <div class="detail-grid inline">
-          <div><div class="meta">Order</div><div>{{ j.order || '—' }}</div></div>
-          <div><div class="meta">Work Package</div><div>{{ j.workPackage || '—' }}</div></div>
-          <div><div class="meta">Work Permit</div><div>{{ j.workPermit || '—' }}</div></div>
-          <div><div class="meta">WAFF</div><div>{{ j.waff || '—' }}</div></div>
-          <div><div class="meta">Serial Number</div><div>{{ j.serialNumber || '—' }}</div></div>
-          <div><div class="meta">Refit #</div><div>{{ j.refitNumber || '—' }}</div></div>
-          <div><div class="meta">Repair #</div><div>{{ j.repairNumber || '—' }}</div></div>
-          <div><div class="meta">SS</div><div>{{ j.ss || '—' }}</div></div>
-          <div><div class="meta">SFFF</div><div>{{ j.sfff || '—' }}</div></div>
-          <div><div class="meta">DSS-AAA</div><div>{{ j.dssAaa || '—' }}</div></div>
-          <div><div class="meta">ER1</div><div>{{ j.er1 || '—' }}</div></div>
-          <div><div class="meta">ER2</div><div>{{ j.er2 || '—' }}</div></div>
-          <div><div class="meta">ER3</div><div>{{ j.er3 || '—' }}</div></div>
-          <div><div class="meta">ER4</div><div>{{ j.er4 || '—' }}</div></div>
+        <div class="flex gap-6">
+          <!-- Column 1: Order - Serial Number -->
+          <div class="flex-1 min-w-0">
+            <div class="detail-col">
+              <div class="detail-row"><span class="meta">Order</span><span>{{ j.order || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">Work Package</span><span>{{ j.workPackage || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">Work Permit</span><span>{{ j.workPermit || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">WAFF</span><span>{{ j.waff || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">Serial Number</span><span>{{ j.serialNumber || '—' }}</span></div>
+            </div>
+          </div>
+          <!-- Column 2: Refit - DSS -->
+          <div class="flex-1 min-w-0">
+            <div class="detail-col">
+              <div class="detail-row"><span class="meta">Refit #</span><span>{{ j.refitNumber || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">Repair #</span><span>{{ j.repairNumber || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">SS</span><span>{{ j.ss || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">SFFF</span><span>{{ j.sfff || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">DSS-AAA</span><span>{{ j.dssAaa || '—' }}</span></div>
+            </div>
+          </div>
+          <!-- Column 3: ER1-ER4 -->
+          <div class="flex-1 min-w-0">
+            <div class="detail-col">
+              <div class="detail-row"><span class="meta">ER1</span><span>{{ j.er1 || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">ER2</span><span>{{ j.er2 || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">ER3</span><span>{{ j.er3 || '—' }}</span></div>
+              <div class="detail-row"><span class="meta">ER4</span><span>{{ j.er4 || '—' }}</span></div>
+            </div>
+          </div>
         </div>
       </div>
       <!-- Attribute Codes -->
