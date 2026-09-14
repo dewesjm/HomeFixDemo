@@ -339,15 +339,24 @@ export class JobDetailComponent {
   }
 
   /* check if the current joint design requires consumable insert or backing ring */
+  /* Revised Joint Design takes priority; falls back to joint details joint design */
+  private effectiveJointDesign(): string {
+    const fab = this.wf?.().fabricationData;
+    const revised = fab?.['revisedJointDesign'] ?? '';
+    return revised.trim() || (this.job?.jointDesign ?? '');
+  }
+
   jointDesignRequiresInsert(): boolean {
-    if (!this.job) return false;
-    const jd = getJointDesign(this.job.jointDesign);
+    const code = this.effectiveJointDesign();
+    if (!code) return false;
+    const jd = getJointDesign(code);
     return jd?.requiresConsumableInsert || false;
   }
 
   jointDesignRequiresBackingRing(): boolean {
-    if (!this.job) return false;
-    const jd = getJointDesign(this.job.jointDesign);
+    const code = this.effectiveJointDesign();
+    if (!code) return false;
+    const jd = getJointDesign(code);
     return jd?.requiresBackingRing || false;
   }
 
