@@ -984,7 +984,7 @@
         <div class="signoff-actions">
           @if (!stage.signed) {
             <button type="button" class="btn btn-primary" [disabled]="!canSignStage(stage)" (click)="signStage(stage)">
-              <svg lucideCheck class="size-4"></svg> Signoff
+              <svg lucideCheck class="size-4 text-current"></svg> Signoff
             </button>
           } @else {
             <span class="badge" [class.badge-error]="stage.result === 'unsat'" [class.badge-success]="stage.result === 'sat'">
