@@ -1114,7 +1114,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     if (isWeldStage) {
       showOverride = Math.random() < 0.5;
       if (showOverride) {
-        Object.assign(inputs, { overridePhMin: '2.8', overridePhMax: '7.0', overrideIpMin: '1.2', overrideIpMax: '5.2', overrideNote: 'Approved deviation per WPS-001' });
+        Object.assign(inputs, { overridePhMin: '110', overridePhMax: '170', overrideIpMin: '85', overrideIpMax: '140', overrideNote: 'Approved deviation per WPS-001' });
       }
     }
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */

@@ -424,10 +424,10 @@ export class JobDetailComponent {
   };
   /* WTN → PH/IP requirements mapping */
   private readonly WTN_PHIP_MAP: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string }> = {
-    'wtn-101': { phMin: '3.2', phMax: '6.4', ipMin: '1.6', ipMax: '4.8' },
-    'wtn-102': { phMin: '2.8', phMax: '5.8', ipMin: '1.4', ipMax: '4.2' },
-    'wtn-103': { phMin: '3.0', phMax: '6.0', ipMin: '1.5', ipMax: '4.5' },
-    'wtn-201': { phMin: '3.5', phMax: '7.0', ipMin: '1.8', ipMax: '5.0' },
+    'wtn-101': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150' },
+    'wtn-102': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140' },
+    'wtn-103': { phMin: '115', phMax: '175', ipMin: '88', ipMax: '145' },
+    'wtn-201': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
   };
 
   /* select fields commit on change, clear maps to '' */
