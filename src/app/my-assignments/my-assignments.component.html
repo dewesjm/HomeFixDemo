@@ -3,26 +3,6 @@
   Work items assigned to you from external systems. Filtered by your active role.
 </p>
 
-<!-- Stats row -->
-<div class="flex flex-wrap gap-3 mb-4">
-  <div class="stat-box">
-    <div class="text-2xl font-bold">{{ stats().total }}</div>
-    <div class="text-xs opacity-60">Total</div>
-  </div>
-  @if (stats().urgent > 0) {
-    <div class="stat-box border-error/30">
-      <div class="text-2xl font-bold text-error">{{ stats().urgent }}</div>
-      <div class="text-xs opacity-60">Urgent</div>
-    </div>
-  }
-  @if (stats().overdue > 0) {
-    <div class="stat-box border-warning/30">
-      <div class="text-2xl font-bold text-warning">{{ stats().overdue }}</div>
-      <div class="text-xs opacity-60">Overdue</div>
-    </div>
-  }
-</div>
-
 <!-- Role filter -->
 <div class="flex items-center gap-3 mb-4">
   <label class="text-xs font-semibold opacity-60">Showing assignments for:</label>
@@ -35,57 +15,42 @@
 </div>
 
 <!-- Assignment cards -->
-<div class="flex flex-col gap-3">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
   @for (a of assignments(); track a.id) {
     <div class="panel cursor-pointer hover:border-primary/40 transition-colors"
-         [class.border-l-4]="a.status === 'urgent'"
-         [class.border-l-error]="a.status === 'urgent'"
-         [class.border-l-4]="a.status === 'high'"
-         [class.border-l-warning]="a.status === 'high'"
          (click)="openDetails(a.jobId)">
-      <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-        <!-- Left: job info -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="font-bold text-sm">{{ a.jobNumber }}</span>
-            <span class="badge badge-sm {{ priorityClass(a.status) }}">{{ a.status }}</span>
-            @if (isOverdue(a.dueDate)) {
-              <span class="badge badge-sm badge-error gap-1">
-                <svg lucideAlertTriangle class="size-3"></svg> Overdue
-              </span>
-            }
-          </div>
-          <div class="text-xs opacity-60 mb-1">
-            {{ a.drawing }} · Joint {{ a.joint }} · {{ a.trade }}
-          </div>
-          <div class="text-sm">
-            <span class="font-semibold">Step:</span> {{ a.step }}
-          </div>
-          @if (a.notes) {
-            <div class="text-xs mt-1 text-warning">{{ a.notes }}</div>
-          }
+      <div class="flex items-start justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="font-bold text-sm">{{ a.jobNumber }}</span>
+          <span class="badge badge-sm {{ priorityClass(a.priority) }}">{{ a.priority }}</span>
         </div>
-
-        <!-- Right: meta -->
-        <div class="flex flex-wrap items-center gap-4 text-xs opacity-70 flex-shrink-0">
-          <div class="flex items-center gap-1">
-            <svg lucideCalendar class="size-3"></svg>
-            <span [class.text-error]="isOverdue(a.dueDate)">
-              {{ daysUntil(a.dueDate) }}
-            </span>
-          </div>
-          <div class="flex items-center gap-1">
-            <svg lucideUser class="size-3"></svg>
-            {{ a.assignedBy }}
-          </div>
-          <button type="button" class="btn btn-primary btn-xs gap-1" (click)="openDetails(a.jobId); $event.stopPropagation()">
-            <svg lucideArrowUpRight class="size-3"></svg> Open
-          </button>
+        <span class="text-xs opacity-50">{{ a.id }}</span>
+      </div>
+      <div class="text-xs opacity-60 mb-2">
+        {{ a.drawing }} · Joint {{ a.joint }} · {{ a.trade }}
+      </div>
+      <div class="text-sm mb-2">
+        <span class="font-semibold">Step:</span> {{ a.step }}
+      </div>
+      @if (a.notes) {
+        <div class="text-xs mb-2 text-warning">{{ a.notes }}</div>
+      }
+      <div class="flex items-center justify-between text-xs opacity-50 pt-2 border-t border-base-300">
+        <div class="flex items-center gap-1">
+          <svg lucideCalendar class="size-3"></svg>
+          {{ daysUntil(a.dueDate) }}
         </div>
+        <div class="flex items-center gap-1">
+          <svg lucideUser class="size-3"></svg>
+          {{ a.assignedBy }}
+        </div>
+        <button type="button" class="btn btn-primary btn-xs gap-1" (click)="openDetails(a.jobId); $event.stopPropagation()">
+          <svg lucideArrowUpRight class="size-3"></svg> Open
+        </button>
       </div>
     </div>
   } @empty {
-    <div class="panel text-center py-8 opacity-50">
+    <div class="panel text-center py-8 opacity-50 col-span-full">
       <p>No assignments for this role.</p>
     </div>
   }
