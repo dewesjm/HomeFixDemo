@@ -18,11 +18,13 @@ import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-p
 import { AdminBannerComponent } from './admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './admin-joint-designs/admin-joint-designs.component';
 import { AdminTeamsComponent } from './admin-teams/admin-teams.component';
+import { MyAssignmentsComponent } from './my-assignments/my-assignments.component';
 
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'table' },
   { path: 'table', component: TableSearchComponent, title: 'Project Search' },
+  { path: 'assignments', component: MyAssignmentsComponent, title: 'My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
   { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Routing' },
