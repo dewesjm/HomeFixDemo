@@ -2,7 +2,7 @@
 import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
-  id: number;
+  id: string;          /* random 5-char alphanumeric code */
   jobNumber: string;   /* 5-char code: letter + 4 digits, e.g. K7234 */
   title: string;
   trade: string;  /* dynamic — admin can add new trades */
@@ -141,7 +141,7 @@ export function generateJobs(count = 240): Job[] {
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
     out.push({
-      id: i + 1,
+      id: makeJobNumber(i + 1),
       jobNumber: makeJobNumber(i + 1),
       title,
       trade,
@@ -206,13 +206,14 @@ export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
 /* add a test job for a given trade (for testing admin-added trades) */
 let _nextCustomId = 10_000;
 export function addTestJob(trade: string): Job {
-  const id = _nextCustomId++;
+  const numId = _nextCustomId++;
+  const id = makeJobNumber(numId);
   const job: Job = {
     id,
-    jobNumber: makeJobNumber(id),
+    jobNumber: makeJobNumber(numId),
     title: `${trade} test job`,
     trade,
-    technician: TECHNICIANS[id % TECHNICIANS.length],
+    technician: TECHNICIANS[numId % TECHNICIANS.length],
     drawing: '',
     drawingRev: '',
     joint: '',

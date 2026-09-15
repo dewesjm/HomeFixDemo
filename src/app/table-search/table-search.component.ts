@@ -94,7 +94,7 @@ export class TableSearchComponent {
   totalLoaded = signal(JOBS.length);
 
   // Row selection
-  selectedIds = signal<Set<number>>(new Set());
+  selectedIds = signal<Set<string>>(new Set());
 
   toggleSelectAll() {
     const all = this.table.paged();
@@ -111,7 +111,7 @@ export class TableSearchComponent {
     }
   }
 
-  toggleSelect(id: number) {
+  toggleSelect(id: string) {
     const next = new Set(this.selectedIds());
     if (next.has(id)) next.delete(id); else next.add(id);
     this.selectedIds.set(next);

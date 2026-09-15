@@ -25,7 +25,7 @@ const CURRENT_VERSION = '1.3.1';
 export class WorkflowService {
   private sync = inject(SyncService);
   private messages = inject(ToastService);
-  private store = new Map<number, WritableSignal<JobWorkflow>>();
+  private store = new Map<string, WritableSignal<JobWorkflow>>();
 
   /* Clear stale caches when the app version changes */
   private static clearStaleCachesIfNeeded() {
@@ -37,7 +37,7 @@ export class WorkflowService {
     }
   }
 
-  private persisted: Record<number, JobWorkflow> = this.load();
+  private persisted: Record<string, JobWorkflow> = this.load();
   private seq = Date.now();
 
   private notify(severity: 'success' | 'info' | 'warn', summary: string, detail?: string) {
@@ -56,8 +56,8 @@ export class WorkflowService {
 
   /* all known workflows, persisted + live */
   allWorkflows(): JobWorkflow[] {
-    const merged = new Map<number, JobWorkflow>();
-    for (const [id, wf] of Object.entries(this.persisted)) merged.set(Number(id), wf);
+    const merged = new Map<string, JobWorkflow>();
+    for (const [id, wf] of Object.entries(this.persisted)) merged.set(id, wf);
     for (const [id, sig] of this.store) merged.set(id, sig());   // live overrides persisted
     return [...merged.values()];
   }
@@ -443,17 +443,17 @@ export class WorkflowService {
   }
 
   private persist() {
-    const out: Record<number, JobWorkflow> = {};
+    const out: Record<string, JobWorkflow> = {};
     for (const [id, sig] of this.store) out[id] = sig();
     try { localStorage.setItem(LS_KEY, JSON.stringify(out)); } catch { /* ignore */ }
     this.sync.markDirty();   // a local change is now waiting to sync to a backend
   }
 
-  private load(): Record<number, JobWorkflow> {
+  private load(): Record<string, JobWorkflow> {
     WorkflowService.clearStaleCachesIfNeeded();
     try {
       const raw = localStorage.getItem(LS_KEY);
-      const parsed = raw ? (JSON.parse(raw) as Record<number, JobWorkflow>) : {};
+      const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       /* backfill old/partial records so reads don't throw */
       for (const wf of Object.values(parsed)) {
         wf.components ??= [];

@@ -16,7 +16,7 @@ import { MOCK_ACTIVITY } from '../data/mock-history';
 import { downloadCsv } from '../data/export-csv';
 
 interface ActivityRow extends HistoryEntry {
-  jobId: number;
+  jobId: string;
   jobNumber: string;
   jobTitle: string;
   trade: Job['trade'];
@@ -36,7 +36,7 @@ export class WorkHistoryComponent {
   private wfService = inject(WorkflowService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private jobById = new Map<number, Job>(JOBS.map(j => [j.id, j]));
+  private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   back() { this.router.navigate(['/table']); }
 
@@ -85,7 +85,7 @@ export class WorkHistoryComponent {
   /* all history flattened newest-first, padded with mock activity */
   private allActivity = computed<ActivityRow[]>(() => {
     const rows: ActivityRow[] = [];
-    const realJobIds = new Set<number>();
+    const realJobIds = new Set<string>();
     for (const wf of this.wfService.allWorkflows()) {
       const job = this.jobById.get(wf.jobId);
       if (wf.history.length) realJobIds.add(wf.jobId);
@@ -130,7 +130,7 @@ export class WorkHistoryComponent {
   }
 
   /* go back one step for a job */
-  goBack(jobId: number) {
+  goBack(jobId: string) {
     const job = this.jobById.get(jobId);
     if (!job) return;
     this.wfService.goBackStep(job);

@@ -4,7 +4,7 @@ import { HistoryEntry, StageField, STAGE_TEMPLATES } from './workflow';
 import { CONDITION_CODES } from './conditions';
 
 export interface MockActivity {
-  jobId: number;
+  jobId: string;
   entry: HistoryEntry;
 }
 

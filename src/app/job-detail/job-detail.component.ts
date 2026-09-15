@@ -1,6 +1,6 @@
 //This is the job details page, lot of stuff in here
 
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, afterNextRender } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -53,7 +53,21 @@ export class JobDetailComponent {
     });
   });
 
-  job: Job | undefined = JOBS.find(j => j.id === Number(this.route.snapshot.paramMap.get('id')));
+  constructor() {
+    afterNextRender(() => {
+      const idx = this.selectedStep();
+      const steps = this.stepsModel();
+      const pos = steps.findIndex(s => s.stageIndex === idx);
+      if (pos >= 0) {
+        setTimeout(() => {
+          const el = document.querySelectorAll('.routing-step')[pos];
+          el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+        }, 100);
+      }
+    });
+  }
+
+  job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
 
   /* new-component form model */
@@ -182,26 +196,27 @@ export class JobDetailComponent {
     const j = this.job;
     if (!j) return null;
     const id = j.id;
-    const pick = (arr: string[], salt: number) => arr[(id * salt) % arr.length];
+    const idNum = id.split('').reduce((a, c) => a * 31 + c.charCodeAt(0), 0);
+    const pick = (arr: string[], salt: number) => arr[(idNum * salt) % arr.length];
     return {
       // Job details
       priority:        pick(['Normal', 'High', 'Low', 'Urgent'], 7),
       workOrderType:   pick(['Corrective', 'Preventive', 'Inspection', 'Emergency'], 3),
       customer:        pick(['Acme Property Mgmt', 'Riverside HOA', 'Lakeview Apartments', 'Summit Facilities', 'Oakwood Realty'], 5),
-      customerPhone:   `(555) 0${10 + (id % 89)}-${String(1000 + (id * 37) % 9000)}`,
-      serviceAddress:  `${100 + (id * 13) % 9899} ${pick(['Maple Ave', 'Oak St', 'Cedar Ln', 'Pine Rd', 'Elm Blvd'], 11)}, ${pick(['Springfield', 'Riverton', 'Fairview', 'Madison', 'Clinton'], 17)}`,
-      region:          `${pick(['Midwest', 'Northeast', 'South', 'West', 'Mountain'], 19)} · Branch ${1 + (id % 24)}`,
+      customerPhone:   `(555) 0${10 + (idNum % 89)}-${String(1000 + (idNum * 37) % 9000)}`,
+      serviceAddress:  `${100 + (idNum * 13) % 9899} ${pick(['Maple Ave', 'Oak St', 'Cedar Ln', 'Pine Rd', 'Elm Blvd'], 11)}, ${pick(['Springfield', 'Riverton', 'Fairview', 'Madison', 'Clinton'], 17)}`,
+      region:          `${pick(['Midwest', 'Northeast', 'South', 'West', 'Mountain'], 19)} · Branch ${1 + (idNum % 24)}`,
       warranty:        pick(['In warranty', 'Out of warranty', 'Extended'], 23),
       paymentTerms:    pick(['Net 30', 'Net 15', 'Net 60', 'Due on receipt'], 29),
       // Work validation
-      laborHours:      (1 + (id * 7) % 80 / 10).toFixed(1),
+      laborHours:      (1 + (idNum * 7) % 80 / 10).toFixed(1),
       warrantyPeriod:  pick(['30 days', '90 days', '1 year', '2 years'], 31),
       disposalMethod:  pick(['Recycled', 'Landfill', 'Returned to vendor', 'Hazmat'], 37),
       followUp:        pick(['No', 'Yes'], 41),
       // Sign-off
       permitVerified:  pick(['Yes', 'N/A', 'Pending'], 43),
       testMethod:      pick(['Visual + functional', 'Pressure test', 'Meter reading', 'Load test'], 47),
-      crewSize:        String(1 + (id % 4)),
+      crewSize:        String(1 + (idNum % 4)),
       safetyCheck:     pick(['Passed', 'Passed w/ notes', 'N/A'], 53),
       reworkNeeded:    pick(['No', 'Yes'], 59),
       customerSignature: pick(['On file', 'Verbal', 'Pending'], 61),

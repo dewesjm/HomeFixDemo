@@ -104,7 +104,7 @@ export interface HistoryEntry {
 }
 
 export interface JobWorkflow {
-  jobId: number;
+  jobId: string;
   technician: string;
   stages: WorkflowStage[];
   components: InstalledComponent[];
@@ -1254,7 +1254,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const k = signedStageCount(job, total);
   if (k <= 0) return wf;
 
-  const rand = seeded(job.id * 97 + 13);
+  const rand = seeded(job.id.charCodeAt(0) * 97 + job.id.charCodeAt(1) * 13);
   const DAY = 24 * 60 * 60 * 1000, MIN = 60 * 1000;
   let t = Date.now() - (2 + Math.floor(rand() * 40)) * DAY;
 

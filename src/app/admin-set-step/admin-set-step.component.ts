@@ -22,7 +22,7 @@ export class AdminSetStepComponent {
   private confirm = inject(ConfirmService);
 
   jobOptions = JOBS.map(j => ({ label: `${j.jobNumber} · ${j.title}`, value: j.id }));
-  selectedJobId = signal<number | null>(null);
+  selectedJobId = signal<string | null>(null);
   targetIndex = signal<number | null>(null);
 
   selectedJob = computed<Job | undefined>(() => JOBS.find(j => j.id === this.selectedJobId()));
@@ -43,7 +43,7 @@ export class AdminSetStepComponent {
     return wf ? currentStepLabel(wf.stages) : '';
   });
 
-  pickJob(id: number | null) {
+  pickJob(id: string | null) {
     this.selectedJobId.set(id);
     this.targetIndex.set(null);
   }
