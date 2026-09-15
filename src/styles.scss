@@ -294,8 +294,9 @@ html, body {
   100% { background: transparent; }
 }
 
-/* Table page — fill available height, pager pinned at bottom */
-.table-page-wrap { display: flex; flex-direction: column; height: 100%; max-width: 100%; overflow-x: hidden; }
+/* Table page — fixed height so table scrolls inside, not the whole page */
+.table-page-wrap { display: flex; flex-direction: column; height: calc(100vh - 3rem); max-width: 100%; overflow: hidden; }
+.table-page-wrap .flex-1 { overflow-y: auto; }
 .table-page-wrap app-table-pager { flex-shrink: 0; }
 
 /* Sticky column filter inputs hidden on mobile to save space */
