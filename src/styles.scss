@@ -65,9 +65,6 @@ html, body {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 8px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .facet-row > * { flex: 0 0 auto; }
@@ -298,22 +295,28 @@ html, body {
 }
 
 /* Table page — fill available height, pager pinned at bottom */
-.table-page-wrap { display: flex; flex-direction: column; height: 100%; max-width: 100%; overflow-x: auto; }
-.table-page-wrap app-table-pager { flex-shrink: 0; }
+.table-page-wrap { display: flex; flex-direction: column; height: 100%; max-width: 100%; }
+.table-top { flex-shrink: 0; }
+.table-scroll { flex: 1 1 0; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+.table-scroll app-table-pager { flex-shrink: 0; }
 
-/* Sticky columns on mobile — checkbox + ID stay pinned left */
+/* Sticky column filter inputs hidden on mobile to save space */
+@media (max-width: 640px) { .col-filter-mobile { display: none; } }
+
+/* Frozen columns — checkbox + ID pinned left when scrolling horizontally */
 @media (max-width: 640px) {
-  .table-page-wrap .table { min-width: 40rem; }
-  .table-page-wrap .table th:first-child,
-  .table-page-wrap .table td:first-child {
+  .table-scroll .table { min-width: 40rem; }
+  .col-freeze-1 {
     position: sticky; left: 0; z-index: 5; background: var(--app-surface);
     box-shadow: 2px 0 4px rgba(0,0,0,.08);
   }
-  .table-page-wrap .table th:nth-child(2),
-  .table-page-wrap .table td:nth-child(2) {
+  .col-freeze-2 {
     position: sticky; left: 2rem; z-index: 5; background: var(--app-surface);
     box-shadow: 2px 0 4px rgba(0,0,0,.08);
   }
+  /* Thead freeze needs higher z so it stays above scrolling rows */
+  .table-scroll .table thead .col-freeze-1,
+  .table-scroll .table thead .col-freeze-2 { z-index: 6; }
 }
 
 /* Page header: hamburger + title + sync on one line */

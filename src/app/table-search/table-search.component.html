@@ -1,5 +1,8 @@
 <!-- Work orders table template (paired with table-search.component.ts). -->
 <div class="table-page-wrap">
+
+<!-- FIXED: header + filters -->
+<div class="table-top">
 <div class="page-header">
   <h2 class="section-title">Pipe Welding</h2>
   @if (banner(); as b) {
@@ -53,27 +56,27 @@
     }
   </label>
 </div>
+</div>
 
-<div class="flex-1 min-h-0 min-w-0">
+<!-- SCROLLABLE: table + pager -->
+<div class="table-scroll">
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="w-8">
+      <th class="w-8 col-freeze-1">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
-      <th class="min-w-16">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
-            ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-        </div>
+      <th class="min-w-16 col-freeze-2">
+        <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
+          ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+        </a>
       </th>
       <th class="min-w-32">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
             Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <div class="relative">
+          <div class="relative col-filter-mobile">
             <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
                    [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
                    (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
@@ -90,7 +93,7 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('drawing')">
             Drawing {{ table.sortField() === 'drawing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <div class="relative">
+          <div class="relative col-filter-mobile">
             <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
                    [ngModel]="table.columnFilters()['drawing'] ?? ''"
                    (ngModelChange)="table.setColumnFilter('drawing', $event)" />
@@ -107,7 +110,7 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('joint')">
             Joint {{ table.sortField() === 'joint' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <div class="relative">
+          <div class="relative col-filter-mobile">
             <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
                    [ngModel]="table.columnFilters()['joint'] ?? ''"
                    (ngModelChange)="table.setColumnFilter('joint', $event)" />
@@ -135,10 +138,10 @@
   <tbody>
     @for (job of table.paged(); track job.id) {
       <tr>
-        <td class="w-8">
+        <td class="w-8 col-freeze-1">
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
-        <td class="text-xs">{{ job.id }}</td>
+        <td class="text-xs col-freeze-2">{{ job.id }}</td>
         <td>{{ job.jobNumber }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>
@@ -159,7 +162,8 @@
     }
   </tbody>
 </table>
-</div>
 
 <app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
+</div>
+
 </div>
