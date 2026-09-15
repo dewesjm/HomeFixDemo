@@ -3,7 +3,7 @@
   Work items assigned to you from external systems. Filtered by your active role.
 </p>
 
-<!-- Role filter -->
+<!-- Role filter + keyword -->
 <div class="flex items-center gap-3 mb-4">
   <label class="text-xs font-semibold opacity-60">Showing assignments for:</label>
   <select class="select select-sm select-bordered"
@@ -12,6 +12,9 @@
       <option [ngValue]="o.value">{{ o.label }}</option>
     }
   </select>
+  <input class="input input-sm input-bordered w-48"
+         placeholder="Filter…"
+         [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
 </div>
 
 <!-- Assignment list -->
