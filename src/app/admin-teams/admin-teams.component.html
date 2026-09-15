@@ -100,17 +100,8 @@
       </div>
     </section>
 
-    <!-- Tabs -->
-    <div class="tabs tabs-border mt-3">
-      <a class="tab" [class.tab-active]="activeTab() === 'permissions'" (click)="activeTab.set('permissions')">Permissions</a>
-      <a class="tab" [class.tab-active]="activeTab() === 'members'" (click)="activeTab.set('members')">Members</a>
-      <a class="tab" [class.tab-active]="activeTab() === 'memberOf'" (click)="activeTab.set('memberOf')">Member of</a>
-      <a class="tab" [class.tab-active]="activeTab() === 'settings'" (click)="activeTab.set('settings')">Settings</a>
-    </div>
-
-    <!-- Tab content -->
-    @if (activeTab() === 'permissions') {
-      <section class="panel mt-0 rounded-tl-none">
+    <!-- Permissions -->
+    <section class="panel mt-3">
         @for (cat of categories; track cat) {
           <div class="mb-4 last:mb-0">
             <h4 class="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">{{ cat }}</h4>
@@ -129,32 +120,5 @@
           </div>
         }
       </section>
-    }
-
-    @if (activeTab() === 'members') {
-      <section class="panel mt-0 rounded-tl-none">
-        <p class="text-sm opacity-50">Members management — not implemented in this demo.</p>
-        <p class="text-xs opacity-30 mt-2">In production, this would show AD group members synced from Entra ID.</p>
-      </section>
-    }
-
-    @if (activeTab() === 'memberOf') {
-      <section class="panel mt-0 rounded-tl-none">
-        <p class="text-sm opacity-50">Group membership — not implemented in this demo.</p>
-        <p class="text-xs opacity-30 mt-2">Shows which parent groups this group inherits permissions from.</p>
-      </section>
-    }
-
-    @if (activeTab() === 'settings') {
-      <section class="panel mt-0 rounded-tl-none">
-        <div class="flex items-center justify-between py-2 border-b border-base-300">
-          <div>
-            <div class="text-sm font-semibold">Delete group</div>
-            <div class="text-xs opacity-50">Remove this group and revoke all its permissions.</div>
-          </div>
-          <button type="button" class="btn btn-sm btn-error btn-outline" (click)="removeGroup(group.id)">Delete</button>
-        </div>
-      </section>
-    }
   }
 }

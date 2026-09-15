@@ -126,7 +126,6 @@ export class AdminTeamsComponent {
   groups = signal<TeamGroup[]>(DEFAULT_GROUPS.map(g => ({ ...g, permissions: { ...g.permissions } })));
   permissions = PERMISSIONS;
   selectedGroupId = signal<string | null>(null);
-  activeTab = signal<'permissions' | 'members' | 'memberOf' | 'settings'>('permissions');
   showAddForm = signal(false);
   newGroupName = signal('');
   newGroupDesc = signal('');
@@ -141,7 +140,6 @@ export class AdminTeamsComponent {
 
   selectGroup(id: string) {
     this.selectedGroupId.set(id);
-    this.activeTab.set('permissions');
   }
 
   backToList() {
