@@ -1,96 +1,160 @@
-<h2 class="section-title"><svg lucideShield class="size-5"></svg> Teams &amp; Permissions</h2>
+<h2 class="section-title"><svg lucideShield class="size-5"></svg> Permissions</h2>
 <p class="section-sub">
-  Manage AD group access to workflow stages and features. Assign Allow, Deny, or leave as Not Set (inherits default).
+  Manage AD group access to project stages and features.
 </p>
 
 <div class="mb-sm p-3 rounded-lg bg-base-200 border border-base-300 text-xs opacity-70">
-  <strong>Demo concept only</strong> — this screen shows the proposed permissions model. Changes here are not persisted or enforced.
+  <strong>Demo concept only</strong> — this screen shows the proposed permissions model. Changes are not persisted or enforced.
 </div>
 
-<section class="panel overflow-x-auto">
-  <table class="table table-sm w-full text-xs">
-    <thead>
-      <tr>
-        <th class="w-52 min-w-[13rem]">AD Group</th>
-        @for (cat of categories; track cat) {
-          <th class="text-center border-l border-base-300" [attr.colspan]="permsForCategory(cat).length">{{ cat }}</th>
-        }
-        <th class="w-10 border-l border-base-300"></th>
-      </tr>
-      <tr>
-        <th></th>
-        @for (cat of categories; track cat) {
-          @for (p of permsForCategory(cat); track p.key) {
-            <th class="text-center font-normal text-[0.65rem] px-1 py-0.5" [title]="p.label">{{ p.label }}</th>
-          }
-        }
-        <th class="border-l border-base-300"></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (group of groups(); track group.id) {
-        <tr class="hover">
-          <td>
-            <div class="font-semibold text-sm">{{ group.name }}</div>
-            <div class="text-[0.65rem] opacity-60">{{ group.description }}</div>
-          </td>
-          @for (cat of categories; track cat) {
-            @for (p of permsForCategory(cat); track p.key) {
-              <td class="text-center border-l border-base-300">
-                <button type="button"
-                        class="badge badge-sm cursor-pointer hover:opacity-80 transition-opacity {{ permClass(group.permissions[p.key] ?? 'not-set') }}"
-                        (click)="cyclePerm(group.id, p.key)"
-                        [title]="p.label + ': ' + permLabel(group.permissions[p.key] ?? 'not-set')">
-                  {{ permLabel(group.permissions[p.key] ?? 'not-set') }}
-                </button>
-              </td>
-            }
-          }
-          <td class="border-l border-base-300">
-            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGroup(group.id)" title="Remove group">
-              <svg lucideTrash2 class="size-3"></svg>
-            </button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
-</section>
-
-<section class="panel mt-sm">
-  @if (!showAddForm()) {
-    <button type="button" class="btn btn-sm btn-outline" (click)="showAddForm.set(true)">
-      <svg lucidePlus class="size-4"></svg> Add AD Group
-    </button>
-  } @else {
-    <div class="flex flex-col sm:flex-row gap-3 items-end">
-      <div class="flex-1 w-full">
-        <label class="text-xs font-semibold mb-1 block">Group Name</label>
-        <input class="input input-sm input-bordered w-full" placeholder="e.g. NDT-Inspectors"
-               [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)" />
+@if (!selectedGroupId()) {
+  <!-- ======== GROUP LIST VIEW ======== -->
+  <section class="panel">
+    <div class="flex items-center justify-between mb-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xs opacity-60">Total</span>
+        <span class="badge badge-sm">{{ groups().length }}</span>
       </div>
-      <div class="flex-1 w-full">
-        <label class="text-xs font-semibold mb-1 block">Description</label>
-        <input class="input input-sm input-bordered w-full" placeholder="e.g. Level II NDT technicians"
-               [ngModel]="newGroupDesc()" (ngModelChange)="newGroupDesc.set($event)" />
-      </div>
-      <div class="flex gap-2">
-        <button type="button" class="btn btn-sm btn-primary" (click)="addGroup()">
-          <svg lucideCheck class="size-4"></svg> Add
-        </button>
-        <button type="button" class="btn btn-sm btn-ghost" (click)="showAddForm.set(false); newGroupName.set(''); newGroupDesc.set('')">
-          <svg lucideX class="size-4"></svg> Cancel
-        </button>
-      </div>
+      <button type="button" class="btn btn-sm btn-primary" (click)="showAddForm.set(true)">
+        <svg lucidePlus class="size-4"></svg> New Group
+      </button>
     </div>
-  }
-</section>
 
-<section class="panel mt-sm">
-  <h3 class="panel-title text-xs">Permission Legend</h3>
-  <div class="flex flex-wrap gap-4 text-xs">
-    <div class="flex items-center gap-2"><span class="badge badge-sm badge-success">Allow</span> Explicitly granted</div>
-    <div class="flex items-center gap-2"><span class="badge badge-sm badge-error">Deny</span> Explicitly blocked (overrides Allow)</div>
-    <div class="flex items-center gap-2"><span class="badge badge-sm badge-ghost badge-outline">—</span> Not set — inherits default access</div>
-  </div>
-</section>
+    @if (showAddForm()) {
+      <div class="mb-4 p-4 rounded-lg border border-base-300 bg-base-200">
+        <div class="flex flex-col sm:flex-row gap-3 items-end">
+          <div class="flex-1 w-full">
+            <label class="text-xs font-semibold mb-1 block">Group Name</label>
+            <input class="input input-sm input-bordered w-full" placeholder="e.g. NDT-Inspectors"
+                   [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)" />
+          </div>
+          <div class="flex-1 w-full">
+            <label class="text-xs font-semibold mb-1 block">Description</label>
+            <input class="input input-sm input-bordered w-full" placeholder="e.g. Level II NDT technicians"
+                   [ngModel]="newGroupDesc()" (ngModelChange)="newGroupDesc.set($event)" />
+          </div>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-sm btn-primary" (click)="addGroup()">Save</button>
+            <button type="button" class="btn btn-sm btn-ghost" (click)="showAddForm.set(false); newGroupName.set(''); newGroupDesc.set('')">Cancel</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Table header -->
+    <div class="grid grid-cols-[1fr_2fr_5rem_5rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+      <div>Name</div>
+      <div>Description</div>
+      <div class="text-center">Type</div>
+      <div class="text-center">Members</div>
+      <div></div>
+    </div>
+
+    <!-- Group rows -->
+    @for (group of groups(); track group.id) {
+      <div class="grid grid-cols-[1fr_2fr_5rem_5rem_2.5rem] gap-2 px-3 py-3 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors"
+           (click)="selectGroup(group.id)">
+        <!-- Name + avatar -->
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+               [style.background]="group.avatarColor">
+            {{ initials(group.name) }}
+          </div>
+          <span class="font-semibold text-sm truncate">{{ group.name }}</span>
+        </div>
+        <!-- Description -->
+        <div class="text-xs opacity-70 truncate">{{ group.description }}</div>
+        <!-- Type -->
+        <div class="text-center text-xs">{{ group.type }}</div>
+        <!-- Members -->
+        <div class="flex items-center justify-center gap-1 text-xs">
+          <svg lucideUsers class="size-3 opacity-50"></svg>
+          {{ group.memberCount }}
+        </div>
+        <!-- Chevron indicator -->
+        <div class="text-right text-xs opacity-40">›</div>
+      </div>
+    }
+  </section>
+
+} @else {
+  <!-- ======== GROUP DETAIL VIEW ======== -->
+  @if (selectedGroup(); as group) {
+    <div class="mb-3">
+      <button type="button" class="btn btn-ghost btn-sm gap-1" (click)="backToList()">
+        <svg lucideChevronLeft class="size-4"></svg> All groups
+      </button>
+    </div>
+
+    <!-- Group header -->
+    <section class="panel">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold flex-shrink-0"
+             [style.background]="group.avatarColor">
+          {{ initials(group.name) }}
+        </div>
+        <div>
+          <h3 class="text-lg font-bold">{{ group.name }}</h3>
+          <p class="text-xs opacity-60">{{ group.description }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <div class="tabs tabs-border mt-3">
+      <a class="tab" [class.tab-active]="activeTab() === 'permissions'" (click)="activeTab.set('permissions')">Permissions</a>
+      <a class="tab" [class.tab-active]="activeTab() === 'members'" (click)="activeTab.set('members')">Members</a>
+      <a class="tab" [class.tab-active]="activeTab() === 'memberOf'" (click)="activeTab.set('memberOf')">Member of</a>
+      <a class="tab" [class.tab-active]="activeTab() === 'settings'" (click)="activeTab.set('settings')">Settings</a>
+    </div>
+
+    <!-- Tab content -->
+    @if (activeTab() === 'permissions') {
+      <section class="panel mt-0 rounded-tl-none">
+        @for (cat of categories; track cat) {
+          <div class="mb-4 last:mb-0">
+            <h4 class="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">{{ cat }}</h4>
+            @for (p of permsForCategory(cat); track p.key) {
+              <div class="flex items-center justify-between py-2 border-b border-base-300 last:border-b-0">
+                <span class="text-sm">{{ p.label }}</span>
+                <select class="select select-sm select-bordered w-40"
+                        [ngModel]="group.permissions[p.key] ?? 'not-set'"
+                        (ngModelChange)="updatePerm(group.id, p.key, $event)">
+                  <option value="not-set">Not set</option>
+                  <option value="allow">Allow</option>
+                  <option value="deny">Deny</option>
+                </select>
+              </div>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    @if (activeTab() === 'members') {
+      <section class="panel mt-0 rounded-tl-none">
+        <p class="text-sm opacity-50">Members management — not implemented in this demo.</p>
+        <p class="text-xs opacity-30 mt-2">In production, this would show AD group members synced from Entra ID.</p>
+      </section>
+    }
+
+    @if (activeTab() === 'memberOf') {
+      <section class="panel mt-0 rounded-tl-none">
+        <p class="text-sm opacity-50">Group membership — not implemented in this demo.</p>
+        <p class="text-xs opacity-30 mt-2">Shows which parent groups this group inherits permissions from.</p>
+      </section>
+    }
+
+    @if (activeTab() === 'settings') {
+      <section class="panel mt-0 rounded-tl-none">
+        <div class="flex items-center justify-between py-2 border-b border-base-300">
+          <div>
+            <div class="text-sm font-semibold">Delete group</div>
+            <div class="text-xs opacity-50">Remove this group and revoke all its permissions.</div>
+          </div>
+          <button type="button" class="btn btn-sm btn-error btn-outline" (click)="removeGroup(group.id)">Delete</button>
+        </div>
+      </section>
+    }
+  }
+}
