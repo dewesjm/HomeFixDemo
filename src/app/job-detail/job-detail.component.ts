@@ -805,7 +805,8 @@ export class JobDetailComponent {
   }
 
   back() {
-    this.router.navigate(['/table']);
+    const from = this.route.snapshot.queryParamMap.get('from');
+    this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
   }
 
   copySignoffHistory() {

@@ -26,6 +26,6 @@ export class MyAssignmentsComponent {
   });
 
   openDetails(jobId: string) {
-    this.router.navigate(['/jobs', jobId]);
+    this.router.navigate(['/jobs', jobId], { queryParams: { from: 'assignments' } });
   }
 }
