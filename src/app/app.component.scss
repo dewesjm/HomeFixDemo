@@ -10,9 +10,12 @@
   border-bottom: 1px solid var(--app-border);
   background: var(--app-surface);
   flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-.topnav-left { display: flex; align-items: center; gap: 1.5rem; }
+.topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; }
 
 .topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
 
@@ -23,6 +26,10 @@
   margin: 0;
   padding: 0;
   align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar { display: none; }
 
   li { position: relative; }
 

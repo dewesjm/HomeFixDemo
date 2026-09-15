@@ -65,6 +65,9 @@ html, body {
   background: var(--app-surface);
   border: 1px solid var(--app-border);
   border-radius: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .facet-row > * { flex: 0 0 auto; }
@@ -297,6 +300,21 @@ html, body {
 /* Table page — fill available height, pager pinned at bottom */
 .table-page-wrap { display: flex; flex-direction: column; height: 100%; max-width: 100%; overflow-x: auto; }
 .table-page-wrap app-table-pager { flex-shrink: 0; }
+
+/* Sticky columns on mobile — checkbox + ID stay pinned left */
+@media (max-width: 640px) {
+  .table-page-wrap .table { min-width: 40rem; }
+  .table-page-wrap .table th:first-child,
+  .table-page-wrap .table td:first-child {
+    position: sticky; left: 0; z-index: 5; background: var(--app-surface);
+    box-shadow: 2px 0 4px rgba(0,0,0,.08);
+  }
+  .table-page-wrap .table th:nth-child(2),
+  .table-page-wrap .table td:nth-child(2) {
+    position: sticky; left: 2rem; z-index: 5; background: var(--app-surface);
+    box-shadow: 2px 0 4px rgba(0,0,0,.08);
+  }
+}
 
 /* Page header: hamburger + title + sync on one line */
 .page-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
