@@ -1,6 +1,6 @@
 //This is the job details page, lot of stuff in here
 
-import { Component, computed, effect, inject, signal, afterNextRender } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -44,7 +44,7 @@ export class JobDetailComponent {
   /** Auto-scroll the routing bar so the active step is centered */
   private _scrollActiveIntoView = effect(() => {
     const idx = this.selectedStep();
-    const steps = this.stepsModel();
+    const steps = untracked(() => this.stepsModel());
     const pos = steps.findIndex(s => s.stageIndex === idx);
     if (pos < 0) return;
     queueMicrotask(() => {
@@ -52,20 +52,6 @@ export class JobDetailComponent {
       el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
     });
   });
-
-  constructor() {
-    afterNextRender(() => {
-      const idx = this.selectedStep();
-      const steps = this.stepsModel();
-      const pos = steps.findIndex(s => s.stageIndex === idx);
-      if (pos >= 0) {
-        setTimeout(() => {
-          const el = document.querySelectorAll('.routing-step')[pos];
-          el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-        }, 100);
-      }
-    });
-  }
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
