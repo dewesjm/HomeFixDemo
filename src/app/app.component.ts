@@ -1,7 +1,7 @@
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
@@ -41,10 +41,15 @@ export class AppComponent {
   updateReady = signal(false);
   adminOpen = signal(false);
 
+  @ViewChild('adminDetails') adminDetails?: ElementRef<HTMLDetailsElement>;
+
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
       if (this.adminOpen() && !(e.target as HTMLElement).closest('.dropdown-wrapper')) {
         this.adminOpen.set(false);
+        if (this.adminDetails?.nativeElement) {
+          this.adminDetails.nativeElement.open = false;
+        }
       }
     });
 

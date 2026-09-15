@@ -32,7 +32,7 @@
           </a>
         </li>
         <li class="dropdown-wrapper">
-          <details [open]="adminOpen()" (toggle)="adminOpen.set($any($event.target).open)">
+          <details #adminDetails (toggle)="adminOpen.set($any($event.target).open)">
             <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/admin/steps" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
