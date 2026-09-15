@@ -17,7 +17,8 @@
 <!-- Assignment list -->
 <div class="flex flex-col">
   <!-- Header -->
-  <div class="grid grid-cols-[1fr_6rem_1fr_8rem_5rem_1fr_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+  <div class="grid grid-cols-[4.5rem_1fr_6rem_1fr_8rem_5rem_1fr_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+    <div>ID</div>
     <div>Project</div>
     <div>Drawing</div>
     <div>Step</div>
@@ -29,8 +30,9 @@
 
   <!-- Rows -->
   @for (a of assignments(); track a.id) {
-    <div class="grid grid-cols-[1fr_6rem_1fr_8rem_5rem_1fr_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
+    <div class="grid grid-cols-[4.5rem_1fr_6rem_1fr_8rem_5rem_1fr_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
          (click)="openDetails(a.jobId)">
+      <div class="font-mono text-xs opacity-60 truncate">{{ a.jobId }}</div>
       <div class="font-semibold truncate">{{ a.jobNumber }}</div>
       <div class="text-xs opacity-60 truncate">{{ a.drawing }}</div>
       <div class="truncate">{{ a.step }}</div>
@@ -39,7 +41,7 @@
       <div class="text-xs font-semibold">John Johnson</div>
       <div class="flex items-center gap-1 justify-end">
         <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
-           target="_blank" rel="noopener" title="View work package" (click)="$event.stopPropagation()">
+           target="_blank" rel="noopener" title="View assignment" (click)="$event.stopPropagation()">
           <svg lucideFileText class="size-3.5"></svg>
         </a>
         <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(a.jobId); $event.stopPropagation()">
