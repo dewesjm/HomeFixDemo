@@ -24,7 +24,10 @@
           <span class="font-bold text-sm">{{ a.jobNumber }}</span>
           <span class="badge badge-sm {{ priorityClass(a.priority) }}">{{ a.priority }}</span>
         </div>
-        <span class="text-xs opacity-50">{{ a.id }}</span>
+        <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
+           target="_blank" rel="noopener" title="View work package" (click)="$event.stopPropagation()">
+          <svg lucideFileText class="size-4"></svg>
+        </a>
       </div>
       <div class="text-xs opacity-60 mb-2">
         {{ a.drawing }} · Joint {{ a.joint }} · {{ a.trade }}

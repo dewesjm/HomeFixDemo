@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideClipboardList, LucideArrowUpRight, LucideCalendar, LucideUser } from '@lucide/angular';
+import { LucideClipboardList, LucideArrowUpRight, LucideCalendar, LucideUser, LucideFileText } from '@lucide/angular';
 
 import { ASSIGNMENTS, AssignmentPriority } from '../data/assignments';
 import { ROLES, Role, DEFAULT_ROLE } from '../data/workflow';
@@ -10,7 +10,7 @@ import { ROLES, Role, DEFAULT_ROLE } from '../data/workflow';
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideClipboardList, LucideArrowUpRight, LucideCalendar, LucideUser],
+  imports: [CommonModule, FormsModule, LucideClipboardList, LucideArrowUpRight, LucideCalendar, LucideUser, LucideFileText],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {
