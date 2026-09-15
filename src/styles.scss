@@ -295,7 +295,7 @@ html, body {
 }
 
 /* Table page — fill available height, pager pinned at bottom */
-.table-page-wrap { display: flex; flex-direction: column; height: 100%; max-width: 100%; }
+.table-page-wrap { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; max-width: 100%; }
 .table-top { flex-shrink: 0; }
 .table-scroll { flex: 1 1 0; min-height: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
 .table-scroll app-table-pager { flex-shrink: 0; }
