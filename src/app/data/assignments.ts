@@ -13,7 +13,6 @@ export interface Assignment {
   trade: string;
   step: string;
   assignedRoles: string[];
-  priority: AssignmentPriority;
   dueDate: string;
   assignedDate: string;
   assignedBy: string;
@@ -56,8 +55,6 @@ function generateAssignments(): Assignment[] {
     'Final Sign-off': ['Foreman', 'Records'],
   };
 
-  const priorities: AssignmentPriority[] = ['low', 'normal', 'normal', 'normal', 'high'];
-
   for (let i = 0; i < 18; i++) {
     const job = pick(JOBS);
     const step = pick(STEPS);
@@ -75,7 +72,6 @@ function generateAssignments(): Assignment[] {
       trade: job.trade,
       step,
       assignedRoles: rolesByStep[step] || ['View'],
-      priority: pick(priorities),
       dueDate: due.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
       assignedBy: pick(ASSIGNEES),
@@ -83,10 +79,7 @@ function generateAssignments(): Assignment[] {
     });
   }
 
-  return assignments.sort((a, b) => {
-    const po: Record<string, number> = { high: 0, normal: 1, low: 2 };
-    return (po[a.priority] ?? 1) - (po[b.priority] ?? 1) || a.dueDate.localeCompare(b.dueDate);
-  });
+  return assignments.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
 
 export const ASSIGNMENTS = generateAssignments();
