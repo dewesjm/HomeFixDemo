@@ -58,7 +58,7 @@
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="w-8 col-freeze-1">
+      <th class="w-8">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
       <th class="min-w-16">
@@ -127,13 +127,13 @@
             (selectedChange)="table.setColumnFilter('currentStep', $event)" />
         </div>
       </th>
-      <th class="Actions">Actions</th>
+      <th class="Actions col-freeze-actions">Actions</th>
     </tr>
   </thead>
   <tbody>
     @for (job of table.paged(); track job.id) {
       <tr>
-        <td class="w-8 col-freeze-1">
+        <td class="w-8">
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
         <td class="text-xs">{{ job.id }}</td>
@@ -141,7 +141,7 @@
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>
         <td>{{ job.currentStep }}</td>
-        <td>
+        <td class="col-freeze-actions">
           <div class="row-tight">
             <button type="button" class="btn btn-ghost btn-xs" (click)="openHistory(job)">
               <svg lucideHistory class="size-3"></svg> History
