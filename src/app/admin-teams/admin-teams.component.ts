@@ -104,7 +104,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     })(),
   },
   {
-    id: 'g5', name: 'Readers', description: 'Members of this group have read-only access to the team project.',
+    id: 'g5', name: 'Viewers', description: 'Members of this group have read-only access to the team project.',
     type: 'Group', avatarColor: '#5d4037', memberCount: 8,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
@@ -144,6 +144,12 @@ export class AdminTeamsComponent {
 
   backToList() {
     this.selectedGroupId.set(null);
+  }
+
+  updateDesc(groupId: string, value: string) {
+    this.groups.update(groups =>
+      groups.map(g => g.id !== groupId ? g : { ...g, description: value })
+    );
   }
 
   updatePerm(groupId: string, permKey: string, value: 'allow' | 'deny' | 'not-set') {

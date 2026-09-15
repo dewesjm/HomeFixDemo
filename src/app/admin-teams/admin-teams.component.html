@@ -42,17 +42,15 @@
     }
 
     <!-- Table header -->
-    <div class="grid grid-cols-[1fr_2fr_5rem_5rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
-      <div>Name</div>
+    <div class="grid grid-cols-[1fr_2fr_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+      <div>AD Group</div>
       <div>Description</div>
-      <div class="text-center">Type</div>
-      <div class="text-center">Members</div>
       <div></div>
     </div>
 
     <!-- Group rows -->
     @for (group of groups(); track group.id) {
-      <div class="grid grid-cols-[1fr_2fr_5rem_5rem_2.5rem] gap-2 px-3 py-3 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors"
+      <div class="grid grid-cols-[1fr_2fr_2.5rem] gap-2 px-3 py-3 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors"
            (click)="selectGroup(group.id)">
         <!-- Name + avatar -->
         <div class="flex items-center gap-3 min-w-0">
@@ -64,13 +62,6 @@
         </div>
         <!-- Description -->
         <div class="text-xs opacity-70 truncate">{{ group.description }}</div>
-        <!-- Type -->
-        <div class="text-center text-xs">{{ group.type }}</div>
-        <!-- Members -->
-        <div class="flex items-center justify-center gap-1 text-xs">
-          <svg lucideUsers class="size-3 opacity-50"></svg>
-          {{ group.memberCount }}
-        </div>
         <!-- Chevron indicator -->
         <div class="text-right text-xs opacity-40">›</div>
       </div>
@@ -93,9 +84,10 @@
              [style.background]="group.avatarColor">
           {{ initials(group.name) }}
         </div>
-        <div>
+        <div class="flex-1">
           <h3 class="text-lg font-bold">{{ group.name }}</h3>
-          <p class="text-xs opacity-60">{{ group.description }}</p>
+          <input class="input input-sm input-bordered w-full mt-1" [ngModel]="group.description"
+                 (ngModelChange)="updateDesc(group.id, $event)" placeholder="Group description" />
         </div>
       </div>
     </section>
