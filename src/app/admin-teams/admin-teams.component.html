@@ -1,0 +1,96 @@
+<h2 class="section-title"><svg lucideShield class="size-5"></svg> Teams &amp; Permissions</h2>
+<p class="section-sub">
+  Manage AD group access to workflow stages and features. Assign Allow, Deny, or leave as Not Set (inherits default).
+</p>
+
+<div class="mb-sm p-3 rounded-lg bg-base-200 border border-base-300 text-xs opacity-70">
+  <strong>Demo concept only</strong> — this screen shows the proposed permissions model. Changes here are not persisted or enforced.
+</div>
+
+<section class="panel overflow-x-auto">
+  <table class="table table-sm w-full text-xs">
+    <thead>
+      <tr>
+        <th class="w-52 min-w-[13rem]">AD Group</th>
+        @for (cat of categories; track cat) {
+          <th class="text-center border-l border-base-300" [attr.colspan]="permsForCategory(cat).length">{{ cat }}</th>
+        }
+        <th class="w-10 border-l border-base-300"></th>
+      </tr>
+      <tr>
+        <th></th>
+        @for (cat of categories; track cat) {
+          @for (p of permsForCategory(cat); track p.key) {
+            <th class="text-center font-normal text-[0.65rem] px-1 py-0.5" [title]="p.label">{{ p.label }}</th>
+          }
+        }
+        <th class="border-l border-base-300"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (group of groups(); track group.id) {
+        <tr class="hover">
+          <td>
+            <div class="font-semibold text-sm">{{ group.name }}</div>
+            <div class="text-[0.65rem] opacity-60">{{ group.description }}</div>
+          </td>
+          @for (cat of categories; track cat) {
+            @for (p of permsForCategory(cat); track p.key) {
+              <td class="text-center border-l border-base-300">
+                <button type="button"
+                        class="badge badge-sm cursor-pointer hover:opacity-80 transition-opacity {{ permClass(group.permissions[p.key] ?? 'not-set') }}"
+                        (click)="cyclePerm(group.id, p.key)"
+                        [title]="p.label + ': ' + permLabel(group.permissions[p.key] ?? 'not-set')">
+                  {{ permLabel(group.permissions[p.key] ?? 'not-set') }}
+                </button>
+              </td>
+            }
+          }
+          <td class="border-l border-base-300">
+            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGroup(group.id)" title="Remove group">
+              <svg lucideTrash2 class="size-3"></svg>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</section>
+
+<section class="panel mt-sm">
+  @if (!showAddForm()) {
+    <button type="button" class="btn btn-sm btn-outline" (click)="showAddForm.set(true)">
+      <svg lucidePlus class="size-4"></svg> Add AD Group
+    </button>
+  } @else {
+    <div class="flex flex-col sm:flex-row gap-3 items-end">
+      <div class="flex-1 w-full">
+        <label class="text-xs font-semibold mb-1 block">Group Name</label>
+        <input class="input input-sm input-bordered w-full" placeholder="e.g. NDT-Inspectors"
+               [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)" />
+      </div>
+      <div class="flex-1 w-full">
+        <label class="text-xs font-semibold mb-1 block">Description</label>
+        <input class="input input-sm input-bordered w-full" placeholder="e.g. Level II NDT technicians"
+               [ngModel]="newGroupDesc()" (ngModelChange)="newGroupDesc.set($event)" />
+      </div>
+      <div class="flex gap-2">
+        <button type="button" class="btn btn-sm btn-primary" (click)="addGroup()">
+          <svg lucideCheck class="size-4"></svg> Add
+        </button>
+        <button type="button" class="btn btn-sm btn-ghost" (click)="showAddForm.set(false); newGroupName.set(''); newGroupDesc.set('')">
+          <svg lucideX class="size-4"></svg> Cancel
+        </button>
+      </div>
+    </div>
+  }
+</section>
+
+<section class="panel mt-sm">
+  <h3 class="panel-title text-xs">Permission Legend</h3>
+  <div class="flex flex-wrap gap-4 text-xs">
+    <div class="flex items-center gap-2"><span class="badge badge-sm badge-success">Allow</span> Explicitly granted</div>
+    <div class="flex items-center gap-2"><span class="badge badge-sm badge-error">Deny</span> Explicitly blocked (overrides Allow)</div>
+    <div class="flex items-center gap-2"><span class="badge badge-sm badge-ghost badge-outline">—</span> Not set — inherits default access</div>
+  </div>
+</section>
