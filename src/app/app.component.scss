@@ -26,10 +26,6 @@
   margin: 0;
   padding: 0;
   align-items: center;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  &::-webkit-scrollbar { display: none; }
 
   li { position: relative; }
 
