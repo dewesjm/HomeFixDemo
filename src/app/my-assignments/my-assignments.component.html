@@ -1,10 +1,18 @@
-<h2 class="section-title"><svg lucideClipboardList class="size-5"></svg> My Assignments</h2>
-<p class="section-sub">
-  Work items assigned to you
-</p>
-
-<!-- Keyword filter -->
 <div class="flex items-center gap-3 mb-4">
+  <h2 class="section-title mb-0"><svg lucideClipboardList class="size-5"></svg> My Assignments</h2>
+  @if (banner(); as b) {
+    <span class="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full"
+          [ngClass]="{
+            'bg-info/20 text-info': b.type === 'info',
+            'bg-warning/20 text-warning': b.type === 'warning',
+            'bg-error/20 text-error': b.type === 'error',
+            'bg-success/20 text-success': b.type === 'success'
+          }">
+      <svg lucideMegaphone class="size-4"></svg>
+      <span>{{ b.message }}</span>
+    </span>
+  }
+  <span class="flex-1"></span>
   <input class="input input-sm input-bordered w-48"
          placeholder="Filter…"
          [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
