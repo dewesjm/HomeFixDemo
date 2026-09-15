@@ -48,8 +48,11 @@ export class JobDetailComponent {
     const pos = steps.findIndex(s => s.stageIndex === idx);
     if (pos < 0) return;
     queueMicrotask(() => {
-      const el = document.querySelectorAll('.routing-step')[pos];
-      el?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+      const container = document.querySelector('.routing-scroll') as HTMLElement | null;
+      const el = document.querySelectorAll('.routing-step')[pos] as HTMLElement | null;
+      if (!container || !el) return;
+      const left = el.offsetLeft - container.offsetWidth / 2 + el.offsetWidth / 2;
+      container.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
     });
   });
 
