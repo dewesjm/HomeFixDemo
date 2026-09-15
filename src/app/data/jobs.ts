@@ -3,7 +3,7 @@ import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
-  jobNumber: string;   /* 5-char code: letter + 4 digits, e.g. K7234 */
+  jobNumber: string;   /* letter + 4 digits, e.g. K7234 */
   title: string;
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
@@ -101,13 +101,22 @@ function seeded(n: number) {
 
 /* stable 5-char code from id: random alphanumeric jumble */
 const ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-function makeJobNumber(seed: number): string {
+function makeJobId(seed: number): string {
   const rand = seeded(seed * 31 + 7);
   let code = '';
   for (let j = 0; j < 5; j++) {
     code += ID_CHARS[Math.floor(rand() * ID_CHARS.length)];
   }
   return code;
+}
+
+/* stable project number: letter + 4 digits, e.g. K7234 */
+const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+function makeJobNumber(seed: number): string {
+  const rand = seeded(seed * 53 + 11);
+  const letter = LETTERS[Math.floor(rand() * LETTERS.length)];
+  const digits = String(1000 + Math.floor(rand() * 9000));
+  return letter + digits;
 }
 
 /* up to 3 distinct codes per job, own seed stream keyed off id */
@@ -141,7 +150,7 @@ export function generateJobs(count = 240): Job[] {
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
     out.push({
-      id: makeJobNumber(i + 1),
+      id: makeJobId(i + 1),
       jobNumber: makeJobNumber(i + 1),
       title,
       trade,
@@ -207,7 +216,7 @@ export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
 let _nextCustomId = 10_000;
 export function addTestJob(trade: string): Job {
   const numId = _nextCustomId++;
-  const id = makeJobNumber(numId);
+  const id = makeJobId(numId);
   const job: Job = {
     id,
     jobNumber: makeJobNumber(numId),
