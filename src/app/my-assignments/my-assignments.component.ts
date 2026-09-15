@@ -5,7 +5,6 @@ import { Router } from '@angular/router';
 import { LucideClipboardList, LucideArrowUpRight, LucideFileText } from '@lucide/angular';
 
 import { ASSIGNMENTS } from '../data/assignments';
-import { ROLES, Role, DEFAULT_ROLE } from '../data/workflow';
 
 @Component({
   selector: 'app-my-assignments',
@@ -16,13 +15,10 @@ import { ROLES, Role, DEFAULT_ROLE } from '../data/workflow';
 export class MyAssignmentsComponent {
   private router = inject(Router);
 
-  selectedRole = signal<Role>(DEFAULT_ROLE);
   keyword = signal('');
-  roleOptions = ROLES.filter(r => r !== 'View').map(r => ({ label: r, value: r }));
 
   assignments = computed(() => {
-    const role = this.selectedRole();
-    let list = role === 'View' ? ASSIGNMENTS : ASSIGNMENTS.filter(a => a.assignedRoles.includes(role));
+    let list = ASSIGNMENTS;
     const q = this.keyword().toLowerCase().trim();
     if (!q) return list;
     return list.filter(a =>
