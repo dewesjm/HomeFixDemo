@@ -81,8 +81,9 @@ export class TableSearchComponent {
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
   table = new TableState<Row>(
-    ['jobNumber', 'title', 'drawing', 'joint'],
+    ['id', 'jobNumber', 'title', 'drawing', 'joint'],
     {
+      id: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
       jobNumber: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
       title: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
       drawing: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
