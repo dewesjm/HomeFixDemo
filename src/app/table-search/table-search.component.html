@@ -61,7 +61,7 @@
       <th class="w-8 col-freeze-1">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
-      <th class="min-w-16 col-freeze-2">
+      <th class="min-w-16">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
           ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
@@ -136,7 +136,7 @@
         <td class="w-8 col-freeze-1">
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
-        <td class="text-xs col-freeze-2">{{ job.id }}</td>
+        <td class="text-xs">{{ job.id }}</td>
         <td>{{ job.jobNumber }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>

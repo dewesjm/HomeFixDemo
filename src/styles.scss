@@ -302,19 +302,14 @@ html, body {
 /* Sticky column filter inputs hidden on mobile to save space */
 @media (max-width: 640px) { .col-filter-mobile { display: none; } }
 
-/* Frozen columns — checkbox + ID pinned left when scrolling horizontally */
+/* Frozen columns — checkbox pinned left when scrolling horizontally */
 @media (max-width: 640px) {
   .table-page-wrap table { min-width: 40rem; }
   .col-freeze-1 {
     position: sticky; left: 0; z-index: 5; background: var(--app-surface);
     box-shadow: 2px 0 4px rgba(0,0,0,.08);
   }
-  .col-freeze-2 {
-    position: sticky; left: 2rem; z-index: 5; background: var(--app-surface);
-    box-shadow: 2px 0 4px rgba(0,0,0,.08);
-  }
-  .table-page-wrap table thead .col-freeze-1,
-  .table-page-wrap table thead .col-freeze-2 { z-index: 6; }
+  .table-page-wrap table thead .col-freeze-1 { z-index: 6; }
 }
 
 /* Page header: hamburger + title + sync on one line */
