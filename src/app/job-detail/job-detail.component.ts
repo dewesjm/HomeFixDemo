@@ -549,11 +549,10 @@ export class JobDetailComponent {
     }
   }
 
-  /** Check if Override Requirements should show for a weld stage based on Fit stage WTN */
+  /** Check if Override Requirements should show for a weld stage based on WTN */
   showOverrideForStage(stage: WorkflowStage): boolean {
     if (!this.wf) return false;
-    const fitStage = this.wf().stages.find(s => s.id === 'fit');
-    const wtn = fitStage?.inputs?.['wtn'] ?? '';
+    const wtn = this.wf().fabricationData?.['wtn'] ?? '';
     return this.WTN_OVERRIDE_WTNS.has(wtn);
   }
 
