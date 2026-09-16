@@ -21,27 +21,27 @@ const DAY = 24 * 60 * 60 * 1000;
 const MIN = 60 * 1000;
 
 const COMPONENTS = [
-  { name: 'Capacitor', part: 'CAP-440' },
-  { name: 'Blower motor', part: 'BM-1175' },
-  { name: 'Thermostat', part: 'TS-6P' },
-  { name: 'Shutoff valve', part: 'SV-0.5' },
-  { name: 'Circuit breaker', part: 'CB-20A' },
-  { name: 'Flashing kit', part: 'FK-STD' },
-  { name: 'Hinge set', part: 'HS-3.5' },
-  { name: 'Gasket', part: 'GK-200' }
+  { name: 'Welding rod', part: 'E7018-3/32' },
+  { name: 'TIG filler wire', part: 'ER70S-6-1/16' },
+  { name: 'Backing ring', part: 'BR-ST-200' },
+  { name: 'Consumable insert', part: 'CI-316L' },
+  { name: 'Nozzle tip', part: 'NT-12AG' },
+  { name: 'Gas lens collet', part: 'GLC-3/32' },
+  { name: 'Clamp strap', part: 'CS-200' },
+  { name: 'Gasket set', part: 'GKS-316' }
 ];
 
 const FILES = [
-  'before.jpg', 'after.jpg', 'invoice.pdf', 'permit.pdf', 'meter-reading.jpg',
-  'warranty.pdf', 'site-photo.png', 'nameplate.jpg'
+  'before.jpg', 'after.jpg', 'wps.pdf', 'permit.pdf', 'ndt-report.jpg',
+  'weld-map.pdf', 'site-photo.png', 'nameplate.jpg'
 ];
 
 const NOTES = [
-  'Customer notified of recommended follow-up.',
-  'Parts on backorder; temporary fix applied.',
-  'Work completed within the estimate.',
-  'Recommended full replacement on next visit.',
-  'Area cleared and tested before leaving site.'
+  'Weld completed per WPS requirements.',
+  'NDT report attached — no indications found.',
+  'Fit-up verified against drawing revision.',
+  'Preheat temperature recorded before welding.',
+  'Post-weld visual inspection passed.'
 ];
 
 /* plausible recorded value for a stage field */
