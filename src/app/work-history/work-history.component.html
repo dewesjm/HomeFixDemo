@@ -107,8 +107,8 @@
         <td>{{ r.trade }}</td>
         <td>
           @if (isLatestEntry(r)) {
-            <button type="button" class="btn btn-ghost btn-xs text-warning" (click)="goBack(r.jobId)" title="Reverse to previous step">
-              <svg lucideRotateCcw class="size-3"></svg> Reverse
+            <button type="button" class="btn btn-ghost btn-xs" (click)="goBack(r.jobId)" title="Reverse to previous step">
+              <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Reverse</span>
             </button>
           }
         </td>
