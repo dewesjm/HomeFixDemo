@@ -727,7 +727,8 @@ export class JobDetailComponent {
       password: true,
       accept: () => {
         this.wfService.signStage(this.job!, stage.id);
-        this.router.navigate(['/table']);
+        const from = this.route.snapshot.queryParamMap.get('from');
+        this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
       }
     });
   }
