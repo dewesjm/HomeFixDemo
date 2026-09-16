@@ -1111,14 +1111,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
     const isWeldStage = ['tack', 'root-weld', 'final-weld'].includes(t.id);
-    /* 50/50 chance of override requirements */
-    let showOverride = false;
-    if (isWeldStage) {
-      showOverride = Math.random() < 0.5;
-      if (showOverride) {
-        Object.assign(inputs, { overridePhMin: '110', overridePhMax: '170', overrideIpMin: '85', overrideIpMax: '140', overrideNote: 'Approved deviation per WPS-001' });
-      }
-    }
+    /* override requirements based on WTN — set dynamically from Fit stage */
+    const showOverride = false;
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : (t.role ?? '');

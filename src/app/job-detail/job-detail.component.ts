@@ -505,6 +505,8 @@ export class JobDetailComponent {
     'wtn-103': { phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145' },
     'wtn-201': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
   };
+  /* WTNs that show Override Requirements on weld stages */
+  private readonly WTN_OVERRIDE_WTNS = new Set(['wtn-101', 'wtn-201']);
 
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
@@ -545,6 +547,14 @@ export class JobDetailComponent {
       delete next[key];
       this.fieldErrors.set(next);
     }
+  }
+
+  /** Check if Override Requirements should show for a weld stage based on Fit stage WTN */
+  showOverrideForStage(stage: WorkflowStage): boolean {
+    if (!this.wf) return false;
+    const fitStage = this.wf().stages.find(s => s.id === 'fit');
+    const wtn = fitStage?.inputs?.['wtn'] ?? '';
+    return this.WTN_OVERRIDE_WTNS.has(wtn);
   }
 
   // ---- per-stage sign-off ----

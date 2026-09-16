@@ -557,7 +557,7 @@
               </div>
             </div>
             <!-- Override Requirements (only when present) -->
-            @if (stage.showOverride) {
+            @if (showOverrideForStage(stage)) {
             <div>
               <div class="font-semibold text-sm mb-1">Override Requirements</div>
               <div class="flex gap-4">
