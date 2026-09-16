@@ -316,7 +316,7 @@ html, body {
 /* Page header: hamburger + title + sync on one line */
 .page-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
 .page-header .section-title { margin: 0; }
-.back-link { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0; border: none; background: none; cursor: pointer; font-size: 0.9rem; line-height: 1; color: var(--app-text-muted); align-self: center; }
+.back-link { display: inline-flex; align-items: center; gap: 0.25rem; cursor: pointer; font-size: 0.9rem; line-height: 1.5; color: var(--app-text-muted); }
 .back-link svg { flex-shrink: 0; }
 
 /* Signoff fields: one per row, normal width */

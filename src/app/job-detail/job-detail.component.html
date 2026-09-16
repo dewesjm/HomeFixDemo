@@ -5,9 +5,7 @@
 @if (wfSig(); as w) {
 
   <div class="page-header mt-sm">
-    <button type="button" class="back-link" (click)="back()">
-      <svg lucideArrowLeft class="size-4"></svg> Back
-    </button>
+    <span class="back-link" (click)="back()"><svg lucideArrowLeft class="size-4"></svg> Back</span>
     <span class="section-sub m-0">
       Project #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
       <strong>Routing Step:</strong> {{ currentStep() }}
