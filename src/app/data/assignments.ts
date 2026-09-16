@@ -23,9 +23,11 @@ export interface Assignment {
 }
 
 const STEPS = [
-  'Preparation', 'Fit-Up Release', 'Visual Inspection', 'Fit-Up',
-  'Fit-Up Inspection', 'Root Pass', 'Hot Pass', 'Fill Pass', 'Cap Pass',
-  'NDT Root Pass', 'NDT Final', 'UT', 'MCL Verification', 'Final Sign-off',
+  'Pre-Fit', 'Fit', 'Tack', 'Fit-Up Insp', 'Fit-Up Release', 'Deferred Tack',
+  'Root', 'Root NDT UT/RT', 'Root NDT MT/PT', 'Root NDT VT/5X',
+  'Layer', 'Layer NDT UT/RT', 'Layer NDT VT/5X', 'Layer NDT MT/PT',
+  'Final Weld', 'Final NDT UT/RT', 'Final NDT MT/PT', 'Final NDT VT/5X',
+  'Review',
 ];
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
@@ -47,18 +49,25 @@ function generateAssignments(): Assignment[] {
   const assignments: Assignment[] = [];
 
   const rolesByStep: Record<string, string[]> = {
-    'Preparation': ['Fitting'],
-    'Fit-Up Release': ['Fitting', 'Foreman'],
-    'Visual Inspection': ['Inspector'],
-    'Fit-Up': ['Fitting'],
-    'Fit-Up Inspection': ['Inspector', 'Foreman'],
-    'Fabrication': ['Welding', 'Fitting'],
-    'NDT Root Pass': ['NQC Inspector'],
-    'NDT Each Pass': ['NQC Inspector'],
-    'NDT Final': ['NQC Inspector'],
-    'UT': ['NQC Inspector'],
-    'MCL Verification': ['Inspector', 'Foreman'],
-    'Final Sign-off': ['Foreman', 'Records'],
+    'Pre-Fit': ['NQC Inspector'],
+    'Fit': ['Fitting'],
+    'Tack': ['Welding'],
+    'Fit-Up Insp': ['Inspector', 'Foreman'],
+    'Fit-Up Release': ['Welding'],
+    'Deferred Tack': ['Welding'],
+    'Root': ['Welding'],
+    'Root NDT UT/RT': ['NQC Inspector'],
+    'Root NDT MT/PT': ['NQC Inspector'],
+    'Root NDT VT/5X': ['NQC Inspector'],
+    'Layer': ['Welding'],
+    'Layer NDT UT/RT': ['NQC Inspector'],
+    'Layer NDT VT/5X': ['NQC Inspector'],
+    'Layer NDT MT/PT': ['NQC Inspector'],
+    'Final Weld': ['Welding'],
+    'Final NDT UT/RT': ['NQC Inspector'],
+    'Final NDT MT/PT': ['NQC Inspector'],
+    'Final NDT VT/5X': ['NQC Inspector'],
+    'Review': ['Records'],
   };
 
   for (let i = 0; i < 18; i++) {

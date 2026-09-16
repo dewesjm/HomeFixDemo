@@ -649,7 +649,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'Fit', value: 'fit', default: true },
       { label: 'Weld Build up', value: 'weld-buildup' },
     ] },
-    { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+    { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+      { label: 'Tack', value: 'standard', default: true },
+    ] },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
       { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
       { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
@@ -666,7 +668,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
           { label: 'Incomplete', value: 'incomplete' }] }
     ], signoffFields: [] },
-    { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+    { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+      { label: 'Root', value: 'standard', default: true },
+    ] },
     { id: 'root-ndt-utrt', label: 'Root NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
@@ -806,7 +810,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: 'MT', value: 'mt', default: true },
       { label: 'PT', value: 'pt' },
     ] },
-    { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+    { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+      { label: 'Final Weld', value: 'standard', default: true },
+    ] },
     { id: 'final-ndt-utrt', label: 'Final NDT UT/RT', required: true, role: 'Inspector', fields: [
       { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select',
         options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
