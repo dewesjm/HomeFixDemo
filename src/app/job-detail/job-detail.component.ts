@@ -498,11 +498,11 @@ export class JobDetailComponent {
   private readonly WTN_PROCESS_MAP: Record<string, string> = {
     'wtn-101': 'smaw', 'wtn-102': 'gtaw', 'wtn-103': 'gmaw', 'wtn-201': 'fcaw'
   };
-  /* WTN → PH/IP requirements mapping */
+  /* WTN → PH/IP requirements mapping (NC = non-critical, no limit) */
   private readonly WTN_PHIP_MAP: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string }> = {
-    'wtn-101': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150' },
-    'wtn-102': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140' },
-    'wtn-103': { phMin: '115', phMax: '175', ipMin: '88', ipMax: '145' },
+    'wtn-101': { phMin: '120', phMax: '180', ipMin: '90', ipMax: 'NC' },
+    'wtn-102': { phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140' },
+    'wtn-103': { phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145' },
     'wtn-201': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
   };
 
@@ -622,8 +622,10 @@ export class JobDetailComponent {
       }
       if (!empty && f.type === 'number' && (f.minField || f.maxField)) {
         const num = Number(val);
-        const minVal = f.minField ? Number(stage.inputs?.[f.minField]) : NaN;
-        const maxVal = f.maxField ? Number(stage.inputs?.[f.maxField]) : NaN;
+        const rawMin = f.minField ? stage.inputs?.[f.minField] : undefined;
+        const rawMax = f.maxField ? stage.inputs?.[f.maxField] : undefined;
+        const minVal = rawMin && rawMin !== 'NC' ? Number(rawMin) : NaN;
+        const maxVal = rawMax && rawMax !== 'NC' ? Number(rawMax) : NaN;
         const belowMin = !isNaN(minVal) && num < minVal;
         const aboveMax = !isNaN(maxVal) && num > maxVal;
         if (belowMin || aboveMax) {
@@ -653,8 +655,10 @@ export class JobDetailComponent {
     /* range check */
     if (!empty && field.type === 'number' && (field.minField || field.maxField)) {
       const num = Number(val);
-      const minVal = field.minField ? Number(curStage?.inputs?.[field.minField]) : NaN;
-      const maxVal = field.maxField ? Number(curStage?.inputs?.[field.maxField]) : NaN;
+      const rawMin = field.minField ? curStage?.inputs?.[field.minField] : undefined;
+      const rawMax = field.maxField ? curStage?.inputs?.[field.maxField] : undefined;
+      const minVal = rawMin && rawMin !== 'NC' ? Number(rawMin) : NaN;
+      const maxVal = rawMax && rawMax !== 'NC' ? Number(rawMax) : NaN;
       const belowMin = !isNaN(minVal) && num < minVal;
       const aboveMax = !isNaN(maxVal) && num > maxVal;
       if (belowMin || aboveMax) {
