@@ -790,6 +790,30 @@
           <div class="stage-inputs">
             @for (f of visibleFields(stage); track f.key) {
               @if (startsGroup(stage, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
+              @if (f.key === 'partial') {
+                <div class="flex items-end gap-4 w-full">
+                  <label class="flex items-center gap-2 cursor-pointer mb-6">
+                    <input type="checkbox" class="checkbox checkbox-sm"
+                           [disabled]="!inputsEditable(stage, selectedStep())"
+                           [checked]="stage.inputs[f.key] === 'yes'"
+                           (change)="stage.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
+                    <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                  </label>
+                  @for (g of visibleFields(stage); track g.key) {
+                    @if (g.key === 'portionInspected') {
+                      <div class="flex-1">
+                        <label class="stage-field">
+                          <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
+                          <input class="input input-bordered w-full" type="text"
+                                 [disabled]="!inputsEditable(stage, selectedStep())"
+                                 [ngModel]="stage.inputs[g.key]"
+                                 (blur)="stageInputBlur(stage, g, $any($event.target).value)" />
+                        </label>
+                      </div>
+                    }
+                  }
+                </div>
+              } @else if (f.key !== 'portionInspected') {
               <div class="w-full">
               @if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">

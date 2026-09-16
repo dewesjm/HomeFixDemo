@@ -24,8 +24,8 @@ export interface Assignment {
 
 const STEPS = [
   'Preparation', 'Fit-Up Release', 'Visual Inspection', 'Fit-Up',
-  'Fit-Up Inspection', 'Fabrication', 'NDT Root Pass', 'NDT Each Pass',
-  'NDT Final', 'UT', 'MCL Verification', 'Final Sign-off',
+  'Fit-Up Inspection', 'Root Pass', 'Hot Pass', 'Fill Pass', 'Cap Pass',
+  'NDT Root Pass', 'NDT Final', 'UT', 'MCL Verification', 'Final Sign-off',
 ];
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
