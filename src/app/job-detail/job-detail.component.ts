@@ -690,27 +690,8 @@ export class JobDetailComponent {
         password: true,
         accept: () => {
           this.wfService.signStage(this.job!, stage.id);
-          /* insert a fresh layer copy after this one */
-          if (this.wf) {
-            const wf = this.wf();
-            const idx = wf.stages.findIndex(s => s.id === stage.id);
-            const fresh: WorkflowStage = {
-              ...stage,
-              id: `root-layer-${Date.now()}`,
-              signed: false,
-              signedAt: null,
-              result: null,
-              inputs: {},
-              signoffInputs: {},
-              stepType: 'standard',
-              routeTo: '',
-            };
-            this.wf.update(w => ({
-              ...w,
-              stages: [...w.stages.slice(0, idx + 1), fresh, ...w.stages.slice(idx + 1)]
-            }));
-            this.selectedStep.set(idx + 1);
-          }
+          const from = this.route.snapshot.queryParamMap.get('from');
+          this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
         }
       });
       return;
