@@ -1117,10 +1117,20 @@ export function buildStages(job: Job): WorkflowStage[] {
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : (t.role ?? '');
     /* Root and Final Weld get a 5X inspection field */
-    const fields = (t.id === 'root-weld' || t.id === 'final-weld')
+    let fields = (t.id === 'root-weld' || t.id === 'final-weld')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
           options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
-      : t.fields;
+      : [...t.fields];
+    /* Weld stages get override fields */
+    if (isWeldStage) {
+      fields = [...fields,
+        { key: 'overridePhMin', label: 'Override PH Min', type: 'number' as const },
+        { key: 'overridePhMax', label: 'Override PH Max', type: 'number' as const },
+        { key: 'overrideIpMin', label: 'Override IP Min', type: 'number' as const },
+        { key: 'overrideIpMax', label: 'Override IP Max', type: 'number' as const },
+        { key: 'overrideNote', label: 'Override Note', type: 'text' as const },
+      ];
+    }
     return {
       id: t.id,
       label: t.label,
@@ -1188,6 +1198,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     weldMemo: 'Standard weld procedure',
     revisedJointDesign: 'bj-g',
     changeNumber: 'ER-0042',
+    wtn: Math.random() < 0.5 ? 'wtn-101' : 'wtn-201',
   } : {};
   return {
     jobId: job.id,
