@@ -487,7 +487,7 @@ export class JobDetailComponent {
     if (field.required && value) {
       const key = `${stage.id}:${field.key}`;
       const prev = this.fieldErrors();
-      if (prev[key]) {
+      if (prev[key]?.endsWith('is required')) {
         const next = { ...prev };
         delete next[key];
         this.fieldErrors.set(next);
