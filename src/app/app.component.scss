@@ -15,7 +15,7 @@
   z-index: 50;
 }
 
-.topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; }
+.topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; overflow: hidden; }
 
 .topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
 
