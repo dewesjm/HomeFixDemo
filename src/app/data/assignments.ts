@@ -5,6 +5,7 @@ export type AssignmentPriority = 'low' | 'normal' | 'high';
 
 export interface Assignment {
   id: string;
+  assignmentNumber: string;
   jobId: string;
   jobNumber: string;
   jobTitle: string;
@@ -69,6 +70,7 @@ function generateAssignments(): Assignment[] {
 
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
+      assignmentNumber: `ASN-${String(i + 1).padStart(3, '0')}`,
       jobId: job.id,
       jobNumber: job.jobNumber,
       jobTitle: job.title,
