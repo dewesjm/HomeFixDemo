@@ -339,3 +339,9 @@ input[type="number"] { -moz-appearance: textfield; }
   min-width: 5rem;
   text-align: center;
 }
+
+/* Themed toast alerts */
+.toast-success { background: color-mix(in oklch, var(--color-success) 15%, var(--app-surface)); border: 1px solid color-mix(in oklch, var(--color-success) 40%, transparent); color: var(--app-text); }
+.toast-info    { background: color-mix(in oklch, var(--color-info) 15%, var(--app-surface));    border: 1px solid color-mix(in oklch, var(--color-info) 40%, transparent);    color: var(--app-text); }
+.toast-warn    { background: color-mix(in oklch, var(--color-warning) 15%, var(--app-surface)); border: 1px solid color-mix(in oklch, var(--color-warning) 40%, transparent); color: var(--app-text); }
+.toast-error   { background: color-mix(in oklch, var(--color-error) 15%, var(--app-surface));   border: 1px solid color-mix(in oklch, var(--color-error) 40%, transparent);   color: var(--app-text); }

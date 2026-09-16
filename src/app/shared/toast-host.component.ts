@@ -3,10 +3,10 @@ import { Component, inject } from '@angular/core';
 import { ToastService } from './toast.service';
 
 const ALERT_CLASS: Record<string, string> = {
-  success: 'alert-success',
-  info: 'alert-info',
-  warn: 'alert-warning',
-  error: 'alert-error'
+  success: 'toast-success',
+  info: 'toast-info',
+  warn: 'toast-warn',
+  error: 'toast-error'
 };
 
 @Component({
