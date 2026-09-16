@@ -506,7 +506,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="120" />
+                               [disabled]="true" [value]="stage.inputs[f.key] ?? ''" />
                       </label>
                     </div>
                   }
@@ -515,7 +515,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="180" />
+                               [disabled]="true" [value]="stage.inputs[f.key] ?? ''" />
                       </label>
                     </div>
                   }
@@ -524,7 +524,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="90" />
+                               [disabled]="true" [value]="stage.inputs[f.key] ?? ''" />
                       </label>
                     </div>
                   }
@@ -533,7 +533,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" value="150" />
+                               [disabled]="true" [value]="stage.inputs[f.key] ?? ''" />
                       </label>
                     </div>
                   }
