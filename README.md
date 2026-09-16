@@ -19,7 +19,8 @@ cd "C:\Users\dewes\primeng-search-demo"; npx ng build 2>&1
 - **No backend** — all data is seeded in-memory or persisted to `localStorage`
 - **240 seeded jobs** with deterministic data (same every load)
 - **Workflow stages** per trade with signoff, rejection routing, NDT inspection, repair
-- **Admin screens** for routing, signoff fields, NDT settings, banners, etc.
+- **Admin screens** for routing, signoff fields, NDT settings, banners, joint designs, teams & permissions
+- **My Assignments** page with role-filtered assignment list, keyword search, document links
 - **Dark mode** is default (DaisyUI theme switching)
 
 ## Documentation
