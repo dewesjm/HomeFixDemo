@@ -348,7 +348,8 @@ export class JobDetailComponent {
     return stage.fields.filter(f => {
       if (f.showIf) {
         const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType : stage.inputs[f.showIf.key];
-        if (checkVal !== f.showIf.equals) return false;
+        if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
+        else if (checkVal !== f.showIf.equals) return false;
       }
       return true;
     });
@@ -430,8 +431,11 @@ export class JobDetailComponent {
   private clearHidden(stage: WorkflowStage) {
     if (!this.job) return;
     for (const f of stage.fields) {
-      if (f.showIf && stage.inputs[f.showIf.key] !== f.showIf.equals && stage.inputs[f.key])
-        this.wfService.setStageInput(this.job, stage.id, f, '');
+      if (f.showIf) {
+        const checkVal = stage.inputs[f.showIf.key];
+        const visible = f.showIf.anyOf ? f.showIf.anyOf.includes(checkVal ?? '') : checkVal === f.showIf.equals;
+        if (!visible && stage.inputs[f.key]) this.wfService.setStageInput(this.job, stage.id, f, '');
+      }
     }
   }
 

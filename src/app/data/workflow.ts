@@ -24,7 +24,7 @@ export interface StageField {
   unit?: string;          /* shown by the label, e.g. PSI */
   placeholder?: string;
   options?: { label: string; value: string }[];
-  showIf?: { key: string; equals: string };   // ← declarative dependency, serializable
+  showIf?: { key: string; equals?: string; anyOf?: string[] };   // ← declarative dependency, serializable
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */
   disabled?: boolean;    /* read-only / information only */
@@ -40,7 +40,7 @@ export interface SignoffField {
   required: boolean;
   placeholder?: string;
   options?: { label: string; value: string }[];
-  showIf?: { key: string; equals: string };
+  showIf?: { key: string; equals?: string; anyOf?: string[] };
   fullWidth?: boolean;   // spans full grid width (3 columns)
 }
 
@@ -674,13 +674,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
-        options: [{ label: 'UT-PROC-101', value: 'ut-proc-101' }, { label: 'RT-PROC-201', value: 'rt-proc-201' }] },
+        options: [{ label: '101', value: '101' }, { label: '102', value: '102' }, { label: '201', value: '201' }, { label: '202', value: '202' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: '30%', value: '30' }, { label: '60%', value: '60' }, { label: '90%', value: '90' }] },
-      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' } },
-      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] } },
+      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
@@ -748,13 +748,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
-        options: [{ label: 'UT-PROC-101', value: 'ut-proc-101' }, { label: 'RT-PROC-201', value: 'rt-proc-201' }] },
+        options: [{ label: '101', value: '101' }, { label: '102', value: '102' }, { label: '201', value: '201' }, { label: '202', value: '202' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: '30%', value: '30' }, { label: '60%', value: '60' }, { label: '90%', value: '90' }] },
-      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' } },
-      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] } },
+      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
@@ -816,13 +816,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
       { key: 'ndtMethod', label: 'NDT method', type: 'select',
-        options: [{ label: 'UT-PROC-101', value: 'ut-proc-101' }, { label: 'RT-PROC-201', value: 'rt-proc-201' }] },
+        options: [{ label: '101', value: '101' }, { label: '102', value: '102' }, { label: '201', value: '201' }, { label: '202', value: '202' }] },
       { key: 'partial', label: 'Partial', type: 'checkbox' },
       { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
-      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: '30%', value: '30' }, { label: '60%', value: '60' }, { label: '90%', value: '90' }] },
-      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' } },
-      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', equals: 'rt-proc-201' },
+      { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] } },
+      { key: 'defectCode', label: 'Defect Code', type: 'select', showIf: { key: 'ndtMethod', anyOf: ['201', '202'] },
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
           { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
