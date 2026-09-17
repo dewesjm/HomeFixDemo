@@ -543,7 +543,7 @@ export class JobDetailComponent {
           if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
         }
       }
-      /* Populate/clear override fields on weld stages when WTN changes */
+      /* Populate/clear override fields on weld stages when WTN changes (disabled for demo)
       if (field.key === 'wtn' && this.job && this.wf) {
         const weldStages = ['tack', 'root-weld', 'final-weld'];
         const ov = this.WTN_OVERRIDE_VALUES[v];
@@ -557,7 +557,7 @@ export class JobDetailComponent {
             if (f) this.wfService.setStageInput(this.job, s.id, f, val);
           }
         }
-      }
+      }*/
     }
     /* clear validation error for this field */
     const key = `${stage.id}:${field.key}`;
