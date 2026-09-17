@@ -507,6 +507,11 @@ export class JobDetailComponent {
   };
   /* WTNs that show Override Requirements on weld stages */
   private readonly WTN_OVERRIDE_WTNS = new Set(['wtn-101', 'wtn-201']);
+  /* Override field values per WTN */
+  private readonly WTN_OVERRIDE_VALUES: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string; note: string }> = {
+    'wtn-101': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140', note: 'Approved deviation per WPS-001' },
+    'wtn-201': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', note: 'Approved deviation per WPS-002' },
+  };
 
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
@@ -536,6 +541,21 @@ export class JobDetailComponent {
         for (const [k, val] of Object.entries(phip)) {
           const f = stage.fields.find(ff => ff.key === k);
           if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
+        }
+      }
+      /* Populate/clear override fields on weld stages when WTN changes */
+      if (field.key === 'wtn' && this.job && this.wf) {
+        const weldStages = ['tack', 'root-weld', 'final-weld'];
+        const ov = this.WTN_OVERRIDE_VALUES[v];
+        const overrideMap: Record<string, string> = ov
+          ? { overridePhMin: ov.phMin, overridePhMax: ov.phMax, overrideIpMin: ov.ipMin, overrideIpMax: ov.ipMax, overrideNote: ov.note }
+          : { overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '' };
+        for (const s of this.wf().stages) {
+          if (!weldStages.includes(s.id)) continue;
+          for (const [fk, val] of Object.entries(overrideMap)) {
+            const f = s.fields.find(ff => ff.key === fk);
+            if (f) this.wfService.setStageInput(this.job, s.id, f, val);
+          }
         }
       }
     }
