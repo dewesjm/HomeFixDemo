@@ -353,7 +353,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 2: Deck, Frame, P/S/CL, and Usage
   { key: 'deck', label: 'Deck', type: 'text', row: 2 },
   { key: 'frame', label: 'Frame', type: 'text', row: 2 },
-  { key: 'pscl', label: 'P/S/CL', type: 'text', row: 2 },
+  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2,
+    options: [{ label: 'P', value: 'P' }, { label: 'S', value: 'S' }, { label: 'CL', value: 'CL' }] },
   { key: 'usage', label: 'Usage', type: 'text', row: 2 },
   // Line 3: MIC 1 and MIC 2
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
@@ -1183,7 +1184,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     specificLocation: 'Bay 3, Rack 12',
     deck: 'D2',
     frame: 'F14',
-    pscl: 'PS',
+    pscl: ['P', 'S', 'CL'][Math.floor(Math.random() * 3)],
     usage: 'Structural',
     id1: 'MIC-4410',
     id2: 'MIC-4411',
