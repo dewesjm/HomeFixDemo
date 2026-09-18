@@ -149,7 +149,7 @@
           @for (f of fabFields(); track f.key) {
             @if (f.row === 1) {
               <div class="flex-1 max-w-xs">
-                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 @if (f.type === 'select') {
                   <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
                           [ngModel]="w.fabricationData[f.key]" (ngModelChange)="fabSelectChange(f.key, $event)">
@@ -172,7 +172,7 @@
           @for (f of fabFields(); track f.key) {
             @if (f.row === 2) {
               <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
-                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
                        [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
@@ -187,7 +187,7 @@
           @for (f of fabFields(); track f.key) {
             @if (f.row === 3) {
               <div class="flex-1 max-w-xs">
-                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" type="text"
                        [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
@@ -202,7 +202,7 @@
           @for (f of fabFields(); track f.key) {
             @if (f.row === 4) {
               <div class="flex-1 max-w-xs">
-                <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
                        [placeholder]="f.placeholder || ''"                          [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="w.fabricationData[f.key]"
