@@ -115,16 +115,11 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   return out;
 }
 
-/* seeded activity across a spread of jobs, newest near now */
-export function generateMockActivity(jobCount = 28): MockActivity[] {
+/* seeded activity for all jobs */
+export function generateMockActivity(): MockActivity[] {
   const rand = seeded(7);
   const now = Date.now();
-  /* stable pseudo-random job selection for variety */
-  const chosen = JOBS.map(j => ({ j, key: rand() }))
-    .sort((a, b) => a.key - b.key)
-    .slice(0, jobCount)
-    .map(x => x.j);
-  return chosen.flatMap(j => activityForJob(j, rand, now));
+  return JOBS.flatMap(j => activityForJob(j, rand, now));
 }
 
 export const MOCK_ACTIVITY: MockActivity[] = generateMockActivity();
