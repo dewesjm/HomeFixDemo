@@ -32,7 +32,7 @@ function currentStepOptions() {
 
 export const FILTER_SCHEMA: FilterField[] = [
   { key: 'title',           label: 'Project',          type: 'text',        group: 'Job',        field: 'title', required: true },
-  { key: 'jobNumber',       label: 'Project #',        type: 'text',        group: 'Job',        field: 'jobNumber' },
+  { key: 'id',              label: 'ID',               type: 'text',        group: 'Job',        field: 'id' },
   { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
   { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
   { key: 'drawing',         label: 'Drawing',          type: 'text',        group: 'Job',        field: 'drawing' },
@@ -42,7 +42,6 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'materialType1',   label: 'Material',         type: 'multiselect', group: 'Welding',    field: 'materialType1', options: material1Options() },
   { key: 'ndt',             label: 'NDT',              type: 'multiselect', group: 'Welding',    field: 'ndt',         options: ndtOptions() },
   { key: 'estimatedHours',  label: 'Est. hours',       type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
-  { key: 'estimatedCost',   label: 'Est. cost ($)',    type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
   { key: 'scheduledFor',    label: 'Scheduled',        type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
 ];
 

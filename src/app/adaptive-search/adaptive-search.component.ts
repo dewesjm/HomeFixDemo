@@ -37,7 +37,7 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'jobNumber',     label: 'Project #',   field: 'jobNumber',     sortField: 'jobNumber',     width: 'min-w-8' },
+  { key: 'id',            label: 'ID',          field: 'id',            sortField: 'id',            width: 'min-w-8' },
   { key: 'title',         label: 'Project',     field: 'title',         sortField: 'title',         width: 'min-w-14' },
   { key: 'drawing',       label: 'Drawing',     field: 'drawing',       sortField: 'drawing',       width: 'min-w-12' },
   { key: 'joint',         label: 'Joint',       field: 'joint',         sortField: 'joint',         width: 'min-w-11' },
@@ -48,12 +48,11 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'materialType1', label: 'Material',    field: 'materialType1', sortField: 'materialType1', width: 'min-w-14' },
   { key: 'ndt',           label: 'NDT',         field: 'ndt',           sortField: 'ndt',           width: 'min-w-12' },
   { key: 'wps',           label: 'WPS',         field: 'wps',           sortField: 'wps',           width: 'min-w-11' },
-  { key: 'estimatedCost', label: 'Est. cost',   field: 'estimatedCost', sortField: 'estimatedCost', width: 'min-w-13' },
   { key: 'scheduledFor',  label: 'Scheduled',   field: 'scheduledFor',  sortField: 'scheduledFor',  width: 'min-w-13' },
   { key: 'currentStep',   label: 'Current step',                                                                  width: 'min-w-13' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'ndt', 'currentStep'];
+const DEFAULT_COLUMN_KEYS = ['id', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'ndt', 'currentStep'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -330,20 +329,17 @@ export class AdaptiveSearchComponent {
 
   exportCsv() {
     downloadCsv('adaptive-search', [
-      { header: 'Project #', value: (r: Job) => r.jobNumber },
+      { header: 'ID', value: (r: Job) => r.id },
       { header: 'Project', value: (r: Job) => r.title },
-      { header: 'Trade', value: (r: Job) => r.trade },
-      { header: 'Technician', value: (r: Job) => r.technician },
       { header: 'Drawing', value: (r: Job) => r.drawing },
       { header: 'Joint', value: (r: Job) => r.joint },
+      { header: 'Trade', value: (r: Job) => r.trade },
+      { header: 'Technician', value: (r: Job) => r.technician },
       { header: 'Joint design', value: (r: Job) => r.jointDesign },
       { header: 'Weld type', value: (r: Job) => r.weldType },
-      { header: 'Material 1', value: (r: Job) => r.materialType1 },
-      { header: 'Material 2', value: (r: Job) => r.materialType2 },
-      { header: 'WPS', value: (r: Job) => r.wps },
+      { header: 'Material', value: (r: Job) => r.materialType1 },
       { header: 'NDT', value: (r: Job) => r.ndt },
-      { header: 'PWHT', value: (r: Job) => r.pwht },
-      { header: 'Est. cost', value: (r: Job) => Number(r.estimatedCost).toFixed(2) }
+      { header: 'WPS', value: (r: Job) => r.wps },
     ], this.table.sorted());
   }
 

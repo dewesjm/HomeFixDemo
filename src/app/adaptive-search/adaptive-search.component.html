@@ -128,8 +128,8 @@
       <tr>
         @for (col of visibleColumns(); track col.key) {
           <td>
-            @switch (col.key) {
-              @case ('jobNumber') { <span class="mono">{{ job.jobNumber }}</span> }
+              @switch (col.key) {
+              @case ('id') { <span class="mono">{{ job.id }}</span> }
               @case ('title') { {{ job.title }} }
               @case ('trade') { {{ job.trade }} }
               @case ('technician') { {{ job.technician }} }
