@@ -416,16 +416,16 @@ export class WorkflowService {
       if (currentIdx <= 0) return wf; // already at first step
       const stages = wf.stages.map((s, i) => {
         if (i === currentIdx - 1 || i === currentIdx) {
-          return { ...s, signed: false, signedAt: null, result: null };
+          return { ...s, signed: false, signedAt: null, result: null, inputs: {}, signoffInputs: {} };
         }
         return s;
       });
       return this.withHistory(wf, { ...wf, stages }, {
-        section: 'Stages',
+        section: 'Sign-off',
         who: 'Admin',
-        action: 'Step reversed (admin)',
+        action: `${wf.stages[currentIdx - 1]?.label ?? ''} — Re-opened`,
         from: wf.stages[currentIdx]?.label ?? '',
-        to: wf.stages[currentIdx - 1]?.label ?? ''
+        to: ''
       });
     });
     this.persist();

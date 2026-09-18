@@ -260,7 +260,12 @@ export class JobDetailComponent {
   }
   /* only the last signed stage can reopen */
   canReopen(stage: WorkflowStage, i: number): boolean {
-    if (!stage.signed || !this.wf || this.soldSigned()) return false;
+    if (!stage.signed || !this.wf) return false;
+    // Sold stage: allow deprogress on the last signed stage only
+    if (this.soldSigned()) {
+      const lastSigned = this.wf().stages.map((s, idx) => ({ s, idx })).filter(x => x.s.signed).pop();
+      return lastSigned?.idx === i;
+    }
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
   canSignStage(stage: WorkflowStage): boolean {

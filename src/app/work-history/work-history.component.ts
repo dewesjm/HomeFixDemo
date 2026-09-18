@@ -5,13 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft } from '@lucide/angular';
 
-import { TableState, inArray } from '../shared/table-state';
+import { TableState } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
-import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 
 import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { HistoryEntry, getTradeOptions } from '../data/workflow';
+import { HistoryEntry } from '../data/workflow';
 import { MOCK_ACTIVITY } from '../data/mock-history';
 import { downloadCsv } from '../data/export-csv';
 
@@ -19,7 +18,6 @@ interface ActivityRow extends HistoryEntry {
   jobId: string;
   jobNumber: string;
   jobTitle: string;
-  trade: Job['trade'];
 }
 
 @Component({
@@ -27,7 +25,7 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    TablePagerComponent, MultiselectDropdownComponent,
+    TablePagerComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft
   ],
   templateUrl: './work-history.component.html'
@@ -40,15 +38,13 @@ export class WorkHistoryComponent {
 
   back() { this.router.navigate(['/table']); }
 
-  tradeOptions = getTradeOptions();
-
   person = signal<string | null>(null);
   /* job filter: job number or id */
   jobQuery = signal<string>('');
 
   table = new TableState<ActivityRow>(
     ['jobTitle', 'action', 'from', 'to', 'step'],
-    { trade: inArray }
+    {}
   );
 
   constructor() {
@@ -95,7 +91,6 @@ export class WorkHistoryComponent {
           jobId: wf.jobId,
           jobNumber: job?.jobNumber ?? '',
           jobTitle: job?.title ?? `Project #${wf.jobId}`,
-          trade: job?.trade ?? 'Inspection'
         });
       }
     }
@@ -107,7 +102,6 @@ export class WorkHistoryComponent {
         jobId: m.jobId,
         jobNumber: job?.jobNumber ?? '',
         jobTitle: job?.title ?? `Project #${m.jobId}`,
-        trade: job?.trade ?? 'Inspection'
       });
     }
     return rows.sort((a, b) => b.when.localeCompare(a.when));
@@ -155,8 +149,7 @@ export class WorkHistoryComponent {
       { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
       { header: 'Step',      value: (r: ActivityRow) => r.step },
       { header: 'Project #', value: (r: ActivityRow) => r.jobId },
-      { header: 'Project',   value: (r: ActivityRow) => r.jobTitle },
-      { header: 'Trade',     value: (r: ActivityRow) => r.trade }
+      { header: 'Project',   value: (r: ActivityRow) => r.jobTitle }
     ], this.table.sorted());
   }
 }

@@ -472,6 +472,18 @@
                         </tr>
                       }
                     }
+                    @for (e of w.history; track e.when) {
+                      @if (e.action?.includes('Re-opened')) {
+                        <tr>
+                          <td class="font-medium">{{ e.from }}</td>
+                          <td><span class="badge badge-sm badge-warning">RE-OPENED</span></td>
+                          <td class="opacity-50">—</td>
+                          <td class="opacity-50">—</td>
+                          <td class="text-xs">{{ e.who }}</td>
+                          <td class="text-xs">{{ e.when | date:'short' }}</td>
+                        </tr>
+                      }
+                    }
                   </tbody>
                 </table>
                 </div>

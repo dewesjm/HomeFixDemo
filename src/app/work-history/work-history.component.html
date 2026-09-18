@@ -78,16 +78,6 @@
             Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
-      <th class="min-w-11">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
-            Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
-            [selected]="table.columnFilters()['trade'] ?? []"
-            (selectedChange)="table.setColumnFilter('trade', $event)" />
-        </div>
-      </th>
       <th class="min-w-11">Actions</th>
     </tr>
   </thead>
@@ -104,7 +94,6 @@
           <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
           <div class="meta">{{ r.jobTitle }}</div>
         </td>
-        <td>{{ r.trade }}</td>
         <td>
           @if (isLatestEntry(r)) {
             <button type="button" class="btn btn-ghost btn-xs" (click)="goBack(r.jobId)" title="Reverse to previous step">
@@ -115,7 +104,7 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="9" class="empty">
+        <td colspan="8" class="empty">
           No matching activity. Activity is recorded when stages, components, or signoffs change on a job's Details page.
         </td>
       </tr>
