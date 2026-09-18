@@ -11,38 +11,41 @@ export type FilterField =
   | { key: string; label: string; type: 'range';       group: string; required?: boolean; field: keyof Job; min: number; max: number }
   | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job };
 
-/* derive filter options from the seeded job data */
 function uniqueOpts(getter: (j: Job) => string): { label: string; value: string }[] {
   const vals = [...new Set(JOBS.map(getter))].filter(Boolean).sort();
   return vals.map(v => ({ label: v, value: v }));
 }
 
-function ndtOptions() { return uniqueOpts(j => j.ndt); }
-function jointDesignOptions() { return uniqueOpts(j => j.jointDesign); }
-function weldTypeOptions() { return uniqueOpts(j => j.weldType); }
-function material1Options() { return uniqueOpts(j => j.materialType1); }
-function currentStepOptions() {
-  return [
-    { label: 'Pre-Fit', value: 'Pre-Fit' }, { label: 'Fit', value: 'Fit' },
-    { label: 'Tack', value: 'Tack' }, { label: 'Fit-Up Insp', value: 'Fit-Up Insp' },
-    { label: 'Root', value: 'Root' }, { label: 'Layer', value: 'Layer' },
-    { label: 'Final Weld', value: 'Final Weld' }, { label: 'Review', value: 'Review' },
-  ];
-}
-
 export const FILTER_SCHEMA: FilterField[] = [
   { key: 'title',           label: 'Project',          type: 'text',        group: 'Job',        field: 'title', required: true },
   { key: 'id',              label: 'ID',               type: 'text',        group: 'Job',        field: 'id' },
-  { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
   { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
   { key: 'drawing',         label: 'Drawing',          type: 'text',        group: 'Job',        field: 'drawing' },
+  { key: 'drawingRev',      label: 'Drawing Rev',      type: 'text',        group: 'Job',        field: 'drawingRev' },
   { key: 'joint',           label: 'Joint',            type: 'text',        group: 'Job',        field: 'joint' },
-  { key: 'jointDesign',     label: 'Joint design',     type: 'multiselect', group: 'Welding',    field: 'jointDesign', options: jointDesignOptions() },
-  { key: 'weldType',        label: 'Weld type',        type: 'multiselect', group: 'Welding',    field: 'weldType',    options: weldTypeOptions() },
-  { key: 'materialType1',   label: 'Material',         type: 'multiselect', group: 'Welding',    field: 'materialType1', options: material1Options() },
-  { key: 'ndt',             label: 'NDT',              type: 'multiselect', group: 'Welding',    field: 'ndt',         options: ndtOptions() },
-  { key: 'estimatedHours',  label: 'Est. hours',       type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
-  { key: 'scheduledFor',    label: 'Scheduled',        type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
+  { key: 'jointDesign',     label: 'Joint design',     type: 'multiselect', group: 'Welding',    field: 'jointDesign', options: uniqueOpts(j => j.jointDesign) },
+  { key: 'weldType',        label: 'Weld type',        type: 'multiselect', group: 'Welding',    field: 'weldType',    options: uniqueOpts(j => j.weldType) },
+  { key: 'materialType1',   label: 'Material',         type: 'multiselect', group: 'Welding',    field: 'materialType1', options: uniqueOpts(j => j.materialType1) },
+  { key: 'pipeSize',        label: 'Pipe size',        type: 'text',        group: 'Welding',    field: 'pipeSize' },
+  { key: 'wallThickness',   label: 'Wall thickness',   type: 'text',        group: 'Welding',    field: 'wallThickness' },
+  { key: 'nInd',            label: 'N Ind.',           type: 'multiselect', group: 'Welding',    field: 'nInd',         options: [{ label: '1', value: '1' }, { label: '2', value: '2' }, { label: '3', value: '3' }] },
+  { key: 'ndt',             label: 'NDT',              type: 'text',        group: 'NDT',        field: 'ndt' },
+  { key: 'rtRoot',          label: 'RT Root',          type: 'text',        group: 'NDT',        field: 'rtRoot' },
+  { key: 'rtFinal',         label: 'RT Final',         type: 'text',        group: 'NDT',        field: 'rtFinal' },
+  { key: 'ndtRoot',         label: 'NDT Root',         type: 'text',        group: 'NDT',        field: 'ndtRoot' },
+  { key: 'ndtEach',         label: 'NDT Each',         type: 'text',        group: 'NDT',        field: 'ndtEach' },
+  { key: 'ndtFinal',        label: 'NDT Final',        type: 'text',        group: 'NDT',        field: 'ndtFinal' },
+  { key: 'ut',              label: 'UT',               type: 'text',        group: 'NDT',        field: 'ut' },
+  { key: 'pwht',            label: 'PWHT',             type: 'text',        group: 'NDT',        field: 'pwht' },
+  { key: 'order',           label: 'Order',            type: 'text',        group: 'Additional', field: 'order' },
+  { key: 'workPackage',     label: 'Work package',     type: 'text',        group: 'Additional', field: 'workPackage' },
+  { key: 'workPermit',      label: 'Work permit',      type: 'text',        group: 'Additional', field: 'workPermit' },
+  { key: 'serialNumber',    label: 'Serial number',    type: 'text',        group: 'Additional', field: 'serialNumber' },
+  { key: 'refitNumber',     label: 'Refit number',     type: 'text',        group: 'Additional', field: 'refitNumber' },
+  { key: 'repairNumber',    label: 'Repair number',    type: 'text',        group: 'Additional', field: 'repairNumber' },
+  { key: 'attributeCode1',  label: 'Attribute code 1', type: 'text',        group: 'Additional', field: 'attributeCode1' },
+  { key: 'attributeCode2',  label: 'Attribute code 2', type: 'text',        group: 'Additional', field: 'attributeCode2' },
+  { key: 'attributeCode3',  label: 'Attribute code 3', type: 'text',        group: 'Additional', field: 'attributeCode3' },
 ];
 
 export type FilterValues = Record<string, any>;

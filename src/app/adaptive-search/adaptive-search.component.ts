@@ -25,7 +25,7 @@ import {
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
 
-const DEFAULT_KEYS = ['title', 'jobNumber', 'drawing', 'joint', 'trade'];
+const DEFAULT_KEYS = ['title', 'id', 'drawing', 'joint', 'ndt'];
 
 /* ── Result column definitions ── */
 export interface ResultColumn {
@@ -37,22 +37,35 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'id',            label: 'ID',          field: 'id',            sortField: 'id',            width: 'min-w-8' },
-  { key: 'title',         label: 'Project',     field: 'title',         sortField: 'title',         width: 'min-w-14' },
-  { key: 'drawing',       label: 'Drawing',     field: 'drawing',       sortField: 'drawing',       width: 'min-w-12' },
-  { key: 'joint',         label: 'Joint',       field: 'joint',         sortField: 'joint',         width: 'min-w-11' },
-  { key: 'trade',         label: 'Trade',       field: 'trade',         sortField: 'trade',         width: 'min-w-12' },
-  { key: 'technician',    label: 'Technician',  field: 'technician',    sortField: 'technician',    width: 'min-w-11' },
-  { key: 'jointDesign',   label: 'Joint design',field: 'jointDesign',   sortField: 'jointDesign',   width: 'min-w-12' },
-  { key: 'weldType',      label: 'Weld type',   field: 'weldType',      sortField: 'weldType',      width: 'min-w-11' },
-  { key: 'materialType1', label: 'Material',    field: 'materialType1', sortField: 'materialType1', width: 'min-w-14' },
-  { key: 'ndt',           label: 'NDT',         field: 'ndt',           sortField: 'ndt',           width: 'min-w-12' },
-  { key: 'wps',           label: 'WPS',         field: 'wps',           sortField: 'wps',           width: 'min-w-11' },
-  { key: 'scheduledFor',  label: 'Scheduled',   field: 'scheduledFor',  sortField: 'scheduledFor',  width: 'min-w-13' },
-  { key: 'currentStep',   label: 'Current step',                                                                  width: 'min-w-13' },
+  { key: 'id',              label: 'ID',              field: 'id',              sortField: 'id',              width: 'min-w-8' },
+  { key: 'title',           label: 'Project',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
+  { key: 'drawing',         label: 'Drawing',         field: 'drawing',         sortField: 'drawing',         width: 'min-w-12' },
+  { key: 'drawingRev',      label: 'Drawing Rev',     field: 'drawingRev',      sortField: 'drawingRev',      width: 'min-w-10' },
+  { key: 'joint',           label: 'Joint',           field: 'joint',           sortField: 'joint',           width: 'min-w-11' },
+  { key: 'jointDesign',     label: 'Joint design',    field: 'jointDesign',     sortField: 'jointDesign',     width: 'min-w-12' },
+  { key: 'weldType',        label: 'Weld type',       field: 'weldType',        sortField: 'weldType',        width: 'min-w-11' },
+  { key: 'technician',      label: 'Technician',      field: 'technician',      sortField: 'technician',      width: 'min-w-11' },
+  { key: 'materialType1',   label: 'Material',        field: 'materialType1',   sortField: 'materialType1',   width: 'min-w-14' },
+  { key: 'pipeSize',        label: 'Pipe size',       field: 'pipeSize',        sortField: 'pipeSize',        width: 'min-w-10' },
+  { key: 'wallThickness',   label: 'Wall thickness',  field: 'wallThickness',   sortField: 'wallThickness',   width: 'min-w-10' },
+  { key: 'ndt',             label: 'NDT',             field: 'ndt',             sortField: 'ndt',             width: 'min-w-12' },
+  { key: 'rtRoot',          label: 'RT Root',         field: 'rtRoot',          sortField: 'rtRoot',          width: 'min-w-10' },
+  { key: 'rtFinal',         label: 'RT Final',        field: 'rtFinal',         sortField: 'rtFinal',         width: 'min-w-10' },
+  { key: 'ndtRoot',         label: 'NDT Root',        field: 'ndtRoot',         sortField: 'ndtRoot',         width: 'min-w-10' },
+  { key: 'ndtEach',         label: 'NDT Each',        field: 'ndtEach',         sortField: 'ndtEach',         width: 'min-w-10' },
+  { key: 'ndtFinal',        label: 'NDT Final',       field: 'ndtFinal',        sortField: 'ndtFinal',        width: 'min-w-10' },
+  { key: 'ut',              label: 'UT',              field: 'ut',              sortField: 'ut',              width: 'min-w-10' },
+  { key: 'pwht',            label: 'PWHT',            field: 'pwht',            sortField: 'pwht',            width: 'min-w-10' },
+  { key: 'nInd',            label: 'N Ind.',          field: 'nInd',            sortField: 'nInd',            width: 'min-w-8' },
+  { key: 'order',           label: 'Order',           field: 'order',           sortField: 'order',           width: 'min-w-10' },
+  { key: 'workPackage',     label: 'Work package',    field: 'workPackage',     sortField: 'workPackage',     width: 'min-w-10' },
+  { key: 'serialNumber',    label: 'Serial #',        field: 'serialNumber',    sortField: 'serialNumber',    width: 'min-w-10' },
+  { key: 'refitNumber',     label: 'Refit #',         field: 'refitNumber',     sortField: 'refitNumber',     width: 'min-w-10' },
+  { key: 'repairNumber',    label: 'Repair #',        field: 'repairNumber',    sortField: 'repairNumber',    width: 'min-w-10' },
+  { key: 'currentStep',     label: 'Current step',                                                                     width: 'min-w-13' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['id', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'ndt', 'currentStep'];
+const DEFAULT_COLUMN_KEYS = ['id', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -333,13 +346,16 @@ export class AdaptiveSearchComponent {
       { header: 'Project', value: (r: Job) => r.title },
       { header: 'Drawing', value: (r: Job) => r.drawing },
       { header: 'Joint', value: (r: Job) => r.joint },
-      { header: 'Trade', value: (r: Job) => r.trade },
-      { header: 'Technician', value: (r: Job) => r.technician },
       { header: 'Joint design', value: (r: Job) => r.jointDesign },
       { header: 'Weld type', value: (r: Job) => r.weldType },
+      { header: 'Technician', value: (r: Job) => r.technician },
       { header: 'Material', value: (r: Job) => r.materialType1 },
       { header: 'NDT', value: (r: Job) => r.ndt },
-      { header: 'WPS', value: (r: Job) => r.wps },
+      { header: 'RT Root', value: (r: Job) => r.rtRoot },
+      { header: 'RT Final', value: (r: Job) => r.rtFinal },
+      { header: 'UT', value: (r: Job) => r.ut },
+      { header: 'PWHT', value: (r: Job) => r.pwht },
+      { header: 'Current step', value: (r: Job) => '' },
     ], this.table.sorted());
   }
 

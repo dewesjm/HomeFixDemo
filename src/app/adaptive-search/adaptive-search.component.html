@@ -128,23 +128,32 @@
       <tr>
         @for (col of visibleColumns(); track col.key) {
           <td>
-              @switch (col.key) {
+            @switch (col.key) {
               @case ('id') { <span class="mono">{{ job.id }}</span> }
               @case ('title') { {{ job.title }} }
-              @case ('trade') { {{ job.trade }} }
-              @case ('technician') { {{ job.technician }} }
               @case ('drawing') { {{ job.drawing }} }
+              @case ('drawingRev') { {{ job.drawingRev }} }
               @case ('joint') { {{ job.joint }} }
               @case ('jointDesign') { {{ job.jointDesign }} }
               @case ('weldType') { {{ job.weldType }} }
+              @case ('technician') { {{ job.technician }} }
               @case ('materialType1') { {{ job.materialType1 }} }
-              @case ('materialType2') { {{ job.materialType2 }} }
-              @case ('wps') { {{ job.wps }} }
+              @case ('pipeSize') { {{ job.pipeSize }} }
+              @case ('wallThickness') { {{ job.wallThickness }} }
               @case ('ndt') { {{ job.ndt }} }
+              @case ('rtRoot') { {{ job.rtRoot }} }
+              @case ('rtFinal') { {{ job.rtFinal }} }
+              @case ('ndtRoot') { {{ job.ndtRoot }} }
+              @case ('ndtEach') { {{ job.ndtEach }} }
+              @case ('ndtFinal') { {{ job.ndtFinal }} }
+              @case ('ut') { {{ job.ut }} }
               @case ('pwht') { {{ job.pwht }} }
-              @case ('estimatedCost') { {{ job.estimatedCost | currency:'USD' }} }
-              @case ('estimatedHours') { {{ job.estimatedHours }}h }
-              @case ('scheduledFor') { {{ job.scheduledFor | date:'mediumDate' }} }
+              @case ('nInd') { {{ job.nInd }} }
+              @case ('order') { {{ job.order }} }
+              @case ('workPackage') { {{ job.workPackage }} }
+              @case ('serialNumber') { {{ job.serialNumber }} }
+              @case ('refitNumber') { {{ job.refitNumber }} }
+              @case ('repairNumber') { {{ job.repairNumber }} }
               @case ('currentStep') { {{ currentStep(job) }} }
             }
           </td>
