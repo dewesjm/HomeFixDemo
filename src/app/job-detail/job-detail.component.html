@@ -414,52 +414,55 @@
 
             <div>
               <div class="font-semibold text-sm">Signoff History</div>
-              @if (signedStages().length) {
+              @if (signoffRecords().length) {
                 <div class="overflow-x-auto">
                 <table class="table table-sm">
                   <thead>
                     <tr>
                       <th>Stage</th>
-                      <th>Result</th>
+                      <th>Action</th>
                       <th>Field</th>
                       <th>Value</th>
-                      <th>Signed By</th>
+                      <th>Who</th>
                       <th>Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (s of signedStages(); track s.signedAt) {
-                      @if (s.fields.length) {
-                        @for (f of s.fields; track f.key; let i = $index) {
+                    @for (r of signoffRecords(); track r.when) {
+                      @if (r.fields.length) {
+                        @for (f of r.fields; track f.key; let i = $index) {
                           <tr>
                             @if (i === 0) {
-                              <td [attr.rowspan]="s.fields.length" class="font-medium align-top">{{ s.label }}</td>
-                              <td [attr.rowspan]="s.fields.length" class="align-top">
-                                @if (s.result === 'sat') {
+                              <td [attr.rowspan]="r.fields.length" class="font-medium align-top">{{ r.stageLabel }}</td>
+                              <td [attr.rowspan]="r.fields.length" class="align-top">
+                                @if (r.action === 'reopened') {
+                                  <span class="badge badge-sm badge-warning">RE-OPENED</span>
+                                } @else if (r.result === 'sat') {
                                   <span class="badge badge-sm badge-success">SAT</span>
-                                } @else if (s.result === 'unsat') {
+                                } @else if (r.result === 'unsat') {
                                   <span class="badge badge-sm badge-error">UNSAT</span>
                                 } @else {
                                   <span>—</span>
                                 }
                               </td>
-                              <td [attr.rowspan]="s.fields.length" [attr.colspan]="0" class="hidden"></td>
                             }
                             <td class="text-xs opacity-70">{{ f.label }}</td>
                             <td class="text-xs">{{ f.value }}</td>
                             @if (i === 0) {
-                              <td [attr.rowspan]="s.fields.length" class="text-xs align-top">{{ s.who }}</td>
-                              <td [attr.rowspan]="s.fields.length" class="text-xs align-top">{{ s.signedAt | date:'short' }}</td>
+                              <td [attr.rowspan]="r.fields.length" class="text-xs align-top">{{ r.who }}</td>
+                              <td [attr.rowspan]="r.fields.length" class="text-xs align-top">{{ r.when | date:'short' }}</td>
                             }
                           </tr>
                         }
                       } @else {
                         <tr>
-                          <td class="font-medium">{{ s.label }}</td>
+                          <td class="font-medium">{{ r.stageLabel }}</td>
                           <td>
-                            @if (s.result === 'sat') {
+                            @if (r.action === 'reopened') {
+                              <span class="badge badge-sm badge-warning">RE-OPENED</span>
+                            } @else if (r.result === 'sat') {
                               <span class="badge badge-sm badge-success">SAT</span>
-                            } @else if (s.result === 'unsat') {
+                            } @else if (r.result === 'unsat') {
                               <span class="badge badge-sm badge-error">UNSAT</span>
                             } @else {
                               <span>—</span>
@@ -467,20 +470,8 @@
                           </td>
                           <td class="opacity-50">—</td>
                           <td class="opacity-50">—</td>
-                          <td class="text-xs">{{ s.who }}</td>
-                          <td class="text-xs">{{ s.signedAt | date:'short' }}</td>
-                        </tr>
-                      }
-                    }
-                    @for (e of w.history; track e.when) {
-                      @if (e.action?.includes('Re-opened')) {
-                        <tr>
-                          <td class="font-medium">{{ e.from }}</td>
-                          <td><span class="badge badge-sm badge-warning">RE-OPENED</span></td>
-                          <td class="opacity-50">—</td>
-                          <td class="opacity-50">—</td>
-                          <td class="text-xs">{{ e.who }}</td>
-                          <td class="text-xs">{{ e.when | date:'short' }}</td>
+                          <td class="text-xs">{{ r.who }}</td>
+                          <td class="text-xs">{{ r.when | date:'short' }}</td>
                         </tr>
                       }
                     }

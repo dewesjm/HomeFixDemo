@@ -45,6 +45,15 @@ export interface SignoffField {
 }
 
 /* sequential stages, each its own sign-off */
+export interface SignoffRecord {
+  stageLabel: string;
+  fields: { key: string; label: string; value: string }[];
+  result: StageResult | null;
+  who: string;
+  when: string;         /* ISO */
+  action: 'signed' | 'reopened';
+}
+
 export interface WorkflowStage {
   id: string;
   label: string;
@@ -67,6 +76,7 @@ export interface WorkflowStage {
   stepOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
+  signoffRecords: SignoffRecord[];
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
   showOverride?: boolean;         /* show Override Requirements section (weld stages only) */
 }
@@ -1148,6 +1158,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       stepOptions: t.stepOptions,
       signed: false,
       signedAt: null,
+      signoffRecords: [],
       showOverride
     };
   };
@@ -1294,7 +1305,17 @@ export function seededWorkflow(job: Job): JobWorkflow {
       signoffInputs,
       result: 'sat' as StageResult,
       signed: true,
-      signedAt: new Date(t).toISOString()
+      signedAt: new Date(t).toISOString(),
+      signoffRecords: [{
+        stageLabel: s.label,
+        fields: Object.entries({ ...inputs, ...signoffInputs })
+          .filter(([, v]) => v)
+          .map(([key, value]) => ({ key, label: key, value })),
+        result: 'sat' as StageResult,
+        who,
+        when: new Date(t).toISOString(),
+        action: 'signed' as const,
+      }],
     };
   });
   return wf;

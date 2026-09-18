@@ -115,24 +115,13 @@ export class JobDetailComponent {
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
   history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
-  signedStages = computed(() => {
+  signoffRecords = computed(() => {
     if (!this.wf) return [];
-    const wf = this.wf();
-    const names = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
-    return wf.stages
-      .filter(s => s.signed)
-      .map((s, i) => {
-        const labelMap: Record<string, string> = {};
-        for (const f of s.fields) labelMap[f.key] = f.label;
-        for (const f of s.signoffFields) labelMap[f.key] = f.label;
-        labelMap['result'] = 'Decision';
-        labelMap['inspectorName'] = 'Inspector Name';
-        const fields: { key: string; label: string; value: string }[] = [];
-        for (const [k, v] of Object.entries(s.inputs)) if (v) fields.push({ key: k, label: labelMap[k] || k, value: v });
-        for (const [k, v] of Object.entries(s.signoffInputs)) if (v && !fields.some(f => f.key === k)) fields.push({ key: k, label: labelMap[k] || k, value: v });
-        const who = s.signoffInputs['inspectorName'] || wf.technician || names[i % names.length];
-        return { label: s.label, result: s.result, who, signedAt: s.signedAt, fields };
-      });
+    const all: { stageLabel: string; fields: { key: string; label: string; value: string }[]; result: string | null; who: string; when: string; action: 'signed' | 'reopened' }[] = [];
+    for (const s of this.wf().stages) {
+      for (const r of s.signoffRecords) all.push(r);
+    }
+    return all.sort((a, b) => a.when.localeCompare(b.when));
   });
 
   defaultStepOption(stage: WorkflowStage): string {
@@ -874,21 +863,4 @@ export class JobDetailComponent {
     this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
   }
 
-  copySignoffHistory() {
-    const stages = this.signedStages();
-    if (!stages.length) return;
-    const rows: string[] = ['Stage\tResult\tField\tValue\tSigned By\tDate'];
-    for (const s of stages) {
-      const result = s.result === 'sat' ? 'SAT' : s.result === 'unsat' ? 'UNSAT' : '—';
-      const date = s.signedAt ? new Date(s.signedAt).toLocaleDateString() : '—';
-      if (s.fields.length) {
-        for (const f of s.fields) {
-          rows.push(`${s.label}\t${result}\t${f.label}\t${f.value}\t${s.who}\t${date}`);
-        }
-      } else {
-        rows.push(`${s.label}\t${result}\t—\t—\t${s.who}\t${date}`);
-      }
-    }
-    navigator.clipboard.writeText(rows.join('\n'));
-  }
 }

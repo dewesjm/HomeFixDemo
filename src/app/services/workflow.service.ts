@@ -246,7 +246,24 @@ export class WorkflowService {
   signStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
       let stages: WorkflowStage[] = wf.stages.map(s =>
-        s.id === stageId ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
+        s.id === stageId ? {
+          ...s,
+          signed: true,
+          signedAt: new Date().toISOString(),
+          signoffRecords: [
+            ...s.signoffRecords,
+            {
+              stageLabel: s.label,
+              fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
+                .filter(([, v]) => v)
+                .map(([key, value]) => ({ key, label: key, value })),
+              result: s.result,
+              who: s.signoffInputs['inspectorName'] || wf.technician,
+              when: new Date().toISOString(),
+              action: 'signed' as const,
+            },
+          ],
+        } : s);
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
 
@@ -284,6 +301,7 @@ export class WorkflowService {
           result: null,
           inputs: {},
           signoffInputs: {},
+          signoffRecords: [],
           stepType: 'standard',
           routeTo: '',
         };
@@ -295,9 +313,20 @@ export class WorkflowService {
         const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
         const currentIdx = stages.findIndex(s => s.id === stageId);
         if (targetIdx >= 0 && targetIdx < currentIdx) {
+          const now = new Date().toISOString();
           for (let i = targetIdx; i < currentIdx; i++) {
             if (stages[i].signed) {
-              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
+              const reopenRecord = {
+                stageLabel: stages[i].label,
+                fields: Object.entries({ ...stages[i].inputs, ...stages[i].signoffInputs })
+                  .filter(([, v]) => v)
+                  .map(([key, value]) => ({ key, label: key, value })),
+                result: stages[i].result,
+                who: wf.technician,
+                when: now,
+                action: 'reopened' as const,
+              };
+              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null, signoffRecords: [...stages[i].signoffRecords, reopenRecord] };
             }
           }
         }
@@ -314,6 +343,7 @@ export class WorkflowService {
             inputs: { allowableThickness: 'Allowable thickness: 3/16 inch or 20% of material thickness, whichever is less' },
             signoffFields: [],
             signoffInputs: {},
+            signoffRecords: [],
             result: null,
             rejectToStage: '',
             repeatable: false,
@@ -350,8 +380,29 @@ export class WorkflowService {
   /* re-open a signed stage for edits */
   reopenStage(job: Job, stageId: string) {
     this.workflowFor(job).update(wf => {
-      const stages = wf.stages.map(s =>
-        s.id === stageId ? { ...s, signed: false, signedAt: null } : s);
+      const now = new Date().toISOString();
+      const stages = wf.stages.map(s => {
+        if (s.id !== stageId) return s;
+        const who = s.signoffInputs['inspectorName'] || wf.technician;
+        return {
+          ...s,
+          signed: false,
+          signedAt: null,
+          signoffRecords: [
+            ...s.signoffRecords,
+            {
+              stageLabel: s.label,
+              fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
+                .filter(([, v]) => v)
+                .map(([key, value]) => ({ key, label: key, value })),
+              result: s.result,
+              who,
+              when: now,
+              action: 'reopened' as const,
+            },
+          ],
+        };
+      });
       const st = stages.find(s => s.id === stageId)!;
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
@@ -395,7 +446,21 @@ export class WorkflowService {
             }
           };
         }
-        return s.signed ? { ...s, signed: false, signedAt: null } : s;
+        return s.signed ? {
+          ...s,
+          signed: false,
+          signedAt: null,
+          signoffRecords: [...s.signoffRecords, {
+            stageLabel: s.label,
+            fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
+              .filter(([, v]) => v)
+              .map(([key, value]) => ({ key, label: key, value })),
+            result: s.result,
+            who: 'Admin',
+            when,
+            action: 'reopened' as const,
+          }],
+        } : s;
       });
       const target = stages[targetIndex];
       return this.withHistory(wf, { ...wf, stages }, {
@@ -414,9 +479,28 @@ export class WorkflowService {
     this.workflowFor(job).update(wf => {
       const currentIdx = wf.stages.findIndex(s => !s.signed);
       if (currentIdx <= 0) return wf; // already at first step
+      const now = new Date().toISOString();
       const stages = wf.stages.map((s, i) => {
         if (i === currentIdx - 1 || i === currentIdx) {
-          return { ...s, signed: false, signedAt: null, result: null, inputs: {}, signoffInputs: {} };
+          const record = {
+            stageLabel: s.label,
+            fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
+              .filter(([, v]) => v)
+              .map(([key, value]) => ({ key, label: key, value })),
+            result: s.result,
+            who: 'Admin',
+            when: now,
+            action: 'reopened' as const,
+          };
+          return {
+            ...s,
+            signed: false,
+            signedAt: null,
+            result: null,
+            inputs: {},
+            signoffInputs: {},
+            signoffRecords: [...s.signoffRecords, record],
+          };
         }
         return s;
       });
