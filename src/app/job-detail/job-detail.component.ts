@@ -98,6 +98,10 @@ export class JobDetailComponent {
   currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
+  soldSigned = computed(() => {
+    if (!this.wf) return false;
+    return this.wf().stages.some(s => s.id === 'sold' && s.signed);
+  });
   /* fabrication fields locked after fit-up inspection signed */
   fabLocked = computed(() => {
     if (!this.wf) return false;
@@ -238,7 +242,7 @@ export class JobDetailComponent {
   }
   /* sign-off editable only on the active stage */
   editable(stage: WorkflowStage): boolean {
-    return stage.required && !stage.signed && stage.id === this.activeStage();
+    return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned();
   }
   canDeactivate(): boolean {
     if (!this.wf) return true;
@@ -252,11 +256,11 @@ export class JobDetailComponent {
   }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
-    return !stage.signed && !this.locked(i);
+    return !stage.signed && !this.locked(i) && !this.soldSigned();
   }
   /* only the last signed stage can reopen */
   canReopen(stage: WorkflowStage, i: number): boolean {
-    if (!stage.signed || !this.wf) return false;
+    if (!stage.signed || !this.wf || this.soldSigned()) return false;
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
   canSignStage(stage: WorkflowStage): boolean {
