@@ -475,7 +475,7 @@ export class WorkflowService {
   }
 
   /* go back one step — re-opens the current stage and the one before it */
-  goBackStep(job: Job) {
+  goBackStep(job: Job, comment?: string) {
     this.workflowFor(job).update(wf => {
       const currentIdx = wf.stages.findIndex(s => !s.signed);
       if (currentIdx <= 0) return wf; // already at first step
@@ -484,9 +484,12 @@ export class WorkflowService {
         if (i === currentIdx - 1 || i === currentIdx) {
           const record = {
             stageLabel: s.label,
-            fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
-              .filter(([, v]) => v)
-              .map(([key, value]) => ({ key, label: key, value })),
+            fields: [
+              ...Object.entries({ ...s.inputs, ...s.signoffInputs })
+                .filter(([, v]) => v)
+                .map(([key, value]) => ({ key, label: key, value })),
+              ...(comment ? [{ key: 'comment', label: 'Comment', value: comment }] : []),
+            ],
             result: s.result,
             who: 'Admin',
             when: now,
@@ -507,7 +510,7 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: 'Admin',
-        action: `${wf.stages[currentIdx - 1]?.label ?? ''} — Re-opened`,
+        action: `${wf.stages[currentIdx - 1]?.label ?? ''} — Re-opened${comment ? ': ' + comment : ''}`,
         from: wf.stages[currentIdx]?.label ?? '',
         to: ''
       });

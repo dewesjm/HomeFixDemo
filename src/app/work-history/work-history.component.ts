@@ -41,6 +41,8 @@ export class WorkHistoryComponent {
   person = signal<string | null>(null);
   /* job filter: job number or id */
   jobQuery = signal<string>('');
+  deprogressTarget = signal<string | null>(null);
+  deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
     ['jobTitle', 'action', 'from', 'to', 'step'],
@@ -124,10 +126,21 @@ export class WorkHistoryComponent {
   }
 
   /* go back one step for a job */
-  goBack(jobId: string) {
+  goBack(jobId: string, comment: string) {
     const job = this.jobById.get(jobId);
     if (!job) return;
-    this.wfService.goBackStep(job);
+    this.wfService.goBackStep(job, comment);
+    this.cancelDeprogress();
+  }
+
+  confirmDeprogress(jobId: string) {
+    if (!this.deprogressComment().trim()) return;
+    this.goBack(jobId, this.deprogressComment().trim());
+  }
+
+  cancelDeprogress() {
+    this.deprogressTarget.set(null);
+    this.deprogressComment.set('');
   }
 
   clear() {

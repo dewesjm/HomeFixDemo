@@ -96,9 +96,20 @@
         </td>
         <td>
           @if (isLatestEntry(r)) {
-            <button type="button" class="btn btn-ghost btn-xs" (click)="goBack(r.jobId)" title="Reverse to previous step">
-              <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
-            </button>
+            @if (deprogressTarget() === r.jobId) {
+              <div class="flex items-center gap-1">
+                <input class="input input-bordered input-xs w-48" placeholder="Reason for deprogress..."
+                       [ngModel]="deprogressComment()" (ngModelChange)="deprogressComment.set($event)"
+                       (keyup.enter)="confirmDeprogress(r.jobId)" autofocus />
+                <button type="button" class="btn btn-error btn-xs" (click)="confirmDeprogress(r.jobId)"
+                        [disabled]="!deprogressComment().trim()">Go</button>
+                <button type="button" class="btn btn-ghost btn-xs" (click)="cancelDeprogress()">Cancel</button>
+              </div>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="deprogressTarget.set(r.jobId); deprogressComment.set('')" title="Reverse to previous step">
+                <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
+              </button>
+            }
           }
         </td>
       </tr>
