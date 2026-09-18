@@ -137,13 +137,18 @@ export class JobDetailComponent {
   }
 
   /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
-  fabFields = computed(() => FABRICATION_FIELDS.map(f =>
-    f.key === 'location'
-      ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
-      : f.key === 'revisedJointDesign'
-      ? { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] }
-      : f
-  ));
+  fabFields = computed(() => {
+    const fab = this.wf ? this.wf().fabricationData : {};
+    return FABRICATION_FIELDS
+      .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
+      .map(f =>
+        f.key === 'location'
+          ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
+          : f.key === 'revisedJointDesign'
+          ? { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] }
+          : f
+      );
+  });
   fabErrors = computed(() => {
     if (!this.wf) return {};
     const fab = this.wf().fabricationData;
@@ -153,6 +158,11 @@ export class JobDetailComponent {
         const triggerVal = fab[f.requiredWhen.key] ?? '';
         if (f.requiredWhen.notEmpty && triggerVal.trim() && !(fab[f.key] ?? '').trim()) {
           errors[f.key] = `${f.label} is required when ${FABRICATION_FIELDS.find(ff => ff.key === f.requiredWhen!.key)?.label ?? f.requiredWhen.key} is set`;
+        }
+      }
+      if (f.showIf && f.required) {
+        if (fab[f.showIf.key] === f.showIf.equals && !(fab[f.key] ?? '').trim()) {
+          errors[f.key] = `${f.label} is required`;
         }
       }
     }
@@ -382,7 +392,12 @@ export class JobDetailComponent {
   }
 
   fabFieldRequired(f: FabricationField): boolean {
-    if (!f.requiredWhen || !this.wf) return false;
+    if (!this.wf) return false;
+    if (f.showIf && f.required) {
+      const fab = this.wf().fabricationData;
+      return fab[f.showIf.key] === f.showIf.equals;
+    }
+    if (!f.requiredWhen) return false;
     const val = (this.wf().fabricationData[f.requiredWhen.key] ?? '').trim();
     return f.requiredWhen.notEmpty ? val.length > 0 : val.length === 0;
   }
