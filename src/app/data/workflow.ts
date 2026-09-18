@@ -1192,7 +1192,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     id2: 'MIC-4411',
     drawingRev: 'C',
     actualThickness: '0.75',
-    weldMemo: '',
+    weldMemo: ['Per drawing', 'No deviations', 'Completed as required', 'Per spec'][Math.floor(Math.random() * 4)],
     revisedJointDesign: 'bj-g',
     changeNumber: 'ER-0042',
     wtn: Math.random() < 0.5 ? 'wtn-101' : 'wtn-201',
