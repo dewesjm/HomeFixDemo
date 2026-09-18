@@ -1190,7 +1190,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     usage: 'Structural',
     id1: 'MIC-4410',
     id2: 'MIC-4411',
-    drawingRev: 'Rev C',
+    drawingRev: 'C',
     actualThickness: '0.75',
     weldMemo: 'Standard weld procedure',
     revisedJointDesign: 'bj-g',
