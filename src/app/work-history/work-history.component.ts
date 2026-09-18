@@ -118,7 +118,7 @@ export class WorkHistoryComponent {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
     return this.allActivity().filter(r =>
-      (!jq || String(r.jobId) === jq || r.jobNumber.toLowerCase().includes(jq)) &&
+      (!jq || r.jobId.toLowerCase() === jq || r.jobTitle.toLowerCase().includes(jq) || r.jobNumber.toLowerCase().includes(jq)) &&
       (!p || r.who === p)
     );
   });
