@@ -663,7 +663,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Good', value: 'good' }, { label: 'Cracked', value: 'cracked' },
           { label: 'Incomplete', value: 'incomplete' }] }
     ], signoffFields: [] },
-    { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+    { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
+        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
+      ], signoffFields: [], stepOptions: [
       { label: 'Root', value: 'standard', default: true },
     ] },
     { id: 'root-ndt-utrt', label: 'Root NDT UT/RT', required: true, role: 'Inspector', fields: [
@@ -732,9 +734,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { label: '5X', value: '5x' },
     ] },
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
-      fields: [...WELD_STAGE_FIELDS,
-        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
-      ],
+      fields: WELD_STAGE_FIELDS,
       signoffFields: [], stepOptions: [
         { label: 'Interim Layer', value: 'interim', default: true },
         { label: 'Final Layer', value: 'final' },
