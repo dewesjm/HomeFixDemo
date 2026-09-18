@@ -62,7 +62,7 @@ const THEME_KEY = 'homefix:theme';
 })
 export class ThemePickerComponent {
   themes = THEMES;
-  active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'corporate');
+  active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'forest');
 
   constructor() {
     document.documentElement.setAttribute('data-theme', this.active());

@@ -865,7 +865,26 @@
                     }
                   }
                 </div>
-              } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector') {
+              } @else if (f.key === 'penetrantBrand') {
+                <div class="flex items-end gap-4 w-full">
+                  @for (g of visibleFields(stage); track g.key) {
+                    @if (g.key === 'penetrantBrand' || g.key === 'penetrantManufacturer') {
+                      <div class="flex-1">
+                        <label class="stage-field">
+                          <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
+                          @if (g.type === 'select') {
+                            <select class="select select-bordered" [disabled]="!inputsEditable(stage, selectedStep())"
+                                    [ngModel]="stage.inputs[g.key]" (ngModelChange)="stageSelectChange(stage, g, $event)">
+                              <option [ngValue]="null">Select</option>
+                              @for (o of g.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                            </select>
+                          }
+                        </label>
+                      </div>
+                    }
+                  }
+                </div>
+              } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantManufacturer') {
               <div class="w-full">
               @if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
