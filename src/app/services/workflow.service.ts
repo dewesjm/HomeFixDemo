@@ -474,44 +474,40 @@ export class WorkflowService {
     this.notify('success', 'Step updated', `Set to step ${targetIndex + 1}`);
   }
 
-  /* go back one step — re-opens the current stage and the one before it */
+  /* go back one step — re-opens the most recently signed stage */
   goBackStep(job: Job, comment?: string) {
     this.workflowFor(job).update(wf => {
-      const currentIdx = wf.stages.findIndex(s => !s.signed);
-      if (currentIdx <= 0) return wf; // already at first step
+      const lastSignedIdx = [...wf.stages].map((s, i) => ({ s, i })).filter(x => x.s.signed).pop()?.i ?? -1;
+      if (lastSignedIdx < 0) return wf; // nothing signed
       const now = new Date().toISOString();
-      const stages = wf.stages.map((s, i) => {
-        if (i === currentIdx - 1 || i === currentIdx) {
-          const record = {
-            stageLabel: s.label,
-            fields: [
-              ...Object.entries({ ...s.inputs, ...s.signoffInputs })
-                .filter(([, v]) => v)
-                .map(([key, value]) => ({ key, label: key, value })),
-              ...(comment ? [{ key: 'comment', label: 'Comment', value: comment }] : []),
-            ],
-            result: s.result,
-            who: 'Admin',
-            when: now,
-            action: 'reopened' as const,
-          };
-          return {
-            ...s,
-            signed: false,
-            signedAt: null,
-            result: null,
-            inputs: {},
-            signoffInputs: {},
-            signoffRecords: [...s.signoffRecords, record],
-          };
-        }
-        return s;
-      });
+      const s = wf.stages[lastSignedIdx];
+      const record = {
+        stageLabel: s.label,
+        fields: [
+          ...Object.entries({ ...s.inputs, ...s.signoffInputs })
+            .filter(([, v]) => v)
+            .map(([key, value]) => ({ key, label: key, value })),
+          ...(comment ? [{ key: 'comment', label: 'Comment', value: comment }] : []),
+        ],
+        result: s.result,
+        who: 'Admin',
+        when: now,
+        action: 'reopened' as const,
+      };
+      const stages = wf.stages.map((st, i) => i === lastSignedIdx ? {
+        ...st,
+        signed: false,
+        signedAt: null,
+        result: null,
+        inputs: {},
+        signoffInputs: {},
+        signoffRecords: [...st.signoffRecords, record],
+      } : st);
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: 'Admin',
-        action: `${wf.stages[currentIdx - 1]?.label ?? ''} — Re-opened${comment ? ': ' + comment : ''}`,
-        from: wf.stages[currentIdx]?.label ?? '',
+        action: `${s.label} — Re-opened${comment ? ': ' + comment : ''}`,
+        from: s.label,
         to: ''
       });
     });

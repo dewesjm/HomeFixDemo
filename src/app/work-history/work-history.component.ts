@@ -18,6 +18,7 @@ interface ActivityRow extends HistoryEntry {
   jobId: string;
   jobNumber: string;
   jobTitle: string;
+  drawing: string;
 }
 
 @Component({
@@ -93,6 +94,7 @@ export class WorkHistoryComponent {
           jobId: wf.jobId,
           jobNumber: job?.jobNumber ?? '',
           jobTitle: job?.title ?? `Project #${wf.jobId}`,
+          drawing: job?.drawing ?? '',
         });
       }
     }
@@ -104,6 +106,7 @@ export class WorkHistoryComponent {
         jobId: m.jobId,
         jobNumber: job?.jobNumber ?? '',
         jobTitle: job?.title ?? `Project #${m.jobId}`,
+        drawing: job?.drawing ?? '',
       });
     }
     return rows.sort((a, b) => b.when.localeCompare(a.when));
@@ -119,9 +122,11 @@ export class WorkHistoryComponent {
     );
   });
 
-  /* check if this is the latest entry for a given job */
+  /* check if this is the latest signoff entry for a given job */
   isLatestEntry(r: ActivityRow): boolean {
-    const jobEntries = this.table.sorted().filter(e => e.jobId === r.jobId);
+    if (r.section !== 'Sign-off' || r.action?.includes('Re-opened')) return false;
+    const jobEntries = this.table.sorted().filter(e =>
+      e.jobId === r.jobId && e.section === 'Sign-off' && !e.action?.includes('Re-opened'));
     return jobEntries.length > 0 && jobEntries[0] === r;
   }
 
