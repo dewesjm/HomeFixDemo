@@ -723,12 +723,12 @@
             <div>
               @for (f of visibleFields(stage); track f.key) {
                 @if (f.key === 'consumableInsertOnly') {
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}</span>
-                    <select class="select select-bordered w-full max-w-[400px]" [disabled]="!inputsEditable(stage, selectedStep())"
-                            [ngModel]="stage.inputs[f.key]" (ngModelChange)="onConsumableInsertChange(stage, $event)">
-                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                    </select>
+                  <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" class="checkbox checkbox-sm"
+                           [disabled]="!inputsEditable(stage, selectedStep())"
+                           [checked]="stage.inputs[f.key] === 'yes'"
+                           (change)="onConsumableInsertChange(stage, $any($event.target).checked ? 'yes' : '')" />
+                    <span>{{ f.label }}</span>
                   </label>
                 }
               }

@@ -733,8 +733,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ] },
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
       fields: [...WELD_STAGE_FIELDS,
-        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'select',
-          options: [{ label: 'No', value: 'no' }, { label: 'Yes', value: 'yes' }] },
+        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
       ],
       signoffFields: [], stepOptions: [
         { label: 'Interim Layer', value: 'interim', default: true },
