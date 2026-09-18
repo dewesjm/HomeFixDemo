@@ -199,6 +199,10 @@
                          (change)="toggleDraft(f.key, $any($event.target).checked)" />
                   <span>{{ f.label }}</span>
                   @if (f.required) { <span class="required-tag">required</span> }
+                  <span class="flex gap-0.5 ml-auto">
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(draftKeys, f.key); $event.preventDefault()">▲</button>
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(draftKeys, f.key); $event.preventDefault()">▼</button>
+                  </span>
                 </label>
               }
             </div>
@@ -244,6 +248,10 @@
                    [checked]="isDraftCol(col.key)"
                    (change)="toggleDraftCol(col.key, $any($event.target).checked)" />
             <span>{{ col.label }}</span>
+            <span class="flex gap-0.5 ml-auto">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(draftColKeys, col.key); $event.preventDefault()">▲</button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(draftColKeys, col.key); $event.preventDefault()">▼</button>
+            </span>
           </label>
         }
         @if (!groupedColumns().length) {

@@ -12,31 +12,35 @@ export type FilterField =
   | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job };
 
 /* derive filter options from the seeded job data */
-function weldTypeOptions(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.weldType))].sort();
-  return vals.map(v => ({ label: v, value: v }));
-}
-function jointDesignOptions(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.jointDesign))].sort();
-  return vals.map(v => ({ label: v, value: v }));
-}
-function material1Options(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.materialType1))].sort();
-  return vals.map(v => ({ label: v, value: v }));
-}
-function material2Options(): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(j => j.materialType2))].sort();
+function uniqueOpts(getter: (j: Job) => string): { label: string; value: string }[] {
+  const vals = [...new Set(JOBS.map(getter))].filter(Boolean).sort();
   return vals.map(v => ({ label: v, value: v }));
 }
 
+function ndtOptions() { return uniqueOpts(j => j.ndt); }
+function jointDesignOptions() { return uniqueOpts(j => j.jointDesign); }
+function weldTypeOptions() { return uniqueOpts(j => j.weldType); }
+function material1Options() { return uniqueOpts(j => j.materialType1); }
+function currentStepOptions() {
+  return [
+    { label: 'Pre-Fit', value: 'Pre-Fit' }, { label: 'Fit', value: 'Fit' },
+    { label: 'Tack', value: 'Tack' }, { label: 'Fit-Up Insp', value: 'Fit-Up Insp' },
+    { label: 'Root', value: 'Root' }, { label: 'Layer', value: 'Layer' },
+    { label: 'Final Weld', value: 'Final Weld' }, { label: 'Review', value: 'Review' },
+  ];
+}
+
 export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'title',           label: 'Title contains',   type: 'text',        group: 'Job',        field: 'title', required: true },
+  { key: 'title',           label: 'Project',          type: 'text',        group: 'Job',        field: 'title', required: true },
+  { key: 'jobNumber',       label: 'Project #',        type: 'text',        group: 'Job',        field: 'jobNumber' },
   { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',      options: TRADE_OPTIONS },
   { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician', options: TECHNICIAN_OPTIONS },
+  { key: 'drawing',         label: 'Drawing',          type: 'text',        group: 'Job',        field: 'drawing' },
+  { key: 'joint',           label: 'Joint',            type: 'text',        group: 'Job',        field: 'joint' },
   { key: 'jointDesign',     label: 'Joint design',     type: 'multiselect', group: 'Welding',    field: 'jointDesign', options: jointDesignOptions() },
   { key: 'weldType',        label: 'Weld type',        type: 'multiselect', group: 'Welding',    field: 'weldType',    options: weldTypeOptions() },
-  { key: 'materialType1',   label: 'Material 1',       type: 'multiselect', group: 'Welding',    field: 'materialType1', options: material1Options() },
-  { key: 'materialType2',   label: 'Material 2',       type: 'multiselect', group: 'Welding',    field: 'materialType2', options: material2Options() },
+  { key: 'materialType1',   label: 'Material',         type: 'multiselect', group: 'Welding',    field: 'materialType1', options: material1Options() },
+  { key: 'ndt',             label: 'NDT',              type: 'multiselect', group: 'Welding',    field: 'ndt',         options: ndtOptions() },
   { key: 'estimatedHours',  label: 'Est. hours',       type: 'range',       group: 'Scheduling', field: 'estimatedHours', min: 0, max: 40 },
   { key: 'estimatedCost',   label: 'Est. cost ($)',    type: 'range',       group: 'Cost',       field: 'estimatedCost', min: 0, max: 2000 },
   { key: 'scheduledFor',    label: 'Scheduled',        type: 'daterange',   group: 'Scheduling', field: 'scheduledFor' },
@@ -111,7 +115,6 @@ export function loadVariants(): FilterVariant[] {
     const raw = localStorage.getItem(VARIANTS_LS_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as FilterVariant[];
-    // revive Date objects in daterange values
     for (const v of parsed) {
       for (const f of FILTER_SCHEMA) {
         if (f.type === 'daterange' && Array.isArray(v.values[f.key])) {

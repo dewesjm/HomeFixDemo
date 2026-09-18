@@ -1,6 +1,6 @@
 /* adaptive filters screen, schema-driven */
 //heavily custom
-import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
+import { Component, ElementRef, computed, effect, signal, viewChild, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -25,7 +25,7 @@ import {
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
 
-const DEFAULT_KEYS = ['title', 'trade', 'estimatedCost'];
+const DEFAULT_KEYS = ['title', 'jobNumber', 'drawing', 'joint', 'trade'];
 
 /* ── Result column definitions ── */
 export interface ResultColumn {
@@ -37,26 +37,23 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-      { key: 'jobNumber',  label: 'Project #',  field: 'jobNumber', sortField: 'jobNumber', width: 'min-w-8' },
-      { key: 'title',      label: 'Project',    field: 'title',     sortField: 'title',     width: 'min-w-14' },
-  { key: 'trade',            label: 'Trade',            field: 'trade',            sortField: 'trade',            width: 'min-w-12' },
-  { key: 'technician',       label: 'Technician',       field: 'technician',       sortField: 'technician',       width: 'min-w-11' },
-  { key: 'drawing',          label: 'Drawing',          field: 'drawing',          sortField: 'drawing',          width: 'min-w-12' },
-  { key: 'joint',            label: 'Joint',            field: 'joint',            sortField: 'joint',            width: 'min-w-11' },
-  { key: 'jointDesign',      label: 'Joint design',     field: 'jointDesign',      sortField: 'jointDesign',      width: 'min-w-12' },
-  { key: 'weldType',         label: 'Weld type',        field: 'weldType',         sortField: 'weldType',         width: 'min-w-11' },
-  { key: 'materialType1',    label: 'Material 1',       field: 'materialType1',    sortField: 'materialType1',    width: 'min-w-14' },
-  { key: 'materialType2',    label: 'Material 2',       field: 'materialType2',    sortField: 'materialType2',    width: 'min-w-14' },
-  { key: 'wps',              label: 'WPS',              field: 'wps',              sortField: 'wps',              width: 'min-w-11' },
-  { key: 'ndt',              label: 'NDT',              field: 'ndt',              sortField: 'ndt',              width: 'min-w-12' },
-  { key: 'pwht',             label: 'PWHT',             field: 'pwht',             sortField: 'pwht',             width: 'min-w-14' },
-  { key: 'estimatedCost',    label: 'Est. cost',        field: 'estimatedCost',    sortField: 'estimatedCost',    width: 'min-w-13' },
-  { key: 'estimatedHours',   label: 'Est. hours',       field: 'estimatedHours',   sortField: 'estimatedHours',   width: 'min-w-10' },
-  { key: 'scheduledFor',     label: 'Scheduled',        field: 'scheduledFor',     sortField: 'scheduledFor',     width: 'min-w-13' },
-  { key: 'currentStep',      label: 'Current step',                                                                  width: 'min-w-13' },
+  { key: 'jobNumber',     label: 'Project #',   field: 'jobNumber',     sortField: 'jobNumber',     width: 'min-w-8' },
+  { key: 'title',         label: 'Project',     field: 'title',         sortField: 'title',         width: 'min-w-14' },
+  { key: 'drawing',       label: 'Drawing',     field: 'drawing',       sortField: 'drawing',       width: 'min-w-12' },
+  { key: 'joint',         label: 'Joint',       field: 'joint',         sortField: 'joint',         width: 'min-w-11' },
+  { key: 'trade',         label: 'Trade',       field: 'trade',         sortField: 'trade',         width: 'min-w-12' },
+  { key: 'technician',    label: 'Technician',  field: 'technician',    sortField: 'technician',    width: 'min-w-11' },
+  { key: 'jointDesign',   label: 'Joint design',field: 'jointDesign',   sortField: 'jointDesign',   width: 'min-w-12' },
+  { key: 'weldType',      label: 'Weld type',   field: 'weldType',      sortField: 'weldType',      width: 'min-w-11' },
+  { key: 'materialType1', label: 'Material',    field: 'materialType1', sortField: 'materialType1', width: 'min-w-14' },
+  { key: 'ndt',           label: 'NDT',         field: 'ndt',           sortField: 'ndt',           width: 'min-w-12' },
+  { key: 'wps',           label: 'WPS',         field: 'wps',           sortField: 'wps',           width: 'min-w-11' },
+  { key: 'estimatedCost', label: 'Est. cost',   field: 'estimatedCost', sortField: 'estimatedCost', width: 'min-w-13' },
+  { key: 'scheduledFor',  label: 'Scheduled',   field: 'scheduledFor',  sortField: 'scheduledFor',  width: 'min-w-13' },
+  { key: 'currentStep',   label: 'Current step',                                                                  width: 'min-w-13' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'currentStep'];
+const DEFAULT_COLUMN_KEYS = ['jobNumber', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'materialType1', 'ndt', 'currentStep'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -136,7 +133,7 @@ export class AdaptiveSearchComponent {
 
   // --- Adapt Filters dialog ---
   showAdapt = signal(false);
-  draftKeys = signal<Set<string>>(new Set());
+  draftKeys = signal<string[]>([]);
   adaptFilter = signal<string>('');
 
   groupedSchema = computed(() => {
@@ -152,43 +149,43 @@ export class AdaptiveSearchComponent {
   });
 
   openAdapt() {
-    this.draftKeys.set(new Set(this.visibleKeys()));
+    this.draftKeys.set([...this.visibleKeys()]);
     this.adaptFilter.set('');
     this.showAdapt.set(true);
   }
 
   isDraftSelected(key: string): boolean {
-    return this.draftKeys().has(key);
+    return this.draftKeys().includes(key);
   }
   toggleDraft(key: string, checked: boolean) {
-    const next = new Set(this.draftKeys());
-    if (checked) next.add(key); else next.delete(key);
+    const next = [...this.draftKeys()];
+    const i = next.indexOf(key);
+    if (checked && i < 0) next.push(key);
+    if (!checked && i >= 0) next.splice(i, 1);
     this.draftKeys.set(next);
   }
   selectGroup(group: string, selected: boolean) {
-    const next = new Set(this.draftKeys());
+    const next = [...this.draftKeys()];
     for (const f of this.schema) {
       if (f.group !== group) continue;
-      if (selected) next.add(f.key);
-      else if (!f.required) next.delete(f.key);
+      const i = next.indexOf(f.key);
+      if (selected && i < 0) next.push(f.key);
+      if (!selected && i >= 0 && !f.required) next.splice(i, 1);
     }
     this.draftKeys.set(next);
   }
   selectAll(selected: boolean) {
-    const next = new Set<string>();
+    const next: string[] = [];
     for (const f of this.schema) {
-      if (selected || f.required) next.add(f.key);
+      if (selected || f.required) next.push(f.key);
     }
     this.draftKeys.set(next);
   }
 
   applyAdapt() {
     const requiredKeys = this.schema.filter(f => f.required).map(f => f.key);
-    // preserve schema order so the bar is stable
     const draft = this.draftKeys();
-    const finalKeys = this.schema
-      .map(f => f.key)
-      .filter(k => draft.has(k) || requiredKeys.includes(k));
+    const finalKeys = draft.length ? draft : this.schema.map(f => f.key).filter(k => requiredKeys.includes(k));
 
     const prev = this.values();
     const next = defaultValuesFor(finalKeys);
@@ -239,7 +236,7 @@ export class AdaptiveSearchComponent {
   );
 
   showColPicker = signal(false);
-  draftColKeys = signal<Set<string>>(new Set());
+  draftColKeys = signal<string[]>([]);
   colFilter = signal<string>('');
 
   groupedColumns = computed(() => {
@@ -248,25 +245,39 @@ export class AdaptiveSearchComponent {
   });
 
   openColPicker() {
-    this.draftColKeys.set(new Set(this.visibleColumnKeys()));
+    this.draftColKeys.set([...this.visibleColumnKeys()]);
     this.colFilter.set('');
     this.showColPicker.set(true);
   }
 
-  isDraftCol(key: string): boolean { return this.draftColKeys().has(key); }
+  isDraftCol(key: string): boolean { return this.draftColKeys().includes(key); }
   toggleDraftCol(key: string, checked: boolean) {
-    const next = new Set(this.draftColKeys());
-    if (checked) next.add(key); else next.delete(key);
+    const next = [...this.draftColKeys()];
+    const i = next.indexOf(key);
+    if (checked && i < 0) next.push(key);
+    if (!checked && i >= 0) next.splice(i, 1);
     this.draftColKeys.set(next);
   }
   selectAllCols(selected: boolean) {
-    this.draftColKeys.set(selected ? new Set(ALL_COLUMNS.map(c => c.key)) : new Set());
+    this.draftColKeys.set(selected ? ALL_COLUMNS.map(c => c.key) : []);
   }
   applyColPicker() {
-    const keys = ALL_COLUMNS.map(c => c.key).filter(k => this.draftColKeys().has(k));
+    const keys = this.draftColKeys();
     this.visibleColumnKeys.set(keys);
     saveColumnKeys(keys);
     this.showColPicker.set(false);
+  }
+
+  /* reorder helpers */
+  moveUp(arr: WritableSignal<string[]>, key: string) {
+    const a = [...arr()];
+    const i = a.indexOf(key);
+    if (i > 0) { [a[i - 1], a[i]] = [a[i], a[i - 1]]; arr.set(a); }
+  }
+  moveDown(arr: WritableSignal<string[]>, key: string) {
+    const a = [...arr()];
+    const i = a.indexOf(key);
+    if (i >= 0 && i < a.length - 1) { [a[i], a[i + 1]] = [a[i + 1], a[i]]; arr.set(a); }
   }
 
   // --- Field value helpers ---
