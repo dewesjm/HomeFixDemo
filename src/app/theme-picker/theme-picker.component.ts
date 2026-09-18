@@ -50,7 +50,7 @@ const THEME_KEY = 'homefix:theme';
       <div tabindex="0" role="button" class="btn btn-ghost btn-sm w-full justify-start">
         <svg lucidePalette class="size-4"></svg> Theme
       </div>
-      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow">
+      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow max-h-[70vh] overflow-y-auto">
         @for (t of themes; track t.name) {
           <li>
             <a [class.menu-active]="active() === t.name" (click)="pick(t.name)">{{ t.label }}</a>
