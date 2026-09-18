@@ -498,6 +498,14 @@ export class JobDetailComponent {
       }
     }
   }
+
+  toggleAffectedItem(stage: WorkflowStage, item: string, event: Event) {
+    const checked = (event.target as HTMLInputElement).checked;
+    const raw = stage.inputs['affectedItems'] ?? '';
+    const current = raw ? raw.split(',') : [];
+    const next = checked ? [...current, item] : current.filter(i => i !== item);
+    this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
+  }
   /* WTN → Weld Process mapping */
   private readonly WTN_PROCESS_MAP: Record<string, string> = {
     'wtn-101': 'smaw', 'wtn-102': 'gtaw', 'wtn-103': 'gmaw', 'wtn-201': 'fcaw'
@@ -665,6 +673,17 @@ export class JobDetailComponent {
           const label = f.key === 'actualPh' ? 'Actual PH' : 'Actual IP';
           errors[`${stage.id}:${f.key}`] = `${label} Out of Range`;
         }
+      }
+    }
+    /* Weld build-up: affectedItems + confirmedMic */
+    if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+      const raw = stage.inputs?.['affectedItems'] ?? '';
+      const items = raw ? raw.split(',') : [];
+      if (!items.length) {
+        errors[`${stage.id}:affectedItem`] = 'Select at least one Affected Item';
+      }
+      if (items.length && stage.inputs?.['confirmedMic'] !== 'yes') {
+        errors[`${stage.id}:affectedItem`] = 'Please confirm the MIC';
       }
     }
     return errors;
