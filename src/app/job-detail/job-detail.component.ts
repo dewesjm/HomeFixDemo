@@ -675,15 +675,18 @@ export class JobDetailComponent {
         }
       }
     }
-    /* Weld build-up: affectedItems + confirmedMic */
+    /* Weld build-up: affectedItems + micVerified */
     if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
       const raw = stage.inputs?.['affectedItems'] ?? '';
       const items = raw ? raw.split(',') : [];
       if (!items.length) {
         errors[`${stage.id}:affectedItem`] = 'Select at least one Affected Item';
       }
-      if (items.length && stage.inputs?.['confirmedMic'] !== 'yes') {
-        errors[`${stage.id}:affectedItem`] = 'Please confirm the MIC';
+      if (items.includes('joiningItem') && stage.inputs?.['micVerified1'] !== 'yes') {
+        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joiningItem || 'item');
+      }
+      if (items.includes('joinToItem') && stage.inputs?.['micVerified2'] !== 'yes') {
+        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
       }
     }
     return errors;

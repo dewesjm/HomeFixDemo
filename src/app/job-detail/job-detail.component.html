@@ -22,8 +22,9 @@
         <div class="routing-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled">
           <div class="routing-num" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()">{{ $index + 1 }}</div>
           <div class="routing-label">{{ s.label }}</div>
-        </div>
-      }
+          </div>
+        }
+
     </div>
   </section>
 
@@ -299,6 +300,54 @@
             </label>
           </div>
         }
+
+      <!-- Affected Items + MIC (weld build-up only) -->
+      @if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+        <div class="flex flex-wrap items-end gap-x-4 gap-y-1 mb-sm">
+          <span class="stage-field-label mb-1">Affected Item<span class="text-error">*</span></span>
+          @if (job?.joiningItem) {
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [disabled]="!inputsEditable(stage, selectedStep())"
+                     [checked]="stage.inputs['affectedItems']?.includes('joiningItem')"
+                     (change)="toggleAffectedItem(stage, 'joiningItem', $event)" />
+              <span class="text-sm">{{ job?.joiningItem }}</span>
+              @if (stage.inputs['affectedItems']?.includes('joiningItem')) {
+                <span class="text-xs opacity-70">MIC: <span class="mono">{{ job?.mcl1 || '—' }}</span></span>
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-xs"
+                         [disabled]="!inputsEditable(stage, selectedStep())"
+                         [checked]="stage.inputs['micVerified1'] === 'yes'"
+                         (change)="stage.inputs['micVerified1'] = $any($event.target).checked ? 'yes' : ''" />
+                  <span class="text-xs">MIC verified</span>
+                </label>
+              }
+            </label>
+          }
+          @if (job?.joinToItem) {
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [disabled]="!inputsEditable(stage, selectedStep())"
+                     [checked]="stage.inputs['affectedItems']?.includes('joinToItem')"
+                     (change)="toggleAffectedItem(stage, 'joinToItem', $event)" />
+              <span class="text-sm">{{ job?.joinToItem }}</span>
+              @if (stage.inputs['affectedItems']?.includes('joinToItem')) {
+                <span class="text-xs opacity-70">MIC: <span class="mono">{{ job?.mcl2 || '—' }}</span></span>
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-xs"
+                         [disabled]="!inputsEditable(stage, selectedStep())"
+                         [checked]="stage.inputs['micVerified2'] === 'yes'"
+                         (change)="stage.inputs['micVerified2'] = $any($event.target).checked ? 'yes' : ''" />
+                  <span class="text-xs">MIC verified</span>
+                </label>
+              }
+            </label>
+          }
+          @if (fieldError(stage.id, 'affectedItem'); as err) {
+            <div class="text-error text-xs">{{ err }}</div>
+          }
+        </div>
+      }
 
       <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
@@ -764,60 +813,6 @@
                 }
               }
             </div>
-            <!-- Affected Items + MIC (weld build-up only) -->
-            @if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
-            <div class="space-y-3">
-              @for (f of visibleFields(stage); track f.key) {
-                @if (f.key === 'affectedItem') {
-                  <div>
-                    <span class="stage-field-label mb-1 block">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <div class="flex flex-col gap-1.5">
-                      @if (job?.joiningItem) {
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" class="checkbox checkbox-sm"
-                                 [disabled]="!inputsEditable(stage, selectedStep())"
-                                 [checked]="stage.inputs['affectedItems']?.includes('joiningItem')"
-                                 (change)="toggleAffectedItem(stage, 'joiningItem', $event)" />
-                          <span>{{ job?.joiningItem }}</span>
-                        </label>
-                      }
-                      @if (job?.joinToItem) {
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" class="checkbox checkbox-sm"
-                                 [disabled]="!inputsEditable(stage, selectedStep())"
-                                 [checked]="stage.inputs['affectedItems']?.includes('joinToItem')"
-                                 (change)="toggleAffectedItem(stage, 'joinToItem', $event)" />
-                          <span>{{ job?.joinToItem }}</span>
-                        </label>
-                      }
-                    </div>
-                  </div>
-                  <!-- Show MCL for selected items -->
-                  @if (stage.inputs['affectedItems']) {
-                    <div class="bg-base-200/60 rounded px-3 py-2 text-sm">
-                      @if (stage.inputs['affectedItems']?.includes('joiningItem')) {
-                        <div><span class="font-medium">{{ job?.joiningItem }}</span> — MIC: <span class="mono">{{ job?.mcl1 || '—' }}</span></div>
-                      }
-                      @if (stage.inputs['affectedItems']?.includes('joinToItem')) {
-                        <div><span class="font-medium">{{ job?.joinToItem }}</span> — MIC: <span class="mono">{{ job?.mcl2 || '—' }}</span></div>
-                      }
-                    </div>
-                  }
-                  <!-- Confirm MIC checkbox -->
-                  <label class="flex items-center gap-2 cursor-pointer mt-1">
-                    <input type="checkbox" class="checkbox checkbox-sm"
-                           [disabled]="!inputsEditable(stage, selectedStep())"
-                           [checked]="stage.inputs['confirmedMic'] === 'yes'"
-                           (change)="stage.inputs['confirmedMic'] = $any($event.target).checked ? 'yes' : ''" />
-                    <span class="text-sm">Confirm MIC</span>
-                  </label>
-                  @if (fieldError(stage.id, f.key); as err) {
-                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                  }
-                }
-              }
-            </div>
-            }
           </div>
         } @else {
           <!-- Default: generic field rendering -->
