@@ -361,7 +361,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
-  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', placeholder: 'IN', row: 4 },
+  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4 },
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
