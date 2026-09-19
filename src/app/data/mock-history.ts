@@ -1,7 +1,6 @@
 /* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
 import { HistoryEntry, StageField, STAGE_TEMPLATES } from './workflow';
-import { CONDITION_CODES } from './conditions';
 
 export interface MockActivity {
   jobId: string;
@@ -96,12 +95,6 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     const c = COMPONENTS[Math.floor(rand() * COMPONENTS.length)];
     const qty = 1 + Math.floor(rand() * 3);
     push('Work Validation', 'Component added', restStep, undefined, `${c.name} (×${qty}, P/N ${c.part})`);
-  }
-  if (rand() < 0.5) {
-    const cc = CONDITION_CODES[Math.floor(rand() * CONDITION_CODES.length)];
-    const count = 1 + Math.floor(rand() * 4);
-    push('Work Validation', 'Condition code', restStep, '—', `${cc.code} (${cc.description})`);
-    push('Work Validation', 'Number of conditions', restStep, '0', String(count));
   }
   if (rand() < 0.4) {
     push('Work Validation', 'Validation notes', restStep, '—', NOTES[Math.floor(rand() * NOTES.length)]);

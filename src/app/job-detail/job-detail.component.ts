@@ -15,7 +15,7 @@ import {
 
 import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
-import { CONDITION_OPTIONS } from '../data/conditions';
+
 import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
@@ -69,7 +69,6 @@ export class JobDetailComponent {
 
   resultOptions = STAGE_RESULT_OPTIONS;
   workTypeOptions = WORK_TYPE_OPTIONS;
-  conditionOptions = CONDITION_OPTIONS;
 
   /* steps model: only show stages that are signed, required, or the current active stage */
   stepsModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
@@ -821,13 +820,6 @@ export class JobDetailComponent {
   }
   setWorkType(workType: WorkType | null) {
     if (this.job && workType !== this.wf!().workType) this.wfService.setWorkType(this.job, workType);
-  }
-  setConditionCode(conditionCode: string) {
-    if (this.job && (conditionCode ?? '') !== this.wf!().conditionCode) this.wfService.setConditionCode(this.job, conditionCode ?? '');
-  }
-  setConditionCount(value: string | number) {
-    const count = Math.max(0, Math.floor(Number(value) || 0));
-    if (this.job && count !== this.wf!().conditionCount) this.wfService.setConditionCount(this.job, count);
   }
 
   /* code description, shown on hover */

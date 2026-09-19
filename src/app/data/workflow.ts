@@ -1,6 +1,6 @@
 /* workflow model + stage helpers, no UI */
 import { Job } from './jobs';
-import { MATERIAL_OPTIONS } from './materials';
+
 import { jointDesignOptions, getJointDesign } from './joint-designs';
 
 /* ── Role-based queue routing ── */
@@ -540,9 +540,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Load test', value: 'load' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'build',   label: 'Build',              required: true, fields: [
-      { key: 'material', label: 'Material used', type: 'select', options: MATERIAL_OPTIONS, placeholder: 'Select material' }
-    ], signoffFields: [
+    { id: 'build',   label: 'Build',              required: true, fields: [], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
       { key: 'crewSize', label: 'Crew size', type: 'number', required: false },
       { key: 'notes', label: 'Notes', type: 'text', required: false },

@@ -8,7 +8,7 @@ import {
   WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, newWorkflow, stageFieldsFor, signoffFieldsFor,
   buildStages, getTemplates, REPAIR_STAGE
 } from '../data/workflow';
-import { conditionLabel } from '../data/conditions';
+
 
 /* value as shown in the history Old/New columns; em dash when empty */
 const show = (v: string | null | undefined) => (v && v.length ? v : '—');
@@ -186,41 +186,6 @@ export class WorkflowService {
         action: 'Work type',
         from: this.workTypeLabel(prev),
         to: this.workTypeLabel(workType)
-      });
-    });
-    this.persist();
-  }
-
-  /* format a condition code for display */
-  private conditionDesc(code: string): string {
-    if (!code) return '—';
-    const label = conditionLabel(code);
-    return label ? `${code} (${label})` : code;
-  }
-
-  setConditionCode(job: Job, conditionCode: string) {
-    this.workflowFor(job).update(wf => {
-      const prev = wf.conditionCode ?? '';
-      return this.withHistory(wf, { ...wf, conditionCode }, {
-        section: 'Work Validation',
-        who: wf.technician,
-        action: 'Condition code',
-        from: this.conditionDesc(prev),
-        to: this.conditionDesc(conditionCode)
-      });
-    });
-    this.persist();
-  }
-
-  setConditionCount(job: Job, conditionCount: number) {
-    this.workflowFor(job).update(wf => {
-      const prev = wf.conditionCount ?? 0;
-      return this.withHistory(wf, { ...wf, conditionCount }, {
-        section: 'Work Validation',
-        who: wf.technician,
-        action: 'Number of conditions',
-        from: String(prev),
-        to: String(conditionCount)
       });
     });
     this.persist();
