@@ -3,7 +3,7 @@ import { Component, computed, effect, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck, LucideMegaphone, LucideX } from '@lucide/angular';
+import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX } from '@lucide/angular';
 
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
@@ -28,7 +28,7 @@ type Row = Job & { currentStep: string };
   imports: [
     CommonModule, FormsModule,
     MultiselectDropdownComponent, TablePagerComponent, SyncStatusComponent,
-    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideMenu, LucideCheck, LucideMegaphone, LucideX
+    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX
   ],
   templateUrl: './table-search.component.html'
 })

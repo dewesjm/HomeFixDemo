@@ -5,15 +5,14 @@ import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core'
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { filter } from 'rxjs/operators';
-import { SyncStatusComponent } from './sync-status/sync-status.component';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-  LucideTriangleAlert, LucideBox, LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
+  LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
-  LucideShield
+  LucideShield, LucideLink
 } from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
@@ -24,11 +23,11 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
   standalone: true,
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    SyncStatusComponent, ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
+    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
-    LucideTriangleAlert, LucideBox, LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
-    LucideShield
+    LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
+    LucideShield, LucideLink
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

@@ -367,7 +367,17 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true,
     options: [{ label: 'P', value: 'P' }, { label: 'S', value: 'S' }, { label: 'CL', value: 'CL' }] },
-  { key: 'usage', label: 'Usage', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
+  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true,
+    options: [
+      { label: 'Galley', value: 'galley' },
+      { label: 'Living', value: 'living' },
+      { label: 'Engine', value: 'engine' },
+      { label: 'Cargo', value: 'cargo' },
+      { label: 'Deck', value: 'deck' },
+      { label: 'Tank', value: 'tank' },
+      { label: 'Machinery', value: 'machinery' },
+      { label: 'Other', value: 'other' },
+    ] },
   // Line 3: MIC 1 and MIC 2
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
   { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },

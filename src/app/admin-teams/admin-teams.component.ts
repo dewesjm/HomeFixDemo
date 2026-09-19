@@ -1,7 +1,7 @@
 import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideShield, LucidePlus, LucideChevronLeft, LucideUsers } from '@lucide/angular';
+import { LucideShield, LucidePlus, LucideChevronLeft } from '@lucide/angular';
 
 interface Permission {
   key: string;
@@ -119,7 +119,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
 @Component({
   selector: 'app-admin-teams',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideShield, LucidePlus, LucideChevronLeft, LucideUsers],
+  imports: [CommonModule, FormsModule, LucideShield, LucidePlus, LucideChevronLeft],
   templateUrl: './admin-teams.component.html',
 })
 export class AdminTeamsComponent {
