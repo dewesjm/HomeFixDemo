@@ -1,14 +1,15 @@
 //This is the job details page, lot of stuff in here
 
-import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../shared/confirm.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
+import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import {
-  LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+  LucideArrowLeft, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
   LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
   LucideChevronDown, LucideChevronUp, LucideCopy
 } from '@lucide/angular';
@@ -29,8 +30,8 @@ import { requiresTraceability } from '../data/mcl-traceability';
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent,
-    LucideArrowLeft, LucideWorkflow, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent,
+    LucideArrowLeft, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
     LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
     LucideChevronDown, LucideChevronUp, LucideCopy
   ],
@@ -41,21 +42,6 @@ export class JobDetailComponent {
   private router = inject(Router);
   private wfService = inject(WorkflowService);
   private confirm = inject(ConfirmService);
-
-  /** Auto-scroll the routing bar so the active step is centered */
-  private _scrollActiveIntoView = effect(() => {
-    const idx = this.selectedStep();
-    const steps = untracked(() => this.stepsModel());
-    const pos = steps.findIndex(s => s.stageIndex === idx);
-    if (pos < 0) return;
-    queueMicrotask(() => {
-      const container = document.querySelector('.routing-scroll') as HTMLElement | null;
-      const el = document.querySelectorAll('.routing-step')[pos] as HTMLElement | null;
-      if (!container || !el) return;
-      const left = el.offsetLeft - container.offsetWidth / 2 + el.offsetWidth / 2;
-      container.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
-    });
-  });
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;

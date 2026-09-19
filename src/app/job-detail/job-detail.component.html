@@ -15,18 +15,7 @@
   </div>
 
   <!-- 1 ───────── Routing (progress only — record & sign in the Signoff section) ───────── -->
-  <section class="panel">
-    <h3 class="panel-title"><svg lucideWorkflow class="size-4"></svg> Routing</h3>
-    <div class="routing-scroll">
-      @for (s of stepsModel(); track $index) {
-        <div class="routing-step" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()" [class.disabled]="s.disabled">
-          <div class="routing-num" [class.active]="s.stageIndex === selectedStep()" [class.done]="s.stageIndex < selectedStep()">{{ $index + 1 }}</div>
-          <div class="routing-label">{{ s.label }}</div>
-          </div>
-        }
-
-    </div>
-  </section>
+  <app-routing-bar [steps]="stepsModel()" [selectedStep]="selectedStep()" (stepSelected)="selectedStep.set($event)" />
 
   <!-- 2 ───────── Joint Details (read-only) ───────── -->
   <section class="panel">
