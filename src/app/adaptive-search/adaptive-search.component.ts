@@ -39,15 +39,25 @@ export interface ResultColumn {
 const ALL_COLUMNS: ResultColumn[] = [
   { key: 'id',              label: 'ID',              field: 'id',              sortField: 'id',              width: 'min-w-8' },
   { key: 'title',           label: 'Project',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
+  { key: 'trade',           label: 'Trade',           field: 'trade',           sortField: 'trade',           width: 'min-w-11' },
   { key: 'drawing',         label: 'Drawing',         field: 'drawing',         sortField: 'drawing',         width: 'min-w-12' },
   { key: 'drawingRev',      label: 'Drawing Rev',     field: 'drawingRev',      sortField: 'drawingRev',      width: 'min-w-10' },
   { key: 'joint',           label: 'Joint',           field: 'joint',           sortField: 'joint',           width: 'min-w-11' },
   { key: 'jointDesign',     label: 'Joint design',    field: 'jointDesign',     sortField: 'jointDesign',     width: 'min-w-12' },
   { key: 'weldType',        label: 'Weld type',       field: 'weldType',        sortField: 'weldType',        width: 'min-w-11' },
   { key: 'technician',      label: 'Technician',      field: 'technician',      sortField: 'technician',      width: 'min-w-11' },
-  { key: 'materialType1',   label: 'Material',        field: 'materialType1',   sortField: 'materialType1',   width: 'min-w-14' },
+  { key: 'materialType1',   label: 'Material 1',      field: 'materialType1',   sortField: 'materialType1',   width: 'min-w-14' },
+  { key: 'materialType2',   label: 'Material 2',      field: 'materialType2',   sortField: 'materialType2',   width: 'min-w-14' },
   { key: 'pipeSize',        label: 'Pipe size',       field: 'pipeSize',        sortField: 'pipeSize',        width: 'min-w-10' },
   { key: 'wallThickness',   label: 'Wall thickness',  field: 'wallThickness',   sortField: 'wallThickness',   width: 'min-w-10' },
+  { key: 'mcl1',            label: 'MCL 1',           field: 'mcl1',            sortField: 'mcl1',            width: 'min-w-10' },
+  { key: 'mcl2',            label: 'MCL 2',           field: 'mcl2',            sortField: 'mcl2',            width: 'min-w-10' },
+  { key: 'joiningItem',     label: 'Joining item',    field: 'joiningItem',     sortField: 'joiningItem',     width: 'min-w-12' },
+  { key: 'joinToItem',      label: 'Join to item',    field: 'joinToItem',      sortField: 'joinToItem',      width: 'min-w-12' },
+  { key: 'sequenceNumber',  label: 'Sequence #',      field: 'sequenceNumber',  sortField: 'sequenceNumber',  width: 'min-w-10' },
+  { key: 'nInd',            label: 'N Ind.',          field: 'nInd',            sortField: 'nInd',            width: 'min-w-8' },
+  { key: 'wps',             label: 'WPS',             field: 'wps',             sortField: 'wps',             width: 'min-w-10' },
+  { key: 'engineeringNotes', label: 'Eng. notes',     field: 'engineeringNotes', sortField: 'engineeringNotes', width: 'min-w-14' },
   { key: 'ndt',             label: 'NDT',             field: 'ndt',             sortField: 'ndt',             width: 'min-w-12' },
   { key: 'rtRoot',          label: 'RT Root',         field: 'rtRoot',          sortField: 'rtRoot',          width: 'min-w-10' },
   { key: 'rtFinal',         label: 'RT Final',        field: 'rtFinal',         sortField: 'rtFinal',         width: 'min-w-10' },
@@ -56,12 +66,27 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'ndtFinal',        label: 'NDT Final',       field: 'ndtFinal',        sortField: 'ndtFinal',        width: 'min-w-10' },
   { key: 'ut',              label: 'UT',              field: 'ut',              sortField: 'ut',              width: 'min-w-10' },
   { key: 'pwht',            label: 'PWHT',            field: 'pwht',            sortField: 'pwht',            width: 'min-w-10' },
-  { key: 'nInd',            label: 'N Ind.',          field: 'nInd',            sortField: 'nInd',            width: 'min-w-8' },
   { key: 'order',           label: 'Order',           field: 'order',           sortField: 'order',           width: 'min-w-10' },
   { key: 'workPackage',     label: 'Work package',    field: 'workPackage',     sortField: 'workPackage',     width: 'min-w-10' },
+  { key: 'workPermit',      label: 'Work permit',     field: 'workPermit',      sortField: 'workPermit',      width: 'min-w-10' },
+  { key: 'waff',            label: 'WAFF',            field: 'waff',            sortField: 'waff',            width: 'min-w-10' },
   { key: 'serialNumber',    label: 'Serial #',        field: 'serialNumber',    sortField: 'serialNumber',    width: 'min-w-10' },
   { key: 'refitNumber',     label: 'Refit #',         field: 'refitNumber',     sortField: 'refitNumber',     width: 'min-w-10' },
   { key: 'repairNumber',    label: 'Repair #',        field: 'repairNumber',    sortField: 'repairNumber',    width: 'min-w-10' },
+  { key: 'ss',              label: 'SS',              field: 'ss',              sortField: 'ss',              width: 'min-w-8' },
+  { key: 'sfff',            label: 'SFFF',            field: 'sfff',            sortField: 'sfff',            width: 'min-w-8' },
+  { key: 'dssAaa',          label: 'DSS/AAA',         field: 'dssAaa',          sortField: 'dssAaa',          width: 'min-w-10' },
+  { key: 'er1',             label: 'ER 1',            field: 'er1',             sortField: 'er1',             width: 'min-w-10' },
+  { key: 'er2',             label: 'ER 2',            field: 'er2',             sortField: 'er2',             width: 'min-w-10' },
+  { key: 'er3',             label: 'ER 3',            field: 'er3',             sortField: 'er3',             width: 'min-w-10' },
+  { key: 'er4',             label: 'ER 4',            field: 'er4',             sortField: 'er4',             width: 'min-w-10' },
+  { key: 'attributeCode1',  label: 'Attr code 1',    field: 'attributeCode1',  sortField: 'attributeCode1',  width: 'min-w-10' },
+  { key: 'attributeCode2',  label: 'Attr code 2',    field: 'attributeCode2',  sortField: 'attributeCode2',  width: 'min-w-10' },
+  { key: 'attributeCode3',  label: 'Attr code 3',    field: 'attributeCode3',  sortField: 'attributeCode3',  width: 'min-w-10' },
+  { key: 'attributeCode4',  label: 'Attr code 4',    field: 'attributeCode4',  sortField: 'attributeCode4',  width: 'min-w-10' },
+  { key: 'estimatedCost',   label: 'Est. cost',       field: 'estimatedCost',   sortField: 'estimatedCost',   width: 'min-w-10' },
+  { key: 'estimatedHours',  label: 'Est. hours',      field: 'estimatedHours',  sortField: 'estimatedHours',  width: 'min-w-10' },
+  { key: 'scheduledFor',    label: 'Scheduled for',   field: 'scheduledFor',    sortField: 'scheduledFor',    width: 'min-w-12' },
   { key: 'currentStep',     label: 'Current step',                                                                     width: 'min-w-13' },
 ];
 
@@ -341,22 +366,10 @@ export class AdaptiveSearchComponent {
   }
 
   exportCsv() {
-    downloadCsv('adaptive-search', [
-      { header: 'ID', value: (r: Job) => r.id },
-      { header: 'Project', value: (r: Job) => r.title },
-      { header: 'Drawing', value: (r: Job) => r.drawing },
-      { header: 'Joint', value: (r: Job) => r.joint },
-      { header: 'Joint design', value: (r: Job) => r.jointDesign },
-      { header: 'Weld type', value: (r: Job) => r.weldType },
-      { header: 'Technician', value: (r: Job) => r.technician },
-      { header: 'Material', value: (r: Job) => r.materialType1 },
-      { header: 'NDT', value: (r: Job) => r.ndt },
-      { header: 'RT Root', value: (r: Job) => r.rtRoot },
-      { header: 'RT Final', value: (r: Job) => r.rtFinal },
-      { header: 'UT', value: (r: Job) => r.ut },
-      { header: 'PWHT', value: (r: Job) => r.pwht },
-      { header: 'Current step', value: (r: Job) => '' },
-    ], this.table.sorted());
+    downloadCsv('adaptive-search', this.visibleColumns().map(col => ({
+      header: col.label,
+      value: (r: Job) => col.key === 'currentStep' ? this.currentStep(r) : col.field ? String((r as any)[col.field] ?? '') : ''
+    })), this.table.sorted());
   }
 
   /* typed casts for discriminated fields */
