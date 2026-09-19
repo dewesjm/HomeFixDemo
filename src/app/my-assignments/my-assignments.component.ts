@@ -18,6 +18,19 @@ export class MyAssignmentsComponent implements OnInit {
   keyword = signal('');
   banner = signal<{ message: string; type: string; enabled: boolean } | null>(null);
 
+  bannerBg(type: string): string {
+    const map: Record<string, string> = { info: 'var(--color-info)', warning: 'var(--color-warning)', error: 'var(--color-error)', success: 'var(--color-success)' };
+    return `color-mix(in oklch, ${map[type] ?? map['info']} 15%, var(--app-surface))`;
+  }
+  bannerBorder(type: string): string {
+    const map: Record<string, string> = { info: 'var(--color-info)', warning: 'var(--color-warning)', error: 'var(--color-error)', success: 'var(--color-success)' };
+    return `color-mix(in oklch, ${map[type] ?? map['info']} 40%, transparent)`;
+  }
+  bannerText(type: string): string {
+    const map: Record<string, string> = { info: 'var(--color-info)', warning: 'var(--color-warning)', error: 'var(--color-error)', success: 'var(--color-success)' };
+    return map[type] ?? map['info'];
+  }
+
   ngOnInit() {
     this.loadBanner();
   }
