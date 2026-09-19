@@ -1,0 +1,32 @@
+<section class="panel">
+  <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> Attachments</h3>
+  <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
+
+  @if (attachments().length) {
+    <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead><tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr></thead>
+      <tbody>
+        @for (a of attachments(); track a.id) {
+          <tr>
+            <td><svg lucideFile class="size-4 mr-xs inline"></svg>{{ a.name }}</td>
+            <td>{{ a.addedBy }}</td>
+            <td>{{ a.addedAt | date:'MMM d, y, h:mm a' }}</td>
+            <td>
+              <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="disabled()"
+                      (click)="remove.emit(a.id)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    </div>
+  } @else {
+    <div class="meta mb-xs">No attachments yet.</div>
+  }
+
+  <input type="file" multiple class="file-input" [disabled]="disabled()"
+         (change)="add.emit($any($event.target).files)" />
+</section>

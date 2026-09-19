@@ -9,9 +9,10 @@ import { TooltipDirective } from '../shared/tooltip.directive';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
+import { AttachmentsComponent } from '../attachments/attachments.component';
 import {
-  LucideArrowLeft, LucideBox, LucideTrash2, LucidePlus,
-  LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+  LucideArrowLeft, LucideBox,
+  LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
   LucideCopy
 } from '@lucide/angular';
 
@@ -31,9 +32,9 @@ import { requiresTraceability } from '../data/mcl-traceability';
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent,
-    LucideArrowLeft, LucideBox, LucideTrash2, LucidePlus,
-    LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent,
+    LucideArrowLeft, LucideBox,
+    LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
     LucideCopy
   ],
   templateUrl: './job-detail.component.html'
@@ -781,11 +782,9 @@ export class JobDetailComponent {
   }
 
   // ---- attachments ----
-  addAttachments(event: Event) {
+  addAttachments(files: FileList) {
     if (!this.job) return;
-    const input = event.target as HTMLInputElement;
-    for (const f of Array.from(input.files ?? [])) this.wfService.addAttachment(this.job, f.name);
-    input.value = '';   // reset so the same file can be picked again
+    for (const f of Array.from(files)) this.wfService.addAttachment(this.job, f.name);
   }
   removeAttachment(id: string) {
     if (this.job) this.wfService.removeAttachment(this.job, id);
