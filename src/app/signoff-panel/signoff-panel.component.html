@@ -32,15 +32,15 @@
     @if (st.id === 'fit' && st.stepType === 'weld-buildup') {
       <div class="flex flex-wrap items-end gap-x-4 gap-y-1 mb-sm">
         <span class="stage-field-label mb-1">Affected Item<span class="text-error">*</span></span>
-        @if (ctx().job?.joiningItem) {
+        @if (ctx().job.joiningItem) {
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" class="checkbox checkbox-sm"
                    [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="st.inputs['affectedItems']?.includes('joiningItem')"
+                   [checked]="st.inputs['affectedItems'].includes('joiningItem')"
                    (change)="ctx().toggleAffectedItem(st, 'joiningItem', $event)" />
-            <span class="text-sm">{{ ctx().job?.joiningItem }}</span>
-            @if (st.inputs['affectedItems']?.includes('joiningItem')) {
-              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job?.mcl1 || '—' }}</span></span>
+            <span class="text-sm">{{ ctx().job.joiningItem }}</span>
+            @if (st.inputs['affectedItems'].includes('joiningItem')) {
+              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl1 || '—' }}</span></span>
               <label class="flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-xs"
                        [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
@@ -51,15 +51,15 @@
             }
           </label>
         }
-        @if (ctx().job?.joinToItem) {
+        @if (ctx().job.joinToItem) {
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" class="checkbox checkbox-sm"
                    [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="st.inputs['affectedItems']?.includes('joinToItem')"
+                   [checked]="st.inputs['affectedItems'].includes('joinToItem')"
                    (change)="ctx().toggleAffectedItem(st, 'joinToItem', $event)" />
-            <span class="text-sm">{{ ctx().job?.joinToItem }}</span>
-            @if (st.inputs['affectedItems']?.includes('joinToItem')) {
-              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job?.mcl2 || '—' }}</span></span>
+            <span class="text-sm">{{ ctx().job.joinToItem }}</span>
+            @if (st.inputs['affectedItems'].includes('joinToItem')) {
+              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl2 || '—' }}</span></span>
               <label class="flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-xs"
                        [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
@@ -280,7 +280,7 @@
                         <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
                       } @else {
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] ?? ''" />
+                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
                       }
                     </label>
                   </div>
@@ -293,7 +293,7 @@
                         <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
                       } @else {
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] ?? ''" />
+                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
                       }
                     </label>
                   </div>
@@ -306,7 +306,7 @@
                         <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
                       } @else {
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] ?? ''" />
+                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
                       }
                     </label>
                   </div>
@@ -319,7 +319,7 @@
                         <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
                       } @else {
                         <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] ?? ''" />
+                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
                       }
                     </label>
                   </div>
@@ -365,7 +365,7 @@
             </div>
           </div>
           <!-- Weld Position (only when N Ind. = 1) -->
-          @if (ctx().job?.nInd === '1') {
+          @if (ctx().job.nInd === '1') {
           <div>
             @for (f of ctx().visibleFields(st); track f.key) {
               @if (f.key === 'weldPosition') {

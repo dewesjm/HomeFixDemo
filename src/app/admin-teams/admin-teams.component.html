@@ -101,7 +101,7 @@
               <div class="flex items-center justify-between py-2 border-b border-base-300 last:border-b-0">
                 <span class="text-sm">{{ p.label }}</span>
                 <select class="select select-sm select-bordered w-40"
-                        [ngModel]="group.permissions[p.key] ?? 'not-set'"
+                        [ngModel]="group.permissions[p.key] || 'not-set'"
                         (ngModelChange)="updatePerm(group.id, p.key, $event)">
                   <option value="not-set">Not set</option>
                   <option value="allow">Allow</option>
