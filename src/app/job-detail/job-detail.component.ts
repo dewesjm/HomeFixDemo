@@ -11,11 +11,7 @@ import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
 import { AttachmentsComponent } from '../attachments/attachments.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
-import {
-  LucideArrowLeft,
-  LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
-  LucideCopy
-} from '@lucide/angular';
+import { SignoffPanelComponent, SignoffContext } from '../signoff-panel/signoff-panel.component';
 
 import { JOBS, Job } from '../data/jobs';
 import { characteristicLabel } from '../data/characteristics';
@@ -33,10 +29,7 @@ import { requiresTraceability } from '../data/mcl-traceability';
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent,
-    LucideArrowLeft,
-    LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
-    LucideCopy
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -53,9 +46,6 @@ export class JobDetailComponent {
   newName = signal('');
   newPart = signal('');
   newQty = signal(1);
-
-  resultOptions = STAGE_RESULT_OPTIONS;
-  workTypeOptions = WORK_TYPE_OPTIONS;
 
   /* steps model: only show stages that are signed, required, or the current active stage */
   stepsModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
@@ -114,6 +104,52 @@ export class JobDetailComponent {
     if (!stage.stepOptions?.length) return '';
     return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
   }
+
+  signoffCtx = computed<SignoffContext | null>(() => {
+    if (!this.job || !this.wf) return null;
+    const job = this.job;
+    const wfService = this.wfService;
+    const self = this;
+    return {
+      job,
+      wf: () => ({ stages: self.wf!().stages, fabricationData: self.wf!().fabricationData, signoffRecords: self.signoffRecords() }),
+      selectedStep: () => self.selectedStep(),
+      jobComplete: () => self.jobComplete(),
+      soldSigned: () => self.soldSigned(),
+      fabLocked: () => self.fabLocked(),
+      rejectedCount: () => self.rejectedCount(),
+      resultOptions: STAGE_RESULT_OPTIONS,
+      fabErrors: () => self.fabErrors(),
+      fieldErrors: () => self.fieldErrors(),
+      editable: (s) => self.editable(s),
+      inputsEditable: (s, i) => self.inputsEditable(s, i),
+      canSignStage: (s) => self.canSignStage(s),
+      canReopen: (s, i) => self.canReopen(s, i),
+      visibleFields: (s) => self.visibleFields(s),
+      visibleSignoffFields: (s) => self.visibleSignoffFields(s),
+      startsGroup: (s, f) => self.startsGroup(s, f),
+      fieldError: (sid, fk) => self.fieldError(sid, fk),
+      getFabValue: (k) => self.getFabValue(k),
+      getReviewValue: (k) => self.getReviewValue(k),
+      fabFieldRequired: (f) => self.fabFieldRequired(f),
+      defaultStepOption: (s) => self.defaultStepOption(s),
+      jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
+      jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
+      stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
+      stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
+      blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
+      signoffSelectChange: (s, f, v) => self.signoffSelectChange(s, f, v),
+      signoffCheckboxChange: (s, f, c) => self.signoffCheckboxChange(s, f, c),
+      toggleAffectedItem: (s, item, e) => self.toggleAffectedItem(s, item, e),
+      onConsumableInsertChange: (s, v) => self.onConsumableInsertChange(s, v),
+      on5xChange: (s, v) => self.on5xChange(s, v),
+      updateStepType: (s, v) => self.updateStepType(s, v),
+      setInspectionType: (v) => self.setInspectionType(v),
+      setStageResult: (s, r) => self.setStageResult(s, r),
+      signStage: (s) => self.signStage(s),
+      reopenStage: (s) => self.reopenStage(s),
+    };
+  });
 
   /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
   fabFields = computed(() => {
