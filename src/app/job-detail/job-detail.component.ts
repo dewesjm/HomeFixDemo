@@ -10,8 +10,9 @@ import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
 import { AttachmentsComponent } from '../attachments/attachments.component';
+import { FabricationComponent } from '../fabrication/fabrication.component';
 import {
-  LucideArrowLeft, LucideBox,
+  LucideArrowLeft,
   LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
   LucideCopy
 } from '@lucide/angular';
@@ -32,8 +33,8 @@ import { requiresTraceability } from '../data/mcl-traceability';
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent,
-    LucideArrowLeft, LucideBox,
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent,
+    LucideArrowLeft,
     LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen,
     LucideCopy
   ],
