@@ -34,7 +34,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'primeng-search-demo';
+  title = 'welding-inspection';
 
   private swUpdate = inject(SwUpdate);
   /* true once a new deploy is ready to activate */

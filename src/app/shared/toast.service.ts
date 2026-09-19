@@ -1,4 +1,4 @@
-/* Signal-based toast queue, replaces PrimeNG's MessageService. */
+/* Signal-based toast queue. */
 import { Injectable, signal } from '@angular/core';
 
 export type ToastSeverity = 'success' | 'info' | 'warn' | 'error';

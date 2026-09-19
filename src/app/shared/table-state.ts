@@ -1,5 +1,5 @@
-/* Client-side sort/paginate/filter helper shared by every table screen — replaces
-   PrimeNG p-table's built-in state + FilterService. Each screen owns one instance,
+/* Client-side sort/paginate/filter helper shared by every table screen.
+   Sorting, global filter, column filters, paging. Each screen owns one instance,
    feeds it rows via setRows(), and reads paged()/total()/etc in its template. */
 import { computed, signal } from '@angular/core';
 

@@ -1,4 +1,4 @@
-/* Signal-based confirm dialog request queue, replaces PrimeNG's ConfirmationService. */
+/* Signal-based confirm dialog request queue. */
 import { Injectable, signal } from '@angular/core';
 
 export interface ConfirmRequest {
