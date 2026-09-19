@@ -23,6 +23,7 @@ import {
   isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   getShops
 } from '../data/workflow';
+import { requiresTraceability } from '../data/mcl-traceability';
 
 @Component({
   selector: 'app-job-detail',
@@ -131,8 +132,19 @@ export class JobDetailComponent {
   /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
   fabFields = computed(() => {
     const fab = this.wf ? this.wf().fabricationData : {};
+    const job = this.job;
+    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
+    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
+    const anyTraceable = mcl1Traceable || mcl2Traceable;
     return FABRICATION_FIELDS
       .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
+      .filter(f => {
+        // MIC 1 only if joiningItem MCL requires traceability
+        if (f.key === 'id1') return mcl1Traceable;
+        // MIC 2 only if joinToItem MCL requires traceability
+        if (f.key === 'id2') return mcl2Traceable;
+        return true;
+      })
       .map(f =>
         f.key === 'location'
           ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
@@ -352,12 +364,18 @@ export class JobDetailComponent {
   // ---- stage inputs ----
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
+    const job = this.job;
+    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
+    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
+    const anyTraceable = mcl1Traceable || mcl2Traceable;
     return stage.fields.filter(f => {
       if (f.showIf) {
         const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType : stage.inputs[f.showIf.key];
         if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
         else if (checkVal !== f.showIf.equals) return false;
       }
+      // MIC fields only visible when traceability is required
+      if (f.key === 'consumableId' || f.key === 'backingRingId') return anyTraceable;
       return true;
     });
   }
