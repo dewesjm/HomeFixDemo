@@ -1,8 +1,6 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
 
-export type AssignmentPriority = 'low' | 'normal' | 'high';
-
 export interface Assignment {
   id: string;
   assignmentNumber: string;

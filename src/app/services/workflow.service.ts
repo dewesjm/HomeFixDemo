@@ -509,19 +509,9 @@ export class WorkflowService {
         wf.history ??= [];
         wf.validationNotes ??= '';
         wf.workType ??= null;
-        wf.conditionCode ??= '';
-        wf.conditionCount ??= 0;
         wf.fabricationData ??= {};
-        delete (wf as unknown as { signoff?: unknown }).signoff;   // old single sign-off removed
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
-
-        /* v4: migrate fabrication stage inputs into fabricationData, then remove the stage */
-        const fabStage = wf.stages.find(s => s.id === 'fabrication');
-        if (fabStage && Object.keys(wf.fabricationData).length === 0) {
-          wf.fabricationData = { ...fabStage.inputs };
-        }
-        wf.stages = wf.stages.filter(s => s.id !== 'fabrication');
 
         wf.stages.forEach(s => {
           s.inputs ??= {};

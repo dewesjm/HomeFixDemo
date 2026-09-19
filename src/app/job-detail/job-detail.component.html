@@ -573,64 +573,6 @@
                 }
               </div>
             </div>
-            <!-- Override Requirements (hidden for demo) -->
-            @if (false) {
-            <div>
-              <div class="font-semibold text-sm mb-1">Override Requirements</div>
-              <div class="flex gap-4">
-                @for (f of visibleFields(stage); track f.key) {
-                  @if (f.key === 'overridePhMin') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="stage.inputs['overridePhMin'] || '0'" />
-                      </label>
-                    </div>
-                  }
-                  @if (f.key === 'overridePhMax') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="stage.inputs['overridePhMax'] || '0'" />
-                      </label>
-                    </div>
-                  }
-                  @if (f.key === 'overrideIpMin') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="stage.inputs['overrideIpMin'] || '0'" />
-                      </label>
-                    </div>
-                  }
-                  @if (f.key === 'overrideIpMax') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="stage.inputs['overrideIpMax'] || '0'" />
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-              <!-- Override Note (dedicated line) -->
-              <div class="mt-1">
-                @for (f of visibleFields(stage); track f.key) {
-                  @if (f.key === 'overrideNote') {
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <input class="input input-bordered w-full bg-base-200" type="text"
-                             [disabled]="true" value="Override permitted when base material thickness exceeds 1.5x nominal and preheat is verified" />
-                    </label>
-                  }
-                }
-              </div>
-            </div>
-            }
             <!-- PH/IP Actuals -->
             <div>
               <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>

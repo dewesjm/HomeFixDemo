@@ -21,9 +21,3 @@ export function characteristicLabel(code: string): string {
   if (!code) return '';
   return CHARACTERISTIC_CODES.find(c => c.code === code)?.description ?? '';
 }
-
-/* dropdown options, e.g. "1234 Hazardous" */
-export const CHARACTERISTIC_OPTIONS = CHARACTERISTIC_CODES.map(c => ({
-  label: `${c.code} — ${c.description}`,
-  value: c.code
-}));
