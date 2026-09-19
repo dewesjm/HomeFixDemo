@@ -8,10 +8,11 @@ import { ConfirmService } from '../shared/confirm.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
+import { JointDetailsComponent } from '../joint-details/joint-details.component';
 import {
-  LucideArrowLeft, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+  LucideArrowLeft, LucideBox, LucideTrash2, LucidePlus,
   LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
-  LucideChevronDown, LucideChevronUp, LucideCopy
+  LucideCopy
 } from '@lucide/angular';
 
 import { JOBS, Job } from '../data/jobs';
@@ -30,10 +31,10 @@ import { requiresTraceability } from '../data/mcl-traceability';
   selector: 'app-job-detail',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent,
-    LucideArrowLeft, LucideInfo, LucideBox, LucideTrash2, LucidePlus,
+    CommonModule, FormsModule, TooltipDirective, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent,
+    LucideArrowLeft, LucideBox, LucideTrash2, LucidePlus,
     LucideBadgeCheck, LucideCircleCheck, LucideCheck, LucideLockOpen, LucidePaperclip, LucideFile,
-    LucideChevronDown, LucideChevronUp, LucideCopy
+    LucideCopy
   ],
   templateUrl: './job-detail.component.html'
 })
@@ -50,9 +51,6 @@ export class JobDetailComponent {
   newName = signal('');
   newPart = signal('');
   newQty = signal(1);
-
-  /* audit/records tier: collapsed by default, toggled by the Show more/less button */
-  showAudit = signal(false);
 
   resultOptions = STAGE_RESULT_OPTIONS;
   workTypeOptions = WORK_TYPE_OPTIONS;
@@ -165,19 +163,6 @@ export class JobDetailComponent {
     return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
       || id === 'repair';
   });
-
-  ndtLabel(method: string): string {
-    const ndt = (this.job?.ndt || '').toUpperCase();
-    const has = (m: string) => ndt.includes(m);
-    if (method === 'rtRoot' || method === 'rtFinal') return has('RT') ? 'X' : '—';
-    if (method === 'ut') return has('UT') ? 'X' : '—';
-    if (method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
-      if (has('5X')) return '5X';
-      if (has('UT') || has('RT') || has('MT') || has('PT') || has('VISUAL') || has('VT')) return 'X';
-      return '—';
-    }
-    return '—';
-  }
 
 //extra fields when you press show more
   /* deterministic placeholder values, varied per job so the demo doesn't look templated */

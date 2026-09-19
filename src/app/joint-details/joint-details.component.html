@@ -1,0 +1,107 @@
+<section class="panel">
+  <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
+  <div class="flex flex-col sm:flex-row gap-6">
+    <!-- Column 1: Job Info -->
+    <div class="flex-1 min-w-0">
+      <div class="detail-col">
+        <div class="detail-row"><span class="meta">ID</span><span>{{ job().id }}</span></div>
+        <div class="detail-row"><span class="meta">Project</span><span>{{ job().jobNumber }}</span></div>
+        <div class="detail-row"><span class="meta">Drawing</span><span>{{ job().drawing || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Drawing Rev</span><span>{{ job().drawingRev || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Joint</span><span>{{ job().joint || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Joint Design</span><span>{{ job().jointDesign || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Weld Type</span><span>{{ job().weldType || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Pipe Size</span><span>{{ job().pipeSize || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Wall Thickness</span><span>{{ job().wallThickness || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">N Ind.</span><span>{{ job().nInd || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Sequence #</span><span>{{ job().sequenceNumber || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Routing Step</span><span>{{ currentStep() }}</span></div>
+        <div class="detail-row"><span class="meta">Engineering Notes</span><span>{{ job().engineeringNotes || '—' }}</span></div>
+      </div>
+    </div>
+
+    <!-- Column 2: Joining -->
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-sm mb-1">Joining Item</div>
+      <div class="detail-col">
+        <div class="detail-row"><span class="meta">MCL 1</span><span>{{ job().mcl1 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Material Type 1</span><span>{{ job().materialType1 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Joining Item</span><span>{{ job().joiningItem || '—' }}</span></div>
+      </div>
+      <div class="mt-sm">
+        <div class="font-semibold text-sm mb-1">Join To</div>
+        <div class="detail-col">
+          <div class="detail-row"><span class="meta">MCL 2</span><span>{{ job().mcl2 || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Material Type 2</span><span>{{ job().materialType2 || '—' }}</span></div>
+          <div class="detail-row"><span class="meta">Join To Item</span><span>{{ job().joinToItem || '—' }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Column 3: NDT Data -->
+    <div class="flex-1 min-w-0">
+      <div class="font-semibold text-sm mb-1">NDT Data</div>
+      <div class="detail-col">
+        <div class="detail-row"><span class="meta">RT Root</span><span>{{ ndtLabel('rtRoot') }}</span></div>
+        <div class="detail-row"><span class="meta">RT Final</span><span>{{ ndtLabel('rtFinal') }}</span></div>
+        <div class="detail-row"><span class="meta">NDT Root</span><span>{{ ndtLabel('ndtRoot') }}</span></div>
+        <div class="detail-row"><span class="meta">NDT Each</span><span>{{ ndtLabel('ndtEach') }}</span></div>
+        <div class="detail-row"><span class="meta">NDT Final</span><span>{{ ndtLabel('ndtFinal') }}</span></div>
+        <div class="detail-row"><span class="meta">UT</span><span>{{ ndtLabel('ut') }}</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Show more / less -->
+  <button type="button" class="btn btn-ghost btn-sm mt-sm" (click)="showAudit.set(!showAudit())">
+    {{ showAudit() ? 'Show less' : 'Show more' }}
+    @if (showAudit()) { <svg lucideChevronUp class="size-4"></svg> } @else { <svg lucideChevronDown class="size-4"></svg> }
+  </button>
+  @if (showAudit()) {
+    <!-- Additional Data -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Additional Data</div>
+      <div class="flex flex-col sm:flex-row gap-6">
+        <!-- Column 1: Order - Serial Number -->
+        <div class="flex-1 min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">Order</span><span>{{ job().order || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Work Package</span><span>{{ job().workPackage || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Work Permit</span><span>{{ job().workPermit || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">WAFF</span><span>{{ job().waff || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Serial Number</span><span>{{ job().serialNumber || '—' }}</span></div>
+          </div>
+        </div>
+        <!-- Column 2: Refit - DSS -->
+        <div class="flex-1 min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">Refit #</span><span>{{ job().refitNumber || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">Repair #</span><span>{{ job().repairNumber || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">SS</span><span>{{ job().ss || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">SFFF</span><span>{{ job().sfff || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">DSS-AAA</span><span>{{ job().dssAaa || '—' }}</span></div>
+          </div>
+        </div>
+        <!-- Column 3: ER1-ER4 -->
+        <div class="flex-1 min-w-0">
+          <div class="detail-col">
+            <div class="detail-row"><span class="meta">ER1</span><span>{{ job().er1 || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">ER2</span><span>{{ job().er2 || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">ER3</span><span>{{ job().er3 || '—' }}</span></div>
+            <div class="detail-row"><span class="meta">ER4</span><span>{{ job().er4 || '—' }}</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Attribute Codes -->
+    <div class="mt-sm">
+      <div class="font-semibold text-sm mb-1">Attribute Codes</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-6">
+        <div class="detail-row"><span class="meta">Attribute Code 1</span><span>{{ job().attributeCode1 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 2</span><span>{{ job().attributeCode2 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 3</span><span>{{ job().attributeCode3 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 4</span><span>{{ job().attributeCode4 || '—' }}</span></div>
+      </div>
+    </div>
+  }
+</section>
