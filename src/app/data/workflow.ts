@@ -221,7 +221,7 @@ const HANDOVER_STAGE: StageTemplate = {
 
 /* ── Shop locations (admin-configurable via localStorage) ── */
 const SHOPS_LS_KEY = 'homefix:shops:v1';
-const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Field — Onsite', 'MV Pacific Trader (Ship)'];
+const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Field — Onsite', 'Ship'];
 
 export function getShops(): string[] {
   try {
@@ -363,11 +363,11 @@ export const FABRICATION_FIELDS: FabricationField[] = [
     options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship)
-  { key: 'deck', label: 'Deck', type: 'text', row: 2, showIf: { key: 'location', equals: 'mv-pacific-trader-(ship)' }, required: true },
-  { key: 'frame', label: 'Frame', type: 'text', row: 2, showIf: { key: 'location', equals: 'mv-pacific-trader-(ship)' }, required: true },
-  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'mv-pacific-trader-(ship)' }, required: true,
+  { key: 'deck', label: 'Deck', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
+  { key: 'frame', label: 'Frame', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
+  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true,
     options: [{ label: 'P', value: 'P' }, { label: 'S', value: 'S' }, { label: 'CL', value: 'CL' }] },
-  { key: 'usage', label: 'Usage', type: 'text', row: 2, showIf: { key: 'location', equals: 'mv-pacific-trader-(ship)' }, required: true },
+  { key: 'usage', label: 'Usage', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
   // Line 3: MIC 1 and MIC 2
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
   { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },
