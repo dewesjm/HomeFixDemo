@@ -12,7 +12,7 @@
     <app-sync-status />
   </div>
 
-  <app-routing-bar [steps]="stepsModel()" [selectedStep]="selectedStep()" (stepSelected)="selectedStep.set($event)" />
+  <app-routing-bar [steps]="stepsModel()" [selectedStep]="selectedStep()" />
 
   <app-joint-details [job]="j" [currentStep]="currentStep()" />
 

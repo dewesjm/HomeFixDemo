@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, input, output, untracked, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, input, untracked, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideWorkflow } from '@lucide/angular';
 
@@ -11,7 +11,6 @@ import { LucideWorkflow } from '@lucide/angular';
 export class RoutingBarComponent {
   steps = input.required<{ label: string; disabled: boolean; stageIndex: number }[]>();
   selectedStep = input.required<number>();
-  stepSelected = output<number>();
 
   private scrollContainer = viewChild.required<ElementRef<HTMLElement>>('scrollContainer');
 

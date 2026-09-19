@@ -415,7 +415,7 @@ export class JobDetailComponent {
     return this.jointDesignRequiresInsert() || this.jointDesignRequiresBackingRing();
   }
 
-  fabFieldRequired(f: FabricationField): boolean {
+  fabFieldRequired = (f: FabricationField): boolean => {
     if (!this.wf) return false;
     if (f.showIf && f.required) {
       const fab = this.wf().fabricationData;
@@ -424,7 +424,7 @@ export class JobDetailComponent {
     if (!f.requiredWhen) return false;
     const val = (this.wf().fabricationData[f.requiredWhen.key] ?? '').trim();
     return f.requiredWhen.notEmpty ? val.length > 0 : val.length === 0;
-  }
+  };
 
   /* map fitup-insp verification field keys to fabrication data keys */
   private readonly FAB_VERIFY_MAP: Record<string, string> = {
