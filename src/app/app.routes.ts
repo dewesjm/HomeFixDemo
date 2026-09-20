@@ -18,6 +18,10 @@ import { AdminJointDesignsComponent } from './admin-joint-designs/admin-joint-de
 import { AdminTeamsComponent } from './admin-teams/admin-teams.component';
 import { AdminMaterialTraceabilityComponent } from './admin-material-traceability/admin-material-traceability.component';
 import { MyAssignmentsComponent } from './my-assignments/my-assignments.component';
+import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
+import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
+import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detail.component';
+import { WeldPlanningAdminComponent } from './weld-planning/weld-planning-admin.component';
 
 
 export const routes: Routes = [
@@ -40,5 +44,13 @@ export const routes: Routes = [
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'Material Traceability' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details', canDeactivate: [canDeactivateGuard] },
+
+  /* ── Weld Planning routes (separate system) ── */
+  { path: 'weld-planning', component: WeldPlanningListComponent, title: 'Weld Planning' },
+  { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'New Joint Plan' },
+  { path: 'weld-planning/admin', component: WeldPlanningAdminComponent, title: 'Weld Planning Admin' },
+  { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'Joint Plan Details' },
+  { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'Edit Joint Plan' },
+
   { path: '**', redirectTo: 'table' }
 ];

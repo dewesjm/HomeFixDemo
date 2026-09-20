@@ -1,0 +1,182 @@
+<div style="max-width: 900px; margin: 0 auto; padding: 1rem">
+  <div class="page-header">
+    <a routerLink="/weld-planning" class="back-link">Weld Planning</a>
+    <span style="color: var(--app-text-muted)">/</span>
+    <h2 class="section-title">{{ isEdit() ? 'Edit' : 'New' }} Joint Plan</h2>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Basic Information</div>
+    <div class="detail-grid">
+      <div class="detail-col">
+        <label class="field-label">Joint Number <span class="required-mark">*</span></label>
+        <input class="input input-sm" [(ngModel)]="form.jointNumber" placeholder="JP-001" />
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Title <span class="required-mark">*</span></label>
+        <input class="input input-sm" [(ngModel)]="form.title" placeholder="Joint plan title" />
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Status <span class="required-mark">*</span></label>
+        <select class="select select-sm" [(ngModel)]="form.status">
+          @for (opt of statusOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Priority <span class="required-mark">*</span></label>
+        <select class="select select-sm" [(ngModel)]="form.priority">
+          @for (opt of priorityOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col col-span-all">
+        <label class="field-label">Description</label>
+        <textarea class="textarea textarea-sm w-full" [(ngModel)]="form.description" rows="2" placeholder="Describe the joint plan..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Welding Attributes</div>
+    <div class="detail-grid">
+      <div class="detail-col">
+        <label class="field-label">Joint Design <span class="required-mark">*</span></label>
+        <select class="select select-sm" [(ngModel)]="form.jointDesign">
+          <option value="">Select...</option>
+          @for (d of designOptions(); track d.code) {
+            <option [value]="d.label">{{ d.label }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Weld Type <span class="required-mark">*</span></label>
+        <select class="select select-sm" [(ngModel)]="form.weldType">
+          <option value="">Select...</option>
+          @for (t of weldTypes; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Pipe Size</label>
+        <select class="select select-sm" [(ngModel)]="form.pipeSize">
+          <option value="">Select...</option>
+          @for (s of pipeSizes; track s) {
+            <option [value]="s">{{ s }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Wall Thickness</label>
+        <select class="select select-sm" [(ngModel)]="form.wallThickness">
+          <option value="">Select...</option>
+          @for (t of wallThicknesses; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Material 1</label>
+        <select class="select select-sm" [(ngModel)]="form.materialType1">
+          <option value="">Select...</option>
+          @for (m of materials1; track m) {
+            <option [value]="m">{{ m }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Material 2 (Filler)</label>
+        <select class="select select-sm" [(ngModel)]="form.materialType2">
+          <option value="">Select...</option>
+          @for (m of materials2; track m) {
+            <option [value]="m">{{ m }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">WPS</label>
+        <select class="select select-sm" [(ngModel)]="form.wps">
+          <option value="">Select...</option>
+          @for (w of wpsPool; track w) {
+            <option [value]="w">{{ w }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">NDT Requirement</label>
+        <select class="select select-sm" [(ngModel)]="form.ndt">
+          <option value="">Select...</option>
+          @for (n of ndtOpts(); track n) {
+            <option [value]="n">{{ n }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">PWHT</label>
+        <select class="select select-sm" [(ngModel)]="form.pwht">
+          <option value="">Select...</option>
+          @for (p of pwhtOpts(); track p) {
+            <option [value]="p">{{ p }}</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Scheduling &amp; Location</div>
+    <div class="detail-grid">
+      <div class="detail-col">
+        <label class="field-label">Drawing</label>
+        <input class="input input-sm" [(ngModel)]="form.drawing" placeholder="DWG-100" />
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Drawing Rev</label>
+        <input class="input input-sm" [(ngModel)]="form.drawingRev" placeholder="A" />
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Location</label>
+        <select class="select select-sm" [(ngModel)]="form.location">
+          <option value="">Select...</option>
+          @for (l of locations; track l) {
+            <option [value]="l">{{ l }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Assigned To</label>
+        <select class="select select-sm" [(ngModel)]="form.assignedTo">
+          <option value="">Select...</option>
+          @for (t of technicians; track t) {
+            <option [value]="t">{{ t }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Scheduled Date</label>
+        <input class="input input-sm" type="date" [ngModel]="scheduledDateValue()" (ngModelChange)="onDateChange($event)" />
+      </div>
+      <div class="detail-col">
+        <label class="field-label">Est. Hours</label>
+        <input class="input input-sm" type="number" [(ngModel)]="form.estimatedHours" min="0" step="0.5" />
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Notes</div>
+    <textarea class="textarea textarea-sm w-full" [(ngModel)]="form.notes" rows="3" placeholder="Additional notes..."></textarea>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding: 1rem 0">
+    <button class="btn btn-ghost" (click)="cancel()">
+      <svg lucideX class="size-4"></svg> Cancel
+    </button>
+    <button class="btn btn-primary" (click)="save()">
+      <svg lucideSave class="size-4"></svg> {{ isEdit() ? 'Update' : 'Create' }}
+    </button>
+  </div>
+</div>

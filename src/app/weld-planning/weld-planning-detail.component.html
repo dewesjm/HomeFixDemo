@@ -1,0 +1,73 @@
+<div style="max-width: 900px; margin: 0 auto; padding: 1rem">
+  @if (joint(); as j) {
+    <div class="page-header">
+      <a (click)="goBack()" class="back-link">
+        <svg lucideArrowLeft class="size-4"></svg> Weld Planning
+      </a>
+      <span style="color: var(--app-text-muted)">/</span>
+      <h2 class="section-title">{{ j.jointNumber }}</h2>
+      <span class="spacer"></span>
+      <button class="btn btn-sm btn-primary" (click)="edit()">
+        <svg lucidePencil class="size-4"></svg> Edit
+      </button>
+    </div>
+
+    <!-- Status & Priority badges -->
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
+      <span class="badge" [class]="statusBadgeClass(j.status)">{{ j.status }}</span>
+      <span class="badge" [class]="priorityBadgeClass(j.priority)">{{ j.priority }}</span>
+      @if (j.pipeWeldJobId) {
+        <a [routerLink]="['/jobs', j.pipeWeldJobId]" class="badge badge-outline badge-sm" style="text-decoration: none; cursor: pointer">
+          Linked Job: {{ j.pipeWeldJobId }}
+        </a>
+      }
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Basic Information</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">Title</div><span>{{ j.title }}</span></div>
+        <div><div class="meta">Description</div><span>{{ j.description || '-' }}</span></div>
+        <div><div class="meta">Created</div><span>{{ formatDate(j.createdAt) }}</span></div>
+        <div><div class="meta">Updated</div><span>{{ formatDate(j.updatedAt) }}</span></div>
+        <div><div class="meta">Created By</div><span>{{ j.createdBy }}</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Welding Attributes</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">Joint Design</div><span class="mono fw-bold">{{ j.jointDesign }}</span></div>
+        <div><div class="meta">Weld Type</div><span>{{ j.weldType }}</span></div>
+        <div><div class="meta">Pipe Size</div><span>{{ j.pipeSize || '-' }}</span></div>
+        <div><div class="meta">Wall Thickness</div><span>{{ j.wallThickness || '-' }}</span></div>
+        <div><div class="meta">Material 1</div><span>{{ j.materialType1 || '-' }}</span></div>
+        <div><div class="meta">Material 2</div><span>{{ j.materialType2 || '-' }}</span></div>
+        <div><div class="meta">WPS</div><span class="mono">{{ j.wps || '-' }}</span></div>
+        <div><div class="meta">NDT</div><span>{{ j.ndt || '-' }}</span></div>
+        <div><div class="meta">PWHT</div><span>{{ j.pwht || '-' }}</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Scheduling &amp; Location</div>
+      <div class="detail-grid inline">
+        <div><div class="meta">Drawing</div><span class="mono">{{ j.drawing || '-' }}</span></div>
+        <div><div class="meta">Drawing Rev</div><span>{{ j.drawingRev || '-' }}</span></div>
+        <div><div class="meta">Location</div><span>{{ j.location || '-' }}</span></div>
+        <div><div class="meta">Assigned To</div><span>{{ j.assignedTo || '-' }}</span></div>
+        <div><div class="meta">Scheduled</div><span>{{ formatDate(j.scheduledDate) }}</span></div>
+        <div><div class="meta">Est. Hours</div><span>{{ j.estimatedHours }} hrs</span></div>
+      </div>
+    </div>
+
+    @if (j.notes) {
+      <div class="panel">
+        <div class="panel-title">Notes</div>
+        <p style="margin: 0; white-space: pre-wrap">{{ j.notes }}</p>
+      </div>
+    }
+  } @else {
+    <div class="empty">Loading...</div>
+  }
+</div>
