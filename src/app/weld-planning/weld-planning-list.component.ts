@@ -26,8 +26,7 @@ type Row = JointPlan;
     LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload
   ],
   template: `
-    <div class="table-page-wrap">
-      <div class="flex-1" style="overflow-y: auto">
+    <div style="max-width: 100%">
         <div class="page-header" style="padding: 0.75rem 1rem">
           <h2 class="section-title">Weld Planning</h2>
           <span class="match-count">{{ table.total() }} joint plans</span>
@@ -157,7 +156,6 @@ type Row = JointPlan;
             </tbody>
           </table>
         </div>
-      </div>
 
       <app-table-pager [state]="table" />
     </div>

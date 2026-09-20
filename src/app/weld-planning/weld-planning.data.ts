@@ -139,15 +139,19 @@ function generateSeededJoints(count = 80): JointPlan[] {
 const LS_KEY = 'wp:joint-plans:v1';
 
 function loadJointPlans(): JointPlan[] {
+  const projPool = [...PROJECTS];
+  const jointPool = [...JOINTS_POOL];
+  const pickFrom = <T>(arr: T[], idx: number): T => arr[idx % arr.length];
+
   try {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return parsed.map((j: any) => ({
+      return parsed.map((j: any, i: number) => ({
         ...j,
         jointType: j.jointType || 'pipe',
-        projectNumber: j.projectNumber || '',
-        joint: j.joint || '',
+        projectNumber: j.projectNumber || pickFrom(projPool, i),
+        joint: j.joint || pickFrom(jointPool, i),
       }));
     }
   } catch { /* ignore */ }
