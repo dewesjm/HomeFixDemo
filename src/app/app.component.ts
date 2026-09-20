@@ -44,16 +44,20 @@ export class AppComponent {
   @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
 
+  private suppressToggle = false;
+
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
+    this.suppressToggle = true;
     [this.ewrDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
       if (ref && ref !== except) ref.nativeElement.open = false;
     });
+    setTimeout(() => this.suppressToggle = false, 0);
   }
 
-  onEwrToggle(e: Event) { this.closeAll(this.ewrDetails); }
-  onWpToggle(e: Event)  { this.closeAll(this.wpDetails); }
-  onWaToggle(e: Event)  { this.closeAll(this.waDetails); }
-  onWeToggle(e: Event)  { this.closeAll(this.weDetails); }
+  onEwrToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.ewrDetails)); }
+  onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
+  onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
+  onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
