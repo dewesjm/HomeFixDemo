@@ -78,8 +78,8 @@ const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
-const WORK_PACKAGES = ['WP-001', 'WP-002', 'WP-003', 'WP-004', 'WP-005'];
-const ATTR_CODES = ['AT-100', 'AT-200', 'AT-300', 'AT-400', 'AT-500', 'AT-600', 'AT-700', 'AT-800'];
+const WORK_PACKAGES = ['PRJ-4A-01', 'PRJ-4A-02', 'PRJ-4B-01', 'PRJ-4B-03', 'PRJ-5A-01', 'PRJ-5A-02', 'PRJ-5B-01', 'PRJ-5C-02', 'PRJ-6A-01', 'PRJ-6B-01'];
+const ATTR_CODES = ['AB', 'CD', 'EF', 'GH', 'JK', 'MN', 'PQ', 'RS', 'TU', 'VW', 'XY'];
 
 const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
   Plumbing:   ['Leaking faucet repair', 'Water heater replacement', 'Clogged drain clearing', 'Pipe leak inspection', 'Toilet reseal', 'Sump pump service'],
@@ -180,7 +180,7 @@ export function generateJobs(count = 240): Job[] {
       ndtEach: pick(NDT_RESULTS),
       ndtFinal: pick(NDT_RESULTS),
       ut: pick(NDT_RESULTS),
-      order: `ORD-${10000 + i}`,
+      order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
       workPackage: pick(WORK_PACKAGES),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: i % 5 === 0 ? 'Required' : '',
