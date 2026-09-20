@@ -45,6 +45,7 @@ export class AppComponent {
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
 
   private suppressToggle = false;
+  activeSystem = signal('Weld Record');
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
@@ -54,10 +55,10 @@ export class AppComponent {
     setTimeout(() => this.suppressToggle = false, 0);
   }
 
-  onEwrToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.ewrDetails)); }
-  onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
-  onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
-  onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
+  onEwrToggle(e: Event) { if (!this.suppressToggle) { this.activeSystem.set('Weld Record'); setTimeout(() => this.closeAll(this.ewrDetails)); } }
+  onWpToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Planning'); setTimeout(() => this.closeAll(this.wpDetails)); } }
+  onWaToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Assignment'); setTimeout(() => this.closeAll(this.waDetails)); } }
+  onWeToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Engineering'); setTimeout(() => this.closeAll(this.weDetails)); } }
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
