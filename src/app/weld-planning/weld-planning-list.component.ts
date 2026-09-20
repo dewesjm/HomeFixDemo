@@ -29,7 +29,6 @@ type Row = JointPlan;
     <div style="max-width: 100%">
         <div class="page-header" style="padding: 0.75rem 1rem">
           <h2 class="section-title">Weld Planning</h2>
-          <span class="match-count">{{ table.total() }} joint plans</span>
           <span class="spacer"></span>
           <button class="btn btn-sm btn-primary" (click)="createNew()">
             <svg lucidePlus class="size-4"></svg> Create
