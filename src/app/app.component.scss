@@ -17,7 +17,7 @@
 
 .topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; }
 
-.topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
+.topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; min-width: 14ch; }
 
 .topnav-menu {
   display: flex;
