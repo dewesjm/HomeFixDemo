@@ -1,10 +1,10 @@
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
-import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, signal, inject, ViewChild, ElementRef, computed } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
-import { filter } from 'rxjs/operators';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
@@ -36,6 +36,7 @@ export class AppComponent {
   title = 'welding-inspection';
 
   private swUpdate = inject(SwUpdate);
+  private router = inject(Router);
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
 
@@ -45,6 +46,7 @@ export class AppComponent {
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
 
   private suppressToggle = false;
+
   activeSystem = signal('Weld Record');
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
@@ -55,10 +57,10 @@ export class AppComponent {
     setTimeout(() => this.suppressToggle = false, 0);
   }
 
-  onEwrToggle(e: Event) { if (!this.suppressToggle) { this.activeSystem.set('Weld Record'); setTimeout(() => this.closeAll(this.ewrDetails)); } }
-  onWpToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Planning'); setTimeout(() => this.closeAll(this.wpDetails)); } }
-  onWaToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Assignment'); setTimeout(() => this.closeAll(this.waDetails)); } }
-  onWeToggle(e: Event)  { if (!this.suppressToggle) { this.activeSystem.set('Weld Engineering'); setTimeout(() => this.closeAll(this.weDetails)); } }
+  onEwrToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.ewrDetails)); }
+  onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
+  onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
+  onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
@@ -66,6 +68,24 @@ export class AppComponent {
         this.closeAll();
       }
     });
+
+    /* derive active system from current route */
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd)
+    ).subscribe(e => {
+      const url = e.urlAfterRedirects || e.url;
+      if (url.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
+      else if (url.startsWith('/assignments') || url.startsWith('/history') || url.startsWith('/adaptive') || url.startsWith('/admin') || url.startsWith('/table')) this.activeSystem.set('Weld Record');
+      else if (url.startsWith('/weld-assignment')) this.activeSystem.set('Weld Assignment');
+      else if (url.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
+    });
+
+    /* also set on initial load */
+    const initUrl = this.router.url;
+    if (initUrl.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
+    else if (initUrl.startsWith('/weld-assignment')) this.activeSystem.set('Weld Assignment');
+    else if (initUrl.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
+    else this.activeSystem.set('Weld Record');
 
     if (this.swUpdate.isEnabled) {
       // check for updates + button to update now, PWA/offline important
