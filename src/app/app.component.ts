@@ -12,7 +12,7 @@ import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
-    LucideShield, LucideLink, LucideUpload
+    LucideShield, LucideLink, LucideUpload, LucideSearch
 } from '@lucide/angular';
 
 // check for version updates periodically, only full refresh will check
@@ -27,7 +27,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
-  LucideShield, LucideLink, LucideUpload
+  LucideShield, LucideLink, LucideUpload, LucideSearch
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
