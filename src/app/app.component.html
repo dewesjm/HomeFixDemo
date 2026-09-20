@@ -8,7 +8,7 @@
       <ul class="topnav-menu">
         <!-- EWR group dropdown -->
         <li class="dropdown-wrapper">
-          <details #ewrDetails (toggle)="ewrOpen.set($any($event.target).open)">
+          <details #ewrDetails (toggle)="onEwrToggle($event)">
             <summary><svg lucideTable class="size-4"></svg> EWR</summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/table" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding</a></li>
@@ -17,63 +17,91 @@
               <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> History</a></li>
               <li><a routerLink="/adaptive" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search</a></li>
               <li class="dropdown-divider"></li>
-              <li><a routerLink="/admin/steps" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
-              <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
-              <li><a routerLink="/admin/set-step" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Step</a></li>
-              <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
-              <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
-              <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
-              <li><a routerLink="/admin/step-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Step Options</a></li>
-              <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
-              <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
-              <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
-              <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
-              <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
+              <li class="has-submenu">
+                <details>
+                  <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+                  <ul class="submenu">
+                    <li><a routerLink="/admin/steps" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
+                    <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
+                    <li><a routerLink="/admin/set-step" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Step</a></li>
+                    <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
+                    <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
+                    <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+                    <li><a routerLink="/admin/step-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Step Options</a></li>
+                    <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
+                    <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
+                    <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
+                    <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
+                    <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
           </details>
         </li>
 
         <!-- Weld Planning group dropdown -->
         <li class="dropdown-wrapper">
-          <details #wpDetails (toggle)="wpOpen.set($any($event.target).open)">
+          <details #wpDetails (toggle)="onWpToggle($event)">
             <summary><svg lucideLayers class="size-4"></svg> Weld Planning</summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/weld-planning" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Joint Plans</a></li>
               <li><a class="menu-disabled"><svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search</a></li>
               <li class="dropdown-divider"></li>
-              <li><a routerLink="/weld-planning/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Joint Designs &amp; NDT</a></li>
-              <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
-              <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+              <li class="has-submenu">
+                <details>
+                  <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+                  <ul class="submenu">
+                    <li><a routerLink="/weld-planning/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Joint Designs &amp; NDT</a></li>
+                    <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+                    <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
           </details>
         </li>
 
         <!-- Weld Assignment group dropdown -->
         <li class="dropdown-wrapper">
-          <details #waDetails (toggle)="waOpen.set($any($event.target).open)">
+          <details #waDetails (toggle)="onWaToggle($event)">
             <summary><svg lucideClipboardList class="size-4"></svg> Weld Assignment</summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Work Orders</a></li>
               <li><a class="menu-disabled"><svg lucideClipboardList class="size-4"></svg> My Tasks</a></li>
               <li><a class="menu-disabled"><svg lucideHistory class="size-4"></svg> History</a></li>
               <li class="dropdown-divider"></li>
-              <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
-              <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+              <li class="has-submenu">
+                <details>
+                  <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+                  <ul class="submenu">
+                    <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
+                    <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
           </details>
         </li>
 
         <!-- Weld Engineering group dropdown -->
         <li class="dropdown-wrapper">
-          <details #weDetails (toggle)="weOpen.set($any($event.target).open)">
+          <details #weDetails (toggle)="onWeToggle($event)">
             <summary><svg lucideWorkflow class="size-4"></svg> Weld Engineering</summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideLayers class="size-4"></svg> WPS Management</a></li>
               <li><a class="menu-disabled"><svg lucideTag class="size-4"></svg> PQR Tracking</a></li>
               <li><a class="menu-disabled"><svg lucideTarget class="size-4"></svg> Qualifications</a></li>
               <li class="dropdown-divider"></li>
-              <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
-              <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Standards</a></li>
+              <li class="has-submenu">
+                <details>
+                  <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+                  <ul class="submenu">
+                    <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
+                    <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Standards</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
           </details>
         </li>

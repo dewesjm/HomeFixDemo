@@ -38,28 +38,28 @@ export class AppComponent {
   private swUpdate = inject(SwUpdate);
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
-  ewrOpen = signal(false);
-  wpOpen = signal(false);
-  waOpen = signal(false);
-  weOpen = signal(false);
 
   @ViewChild('ewrDetails') ewrDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('wpDetails') wpDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
 
+  private closeAll(except?: ElementRef<HTMLDetailsElement>) {
+    [this.ewrDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
+      if (ref && ref !== except) ref.nativeElement.open = false;
+    });
+  }
+
+  onEwrToggle(e: Event) { this.closeAll(this.ewrDetails); }
+  onWpToggle(e: Event)  { this.closeAll(this.wpDetails); }
+  onWaToggle(e: Event)  { this.closeAll(this.waDetails); }
+  onWeToggle(e: Event)  { this.closeAll(this.weDetails); }
+
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
-      const closeIfOutside = (open: boolean, set: (v: boolean) => void, ref?: ElementRef<HTMLDetailsElement>) => {
-        if (open && !(e.target as HTMLElement).closest('.dropdown-wrapper')) {
-          set(false);
-          if (ref?.nativeElement) ref.nativeElement.open = false;
-        }
-      };
-      closeIfOutside(this.ewrOpen(), v => this.ewrOpen.set(v), this.ewrDetails);
-      closeIfOutside(this.wpOpen(), v => this.wpOpen.set(v), this.wpDetails);
-      closeIfOutside(this.waOpen(), v => this.waOpen.set(v), this.waDetails);
-      closeIfOutside(this.weOpen(), v => this.weOpen.set(v), this.weDetails);
+      if (!(e.target as HTMLElement).closest('.dropdown-wrapper')) {
+        this.closeAll();
+      }
     });
 
     if (this.swUpdate.isEnabled) {
