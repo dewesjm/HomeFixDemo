@@ -100,7 +100,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
     const statuses: JointStatus[] = ['planned', 'in-progress', 'completed', 'on-hold', 'cancelled'];
     const priorities: JointPriority[] = ['low', 'medium', 'high', 'critical'];
     const types: JointType[] = ['pipe', 'structural'];
-    const jt = pick(types);
+    const jt = i % 3 === 0 ? 'structural' : pick(types);
     const createdAt = new Date(Date.now() - Math.floor(rand() * 60) * 24 * 60 * 60 * 1000);
 
     out.push({

@@ -11,8 +11,8 @@ import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
 import {
   jointPlans, deleteJointPlan,
-  JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS,
-  JOINT_PLAN_CSV_COLUMNS, type JointPlan, type JointStatus, type JointPriority
+  JOINT_STATUS_OPTIONS,
+  JOINT_PLAN_CSV_COLUMNS, type JointPlan, type JointStatus
 } from './weld-planning.data';
 
 type Row = JointPlan;
@@ -58,12 +58,6 @@ type Row = JointPlan;
               <option [value]="opt.value">{{ opt.label }}</option>
             }
           </select>
-          <select class="select select-sm" [(ngModel)]="priorityFilter" (ngModelChange)="onPriorityFilterChange($event)">
-            <option value="">All Priorities</option>
-            @for (opt of priorityOptions; track opt.value) {
-              <option [value]="opt.value">{{ opt.label }}</option>
-            }
-          </select>
           <button class="btn btn-sm btn-ghost" (click)="clearFilters()">
             Clear
           </button>
@@ -97,12 +91,6 @@ type Row = JointPlan;
                 <th (click)="table.toggleSort('status')" style="cursor: pointer; min-width: 7rem">
                   Status {{ sortIcon('status') }}
                 </th>
-                <th (click)="table.toggleSort('priority')" style="cursor: pointer; min-width: 6rem">
-                  Priority {{ sortIcon('priority') }}
-                </th>
-                <th (click)="table.toggleSort('assignedTo')" style="cursor: pointer; min-width: 7rem">
-                  Assigned {{ sortIcon('assignedTo') }}
-                </th>
                 <th style="min-width: 7rem">Actions</th>
               </tr>
             </thead>
@@ -112,11 +100,7 @@ type Row = JointPlan;
                   <td class="mono fw-bold">{{ row.id }}</td>
                   <td>{{ row.projectNumber }}</td>
                   <td>{{ row.joint }}</td>
-                  <td>
-                    <span class="badge badge-sm" [class]="row.jointType === 'pipe' ? 'badge-info' : 'badge-warning'">
-                      {{ row.jointType }}
-                    </span>
-                  </td>
+                  <td>{{ row.jointType }}</td>
                   <td class="mono">{{ row.drawing }}</td>
                   <td class="mono">{{ row.jointDesign }}</td>
                   <td>{{ row.weldType }}</td>
@@ -125,12 +109,6 @@ type Row = JointPlan;
                       {{ row.status }}
                     </span>
                   </td>
-                  <td>
-                    <span class="badge badge-sm" [class]="priorityBadgeClass(row.priority)">
-                      {{ row.priority }}
-                    </span>
-                  </td>
-                  <td>{{ row.assignedTo }}</td>
                   <td>
                     <div class="row-tight">
                       <a [routerLink]="['/weld-planning', row.id]"
@@ -149,7 +127,7 @@ type Row = JointPlan;
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="11" class="empty">No joint plans found.</td>
+                  <td colspan="8" class="empty">No joint plans found.</td>
                 </tr>
               }
             </tbody>
@@ -166,16 +144,13 @@ export class WeldPlanningListComponent {
   private confirm = inject(ConfirmService);
 
   statusOptions = JOINT_STATUS_OPTIONS;
-  priorityOptions = JOINT_PRIORITY_OPTIONS;
 
   statusFilter = '';
-  priorityFilter = '';
 
   table = new TableState<Row>(
-    ['id', 'projectNumber', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType', 'assignedTo'],
+    ['id', 'projectNumber', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType'],
     {
       status: inArray,
-      priority: inArray,
     }
   );
 
@@ -192,13 +167,8 @@ export class WeldPlanningListComponent {
     this.table.setColumnFilter('status', val ? [val] : []);
   }
 
-  onPriorityFilterChange(val: string) {
-    this.table.setColumnFilter('priority', val ? [val] : []);
-  }
-
   clearFilters() {
     this.statusFilter = '';
-    this.priorityFilter = '';
     this.table.clearFilters();
   }
 
@@ -240,15 +210,5 @@ export class WeldPlanningListComponent {
       'cancelled': 'badge-error',
     };
     return map[status] || 'badge-ghost';
-  }
-
-  priorityBadgeClass(priority: JointPriority): string {
-    const map: Record<JointPriority, string> = {
-      'low': 'badge-ghost',
-      'medium': 'badge-info',
-      'high': 'badge-warning',
-      'critical': 'badge-error',
-    };
-    return map[priority] || 'badge-ghost';
   }
 }
