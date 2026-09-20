@@ -145,11 +145,16 @@ function loadJointPlans(): JointPlan[] {
     const raw = localStorage.getItem(LS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      const statusMap: Record<string, JointStatus> = {
+        'planned': 'development', 'in-progress': 'development', 'completed': 'unlocked',
+        'on-hold': 'locked', 'cancelled': 'locked',
+      };
       return parsed.map((j: any, i: number) => ({
         ...j,
         jointType: j.jointType || 'pipe',
         projectNumber: j.projectNumber || pickFrom(projPool, i),
         joint: j.joint || pickFrom(jointPool, i),
+        status: statusMap[j.status] || j.status || 'development',
       }));
     }
   } catch { /* ignore */ }
