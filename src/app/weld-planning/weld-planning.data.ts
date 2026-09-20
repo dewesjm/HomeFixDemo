@@ -344,3 +344,28 @@ export function parseCsvImport(text: string): Record<string, string>[] {
     return row;
   });
 }
+
+/* ── XLSX Import ── */
+export async function parseXlsxImport(file: File): Promise<Record<string, string>[]> {
+  const XLSX = await import('xlsx');
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data, { type: 'array' });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
+}
+
+/* ── XLSX Template Download ── */
+export async function downloadXlsxTemplate(): Promise<void> {
+  const XLSX = await import('xlsx');
+  const headers = [
+    'jointNumber', 'projectNumber', 'joint', 'title', 'description',
+    'status', 'priority', 'jointType', 'drawing', 'drawingRev',
+    'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
+    'materialType1', 'materialType2', 'wps', 'ndt', 'pwht',
+    'assignedTo', 'estimatedHours', 'notes'
+  ];
+  const ws = XLSX.utils.aoa_to_sheet([headers]);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Import Template');
+  XLSX.writeFile(wb, 'weld-planning-import-template.xlsx');
+}

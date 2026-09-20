@@ -22,6 +22,7 @@ import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.co
 import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
 import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detail.component';
 import { WeldPlanningAdminComponent } from './weld-planning/weld-planning-admin.component';
+import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mass-edit.component';
 
 
 export const routes: Routes = [
@@ -49,6 +50,7 @@ export const routes: Routes = [
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'Weld Planning' },
   { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'Create Joint Plan' },
   { path: 'weld-planning/admin', component: WeldPlanningAdminComponent, title: 'Weld Planning Admin' },
+  { path: 'weld-planning/import', component: WeldPlanningMassEditComponent, title: 'Mass Import Joint Plans' },
   { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'Joint Plan Details' },
   { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'Edit Joint Plan' },
 
