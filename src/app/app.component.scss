@@ -78,6 +78,15 @@
     transition: background 0.15s;
   }
   li a:hover { background: var(--app-muted); }
+
+  /* Divider line between sections within a dropdown */
+  .dropdown-divider {
+    height: 1px;
+    background: var(--app-border);
+    margin: 0.25rem 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
 }
 
 .content { flex: 1; padding: 1.5rem; display: flex; flex-direction: column; min-height: 0; overflow-x: hidden; }

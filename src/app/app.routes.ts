@@ -47,7 +47,7 @@ export const routes: Routes = [
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'Weld Planning' },
-  { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'New Joint Plan' },
+  { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'Create Joint Plan' },
   { path: 'weld-planning/admin', component: WeldPlanningAdminComponent, title: 'Weld Planning Admin' },
   { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'Joint Plan Details' },
   { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'Edit Joint Plan' },

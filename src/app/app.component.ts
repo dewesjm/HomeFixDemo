@@ -38,19 +38,15 @@ export class AppComponent {
   private swUpdate = inject(SwUpdate);
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
-  adminOpen = signal(false);
-  wpAdminOpen = signal(false);
-  waAdminOpen = signal(false);
-  waAdminOpen2 = signal(false);
-  weAdminOpen = signal(false);
-  weAdminOpen2 = signal(false);
+  ewrOpen = signal(false);
+  wpOpen = signal(false);
+  waOpen = signal(false);
+  weOpen = signal(false);
 
-  @ViewChild('adminDetails') adminDetails?: ElementRef<HTMLDetailsElement>;
-  @ViewChild('wpAdminDetails') wpAdminDetails?: ElementRef<HTMLDetailsElement>;
-  @ViewChild('waAdminDetails') waAdminDetails?: ElementRef<HTMLDetailsElement>;
-  @ViewChild('waAdminDetails2') waAdminDetails2?: ElementRef<HTMLDetailsElement>;
-  @ViewChild('weAdminDetails') weAdminDetails?: ElementRef<HTMLDetailsElement>;
-  @ViewChild('weAdminDetails2') weAdminDetails2?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('ewrDetails') ewrDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('wpDetails') wpDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
@@ -60,12 +56,10 @@ export class AppComponent {
           if (ref?.nativeElement) ref.nativeElement.open = false;
         }
       };
-      closeIfOutside(this.adminOpen(), v => this.adminOpen.set(v), this.adminDetails);
-      closeIfOutside(this.wpAdminOpen(), v => this.wpAdminOpen.set(v), this.wpAdminDetails);
-      closeIfOutside(this.waAdminOpen(), v => this.waAdminOpen.set(v), this.waAdminDetails);
-      closeIfOutside(this.waAdminOpen2(), v => this.waAdminOpen2.set(v), this.waAdminDetails2);
-      closeIfOutside(this.weAdminOpen(), v => this.weAdminOpen.set(v), this.weAdminDetails);
-      closeIfOutside(this.weAdminOpen2(), v => this.weAdminOpen2.set(v), this.weAdminDetails2);
+      closeIfOutside(this.ewrOpen(), v => this.ewrOpen.set(v), this.ewrDetails);
+      closeIfOutside(this.wpOpen(), v => this.wpOpen.set(v), this.wpDetails);
+      closeIfOutside(this.waOpen(), v => this.waOpen.set(v), this.waDetails);
+      closeIfOutside(this.weOpen(), v => this.weOpen.set(v), this.weDetails);
     });
 
     if (this.swUpdate.isEnabled) {

@@ -34,7 +34,7 @@ type Row = JointPlan;
           <span class="match-count">{{ table.total() }} joint plans</span>
           <span class="spacer"></span>
           <button class="btn btn-sm btn-primary" (click)="createNew()">
-            <svg lucidePlus class="size-4"></svg> New Joint Plan
+            <svg lucidePlus class="size-4"></svg> Create
           </button>
           <button class="btn btn-sm" (click)="exportCsv()">
             <svg lucideFileSpreadsheet class="size-4"></svg> Export
