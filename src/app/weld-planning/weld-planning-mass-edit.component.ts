@@ -1,17 +1,19 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import {
-  addJointPlan, parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
-  JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS, JOINT_TYPE_OPTIONS,
-  type JointPlan, type JointStatus, type JointPriority, type JointType
+  addJointPlan, updateJointPlan, jointPlans, getJointPlan,
+  parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
+  JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
+  type JointPlan, type JointStatus, type JointType
 } from './weld-planning.data';
 
 type EditableRow = {
+  _id: string;
   _raw: Record<string, string>;
   _errors: string[];
   _saved: boolean;
@@ -40,8 +42,6 @@ type EditableRow = {
   createdBy: string;
 };
 
-const VALID_STATUSES = new Set(['planned', 'in-progress', 'completed', 'on-hold', 'cancelled']);
-const VALID_PRIORITIES = new Set(['low', 'medium', 'high', 'critical']);
 const VALID_TYPES = new Set(['pipe', 'structural']);
 
 @Component({
@@ -55,32 +55,29 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
           <svg lucideArrowLeft class="size-4"></svg> Weld Planning
         </a>
         <span style="color: var(--app-text-muted)">/</span>
-        <h2 class="section-title">Mass Import</h2>
-        <span class="spacer"></span>
-        <span class="match-count">{{ rows().length }} rows</span>
-        <button class="btn btn-sm" (click)="downloadTemplate()">
-          Download Template
-        </button>
+        <h2 class="section-title">{{ isEditMode() ? 'Mass Edit' : 'Import Joints' }}</h2>
       </div>
 
       <!-- File picker (hidden) -->
       <input #fileInput type="file" accept=".xlsx,.csv" style="display: none" (change)="onFileSelected($event)" />
 
-      <!-- Status bar -->
+      <!-- Actions bar -->
       <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap">
         @if (loading()) {
-          <span style="color: var(--app-text-muted)">Processing file...</span>
+          <span style="color: var(--app-text-muted)">Processing...</span>
         }
         @if (rows().length > 0) {
-          <span class="badge badge-info badge-sm">{{ rows().length }} rows loaded</span>
-          <span class="badge badge-sm" [class]="errorCount() > 0 ? 'badge-error' : 'badge-success'">
+          <span style="font-size: 0.85rem; color: var(--app-text-muted)">{{ rows().length }} rows</span>
+          <span style="font-size: 0.85rem" [style.color]="errorCount() > 0 ? 'var(--color-error)' : 'var(--color-success)'">
             {{ errorCount() }} errors
           </span>
-          <span class="badge badge-sm badge-success">{{ savedCount() }} saved</span>
+          <span style="font-size: 0.85rem; color: var(--color-success)">{{ savedCount() }} saved</span>
         }
         <span class="spacer"></span>
-        @if (rows().length === 0 && !loading()) {
-          <button class="btn btn-sm" (click)="fileInput.click()">Choose File (.xlsx or .csv)</button>
+        @if (rows().length === 0 && !loading() && !isEditMode()) {
+          <button class="btn btn-sm" (click)="downloadTemplate()">Download Template</button>
+          <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
+          <button class="btn btn-sm btn-primary" (click)="loadSample()">Use Sample</button>
         }
         @if (rows().length > 0 && savedCount() === 0) {
           <button class="btn btn-sm btn-primary" (click)="saveAll()" [disabled]="saving()">
@@ -98,7 +95,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
             <thead>
               <tr>
                 <th style="min-width: 3rem; text-align: center">#</th>
-                <th style="min-width: 4rem">Status</th>
                 <th style="min-width: 6rem">Joint #</th>
                 <th style="min-width: 5rem">Project</th>
                 <th style="min-width: 5rem">Joint</th>
@@ -108,7 +104,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                 <th style="min-width: 6rem">Design</th>
                 <th style="min-width: 5rem">Weld</th>
                 <th style="min-width: 6rem">Status</th>
-                <th style="min-width: 5rem">Priority</th>
                 <th style="min-width: 6rem">Material 1</th>
                 <th style="min-width: 6rem">WPS</th>
                 <th style="min-width: 10rem">Notes</th>
@@ -117,14 +112,15 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
             <tbody>
               @for (row of rows(); track $index; let i = $index) {
                 <tr [class]="row._saved ? 'table-success' : (row._errors.length > 0 ? 'table-error' : '')">
-                  <td style="text-align: center; font-size: 0.75rem; color: var(--app-text-muted)">{{ i + 1 }}</td>
-                  <td style="text-align: center">
+                  <td style="text-align: center; font-size: 0.75rem; color: var(--app-text-muted)">
                     @if (row._saved) {
                       <svg lucideCheckCircle class="size-4" style="color: var(--color-success)"></svg>
                     } @else if (row._errors.length > 0) {
                       <div [title]="row._errors.join(', ')" style="cursor: help">
                         <svg lucideAlertTriangle class="size-4" style="color: var(--color-error)"></svg>
                       </div>
+                    } @else {
+                      {{ i + 1 }}
                     }
                   </td>
                   <td>
@@ -163,13 +159,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                     </select>
                   </td>
                   <td>
-                    <select class="select select-xs w-full" [(ngModel)]="row.priority">
-                      @for (p of priorities; track p.value) {
-                        <option [value]="p.value">{{ p.label }}</option>
-                      }
-                    </select>
-                  </td>
-                  <td>
                     <input class="input input-xs w-full" [(ngModel)]="row.materialType1" />
                   </td>
                   <td>
@@ -184,36 +173,87 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
           </table>
         </div>
       } @else if (!loading()) {
-        <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
-          <p>Import a .xlsx or .csv file to mass-load joint plans.</p>
-          <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem">
-            <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
-            <button class="btn btn-sm btn-ghost" (click)="downloadTemplate()" style="text-decoration: underline">
-              Download Template
-            </button>
-            <button class="btn btn-sm btn-primary" (click)="loadSample()">
-              Use Sample
-            </button>
+        @if (isEditMode()) {
+          <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
+            <p>No joint plans to edit.</p>
           </div>
-        </div>
+        } @else {
+          <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
+            <p>Import a .xlsx or .csv file to mass-load joint plans.</p>
+            <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem">
+              <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
+              <button class="btn btn-sm btn-ghost" (click)="downloadTemplate()" style="text-decoration: underline">
+                Download Template
+              </button>
+              <button class="btn btn-sm btn-primary" (click)="loadSample()">
+                Use Sample
+              </button>
+            </div>
+          </div>
+        }
       }
     </div>
   `
 })
-export class WeldPlanningMassEditComponent {
+export class WeldPlanningMassEditComponent implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 
   rows = signal<EditableRow[]>([]);
   loading = signal(false);
   saving = signal(false);
+  isEditMode = signal(false);
 
   statuses = JOINT_STATUS_OPTIONS;
-  priorities = JOINT_PRIORITY_OPTIONS;
   jointTypes = JOINT_TYPE_OPTIONS;
 
   errorCount = signal(0);
   savedCount = signal(0);
+
+  ngOnInit() {
+    if (this.route.snapshot.queryParamMap.get('mode') === 'edit') {
+      this.isEditMode.set(true);
+      this.loadExistingRows();
+    }
+  }
+
+  loadExistingRows() {
+    const all = jointPlans();
+    const editable: EditableRow[] = all.map(j => ({
+      _id: j.id,
+      _raw: {},
+      _errors: [],
+      _saved: false,
+      jointNumber: j.jointNumber,
+      projectNumber: j.projectNumber,
+      joint: j.joint,
+      title: j.title,
+      description: j.description,
+      status: j.status,
+      priority: j.priority || 'medium',
+      jointType: j.jointType,
+      drawing: j.drawing,
+      drawingRev: j.drawingRev,
+      jointDesign: j.jointDesign,
+      weldType: j.weldType,
+      pipeSize: j.pipeSize,
+      wallThickness: j.wallThickness,
+      materialType1: j.materialType1,
+      materialType2: j.materialType2,
+      wps: j.wps,
+      ndt: j.ndt,
+      pwht: j.pwht,
+      assignedTo: j.assignedTo,
+      estimatedHours: j.estimatedHours,
+      notes: j.notes,
+      createdBy: j.createdBy,
+    }));
+    editable.forEach(row => this.validateRow(row));
+    this.rows.set(editable);
+    this.errorCount.set(0);
+    this.savedCount.set(0);
+  }
 
   async onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -232,13 +272,14 @@ export class WeldPlanningMassEditComponent {
 
       const editable: EditableRow[] = parsed.map(raw => {
         const row: EditableRow = {
+          _id: '',
           _raw: raw, _errors: [], _saved: false,
           jointNumber: raw['jointNumber'] || raw['joint_number'] || '',
           projectNumber: raw['projectNumber'] || raw['project_number'] || '',
           joint: raw['joint'] || '',
           title: raw['title'] || '',
           description: raw['description'] || '',
-          status: raw['status'] || 'planned',
+          status: raw['status'] || 'development',
           priority: raw['priority'] || 'medium',
           jointType: raw['jointType'] || raw['joint_type'] || 'pipe',
           drawing: raw['drawing'] || '',
@@ -277,9 +318,7 @@ export class WeldPlanningMassEditComponent {
     const errors: string[] = [];
     if (!row.jointNumber) errors.push('Joint # required');
     if (!row.title) errors.push('Title required');
-    if (!VALID_STATUSES.has(row.status)) errors.push('Invalid status');
-    if (!VALID_PRIORITIES.has(row.priority)) errors.push('Invalid priority');
-    if (!VALID_TYPES.has(row.jointType)) errors.push('Invalid joint type (must be pipe or structural)');
+    if (!VALID_TYPES.has(row.jointType)) errors.push('Invalid joint type');
     row._errors = errors;
   }
 
@@ -291,31 +330,58 @@ export class WeldPlanningMassEditComponent {
 
     for (const row of pending) {
       try {
-        addJointPlan({
-          jointNumber: row.jointNumber,
-          projectNumber: row.projectNumber,
-          joint: row.joint,
-          title: row.title,
-          description: row.description,
-          status: row.status as JointStatus,
-          priority: row.priority as JointPriority,
-          jointType: row.jointType as JointType,
-          drawing: row.drawing,
-          drawingRev: row.drawingRev,
-          jointDesign: row.jointDesign,
-          weldType: row.weldType,
-          pipeSize: row.pipeSize,
-          wallThickness: row.wallThickness,
-          materialType1: row.materialType1,
-          materialType2: row.materialType2,
-          wps: row.wps,
-          ndt: row.ndt,
-          pwht: row.pwht,
-          assignedTo: row.assignedTo,
-          estimatedHours: row.estimatedHours,
-          notes: row.notes,
-          createdBy: 'Import',
-        });
+        if (this.isEditMode() && row._id) {
+          updateJointPlan(row._id, {
+            jointNumber: row.jointNumber,
+            projectNumber: row.projectNumber,
+            joint: row.joint,
+            title: row.title,
+            description: row.description,
+            status: row.status as JointStatus,
+            priority: row.priority as any,
+            jointType: row.jointType as JointType,
+            drawing: row.drawing,
+            drawingRev: row.drawingRev,
+            jointDesign: row.jointDesign,
+            weldType: row.weldType,
+            pipeSize: row.pipeSize,
+            wallThickness: row.wallThickness,
+            materialType1: row.materialType1,
+            materialType2: row.materialType2,
+            wps: row.wps,
+            ndt: row.ndt,
+            pwht: row.pwht,
+            assignedTo: row.assignedTo,
+            estimatedHours: row.estimatedHours,
+            notes: row.notes,
+          });
+        } else {
+          addJointPlan({
+            jointNumber: row.jointNumber,
+            projectNumber: row.projectNumber,
+            joint: row.joint,
+            title: row.title,
+            description: row.description,
+            status: row.status as JointStatus,
+            priority: row.priority as any,
+            jointType: row.jointType as JointType,
+            drawing: row.drawing,
+            drawingRev: row.drawingRev,
+            jointDesign: row.jointDesign,
+            weldType: row.weldType,
+            pipeSize: row.pipeSize,
+            wallThickness: row.wallThickness,
+            materialType1: row.materialType1,
+            materialType2: row.materialType2,
+            wps: row.wps,
+            ndt: row.ndt,
+            pwht: row.pwht,
+            assignedTo: row.assignedTo,
+            estimatedHours: row.estimatedHours,
+            notes: row.notes,
+            createdBy: 'Import',
+          });
+        }
         row._saved = true;
         saved++;
       } catch {
@@ -326,8 +392,9 @@ export class WeldPlanningMassEditComponent {
     this.savedCount.set(this.rows().filter(r => r._saved).length);
     this.errorCount.set(this.rows().filter(r => !r._saved && r._errors.length > 0).length);
 
+    const action = this.isEditMode() ? 'updated' : 'created';
     if (saved > 0) {
-      this.toast.add({ severity: 'success', summary: 'Saved', detail: `${saved} joint plans created` });
+      this.toast.add({ severity: 'success', summary: 'Saved', detail: `${saved} joint plans ${action}` });
     }
     if (failed > 0) {
       this.toast.add({ severity: 'error', summary: 'Failed', detail: `${failed} rows failed to save` });
@@ -343,11 +410,11 @@ export class WeldPlanningMassEditComponent {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { jointNumber: 'JP-001', projectNumber: 'PRJ-001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'planned', priority: 'high', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: 'Mike R.', estimatedHours: 4.5, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
-      { jointNumber: 'JP-002', projectNumber: 'PRJ-001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'in-progress', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: 'Sara L.', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
-      { jointNumber: 'JP-003', projectNumber: 'PRJ-002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'planned', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: 'Tom B.', estimatedHours: 1.5, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
-      { jointNumber: 'JP-004', projectNumber: 'PRJ-002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'on-hold', priority: 'critical', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: 'Priya N.', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
-      { jointNumber: 'JP-005', projectNumber: 'PRJ-003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'planned', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: 'Dave K.', estimatedHours: 1.0, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-001', projectNumber: 'PRJ-001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: '', estimatedHours: 4.5, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-002', projectNumber: 'PRJ-001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: '', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-003', projectNumber: 'PRJ-002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.5, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-004', projectNumber: 'PRJ-002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: '', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-005', projectNumber: 'PRJ-003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.0, notes: '', createdBy: 'Sample' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
