@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
-import { LucideSave, LucideX } from '@lucide/angular';
+import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import {
@@ -25,7 +25,7 @@ const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Lui
 @Component({
   selector: 'app-weld-planning-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideX],
+  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideX, LucideArrowLeft],
   templateUrl: './weld-planning-form.component.html'
 })
 export class WeldPlanningFormComponent implements OnInit {

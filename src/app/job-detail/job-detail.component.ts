@@ -1,6 +1,6 @@
 //This is the job details page, lot of stuff in here
 
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -32,7 +32,7 @@ import { requiresTraceability } from '../data/mcl-traceability';
   ],
   templateUrl: './job-detail.component.html'
 })
-export class JobDetailComponent {
+export class JobDetailComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private wfService = inject(WorkflowService);
@@ -40,6 +40,28 @@ export class JobDetailComponent {
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
+
+  /* Reset fit stage stepType + inputs on navigation so it reverts to default */
+  ngOnDestroy() {
+    if (!this.job || !this.wf) return;
+    const templates = getTemplates()[this.job.trade] ?? [];
+    const fitTpl = templates.find(t => t.id === 'fit');
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map(s => {
+        if (s.id !== 'fit') return s;
+        if (s.stepType === 'fit') return s;
+        return {
+          ...s,
+          stepType: 'fit',
+          fields: (fitTpl?.fields ?? []).map(f => ({ ...f })),
+          signoffFields: (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
+          inputs: {},
+          signoffInputs: {},
+        };
+      })
+    }));
+  }
 
   /* new-component form model */
   newName = signal('');

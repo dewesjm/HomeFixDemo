@@ -2,7 +2,7 @@
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload } from '@lucide/angular';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit } from '@lucide/angular';
 
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { TableState, inArray } from '../shared/table-state';
@@ -23,7 +23,7 @@ type Row = JointPlan;
   imports: [
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit
   ],
   template: `
     <div style="max-width: 100%">
@@ -35,6 +35,9 @@ type Row = JointPlan;
           </button>
           <button class="btn btn-sm" (click)="importFile()">
             <svg lucideUpload class="size-4"></svg> Import
+          </button>
+          <button class="btn btn-sm" (click)="massEdit()">
+            <svg lucideFileEdit class="size-4"></svg> Mass Edit
           </button>
           <button class="btn btn-sm" (click)="exportCsv()">
             <svg lucideFileSpreadsheet class="size-4"></svg> Export
@@ -174,6 +177,10 @@ export class WeldPlanningListComponent {
 
   importFile() {
     this.router.navigate(['/weld-planning/import']);
+  }
+
+  massEdit() {
+    this.router.navigate(['/weld-planning/import'], { queryParams: { mode: 'edit' } });
   }
 
   editRow(row: JointPlan) {
