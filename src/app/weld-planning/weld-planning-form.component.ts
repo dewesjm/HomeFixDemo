@@ -7,9 +7,9 @@ import { LucideSave, LucideX } from '@lucide/angular';
 import { ToastService } from '../shared/toast.service';
 import {
   addJointPlan, updateJointPlan, getJointPlan,
-  JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS,
+  JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS, JOINT_TYPE_OPTIONS,
   adminJointDesigns, adminNdtOptions, adminPwhtOptions,
-  type JointPlan, type JointStatus, type JointPriority
+  type JointPlan, type JointStatus, type JointPriority, type JointType
 } from './weld-planning.data';
 
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
@@ -18,7 +18,8 @@ const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
-const LOCATIONS = ['Shop A', 'Shop B', 'Building 4', 'Field - Onsite', 'Drydock Bay 1', 'Drydock Bay 2'];
+const PROJECTS = ['PRJ-001', 'PRJ-002', 'PRJ-003', 'PRJ-004', 'PRJ-005'];
+const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 
 @Component({
@@ -36,24 +37,27 @@ export class WeldPlanningFormComponent implements OnInit {
   jointId = signal('');
 
   form: JointPlan = {
-    id: '', jointNumber: '', title: '', description: '',
-    status: 'planned', priority: 'medium',
+    id: '', jointNumber: '', projectNumber: '', joint: '',
+    title: '', description: '',
+    status: 'planned', priority: 'medium', jointType: 'pipe',
+    drawing: '', drawingRev: '',
     jointDesign: '', weldType: '', pipeSize: '', wallThickness: '',
     materialType1: '', materialType2: '', wps: '', ndt: '', pwht: '',
-    drawing: '', drawingRev: '', location: '', assignedTo: '',
-    scheduledDate: '', estimatedHours: 0, notes: '',
+    assignedTo: '', estimatedHours: 0, notes: '',
     createdBy: 'User', createdAt: '', updatedAt: ''
   };
 
   statusOptions = JOINT_STATUS_OPTIONS;
   priorityOptions = JOINT_PRIORITY_OPTIONS;
+  jointTypeOptions = JOINT_TYPE_OPTIONS;
   pipeSizes = PIPE_SIZES;
   wallThicknesses = WALL_THICKNESSES;
   materials1 = MATERIALS_1;
   materials2 = MATERIALS_2;
   weldTypes = WELD_TYPES;
   wpsPool = WPS_POOL;
-  locations = LOCATIONS;
+  projects = PROJECTS;
+  jointsPool = JOINTS_POOL;
   technicians = TECHNICIANS;
 
   designOptions = adminJointDesigns;
@@ -89,15 +93,6 @@ export class WeldPlanningFormComponent implements OnInit {
       this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.jointNumber} created` });
     }
     this.router.navigate(['/weld-planning']);
-  }
-
-  scheduledDateValue(): string {
-    if (!this.form.scheduledDate) return '';
-    return this.form.scheduledDate.substring(0, 10);
-  }
-
-  onDateChange(val: string) {
-    this.form.scheduledDate = val ? new Date(val).toISOString() : '';
   }
 
   cancel() {

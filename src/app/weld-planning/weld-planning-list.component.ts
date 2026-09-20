@@ -10,7 +10,7 @@ import { downloadCsv } from '../data/export-csv';
 import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
 import {
-  jointPlans, jointPlanStats, deleteJointPlan,
+  jointPlans, deleteJointPlan,
   JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS,
   JOINT_PLAN_CSV_COLUMNS, type JointPlan, type JointStatus, type JointPriority
 } from './weld-planning.data';
@@ -28,7 +28,6 @@ type Row = JointPlan;
   template: `
     <div class="table-page-wrap">
       <div class="flex-1" style="overflow-y: auto">
-        <!-- Page header -->
         <div class="page-header" style="padding: 0.75rem 1rem">
           <h2 class="section-title">Weld Planning</h2>
           <span class="match-count">{{ table.total() }} joint plans</span>
@@ -41,31 +40,6 @@ type Row = JointPlan;
           </button>
         </div>
 
-        <!-- Stats row -->
-        <div style="display: flex; gap: 0.75rem; padding: 0 1rem; margin-bottom: 0.75rem; flex-wrap: wrap">
-          <div class="stat-box">
-            <div style="font-size: 1.25rem; font-weight: 700">{{ stats().total }}</div>
-            <div style="font-size: 0.75rem; color: var(--app-text-muted)">Total</div>
-          </div>
-          <div class="stat-box" (click)="filterByStatus('planned')" style="cursor: pointer">
-            <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-info)">{{ stats().planned }}</div>
-            <div style="font-size: 0.75rem; color: var(--app-text-muted)">Planned</div>
-          </div>
-          <div class="stat-box" (click)="filterByStatus('in-progress')" style="cursor: pointer">
-            <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-warning)">{{ stats().inProgress }}</div>
-            <div style="font-size: 0.75rem; color: var(--app-text-muted)">In Progress</div>
-          </div>
-          <div class="stat-box" (click)="filterByStatus('completed')" style="cursor: pointer">
-            <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-success)">{{ stats().completed }}</div>
-            <div style="font-size: 0.75rem; color: var(--app-text-muted)">Completed</div>
-          </div>
-          <div class="stat-box" (click)="filterByStatus('on-hold')" style="cursor: pointer">
-            <div style="font-size: 1.25rem; font-weight: 700; color: var(--color-warning)">{{ stats().onHold }}</div>
-            <div style="font-size: 0.75rem; color: var(--app-text-muted)">On Hold</div>
-          </div>
-        </div>
-
-        <!-- Search + filters -->
         <div class="facet-row" style="margin: 0 1rem 0.75rem">
           <div style="position: relative; flex: 1 1 280px">
             <svg lucideSearch class="size-4" style="position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--app-text-muted)"></svg>
@@ -94,22 +68,24 @@ type Row = JointPlan;
           </button>
         </div>
 
-        <!-- Table -->
         <div style="overflow-x: auto; padding: 0 1rem">
           <table class="table table-sm">
             <thead>
               <tr>
-                <th (click)="table.toggleSort('jointNumber')" style="cursor: pointer; min-width: 6rem">
-                  Joint # {{ sortIcon('jointNumber') }}
+                <th (click)="table.toggleSort('id')" style="cursor: pointer; min-width: 5rem">
+                  ID {{ sortIcon('id') }}
                 </th>
-                <th (click)="table.toggleSort('title')" style="cursor: pointer; min-width: 12rem">
-                  Title {{ sortIcon('title') }}
+                <th (click)="table.toggleSort('projectNumber')" style="cursor: pointer; min-width: 6rem">
+                  Project {{ sortIcon('projectNumber') }}
                 </th>
-                <th (click)="table.toggleSort('status')" style="cursor: pointer; min-width: 7rem">
-                  Status {{ sortIcon('status') }}
+                <th (click)="table.toggleSort('joint')" style="cursor: pointer; min-width: 5rem">
+                  Joint {{ sortIcon('joint') }}
                 </th>
-                <th (click)="table.toggleSort('priority')" style="cursor: pointer; min-width: 6rem">
-                  Priority {{ sortIcon('priority') }}
+                <th (click)="table.toggleSort('jointType')" style="cursor: pointer; min-width: 6rem">
+                  Type {{ sortIcon('jointType') }}
+                </th>
+                <th (click)="table.toggleSort('drawing')" style="cursor: pointer; min-width: 6rem">
+                  Drawing {{ sortIcon('drawing') }}
                 </th>
                 <th (click)="table.toggleSort('jointDesign')" style="cursor: pointer; min-width: 6rem">
                   Design {{ sortIcon('jointDesign') }}
@@ -117,17 +93,14 @@ type Row = JointPlan;
                 <th (click)="table.toggleSort('weldType')" style="cursor: pointer; min-width: 5rem">
                   Weld {{ sortIcon('weldType') }}
                 </th>
-                <th (click)="table.toggleSort('pipeSize')" style="cursor: pointer; min-width: 5rem">
-                  Size {{ sortIcon('pipeSize') }}
+                <th (click)="table.toggleSort('status')" style="cursor: pointer; min-width: 7rem">
+                  Status {{ sortIcon('status') }}
+                </th>
+                <th (click)="table.toggleSort('priority')" style="cursor: pointer; min-width: 6rem">
+                  Priority {{ sortIcon('priority') }}
                 </th>
                 <th (click)="table.toggleSort('assignedTo')" style="cursor: pointer; min-width: 7rem">
                   Assigned {{ sortIcon('assignedTo') }}
-                </th>
-                <th (click)="table.toggleSort('scheduledDate')" style="cursor: pointer; min-width: 7rem">
-                  Scheduled {{ sortIcon('scheduledDate') }}
-                </th>
-                <th (click)="table.toggleSort('location')" style="cursor: pointer; min-width: 8rem">
-                  Location {{ sortIcon('location') }}
                 </th>
                 <th style="min-width: 7rem">Actions</th>
               </tr>
@@ -135,12 +108,17 @@ type Row = JointPlan;
             <tbody>
               @for (row of table.paged(); track row.id) {
                 <tr>
-                  <td class="mono fw-bold">{{ row.jointNumber }}</td>
+                  <td class="mono fw-bold">{{ row.id }}</td>
+                  <td>{{ row.projectNumber }}</td>
+                  <td>{{ row.joint }}</td>
                   <td>
-                    <a [routerLink]="['/weld-planning', row.id]" class="link link-primary" style="text-decoration: none">
-                      {{ row.title }}
-                    </a>
+                    <span class="badge badge-sm" [class]="row.jointType === 'pipe' ? 'badge-info' : 'badge-warning'">
+                      {{ row.jointType }}
+                    </span>
                   </td>
+                  <td class="mono">{{ row.drawing }}</td>
+                  <td class="mono">{{ row.jointDesign }}</td>
+                  <td>{{ row.weldType }}</td>
                   <td>
                     <span class="badge badge-sm" [class]="statusBadgeClass(row.status)">
                       {{ row.status }}
@@ -151,12 +129,7 @@ type Row = JointPlan;
                       {{ row.priority }}
                     </span>
                   </td>
-                  <td class="mono">{{ row.jointDesign }}</td>
-                  <td>{{ row.weldType }}</td>
-                  <td>{{ row.pipeSize }}</td>
                   <td>{{ row.assignedTo }}</td>
-                  <td>{{ formatDate(row.scheduledDate) }}</td>
-                  <td>{{ row.location }}</td>
                   <td>
                     <div class="row-tight">
                       <a [routerLink]="['/weld-planning', row.id]"
@@ -192,7 +165,6 @@ export class WeldPlanningListComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
-  stats = jointPlanStats;
   statusOptions = JOINT_STATUS_OPTIONS;
   priorityOptions = JOINT_PRIORITY_OPTIONS;
 
@@ -200,7 +172,7 @@ export class WeldPlanningListComponent {
   priorityFilter = '';
 
   table = new TableState<Row>(
-    ['jointNumber', 'title', 'jointDesign', 'weldType', 'assignedTo', 'location'],
+    ['id', 'projectNumber', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType', 'assignedTo'],
     {
       status: inArray,
       priority: inArray,
@@ -222,11 +194,6 @@ export class WeldPlanningListComponent {
 
   onPriorityFilterChange(val: string) {
     this.table.setColumnFilter('priority', val ? [val] : []);
-  }
-
-  filterByStatus(status: JointStatus) {
-    this.statusFilter = status;
-    this.table.setColumnFilter('status', [status]);
   }
 
   clearFilters() {
@@ -258,11 +225,6 @@ export class WeldPlanningListComponent {
   exportCsv() {
     downloadCsv('weld-planning-export', JOINT_PLAN_CSV_COLUMNS, this.table.sorted());
     this.toast.add({ severity: 'info', summary: 'Exported', detail: 'CSV download started' });
-  }
-
-  formatDate(iso: string): string {
-    if (!iso) return '';
-    return new Date(iso).toLocaleDateString();
   }
 
   statusBadgeClass(status: JointStatus): string {

@@ -12,22 +12,25 @@
       </button>
     </div>
 
-    <!-- Status & Priority badges -->
     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
       <span class="badge" [class]="statusBadgeClass(j.status)">{{ j.status }}</span>
       <span class="badge" [class]="priorityBadgeClass(j.priority)">{{ j.priority }}</span>
-      @if (j.pipeWeldJobId) {
-        <a [routerLink]="['/jobs', j.pipeWeldJobId]" class="badge badge-outline badge-sm" style="text-decoration: none; cursor: pointer">
-          Linked Job: {{ j.pipeWeldJobId }}
-        </a>
-      }
+      <span class="badge badge-sm" [class]="j.jointType === 'pipe' ? 'badge-info' : 'badge-warning'">
+        {{ j.jointType }}
+      </span>
     </div>
 
     <div class="panel">
       <div class="panel-title">Basic Information</div>
       <div class="detail-grid inline">
+        <div><div class="meta">ID</div><span class="mono fw-bold">{{ j.id }}</span></div>
+        <div><div class="meta">Joint Number</div><span class="mono">{{ j.jointNumber }}</span></div>
+        <div><div class="meta">Project</div><span>{{ j.projectNumber || '-' }}</span></div>
+        <div><div class="meta">Joint</div><span>{{ j.joint || '-' }}</span></div>
         <div><div class="meta">Title</div><span>{{ j.title }}</span></div>
         <div><div class="meta">Description</div><span>{{ j.description || '-' }}</span></div>
+        <div><div class="meta">Drawing</div><span class="mono">{{ j.drawing || '-' }}</span></div>
+        <div><div class="meta">Drawing Rev</div><span>{{ j.drawingRev || '-' }}</span></div>
         <div><div class="meta">Created</div><span>{{ formatDate(j.createdAt) }}</span></div>
         <div><div class="meta">Updated</div><span>{{ formatDate(j.updatedAt) }}</span></div>
         <div><div class="meta">Created By</div><span>{{ j.createdBy }}</span></div>
@@ -39,24 +42,16 @@
       <div class="detail-grid inline">
         <div><div class="meta">Joint Design</div><span class="mono fw-bold">{{ j.jointDesign }}</span></div>
         <div><div class="meta">Weld Type</div><span>{{ j.weldType }}</span></div>
-        <div><div class="meta">Pipe Size</div><span>{{ j.pipeSize || '-' }}</span></div>
-        <div><div class="meta">Wall Thickness</div><span>{{ j.wallThickness || '-' }}</span></div>
+        @if (j.jointType === 'pipe') {
+          <div><div class="meta">Pipe Size</div><span>{{ j.pipeSize || '-' }}</span></div>
+          <div><div class="meta">Wall Thickness</div><span>{{ j.wallThickness || '-' }}</span></div>
+        }
         <div><div class="meta">Material 1</div><span>{{ j.materialType1 || '-' }}</span></div>
         <div><div class="meta">Material 2</div><span>{{ j.materialType2 || '-' }}</span></div>
         <div><div class="meta">WPS</div><span class="mono">{{ j.wps || '-' }}</span></div>
         <div><div class="meta">NDT</div><span>{{ j.ndt || '-' }}</span></div>
         <div><div class="meta">PWHT</div><span>{{ j.pwht || '-' }}</span></div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-title">Scheduling &amp; Location</div>
-      <div class="detail-grid inline">
-        <div><div class="meta">Drawing</div><span class="mono">{{ j.drawing || '-' }}</span></div>
-        <div><div class="meta">Drawing Rev</div><span>{{ j.drawingRev || '-' }}</span></div>
-        <div><div class="meta">Location</div><span>{{ j.location || '-' }}</span></div>
         <div><div class="meta">Assigned To</div><span>{{ j.assignedTo || '-' }}</span></div>
-        <div><div class="meta">Scheduled</div><span>{{ formatDate(j.scheduledDate) }}</span></div>
         <div><div class="meta">Est. Hours</div><span>{{ j.estimatedHours }} hrs</span></div>
       </div>
     </div>

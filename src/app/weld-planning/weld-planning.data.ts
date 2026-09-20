@@ -2,7 +2,7 @@
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Keys prefixed with "wp:" to avoid collision with Pipe Welding system. */
-import { signal, computed } from '@angular/core';
+import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
 /* ── Joint Planning ── */
@@ -25,13 +25,25 @@ export const JOINT_PRIORITY_OPTIONS: { label: string; value: JointPriority }[] =
   { label: 'Critical', value: 'critical' },
 ];
 
+export type JointType = 'pipe' | 'structural';
+
+export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
+  { label: 'Pipe', value: 'pipe' },
+  { label: 'Structural', value: 'structural' },
+];
+
 export interface JointPlan {
   id: string;
   jointNumber: string;
+  projectNumber: string;
+  joint: string;
   title: string;
   description: string;
   status: JointStatus;
   priority: JointPriority;
+  jointType: JointType;
+  drawing: string;
+  drawingRev: string;
   jointDesign: string;
   weldType: string;
   pipeSize: string;
@@ -41,17 +53,12 @@ export interface JointPlan {
   wps: string;
   ndt: string;
   pwht: string;
-  drawing: string;
-  drawingRev: string;
-  location: string;
   assignedTo: string;
-  scheduledDate: string;
   estimatedHours: number;
   notes: string;
   createdBy: string;
   createdAt: string;
   updatedAt: string;
-  pipeWeldJobId?: string;
 }
 
 /* ── Seed data pools ── */
@@ -64,8 +71,9 @@ const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600C/2hr', 'Required - 620C/1hr', 'Pending review'];
-const LOCATIONS = ['Shop A', 'Shop B', 'Building 4', 'Field - Onsite', 'Drydock Bay 1', 'Drydock Bay 2'];
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
+const PROJECTS = ['PRJ-001', 'PRJ-002', 'PRJ-003', 'PRJ-004', 'PRJ-005'];
+const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -91,37 +99,37 @@ function generateSeededJoints(count = 80): JointPlan[] {
   for (let i = 0; i < count; i++) {
     const statuses: JointStatus[] = ['planned', 'in-progress', 'completed', 'on-hold', 'cancelled'];
     const priorities: JointPriority[] = ['low', 'medium', 'high', 'critical'];
-    const dayOffset = Math.floor(rand() * 120) - 30;
-    const scheduledDate = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000);
+    const types: JointType[] = ['pipe', 'structural'];
+    const jt = pick(types);
     const createdAt = new Date(Date.now() - Math.floor(rand() * 60) * 24 * 60 * 60 * 1000);
 
     out.push({
       id: makeId(i + 1),
       jointNumber: `JP-${String(1000 + i).slice(1)}`,
+      projectNumber: pick(PROJECTS),
+      joint: pick(JOINTS_POOL),
       title: `Joint Plan ${String.fromCharCode(65 + (i % 26))}-${i}`,
-      description: `Weld joint plan for ${pick(PIPE_SIZES)} ${pick(JOINT_DESIGNS)} connection`,
+      description: `${jt} weld joint plan for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
       priority: pick(priorities),
+      jointType: jt,
+      drawing: `DWG-${100 + i}`,
+      drawingRev: pick(['A', 'B', 'C', 'D']),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
-      pipeSize: pick(PIPE_SIZES),
-      wallThickness: pick(WALL_THICKNESSES),
+      pipeSize: jt === 'pipe' ? pick(PIPE_SIZES) : '',
+      wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
       materialType1: pick(MATERIALS_1),
       materialType2: pick(MATERIALS_2),
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
-      drawing: `DWG-${100 + i}`,
-      drawingRev: pick(['A', 'B', 'C', 'D']),
-      location: pick(LOCATIONS),
       assignedTo: pick(TECHNICIANS),
-      scheduledDate: scheduledDate.toISOString(),
       estimatedHours: Math.round((0.5 + rand() * 16) * 10) / 10,
       notes: i % 4 === 0 ? 'Standard weld procedure per WPS' : '',
       createdBy: 'System',
       createdAt: createdAt.toISOString(),
       updatedAt: createdAt.toISOString(),
-      pipeWeldJobId: i % 3 === 0 ? makeId(i + 500) : undefined,
     });
   }
   return out;
@@ -133,7 +141,15 @@ const LS_KEY = 'wp:joint-plans:v1';
 function loadJointPlans(): JointPlan[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return parsed.map((j: any) => ({
+        ...j,
+        jointType: j.jointType || 'pipe',
+        projectNumber: j.projectNumber || '',
+        joint: j.joint || '',
+      }));
+    }
   } catch { /* ignore */ }
   const seeded = generateSeededJoints();
   persistJointPlans(seeded);
@@ -183,18 +199,46 @@ export function getJointPlan(id: string): JointPlan | undefined {
   return jointPlans().find(j => j.id === id);
 }
 
-/* ── Stats (computed) ── */
-export const jointPlanStats = computed(() => {
-  const all = jointPlans();
-  return {
-    total: all.length,
-    planned: all.filter(j => j.status === 'planned').length,
-    inProgress: all.filter(j => j.status === 'in-progress').length,
-    completed: all.filter(j => j.status === 'completed').length,
-    onHold: all.filter(j => j.status === 'on-hold').length,
-    cancelled: all.filter(j => j.status === 'cancelled').length,
-  };
-});
+/* ── Bulk import ── */
+export function importJointPlans(rows: Record<string, string>[]): number {
+  const now = new Date().toISOString();
+  const newJoints: JointPlan[] = rows.map((row, idx) => ({
+    id: (row['id'] as string) || makeId(Date.now() + idx),
+    jointNumber: (row['jointNumber'] || row['joint_number'] || '') as string,
+    projectNumber: (row['projectNumber'] || row['project_number'] || '') as string,
+    joint: (row['joint'] || '') as string,
+    title: (row['title'] || 'Untitled') as string,
+    description: (row['description'] || '') as string,
+    status: (row['status'] || 'planned') as JointStatus,
+    priority: (row['priority'] || 'medium') as JointPriority,
+    jointType: (row['jointType'] || row['joint_type'] || 'pipe') as JointType,
+    drawing: (row['drawing'] || '') as string,
+    drawingRev: (row['drawingRev'] || row['drawing_rev'] || '') as string,
+    jointDesign: (row['jointDesign'] || row['joint_design'] || '') as string,
+    weldType: (row['weldType'] || row['weld_type'] || '') as string,
+    pipeSize: (row['pipeSize'] || row['pipe_size'] || '') as string,
+    wallThickness: (row['wallThickness'] || row['wall_thickness'] || '') as string,
+    materialType1: (row['materialType1'] || row['material_1'] || '') as string,
+    materialType2: (row['materialType2'] || row['material_2'] || '') as string,
+    wps: (row['wps'] || '') as string,
+    ndt: (row['ndt'] || '') as string,
+    pwht: (row['pwht'] || '') as string,
+    assignedTo: (row['assignedTo'] || row['assigned_to'] || '') as string,
+    estimatedHours: parseFloat(row['estimatedHours'] || row['estimated_hours'] || '0') || 0,
+    notes: (row['notes'] || '') as string,
+    createdBy: 'Import',
+    createdAt: (row['createdAt'] || row['created_at'] || now) as string,
+    updatedAt: now,
+  }));
+  let count = 0;
+  jointPlans.update(list => {
+    const next = [...list, ...newJoints];
+    count = newJoints.length;
+    persistJointPlans(next);
+    return next;
+  });
+  return count;
+}
 
 /* ── Admin: Joint Design options (persisted to localStorage) ── */
 const ADMIN_DESIGNS_KEY = 'wp:admin-joint-designs:v1';
@@ -264,10 +308,16 @@ export function persistAdminPwhtOptions(opts: string[]) {
 
 /* ── CSV Export columns ── */
 export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
+  { header: 'ID', value: r => r.id },
   { header: 'Joint #', value: r => r.jointNumber },
+  { header: 'Project', value: r => r.projectNumber },
+  { header: 'Joint', value: r => r.joint },
+  { header: 'Type', value: r => r.jointType },
   { header: 'Title', value: r => r.title },
   { header: 'Status', value: r => r.status },
   { header: 'Priority', value: r => r.priority },
+  { header: 'Drawing', value: r => r.drawing },
+  { header: 'Drawing Rev', value: r => r.drawingRev },
   { header: 'Joint Design', value: r => r.jointDesign },
   { header: 'Weld Type', value: r => r.weldType },
   { header: 'Pipe Size', value: r => r.pipeSize },
@@ -277,10 +327,20 @@ export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
   { header: 'WPS', value: r => r.wps },
   { header: 'NDT', value: r => r.ndt },
   { header: 'PWHT', value: r => r.pwht },
-  { header: 'Drawing', value: r => r.drawing },
-  { header: 'Location', value: r => r.location },
   { header: 'Assigned To', value: r => r.assignedTo },
-  { header: 'Scheduled', value: r => r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString() : '' },
   { header: 'Est. Hours', value: r => r.estimatedHours },
   { header: 'Notes', value: r => r.notes },
 ];
+
+/* ── CSV Import: parse CSV text into row objects ── */
+export function parseCsvImport(text: string): Record<string, string>[] {
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
+  return lines.slice(1).map(line => {
+    const cells = line.split(',').map(c => c.trim().replace(/['"]/g, ''));
+    const row: Record<string, string> = {};
+    headers.forEach((h, i) => { if (cells[i]) row[h] = cells[i]; });
+    return row;
+  });
+}
