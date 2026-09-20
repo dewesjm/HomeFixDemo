@@ -186,12 +186,15 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
       } @else if (!loading()) {
         <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
           <p>Import a .xlsx or .csv file to mass-load joint plans.</p>
-          <p style="font-size: 0.875rem; margin-top: 0.5rem">
+          <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem">
+            <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
             <button class="btn btn-sm btn-ghost" (click)="downloadTemplate()" style="text-decoration: underline">
-              Download template
+              Download Template
             </button>
-            to see expected column headers.
-          </p>
+            <button class="btn btn-sm btn-primary" (click)="loadSample()">
+              Use Sample
+            </button>
+          </div>
         </div>
       }
     </div>
@@ -336,5 +339,20 @@ export class WeldPlanningMassEditComponent {
   async downloadTemplate() {
     await downloadXlsxTemplate();
     this.toast.add({ severity: 'info', summary: 'Downloaded', detail: 'Template file saved' });
+  }
+
+  loadSample() {
+    const sample: EditableRow[] = [
+      { jointNumber: 'JP-001', projectNumber: 'PRJ-001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'planned', priority: 'high', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: 'Mike R.', estimatedHours: 4.5, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+      { jointNumber: 'JP-002', projectNumber: 'PRJ-001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'in-progress', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: 'Sara L.', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+      { jointNumber: 'JP-003', projectNumber: 'PRJ-002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'planned', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: 'Tom B.', estimatedHours: 1.5, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+      { jointNumber: 'JP-004', projectNumber: 'PRJ-002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'on-hold', priority: 'critical', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: 'Priya N.', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+      { jointNumber: 'JP-005', projectNumber: 'PRJ-003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'planned', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: 'Dave K.', estimatedHours: 1.0, notes: '', createdBy: 'Sample', _raw: {}, _errors: [], _saved: false },
+    ];
+    sample.forEach(r => this.validateRow(r));
+    this.rows.set(sample);
+    this.errorCount.set(0);
+    this.savedCount.set(0);
+    this.toast.add({ severity: 'info', summary: 'Sample loaded', detail: '5 sample rows ready to review and save' });
   }
 }
