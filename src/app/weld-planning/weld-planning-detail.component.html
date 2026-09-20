@@ -7,17 +7,19 @@
       <span style="color: var(--app-text-muted)">/</span>
       <h2 class="section-title">{{ j.jointNumber }}</h2>
       <span class="spacer"></span>
-      <button class="btn btn-sm btn-primary" (click)="edit()">
-        <svg lucidePencil class="size-4"></svg> Edit
-      </button>
+      @if (isLocked()) {
+        <span class="badge badge-sm badge-ghost">Locked</span>
+      } @else {
+        <button class="btn btn-sm btn-primary" (click)="edit()">
+          <svg lucidePencil class="size-4"></svg> Edit
+        </button>
+      }
     </div>
 
-    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
-      <span class="badge" [class]="statusBadgeClass(j.status)">{{ j.status }}</span>
-      <span class="badge" [class]="priorityBadgeClass(j.priority)">{{ j.priority }}</span>
-      <span class="badge badge-sm" [class]="j.jointType === 'pipe' ? 'badge-info' : 'badge-warning'">
-        {{ j.jointType }}
-      </span>
+    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem; color: var(--app-text-muted)">
+      <span>{{ j.status }}</span>
+      <span>|</span>
+      <span>{{ j.jointType }}</span>
     </div>
 
     <div class="panel">
@@ -51,7 +53,6 @@
         <div><div class="meta">WPS</div><span class="mono">{{ j.wps || '-' }}</span></div>
         <div><div class="meta">NDT</div><span>{{ j.ndt || '-' }}</span></div>
         <div><div class="meta">PWHT</div><span>{{ j.pwht || '-' }}</span></div>
-        <div><div class="meta">Assigned To</div><span>{{ j.assignedTo || '-' }}</span></div>
         <div><div class="meta">Est. Hours</div><span>{{ j.estimatedHours }} hrs</span></div>
       </div>
     </div>

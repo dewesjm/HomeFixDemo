@@ -7,9 +7,9 @@ import { LucideSave, LucideX } from '@lucide/angular';
 import { ToastService } from '../shared/toast.service';
 import {
   addJointPlan, updateJointPlan, getJointPlan,
-  JOINT_STATUS_OPTIONS, JOINT_PRIORITY_OPTIONS, JOINT_TYPE_OPTIONS,
+  JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
   adminJointDesigns, adminNdtOptions, adminPwhtOptions,
-  type JointPlan, type JointStatus, type JointPriority, type JointType
+  type JointPlan, type JointStatus, type JointType
 } from './weld-planning.data';
 
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
@@ -39,7 +39,7 @@ export class WeldPlanningFormComponent implements OnInit {
   form: JointPlan = {
     id: '', jointNumber: '', projectNumber: '', joint: '',
     title: '', description: '',
-    status: 'planned', priority: 'medium', jointType: 'pipe',
+    status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
     jointDesign: '', weldType: '', pipeSize: '', wallThickness: '',
     materialType1: '', materialType2: '', wps: '', ndt: '', pwht: '',
@@ -47,8 +47,9 @@ export class WeldPlanningFormComponent implements OnInit {
     createdBy: 'User', createdAt: '', updatedAt: ''
   };
 
+  isLocked = signal(false);
+
   statusOptions = JOINT_STATUS_OPTIONS;
-  priorityOptions = JOINT_PRIORITY_OPTIONS;
   jointTypeOptions = JOINT_TYPE_OPTIONS;
   pipeSizes = PIPE_SIZES;
   wallThicknesses = WALL_THICKNESSES;
@@ -72,6 +73,11 @@ export class WeldPlanningFormComponent implements OnInit {
       const existing = getJointPlan(id);
       if (existing) {
         this.form = { ...existing };
+        if (existing.status === 'locked') {
+          this.isLocked.set(true);
+          this.toast.add({ severity: 'warn', summary: 'Locked', detail: 'This joint plan is locked and cannot be edited' });
+          this.router.navigate(['/weld-planning', id]);
+        }
       } else {
         this.router.navigate(['/weld-planning']);
       }

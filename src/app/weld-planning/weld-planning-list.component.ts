@@ -12,7 +12,7 @@ import { ConfirmService } from '../shared/confirm.service';
 import {
   jointPlans, deleteJointPlan,
   JOINT_STATUS_OPTIONS,
-  JOINT_PLAN_CSV_COLUMNS, type JointPlan, type JointStatus
+  JOINT_PLAN_CSV_COLUMNS, type JointPlan
 } from './weld-planning.data';
 
 type Row = JointPlan;
@@ -104,11 +104,7 @@ type Row = JointPlan;
                   <td class="mono">{{ row.drawing }}</td>
                   <td class="mono">{{ row.jointDesign }}</td>
                   <td>{{ row.weldType }}</td>
-                  <td>
-                    <span class="badge badge-sm" [class]="statusBadgeClass(row.status)">
-                      {{ row.status }}
-                    </span>
-                  </td>
+                  <td>{{ row.status }}</td>
                   <td>
                     <div class="row-tight">
                       <a [routerLink]="['/weld-planning', row.id]"
@@ -199,16 +195,5 @@ export class WeldPlanningListComponent {
   exportCsv() {
     downloadCsv('weld-planning-export', JOINT_PLAN_CSV_COLUMNS, this.table.sorted());
     this.toast.add({ severity: 'info', summary: 'Exported', detail: 'CSV download started' });
-  }
-
-  statusBadgeClass(status: JointStatus): string {
-    const map: Record<JointStatus, string> = {
-      'planned': 'badge-info',
-      'in-progress': 'badge-warning',
-      'completed': 'badge-success',
-      'on-hold': 'badge-ghost',
-      'cancelled': 'badge-error',
-    };
-    return map[status] || 'badge-ghost';
   }
 }

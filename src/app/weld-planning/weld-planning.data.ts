@@ -6,14 +6,12 @@ import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
 /* ── Joint Planning ── */
-export type JointStatus = 'planned' | 'in-progress' | 'completed' | 'on-hold' | 'cancelled';
+export type JointStatus = 'development' | 'locked' | 'unlocked';
 
 export const JOINT_STATUS_OPTIONS: { label: string; value: JointStatus }[] = [
-  { label: 'Planned', value: 'planned' },
-  { label: 'In Progress', value: 'in-progress' },
-  { label: 'Completed', value: 'completed' },
-  { label: 'On Hold', value: 'on-hold' },
-  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Development', value: 'development' },
+  { label: 'Locked', value: 'locked' },
+  { label: 'Unlocked', value: 'unlocked' },
 ];
 
 export type JointPriority = 'low' | 'medium' | 'high' | 'critical';
@@ -97,7 +95,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
   const out: JointPlan[] = [];
 
   for (let i = 0; i < count; i++) {
-    const statuses: JointStatus[] = ['planned', 'in-progress', 'completed', 'on-hold', 'cancelled'];
+    const statuses: JointStatus[] = ['development', 'locked', 'unlocked'];
     const priorities: JointPriority[] = ['low', 'medium', 'high', 'critical'];
     const types: JointType[] = ['pipe', 'structural'];
     const jt = i % 3 === 0 ? 'structural' : pick(types);
@@ -213,7 +211,7 @@ export function importJointPlans(rows: Record<string, string>[]): number {
     joint: (row['joint'] || '') as string,
     title: (row['title'] || 'Untitled') as string,
     description: (row['description'] || '') as string,
-    status: (row['status'] || 'planned') as JointStatus,
+        status: (row['status'] || 'development') as JointStatus,
     priority: (row['priority'] || 'medium') as JointPriority,
     jointType: (row['jointType'] || row['joint_type'] || 'pipe') as JointType,
     drawing: (row['drawing'] || '') as string,
