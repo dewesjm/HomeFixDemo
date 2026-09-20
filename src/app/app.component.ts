@@ -39,17 +39,33 @@ export class AppComponent {
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
   adminOpen = signal(false);
+  wpAdminOpen = signal(false);
+  waAdminOpen = signal(false);
+  waAdminOpen2 = signal(false);
+  weAdminOpen = signal(false);
+  weAdminOpen2 = signal(false);
 
   @ViewChild('adminDetails') adminDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('wpAdminDetails') wpAdminDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('waAdminDetails') waAdminDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('waAdminDetails2') waAdminDetails2?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('weAdminDetails') weAdminDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('weAdminDetails2') weAdminDetails2?: ElementRef<HTMLDetailsElement>;
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
-      if (this.adminOpen() && !(e.target as HTMLElement).closest('.dropdown-wrapper')) {
-        this.adminOpen.set(false);
-        if (this.adminDetails?.nativeElement) {
-          this.adminDetails.nativeElement.open = false;
+      const closeIfOutside = (open: boolean, set: (v: boolean) => void, ref?: ElementRef<HTMLDetailsElement>) => {
+        if (open && !(e.target as HTMLElement).closest('.dropdown-wrapper')) {
+          set(false);
+          if (ref?.nativeElement) ref.nativeElement.open = false;
         }
-      }
+      };
+      closeIfOutside(this.adminOpen(), v => this.adminOpen.set(v), this.adminDetails);
+      closeIfOutside(this.wpAdminOpen(), v => this.wpAdminOpen.set(v), this.wpAdminDetails);
+      closeIfOutside(this.waAdminOpen(), v => this.waAdminOpen.set(v), this.waAdminDetails);
+      closeIfOutside(this.waAdminOpen2(), v => this.waAdminOpen2.set(v), this.waAdminDetails2);
+      closeIfOutside(this.weAdminOpen(), v => this.weAdminOpen.set(v), this.weAdminDetails);
+      closeIfOutside(this.weAdminOpen2(), v => this.weAdminOpen2.set(v), this.weAdminDetails2);
     });
 
     if (this.swUpdate.isEnabled) {

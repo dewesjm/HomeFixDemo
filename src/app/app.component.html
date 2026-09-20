@@ -6,6 +6,8 @@
     <div class="topnav-left">
       <span class="topnav-brand">Welding</span>
       <ul class="topnav-menu">
+        <!-- EWR group -->
+        <li class="nav-group-label">EWR</li>
         <li>
           <a routerLink="/table" routerLinkActive="menu-active">
             <svg lucideTable class="size-4"></svg> Pipe Welding
@@ -50,9 +52,82 @@
             </ul>
           </details>
         </li>
-        <li><a routerLink="/weld-planning" routerLinkActive="menu-active">Weld Planning</a></li>
-        <li><a class="menu-disabled">Weld Assignment</a></li>
-        <li><a class="menu-disabled">Weld Engineering</a></li>
+
+        <!-- separator -->
+        <li class="nav-separator"></li>
+
+        <!-- Weld Planning group -->
+        <li class="nav-group-label">Weld Planning</li>
+        <li>
+          <a routerLink="/weld-planning" routerLinkActive="menu-active">
+            <svg lucideTable class="size-4"></svg> Joint Plans
+          </a>
+        </li>
+        <li>
+          <a class="menu-disabled">
+            <svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search
+          </a>
+        </li>
+        <li class="dropdown-wrapper">
+          <details #wpAdminDetails (toggle)="wpAdminOpen.set($any($event.target).open)">
+            <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+            <ul class="dropdown-menu">
+              <li><a routerLink="/weld-planning/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Joint Designs &amp; NDT</a></li>
+              <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+              <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+            </ul>
+          </details>
+        </li>
+
+        <!-- separator -->
+        <li class="nav-separator"></li>
+
+        <!-- Weld Assignment group -->
+        <li class="nav-group-label">Weld Assignment</li>
+        <li class="dropdown-wrapper">
+          <details #waAdminDetails (toggle)="waAdminOpen.set($any($event.target).open)">
+            <summary><svg lucideClipboardList class="size-4"></svg> Assignment</summary>
+            <ul class="dropdown-menu">
+              <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Work Orders</a></li>
+              <li><a class="menu-disabled"><svg lucideClipboardList class="size-4"></svg> My Tasks</a></li>
+              <li><a class="menu-disabled"><svg lucideHistory class="size-4"></svg> History</a></li>
+            </ul>
+          </details>
+        </li>
+        <li class="dropdown-wrapper">
+          <details #waAdminDetails2 (toggle)="waAdminOpen2.set($any($event.target).open)">
+            <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+            <ul class="dropdown-menu">
+              <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
+              <li><a class="menu-disabled"><svg lucideShield class="size-4"></svg> Teams</a></li>
+            </ul>
+          </details>
+        </li>
+
+        <!-- separator -->
+        <li class="nav-separator"></li>
+
+        <!-- Weld Engineering group -->
+        <li class="nav-group-label">Weld Engineering</li>
+        <li class="dropdown-wrapper">
+          <details #weAdminDetails (toggle)="weAdminOpen.set($any($event.target).open)">
+            <summary><svg lucideWorkflow class="size-4"></svg> Engineering</summary>
+            <ul class="dropdown-menu">
+              <li><a class="menu-disabled"><svg lucideLayers class="size-4"></svg> WPS Management</a></li>
+              <li><a class="menu-disabled"><svg lucideTag class="size-4"></svg> PQR Tracking</a></li>
+              <li><a class="menu-disabled"><svg lucideTarget class="size-4"></svg> Qualifications</a></li>
+            </ul>
+          </details>
+        </li>
+        <li class="dropdown-wrapper">
+          <details #weAdminDetails2 (toggle)="weAdminOpen2.set($any($event.target).open)">
+            <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+            <ul class="dropdown-menu">
+              <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
+              <li><a class="menu-disabled"><svg lucideMapPin class="size-4"></svg> Standards</a></li>
+            </ul>
+          </details>
+        </li>
       </ul>
     </div>
     <div class="topnav-right">
