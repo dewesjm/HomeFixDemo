@@ -38,6 +38,15 @@ export class WorkflowService {
 
   private persisted: Record<string, JobWorkflow> = this.load();
   private seq = Date.now();
+  /* the workflow object each signal started with; a signal whose value differs has been edited */
+  private baseline = new Map<string, JobWorkflow>();
+  private persistTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    /* a save may still be pending when the tab is hidden or closed */
+    window.addEventListener('pagehide', () => this.flushPersist());
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') this.flushPersist(); });
+  }
 
   private notify(severity: 'success' | 'info' | 'warn', summary: string, detail?: string) {
     this.messages.add({ severity, summary, detail, life: 3000 });
@@ -49,6 +58,7 @@ export class WorkflowService {
     if (!sig) {
       sig = signal(this.persisted[job.id] ?? (job._fresh ? newWorkflow(job) : seededWorkflow(job)));
       this.store.set(job.id, sig);
+      this.baseline.set(job.id, sig());
     }
     return sig;
   }
@@ -79,21 +89,30 @@ export class WorkflowService {
 
   // --- Stage inputs -------------------------------------------------------
   setStageInput(job: Job, stageId: string, field: StageField, value: string) {
-    this.workflowFor(job).update(wf => {
-      const prev = wf.stages.find(s => s.id === stageId)?.inputs[field.key] ?? '';
-      const stages = wf.stages.map(s =>
-        s.id === stageId ? { ...s, inputs: { ...s.inputs, [field.key]: value } } : s);
-      const stage = stages.find(s => s.id === stageId)!;
-      const unit = field.unit ? ` ${field.unit}` : '';
-      return this.withHistory(wf, { ...wf, stages }, {
-        section: 'Stages',
-        who: wf.technician,
-        action: `${stage.label} — ${field.label}`,
-        from: show(prev),
-        to: show(value ? value + unit : value)
-      });
-    });
+    this.setStageInputs(job, stageId, [{ field, value }]);
+  }
+
+  /* several field edits on one stage as a single update and a single save; each changed field is logged */
+  setStageInputs(job: Job, stageId: string, changes: { field: StageField; value: string }[]) {
+    this.workflowFor(job).update(wf =>
+      changes.reduce((acc, c) => this.applyStageInput(acc, stageId, c.field, c.value), wf));
     this.persist();
+  }
+
+  private applyStageInput(wf: JobWorkflow, stageId: string, field: StageField, value: string): JobWorkflow {
+    const prev = wf.stages.find(s => s.id === stageId)?.inputs[field.key] ?? '';
+    if (prev === value) return wf;
+    const stages = wf.stages.map(s =>
+      s.id === stageId ? { ...s, inputs: { ...s.inputs, [field.key]: value } } : s);
+    const stage = stages.find(s => s.id === stageId)!;
+    const unit = field.unit ? ` ${field.unit}` : '';
+    return this.withHistory(wf, { ...wf, stages }, {
+      section: 'Stages',
+      who: wf.technician,
+      action: `${stage.label} — ${field.label}`,
+      from: show(prev),
+      to: show(value ? value + unit : value)
+    });
   }
 
   // --- Attachments --------------------------------------------------------
@@ -487,11 +506,19 @@ export class WorkflowService {
     return { ...next, history: [...prev.history, entry] };
   }
 
+  /* Serializing every workflow (~8 MB for 240 jobs) on each field edit made multi-field changes like
+     WTN take seconds. Saves are now coalesced and only workflows the user actually edited are written;
+     untouched jobs regenerate from their seed. */
   private persist() {
-    const out: Record<string, JobWorkflow> = {};
-    for (const [id, sig] of this.store) out[id] = sig();
-    try { localStorage.setItem(LS_KEY, JSON.stringify(out)); } catch { /* ignore */ }
     this.sync.markDirty();   // a local change is now waiting to sync to a backend
+    if (this.persistTimer === null) this.persistTimer = setTimeout(() => this.flushPersist(), 250);
+  }
+
+  private flushPersist() {
+    if (this.persistTimer !== null) { clearTimeout(this.persistTimer); this.persistTimer = null; }
+    const out: Record<string, JobWorkflow> = { ...this.persisted };
+    for (const [id, sig] of this.store) if (sig() !== this.baseline.get(id)) out[id] = sig();
+    try { localStorage.setItem(LS_KEY, JSON.stringify(out)); } catch { /* ignore */ }
   }
 
   private load(): Record<string, JobWorkflow> {

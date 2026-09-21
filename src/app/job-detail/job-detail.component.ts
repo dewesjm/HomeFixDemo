@@ -617,41 +617,34 @@ export class JobDetailComponent implements OnDestroy {
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
     const v = value ?? '';
     if (this.job && v !== (stage.inputs[field.key] ?? '')) {
-      this.wfService.setStageInput(this.job, stage.id, field, v);
+      const changes: { field: StageField; value: string }[] = [{ field, value: v }];
+      const setIfPresent = (key: string, val: string) => {
+        const f = stage.fields.find(ff => ff.key === key);
+        if (f) changes.push({ field: f, value: val });
+      };
+      if (field.key === 'wtn') {
+        /* WTN drives Weld Process, the PH/IP requirements and the override values */
+        if (this.WTN_PROCESS_MAP[v]) setIfPresent('weldProcess', this.WTN_PROCESS_MAP[v]);
+        const phip = this.WTN_PHIP_MAP[v];
+        if (phip) for (const [k, val] of Object.entries(phip)) setIfPresent(k, val);
+        const ov = this.WTN_OVERRIDE_VALUES[v];
+        setIfPresent('overridePhMin', ov?.phMin ?? '');
+        setIfPresent('overridePhMax', ov?.phMax ?? '');
+        setIfPresent('overrideIpMin', ov?.ipMin ?? '');
+        setIfPresent('overrideIpMax', ov?.ipMax ?? '');
+        setIfPresent('overrideNote', ov?.note ?? '');
+      }
+      this.wfService.setStageInputs(this.job, stage.id, changes);
       this.clearHidden(stage);
       if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
-      /* Auto-set Weld Process when WTN changes */
       if (field.key === 'wtn' && this.WTN_PROCESS_MAP[v]) {
-        const weldProcessField = stage.fields.find(f => f.key === 'weldProcess');
-        if (weldProcessField) {
-          this.wfService.setStageInput(this.job, stage.id, weldProcessField, this.WTN_PROCESS_MAP[v]);
-          /* clear weld process error */
-          const wpKey = `${stage.id}:weldProcess`;
-          const prev = this.fieldErrors();
-          if (prev[wpKey]) {
-            const next = { ...prev };
-            delete next[wpKey];
-            this.fieldErrors.set(next);
-          }
-        }
-      }
-      /* Auto-set PH/IP requirements when WTN changes */
-      if (field.key === 'wtn' && this.WTN_PHIP_MAP[v]) {
-        const phip = this.WTN_PHIP_MAP[v];
-        for (const [k, val] of Object.entries(phip)) {
-          const f = stage.fields.find(ff => ff.key === k);
-          if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
-        }
-      }
-      /* Populate/clear override fields on this stage when WTN changes */
-      if (field.key === 'wtn' && this.job && this.wf) {
-        const ov = this.WTN_OVERRIDE_VALUES[v];
-        const overrideMap: Record<string, string> = ov
-          ? { overridePhMin: ov.phMin, overridePhMax: ov.phMax, overrideIpMin: ov.ipMin, overrideIpMax: ov.ipMax, overrideNote: ov.note }
-          : { overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '' };
-        for (const [fk, val] of Object.entries(overrideMap)) {
-          const f = stage.fields.find(ff => ff.key === fk);
-          if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
+        /* clear weld process error */
+        const wpKey = `${stage.id}:weldProcess`;
+        const prev = this.fieldErrors();
+        if (prev[wpKey]) {
+          const next = { ...prev };
+          delete next[wpKey];
+          this.fieldErrors.set(next);
         }
       }
     }
