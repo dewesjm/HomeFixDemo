@@ -332,11 +332,11 @@ export class JobDetailComponent implements OnDestroy {
     const missingSignoff = stage.signoffFields
       .filter(f => {
         if (!f.required) return false;
-        // For fit stage, make consumable and backing ring fields conditionally required
+        // For fit stage, make consumable insert and backing ring fields conditionally required
         if (stage.id === 'fit') {
-          const isConsumable = ['consumableType', 'consumableSize', 'consumableId'].includes(f.key);
+          const isConsumableInsert = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'].includes(f.key);
           const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
-          if (isConsumable && !this.jointDesignRequiresInsert()) return false;
+          if (isConsumableInsert && !this.jointDesignRequiresInsert()) return false;
           if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
         }
         return true;
@@ -442,7 +442,7 @@ export class JobDetailComponent implements OnDestroy {
         }
       }
       // MIC fields only visible when traceability is required
-      if (f.key === 'consumableId' || f.key === 'backingRingId') {
+      if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
         const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
         const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
         return mcl1Traceable || mcl2Traceable;
@@ -544,7 +544,7 @@ export class JobDetailComponent implements OnDestroy {
     }
   }
 
-  /* Consumable Insert: when Yes, auto-populate filler fields from fit stage consumable data and lock them */
+  /* Consumable Insert: when Yes, auto-populate filler fields from fit stage consumable insert data and lock them */
   onConsumableInsertChange(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
     const field = stage.fields.find(f => f.key === 'consumableInsertOnly');
@@ -559,16 +559,16 @@ export class JobDetailComponent implements OnDestroy {
       }
       return;
     }
-    /* find the fit stage's consumable signoff data */
+    /* find the fit stage's consumable insert signoff data */
     const fitStage = this.wf().stages.find(s => s.id === 'fit');
     if (!fitStage) return;
-    const consumableType = fitStage.signoffInputs['consumableType'] ?? '';
-    const consumableSize = fitStage.signoffInputs['consumableSize'] ?? '';
-    const consumableId = fitStage.signoffInputs['consumableId'] ?? '';
+    const consumableInsertType = fitStage.signoffInputs['consumableInsertType'] ?? '';
+    const consumableInsertSize = fitStage.signoffInputs['consumableInsertSize'] ?? '';
+    const consumableInsertId = fitStage.signoffInputs['consumableInsertId'] ?? '';
     /* auto-populate filler fields */
-    if (fillerType && consumableType) this.wfService.setStageInput(this.job, stage.id, fillerType, consumableType);
-    if (fillerSize && consumableSize) this.wfService.setStageInput(this.job, stage.id, fillerSize, consumableSize);
-    if (fillerMic && consumableId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableId);
+    if (fillerType && consumableInsertType) this.wfService.setStageInput(this.job, stage.id, fillerType, consumableInsertType);
+    if (fillerSize && consumableInsertSize) this.wfService.setStageInput(this.job, stage.id, fillerSize, consumableInsertSize);
+    if (fillerMic && consumableInsertId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableInsertId);
   }
 
   /* 5X inspection dropdown: when Yes, auto-sign the corresponding 5X NDT stage */
@@ -727,11 +727,11 @@ export class JobDetailComponent implements OnDestroy {
   visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
     return stage.signoffFields.filter(f => {
       if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return false;
-      // For fit stage, hide consumable and backing ring fields when not required
+      // For fit stage, hide consumable insert and backing ring fields when not required
       if (stage.id === 'fit') {
-        const isConsumable = ['consumableType', 'consumableSize', 'consumableId'].includes(f.key);
+        const isConsumableInsert = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'].includes(f.key);
         const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
-        if (isConsumable && !this.jointDesignRequiresInsert()) return false;
+        if (isConsumableInsert && !this.jointDesignRequiresInsert()) return false;
         if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
       }
       return true;

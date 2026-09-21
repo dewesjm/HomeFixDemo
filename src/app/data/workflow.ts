@@ -527,15 +527,15 @@ export const FABRICATION_FIELDS: FabricationField[] = [
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   Welding: [
     { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [
-      { key: 'consumableType', label: 'Consumable Type', type: 'select',
+      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select',
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
           { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
-      { key: 'consumableSize', label: 'Consumable Size', type: 'select',
+      { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select',
         options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
           { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
-      { key: 'consumableId', label: 'Consumable MIC', type: 'text' },
+      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text' },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
@@ -543,15 +543,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [] },
     { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
-      { key: 'consumableType', label: 'Consumable Type', type: 'select', required: true,
+      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,
         options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
           { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
           { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
-      { key: 'consumableSize', label: 'Consumable Size', type: 'select', required: true,
+      { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', required: true,
         options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
           { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
           { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
-      { key: 'consumableId', label: 'Consumable MIC', type: 'text', required: true },
+      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: true },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
@@ -898,7 +898,8 @@ export function buildStages(job: Job): WorkflowStage[] {
 }
 
 const SEED_SPECIFIC_LOCATIONS = ['Bay 3, Rack 12', 'Bay 1, Rack 4', 'Bay 5, Rack 9', 'Cell 2, Line B', 'Pad C, Yard 1'];
-const SEED_WEB_MEMOS = ['Per drawing', 'No deviations', 'Completed as required', 'Per spec'];
+/* W.E. Memo is a reference to a specific memo, e.g. M-10; about a third of jobs have none */
+const seedWeMemo = (rand: () => number) => (rand() < 0.3 ? '' : `M-${10 + Math.floor(rand() * 40)}`);
 
 /* Realistic, deterministic fabrication data for a welding job. Every select value is taken from the real
    option lists so the dropdowns are populated; Ship-only fields are set only when Location is Ship. */
@@ -924,7 +925,7 @@ export function seedFabricationData(job: Job): Record<string, string> {
     id2: seededMic(rand),
     drawingRev: job.drawingRev || 'C',
     actualThickness: pick(['0.375', '0.5', '0.625', '0.75', '1.0']),
-    weldMemo: pick(SEED_WEB_MEMOS),
+    weldMemo: seedWeMemo(rand),
     revisedJointDesign: revised ? 'bj-g' : '',
     changeNumber: revised ? `ER-${1000 + Math.floor(rand() * 9000)}` : '',
     wtn: rand() < 0.5 ? 'wtn-101' : 'wtn-201',
@@ -981,7 +982,7 @@ function seededFieldValue(f: StageField, rand: () => number): string {
     return f.options[Math.floor(rand() * f.options.length)].value;
   }
   if (f.type === 'number') return String(1 + Math.floor(rand() * 120));
-  if (f.type === 'text' && /mic$|^(consumableid|backingringid)$/i.test(f.key)) return seededMic(rand);
+  if (f.type === 'text' && /mic$|^(consumableinsertid|backingringid)$/i.test(f.key)) return seededMic(rand);
   if (f.placeholder && f.placeholder.startsWith('e.g. ')) return f.placeholder.slice(5);
   /* fallback realistic values based on key patterns */
   const key = f.key.toLowerCase();

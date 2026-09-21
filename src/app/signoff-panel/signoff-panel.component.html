@@ -376,12 +376,12 @@
 
     @if (st.required) {
       <div class="signoff-fields">
-        <!-- Fit stage: consumable row + consumable insert + backing ring row + comments + defer tack -->
+        <!-- Fit stage: consumable insert row + backing ring row + comments + defer tack -->
         @if (st.id === 'fit' && st.routingType !== 'weld-buildup') {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-                @if (f.key === 'consumableType' || f.key === 'consumableSize' || f.key === 'consumableId') {
+                @if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize' || f.key === 'consumableInsertId') {
                   <div>
                     <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
                     @if (f.type === 'select') {
