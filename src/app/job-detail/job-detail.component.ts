@@ -339,6 +339,7 @@ export class JobDetailComponent implements OnDestroy {
   updateStepType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
     const templates = getTemplates()[this.job.trade] ?? [];
+    const currentStep = this.selectedStep();
     /* Fit stage: swap fields when switching between Fit and Weld Build up */
     if (stage.id === 'fit') {
       const fitTpl = templates.find(t => t.id === 'fit');
@@ -349,9 +350,17 @@ export class JobDetailComponent implements OnDestroy {
       const newSignoff = value === 'weld-buildup'
         ? []
         : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
-      this.wfService.updateStageSignoff(this.job!, stage.id, {
-        stepType: value, fields: newFields, signoffInputs: {}, signoffFields: newSignoff,
-      }, { action: `${stage.label} — Type changed to ${value}` });
+      this.wf.update(wf => ({
+        ...wf,
+        stages: wf.stages.map(s => s.id === stage.id ? {
+          ...s,
+          stepType: value,
+          fields: newFields,
+          signoffInputs: {},
+          signoffFields: newSignoff,
+        } : s)
+      }));
+      this.selectedStep.set(currentStep);
       return;
     }
     this.wfService.updateStageSignoff(this.job!, stage.id, {
@@ -391,6 +400,15 @@ export class JobDetailComponent implements OnDestroy {
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
     const job = this.job;
+    /* Weld build-up on fit stage: compute fields from the tack template definition
+       rather than relying on stage.fields, which may not have propagated yet
+       when Angular re-evaluates the @if gate in the same change-detection tick. */
+    if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+      const templates = job ? (getTemplates()[job.trade] ?? []) : [];
+      const tackTpl = templates.find(t => t.id === 'tack');
+      const base = tackTpl ? tackTpl.fields.map(f => ({ ...f })) : [];
+      return [...base, { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }];
+    }
     const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
     const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
     const anyTraceable = mcl1Traceable || mcl2Traceable;
