@@ -513,6 +513,26 @@ export class WorkflowService {
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
 
+        /* backfill empty fabrication data for Welding jobs */
+        if (job?.trade === 'Welding' && Object.keys(wf.fabricationData).length === 0) {
+          wf.fabricationData = {
+            location: 'shop-a',
+            specificLocation: 'Bay 3, Rack 12',
+            deck: 'D2',
+            frame: 'F14',
+            pscl: 'P',
+            usage: 'Structural',
+            id1: 'MIC-4410',
+            id2: 'MIC-4411',
+            drawingRev: 'C',
+            actualThickness: '0.75',
+            weldMemo: 'Per drawing',
+            revisedJointDesign: 'bj-g',
+            changeNumber: 'ER-0042',
+            wtn: 'wtn-101',
+          };
+        }
+
         wf.stages.forEach(s => {
           s.inputs ??= {};
           s.fields ??= [];
