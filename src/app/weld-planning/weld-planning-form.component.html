@@ -1,4 +1,4 @@
-<div style="max-width: 900px; margin: 0 auto; padding: 1rem">
+<div>
   <div class="page-header">
     <a routerLink="/weld-planning" class="back-link">
       <svg lucideArrowLeft class="size-4"></svg> Weld Planning
@@ -118,7 +118,7 @@
         </select>
       </div>
       <div class="detail-col">
-        <label class="field-label">Material 2 (Filler)</label>
+        <label class="field-label">Material 2</label>
         <select class="select select-sm" [(ngModel)]="form.materialType2">
           <option value="">Select...</option>
           @for (m of materials2; track m) {
@@ -126,46 +126,22 @@
           }
         </select>
       </div>
-      <div class="detail-col">
-        <label class="field-label">WPS</label>
-        <select class="select select-sm" [(ngModel)]="form.wps">
-          <option value="">Select...</option>
-          @for (w of wpsPool; track w) {
-            <option [value]="w">{{ w }}</option>
-          }
-        </select>
-      </div>
-      <div class="detail-col">
-        <label class="field-label">NDT Requirement</label>
-        <select class="select select-sm" [(ngModel)]="form.ndt">
-          <option value="">Select...</option>
-          @for (n of ndtOpts(); track n) {
-            <option [value]="n">{{ n }}</option>
-          }
-        </select>
-      </div>
-      <div class="detail-col">
-        <label class="field-label">PWHT</label>
-        <select class="select select-sm" [(ngModel)]="form.pwht">
-          <option value="">Select...</option>
-          @for (p of pwhtOpts(); track p) {
-            <option [value]="p">{{ p }}</option>
-          }
-        </select>
-      </div>
-      <div class="detail-col">
-        <label class="field-label">Assigned To</label>
-        <select class="select select-sm" [(ngModel)]="form.assignedTo">
-          <option value="">Select...</option>
-          @for (t of technicians; track t) {
-            <option [value]="t">{{ t }}</option>
-          }
-        </select>
-      </div>
-      <div class="detail-col">
-        <label class="field-label">Est. Hours</label>
-        <input class="input input-sm" type="number" [(ngModel)]="form.estimatedHours" min="0" step="0.5" />
-      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">NDT Requirements</div>
+    <div class="detail-grid">
+      @for (n of ndtFields; track n.key) {
+        <div class="detail-col">
+          <label class="field-label">{{ n.label }}</label>
+          <select class="select select-sm" [(ngModel)]="form[n.key]">
+            @for (m of ndtMarks; track m) {
+              <option [value]="m">{{ m || 'None' }}</option>
+            }
+          </select>
+        </div>
+      }
     </div>
   </div>
 

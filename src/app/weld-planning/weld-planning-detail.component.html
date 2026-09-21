@@ -1,4 +1,4 @@
-<div style="max-width: 900px; margin: 0 auto; padding: 1rem">
+<div>
   @if (joint(); as j) {
     <div class="page-header">
       <a (click)="goBack()" class="back-link">
@@ -50,10 +50,9 @@
         }
         <div><div class="meta">Material 1</div><span>{{ j.materialType1 || '-' }}</span></div>
         <div><div class="meta">Material 2</div><span>{{ j.materialType2 || '-' }}</span></div>
-        <div><div class="meta">WPS</div><span class="mono">{{ j.wps || '-' }}</span></div>
-        <div><div class="meta">NDT</div><span>{{ j.ndt || '-' }}</span></div>
-        <div><div class="meta">PWHT</div><span>{{ j.pwht || '-' }}</span></div>
-        <div><div class="meta">Est. Hours</div><span>{{ j.estimatedHours }} hrs</span></div>
+        @for (n of ndtFields; track n.key) {
+          <div><div class="meta">{{ n.label }}</div><span>{{ j[n.key] || '-' }}</span></div>
+        }
       </div>
     </div>
 

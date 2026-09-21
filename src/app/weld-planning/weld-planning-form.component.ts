@@ -4,12 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
-import { TECHNICIAN_NAMES } from '../data/people';
 import { ToastService } from '../shared/toast.service';
 import {
-  addJointPlan, updateJointPlan, getJointPlan,
+  addJointPlan, updateJointPlan, getJointPlan, NDT_FIELDS, NDT_MARKS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
-  adminJointDesigns, adminNdtOptions, adminPwhtOptions,
+  adminJointDesigns,
   type JointPlan
 } from './weld-planning.data';
 
@@ -18,7 +17,6 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Aluminum'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
-const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
@@ -42,8 +40,9 @@ export class WeldPlanningFormComponent implements OnInit {
     status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
     jointDesign: '', weldType: '', pipeSize: '', wallThickness: '',
-    materialType1: '', materialType2: '', wps: '', ndt: '', pwht: '',
-    assignedTo: '', estimatedHours: 0, notes: '',
+    materialType1: '', materialType2: '',
+    rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: '',
+    notes: '',
     createdBy: 'User', createdAt: '', updatedAt: ''
   };
 
@@ -56,14 +55,12 @@ export class WeldPlanningFormComponent implements OnInit {
   materials1 = MATERIALS_1;
   materials2 = MATERIALS_2;
   weldTypes = WELD_TYPES;
-  wpsPool = WPS_POOL;
   hulls = HULLS;
   jointsPool = JOINTS_POOL;
-  technicians = TECHNICIAN_NAMES;
 
+  ndtFields = NDT_FIELDS;
+  ndtMarks = NDT_MARKS;
   designOptions = adminJointDesigns;
-  ndtOpts = adminNdtOptions;
-  pwhtOpts = adminPwhtOptions;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

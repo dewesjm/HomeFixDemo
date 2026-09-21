@@ -2,7 +2,6 @@
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
-import { TECHNICIAN_NAMES } from '../data/people';
 import { STORAGE } from '../data/storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
@@ -25,6 +24,14 @@ export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
   { label: 'Structural', value: 'structural' },
 ];
 
+/* NDT requirements, the same seven fields as the weld record's joint details; each is blank, X, or 5X */
+export const NDT_FIELDS = [
+  { key: 'rtRoot', label: 'RT Root' }, { key: 'rtFinal', label: 'RT Final' },
+  { key: 'ndtRoot', label: 'NDT Root' }, { key: 'ndtEach', label: 'NDT Each' }, { key: 'ndtFinal', label: 'NDT Final' },
+  { key: 'ut', label: 'UT' }, { key: 'vt', label: 'VT' },
+] as const;
+export const NDT_MARKS = ['', 'X', '5X'];
+
 export interface JointPlan {
   id: string;
   jointNumber: string;
@@ -43,11 +50,13 @@ export interface JointPlan {
   wallThickness: string;
   materialType1: string;
   materialType2: string;
-  wps: string;
-  ndt: string;
-  pwht: string;
-  assignedTo: string;
-  estimatedHours: number;
+  rtRoot: string;
+  rtFinal: string;
+  ndtRoot: string;
+  ndtEach: string;
+  ndtFinal: string;
+  ut: string;
+  vt: string;
   notes: string;
   createdBy: string;
   createdAt: string;
@@ -61,7 +70,6 @@ const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Aluminum'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
-const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600C/2hr', 'Required - 620C/1hr', 'Pending review'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
@@ -113,11 +121,8 @@ function generateSeededJoints(count = 160): JointPlan[] {
       wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
       materialType1: pick(MATERIALS_1),
       materialType2: pick(MATERIALS_2),
-      wps: pick(WPS_POOL),
-      ndt: pick(NDT_POOL),
-      pwht: pick(PWHT_POOL),
-      assignedTo: pick(TECHNICIAN_NAMES),
-      estimatedHours: Math.round((0.5 + rand() * 16) * 10) / 10,
+      rtRoot: pick(NDT_MARKS), rtFinal: pick(NDT_MARKS), ndtRoot: pick(NDT_MARKS), ndtEach: pick(NDT_MARKS),
+      ndtFinal: pick(NDT_MARKS), ut: pick(NDT_MARKS), vt: pick(NDT_MARKS),
       notes: i % 4 === 0 ? 'Standard GWP per WPS' : '',
       createdBy: 'System',
       createdAt: createdAt.toISOString(),
@@ -284,11 +289,7 @@ export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
   { header: 'Wall Thickness', value: r => r.wallThickness },
   { header: 'Material 1', value: r => r.materialType1 },
   { header: 'Material 2', value: r => r.materialType2 },
-  { header: 'WPS', value: r => r.wps },
-  { header: 'NDT', value: r => r.ndt },
-  { header: 'PWHT', value: r => r.pwht },
-  { header: 'Assigned To', value: r => r.assignedTo },
-  { header: 'Est. Hours', value: r => r.estimatedHours },
+  ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: JointPlan) => r[f.key] })),
   { header: 'Notes', value: r => r.notes },
 ];
 
@@ -321,8 +322,8 @@ export async function downloadXlsxTemplate(): Promise<void> {
     'jointNumber', 'hull', 'joint', 'title', 'description',
     'status', 'priority', 'jointType', 'drawing', 'drawingRev',
     'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
-    'materialType1', 'materialType2', 'wps', 'ndt', 'pwht',
-    'assignedTo', 'estimatedHours', 'notes'
+    'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),
+    'notes'
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   const wb = XLSX.utils.book_new();

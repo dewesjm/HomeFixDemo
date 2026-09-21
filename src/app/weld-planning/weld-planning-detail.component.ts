@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucidePencil, LucideArrowLeft } from '@lucide/angular';
 
-import { getJointPlan, type JointPlan } from './weld-planning.data';
+import { getJointPlan, NDT_FIELDS, type JointPlan } from './weld-planning.data';
 
 @Component({
   selector: 'app-weld-planning-detail',
@@ -15,6 +15,7 @@ export class WeldPlanningDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
+  ndtFields = NDT_FIELDS;
   joint = signal<JointPlan | null>(null);
   isLocked = computed(() => this.joint()?.status === 'locked');
 

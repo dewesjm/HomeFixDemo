@@ -32,11 +32,13 @@ type EditableRow = {
   wallThickness: string;
   materialType1: string;
   materialType2: string;
-  wps: string;
-  ndt: string;
-  pwht: string;
-  assignedTo: string;
-  estimatedHours: number;
+  rtRoot: string;
+  rtFinal: string;
+  ndtRoot: string;
+  ndtEach: string;
+  ndtFinal: string;
+  ut: string;
+  vt: string;
   notes: string;
   createdBy: string;
 };
@@ -48,7 +50,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
   standalone: true,
   imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideX, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle],
   template: `
-    <div style="max-width: 1400px; margin: 0 auto; padding: 1rem">
+    <div>
       <div class="page-header">
         <a routerLink="/weld-planning" class="back-link">
           <svg lucideArrowLeft class="size-4"></svg> Weld Planning
@@ -104,7 +106,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                 <th style="min-width: 5rem">Weld</th>
                 <th style="min-width: 6rem">Status</th>
                 <th style="min-width: 6rem">Material 1</th>
-                <th style="min-width: 6rem">WPS</th>
                 <th style="min-width: 10rem">Notes</th>
               </tr>
             </thead>
@@ -159,9 +160,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                   </td>
                   <td>
                     <input class="input input-xs w-full" [(ngModel)]="row.materialType1" />
-                  </td>
-                  <td>
-                    <input class="input input-xs w-full" [(ngModel)]="row.wps" />
                   </td>
                   <td>
                     <input class="input input-xs w-full" [(ngModel)]="row.notes" />
@@ -261,11 +259,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
       wallThickness: j.wallThickness,
       materialType1: j.materialType1,
       materialType2: j.materialType2,
-      wps: j.wps,
-      ndt: j.ndt,
-      pwht: j.pwht,
-      assignedTo: j.assignedTo,
-      estimatedHours: j.estimatedHours,
+      rtRoot: j.rtRoot, rtFinal: j.rtFinal, ndtRoot: j.ndtRoot, ndtEach: j.ndtEach,
+      ndtFinal: j.ndtFinal, ut: j.ut, vt: j.vt,
       notes: j.notes,
       createdBy: j.createdBy,
     }));
@@ -310,11 +305,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
           wallThickness: raw['wallThickness'] || raw['wall_thickness'] || '',
           materialType1: raw['materialType1'] || raw['material_1'] || '',
           materialType2: raw['materialType2'] || raw['material_2'] || '',
-          wps: raw['wps'] || '',
-          ndt: raw['ndt'] || '',
-          pwht: raw['pwht'] || '',
-          assignedTo: raw['assignedTo'] || raw['assigned_to'] || '',
-          estimatedHours: parseFloat(raw['estimatedHours'] || raw['estimated_hours'] || '0') || 0,
+          rtRoot: raw['rtRoot'] || '', rtFinal: raw['rtFinal'] || '', ndtRoot: raw['ndtRoot'] || '', ndtEach: raw['ndtEach'] || '',
+          ndtFinal: raw['ndtFinal'] || '', ut: raw['ut'] || '', vt: raw['vt'] || '',
           notes: raw['notes'] || '',
           createdBy: 'Import',
         };
@@ -368,11 +360,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
             wallThickness: row.wallThickness,
             materialType1: row.materialType1,
             materialType2: row.materialType2,
-            wps: row.wps,
-            ndt: row.ndt,
-            pwht: row.pwht,
-            assignedTo: row.assignedTo,
-            estimatedHours: row.estimatedHours,
+            rtRoot: row.rtRoot, rtFinal: row.rtFinal, ndtRoot: row.ndtRoot, ndtEach: row.ndtEach,
+            ndtFinal: row.ndtFinal, ut: row.ut, vt: row.vt,
             notes: row.notes,
           });
         } else {
@@ -393,11 +382,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
             wallThickness: row.wallThickness,
             materialType1: row.materialType1,
             materialType2: row.materialType2,
-            wps: row.wps,
-            ndt: row.ndt,
-            pwht: row.pwht,
-            assignedTo: row.assignedTo,
-            estimatedHours: row.estimatedHours,
+            rtRoot: row.rtRoot, rtFinal: row.rtFinal, ndtRoot: row.ndtRoot, ndtEach: row.ndtEach,
+            ndtFinal: row.ndtFinal, ut: row.ut, vt: row.vt,
             notes: row.notes,
             createdBy: 'Import',
           });
@@ -430,11 +416,11 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-001', hull: 'K1001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: '', estimatedHours: 4.5, notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-002', hull: 'K1001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: '', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-003', hull: 'K1002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.5, notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-004', hull: 'K1002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: '', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-005', hull: 'K1003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.0, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-001', hull: 'K1001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-002', hull: 'K1001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-003', hull: 'K1002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-004', hull: 'K1002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-005', hull: 'K1003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -483,11 +469,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
         wallThickness: j.wallThickness,
         materialType1: j.materialType1,
         materialType2: j.materialType2,
-        wps: j.wps,
-        ndt: j.ndt,
-        pwht: j.pwht,
-        assignedTo: j.assignedTo,
-        estimatedHours: j.estimatedHours,
+        rtRoot: j.rtRoot, rtFinal: j.rtFinal, ndtRoot: j.ndtRoot, ndtEach: j.ndtEach,
+        ndtFinal: j.ndtFinal, ut: j.ut, vt: j.vt,
         notes: j.notes,
         createdBy: j.createdBy,
       }));
