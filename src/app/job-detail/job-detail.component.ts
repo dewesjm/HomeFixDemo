@@ -19,7 +19,7 @@ import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  getShops, WELD_OVERRIDE_FIELDS
+  shopOptions, WELD_OVERRIDE_FIELDS
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
 
@@ -195,7 +195,7 @@ export class JobDetailComponent implements OnDestroy {
       })
       .map(f =>
         f.key === 'location'
-          ? { ...f, options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) }
+          ? { ...f, options: shopOptions() }
           : f.key === 'revisedJointDesign'
           ? { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] }
           : f

@@ -6,7 +6,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE
+  WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData
 } from '../data/workflow';
 
 
@@ -19,7 +19,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.5.0';
+const CURRENT_VERSION = '1.5.1';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -512,22 +512,7 @@ export class WorkflowService {
 
         /* backfill empty fabrication data for Welding jobs */
         if (job?.trade === 'Welding' && Object.keys(wf.fabricationData).length === 0) {
-          wf.fabricationData = {
-            location: 'shop-a',
-            specificLocation: 'Bay 3, Rack 12',
-            deck: 'D2',
-            frame: 'F14',
-            pscl: 'P',
-            usage: 'Structural',
-            id1: '250C-1500-290-5',
-            id2: '318A-2210-145-3',
-            drawingRev: 'C',
-            actualThickness: '0.75',
-            weldMemo: 'Per drawing',
-            revisedJointDesign: 'bj-g',
-            changeNumber: 'ER-0042',
-            wtn: 'wtn-101',
-          };
+          wf.fabricationData = seedFabricationData(job);
         }
 
         wf.stages.forEach(s => {

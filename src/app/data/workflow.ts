@@ -230,6 +230,10 @@ export function setShops(shops: string[]) {
   localStorage.setItem(SHOPS_LS_KEY, JSON.stringify(shops));
 }
 
+/* Location dropdown options; the value is the slugged shop name (Ship = 'ship') */
+export const shopValue = (shop: string) => shop.toLowerCase().replace(/\s+/g, '-');
+export const shopOptions = () => getShops().map(s => ({ label: s, value: shopValue(s) }));
+
 /* ── Weld Positions (admin-configurable via localStorage) ── */
 export interface WeldPosition {
   code: string;
@@ -422,8 +426,7 @@ export interface FabricationField {
 
 export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
-  { key: 'location', label: 'Location', type: 'select', row: 1,
-    options: getShops().map(s => ({ label: s, value: s.toLowerCase().replace(/\s+/g, '-') })) },
+  { key: 'location', label: 'Location', type: 'select', row: 1, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship)
   { key: 'deck', label: 'Deck', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
@@ -434,6 +437,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
     options: [
       { label: 'Galley', value: 'galley' },
       { label: 'Living', value: 'living' },
+      { label: 'Habitability', value: 'habitability' },
       { label: 'Engine', value: 'engine' },
       { label: 'Cargo', value: 'cargo' },
       { label: 'Deck', value: 'deck' },
@@ -1066,24 +1070,43 @@ export function buildStages(job: Job): WorkflowStage[] {
   return [prep, ...middle, handover].map(toStage);
 }
 
+const SEED_SPECIFIC_LOCATIONS = ['Bay 3, Rack 12', 'Bay 1, Rack 4', 'Bay 5, Rack 9', 'Cell 2, Line B', 'Pad C, Yard 1'];
+const SEED_WEB_MEMOS = ['Per drawing', 'No deviations', 'Completed as required', 'Per spec'];
+
+/* Realistic, deterministic fabrication data for a welding job. Every select value is taken from the real
+   option lists so the dropdowns are populated; Ship-only fields are set only when Location is Ship. */
+export function seedFabricationData(job: Job): Record<string, string> {
+  const rand = seeded(job.id.charCodeAt(0) * 131 + job.id.charCodeAt(1) * 17 + job.id.charCodeAt(3));
+  const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+  const shops = shopOptions();
+  const ship = shops.find(s => s.value === 'ship');
+  const onShip = !!ship && rand() < 0.3;
+  const location = onShip ? ship!.value : pick(shops.filter(s => s.value !== 'ship')).value;
+  const usageOptions = FABRICATION_FIELDS.find(f => f.key === 'usage')?.options ?? [];
+  const revised = rand() < 0.3;
+  return {
+    location,
+    specificLocation: pick(SEED_SPECIFIC_LOCATIONS),
+    ...(onShip ? {
+      deck: `D${1 + Math.floor(rand() * 8)}`,
+      frame: `F${10 + Math.floor(rand() * 60)}`,
+      pscl: pick(['P', 'S', 'CL']),
+      usage: pick(usageOptions).value,
+    } : {}),
+    id1: seededMic(rand),
+    id2: seededMic(rand),
+    drawingRev: job.drawingRev || 'C',
+    actualThickness: pick(['0.375', '0.5', '0.625', '0.75', '1.0']),
+    weldMemo: pick(SEED_WEB_MEMOS),
+    revisedJointDesign: revised ? 'bj-g' : '',
+    changeNumber: revised ? `ER-${1000 + Math.floor(rand() * 9000)}` : '',
+    wtn: rand() < 0.5 ? 'wtn-101' : 'wtn-201',
+  };
+}
+
 export function newWorkflow(job: Job): JobWorkflow {
   /* pre-populate fabrication data for welding demo */
-  const fabData: Record<string, string> = job.trade === 'Welding' ? {
-    location: 'shop-a',
-    specificLocation: 'Bay 3, Rack 12',
-    deck: 'D2',
-    frame: 'F14',
-    pscl: ['P', 'S', 'CL'][Math.floor(Math.random() * 3)],
-    usage: 'Structural',
-    id1: '250C-1500-290-5',
-    id2: '318A-2210-145-3',
-    drawingRev: 'C',
-    actualThickness: '0.75',
-    weldMemo: ['Per drawing', 'No deviations', 'Completed as required', 'Per spec'][Math.floor(Math.random() * 4)],
-    revisedJointDesign: 'bj-g',
-    changeNumber: 'ER-0042',
-    wtn: Math.random() < 0.5 ? 'wtn-101' : 'wtn-201',
-  } : {};
+  const fabData: Record<string, string> = job.trade === 'Welding' ? seedFabricationData(job) : {};
   return {
     jobId: job.id,
     technician: job.technician,
