@@ -349,18 +349,14 @@ export class JobDetailComponent implements OnDestroy {
       const newSignoff = value === 'weld-buildup'
         ? []
         : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
-      this.wf.update(wf => ({
-        ...wf,
-        stages: wf.stages.map(s => s.id === stage.id ? {
-          ...s, stepType: value, fields: newFields, signoffInputs: {}, signoffFields: newSignoff
-        } : s)
-      }));
+      this.wfService.updateStageSignoff(this.job!, stage.id, {
+        stepType: value, fields: newFields, signoffInputs: {}, signoffFields: newSignoff,
+      }, { action: `${stage.label} — Type changed to ${value}` });
       return;
     }
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map(s => s.id === stage.id ? { ...s, stepType: value } : s)
-    }));
+    this.wfService.updateStageSignoff(this.job!, stage.id, {
+      stepType: value,
+    }, { action: `${stage.label} — Type changed to ${value}` });
   }
 
   swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
