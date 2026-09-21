@@ -52,7 +52,8 @@ export interface SignoffContext {
 }
 
 /* Layout of the weld-stage form (Tack / Root / Layer / Final / Fit weld build-up). */
-interface WeldRow { keys: string[]; width: number | null; spacerBefore?: string }
+/* width applies to every field in the row; widths overrides it for named fields */
+interface WeldRow { keys: string[]; width: number | null; widths?: Record<string, number>; spacerBefore?: string }
 interface WeldSection {
   title?: string;
   rows: WeldRow[];
@@ -76,7 +77,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { title: 'PH/IP Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
     { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
-    { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160 }] },
+    { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { sections: [
     { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },

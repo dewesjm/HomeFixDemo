@@ -304,6 +304,17 @@ export function setPenetrants(entries: PenetrantEntry[]) {
   localStorage.setItem(PENETRANT_LS_KEY, JSON.stringify(entries));
 }
 
+/* Consumable insert and filler metal share these choices: "Only Consumable Insert used as filler" copies the
+   Fit stage's insert type/size into the filler fields, so a value missing from either list shows up blank. */
+const METAL_TYPE_OPTIONS = [
+  { label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' }, { label: 'E7018', value: 'e7018' },
+  { label: 'ER70S-6', value: 'er70s-6' }, { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' },
+];
+const METAL_SIZE_OPTIONS = [
+  { label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' }, { label: '1/8"', value: '1/8' },
+  { label: '5/32"', value: '5/32' }, { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' },
+];
+
 /* ── Shared weld stage fields (Tack, Root, Final Weld) ── */
 const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'weldProcedure', label: 'GWP', type: 'select', required: true,
@@ -325,11 +336,9 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'weldPosition', label: 'Weld Position', type: 'select',
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true,
-    options: [{ label: 'ER70S-6', value: 'er70s-6' }, { label: 'ER80S-D2', value: 'er80s-d2' },
-      { label: 'E6010', value: 'e6010' }, { label: 'E7018', value: 'e7018' }] },
+    options: METAL_TYPE_OPTIONS },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true,
-    options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
-      { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' }] },
+    options: METAL_SIZE_OPTIONS },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', required: true },
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];
@@ -528,13 +537,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   Welding: [
     { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [
       { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select',
-        options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
-          { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
-          { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
+        options: METAL_TYPE_OPTIONS },
       { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select',
-        options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
-          { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
-          { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
+        options: METAL_SIZE_OPTIONS },
       { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text' },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -544,13 +549,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ], signoffFields: [] },
     { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
       { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,
-        options: [{ label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' },
-          { label: 'E7018', value: 'e7018' }, { label: 'ER70S-6', value: 'er70s-6' },
-          { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' }] },
+        options: METAL_TYPE_OPTIONS },
       { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', required: true,
-        options: [{ label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' },
-          { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' },
-          { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' }] },
+        options: METAL_SIZE_OPTIONS },
       { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: true },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -981,6 +982,8 @@ function seededFieldValue(f: StageField, rand: () => number): string {
   if (f.type === 'select' && f.options?.length) {
     return f.options[Math.floor(rand() * f.options.length)].value;
   }
+  /* checkboxes: signed verifications are checked, the rest left unchecked */
+  if (f.type === 'checkbox') return f.key.startsWith('verify') ? 'yes' : '';
   if (f.type === 'number') return String(1 + Math.floor(rand() * 120));
   if (f.type === 'text' && /mic$|^(consumableinsertid|backingringid)$/i.test(f.key)) return seededMic(rand);
   if (f.placeholder && f.placeholder.startsWith('e.g. ')) return f.placeholder.slice(5);

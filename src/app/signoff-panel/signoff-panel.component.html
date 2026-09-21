@@ -238,7 +238,7 @@
                                 @if (row.spacerBefore === f.key) {
                                   <div class="flex-1 invisible" [style.max-width.px]="row.width"></div>
                                 }
-                                <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.width }" />
+                                <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.widths?.[f.key] ?? row.width }" />
                               }
                             </div>
                           }
