@@ -32,43 +32,26 @@
     @if (st.id === 'fit' && st.stepType === 'weld-buildup') {
       <div class="flex flex-wrap items-end gap-x-4 gap-y-1 mb-sm">
         <span class="stage-field-label mb-1">Affected Item<span class="text-error">*</span></span>
-        @if (ctx().job.joiningItem) {
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-sm"
-                   [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="(st.inputs['affectedItems'] ?? []).includes('joiningItem')"
-                   (change)="ctx().toggleAffectedItem(st, 'joiningItem', $event)" />
-            <span class="text-sm">{{ ctx().job.joiningItem }}</span>
-            @if ((st.inputs['affectedItems'] ?? []).includes('joiningItem')) {
-              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl1 || '—' }}</span></span>
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-xs"
-                       [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                       [checked]="st.inputs['micVerified1'] === 'yes'"
-                       (change)="st.inputs['micVerified1'] = $any($event.target).checked ? 'yes' : ''" />
-                <span class="text-xs">MIC verified</span>
-              </label>
-            }
-          </label>
-        }
-        @if (ctx().job.joinToItem) {
-          <label class="flex items-center gap-1.5 cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-sm"
-                   [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="(st.inputs['affectedItems'] ?? []).includes('joinToItem')"
-                   (change)="ctx().toggleAffectedItem(st, 'joinToItem', $event)" />
-            <span class="text-sm">{{ ctx().job.joinToItem }}</span>
-            @if ((st.inputs['affectedItems'] ?? []).includes('joinToItem')) {
-              <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl2 || '—' }}</span></span>
-              <label class="flex items-center gap-1 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-xs"
-                       [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                       [checked]="st.inputs['micVerified2'] === 'yes'"
-                       (change)="st.inputs['micVerified2'] = $any($event.target).checked ? 'yes' : ''" />
-                <span class="text-xs">MIC verified</span>
-              </label>
-            }
-          </label>
+        @for (it of affectedItemSlots; track it.key) {
+          @if (ctx().job[it.key]) {
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [disabled]="!fieldsEditable()"
+                     [checked]="isAffected(it.key)"
+                     (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
+              <span>{{ ctx().job[it.key] }}</span>
+              @if (isAffected(it.key)) {
+                <span>MIC: <span class="mono">{{ ctx().job[it.mcl] || '—' }}</span></span>
+                <label class="flex items-center gap-1 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-xs"
+                         [disabled]="!fieldsEditable()"
+                         [checked]="st.inputs[it.micVerified] === 'yes'"
+                         (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''" />
+                  <span>MIC verified</span>
+                </label>
+              }
+            </label>
+          }
         }
         @if (ctx().fieldError(st.id, 'affectedItem'); as err) {
           <div class="text-error text-xs">{{ err }}</div>
@@ -224,303 +207,37 @@
           }
         </div>
       } @else if (st.id === 'tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.stepType === 'weld-buildup')) {
-        <!-- Tack stage: custom layout with subsections -->
+        <!-- Weld stages: layout driven by weldSections (see component) -->
         <div class="flex flex-col gap-3 stage-inputs">
-          <!-- Row 1: GWP, WTN, Weld Process -->
-          <div class="flex gap-4">
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
-                <div class="flex-1 max-w-[200px]">
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    @if (f.type === 'select') {
-                      <select class="select select-bordered w-full"
-                              [disabled]="f.key === 'weldProcess' || !ctx().inputsEditable(st, ctx().selectedStep())"
-                              [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                      </select>
-                    } @else {
-                      <input class="input input-bordered w-full" type="text"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                             [ngModel]="st.inputs[f.key]"
-                             (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                    }
-                  </label>
-                  @if (ctx().fieldError(st.id, f.key); as err) {
-                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
+          @for (sec of weldSections; track $index) {
+            @if (sectionVisible(sec)) {
+              <div>
+                @if (sec.title) { <div class="font-semibold text-sm mb-1">{{ sec.title }}</div> }
+                @if (sec.kind === 'checkbox') {
+                  @for (f of rowFields(sec.rows[0]); track f.key) {
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" class="checkbox checkbox-sm"
+                             [disabled]="!fieldsEditable()"
+                             [checked]="st.inputs[f.key] === 'yes'"
+                             (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
+                      <span>{{ f.label }}</span>
+                    </label>
                   }
-                </div>
-              }
-            }
-          </div>
-          <!-- Row 2: Qualification Check (yellow, disabled) -->
-          <div class="flex gap-4">
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'qualificationCheck') {
-                <div class="flex-1 max-w-[400px]">
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <input class="input input-bordered w-full bg-error/15 border-error text-error font-semibold" type="text"
-                           [disabled]="true" value="Failed. Input disabled, qualifications XYZ, ABC missing" />
-                  </label>
-                </div>
-              }
-            }
-          </div>
-          <!-- PH/IP Requirements -->
-          <div>
-            <div class="font-semibold text-sm mb-1">PH/IP Requirements</div>
-            <div class="flex gap-4">
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                @if (f.key === 'phMin') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      @if (st.inputs[f.key] === 'NC') {
-                        <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
-                      } @else {
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
+                } @else {
+                  @for (row of sec.rows; track $index) {
+                    <div class="flex gap-4" [class.mt-2]="$index > 0">
+                      @for (f of rowFields(row); track f.key) {
+                        @if (row.spacerBefore === f.key) {
+                          <div class="flex-1 invisible" [style.max-width.px]="row.width"></div>
+                        }
+                        <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.width }" />
                       }
-                    </label>
-                  </div>
-                }
-                @if (f.key === 'phMax') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      @if (st.inputs[f.key] === 'NC') {
-                        <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
-                      } @else {
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
-                      }
-                    </label>
-                  </div>
-                }
-                @if (f.key === 'ipMin') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      @if (st.inputs[f.key] === 'NC') {
-                        <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
-                      } @else {
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
-                      }
-                    </label>
-                  </div>
-                }
-                @if (f.key === 'ipMax') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      @if (st.inputs[f.key] === 'NC') {
-                        <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
-                      } @else {
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="true" [value]="st.inputs[f.key] || ''" />
-                      }
-                    </label>
-                  </div>
-                }
-              }
-            </div>
-          </div>
-          <!-- Override Requirements (only when matching WTN selected) -->
-          @if (ctx().hasOverrideFields(st)) {
-          <div>
-            <div class="font-semibold text-sm mb-1">Override Requirements</div>
-            <div class="flex gap-4">
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                @if (f.key === 'overridePhMin' || f.key === 'overridePhMax') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <input class="input input-bordered w-full" type="number"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                             [ngModel]="st.inputs[f.key]"
-                             (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                    </label>
-                  </div>
-                }
-              }
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                @if (f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <input class="input input-bordered w-full" type="number"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                             [ngModel]="st.inputs[f.key]"
-                             (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                    </label>
-                  </div>
-                }
-              }
-            </div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'overrideNote') {
-                <label class="stage-field mt-2">
-                  <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                  <input class="input input-bordered w-full" type="text"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                         [ngModel]="st.inputs[f.key]"
-                         (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                </label>
-              }
-            }
-          </div>
-          }
-          <!-- PH/IP Actuals -->
-          <div>
-            <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>
-            <div class="flex gap-4">
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                @if (f.key === 'actualPh') {
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <input class="input input-bordered w-full" type="number"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                             [ngModel]="st.inputs[f.key]"
-                             (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                    </label>
-                    @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                    }
-                  </div>
-                }
-                @if (f.key === 'actualIp') {
-                  <div class="flex-1 max-w-[120px] invisible"></div>
-                  <div class="flex-1 max-w-[120px]">
-                    <label class="stage-field">
-                      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                      <input class="input input-bordered w-full" type="number"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                             [ngModel]="st.inputs[f.key]"
-                             (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                    </label>
-                    @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                    }
-                  </div>
-                }
-              }
-            </div>
-          </div>
-          <!-- Weld Position (only when N Ind. = 1) -->
-          @if (ctx().job.nInd === '1') {
-          <div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'weldPosition') {
-                <label class="stage-field">
-                  <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                  <select class="select select-bordered w-full max-w-[200px]" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                          [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
-                </label>
-                @if (ctx().fieldError(st.id, f.key); as err) {
-                  <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                }
-              }
-            }
-          </div>
-          }
-          <!-- Consumable Insert (Root only) — sits above Filler Metal -->
-          @if (st.id === 'root-weld') {
-          <div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'consumableInsertOnly') {
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                         [checked]="st.inputs[f.key] === 'yes'"
-                         (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
-                  <span>{{ f.label }}</span>
-                </label>
-              }
-            }
-          </div>
-          }
-          <!-- Filler Metal -->
-          <div class="flex gap-4">
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'fillerMetalType') {
-                <div class="flex-1 max-w-[160px]">
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep()) || st.inputs['consumableInsertOnly'] === 'yes'"
-                            [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                    </select>
-                  </label>
-                  @if (ctx().fieldError(st.id, f.key); as err) {
-                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                    </div>
                   }
-                </div>
-              }
-              @if (f.key === 'fillerMetalSize') {
-                <div class="flex-1 max-w-[160px]">
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep()) || st.inputs['consumableInsertOnly'] === 'yes'"
-                            [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                      @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                    </select>
-                  </label>
-                  @if (ctx().fieldError(st.id, f.key); as err) {
-                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                  }
-                </div>
-              }
-              @if (f.key === 'fillerMetalMic') {
-                <div class="flex-1 max-w-[160px]">
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <input class="input input-bordered w-full" type="text"
-                           [disabled]="!ctx().inputsEditable(st, ctx().selectedStep()) || st.inputs['consumableInsertOnly'] === 'yes'"
-                           [ngModel]="st.inputs[f.key]"
-                           (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                  </label>
-                  @if (ctx().fieldError(st.id, f.key); as err) {
-                    <div class="text-error text-xs mt-0.5">{{ err }}</div>
-                  }
-                </div>
-              }
+                }
+              </div>
             }
-          </div>
-          <!-- 5X Inspection (Root / Final Weld only) -->
-          @if (st.id === 'root-weld' || st.id === 'final-weld') {
-          <div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'performed5x') {
-                <label class="stage-field">
-                  <span class="stage-field-label">{{ f.label }}</span>
-                  <select class="select select-bordered w-full max-w-[400px]" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                          [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().on5xChange(st, $event)">
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
-                </label>
-              }
-            }
-          </div>
           }
-          <!-- Comments -->
-          <div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'comments') {
-                <label class="stage-field">
-                  <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                  <input class="input input-bordered w-full" type="text"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                         [ngModel]="st.inputs[f.key]"
-                         (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                </label>
-              }
-            }
-          </div>
         </div>
       } @else {
         <!-- Default: generic field rendering -->
@@ -820,3 +537,35 @@
     }
   }
 </section>
+
+<!-- One weld-stage field cell (label, control, validation error) -->
+<ng-template #weldField let-f let-width="width">
+  <div class="flex-1 min-w-0" [style.max-width.px]="width">
+    <label class="stage-field">
+      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+      @if (f.key === 'qualificationCheck') {
+        <input class="input input-bordered w-full bg-error/15 border-error text-error font-semibold" type="text"
+               [disabled]="true" value="Failed. Input disabled, qualifications XYZ, ABC missing" />
+      } @else if (isReadonlyLimit(f)) {
+        @if (stage().inputs[f.key] === 'NC') {
+          <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
+        } @else {
+          <input class="input input-bordered w-full" type="number" [disabled]="true" [value]="stage().inputs[f.key] || ''" />
+        }
+      } @else if (f.type === 'select') {
+        <select class="select select-bordered w-full" [disabled]="!fieldsEditable() || isLocked(f)"
+                [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
+          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+        </select>
+      } @else {
+        <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+               [disabled]="!fieldsEditable() || isLocked(f)"
+               [ngModel]="stage().inputs[f.key]"
+               (blur)="ctx().stageInputBlur(stage(), f, $any($event.target).value)" />
+      }
+    </label>
+    @if (ctx().fieldError(stage().id, f.key); as err) {
+      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+    }
+  </div>
+</ng-template>

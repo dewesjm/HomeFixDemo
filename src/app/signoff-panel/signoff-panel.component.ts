@@ -50,6 +50,34 @@ export interface SignoffContext {
   reopenStage: (stage: WorkflowStage) => void;
 }
 
+/* Layout of the weld-stage form (Tack / Root / Layer / Final / Fit weld build-up). */
+interface WeldRow { keys: string[]; width: number | null; spacerBefore?: string }
+interface WeldSection {
+  title?: string;
+  rows: WeldRow[];
+  kind?: 'checkbox';
+  when?: (st: WorkflowStage, ctx: SignoffContext) => boolean;
+}
+
+const READONLY_LIMITS = new Set(['phMin', 'phMax', 'ipMin', 'ipMax']);
+const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
+
+const WELD_SECTIONS: WeldSection[] = [
+  { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
+  { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
+  { title: 'PH/IP Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
+  { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
+    { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
+    { keys: ['overrideNote'], width: null },
+  ] },
+  { title: 'PH/IP Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
+  { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
+  { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
+  { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160 }] },
+  { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
+  { rows: [{ keys: ['comments'], width: null }] },
+];
+
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
@@ -60,4 +88,44 @@ export class SignoffPanelComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();
+
+  weldSections = WELD_SECTIONS;
+
+  /* the two joint members a weld build-up can affect, with their MCL and MIC-verified keys */
+  affectedItemSlots = [
+    { key: 'joiningItem', mcl: 'mcl1', micVerified: 'micVerified1' },
+    { key: 'joinToItem', mcl: 'mcl2', micVerified: 'micVerified2' },
+  ] as const;
+
+  isAffected(key: string): boolean {
+    return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
+  }
+
+  sectionVisible(sec: WeldSection): boolean {
+    return !sec.when || sec.when(this.stage(), this.ctx());
+  }
+
+  rowFields(row: WeldRow): StageField[] {
+    const visible = this.ctx().visibleFields(this.stage());
+    return row.keys.map(k => visible.find(f => f.key === k)).filter((f): f is StageField => !!f);
+  }
+
+  fieldsEditable(): boolean {
+    return this.ctx().inputsEditable(this.stage(), this.ctx().selectedStep());
+  }
+
+  isReadonlyLimit(f: StageField): boolean {
+    return READONLY_LIMITS.has(f.key);
+  }
+
+  /* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox */
+  isLocked(f: StageField): boolean {
+    return f.key === 'weldProcess'
+      || (FILLER_KEYS.has(f.key) && this.stage().inputs['consumableInsertOnly'] === 'yes');
+  }
+
+  onSelect(f: StageField, value: string | null) {
+    if (f.key === 'performed5x') this.ctx().on5xChange(this.stage(), value ?? '');
+    else this.ctx().stageSelectChange(this.stage(), f, value);
+  }
 }
