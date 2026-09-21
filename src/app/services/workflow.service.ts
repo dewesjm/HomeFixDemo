@@ -6,7 +6,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE
+  WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE
 } from '../data/workflow';
 
 
@@ -19,7 +19,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.4.0';
+const CURRENT_VERSION = '1.5.0';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -254,8 +254,8 @@ export class WorkflowService {
         });
       }
 
-      /* repeatable stage + stepType='repeat': insert a fresh copy after this stage */
-      if (st.repeatable && st.stepType === 'repeat') {
+      /* repeatable stage + routingType='repeat': insert a fresh copy after this stage */
+      if (st.repeatable && st.routingType === 'repeat') {
         const idx = stages.findIndex(s => s.id === stageId);
         const clone: typeof st = {
           ...st,
@@ -266,7 +266,7 @@ export class WorkflowService {
           inputs: {},
           signoffInputs: {},
           signoffRecords: [],
-          stepType: 'standard',
+          routingType: 'standard',
         };
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
@@ -310,10 +310,10 @@ export class WorkflowService {
             result: null,
             rejectToStage: '',
             repeatable: false,
-            stepType: 'standard',
+            routingType: 'standard',
             swapStageId: '',
             inspectionType: '',
-            stepOptions: [],
+            routingOptions: [],
             signed: false,
             signedAt: null,
             decisionLabel: REPAIR_STAGE.decisionLabel,
@@ -393,8 +393,8 @@ export class WorkflowService {
 
   /* admin override: force a job to a given stage index — everything before it is
      marked signed/accepted, the chosen stage and everything after are re-opened,
-     so it becomes the current step */
-  forceStep(job: Job, targetIndex: number) {
+     so it becomes the current routing */
+  forceRouting(job: Job, targetIndex: number) {
     this.workflowFor(job).update(wf => {
       const when = new Date().toISOString();
       const stages = wf.stages.map((s, i) => {
@@ -436,8 +436,8 @@ export class WorkflowService {
     this.notify('success', 'Routing updated', `Set to routing ${targetIndex + 1}`);
   }
 
-  /* go back one step — re-opens the most recently signed stage */
-  goBackStep(job: Job, comment?: string) {
+  /* go back one routing — re-opens the most recently signed stage */
+  goBackRouting(job: Job, comment?: string) {
     this.workflowFor(job).update(wf => {
       const lastSignedIdx = [...wf.stages].map((s, i) => ({ s, i })).filter(x => x.s.signed).pop()?.i ?? -1;
       if (lastSignedIdx < 0) return wf; // nothing signed
@@ -478,11 +478,11 @@ export class WorkflowService {
   }
 
   // --- internals ----------------------------------------------------------
-  private withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'step'>): JobWorkflow {
+  private withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'routing'>): JobWorkflow {
     const entry: HistoryEntry = {
       ...e,
       when: new Date().toISOString(),
-      step: currentStepLabel(next.stages)
+      routing: currentRoutingLabel(next.stages)
     };
     return { ...next, history: [...prev.history, entry] };
   }
@@ -541,7 +541,7 @@ export class WorkflowService {
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;
           s.repeatable ??= false;
-          s.stepType ??= 'standard';
+          s.routingType ??= 'standard';
           s.swapStageId ??= '';
           s.role ??= '';
 

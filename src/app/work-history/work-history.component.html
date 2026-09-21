@@ -56,7 +56,7 @@
       <th appSortHeader class="min-w-14" [table]="table" field="action" label="Action"></th>
       <th class="min-w-12">Old value</th>
       <th class="min-w-12">New value</th>
-      <th appSortHeader class="min-w-12" [table]="table" field="step" label="Routing"></th>
+      <th appSortHeader class="min-w-12" [table]="table" field="routing" label="Routing"></th>
       <th appSortHeader class="min-w-13" [table]="table" field="hull" label="Hull"></th>
       <th class="min-w-11">Actions</th>
     </tr>
@@ -69,7 +69,7 @@
         <td>{{ r.action }}</td>
         <td class="hist-old">{{ r.from || '—' }}</td>
         <td class="hist-new">{{ r.to || '—' }}</td>
-        <td>{{ r.step }}</td>
+        <td>{{ r.routing }}</td>
         <td>
           <a [routerLink]="['/jobs', r.jobId]">{{ r.hull }}</a>
         </td>

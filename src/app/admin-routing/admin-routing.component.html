@@ -29,7 +29,7 @@
   <thead>
     <tr>
       <th class="min-w-8 text-center">#</th>
-      <th appSortHeader class="min-w-14" [table]="table" field="step" label="Routing"></th>
+      <th appSortHeader class="min-w-14" [table]="table" field="routing" label="Routing"></th>
       <th appSortHeader class="min-w-12" [table]="table" field="trade" label="Trade" filter="select" [options]="tradeOptions()"></th>
       <th class="min-w-14">Order</th>
       <th class="min-w-14">Reject routes to</th>
@@ -46,9 +46,9 @@
         <td>
           @if (editingId() === row.id) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Routing name"
-                   [ngModel]="row.step" (ngModelChange)="updateField(row, 'step', $event)" />
+                   [ngModel]="row.routing" (ngModelChange)="updateField(row, 'routing', $event)" />
           } @else {
-            {{ row.step || '—' }}
+            {{ row.routing || '—' }}
           }
         </td>
         <td>

@@ -66,10 +66,10 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
 
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
-  const stepAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
-  const push = (section: HistoryEntry['section'], action: string, step: string, from?: string, to?: string) => {
+  const routingAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
+  const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
-    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, action, from, to, step } });
+    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, action, from, to, routing } });
   };
 
   /* stages progressed through; some jobs fully signed, most a step or two in */
@@ -85,24 +85,24 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
       push('Stages', `${stage.label} — ${f.label}`, stage.label, '—', fieldValue(f, rand));
     }
     const decision = rand() < 0.85 ? 'ACCEPT' : 'REJECT';
-    push('Sign-off', `${stage.label} — Signed off`, stepAfter(k), undefined, decision);
+    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision);
   }
 
-  const restStep = stepAfter(signCount - 1);
+  const restRouting = routingAfter(signCount - 1);
 
   /* 2) work validation: component and/or condition code with count */
   if (rand() < 0.6) {
     const c = COMPONENTS[Math.floor(rand() * COMPONENTS.length)];
     const qty = 1 + Math.floor(rand() * 3);
-    push('Work Validation', 'Component added', restStep, undefined, `${c.name} (×${qty}, P/N ${c.part})`);
+    push('Work Validation', 'Component added', restRouting, undefined, `${c.name} (×${qty}, P/N ${c.part})`);
   }
   if (rand() < 0.4) {
-    push('Work Validation', 'Validation notes', restStep, '—', NOTES[Math.floor(rand() * NOTES.length)]);
+    push('Work Validation', 'Validation notes', restRouting, '—', NOTES[Math.floor(rand() * NOTES.length)]);
   }
 
   /* 3) sometimes an attachment */
   if (rand() < 0.55) {
-    push('Attachments', 'Attachment added', restStep, undefined, FILES[Math.floor(rand() * FILES.length)]);
+    push('Attachments', 'Attachment added', restRouting, undefined, FILES[Math.floor(rand() * FILES.length)]);
   }
 
   return out;

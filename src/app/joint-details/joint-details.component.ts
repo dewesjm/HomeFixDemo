@@ -11,7 +11,7 @@ import { Job } from '../data/jobs';
 })
 export class JointDetailsComponent {
   job = input.required<Job>();
-  currentStep = input.required<string>();
+  currentRouting = input.required<string>();
 
   showAudit = signal(false);
 

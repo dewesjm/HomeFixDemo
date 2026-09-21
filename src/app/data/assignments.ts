@@ -9,7 +9,7 @@ export interface Assignment {
   drawing: string;
   joint: string;
   trade: string;
-  step: string;
+  routing: string;
   location: string;
   assignedRoles: string[];
   dueDate: string;
@@ -18,7 +18,7 @@ export interface Assignment {
   notes: string;
 }
 
-const STEPS = [
+const ROUTINGS = [
   'Pre-Fit', 'Fit', 'Tack', 'Fit-Up Insp', 'Fit-Up Release', 'Deferred Tack',
   'Root', 'Root NDT UT/RT', 'Root NDT MT/PT', 'Root NDT VT/5X',
   'Layer', 'Layer NDT UT/RT', 'Layer NDT VT/5X', 'Layer NDT MT/PT',
@@ -43,7 +43,7 @@ function generateAssignments(): Assignment[] {
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const assignments: Assignment[] = [];
 
-  const rolesByStep: Record<string, string[]> = {
+  const rolesByRouting: Record<string, string[]> = {
     'Pre-Fit': ['NQC Inspector'],
     'Fit': ['Fitting'],
     'Tack': ['Welding'],
@@ -67,7 +67,7 @@ function generateAssignments(): Assignment[] {
 
   for (let i = 0; i < 18; i++) {
     const job = pick(JOBS);
-    const step = pick(STEPS);
+    const routing = pick(ROUTINGS);
     const dayOffset = Math.floor(rand() * 14);
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
@@ -80,9 +80,9 @@ function generateAssignments(): Assignment[] {
       drawing: job.drawing,
       joint: job.joint,
       trade: job.trade,
-      step,
+      routing,
       location: pick(LOCATIONS),
-      assignedRoles: rolesByStep[step] || ['View'],
+      assignedRoles: rolesByRouting[routing] || ['View'],
       dueDate: due.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
       assignedBy: pick(ASSIGNEES),

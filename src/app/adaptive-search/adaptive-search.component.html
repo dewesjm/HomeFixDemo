@@ -131,7 +131,7 @@
           <td>
             @switch (col.key) {
               @case ('id') { <span class="mono">{{ job.id }}</span> }
-              @case ('currentStep') { {{ currentStep(job) }} }
+              @case ('currentRouting') { {{ currentRouting(job) }} }
               @case ('scheduledFor') { {{ job.scheduledFor | date:'shortDate' }} }
               @default { {{ job[col.field!] || '—' }} }
             }

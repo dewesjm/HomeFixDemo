@@ -1,4 +1,4 @@
-<!-- Admin → Set step template (paired with admin-set-step.component.ts). -->
+<!-- Admin → Set routing template (paired with admin-set-routing.component.ts). -->
 <h2 class="section-title">Set routing</h2>
 <p class="section-sub">
   Force a job's workflow to a specific stage. Stages before it are marked signed;
@@ -21,7 +21,7 @@
     @if (selectedJob()) {
       <div>
         <div class="meta">Current routing</div>
-        <div><span class="badge badge-info badge-sm">{{ currentStep() }}</span></div>
+        <div><span class="badge badge-info badge-sm">{{ currentRouting() }}</span></div>
       </div>
 
       <div>
@@ -29,7 +29,7 @@
         <select class="select select-sm select-bordered w-full"
                 [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)">
           <option [ngValue]="null">Select a routing</option>
-          @for (o of stepOptions(); track o.value) {
+          @for (o of routingOptions(); track o.value) {
             <option [ngValue]="o.value">{{ o.label }}</option>
           }
         </select>

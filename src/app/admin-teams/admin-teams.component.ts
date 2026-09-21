@@ -27,7 +27,7 @@ const PERMISSIONS: Permission[] = [
   // Routing & Stages
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing & Stages' },
   { key: 'manage-templates', label: 'Manage stage templates', category: 'Routing & Stages' },
-  { key: 'force-step', label: 'Force routing override', category: 'Routing & Stages' },
+  { key: 'force-routing', label: 'Force routing override', category: 'Routing & Stages' },
   { key: 'view-all-stages', label: 'View all hull stages', category: 'Routing & Stages' },
   // Sign-off
   { key: 'signoff-fitup-release', label: 'Sign off Fit-Up Release', category: 'Sign-off' },

@@ -18,7 +18,7 @@ import { characteristicLabel } from '../data/characteristics';
 import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   getShops, WELD_OVERRIDE_FIELDS
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
@@ -40,7 +40,7 @@ export class JobDetailComponent implements OnDestroy {
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
 
-  /* Reset fit stage stepType + inputs on navigation so it reverts to default */
+  /* Reset fit stage routingType + inputs on navigation so it reverts to default */
   ngOnDestroy() {
     if (!this.job || !this.wf) return;
     const templates = getTemplates()[this.job.trade] ?? [];
@@ -49,10 +49,10 @@ export class JobDetailComponent implements OnDestroy {
       ...wf,
       stages: wf.stages.map(s => {
         if (s.id !== 'fit') return s;
-        if (s.stepType === 'fit') return s;
+        if (s.routingType === 'fit') return s;
         return {
           ...s,
-          stepType: 'fit',
+          routingType: 'fit',
           fields: (fitTpl?.fields ?? []).map(f => ({ ...f })),
           signoffFields: (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
           inputs: {},
@@ -67,8 +67,8 @@ export class JobDetailComponent implements OnDestroy {
   newPart = signal('');
   newQty = signal(1);
 
-  /* steps model: only show stages that are signed, required, or the current active stage */
-  stepsModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
+  /* routing model: only show stages that are signed, required, or the current active stage */
+  routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
     if (!this.wf) return [];
     const stages = this.wf().stages;
     const activeIdx = stages.findIndex(s => !s.signed);
@@ -78,20 +78,20 @@ export class JobDetailComponent implements OnDestroy {
       .map(s => ({ label: s.label, disabled: s.disabled, stageIndex: s.stageIndex }));
   });
   /* which stage's sign-off shows; defaults to active */
-  selectedStep = signal<number>(this.initialStep());
+  selectedRouting = signal<number>(this.initialRouting());
   /* index of the last stage the user modified inputs/signoff on */
   lastModifiedStageIdx = signal<number>(-1);
   /* inline field validation errors: key = `${stageId}:${fieldKey}` */
   fieldErrors = signal<Record<string, string>>({});
 
-  activeStepLabel = computed(() => {
-    const steps = this.stepsModel();
-    const idx = this.selectedStep();
-    const match = steps.find(s => s.stageIndex === idx);
+  activeRoutingLabel = computed(() => {
+    const stages = this.routingModel();
+    const idx = this.selectedRouting();
+    const match = stages.find(s => s.stageIndex === idx);
     return match?.label ?? '';
   });
 
-  currentStep = computed(() => (this.wf ? currentStepLabel(this.wf().stages) : ''));
+  currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
   soldSigned = computed(() => {
@@ -120,14 +120,14 @@ export class JobDetailComponent implements OnDestroy {
     return all.sort((a, b) => a.when.localeCompare(b.when));
   });
 
-  /* inspection/NDT steps must have the inspector explicitly choose what was performed */
+  /* inspection/NDT stages must have the inspector explicitly choose what was performed */
   inspectionTypeRequired(stage: WorkflowStage): boolean {
-    return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.stepOptions?.length;
+    return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
   }
 
-  defaultStepOption(stage: WorkflowStage): string {
-    if (!stage.stepOptions?.length) return '';
-    return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
+  defaultRoutingOption(stage: WorkflowStage): string {
+    if (!stage.routingOptions?.length) return '';
+    return stage.routingOptions.find(o => o.default)?.value ?? stage.routingOptions[0].value;
   }
 
   signoffCtx = computed<SignoffContext | null>(() => {
@@ -138,7 +138,7 @@ export class JobDetailComponent implements OnDestroy {
     return {
       job,
       wf: () => ({ stages: w.stages, fabricationData: w.fabricationData, signoffRecords: self.signoffRecords() }),
-      selectedStep: () => self.selectedStep(),
+      selectedRouting: () => self.selectedRouting(),
       jobComplete: () => self.jobComplete(),
       soldSigned: () => self.soldSigned(),
       fabLocked: () => self.fabLocked(),
@@ -157,7 +157,7 @@ export class JobDetailComponent implements OnDestroy {
       getFabValue: (k) => self.getFabValue(k),
       getReviewValue: (k) => self.getReviewValue(k),
       fabFieldRequired: (f) => self.fabFieldRequired(f),
-      defaultStepOption: (s) => self.defaultStepOption(s),
+      defaultRoutingOption: (s) => self.defaultRoutingOption(s),
       inspectionTypeRequired: (s) => self.inspectionTypeRequired(s),
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
@@ -170,7 +170,7 @@ export class JobDetailComponent implements OnDestroy {
       toggleAffectedItem: (s, item, e) => self.toggleAffectedItem(s, item, e),
       onConsumableInsertChange: (s, v) => self.onConsumableInsertChange(s, v),
       on5xChange: (s, v) => self.on5xChange(s, v),
-      updateStepType: (s, v) => self.updateStepType(s, v),
+      updateRoutingType: (s, v) => self.updateRoutingType(s, v),
       setInspectionType: (v) => self.setInspectionType(v),
       setStageResult: (s, r) => self.setStageResult(s, r),
       signStage: (s) => self.signStage(s),
@@ -222,7 +222,7 @@ export class JobDetailComponent implements OnDestroy {
   });
   isNdtStage = computed(() => {
     if (!this.wf) return false;
-    const stage = this.wf().stages[this.selectedStep()];
+    const stage = this.wf().stages[this.selectedRouting()];
     const id = stage?.id ?? '';
     return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
       || id === 'repair';
@@ -268,7 +268,7 @@ export class JobDetailComponent implements OnDestroy {
     const idx = stages.findIndex(s => s.required && !s.signed);
     return idx === -1 ? Math.max(0, stages.length - 1) : idx;
   }
-  private initialStep(): number { return this.indexOfActive(); }
+  private initialRouting(): number { return this.indexOfActive(); }
 
   // ---- stage display helpers ----
   /* locked until prior required stages signed */
@@ -311,7 +311,7 @@ export class JobDetailComponent implements OnDestroy {
     }
     if (!stage.result) return false;
     if (this.inspectionTypeRequired(stage) && !stage.inspectionType) return false;
-    if (stage.repeatable && !stage.stepType) return false;
+    if (stage.repeatable && !stage.routingType) return false;
     // Fit: fabrication data must have MIC 1, MIC 2, Drawing Rev, Actual Thickness
     if (stage.id === 'fit' && this.wf) {
       const fab = this.wf().fabricationData;
@@ -342,7 +342,7 @@ export class JobDetailComponent implements OnDestroy {
       });
   }
 
-  updateStepType(stage: WorkflowStage, value: string) {
+  updateRoutingType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
     const templates = getTemplates()[this.job.trade] ?? [];
     /* Fit stage: swap fields when switching between Fit and Weld Build up */
@@ -356,7 +356,7 @@ export class JobDetailComponent implements OnDestroy {
         ? []
         : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
       this.wfService.updateStageSignoff(this.job!, stage.id, {
-        stepType: value,
+        routingType: value,
         fields: newFields,
         signoffInputs: {},
         signoffFields: newSignoff,
@@ -364,7 +364,7 @@ export class JobDetailComponent implements OnDestroy {
       return;
     }
     this.wfService.updateStageSignoff(this.job!, stage.id, {
-      stepType: value,
+      routingType: value,
     }, { action: `${stage.label} — Type changed to ${value}` });
   }
 
@@ -377,7 +377,7 @@ export class JobDetailComponent implements OnDestroy {
   }
   updateSwapStage(stage: WorkflowStage, swapId: string) {
     if (!this.job || !this.wf) return;
-    const currentStep = this.selectedStep();
+    const currentRouting = this.selectedRouting();
     const templates = getTemplates()[this.job.trade] ?? [];
     const swapTpl = templates.find(t => t.id === swapId);
     if (!swapTpl) return;
@@ -391,8 +391,8 @@ export class JobDetailComponent implements OnDestroy {
         signoffFields: sf.map(f => ({ ...f })),
       } : s)
     }));
-    // Ensure the step selection doesn't shift during re-render
-    this.selectedStep.set(currentStep);
+    // Ensure the routing selection doesn't shift during re-render
+    this.selectedRouting.set(currentRouting);
   }
 
   // ---- stage inputs ----
@@ -402,7 +402,7 @@ export class JobDetailComponent implements OnDestroy {
     /* Weld build-up on fit stage: compute fields from the tack template definition
        rather than relying on stage.fields, which may not have propagated yet
        when Angular re-evaluates the @if gate in the same change-detection tick. */
-    if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+    if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
       const templates = job ? (getTemplates()[job.trade] ?? []) : [];
       const tackTpl = templates.find(t => t.id === 'tack');
       const base = tackTpl ? tackTpl.fields.map(f => ({ ...f })) : [];
@@ -756,7 +756,7 @@ export class JobDetailComponent implements OnDestroy {
       }
     }
     /* Weld build-up: affectedItems + micVerified */
-    if (stage.id === 'fit' && stage.stepType === 'weld-buildup') {
+    if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
       const raw = stage.inputs?.['affectedItems'] ?? '';
       const items = raw ? raw.split(',') : [];
       if (!items.length) {
@@ -820,7 +820,7 @@ export class JobDetailComponent implements OnDestroy {
     }
     if (!this.canSignStage(stage)) return;
     /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
-    if (stage.id === 'root-layer' && stage.stepType === 'interim') {
+    if (stage.id === 'root-layer' && stage.routingType === 'interim') {
       this.confirm.confirm({
         header: 'Confirm sign-off',
         message: 'By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.',
@@ -835,12 +835,12 @@ export class JobDetailComponent implements OnDestroy {
       });
       return;
     }
-    const stepNote = stage.repeatable && stage.stepType === 'repeat'
+    const routingNote = stage.repeatable && stage.routingType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.${stepNote}`,
+      message: `By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.${routingNote}`,
       acceptLabel: 'Signoff',
       rejectLabel: 'Cancel',
       password: true,
@@ -855,7 +855,7 @@ export class JobDetailComponent implements OnDestroy {
     if (!this.job) return;
     this.wfService.reopenStage(this.job, stage.id);
     const idx = this.wf!().stages.findIndex(s => s.id === stage.id);
-    if (idx >= 0) this.selectedStep.set(idx);
+    if (idx >= 0) this.selectedRouting.set(idx);
   }
 
   // ---- attachments ----
@@ -903,10 +903,10 @@ export class JobDetailComponent implements OnDestroy {
     }
   }
 
-  /* step option / inspection type handlers */
+  /* routing option / inspection type handlers */
   setInspectionType(value: string) {
     if (!this.job || !this.wf) return;
-    const idx = this.selectedStep();
+    const idx = this.selectedRouting();
     const stage = this.wf().stages[idx];
     if (!stage) return;
     this.wf.update(wf => ({

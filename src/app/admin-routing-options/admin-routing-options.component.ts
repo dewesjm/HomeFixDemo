@@ -1,11 +1,11 @@
-/* Admin → Step Options: manage per-stage dropdown options (e.g. Fit/Weld Build up, MT/PT) */
+/* Admin → Routing Options: manage per-stage dropdown options (e.g. Fit/Weld Build up, MT/PT) */
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
-import { getTemplates, setStageStepOptions, type StageOption } from '../data/workflow';
+import { getTemplates, setStageRoutingOptions, type StageOption } from '../data/workflow';
 
 interface StageRow {
   uid: string;
@@ -16,15 +16,15 @@ interface StageRow {
 }
 
 @Component({
-  selector: 'app-admin-step-options',
+  selector: 'app-admin-routing-options',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
-  templateUrl: './admin-step-options.component.html'
+  templateUrl: './admin-routing-options.component.html'
 })
-export class AdminStepOptionsComponent {
+export class AdminRoutingOptionsComponent {
   private messages = inject(ToastService);
 
   rows = signal<StageRow[]>(this.loadRows());
@@ -42,7 +42,7 @@ export class AdminStepOptionsComponent {
           trade,
           stageId: s.id,
           stageLabel: s.label,
-          options: s.stepOptions ? [...s.stepOptions] : [],
+          options: s.routingOptions ? [...s.routingOptions] : [],
         });
       }
     }
@@ -55,7 +55,7 @@ export class AdminStepOptionsComponent {
   }
 
   saveEdit(row: StageRow) {
-    setStageStepOptions(row.trade, row.stageId, row.options);
+    setStageRoutingOptions(row.trade, row.stageId, row.options);
     delete this.cloned[row.uid];
     this.editingUid.set(null);
     this.messages.add({ severity: 'success', summary: 'Saved', detail: `${row.stageLabel} options`, life: 3000 });

@@ -1,4 +1,4 @@
-// Admin → Steps: manage per-trade workflow steps with sequence ordering,
+// Admin → Routing: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), and reject routing.
 // Persists to localStorage via workflow.ts CRUD functions.
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -22,9 +22,9 @@ import {
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../data/workflow';
 
-interface StepRow {
+interface RoutingRow {
   id: string;
-  step: string;
+  routing: string;
   trade: Job['trade'];
   sequence: number;
   rejectToStage: string;
@@ -81,16 +81,16 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
 }
 
 @Component({
-  selector: 'app-admin-steps',
+  selector: 'app-admin-routing',
   standalone: true,
   imports: [
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
   ],
-  templateUrl: './admin-steps.component.html'
+  templateUrl: './admin-routing.component.html'
 })
-export class AdminStepsComponent {
+export class AdminRoutingComponent {
   tradeOptions = computed(() => getTradeOptions());
   roleOptions = computed(() => {
     const used = new Set<string>();
@@ -105,12 +105,12 @@ export class AdminStepsComponent {
   });
   stageOptions = signal(allStageIds());
 
-  rows = signal<StepRow[]>(this.buildInitialRows());
-  table = new TableState<StepRow>(['trade', 'sequence', 'step'], { trade: inArray });
+  rows = signal<RoutingRow[]>(this.buildInitialRows());
+  table = new TableState<RoutingRow>(['trade', 'sequence', 'routing'], { trade: inArray });
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
-  private clonedRows: Record<string, StepRow> = {};
+  private clonedRows: Record<string, RoutingRow> = {};
   private seq = 0;
 
   editingId = signal<string | null>(null);
@@ -141,13 +141,13 @@ export class AdminStepsComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  private buildInitialRows(): StepRow[] {
-    const rows: StepRow[] = [];
+  private buildInitialRows(): RoutingRow[] {
+    const rows: RoutingRow[] = [];
     for (const [trade, templates] of Object.entries(getTemplates())) {
       templates.forEach((t, i) => {
         rows.push({
           id: `${trade}:${t.id}`,
-          step: t.label,
+          routing: t.label,
           trade: trade as Job['trade'],
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
@@ -165,14 +165,14 @@ export class AdminStepsComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: StepRow = { id: fullId, step: '', trade, sequence: -1, rejectToStage: '', role: 'View' };
+    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View' };
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
     this.newRowId.set(fullId);
     setTimeout(() => this.newRowId.set(null), 2000);
   }
 
-  deleteRow(row: StepRow) {
+  deleteRow(row: RoutingRow) {
     const trade = row.trade;
     const stageId = row.id.split(':')[1];
     deleteStageTemplate(trade, stageId);
@@ -182,12 +182,12 @@ export class AdminStepsComponent {
     this.messages.add({ severity: 'info', summary: 'Routing deleted', life: 3000 });
   }
 
-  startEdit(row: StepRow) {
+  startEdit(row: RoutingRow) {
     this.clonedRows[row.id] = { ...row };
     this.editingId.set(row.id);
   }
 
-  saveEdit(row: StepRow) {
+  saveEdit(row: RoutingRow) {
     const parts = row.id.split(':');
     const stageId = parts[1];
     const isNew = stageId.startsWith('new-');
@@ -195,7 +195,7 @@ export class AdminStepsComponent {
     if (isNew) {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
-        id: newId, label: row.step, required: true, role: row.role,
+        id: newId, label: row.routing, required: true, role: row.role,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
       });
       const newFullId = `${row.trade}:${newId}`;
@@ -203,7 +203,7 @@ export class AdminStepsComponent {
       this.resequence(row.trade);
     } else {
       updateStageTemplate(row.trade, stageId, {
-        label: row.step,
+        label: row.routing,
         rejectToStage: row.rejectToStage,
         role: row.role,
       });
@@ -212,10 +212,10 @@ export class AdminStepsComponent {
     delete this.clonedRows[row.id];
     this.editingId.set(null);
     this.refreshStageOptions();
-    this.messages.add({ severity: 'success', summary: 'Routing saved', detail: row.step, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Routing saved', detail: row.routing, life: 3000 });
   }
 
-  cancelEdit(row: StepRow) {
+  cancelEdit(row: RoutingRow) {
     const original = this.clonedRows[row.id];
     if (original) {
       this.rows.update(r => r.map(x => (x.id === row.id ? original : x)));
@@ -224,7 +224,7 @@ export class AdminStepsComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: StepRow, field: 'step' | 'trade' | 'role', value: string) {
+  updateField(row: RoutingRow, field: 'routing' | 'trade' | 'role', value: string) {
     if (field === 'trade') {
       const oldTrade = row.trade;
       this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value as Job['trade'] } : x));
@@ -235,13 +235,13 @@ export class AdminStepsComponent {
     }
   }
 
-  updateRejectTo(row: StepRow, value: string) {
+  updateRejectTo(row: RoutingRow, value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectToStage: value } : x));
   }
 
   /* ── Reorder ── */
 
-  moveUp(row: StepRow) {
+  moveUp(row: RoutingRow) {
     const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
     const idx = tradeRows.findIndex(r => r.id === row.id);
     if (idx <= 0) return;
@@ -253,7 +253,7 @@ export class AdminStepsComponent {
     }));
   }
 
-  moveDown(row: StepRow) {
+  moveDown(row: RoutingRow) {
     const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
     const idx = tradeRows.findIndex(r => r.id === row.id);
     if (idx < 0 || idx >= tradeRows.length - 1) return;
@@ -265,11 +265,11 @@ export class AdminStepsComponent {
     }));
   }
 
-  isFirstInTrade(row: StepRow): boolean {
+  isFirstInTrade(row: RoutingRow): boolean {
     const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
     return tradeRows[0]?.id === row.id;
   }
-  isLastInTrade(row: StepRow): boolean {
+  isLastInTrade(row: RoutingRow): boolean {
     const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
     return tradeRows[tradeRows.length - 1]?.id === row.id;
   }
@@ -297,7 +297,7 @@ export class AdminStepsComponent {
 
   /* ── Field config dialog ── */
 
-  openFieldConfig(row: StepRow) {
+  openFieldConfig(row: RoutingRow) {
     const trade = row.trade;
     const stageId = row.id.split(':')[1];
     const templates = getTemplates();
@@ -305,7 +305,7 @@ export class AdminStepsComponent {
 
     this.fieldDlgTrade.set(trade);
     this.fieldDlgStageId.set(stageId);
-    this.fieldDlgStageLabel.set(row.step);
+    this.fieldDlgStageLabel.set(row.routing);
     this.readingFields.set((stage?.fields ?? []).map(toFieldRow));
     this.signoffFields.set((stage?.signoffFields ?? defaultSignoffFields()).map(toFieldRow));
     this.newReadingKey.set('');
@@ -373,9 +373,9 @@ export class AdminStepsComponent {
     addTrade(trade);
     // add rows for the new trade's default stages
     const templates = getTemplates()[trade] ?? [];
-    const newRows: StepRow[] = templates.map((t, i) => ({
+    const newRows: RoutingRow[] = templates.map((t, i) => ({
       id: `${trade}:${t.id}`,
-      step: t.label,
+      routing: t.label,
       trade,
       sequence: i + 1,
       rejectToStage: t.rejectToStage ?? '',
@@ -404,11 +404,11 @@ export class AdminStepsComponent {
   /* ── CSV export ── */
 
   exportCsv() {
-    downloadCsv('steps', [
-      { header: 'Order', value: (r: StepRow) => r.sequence },
-      { header: 'Routing', value: (r: StepRow) => r.step },
-      { header: 'Trade', value: (r: StepRow) => r.trade },
-      { header: 'Reject routes to', value: (r: StepRow) => r.rejectToStage || 'None' }
+    downloadCsv('routing', [
+      { header: 'Order', value: (r: RoutingRow) => r.sequence },
+      { header: 'Routing', value: (r: RoutingRow) => r.routing },
+      { header: 'Trade', value: (r: RoutingRow) => r.trade },
+      { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' }
     ], this.visibleRows());
   }
 }

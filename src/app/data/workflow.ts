@@ -69,11 +69,11 @@ export interface WorkflowStage {
   // --- per-stage sign-off ---
   result: StageResult | null;     /* required before signing, kept special */
   rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
-  repeatable: boolean;            /* signing with stepType='repeat' inserts another copy */
-  stepType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
+  repeatable: boolean;            /* signing with routingType='repeat' inserts another copy */
+  routingType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
   swapStageId: string;            /* which stage template to use for fields (empty = own) */
   inspectionType: string;         /* admin-managed sub-type (e.g. MT/PT on NDT MT/PT stage) */
-  stepOptions?: StageOption[];    /* admin-managed options for this stage */
+  routingOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
   signoffRecords: SignoffRecord[];
@@ -109,7 +109,7 @@ export interface HistoryEntry {
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
-  step: string;          /* step label at time of change */
+  routing: string;       /* routing label at time of change */
 }
 
 export interface JobWorkflow {
@@ -149,8 +149,8 @@ interface StageTemplate {
   repeatable?: boolean;
   /* role that this stage routes to */
   role?: string;
-  /* admin-managed step options (e.g. Fit/Weld Build up, MT/PT) */
-  stepOptions?: StageOption[];
+  /* admin-managed routing options (e.g. Fit/Weld Build up, MT/PT) */
+  routingOptions?: StageOption[];
 }
 
 /* ── Default sign-off fields (pre-populated for admin) ── */
@@ -254,16 +254,16 @@ export function setWeldPositions(positions: WeldPosition[]) {
   localStorage.setItem(WELD_POSITIONS_LS_KEY, JSON.stringify(positions));
 }
 
-/* ── Step options per stage (admin-configurable via localStorage) ── */
+/* ── Routing options per stage (admin-configurable via localStorage) ── */
 export type { StageOption };
 
-const STEP_OPTIONS_LS_KEY = STORAGE.routingOptions;
+const ROUTING_OPTIONS_LS_KEY = STORAGE.routingOptions;
 
-export function setStageStepOptions(trade: string, stageId: string, options: StageOption[]) {
-  const raw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
+export function setStageRoutingOptions(trade: string, stageId: string, options: StageOption[]) {
+  const raw = localStorage.getItem(ROUTING_OPTIONS_LS_KEY);
   const all: Record<string, StageOption[]> = raw ? JSON.parse(raw) : {};
   all[`${trade}:${stageId}`] = options;
-  localStorage.setItem(STEP_OPTIONS_LS_KEY, JSON.stringify(all));
+  localStorage.setItem(ROUTING_OPTIONS_LS_KEY, JSON.stringify(all));
 }
 
 /* ── Penetrant entries (admin-configurable via localStorage) ── */
@@ -401,7 +401,7 @@ function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: 'repair',
     decisionLabel: 'Inspection Results',
-    stepOptions: k.options.map(o => ({ ...o })),
+    routingOptions: k.options.map(o => ({ ...o })),
   };
 }
 
@@ -724,11 +724,11 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', required: true },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
       { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
-    ], stepOptions: [
+    ], routingOptions: [
       { label: 'Fit', value: 'fit', default: true },
       { label: 'Weld Build up', value: 'weld-buildup' },
     ] },
-    { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+    { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
       { label: 'Tack', value: 'standard', default: true },
     ] },
     { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
@@ -749,7 +749,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ], signoffFields: [] },
     { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
         { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
-      ], signoffFields: [], stepOptions: [
+      ], signoffFields: [], routingOptions: [
       { label: 'Root', value: 'standard', default: true },
     ] },
     ndtStage('root', 'utrt'),
@@ -757,14 +757,14 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('root', 'vt5x'),
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
       fields: WELD_STAGE_FIELDS,
-      signoffFields: [], stepOptions: [
+      signoffFields: [], routingOptions: [
         { label: 'Interim Layer', value: 'interim', default: true },
         { label: 'Final Layer', value: 'final' },
       ] },
     ndtStage('layer', 'utrt'),
     ndtStage('layer', 'vt5x'),
     ndtStage('layer', 'mtpt'),
-    { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], stepOptions: [
+    { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
       { label: 'Final Weld', value: 'standard', default: true },
     ] },
     ndtStage('final', 'utrt'),
@@ -823,7 +823,7 @@ interface SerializedStage {
   rejectToStage: string;
   repeatable?: boolean;
   role?: string;
-  stepOptions?: StageOption[];
+  routingOptions?: StageOption[];
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -837,12 +837,12 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectToStage: t.rejectToStage ?? '',
     repeatable: t.repeatable ?? false,
     role: t.role ?? '',
-    stepOptions: t.stepOptions,
+    routingOptions: t.routingOptions,
   };
 }
 
 function deserializeStage(s: SerializedStage): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', stepOptions: s.stepOptions };
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -862,8 +862,8 @@ let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
 export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   if (_merged) return _merged;
   const saved = loadSavedOverrides();
-  const stepOptsRaw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
-  const stepOptsAll: Record<string, StageOption[]> = stepOptsRaw ? JSON.parse(stepOptsRaw) : {};
+  const routingOptsRaw = localStorage.getItem(ROUTING_OPTIONS_LS_KEY);
+  const routingOptsAll: Record<string, StageOption[]> = routingOptsRaw ? JSON.parse(routingOptsRaw) : {};
   _merged = {} as Record<Job['trade'], StageTemplate[]>;
   // Start with static defaults, merge admin overrides by stage ID
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
@@ -878,10 +878,10 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    // Merge stepOptions from separate localStorage key
+    // Merge routingOptions from separate localStorage key
     for (const s of _merged[trade]) {
       const key = `${trade}:${s.id}`;
-      if (stepOptsAll[key]) s.stepOptions = stepOptsAll[key];
+      if (routingOptsAll[key]) s.routingOptions = routingOptsAll[key];
     }
   }
   // Include trades that exist only in localStorage (added via admin)
@@ -890,7 +890,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
       _merged[trade as Job['trade']] = stages.map(deserializeStage);
     }
   }
-  // Remove fabrication — it's a cross-stage data section, not a workflow step
+  // Remove fabrication — it's a cross-stage data section, not a routing stage
   for (const trade of Object.keys(_merged) as Job['trade'][]) {
     _merged[trade] = _merged[trade].filter(s => s.id !== 'fabrication');
   }
@@ -1027,12 +1027,12 @@ export function buildStages(job: Job): WorkflowStage[] {
       result: null,
       rejectToStage: t.rejectToStage ?? '',
       repeatable: t.repeatable ?? false,
-      stepType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? 'standard',
+      routingType: t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
-      /* inspection steps start blank so the inspector must state what was performed */
-      inspectionType: t.role === 'Inspector' ? '' : (t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? ''),
+      /* inspection stages start blank so the inspector must state what was performed */
+      inspectionType: t.role === 'Inspector' ? '' : (t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? ''),
       decisionLabel: t.decisionLabel ?? '',
-      stepOptions: t.stepOptions,
+      routingOptions: t.routingOptions,
       signed: false,
       signedAt: null,
       signoffRecords: [],
@@ -1108,7 +1108,7 @@ function seeded(n: number) {
   };
 }
 
-/* how many leading stages are already signed off — varies the "current step" per job.
+/* how many leading stages are already signed off — varies the "current routing" per job.
    Deterministic per job: ensures coverage of every stage including all NDT types. */
 function signedStageCount(job: Job, total: number): number {
   if (total <= 0) return 0;
@@ -1179,9 +1179,9 @@ export function seededWorkflow(job: Job): JobWorkflow {
       action: s.label,
       from: '',
       to: 'SAT',
-      step: s.label,
+      routing: s.label,
     });
-    const opts = s.stepOptions ?? [];
+    const opts = s.routingOptions ?? [];
     const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
     return {
       ...s,
@@ -1215,8 +1215,8 @@ export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
   return false;
 }
 
-/* first unsigned required stage, the current step */
-export function currentStepLabel(stages: WorkflowStage[]): string {
+/* first unsigned required stage, the current routing */
+export function currentRoutingLabel(stages: WorkflowStage[]): string {
   const next = stages.find(s => s.required && !s.signed);
   return next ? next.label : stages[stages.length - 1]?.label ?? 'Complete';
 }

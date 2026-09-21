@@ -24,7 +24,7 @@ import {
   loadVariants, saveVariants
 } from '../data/filter-schema';
 import { WorkflowService } from '../services/workflow.service';
-import { currentStepLabel } from '../data/workflow';
+import { currentRoutingLabel } from '../data/workflow';
 
 const DEFAULT_KEYS = ['hull', 'id', 'drawing', 'joint', 'ndt'];
 
@@ -88,10 +88,10 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'estimatedCost',   label: 'Est. cost',       field: 'estimatedCost',   sortField: 'estimatedCost',   width: 'min-w-10' },
   { key: 'estimatedHours',  label: 'Est. hours',      field: 'estimatedHours',  sortField: 'estimatedHours',  width: 'min-w-10' },
   { key: 'scheduledFor',    label: 'Scheduled for',   field: 'scheduledFor',    sortField: 'scheduledFor',    width: 'min-w-12' },
-  { key: 'currentStep',     label: 'Current routing',                                                                     width: 'min-w-13' },
+  { key: 'currentRouting',     label: 'Current routing',                                                                     width: 'min-w-13' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['id', 'hull', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];
+const DEFAULT_COLUMN_KEYS = ['id', 'hull', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentRouting'];
 const COLUMNS_LS_KEY = STORAGE.resultColumns;
 
 function loadColumnKeys(): string[] {
@@ -135,9 +135,9 @@ export class AdaptiveSearchComponent {
 
   table = new TableState<Job>(['hull', 'trade', 'technician']);
 
-  /* current workflow step label for a job */
-  currentStep(job: Job): string {
-    return currentStepLabel(this.wfService.workflowFor(job)().stages);
+  /* current routing label for a job */
+  currentRouting(job: Job): string {
+    return currentRoutingLabel(this.wfService.workflowFor(job)().stages);
   }
 
   openDetails(job: Job) {
@@ -369,7 +369,7 @@ export class AdaptiveSearchComponent {
   exportCsv() {
     downloadCsv('adaptive-search', this.visibleColumns().map(col => ({
       header: col.label,
-      value: (r: Job) => col.key === 'currentStep' ? this.currentStep(r) : col.field ? String((r as any)[col.field] ?? '') : ''
+      value: (r: Job) => col.key === 'currentRouting' ? this.currentRouting(r) : col.field ? String((r as any)[col.field] ?? '') : ''
     })), this.table.sorted());
   }
 

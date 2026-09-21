@@ -17,11 +17,11 @@ import {
   JOBS, Job
 } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { currentStepLabel, ROLES, DEFAULT_ROLE, type Role } from '../data/workflow';
+import { currentRoutingLabel, ROLES, DEFAULT_ROLE, type Role } from '../data/workflow';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
-type Row = Job & { currentStep: string };
+type Row = Job & { currentRouting: string };
 
 @Component({
   selector: 'app-table-search',
@@ -78,7 +78,7 @@ export class TableSearchComponent {
 
   table = new TableState<Row>(
     ['id', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber'],
-    { currentStep: inArray }
+    { currentRouting: inArray }
   );
 
   // Row selection
@@ -116,7 +116,7 @@ export class TableSearchComponent {
     if (ids.size === 0) return false;
     return this.table.paged()
       .filter(r => ids.has(r.id))
-      .every(r => r.currentStep === 'Fit-Up Release');
+      .every(r => r.currentRouting === 'Fit-Up Release');
   });
 
   releaseSelected() {
@@ -137,7 +137,7 @@ export class TableSearchComponent {
     if (role === 'View') {
       rows = JOBS;
     } else {
-      // Filter jobs where the current unsignoff'd step has matching role
+      // Filter jobs where the current unsignoff'd routing has matching role
       rows = JOBS.filter(j => {
         const wf = this.wfService.workflowFor(j)();
         const current = wf.stages.find(s => !s.signed);
@@ -145,18 +145,18 @@ export class TableSearchComponent {
         return stageRoles.includes(role);
       });
     }
-    return rows.map(j => ({ ...j, currentStep: this.currentStep(j) }));
+    return rows.map(j => ({ ...j, currentRouting: this.currentRouting(j) }));
   });
 
-  /* distinct current-step values for that column's multiselect filter */
-  stepOptions = computed(() =>
-    [...new Set(this.displayedJobs().map(r => r.currentStep))]
+  /* distinct current-routing values for that column's multiselect filter */
+  routingOptions = computed(() =>
+    [...new Set(this.displayedJobs().map(r => r.currentRouting))]
       .sort()
       .map(s => ({ label: s, value: s })));
 
-  //The workflow step
-  currentStep(job: Job): string {
-    return currentStepLabel(this.wfService.workflowFor(job)().stages);
+  //The current routing
+  currentRouting(job: Job): string {
+    return currentRoutingLabel(this.wfService.workflowFor(job)().stages);
   }
 
 //nav to details
@@ -171,7 +171,7 @@ export class TableSearchComponent {
 
   onRoleChange(role: Role) {
     this.selectedRole.set(role);
-    this.table.columnFilters.update(f => ({ ...f, currentStep: [] }));
+    this.table.columnFilters.update(f => ({ ...f, currentRouting: [] }));
   }
 
   clear() {
@@ -187,7 +187,7 @@ export class TableSearchComponent {
       { header: 'Joint', value: (r: Row) => r.joint },
       { header: 'Order', value: (r: Row) => r.order },
       { header: 'Sequence', value: (r: Row) => r.sequenceNumber },
-      { header: 'Current routing', value: (r: Row) => r.currentStep }
+      { header: 'Current routing', value: (r: Row) => r.currentRouting }
     ], this.table.sorted());
   }
 }

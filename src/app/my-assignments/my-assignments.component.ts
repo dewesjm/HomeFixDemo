@@ -26,7 +26,7 @@ export class MyAssignmentsComponent {
     return list.filter(a =>
       a.hull.toLowerCase().includes(q) ||
       a.drawing.toLowerCase().includes(q) ||
-      a.step.toLowerCase().includes(q) ||
+      a.routing.toLowerCase().includes(q) ||
       a.joint.toLowerCase().includes(q) ||
       a.location.toLowerCase().includes(q)
     );

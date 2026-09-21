@@ -12,18 +12,18 @@
   }
 
   @if (stage(); as st) {
-    <!-- Inspection Type / Step Type dropdown -->
-    @if (st.stepOptions && st.stepOptions.length > 0) {
+    <!-- Inspection Type / Routing Type dropdown -->
+    @if (st.routingOptions && st.routingOptions.length > 0) {
       <div class="mb-sm">
           <label class="stage-field">
             <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
             <select class="select select-bordered"
-                    [ngModel]="st.id === 'fit' ? (st.stepType || ctx().defaultStepOption(st)) : ctx().inspectionTypeRequired(st) ? st.inspectionType : (st.inspectionType || ctx().defaultStepOption(st))"
-                    (ngModelChange)="st.id === 'fit' ? ctx().updateStepType(st, $event) : ctx().setInspectionType($event)">
+                    [ngModel]="st.id === 'fit' ? (st.routingType || ctx().defaultRoutingOption(st)) : ctx().inspectionTypeRequired(st) ? st.inspectionType : (st.inspectionType || ctx().defaultRoutingOption(st))"
+                    (ngModelChange)="st.id === 'fit' ? ctx().updateRoutingType(st, $event) : ctx().setInspectionType($event)">
               @if (ctx().inspectionTypeRequired(st)) {
                 <option [ngValue]="''">Select the inspection performed…</option>
               }
-              @for (opt of st.stepOptions; track opt.value) {
+              @for (opt of st.routingOptions; track opt.value) {
                 <option [ngValue]="opt.value">{{ opt.label }}</option>
               }
             </select>
@@ -32,7 +32,7 @@
       }
 
     <!-- Affected Items + MIC (weld build-up only) -->
-    @if (st.id === 'fit' && st.stepType === 'weld-buildup') {
+    @if (st.id === 'fit' && st.routingType === 'weld-buildup') {
       <div class="flex flex-wrap items-end gap-x-4 gap-y-1 mb-sm">
         <span class="stage-field-label mb-1">Affected Item<span class="text-error">*</span></span>
         @for (it of affectedItemSlots; track it.key) {
@@ -84,7 +84,7 @@
                   <td>{{ ctx().getFabValue(f.key) || '—' }}</td>
                   <td>
                     <input type="checkbox" class="checkbox checkbox-sm"
-                           [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                           [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                            [checked]="st.inputs[f.key] === 'yes'"
                            (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   </td>
@@ -114,7 +114,7 @@
                     <td>{{ ctx().getReviewValue(f.key) || '—' }}</td>
                     <td>
                       <input type="checkbox" class="checkbox checkbox-sm"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                             [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                              [checked]="st.inputs[f.key] === 'yes'"
                              (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                     </td>
@@ -202,14 +202,14 @@
               <label class="stage-field">
                 <span class="stage-field-label">{{ f.label }}</span>
                 <input class="input input-bordered w-full" type="text"
-                       [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                       [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                        [ngModel]="st.inputs[f.key]"
                        (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
               </label>
             }
           }
         </div>
-      } @else if (st.id === 'tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.stepType === 'weld-buildup')) {
+      } @else if (st.id === 'tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.routingType === 'weld-buildup')) {
         <!-- Weld stages: layout driven by weldSections (see component) -->
         <div class="flex flex-col gap-3 stage-inputs">
           @for (sec of weldSections; track $index) {
@@ -251,7 +251,7 @@
               <div class="flex items-end gap-4 w-full">
                 <label class="flex items-center gap-2 cursor-pointer mb-6">
                   <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                         [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                          [checked]="st.inputs[f.key] === 'yes'"
                          (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
@@ -262,7 +262,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="text"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                               [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                                [ngModel]="st.inputs[g.key]"
                                (blur)="ctx().stageInputBlur(st, g, $any($event.target).value)" />
                       </label>
@@ -274,7 +274,7 @@
               <div class="flex items-end gap-4 w-full">
                 <label class="flex items-center gap-2 cursor-pointer mb-6">
                   <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                         [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                          [checked]="st.inputs[f.key] === 'yes'"
                          (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
@@ -285,7 +285,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
                         <input class="input input-bordered w-full" type="text"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                               [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                                [ngModel]="st.inputs[g.key]"
                                (blur)="ctx().stageInputBlur(st, g, $any($event.target).value)" />
                       </label>
@@ -301,7 +301,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
                         @if (g.type === 'select') {
-                          <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                          <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                                   [ngModel]="st.inputs[g.key]" (ngModelChange)="ctx().stageSelectChange(st, g, $event)">
                             <option [ngValue]="null">Select</option>
                             @for (o of g.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
@@ -317,7 +317,7 @@
             @if (f.type === 'checkbox') {
               <label class="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-sm"
-                       [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                       [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                        [checked]="st.inputs[f.key] === 'yes'"
                        (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                 <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
@@ -329,7 +329,7 @@
                   @for (o of f.options || []; track o.value) {
                     <label class="flex items-center gap-2 cursor-pointer">
                       <input type="radio" class="radio radio-sm" [name]="'field-' + st.id + '-' + f.key"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                             [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                              [checked]="st.inputs[f.key] === o.value"
                              (change)="ctx().stageInputBlur(st, f, o.value)" />
                       <span>{{ o.label }}</span>
@@ -341,14 +341,14 @@
               <label class="stage-field">
                 <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
                 @if (f.type === 'select') {
-                  <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                  <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                           [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
                   <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
                          [placeholder]="f.placeholder || ''"
-                         [disabled]="f.disabled || !ctx().inputsEditable(st, ctx().selectedStep())"
+                         [disabled]="f.disabled || !ctx().inputsEditable(st, ctx().selectedRouting())"
                          [ngModel]="st.inputs[f.key]"
                          (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
                 }
@@ -367,7 +367,7 @@
     @if (st.required) {
       <div class="signoff-fields">
         <!-- Fit stage: consumable row + consumable insert + backing ring row + comments + defer tack -->
-        @if (st.id === 'fit' && st.stepType !== 'weld-buildup') {
+        @if (st.id === 'fit' && st.routingType !== 'weld-buildup') {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
@@ -436,20 +436,20 @@
             }
           }
         }
-        <!-- Step type (repeatable stages only) -->
+        <!-- Routing type (repeatable stages only) -->
         @if (st.repeatable && !st.signed) {
           <div>
             <div class="meta">Routing type <span class="req">*</span></div>
             <div class="result-radios">
               <label>
-                <input type="radio" class="radio radio-sm" [name]="'step-' + st.id"
-                       [checked]="st.stepType === 'repeat'" (change)="ctx().updateStepType(st, 'repeat')" />
+                <input type="radio" class="radio radio-sm" [name]="'routing-type-' + st.id"
+                       [checked]="st.routingType === 'repeat'" (change)="ctx().updateRoutingType(st, 'repeat')" />
                 <span>Repeat</span>
               </label>
               <label>
-                <input type="radio" class="radio radio-sm" [name]="'step-' + st.id"
-                       [checked]="st.stepType === 'final' || st.stepType === 'standard'"
-                       (change)="ctx().updateStepType(st, 'final')" />
+                <input type="radio" class="radio radio-sm" [name]="'routing-type-' + st.id"
+                       [checked]="st.routingType === 'final' || st.routingType === 'standard'"
+                       (change)="ctx().updateRoutingType(st, 'final')" />
                 <span>Final</span>
               </label>
             </div>
@@ -528,7 +528,7 @@
           </span>
           <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '—' }} on {{ st.signedAt | date:'medium' }}</span>
           <span class="spacer"></span>
-          @if (ctx().canReopen(st, ctx().selectedStep())) {
+          @if (ctx().canReopen(st, ctx().selectedRouting())) {
             <button type="button" class="btn btn-ghost btn-sm" (click)="ctx().reopenStage(st)">
               <svg lucideLockOpen class="size-4"></svg> Re-open
             </button>

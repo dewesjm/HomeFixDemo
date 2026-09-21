@@ -1,5 +1,5 @@
-// Admin → Set step: force a job's workflow to a chosen stage (current-step override).
-// Picks a job, shows its current step, and lets an admin jump it to any stage.
+// Admin → Set routing: force a job's workflow to a chosen stage (current-routing override).
+// Picks a job, shows its current routing, and lets an admin jump it to any stage.
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,15 +9,15 @@ import { ConfirmService } from '../shared/confirm.service';
 
 import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { currentStepLabel } from '../data/workflow';
+import { currentRoutingLabel } from '../data/workflow';
 
 @Component({
-  selector: 'app-admin-set-step',
+  selector: 'app-admin-set-routing',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideStepForward],
-  templateUrl: './admin-set-step.component.html'
+  templateUrl: './admin-set-routing.component.html'
 })
-export class AdminSetStepComponent {
+export class AdminSetRoutingComponent {
   private wfService = inject(WorkflowService);
   private confirm = inject(ConfirmService);
 
@@ -33,14 +33,14 @@ export class AdminSetStepComponent {
     return job ? this.wfService.workflowFor(job)() : null;
   });
 
-  stepOptions = computed(() => {
+  routingOptions = computed(() => {
     const wf = this.workflow();
     return wf ? wf.stages.map((s, i) => ({ label: `${i + 1}. ${s.label}`, value: i })) : [];
   });
 
-  currentStep = computed(() => {
+  currentRouting = computed(() => {
     const wf = this.workflow();
-    return wf ? currentStepLabel(wf.stages) : '';
+    return wf ? currentRoutingLabel(wf.stages) : '';
   });
 
   pickJob(id: string | null) {
@@ -52,15 +52,15 @@ export class AdminSetStepComponent {
     const job = this.selectedJob();
     const idx = this.targetIndex();
     if (!job || idx === null) return;
-    const label = this.stepOptions()[idx]?.label ?? `routing ${idx + 1}`;
+    const label = this.routingOptions()[idx]?.label ?? `routing ${idx + 1}`;
     this.confirm.confirm({
       header: 'Force routing?',
       message: `This re-opens "${label}" and every stage after it, discarding their sign-offs on ${job.hull}. Continue?`,
       acceptLabel: 'Force routing',
       rejectLabel: 'Cancel',
       accept: () => {
-        this.wfService.forceStep(job, idx);
-        this.targetIndex.set(null);   // current step now reflects the change
+        this.wfService.forceRouting(job, idx);
+        this.targetIndex.set(null);   // current routing now reflects the change
       }
     });
   }

@@ -15,7 +15,7 @@
         <div class="detail-row"><span class="meta">Wall Thickness</span><span>{{ job().wallThickness || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Nuclear Indicator</span><span>{{ job().nInd || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Sequence #</span><span>{{ job().sequenceNumber || '—' }}</span></div>
-        <div class="detail-row"><span class="meta">Routing</span><span>{{ currentStep() }}</span></div>
+        <div class="detail-row"><span class="meta">Routing</span><span>{{ currentRouting() }}</span></div>
         <div class="detail-row"><span class="meta">Engineering Notes</span><span>{{ job().engineeringNotes || '—' }}</span></div>
       </div>
     </div>

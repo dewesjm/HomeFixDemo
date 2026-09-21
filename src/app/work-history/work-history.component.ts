@@ -46,7 +46,7 @@ export class WorkHistoryComponent {
   deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
-    ['hull', 'action', 'from', 'to', 'step'],
+    ['hull', 'action', 'from', 'to', 'routing'],
     {}
   );
 
@@ -128,11 +128,11 @@ export class WorkHistoryComponent {
     return jobEntries.length > 0 && jobEntries[0] === r;
   }
 
-  /* go back one step for a job */
+  /* go back one routing for a job */
   goBack(jobId: string, comment: string) {
     const job = this.jobById.get(jobId);
     if (!job) return;
-    this.wfService.goBackStep(job, comment);
+    this.wfService.goBackRouting(job, comment);
     this.cancelDeprogress();
   }
 
@@ -163,7 +163,7 @@ export class WorkHistoryComponent {
       { header: 'Action',    value: (r: ActivityRow) => r.action },
       { header: 'Old value', value: (r: ActivityRow) => r.from ?? '' },
       { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
-      { header: 'Routing',      value: (r: ActivityRow) => r.step },
+      { header: 'Routing',   value: (r: ActivityRow) => r.routing },
       { header: 'XREFID', value: (r: ActivityRow) => r.jobId },
       { header: 'Hull',      value: (r: ActivityRow) => r.hull }
     ], this.table.sorted());

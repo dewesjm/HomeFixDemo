@@ -5,13 +5,13 @@ import { TableSearchComponent } from './table-search/table-search.component';
 import { WorkHistoryComponent } from './work-history/work-history.component';
 import { AdaptiveSearchComponent } from './adaptive-search/adaptive-search.component';
 import { JobDetailComponent } from './job-detail/job-detail.component';
-import { AdminStepsComponent } from './admin-steps/admin-steps.component';
+import { AdminRoutingComponent } from './admin-routing/admin-routing.component';
 import { AdminCharacteristicsComponent } from './admin-characteristics/admin-characteristics.component';
-import { AdminSetStepComponent } from './admin-set-step/admin-set-step.component';
+import { AdminSetRoutingComponent } from './admin-set-routing/admin-set-routing.component';
 import { AdminSignoffFieldsComponent } from './admin-signoff-fields/admin-signoff-fields.component';
 import { AdminNdtComponent } from './admin-ndt/admin-ndt.component';
 import { AdminLocationsComponent } from './admin-locations/admin-locations.component';
-import { AdminStepOptionsComponent } from './admin-step-options/admin-step-options.component';
+import { AdminRoutingOptionsComponent } from './admin-routing-options/admin-routing-options.component';
 import { AdminWeldPositionsComponent } from './admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './admin-joint-designs/admin-joint-designs.component';
@@ -31,13 +31,13 @@ export const routes: Routes = [
   { path: 'assignments', component: MyAssignmentsComponent, title: 'My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
-  { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Routing' },
+  { path: 'admin/routing', component: AdminRoutingComponent, title: 'Admin Routing' },
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'Attribute Codes' },
-  { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Routing' },
+  { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'Set Routing' },
   { path: 'admin/signoff-fields', component: AdminSignoffFieldsComponent, title: 'Signoff Fields' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'NDT Configuration' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'Locations' },
-  { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Routing Options' },
+  { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'Routing Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'Banner Message' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'Joint Designs' },

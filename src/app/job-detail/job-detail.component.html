@@ -6,21 +6,21 @@
     <span class="back-link" (click)="back()">&larr; Back</span>
     <span class="section-sub m-0">
       Hull {{ j.hull }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
-      <strong>Routing:</strong> {{ currentStep() }}
+      <strong>Routing:</strong> {{ currentRouting() }}
     </span>
     <span class="spacer"></span>
     <app-sync-status />
   </div>
 
-  <app-routing-bar [steps]="stepsModel()" [selectedStep]="selectedStep()" />
+  <app-routing-bar [stages]="routingModel()" [selectedRouting]="selectedRouting()" />
 
-  <app-joint-details [job]="j" [currentStep]="currentStep()" />
+  <app-joint-details [job]="j" [currentRouting]="currentRouting()" />
 
   <app-fabrication [trade]="j.trade" [fabricationData]="w.fabricationData" [fields]="fabFields()" [fabLocked]="fabLocked()" [jobComplete]="jobComplete()" [fabErrors]="fabErrors()" [fabFieldRequired]="fabFieldRequired" (inputBlur)="fabInputBlur($event.key, $event.value)" (selectChange)="fabSelectChange($event.key, $event.value)" />
 
   <!-- 5 ───────── Signoff (current stage) ───────── -->
   @if (signoffCtx(); as ctx) {
-    <app-signoff-panel [ctx]="ctx" [stage]="w.stages[selectedStep()]" [stageIndex]="selectedStep()" />
+    <app-signoff-panel [ctx]="ctx" [stage]="w.stages[selectedRouting()]" [stageIndex]="selectedRouting()" />
   }
 
   <!-- 3.5 ───────── Attachments (NDT stages only) ───────── -->

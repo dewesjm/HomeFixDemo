@@ -8,7 +8,7 @@ import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTI
 export interface SignoffContext {
   job: Job;
   wf: () => { stages: WorkflowStage[]; fabricationData: Record<string, string>; signoffRecords: any[] };
-  selectedStep: () => number;
+  selectedRouting: () => number;
   jobComplete: () => boolean;
   soldSigned: () => boolean;
   fabLocked: () => boolean;
@@ -29,7 +29,7 @@ export interface SignoffContext {
   getFabValue: (fieldKey: string) => string;
   getReviewValue: (fieldKey: string) => string;
   fabFieldRequired: (f: FabricationField) => boolean;
-  defaultStepOption: (stage: WorkflowStage) => string;
+  defaultRoutingOption: (stage: WorkflowStage) => string;
   inspectionTypeRequired: (stage: WorkflowStage) => boolean;
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
@@ -44,7 +44,7 @@ export interface SignoffContext {
   toggleAffectedItem: (stage: WorkflowStage, item: string, event: Event) => void;
   onConsumableInsertChange: (stage: WorkflowStage, value: string) => void;
   on5xChange: (stage: WorkflowStage, value: string) => void;
-  updateStepType: (stage: WorkflowStage, value: string) => void;
+  updateRoutingType: (stage: WorkflowStage, value: string) => void;
   setInspectionType: (value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;
@@ -112,7 +112,7 @@ export class SignoffPanelComponent {
   }
 
   fieldsEditable(): boolean {
-    return this.ctx().inputsEditable(this.stage(), this.ctx().selectedStep());
+    return this.ctx().inputsEditable(this.stage(), this.ctx().selectedRouting());
   }
 
   isReadonlyLimit(f: StageField): boolean {
