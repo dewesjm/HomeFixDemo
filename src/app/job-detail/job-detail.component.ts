@@ -423,8 +423,8 @@ export class JobDetailComponent implements OnDestroy {
         const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
         return mcl1Traceable || mcl2Traceable;
       }
-      // Override fields only visible when a matching WTN is selected on any weld stage
-      if (f.key.startsWith('override') && !this.showOverrideForStage(stage)) return false;
+      // Override fields only visible when a matching WTN is selected on this stage
+      if (f.key.startsWith('override') && !this.WTN_OVERRIDE_WTNS.has(stage.inputs?.['wtn'] ?? '')) return false;
       return true;
     });
     return result;
@@ -635,19 +635,15 @@ export class JobDetailComponent implements OnDestroy {
           if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
         }
       }
-      /* Populate/clear override fields on weld stages when WTN changes */
+      /* Populate/clear override fields on this stage when WTN changes */
       if (field.key === 'wtn' && this.job && this.wf) {
-        const weldStages = ['tack', 'root-weld', 'final-weld'];
         const ov = this.WTN_OVERRIDE_VALUES[v];
         const overrideMap: Record<string, string> = ov
           ? { overridePhMin: ov.phMin, overridePhMax: ov.phMax, overrideIpMin: ov.ipMin, overrideIpMax: ov.ipMax, overrideNote: ov.note }
           : { overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '' };
-        for (const s of this.wf().stages) {
-          if (!weldStages.includes(s.id)) continue;
-          for (const [fk, val] of Object.entries(overrideMap)) {
-            const f = s.fields.find(ff => ff.key === fk);
-            if (f) this.wfService.setStageInput(this.job, s.id, f, val);
-          }
+        for (const [fk, val] of Object.entries(overrideMap)) {
+          const f = stage.fields.find(ff => ff.key === fk);
+          if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
         }
       }
     }
