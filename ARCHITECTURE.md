@@ -73,6 +73,7 @@ src/app/
     assignments.ts       Assignment model + seeded generator (36)
     mock-history.ts      Seeded activity entries
     filter-schema.ts     Schema-driven filter engine for Advanced Search
+    people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     storage-keys.ts      Every localStorage key + clearStaleCaches()
     banner.ts            Admin banner load/save/bannerFor(page)
     joint-designs.ts, characteristics.ts, mcl-traceability.ts, export-csv.ts
@@ -146,8 +147,8 @@ src/app/
 - **Interim Layer** signs off and navigates away; **5X** auto-signs the matching VT/5X stage.
 
 ### My Assignments, History, Weld Planning
-- My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, Location, Assigned To, Assignment #), keyword filter, banner.
-- History: When, Who, Action, Old/New, Routing, Hull, Actions; filter by person/job; CSV; deprogress with required comment.
+- My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, Location, Assigned To, Assignment #, Expires), keyword filter, banner. `expirationDate` is seeded 0-6 days out (always within a week).
+- History: When, Who (name + title held at the time), Action, Old/New, Routing, Hull, Actions. **Person filter is a typeahead** (`searchPeople`: any order of first/last name prefixes, or id; never a full list). **Field edits by the same person on the same job and stage within 15 min collapse into one expandable row** (`grouped` in the component; sign-offs and other events are never grouped; CSV exports one line per field). Each `HistoryEntry` carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. Deprogress needs a required comment.
 - Weld Planning: separate joint-plan data (`wp` list/form/detail/mass edit/admin lists) with its own `hull` field and joint-plan `title`.
 
 ## Data schema
@@ -235,3 +236,7 @@ src/app/
 - `.layout` — `height: 100vh; flex column`; `.topnav` sticky, 3rem, `z-index: 50`; `.content-body` scrolls; `.table-page-wrap` fixes the header/filters and scrolls the table.
 - Theming: 32 DaisyUI themes; default `forest`; app tokens (`--app-bg`, `--app-surface`, `--app-border`, `--app-text-muted`) track the active theme. Toasts use `color-mix()` with theme variables.
 - Shared components: ToastHost, ConfirmDialog (native `<dialog>`, password), TablePager, MultiselectDropdown, SortHeader.
+
+## Gotchas
+
+- **Fabrication select labels**: `Location` and `Revised Joint Design` options exist only at runtime (`withRuntimeOptions()` in `job-detail`); the static `FABRICATION_FIELDS` entries have none. Any place that shows a fabrication value (e.g. Fit-Up Insp verification grid) must resolve its label through that helper, or it shows the raw stored code (`bj-g` instead of `BJ-G`).

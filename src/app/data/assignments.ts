@@ -13,6 +13,7 @@ export interface Assignment {
   location: string;
   assignedRoles: string[];
   dueDate: string;
+  expirationDate: string;   /* seeded 0-6 days out, so always within a week */
   assignedDate: string;
   assignedBy: string;
   notes: string;
@@ -71,6 +72,7 @@ function generateAssignments(): Assignment[] {
     const dayOffset = Math.floor(rand() * 14);
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
+    const expires = new Date(Date.now() + ((i * 3) % 7) * 86400000);
 
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
@@ -84,6 +86,7 @@ function generateAssignments(): Assignment[] {
       location: pick(LOCATIONS),
       assignedRoles: rolesByRouting[routing] || ['View'],
       dueDate: due.toISOString().slice(0, 10),
+      expirationDate: expires.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
       assignedBy: pick(ASSIGNEES),
       notes: rand() < 0.3 ? pick(['Priority client', 'Rework required', 'Awaiting materials', '']) : '',

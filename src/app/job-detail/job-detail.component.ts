@@ -199,14 +199,15 @@ export class JobDetailComponent implements OnDestroy {
         if (f.key === 'id2') return mcl2Traceable;
         return true;
       })
-      .map(f =>
-        f.key === 'location'
-          ? { ...f, options: shopOptions() }
-          : f.key === 'revisedJointDesign'
-          ? { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] }
-          : f
-      );
+      .map(f => this.withRuntimeOptions(f));
   });
+  /* Location and Revised Joint Design get their options at runtime (admin lists); the static
+     field definition has none. Anything that shows a fabrication value's label must go through this. */
+  private withRuntimeOptions(f: FabricationField): FabricationField {
+    if (f.key === 'location') return { ...f, options: shopOptions() };
+    if (f.key === 'revisedJointDesign') return { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] };
+    return f;
+  }
   fabErrors = computed(() => {
     if (!this.wf) return {};
     const fab = this.wf().fabricationData;
@@ -503,8 +504,9 @@ export class JobDetailComponent implements OnDestroy {
     if (!val) return '';
     // Resolve select field labels
     const fabField = FABRICATION_FIELDS.find(f => f.key === fabKey);
-    if (fabField?.type === 'select' && fabField.options) {
-      const match = fabField.options.find(o => o.value === val);
+    const options = fabField ? this.withRuntimeOptions(fabField).options : undefined;
+    if (fabField?.type === 'select' && options) {
+      const match = options.find(o => o.value === val);
       return match?.label ?? val;
     }
     return val;
