@@ -352,7 +352,7 @@ const NDT_COMMON_FIELDS: StageField[] = [
 const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options: StageOption[] }> = {
   utrt: {
     label: 'UT/RT',
-    options: [{ label: 'UT', value: 'ut', default: true }, { label: 'RT', value: 'rt' }],
+    options: [{ label: 'UT', value: 'ut' }, { label: 'RT', value: 'rt' }],
     fields: [
       { key: 'degreeRt', label: 'Degree of RT Performed', type: 'radio', showIf: { key: 'inspectionType', equals: 'rt' },
         options: [{ label: '60', value: '60' }, { label: '360', value: '360' }] },
@@ -366,7 +366,7 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
   },
   mtpt: {
     label: 'MT/PT',
-    options: [{ label: 'MT', value: 'mt', default: true }, { label: 'PT', value: 'pt' }],
+    options: [{ label: 'MT', value: 'mt' }, { label: 'PT', value: 'pt' }],
     fields: [
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
@@ -380,7 +380,7 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
   },
   vt5x: {
     label: 'VT/5X',
-    options: [{ label: 'VT', value: 'vt', default: true }, { label: '5X', value: '5x' }],
+    options: [{ label: 'VT', value: 'vt' }, { label: '5X', value: '5x' }],
     fields: [
       { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
@@ -1031,7 +1031,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       repeatable: t.repeatable ?? false,
       stepType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
-      inspectionType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? '',
+      /* inspection steps start blank so the inspector must state what was performed */
+      inspectionType: t.role === 'Inspector' ? '' : (t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? ''),
       decisionLabel: t.decisionLabel ?? '',
       stepOptions: t.stepOptions,
       signed: false,
@@ -1182,8 +1183,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
       to: 'SAT',
       step: s.label,
     });
+    const opts = s.stepOptions ?? [];
+    const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
     return {
       ...s,
+      inspectionType,
       inputs,
       signoffInputs,
       result: 'sat' as StageResult,

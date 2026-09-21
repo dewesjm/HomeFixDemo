@@ -16,10 +16,13 @@
     @if (st.stepOptions && st.stepOptions.length > 0) {
       <div class="mb-sm">
           <label class="stage-field">
-            <span class="stage-field-label font-semibold">Type</span>
+            <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
             <select class="select select-bordered"
-                    [ngModel]="st.id === 'fit' ? (st.stepType || ctx().defaultStepOption(st)) : (st.inspectionType || ctx().defaultStepOption(st))"
+                    [ngModel]="st.id === 'fit' ? (st.stepType || ctx().defaultStepOption(st)) : ctx().inspectionTypeRequired(st) ? st.inspectionType : (st.inspectionType || ctx().defaultStepOption(st))"
                     (ngModelChange)="st.id === 'fit' ? ctx().updateStepType(st, $event) : ctx().setInspectionType($event)">
+              @if (ctx().inspectionTypeRequired(st)) {
+                <option [ngValue]="''">Select the inspection performed…</option>
+              }
               @for (opt of st.stepOptions; track opt.value) {
                 <option [ngValue]="opt.value">{{ opt.label }}</option>
               }

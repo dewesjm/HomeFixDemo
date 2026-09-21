@@ -30,6 +30,7 @@ export interface SignoffContext {
   getReviewValue: (fieldKey: string) => string;
   fabFieldRequired: (f: FabricationField) => boolean;
   defaultStepOption: (stage: WorkflowStage) => string;
+  inspectionTypeRequired: (stage: WorkflowStage) => boolean;
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;

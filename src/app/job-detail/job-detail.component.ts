@@ -120,6 +120,11 @@ export class JobDetailComponent implements OnDestroy {
     return all.sort((a, b) => a.when.localeCompare(b.when));
   });
 
+  /* inspection/NDT steps must have the inspector explicitly choose what was performed */
+  inspectionTypeRequired(stage: WorkflowStage): boolean {
+    return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.stepOptions?.length;
+  }
+
   defaultStepOption(stage: WorkflowStage): string {
     if (!stage.stepOptions?.length) return '';
     return stage.stepOptions.find(o => o.default)?.value ?? stage.stepOptions[0].value;
@@ -153,6 +158,7 @@ export class JobDetailComponent implements OnDestroy {
       getReviewValue: (k) => self.getReviewValue(k),
       fabFieldRequired: (f) => self.fabFieldRequired(f),
       defaultStepOption: (s) => self.defaultStepOption(s),
+      inspectionTypeRequired: (s) => self.inspectionTypeRequired(s),
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
@@ -304,6 +310,7 @@ export class JobDetailComponent implements OnDestroy {
       return true;
     }
     if (!stage.result) return false;
+    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) return false;
     if (stage.repeatable && !stage.stepType) return false;
     // Fit: fabrication data must have MIC 1, MIC 2, Drawing Rev, Actual Thickness
     if (stage.id === 'fit' && this.wf) {
