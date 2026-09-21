@@ -196,12 +196,35 @@ export class WorkHistoryComponent {
     };
   }
 
-  /* check if this is the latest signoff entry for a given job */
+  /* Deprogress is only offered on a job's last sign-off that is still in effect. Computed from the job's
+     whole history (not the filtered or sorted rows): a re-open cancels the sign-off before it, and where the
+     job's live workflow is loaded the entry must also be its last signed stage, since that is what deprogress reverses. */
+  private deprogressable = computed<ReadonlySet<string>>(() => {
+    const lastSignedLabel = new Map<string, string | undefined>();
+    for (const wf of this.wfService.allWorkflows()) {
+      lastSignedLabel.set(wf.jobId, wf.stages.filter(s => s.signed).pop()?.label);
+    }
+    const byJob = new Map<string, ActivityRow[]>();
+    for (const r of this.allActivity()) {
+      if (r.section === 'Sign-off') byJob.set(r.jobId, [...(byJob.get(r.jobId) ?? []), r]);
+    }
+    const keys = new Set<string>();
+    for (const [jobId, rows] of byJob) {
+      const inEffect: ActivityRow[] = [];
+      for (const r of [...rows].sort((a, b) => a.when.localeCompare(b.when))) {
+        if (/re-opened/i.test(r.action)) inEffect.pop();
+        else inEffect.push(r);
+      }
+      const last = inEffect[inEffect.length - 1];
+      if (!last) continue;
+      if (lastSignedLabel.has(jobId) && last.action.split(' — ')[0] !== lastSignedLabel.get(jobId)) continue;
+      keys.add(last.key);
+    }
+    return keys;
+  });
+
   isLatestEntry(r: ActivityRow): boolean {
-    if (r.section !== 'Sign-off' || r.action?.includes('Re-opened')) return false;
-    const jobEntries = this.table.sorted().filter(e =>
-      e.jobId === r.jobId && e.section === 'Sign-off' && !e.action?.includes('Re-opened'));
-    return jobEntries.length > 0 && jobEntries[0] === r;
+    return this.deprogressable().has(r.key);
   }
 
   /* go back one routing for a job */
