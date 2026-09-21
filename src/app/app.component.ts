@@ -53,7 +53,11 @@ export class AppComponent {
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
     [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
-      if (ref && ref !== except) ref.nativeElement.open = false;
+      if (ref && ref !== except) {
+        ref.nativeElement.open = false;
+        /* also collapse nested Admin submenus so they are closed next time */
+        ref.nativeElement.querySelectorAll('details').forEach(d => d.open = false);
+      }
     });
     setTimeout(() => this.suppressToggle = false, 0);
   }
@@ -65,7 +69,10 @@ export class AppComponent {
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('.dropdown-wrapper')) {
+      const target = e.target as HTMLElement;
+      /* close on outside click, or when a real (non-disabled) menu link is chosen */
+      const link = target.closest('.dropdown-wrapper a');
+      if (!target.closest('.dropdown-wrapper') || (link && !link.classList.contains('menu-disabled'))) {
         this.closeAll();
       }
     });
