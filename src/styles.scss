@@ -145,7 +145,7 @@ html, body {
 .w-5r { width: 5rem; }
 .f-160 { flex: 0 1 160px; }
 .f-200 { flex: 1 1 200px; }
-.signoff-actions { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
+.signoff-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
 /* legend / icon colors */
 .c-green { color: var(--color-success); }
 .c-amber { color: var(--color-warning); }
@@ -322,10 +322,9 @@ html, body {
 .signoff-panel .text-xs:not(.text-error),
 .signoff-panel .text-sm:not(.font-semibold) { font-size: var(--signoff-text); }
 
-/* Signoff: grouped cards for the weld form, and a sticky action bar that says why Sign is unavailable */
+/* Signoff: grouped cards for the weld form, and the note that says why Sign is unavailable */
 .signoff-card { border: 1px solid var(--app-border); border-radius: 8px; padding: 0.75rem 1rem; }
 .signoff-card-title { font-weight: 600; margin-bottom: 0.5rem; }
-.signoff-bar { position: sticky; bottom: 0; z-index: 5; flex-wrap: wrap; padding: 0.75rem 0; background: var(--app-surface); border-top: 1px solid var(--app-border); }
 .signoff-why { color: var(--app-text); }
 
 /* Hide number input spinners */
