@@ -82,7 +82,7 @@ type Row = JointPlan;
             <thead>
               <tr>
                 <th (click)="table.toggleSort('id')" style="cursor: pointer; min-width: 5rem">
-                  ID {{ sortIcon('id') }}
+                  XREFID {{ sortIcon('id') }}
                 </th>
                 <th (click)="table.toggleSort('projectNumber')" style="cursor: pointer; min-width: 6rem">
                   Project {{ sortIcon('projectNumber') }}

@@ -102,7 +102,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
     const createdAt = new Date(Date.now() - Math.floor(rand() * 60) * 24 * 60 * 60 * 1000);
 
     out.push({
-      id: makeId(i + 1),
+      id: i % 4 === 0 ? '' : makeId(i + 1),
       jointNumber: `JP-${String(1000 + i).slice(1)}`,
       projectNumber: pick(PROJECTS),
       joint: pick(JOINTS_POOL),
@@ -315,7 +315,7 @@ export function persistAdminPwhtOptions(opts: string[]) {
 
 /* ── CSV Export columns ── */
 export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
-  { header: 'ID', value: r => r.id },
+  { header: 'XREFID', value: r => r.id },
   { header: 'Joint #', value: r => r.jointNumber },
   { header: 'Project', value: r => r.projectNumber },
   { header: 'Joint', value: r => r.joint },
