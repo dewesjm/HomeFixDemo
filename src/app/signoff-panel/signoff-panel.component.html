@@ -364,6 +364,55 @@
               }
             </div>
           </div>
+          <!-- Override Requirements (only when matching WTN selected) -->
+          @if (ctx().hasOverrideFields(st)) {
+          <div>
+            <div class="font-semibold text-sm mb-1">Override Requirements</div>
+            <div class="flex flex-col gap-2">
+              <div class="flex gap-4">
+                @for (f of ctx().visibleFields(stage()); track f.key) {
+                  @if (f.key === 'overridePhMin' || f.key === 'overridePhMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                        <input class="input input-bordered w-full" type="number"
+                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                               [ngModel]="st.inputs[f.key]"
+                               (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                }
+              </div>
+              <div class="flex gap-4">
+                @for (f of ctx().visibleFields(stage()); track f.key) {
+                  @if (f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
+                    <div class="flex-1 max-w-[120px]">
+                      <label class="stage-field">
+                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                        <input class="input input-bordered w-full" type="number"
+                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                               [ngModel]="st.inputs[f.key]"
+                               (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
+                      </label>
+                    </div>
+                  }
+                }
+              </div>
+              @for (f of ctx().visibleFields(stage()); track f.key) {
+                @if (f.key === 'overrideNote') {
+                  <label class="stage-field">
+                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+                    <input class="input input-bordered w-full" type="text"
+                           [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                           [ngModel]="st.inputs[f.key]"
+                           (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
+                  </label>
+                }
+              }
+            </div>
+          </div>
+          }
           <!-- Weld Position (only when N Ind. = 1) -->
           @if (ctx().job.nInd === '1') {
           <div>
@@ -460,55 +509,6 @@
                 </label>
               }
             }
-          </div>
-          }
-          <!-- Override Requirements (only when matching WTN selected) -->
-          @if (ctx().hasOverrideFields(st)) {
-          <div>
-            <div class="font-semibold text-sm mb-1">Override Requirements</div>
-            <div class="flex flex-col gap-2">
-              <div class="flex gap-4">
-                @for (f of ctx().visibleFields(stage()); track f.key) {
-                  @if (f.key === 'overridePhMin' || f.key === 'overridePhMax') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                               [ngModel]="st.inputs[f.key]"
-                               (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-              <div class="flex gap-4">
-                @for (f of ctx().visibleFields(stage()); track f.key) {
-                  @if (f.key === 'overrideIpMin' || f.key === 'overrideIpMax') {
-                    <div class="flex-1 max-w-[120px]">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="number"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                               [ngModel]="st.inputs[f.key]"
-                               (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                @if (f.key === 'overrideNote') {
-                  <label class="stage-field">
-                    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                    <input class="input input-bordered w-full" type="text"
-                           [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                           [ngModel]="st.inputs[f.key]"
-                           (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                  </label>
-                }
-              }
-            </div>
           </div>
           }
           <!-- Comments -->
