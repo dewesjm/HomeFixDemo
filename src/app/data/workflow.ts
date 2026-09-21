@@ -1,4 +1,5 @@
 /* workflow model + stage helpers, no UI */
+import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
 import { getJointDesign } from './joint-designs';
@@ -215,7 +216,7 @@ const HANDOVER_STAGE: StageTemplate = {
 };
 
 /* ── Shop locations (admin-configurable via localStorage) ── */
-const SHOPS_LS_KEY = 'homefix:shops:v1';
+const SHOPS_LS_KEY = STORAGE.shops;
 const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Field — Onsite', 'Ship'];
 
 export function getShops(): string[] {
@@ -235,7 +236,7 @@ export interface WeldPosition {
   description: string;
 }
 
-const WELD_POSITIONS_LS_KEY = 'homefix:weld-positions:v1';
+const WELD_POSITIONS_LS_KEY = STORAGE.weldPositions;
 const DEFAULT_WELD_POSITIONS: WeldPosition[] = [
   { code: 'O', description: 'Overhead' },
   { code: 'V', description: 'Vertical' },
@@ -256,7 +257,7 @@ export function setWeldPositions(positions: WeldPosition[]) {
 /* ── Step options per stage (admin-configurable via localStorage) ── */
 export type { StageOption };
 
-const STEP_OPTIONS_LS_KEY = 'homefix:step-options:v1';
+const STEP_OPTIONS_LS_KEY = STORAGE.routingOptions;
 
 export function setStageStepOptions(trade: string, stageId: string, options: StageOption[]) {
   const raw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
@@ -271,7 +272,7 @@ export interface PenetrantEntry {
   manufacturer: string;
 }
 
-const PENETRANT_LS_KEY = 'homefix:penetrants:v1';
+const PENETRANT_LS_KEY = STORAGE.penetrants;
 const DEFAULT_PENETRANTS: PenetrantEntry[] = [
   { type: 'Type I - Fluorescent', manufacturer: 'Magnaflux' },
   { type: 'Type II - Visible', manufacturer: 'Sherwin-Williams' },
@@ -809,7 +810,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntri
 ) as Record<Job['trade'], StageTemplate[]>;
 
 /* ── localStorage persistence for stage templates ── */
-const TEMPLATES_LS_KEY = 'homefix:stage-templates:v2';
+const TEMPLATES_LS_KEY = STORAGE.stageTemplates;
 
 /* serialized form — required is always a plain boolean (no functions) */
 interface SerializedStage {

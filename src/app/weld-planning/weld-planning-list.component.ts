@@ -1,3 +1,4 @@
+import { bannerFor } from '../data/banner';
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -158,7 +159,7 @@ export class WeldPlanningListComponent {
 
   statusFilter = '';
 
-  banner = signal<{ message: string; type: string; enabled: boolean } | null>(null);
+  banner = signal(bannerFor('weld-planning'));
 
   statusLabel(value: string): string {
     return this.statusMap[value] ?? value;
@@ -173,20 +174,6 @@ export class WeldPlanningListComponent {
 
   constructor() {
     effect(() => this.table.setRows(jointPlans()));
-    this.loadBanner();
-  }
-
-  private loadBanner() {
-    try {
-      const raw = localStorage.getItem('homefix:banner');
-      if (raw) {
-        const data = JSON.parse(raw);
-        const pages = data.pages ?? ['all'];
-        if (data.enabled && data.message && (pages.includes('all') || pages.includes('weld-planning'))) {
-          this.banner.set(data);
-        }
-      }
-    } catch {}
   }
 
   sortIcon(field: string): string {

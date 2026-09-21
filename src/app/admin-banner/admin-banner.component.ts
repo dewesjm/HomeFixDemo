@@ -1,32 +1,9 @@
+import { BannerData, BannerPage, loadBanner, saveBanner, clearBanner } from '../data/banner';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideMegaphone, LucideCheck, LucideX } from '@lucide/angular';
 import { ToastService } from '../shared/toast.service';
-
-const BANNER_KEY = 'homefix:banner';
-
-export type BannerPage = 'all' | 'ewr' | 'weld-planning';
-
-interface BannerData {
-  message: string;
-  type: 'info' | 'warning' | 'error' | 'success';
-  enabled: boolean;
-  pages: BannerPage[];
-}
-
-const DEFAULT_BANNER: BannerData = { message: '', type: 'info', enabled: false, pages: ['all'] };
-
-function loadBanner(): BannerData {
-  try {
-    const raw = localStorage.getItem(BANNER_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return { ...DEFAULT_BANNER, pages: parsed.pages ?? ['all'], ...parsed };
-    }
-  } catch {}
-  return { ...DEFAULT_BANNER };
-}
 
 @Component({
   selector: 'app-admin-banner',
@@ -49,7 +26,7 @@ export class AdminBannerComponent {
 
   pageOptions: { label: string; value: BannerPage }[] = [
     { label: 'All pages', value: 'all' },
-    { label: 'Pipe Welding (EWR)', value: 'ewr' },
+    { label: 'Pipe Welding', value: 'pipe-welding' },
     { label: 'Joint Search (Weld Planning)', value: 'weld-planning' },
   ];
 
@@ -72,7 +49,7 @@ export class AdminBannerComponent {
       enabled: this.enabled(),
       pages: this.pages(),
     };
-    localStorage.setItem(BANNER_KEY, JSON.stringify(data));
+    saveBanner(data);
     this.messages.add({ severity: 'success', summary: 'Banner saved', life: 3000 });
   }
 
@@ -81,7 +58,7 @@ export class AdminBannerComponent {
     this.type.set('info');
     this.enabled.set(false);
     this.pages.set(['all']);
-    localStorage.removeItem(BANNER_KEY);
+    clearBanner();
     this.messages.add({ severity: 'info', summary: 'Banner cleared', life: 3000 });
   }
 }

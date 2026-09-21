@@ -1,4 +1,5 @@
 /* Joint Design lookup with consumable-insert / backing-ring requirements */
+import { STORAGE } from './storage-keys';
 import { signal, computed } from '@angular/core';
 
 export interface JointDesignEntry {
@@ -8,7 +9,7 @@ export interface JointDesignEntry {
   requiresBackingRing: boolean;
 }
 
-const STORAGE_KEY = 'homefix:joint-designs:v1';
+const STORAGE_KEY = STORAGE.jointDesigns;
 
 const DEFAULTS: JointDesignEntry[] = [
   { code: 'bj-g', label: 'BJ-G', requiresConsumableInsert: true,  requiresBackingRing: false },

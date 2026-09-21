@@ -1,7 +1,8 @@
 /* Weld Planning - Data Layer
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
-   Keys prefixed with "wp:" to avoid collision with Pipe Welding system. */
+   Storage keys live in data/storage-keys.ts. */
+import { STORAGE } from '../data/storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
@@ -127,7 +128,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
 }
 
 /* ── localStorage persistence ── */
-const LS_KEY = 'wp:joint-plans:v1';
+const LS_KEY = STORAGE.jointPlans;
 
 function loadJointPlans(): JointPlan[] {
   const hullPool = [...HULLS];
@@ -200,7 +201,7 @@ export function getJointPlan(id: string): JointPlan | undefined {
 }
 
 /* ── Admin: Joint Design options (persisted to localStorage) ── */
-const ADMIN_DESIGNS_KEY = 'wp:admin-joint-designs:v1';
+const ADMIN_DESIGNS_KEY = STORAGE.adminJointDesigns;
 
 export interface AdminJointDesign {
   code: string;
@@ -230,7 +231,7 @@ export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
 }
 
 /* ── Admin: NDT options ── */
-const ADMIN_NDT_KEY = 'wp:admin-ndt:v1';
+const ADMIN_NDT_KEY = STORAGE.adminNdt;
 
 export const adminNdtOptions = signal<string[]>(loadAdminNdt());
 
@@ -248,7 +249,7 @@ export function persistAdminNdtOptions(opts: string[]) {
 }
 
 /* ── Admin: PWHT options ── */
-const ADMIN_PWHT_KEY = 'wp:admin-pwht:v1';
+const ADMIN_PWHT_KEY = STORAGE.adminPwht;
 
 export const adminPwhtOptions = signal<string[]>(loadAdminPwht());
 

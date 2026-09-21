@@ -1,4 +1,6 @@
 //This is the main search, with filters, keywords, frozen columns, export to excel call
+import { bannerFor } from '../data/banner';
+import { STORAGE } from '../data/storage-keys';
 import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +19,7 @@ import {
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel, ROLES, DEFAULT_ROLE, type Role } from '../data/workflow';
 
-const SEARCH_STATE_KEY = 'homefix:search-state:v1';
+const SEARCH_STATE_KEY = STORAGE.searchState;
 
 type Row = Job & { currentStep: string };
 
@@ -46,9 +48,6 @@ export class TableSearchComponent {
     }
     if (saved['page'] != null) this.table['page'].set(saved['page']);
 
-    // Load admin banner
-    this.loadBanner();
-
     effect(() => this.table.setRows(this.displayedJobs()));
     // Persist filter/sort state on every change
     effect(() => {
@@ -73,7 +72,7 @@ export class TableSearchComponent {
   }
 
   /* Admin banner — read from localStorage, re-read on construction */
-  banner = signal<{ message: string; type: string; enabled: boolean } | null>(null);
+  banner = signal(bannerFor('pipe-welding'));
 
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
@@ -168,25 +167,6 @@ export class TableSearchComponent {
 //nav to history with this job pre-filled
   openHistory(job: Job) {
     this.router.navigate(['/history'], { queryParams: { job: job.id } });
-  }
-
-  private loadBanner() {
-    try {
-      const raw = localStorage.getItem('homefix:banner');
-      if (raw) {
-        const data = JSON.parse(raw);
-        const pages = data.pages ?? ['all'];
-        if (data.enabled && data.message && (pages.includes('all') || pages.includes('ewr'))) {
-          this.banner.set(data);
-        } else {
-          this.banner.set(null);
-        }
-      } else {
-        this.banner.set(null);
-      }
-    } catch {
-      this.banner.set(null);
-    }
   }
 
   onRoleChange(role: Role) {

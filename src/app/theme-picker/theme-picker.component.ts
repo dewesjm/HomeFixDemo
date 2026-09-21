@@ -1,4 +1,5 @@
 /* Theme button: switch the active DaisyUI theme at runtime, persisted. */
+import { STORAGE } from '../data/storage-keys';
 import { Component, signal } from '@angular/core';
 import { LucidePalette } from '@lucide/angular';
 
@@ -39,7 +40,7 @@ const THEMES: ThemeOption[] = [
   { name: 'sunset', label: 'Sunset' },
 ];
 
-const THEME_KEY = 'homefix:theme';
+const THEME_KEY = STORAGE.theme;
 
 @Component({
   selector: 'app-theme-picker',

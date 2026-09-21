@@ -1,5 +1,6 @@
 /* adaptive filters screen, schema-driven */
 //heavily custom
+import { STORAGE } from '../data/storage-keys';
 import { Component, ElementRef, computed, effect, signal, viewChild, WritableSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -91,7 +92,7 @@ const ALL_COLUMNS: ResultColumn[] = [
 ];
 
 const DEFAULT_COLUMN_KEYS = ['id', 'hull', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];
-const COLUMNS_LS_KEY = 'pn-demo:result-columns';
+const COLUMNS_LS_KEY = STORAGE.resultColumns;
 
 function loadColumnKeys(): string[] {
   try {

@@ -1,6 +1,7 @@
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
+import { clearStaleCaches } from './data/storage-keys';
 import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -40,7 +41,7 @@ export class AppComponent {
   /* true once a new deploy is ready to activate */
   updateReady = signal(false);
 
-  @ViewChild('ewrDetails') ewrDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('pipeWeldingDetails') pipeWeldingDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('wpDetails') wpDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
@@ -51,13 +52,13 @@ export class AppComponent {
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
-    [this.ewrDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
+    [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
       if (ref && ref !== except) ref.nativeElement.open = false;
     });
     setTimeout(() => this.suppressToggle = false, 0);
   }
 
-  onEwrToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.ewrDetails)); }
+  onPipeWeldingToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.pipeWeldingDetails)); }
   onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
   onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
   onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
@@ -106,13 +107,7 @@ export class AppComponent {
   /* activate the waiting worker, clear stale caches, and reload */
   reloadForUpdate() {
     // Clear persisted workflow & template caches so new stage definitions take effect
-    const keysToClear = [
-      'homefix:workflows:v2',
-      'homefix:stage-templates:v2',
-      'homefix:penetrants',
-      'homefix:weld-positions',
-    ];
-    keysToClear.forEach(k => localStorage.removeItem(k));
+    clearStaleCaches();
     this.swUpdate.activateUpdate().then(() => document.location.reload());
   }
 }

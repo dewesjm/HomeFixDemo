@@ -1,4 +1,5 @@
 /* MCL traceability configuration — maps MCL values to whether traceability is required */
+import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 
 export interface MclTraceabilityEntry {
@@ -6,7 +7,7 @@ export interface MclTraceabilityEntry {
   requiresTraceability: boolean;
 }
 
-const LS_KEY = 'homefix:mcl-traceability:v1';
+const LS_KEY = STORAGE.mclTraceability;
 
 const DEFAULT_ENTRIES: MclTraceabilityEntry[] = [
   { mclValue: 'Standard', requiresTraceability: false },

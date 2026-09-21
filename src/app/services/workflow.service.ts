@@ -1,4 +1,5 @@
 /* state for each job's workflow; mutations log history + persist */
+import { STORAGE, clearStaleCaches } from '../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { ToastService } from '../shared/toast.service';
 import { JOBS, Job } from '../data/jobs';
@@ -13,8 +14,8 @@ import {
 const show = (v: string | null | undefined) => (v && v.length ? v : '—');
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
-const LS_KEY = 'homefix:workflows:v2';
-const APP_VERSION_KEY = 'homefix:app-version';
+const LS_KEY = STORAGE.workflows;
+const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
@@ -30,8 +31,7 @@ export class WorkflowService {
   private static clearStaleCachesIfNeeded() {
     const stored = localStorage.getItem(APP_VERSION_KEY);
     if (stored !== CURRENT_VERSION) {
-      ['homefix:workflows:v2', 'homefix:stage-templates:v2', 'homefix:penetrants', 'homefix:weld-positions']
-        .forEach(k => localStorage.removeItem(k));
+      clearStaleCaches();
       localStorage.setItem(APP_VERSION_KEY, CURRENT_VERSION);
     }
   }

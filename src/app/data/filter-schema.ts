@@ -1,4 +1,5 @@
 /* schema-driven filter engine + saved variants in localStorage */
+import { STORAGE } from './storage-keys';
 import {
   Job,
   TECHNICIAN_OPTIONS, JOBS
@@ -131,7 +132,7 @@ export interface FilterVariant {
   values: FilterValues;
 }
 
-const VARIANTS_LS_KEY = 'pn-demo:filter-variants';
+const VARIANTS_LS_KEY = STORAGE.filterVariants;
 
 export function loadVariants(): FilterVariant[] {
   try {
