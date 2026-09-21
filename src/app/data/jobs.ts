@@ -171,7 +171,7 @@ export function generateJobs(count = 480): Job[] {
       workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: i % 5 === 0 ? 'Required' : '',
-      serialNumber: `${100000000 + (i * 7919 * 104729) % 900000000}A`,   /* 9 digits then A */
+      serialNumber: `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
       refitNumber: '00',
       repairNumber: '00',
       ss: i % 8 === 0 ? 'Yes' : '',

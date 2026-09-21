@@ -16,7 +16,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 | **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
 | **XREFID** | Internal 5-char alphanumeric job id (`job.id`). Unique. |
 | **Drawing** | Letter + 7 digits, e.g. `H7111234` (`job.drawing`, weld-joint `drawing`). |
-| **Serial number** | 9 digits then `A`, e.g. `458147529A` (`job.serialNumber`). |
+| **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). |
 | **Joint number** | Weld Planning only: 2-letter prefix, hyphen, `J` + 5 digits, e.g. `ST-J00001` (seed: `ST` structural, `PI` pipe). The weld record's own `joint` (`J-001`) is a different field and unchanged. |
 | **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
