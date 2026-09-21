@@ -44,7 +44,7 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="ID, drawing, joint…"
+    <input type="text" class="grow"   placeholder="XREFID, drawing, joint…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
     @if (table.globalFilter()) {
       <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
@@ -63,7 +63,7 @@
       </th>
       <th class="min-w-16">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
-          ID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          XREFID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
       <th class="min-w-32">

@@ -37,7 +37,7 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'id',              label: 'ID',              field: 'id',              sortField: 'id',              width: 'min-w-8' },
+  { key: 'id', label: 'XREFID', field: 'id', sortField: 'id', width: 'min-w-8' },
   { key: 'title',           label: 'Project',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
   { key: 'trade',           label: 'Trade',           field: 'trade',           sortField: 'trade',           width: 'min-w-11' },
   { key: 'drawing',         label: 'Drawing',         field: 'drawing',         sortField: 'drawing',         width: 'min-w-12' },

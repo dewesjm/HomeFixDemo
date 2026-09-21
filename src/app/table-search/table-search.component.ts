@@ -208,7 +208,7 @@ export class TableSearchComponent {
 
   exportCsv() {
     downloadCsv('work-orders', [
-      { header: 'ID', value: (r: Row) => r.id },
+      { header: 'XREFID', value: (r: Row) => r.id },
       { header: 'Project', value: (r: Row) => r.jobNumber },
       { header: 'Drawing', value: (r: Row) => r.drawing },
       { header: 'Joint', value: (r: Row) => r.joint },
