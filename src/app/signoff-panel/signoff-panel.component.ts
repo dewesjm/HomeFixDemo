@@ -32,6 +32,7 @@ export interface SignoffContext {
   defaultStepOption: (stage: WorkflowStage) => string;
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
+  hasOverrideFields: (stage: WorkflowStage) => boolean;
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;

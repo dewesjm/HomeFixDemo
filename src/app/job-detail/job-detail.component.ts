@@ -156,6 +156,7 @@ export class JobDetailComponent implements OnDestroy {
       defaultStepOption: (s) => self.defaultStepOption(s),
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
+      hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
