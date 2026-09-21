@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen } from '@lucide/angular';
@@ -59,4 +59,7 @@ export class SignoffPanelComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();
+
+  visFields = computed(() => this.ctx().visibleFields(this.stage()));
+  visSignoffFields = computed(() => this.ctx().visibleSignoffFields(this.stage()));
 }
