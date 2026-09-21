@@ -314,7 +314,7 @@ export function getPenetrantManufacturers(): string[] {
 
 /* ── Shared weld stage fields (Tack, Root, Final Weld) ── */
 const WELD_STAGE_FIELDS: StageField[] = [
-  { key: 'weldProcedure', label: 'Weld Procedure', type: 'select', required: true,
+  { key: 'weldProcedure', label: 'GWP', type: 'select', required: true,
     options: [{ label: 'WPS-001', value: 'wps-001' }, { label: 'WPS-002', value: 'wps-002' },
       { label: 'WPS-003', value: 'wps-003' }, { label: 'WPS-004', value: 'wps-004' }] },
   { key: 'wtn', label: 'WTN', type: 'select', required: true,
@@ -340,6 +340,15 @@ const WELD_STAGE_FIELDS: StageField[] = [
       { label: '1/8"', value: '1/8' }, { label: '5/32"', value: '5/32' }] },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', required: true },
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
+];
+
+/* Override Requirements fields — appended to every welding stage (shown when a matching WTN is selected) */
+export const WELD_OVERRIDE_FIELDS: StageField[] = [
+  { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
+  { key: 'overridePhMax', label: 'Override PH Max', type: 'number' },
+  { key: 'overrideIpMin', label: 'Override IP Min', type: 'number' },
+  { key: 'overrideIpMax', label: 'Override IP Max', type: 'number' },
+  { key: 'overrideNote', label: 'Override Note', type: 'text' },
 ];
 
 /* ── Fabrication cross-stage fields (Welding) ── */
@@ -895,7 +904,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyMcl2', label: 'MIC 2', type: 'checkbox' },
       { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
       { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
-      { key: 'verifyNInd', label: 'N Ind', type: 'checkbox' },
+      { key: 'verifyNInd', label: 'Nuclear Indicator', type: 'checkbox' },
       { key: 'verifyWps', label: 'WPS', type: 'checkbox' },
       { key: 'verifyOrder', label: 'Order', type: 'checkbox' },
       { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
@@ -1113,7 +1122,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
-    const isWeldStage = ['tack', 'root-weld', 'final-weld'].includes(t.id);
+    const isWeldStage = ['tack', 'root-weld', 'root-layer', 'final-weld'].includes(t.id);
     /* override requirements based on WTN — set dynamically from Fit stage */
     const showOverride = false;
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */
@@ -1126,13 +1135,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       : [...t.fields];
     /* Weld stages get override fields */
     if (isWeldStage) {
-      fields = [...fields,
-        { key: 'overridePhMin', label: 'Override PH Min', type: 'number' as const },
-        { key: 'overridePhMax', label: 'Override PH Max', type: 'number' as const },
-        { key: 'overrideIpMin', label: 'Override IP Min', type: 'number' as const },
-        { key: 'overrideIpMax', label: 'Override IP Max', type: 'number' as const },
-        { key: 'overrideNote', label: 'Override Note', type: 'text' as const },
-      ];
+      fields = [...fields, ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f }))];
     }
     return {
       id: t.id,
@@ -1195,8 +1198,8 @@ export function newWorkflow(job: Job): JobWorkflow {
     frame: 'F14',
     pscl: ['P', 'S', 'CL'][Math.floor(Math.random() * 3)],
     usage: 'Structural',
-    id1: 'MIC-4410',
-    id2: 'MIC-4411',
+    id1: '250C-1500-290-5',
+    id2: '318A-2210-145-3',
     drawingRev: 'C',
     actualThickness: '0.75',
     weldMemo: ['Per drawing', 'No deviations', 'Completed as required', 'Per spec'][Math.floor(Math.random() * 4)],
@@ -1238,6 +1241,12 @@ function signedStageCount(job: Job, total: number): number {
   return idx;
 }
 
+/* MIC (material identification code): hyphen-delimited heat/lot style, e.g. 250C-1500-290-5 */
+function seededMic(rand: () => number): string {
+  const letter = 'ABCDEFGH'[Math.floor(rand() * 8)];
+  return `${200 + Math.floor(rand() * 300)}${letter}-${1000 + Math.floor(rand() * 9000)}-${100 + Math.floor(rand() * 900)}-${1 + Math.floor(rand() * 9)}`;
+}
+
 /* plausible recorded value for a seeded, already-signed stage field */
 function seededFieldValue(f: StageField, rand: () => number): string {
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
@@ -1245,6 +1254,7 @@ function seededFieldValue(f: StageField, rand: () => number): string {
     return f.options[Math.floor(rand() * f.options.length)].value;
   }
   if (f.type === 'number') return String(1 + Math.floor(rand() * 120));
+  if (f.type === 'text' && /mic$|^(consumableid|backingringid)$/i.test(f.key)) return seededMic(rand);
   if (f.placeholder && f.placeholder.startsWith('e.g. ')) return f.placeholder.slice(5);
   /* fallback realistic values based on key patterns */
   const key = f.key.toLowerCase();
@@ -1257,7 +1267,6 @@ function seededFieldValue(f: StageField, rand: () => number): string {
   if (key.includes('wps')) return pick(['WPS-001', 'WPS-002', 'WPS-003']);
   if (key.includes('date')) return new Date(Date.now() - Math.floor(rand() * 30) * 86400000).toISOString().slice(0, 10);
   if (key.includes('note') || key.includes('comment')) return pick(['Standard procedure followed', 'No issues noted', 'Completed per spec', 'All criteria met']);
-  if (key.includes('mic')) return pick(['MIC-4410', 'MIC-4411', 'MIC-4412']);
   return pick(['Completed', 'Verified', 'Accepted', 'Passed']);
 }
 

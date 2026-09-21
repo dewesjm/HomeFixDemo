@@ -19,7 +19,7 @@ const APP_VERSION_KEY = 'homefix:app-version';
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.3.1';
+const CURRENT_VERSION = '1.3.2';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -431,12 +431,12 @@ export class WorkflowService {
       return this.withHistory(wf, { ...wf, stages }, {
         section: 'Stages',
         who: 'Admin',
-        action: 'Step forced (admin)',
+        action: 'Routing forced (admin)',
         to: target?.label ?? `#${targetIndex + 1}`
       });
     });
     this.persist();
-    this.notify('success', 'Step updated', `Set to step ${targetIndex + 1}`);
+    this.notify('success', 'Routing updated', `Set to routing ${targetIndex + 1}`);
   }
 
   /* go back one step — re-opens the most recently signed stage */
@@ -477,7 +477,7 @@ export class WorkflowService {
       });
     });
     this.persist();
-    this.notify('info', 'Step reversed');
+    this.notify('info', 'Routing reversed');
   }
 
   // --- internals ----------------------------------------------------------
@@ -522,8 +522,8 @@ export class WorkflowService {
             frame: 'F14',
             pscl: 'P',
             usage: 'Structural',
-            id1: 'MIC-4410',
-            id2: 'MIC-4411',
+            id1: '250C-1500-290-5',
+            id2: '318A-2210-145-3',
             drawingRev: 'C',
             actualThickness: '0.75',
             weldMemo: 'Per drawing',

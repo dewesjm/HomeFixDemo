@@ -21,13 +21,13 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">
     <svg lucideBriefcase class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"            placeholder="Project # or XREFID"
+    <input type="text" class="grow"            placeholder="Hull # or XREFID"
            [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)" />
   </label>
 
   <label class="input input-sm input-bordered flex items-center gap-2 grow">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"            placeholder="Search projects, changes, steps…"
+    <input type="text" class="grow"            placeholder="Search hulls, changes, routing…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
 
@@ -70,12 +70,12 @@
       <th class="min-w-12">New value</th>
       <th class="min-w-12">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('step')">
-          Step {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          Routing {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
       <th class="min-w-13">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-            Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            Hull {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
       <th class="min-w-11">Actions</th>
@@ -106,7 +106,7 @@
                 <button type="button" class="btn btn-ghost btn-xs" (click)="cancelDeprogress()">Cancel</button>
               </div>
             } @else {
-              <button type="button" class="btn btn-ghost btn-xs" (click)="deprogressTarget.set(r.jobId); deprogressComment.set('')" title="Reverse to previous step">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="deprogressTarget.set(r.jobId); deprogressComment.set('')" title="Reverse to previous routing">
                 <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
               </button>
             }

@@ -5,8 +5,8 @@
   <div class="page-header mt-sm">
     <span class="back-link" (click)="back()">&larr; Back</span>
     <span class="section-sub m-0">
-      Project #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
-      <strong>Routing Step:</strong> {{ currentStep() }}
+      Hull #{{ j.jobNumber }} · {{ j.drawing || '—' }} · {{ j.joint || '—' }} · {{ j.trade }} ·
+      <strong>Routing:</strong> {{ currentStep() }}
     </span>
     <span class="spacer"></span>
     <app-sync-status />

@@ -17,7 +17,7 @@ function uniqueOpts(getter: (j: Job) => string): { label: string; value: string 
 }
 
 export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'title',           label: 'Project',          type: 'text',        group: 'Job',        field: 'title', required: true },
+  { key: 'title',           label: 'Hull',          type: 'text',        group: 'Job',        field: 'title', required: true },
 { key: 'id', label: 'XREFID', type: 'text', group: 'Job', field: 'id' },
   { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',          options: uniqueOpts(j => j.trade) },
   { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician',     options: TECHNICIAN_OPTIONS },
@@ -35,7 +35,7 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'joiningItem',     label: 'Joining item',     type: 'text',        group: 'Welding',    field: 'joiningItem' },
   { key: 'joinToItem',      label: 'Join to item',     type: 'text',        group: 'Welding',    field: 'joinToItem' },
   { key: 'sequenceNumber',  label: 'Sequence #',       type: 'text',        group: 'Welding',    field: 'sequenceNumber' },
-  { key: 'nInd',            label: 'N Ind.',           type: 'multiselect', group: 'Welding',    field: 'nInd',         options: [{ label: '1', value: '1' }, { label: '2', value: '2' }, { label: '3', value: '3' }] },
+  { key: 'nInd',            label: 'Nuclear Indicator', type: 'multiselect', group: 'Welding',    field: 'nInd',         options: [{ label: '1', value: '1' }, { label: '2', value: '2' }, { label: '3', value: '3' }] },
   { key: 'wps',             label: 'WPS',              type: 'text',        group: 'Welding',    field: 'wps' },
   { key: 'engineeringNotes', label: 'Eng. notes',      type: 'text',        group: 'Welding',    field: 'engineeringNotes' },
   { key: 'ndt',             label: 'NDT',              type: 'text',        group: 'NDT',        field: 'ndt' },

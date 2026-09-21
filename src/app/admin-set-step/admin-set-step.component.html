@@ -1,5 +1,5 @@
 <!-- Admin → Set step template (paired with admin-set-step.component.ts). -->
-<h2 class="section-title">Set step</h2>
+<h2 class="section-title">Set routing</h2>
 <p class="section-sub">
   Force a job's workflow to a specific stage. Stages before it are marked signed;
   the chosen stage and everything after it are re-opened. This is an admin override.
@@ -20,15 +20,15 @@
 
     @if (selectedJob()) {
       <div>
-        <div class="meta">Current step</div>
+        <div class="meta">Current routing</div>
         <div><span class="badge badge-info badge-sm">{{ currentStep() }}</span></div>
       </div>
 
       <div>
-        <div class="meta">Target step</div>
+        <div class="meta">Target routing</div>
         <select class="select select-sm select-bordered w-full"
                 [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)">
-          <option [ngValue]="null">Select a step</option>
+          <option [ngValue]="null">Select a routing</option>
           @for (o of stepOptions(); track o.value) {
             <option [ngValue]="o.value">{{ o.label }}</option>
           }
@@ -38,6 +38,6 @@
   </div>
 
   <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetIndex() === null" (click)="apply()">
-    <svg lucideStepForward class="size-4"></svg> Force step
+    <svg lucideStepForward class="size-4"></svg> Force routing
   </button>
 </section>

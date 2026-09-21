@@ -1,13 +1,13 @@
 <!-- Admin → Routing maintenance table with sequence ordering and field config. -->
 <h2 class="section-title">Routing</h2>
-<p class="section-sub">Maintain the workflow steps for each trade. Order determines the stage sequence during signoff.</p>
+<p class="section-sub">Maintain the workflow routing for each trade. Order determines the stage sequence during signoff.</p>
 
 <div class="facet-row">
-  <span class="fw-bold">Steps</span>
+  <span class="fw-bold">Routing</span>
   <span class="spacer"></span>
   <label class="input input-sm input-bordered flex items-center gap-2">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search steps…"
+    <input type="text" class="grow" placeholder="Search routing…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
   <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
@@ -20,7 +20,7 @@
     <svg lucidePlus class="size-4"></svg> Add test job
   </button>
   <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add step
+    <svg lucidePlus class="size-4"></svg> Add routing
   </button>
 </div>
 
@@ -31,7 +31,7 @@
       <th class="min-w-8 text-center">#</th>
       <th class="min-w-14">
         <a class="cursor-pointer select-none" (click)="table.toggleSort('step')">
-          Step {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          Routing {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
         </a>
       </th>
       <th class="min-w-12">
@@ -58,7 +58,7 @@
         </td>
         <td>
           @if (editingId() === row.id) {
-            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Step name"
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Routing name"
                    [ngModel]="row.step" (ngModelChange)="updateField(row, 'step', $event)" />
           } @else {
             {{ row.step || '—' }}
@@ -139,7 +139,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="6" class="empty">No steps defined.</td></tr>
+      <tr><td colspan="6" class="empty">No routing defined.</td></tr>
     }
   </tbody>
 </table>

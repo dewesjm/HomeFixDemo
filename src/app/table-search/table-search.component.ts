@@ -81,7 +81,7 @@ export class TableSearchComponent {
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
   table = new TableState<Row>(
-    ['id', 'jobNumber', 'title', 'drawing', 'joint'],
+    ['id', 'jobNumber', 'title', 'drawing', 'joint', 'order', 'sequenceNumber'],
     {
       id: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
       jobNumber: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
@@ -214,10 +214,12 @@ export class TableSearchComponent {
   exportCsv() {
     downloadCsv('work-orders', [
       { header: 'XREFID', value: (r: Row) => r.id },
-      { header: 'Project', value: (r: Row) => r.jobNumber },
+      { header: 'Hull', value: (r: Row) => r.jobNumber },
       { header: 'Drawing', value: (r: Row) => r.drawing },
       { header: 'Joint', value: (r: Row) => r.joint },
-      { header: 'Current step', value: (r: Row) => r.currentStep }
+      { header: 'Order', value: (r: Row) => r.order },
+      { header: 'Sequence', value: (r: Row) => r.sequenceNumber },
+      { header: 'Current routing', value: (r: Row) => r.currentStep }
     ], this.table.sorted());
   }
 }

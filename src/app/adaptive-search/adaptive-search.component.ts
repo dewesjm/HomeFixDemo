@@ -38,7 +38,7 @@ export interface ResultColumn {
 
 const ALL_COLUMNS: ResultColumn[] = [
   { key: 'id', label: 'XREFID', field: 'id', sortField: 'id', width: 'min-w-8' },
-  { key: 'title',           label: 'Project',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
+  { key: 'title',           label: 'Hull',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
   { key: 'trade',           label: 'Trade',           field: 'trade',           sortField: 'trade',           width: 'min-w-11' },
   { key: 'drawing',         label: 'Drawing',         field: 'drawing',         sortField: 'drawing',         width: 'min-w-12' },
   { key: 'drawingRev',      label: 'Drawing Rev',     field: 'drawingRev',      sortField: 'drawingRev',      width: 'min-w-10' },
@@ -55,7 +55,7 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'joiningItem',     label: 'Joining item',    field: 'joiningItem',     sortField: 'joiningItem',     width: 'min-w-12' },
   { key: 'joinToItem',      label: 'Join to item',    field: 'joinToItem',      sortField: 'joinToItem',      width: 'min-w-12' },
   { key: 'sequenceNumber',  label: 'Sequence #',      field: 'sequenceNumber',  sortField: 'sequenceNumber',  width: 'min-w-10' },
-  { key: 'nInd',            label: 'N Ind.',          field: 'nInd',            sortField: 'nInd',            width: 'min-w-8' },
+  { key: 'nInd',            label: 'Nuclear Indicator', field: 'nInd',            sortField: 'nInd',            width: 'min-w-8' },
   { key: 'wps',             label: 'WPS',             field: 'wps',             sortField: 'wps',             width: 'min-w-10' },
   { key: 'engineeringNotes', label: 'Eng. notes',     field: 'engineeringNotes', sortField: 'engineeringNotes', width: 'min-w-14' },
   { key: 'ndt',             label: 'NDT',             field: 'ndt',             sortField: 'ndt',             width: 'min-w-12' },
@@ -87,7 +87,7 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'estimatedCost',   label: 'Est. cost',       field: 'estimatedCost',   sortField: 'estimatedCost',   width: 'min-w-10' },
   { key: 'estimatedHours',  label: 'Est. hours',      field: 'estimatedHours',  sortField: 'estimatedHours',  width: 'min-w-10' },
   { key: 'scheduledFor',    label: 'Scheduled for',   field: 'scheduledFor',    sortField: 'scheduledFor',    width: 'min-w-12' },
-  { key: 'currentStep',     label: 'Current step',                                                                     width: 'min-w-13' },
+  { key: 'currentStep',     label: 'Current routing',                                                                     width: 'min-w-13' },
 ];
 
 const DEFAULT_COLUMN_KEYS = ['id', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];

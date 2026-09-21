@@ -20,7 +20,7 @@ import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
   isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  getShops
+  getShops, WELD_OVERRIDE_FIELDS
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
 
@@ -345,7 +345,7 @@ export class JobDetailComponent implements OnDestroy {
       const fitTpl = templates.find(t => t.id === 'fit');
       const tackTpl = templates.find(t => t.id === 'tack');
       const newFields = value === 'weld-buildup' && tackTpl
-        ? [...tackTpl.fields.map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
+        ? [...tackTpl.fields.map(f => ({ ...f })), ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
         : (fitTpl?.fields ?? []).map(f => ({ ...f }));
       const newSignoff = value === 'weld-buildup'
         ? []
@@ -525,8 +525,14 @@ export class JobDetailComponent implements OnDestroy {
     if (!this.job || !this.wf) return;
     const field = stage.fields.find(f => f.key === 'consumableInsertOnly');
     if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
+    const fillerType = stage.fields.find(f => f.key === 'fillerMetalType');
+    const fillerSize = stage.fields.find(f => f.key === 'fillerMetalSize');
+    const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
     if (value !== 'yes') {
-      /* clearing: unlock filler fields (they'll revert to normal editable) */
+      /* unchecked: unlock and clear the filler fields so they must be re-entered */
+      for (const f of [fillerType, fillerSize, fillerMic]) {
+        if (f) this.wfService.setStageInput(this.job, stage.id, f, '');
+      }
       return;
     }
     /* find the fit stage's consumable signoff data */
@@ -536,9 +542,6 @@ export class JobDetailComponent implements OnDestroy {
     const consumableSize = fitStage.signoffInputs['consumableSize'] ?? '';
     const consumableId = fitStage.signoffInputs['consumableId'] ?? '';
     /* auto-populate filler fields */
-    const fillerType = stage.fields.find(f => f.key === 'fillerMetalType');
-    const fillerSize = stage.fields.find(f => f.key === 'fillerMetalSize');
-    const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
     if (fillerType && consumableType) this.wfService.setStageInput(this.job, stage.id, fillerType, consumableType);
     if (fillerSize && consumableSize) this.wfService.setStageInput(this.job, stage.id, fillerSize, consumableSize);
     if (fillerMic && consumableId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableId);

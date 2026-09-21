@@ -25,9 +25,9 @@ const PERMISSIONS: Permission[] = [
   { key: 'edit-project', label: 'Edit project-level information', category: 'General' },
   { key: 'delete-project', label: 'Delete project', category: 'General' },
   // Routing & Stages
-  { key: 'manage-routing', label: 'Manage routing steps', category: 'Routing & Stages' },
+  { key: 'manage-routing', label: 'Manage routing', category: 'Routing & Stages' },
   { key: 'manage-templates', label: 'Manage stage templates', category: 'Routing & Stages' },
-  { key: 'force-step', label: 'Force step override', category: 'Routing & Stages' },
+  { key: 'force-step', label: 'Force routing override', category: 'Routing & Stages' },
   { key: 'view-all-stages', label: 'View all project stages', category: 'Routing & Stages' },
   // Sign-off
   { key: 'signoff-fitup-release', label: 'Sign off Fit-Up Release', category: 'Sign-off' },

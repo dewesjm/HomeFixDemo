@@ -1,4 +1,4 @@
-﻿import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -85,7 +85,7 @@ type Row = JointPlan;
                   XREFID {{ sortIcon('id') }}
                 </th>
                 <th (click)="table.toggleSort('projectNumber')" style="cursor: pointer; min-width: 6rem">
-                  Project {{ sortIcon('projectNumber') }}
+                  Hull {{ sortIcon('projectNumber') }}
                 </th>
                 <th (click)="table.toggleSort('joint')" style="cursor: pointer; min-width: 5rem">
                   Joint {{ sortIcon('joint') }}

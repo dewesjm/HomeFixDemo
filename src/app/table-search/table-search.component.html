@@ -44,7 +44,7 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"   placeholder="XREFID, drawing, joint…"
+    <input type="text" class="grow"   placeholder="XREFID, drawing, joint, order…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
     @if (table.globalFilter()) {
       <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
@@ -69,7 +69,7 @@
       <th class="min-w-32">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-            Project {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            Hull {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
           <div class="relative col-filter-mobile">
             <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
@@ -117,10 +117,44 @@
           </div>
         </div>
       </th>
+      <th class="min-w-28">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('order')">
+            Order {{ table.sortField() === 'order' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <div class="relative col-filter-mobile">
+            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
+                   [ngModel]="table.columnFilters()['order'] ?? ''"
+                   (ngModelChange)="table.setColumnFilter('order', $event)" />
+            @if (table.columnFilters()['order']) {
+              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('order', '')">
+                <svg lucideX class="size-3 opacity-60"></svg>
+              </button>
+            }
+          </div>
+        </div>
+      </th>
+      <th class="min-w-24">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('sequenceNumber')">
+            Sequence {{ table.sortField() === 'sequenceNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <div class="relative col-filter-mobile">
+            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
+                   [ngModel]="table.columnFilters()['sequenceNumber'] ?? ''"
+                   (ngModelChange)="table.setColumnFilter('sequenceNumber', $event)" />
+            @if (table.columnFilters()['sequenceNumber']) {
+              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('sequenceNumber', '')">
+                <svg lucideX class="size-3 opacity-60"></svg>
+              </button>
+            }
+          </div>
+        </div>
+      </th>
       <th class="min-w-36">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('currentStep')">
-            Current step {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+            Current routing {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
           <app-multiselect-dropdown class="block w-full min-w-0" [options]="stepOptions()"
             [selected]="table.columnFilters()['currentStep'] ?? []"
@@ -140,6 +174,8 @@
         <td>{{ job.jobNumber }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>
+        <td>{{ job.order || '—' }}</td>
+        <td>{{ job.sequenceNumber || '—' }}</td>
         <td>{{ job.currentStep }}</td>
         <td class="col-freeze-actions">
           <div class="row-tight">
@@ -153,7 +189,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="7" class="empty">No jobs match your filters.</td></tr>
+      <tr><td colspan="9" class="empty">No jobs match your filters.</td></tr>
     }
   </tbody>
 </table>

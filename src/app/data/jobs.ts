@@ -25,7 +25,7 @@ export interface Job {
   wps: string;               /* Welding Procedure Specification */
   ndt: string;               /* Non-Destructive Examination requirement */
   pwht: string;              /* Post Weld Heat Treatment */
-  nInd: string;              /* N Ind.: 1, 2, or 3 */
+  nInd: string;              /* Nuclear Indicator: 1, 2, or 3 */
   /* NDT data */
   rtRoot: string;
   rtFinal: string;
@@ -169,7 +169,7 @@ export function generateJobs(count = 240): Job[] {
       joiningItem: pick(JOINING_ITEMS),
       joinToItem: pick(JOINING_ITEMS),
       sequenceNumber: '1',
-      engineeringNotes: i % 3 === 0 ? 'Standard weld procedure per WPS' : '',
+      engineeringNotes: i % 3 === 0 ? 'Standard GWP per WPS' : '',
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),

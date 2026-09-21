@@ -27,24 +27,24 @@ import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mas
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'table' },
-  { path: 'table', component: TableSearchComponent, title: 'Project Search' },
+  { path: 'table', component: TableSearchComponent, title: 'Hull Search' },
   { path: 'assignments', component: MyAssignmentsComponent, title: 'My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'Advanced Search' },
   { path: 'admin/steps', component: AdminStepsComponent, title: 'Admin Routing' },
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'Attribute Codes' },
-  { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Step' },
+  { path: 'admin/set-step', component: AdminSetStepComponent, title: 'Set Routing' },
   { path: 'admin/signoff-fields', component: AdminSignoffFieldsComponent, title: 'Signoff Fields' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'NDT Configuration' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'Locations' },
-  { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Step Options' },
+  { path: 'admin/step-options', component: AdminStepOptionsComponent,     title: 'Routing Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'Banner Message' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'Joint Designs' },
   { path: 'admin/teams', component: AdminTeamsComponent, title: 'Teams & Permissions' },
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'Material Traceability' },
 
-  { path: 'jobs/:id', component: JobDetailComponent, title: 'Project Details', canDeactivate: [canDeactivateGuard] },
+  { path: 'jobs/:id', component: JobDetailComponent, title: 'Hull Details', canDeactivate: [canDeactivateGuard] },
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'Weld Planning' },

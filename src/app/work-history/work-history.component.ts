@@ -93,7 +93,7 @@ export class WorkHistoryComponent {
           ...e,
           jobId: wf.jobId,
           jobNumber: job?.jobNumber ?? '',
-          jobTitle: job?.title ?? `Project #${wf.jobId}`,
+          jobTitle: job?.title ?? `Hull #${wf.jobId}`,
           drawing: job?.drawing ?? '',
         });
       }
@@ -105,7 +105,7 @@ export class WorkHistoryComponent {
         ...m.entry,
         jobId: m.jobId,
         jobNumber: job?.jobNumber ?? '',
-        jobTitle: job?.title ?? `Project #${m.jobId}`,
+        jobTitle: job?.title ?? `Hull #${m.jobId}`,
         drawing: job?.drawing ?? '',
       });
     }
@@ -165,9 +165,9 @@ export class WorkHistoryComponent {
       { header: 'Action',    value: (r: ActivityRow) => r.action },
       { header: 'Old value', value: (r: ActivityRow) => r.from ?? '' },
       { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
-      { header: 'Step',      value: (r: ActivityRow) => r.step },
-      { header: 'Project #', value: (r: ActivityRow) => r.jobId },
-      { header: 'Project',   value: (r: ActivityRow) => r.jobTitle }
+      { header: 'Routing',      value: (r: ActivityRow) => r.step },
+      { header: 'Hull #', value: (r: ActivityRow) => r.jobId },
+      { header: 'Hull',      value: (r: ActivityRow) => r.jobTitle }
     ], this.table.sorted());
   }
 }

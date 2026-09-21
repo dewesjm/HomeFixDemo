@@ -1,4 +1,4 @@
-<section class="panel">
+<section class="panel signoff-panel">
   <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
   @if (ctx().jobComplete()) {
@@ -226,7 +226,7 @@
       } @else if (st.id === 'tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.stepType === 'weld-buildup')) {
         <!-- Tack stage: custom layout with subsections -->
         <div class="flex flex-col gap-3 stage-inputs">
-          <!-- Row 1: Weld Procedure, WTN, Weld Process -->
+          <!-- Row 1: GWP, WTN, Weld Process -->
           <div class="flex gap-4">
             @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
@@ -428,6 +428,22 @@
             }
           </div>
           }
+          <!-- Consumable Insert (Root only) — sits above Filler Metal -->
+          @if (st.id === 'root-weld') {
+          <div>
+            @for (f of ctx().visibleFields(stage()); track f.key) {
+              @if (f.key === 'consumableInsertOnly') {
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm"
+                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
+                         [checked]="st.inputs[f.key] === 'yes'"
+                         (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
+                  <span>{{ f.label }}</span>
+                </label>
+              }
+            }
+          </div>
+          }
           <!-- Filler Metal -->
           <div class="flex gap-4">
             @for (f of ctx().visibleFields(stage()); track f.key) {
@@ -475,22 +491,6 @@
               }
             }
           </div>
-          <!-- Consumable Insert (Layer only) -->
-          @if (st.id === 'root-weld') {
-          <div>
-            @for (f of ctx().visibleFields(stage()); track f.key) {
-              @if (f.key === 'consumableInsertOnly') {
-                <label class="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                         [checked]="st.inputs[f.key] === 'yes'"
-                         (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
-                  <span>{{ f.label }}</span>
-                </label>
-              }
-            }
-          </div>
-          }
           <!-- 5X Inspection (Root / Final Weld only) -->
           @if (st.id === 'root-weld' || st.id === 'final-weld') {
           <div>
@@ -719,7 +719,7 @@
         <!-- Step type (repeatable stages only) -->
         @if (st.repeatable && !st.signed) {
           <div>
-            <div class="meta">Step type <span class="req">*</span></div>
+            <div class="meta">Routing type <span class="req">*</span></div>
             <div class="result-radios">
               <label>
                 <input type="radio" class="radio radio-sm" [name]="'step-' + st.id"

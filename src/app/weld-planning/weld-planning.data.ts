@@ -1,4 +1,4 @@
-﻿/* Weld Planning - Data Layer
+/* Weld Planning - Data Layer
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Keys prefixed with "wp:" to avoid collision with Pipe Welding system. */
@@ -124,7 +124,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
       pwht: pick(PWHT_POOL),
       assignedTo: pick(TECHNICIANS),
       estimatedHours: Math.round((0.5 + rand() * 16) * 10) / 10,
-      notes: i % 4 === 0 ? 'Standard weld procedure per WPS' : '',
+      notes: i % 4 === 0 ? 'Standard GWP per WPS' : '',
       createdBy: 'System',
       createdAt: createdAt.toISOString(),
       updatedAt: createdAt.toISOString(),
@@ -317,7 +317,7 @@ export function persistAdminPwhtOptions(opts: string[]) {
 export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
   { header: 'XREFID', value: r => r.id },
   { header: 'Joint #', value: r => r.jointNumber },
-  { header: 'Project', value: r => r.projectNumber },
+  { header: 'Hull', value: r => r.projectNumber },
   { header: 'Joint', value: r => r.joint },
   { header: 'Type', value: r => r.jointType },
   { header: 'Title', value: r => r.title },

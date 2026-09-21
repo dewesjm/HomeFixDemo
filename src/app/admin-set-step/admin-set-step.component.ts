@@ -52,11 +52,11 @@ export class AdminSetStepComponent {
     const job = this.selectedJob();
     const idx = this.targetIndex();
     if (!job || idx === null) return;
-    const label = this.stepOptions()[idx]?.label ?? `step ${idx + 1}`;
+    const label = this.stepOptions()[idx]?.label ?? `routing ${idx + 1}`;
     this.confirm.confirm({
-      header: 'Force step?',
+      header: 'Force routing?',
       message: `This re-opens "${label}" and every stage after it, discarding their sign-offs on ${job.jobNumber}. Continue?`,
-      acceptLabel: 'Force step',
+      acceptLabel: 'Force routing',
       rejectLabel: 'Cancel',
       accept: () => {
         this.wfService.forceStep(job, idx);

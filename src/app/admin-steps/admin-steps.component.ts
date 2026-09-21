@@ -179,7 +179,7 @@ export class AdminStepsComponent {
     this.rows.update(r => r.filter(x => x.id !== row.id));
     this.resequence(trade);
     this.refreshStageOptions();
-    this.messages.add({ severity: 'info', summary: 'Step deleted', life: 3000 });
+    this.messages.add({ severity: 'info', summary: 'Routing deleted', life: 3000 });
   }
 
   startEdit(row: StepRow) {
@@ -212,7 +212,7 @@ export class AdminStepsComponent {
     delete this.clonedRows[row.id];
     this.editingId.set(null);
     this.refreshStageOptions();
-    this.messages.add({ severity: 'success', summary: 'Step saved', detail: row.step, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Routing saved', detail: row.step, life: 3000 });
   }
 
   cancelEdit(row: StepRow) {
@@ -406,7 +406,7 @@ export class AdminStepsComponent {
   exportCsv() {
     downloadCsv('steps', [
       { header: 'Order', value: (r: StepRow) => r.sequence },
-      { header: 'Step', value: (r: StepRow) => r.step },
+      { header: 'Routing', value: (r: StepRow) => r.step },
       { header: 'Trade', value: (r: StepRow) => r.trade },
       { header: 'Reject routes to', value: (r: StepRow) => r.rejectToStage || 'None' }
     ], this.visibleRows());

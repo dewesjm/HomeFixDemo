@@ -96,7 +96,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
               <tr>
                 <th style="min-width: 3rem; text-align: center">#</th>
                 <th style="min-width: 6rem">Joint #</th>
-                <th style="min-width: 5rem">Project</th>
+                <th style="min-width: 5rem">Hull</th>
                 <th style="min-width: 5rem">Joint</th>
                 <th style="min-width: 5rem">Type</th>
                 <th style="min-width: 10rem">Title</th>

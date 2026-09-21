@@ -309,6 +309,21 @@ html, body {
 .signoff-fit-row { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
 .signoff-fit-row > * { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 0; min-width: 0; }
 
+/* Signoff panel: one consistent text size for everything except bold headings */
+.signoff-panel { --signoff-text: 1.05rem; font-size: var(--signoff-text); }
+.signoff-panel .table,
+.signoff-panel .table th,
+.signoff-panel .table td,
+.signoff-panel .table thead,
+.signoff-panel .input,
+.signoff-panel .select,
+.signoff-panel .textarea,
+.signoff-panel .meta,
+.signoff-panel .stage-field-label,
+.signoff-panel .result-radios label,
+.signoff-panel .text-xs:not(.text-error),
+.signoff-panel .text-sm:not(.font-semibold) { font-size: var(--signoff-text); }
+
 /* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
