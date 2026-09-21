@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen } from '@lucide/angular';
@@ -59,12 +59,4 @@ export class SignoffPanelComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();
-
-  /* Always read the current stage from the workflow signal (authoritative source).
-     The stage input can be stale during the same change-detection tick as updateStepType. */
-  currentStage = computed(() => {
-    const c = this.ctx();
-    if (!c) return null;
-    return c.wf().stages[c.selectedStep()] ?? null;
-  });
 }

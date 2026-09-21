@@ -11,7 +11,7 @@
     </div>
   }
 
-  @if (currentStage(); as st) {
+  @if (stage(); as st) {
     <!-- Inspection Type / Step Type dropdown -->
     @if (st.stepOptions && st.stepOptions.length > 0) {
       <div class="mb-sm">
@@ -78,7 +78,7 @@
 
     <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
 
-    @if (ctx().visibleFields(st).length) {
+    @if (ctx().visibleFields(stage()).length) {
       @if (st.id === 'fitup-insp') {
         <!-- Fit-Up Insp: verification grid against fabrication data -->
         <div class="stage-inputs">
@@ -92,7 +92,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (f of ctx().visibleFields(st); track f.key) {
+              @for (f of ctx().visibleFields(stage()); track f.key) {
                 <tr>
                   <td>{{ f.label }}</td>
                   <td>{{ ctx().getFabValue(f.key) || '—' }}</td>
@@ -121,7 +121,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (f of ctx().visibleFields(st); track f.key) {
+                @for (f of ctx().visibleFields(stage()); track f.key) {
                   @if (f.key !== 'comments') {
                   <tr>
                     <td>{{ f.label }}</td>
@@ -211,7 +211,7 @@
           </div>
 
           <!-- Comments from visible fields -->
-          @for (f of ctx().visibleFields(st); track f.key) {
+          @for (f of ctx().visibleFields(stage()); track f.key) {
             @if (f.key === 'comments') {
               <label class="stage-field">
                 <span class="stage-field-label">{{ f.label }}</span>
@@ -228,7 +228,7 @@
         <div class="flex flex-col gap-3 stage-inputs">
           <!-- Row 1: Weld Procedure, WTN, Weld Process -->
           <div class="flex gap-4">
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'weldProcedure' || f.key === 'wtn' || f.key === 'weldProcess') {
                 <div class="flex-1 max-w-[200px]">
                   <label class="stage-field">
@@ -255,7 +255,7 @@
           </div>
           <!-- Row 2: Qualification Check (yellow, disabled) -->
           <div class="flex gap-4">
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'qualificationCheck') {
                 <div class="flex-1 max-w-[400px]">
                   <label class="stage-field">
@@ -271,7 +271,7 @@
           <div>
             <div class="font-semibold text-sm mb-1">PH/IP Requirements</div>
             <div class="flex gap-4">
-              @for (f of ctx().visibleFields(st); track f.key) {
+              @for (f of ctx().visibleFields(stage()); track f.key) {
                 @if (f.key === 'phMin') {
                   <div class="flex-1 max-w-[120px]">
                     <label class="stage-field">
@@ -331,7 +331,7 @@
           <div>
             <div class="font-semibold text-sm mb-1">PH/IP Actuals</div>
             <div class="flex gap-4">
-              @for (f of ctx().visibleFields(st); track f.key) {
+              @for (f of ctx().visibleFields(stage()); track f.key) {
                 @if (f.key === 'actualPh') {
                   <div class="flex-1 max-w-[120px]">
                     <label class="stage-field">
@@ -367,7 +367,7 @@
           <!-- Weld Position (only when N Ind. = 1) -->
           @if (ctx().job.nInd === '1') {
           <div>
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'weldPosition') {
                 <label class="stage-field">
                   <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
@@ -385,7 +385,7 @@
           }
           <!-- Filler Metal -->
           <div class="flex gap-4">
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'fillerMetalType') {
                 <div class="flex-1 max-w-[160px]">
                   <label class="stage-field">
@@ -433,7 +433,7 @@
           <!-- Consumable Insert (Layer only) -->
           @if (st.id === 'root-weld') {
           <div>
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'consumableInsertOnly') {
                 <label class="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-sm"
@@ -449,7 +449,7 @@
           <!-- 5X Inspection (Root / Final Weld only) -->
           @if (st.id === 'root-weld' || st.id === 'final-weld') {
           <div>
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'performed5x') {
                 <label class="stage-field">
                   <span class="stage-field-label">{{ f.label }}</span>
@@ -464,7 +464,7 @@
           }
           <!-- Comments -->
           <div>
-            @for (f of ctx().visibleFields(st); track f.key) {
+            @for (f of ctx().visibleFields(stage()); track f.key) {
               @if (f.key === 'comments') {
                 <label class="stage-field">
                   <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
@@ -480,7 +480,7 @@
       } @else {
         <!-- Default: generic field rendering -->
         <div class="stage-inputs">
-          @for (f of ctx().visibleFields(st); track f.key) {
+          @for (f of ctx().visibleFields(stage()); track f.key) {
             @if (ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
             @if (f.key === 'partial') {
               <div class="flex items-end gap-4 w-full">
@@ -491,7 +491,7 @@
                          (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                 </label>
-                @for (g of ctx().visibleFields(st); track g.key) {
+                @for (g of ctx().visibleFields(stage()); track g.key) {
                   @if (g.key === 'portionInspected') {
                     <div class="flex-1">
                       <label class="stage-field">
@@ -514,7 +514,7 @@
                          (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
                   <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
                 </label>
-                @for (g of ctx().visibleFields(st); track g.key) {
+                @for (g of ctx().visibleFields(stage()); track g.key) {
                   @if (g.key === 'probationaryInspector' || g.key === 'oversightInspector') {
                     <div class="flex-1">
                       <label class="stage-field">
@@ -530,7 +530,7 @@
               </div>
             } @else if (f.key === 'penetrantBrand') {
               <div class="flex items-end gap-4 w-full">
-                @for (g of ctx().visibleFields(st); track g.key) {
+                @for (g of ctx().visibleFields(stage()); track g.key) {
                   @if (g.key === 'penetrantBrand' || g.key === 'penetrantManufacturer') {
                     <div class="flex-1">
                       <label class="stage-field">
@@ -605,7 +605,7 @@
         @if (st.id === 'fit' && st.stepType !== 'weld-buildup') {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
-              @for (f of ctx().visibleSignoffFields(st); track f.key) {
+              @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
                 @if (f.key === 'consumableType' || f.key === 'consumableSize' || f.key === 'consumableId') {
                   <div>
                     <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
@@ -628,7 +628,7 @@
           }
           @if (ctx().jointDesignRequiresBackingRing()) {
             <div class="signoff-fit-row">
-              @for (f of ctx().visibleSignoffFields(st); track f.key) {
+              @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
                 @if (f.key === 'backingRingType' || f.key === 'backingRingId') {
                   <div>
                     <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
@@ -651,7 +651,7 @@
           }
         } @else {
           <!-- Default: one per row -->
-          @for (f of ctx().visibleSignoffFields(st); track f.key) {
+          @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
             @if (f.key !== '_spacer' && !f.fullWidth) {
               <div class="signoff-field-row">
                 <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
@@ -721,7 +721,7 @@
       }
 
       <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
-      @for (f of ctx().visibleSignoffFields(st); track f.key) {
+      @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
         @if (f.fullWidth) {
           <div class="mb-sm">
             <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
@@ -735,7 +735,7 @@
 
       <!-- Defer Tack checkbox (fit stage only) -->
       @if (st.id === 'fit') {
-        @for (f of ctx().visibleSignoffFields(st); track f.key) {
+        @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
           @if (f.key === 'deferTack') {
             <div class="mb-sm">
               <label class="flex items-center gap-2 cursor-pointer">

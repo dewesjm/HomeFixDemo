@@ -339,7 +339,6 @@ export class JobDetailComponent implements OnDestroy {
   updateStepType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
     const templates = getTemplates()[this.job.trade] ?? [];
-    const currentStep = this.selectedStep();
     /* Fit stage: swap fields when switching between Fit and Weld Build up */
     if (stage.id === 'fit') {
       const fitTpl = templates.find(t => t.id === 'fit');
@@ -350,17 +349,12 @@ export class JobDetailComponent implements OnDestroy {
       const newSignoff = value === 'weld-buildup'
         ? []
         : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
-      this.wf.update(wf => ({
-        ...wf,
-        stages: wf.stages.map(s => s.id === stage.id ? {
-          ...s,
-          stepType: value,
-          fields: newFields,
-          signoffInputs: {},
-          signoffFields: newSignoff,
-        } : s)
-      }));
-      this.selectedStep.set(currentStep);
+      this.wfService.updateStageSignoff(this.job!, stage.id, {
+        stepType: value,
+        fields: newFields,
+        signoffInputs: {},
+        signoffFields: newSignoff,
+      }, { action: `${stage.label} — Type changed to ${value}` });
       return;
     }
     this.wfService.updateStageSignoff(this.job!, stage.id, {
@@ -409,19 +403,21 @@ export class JobDetailComponent implements OnDestroy {
       const base = tackTpl ? tackTpl.fields.map(f => ({ ...f })) : [];
       return [...base, { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }];
     }
-    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
-    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-    const anyTraceable = mcl1Traceable || mcl2Traceable;
-    return stage.fields.filter(f => {
+    const result = stage.fields.filter(f => {
       if (f.showIf) {
         const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType : stage.inputs[f.showIf.key];
         if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
         else if (checkVal !== f.showIf.equals) return false;
       }
       // MIC fields only visible when traceability is required
-      if (f.key === 'consumableId' || f.key === 'backingRingId') return anyTraceable;
+      if (f.key === 'consumableId' || f.key === 'backingRingId') {
+        const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
+        const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
+        return mcl1Traceable || mcl2Traceable;
+      }
       return true;
     });
+    return result;
   }
 
   /* check if the current joint design requires consumable insert or backing ring */
