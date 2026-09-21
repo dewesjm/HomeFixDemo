@@ -255,7 +255,8 @@
         <!-- Default: generic field rendering -->
         <div class="stage-inputs">
           @for (f of ctx().visibleFields(stage()); track f.key) {
-            @if (ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
+            <!-- the checkbox+field rows below are full-width blocks already; a break before them only adds an empty line of gap -->
+            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantBrand') { <span class="stage-field-break"></span> }
             @if (f.key === 'partial') {
               <div class="flex items-end gap-4 w-full">
                 <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
@@ -531,11 +532,6 @@
           <button type="button" class="btn btn-primary" [disabled]="!ctx().canSignStage(st)" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
-          @if (ctx().signBlockers(st); as why) {
-            @if (why.length) {
-              <span class="signoff-why">Can't sign off yet: {{ why.join(' · ') }}</span>
-            }
-          }
         } @else {
           <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
             {{ (st.result || '') | uppercase }}

@@ -322,10 +322,9 @@ html, body {
 .signoff-panel .text-xs:not(.text-error),
 .signoff-panel .text-sm:not(.font-semibold) { font-size: var(--signoff-text); }
 
-/* Signoff: grouped cards for the weld form, and the note that says why Sign is unavailable */
+/* Signoff: grouped cards for the weld form */
 .signoff-card { border: 1px solid var(--app-border); border-radius: 8px; padding: 0.75rem 1rem; }
 .signoff-card-title { font-weight: 600; margin-bottom: 0.5rem; }
-.signoff-why { color: var(--app-text); }
 
 /* Hide number input spinners */
 input[type="number"]::-webkit-outer-spin-button,

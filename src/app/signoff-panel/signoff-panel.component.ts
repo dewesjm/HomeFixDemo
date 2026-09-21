@@ -34,7 +34,6 @@ export interface SignoffContext {
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;
-  signBlockers: (stage: WorkflowStage) => string[];
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;

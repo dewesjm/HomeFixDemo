@@ -141,7 +141,7 @@ src/app/
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
 - **PH/IP validation** — blur-triggered range checks; NC skips that limit.
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
-- **Sign-off note** (no longer sticky; the sticky bar was removed at the user's request) — the action row shows *why* Signoff is unavailable (`signBlockers()` in job-detail is the single source; `canSignStage()` is derived from it). A failed attempt scrolls to and focuses the first validation error.
+- **Sign button** — disabled until `canSignStage()` passes; it is derived from `signBlockers()` in job-detail, the single source of the rules. There is deliberately no on-screen "why" text (the sticky bar and then the note beside the button were both removed at the user's request). A failed attempt scrolls to and focuses the first validation error.
 - **Fit-Up Insp** — verification grid against fabrication data, Release-to-welding checkbox.
 - **Deprogress** — reverse the last signed stage with a required comment.
 - **Interim Layer** signs off and navigates away; **5X** auto-signs the matching VT/5X stage.
