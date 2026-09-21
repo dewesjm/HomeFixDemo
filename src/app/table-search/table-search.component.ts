@@ -201,6 +201,11 @@ export class TableSearchComponent {
     }
   }
 
+  onRoleChange(role: Role) {
+    this.selectedRole.set(role);
+    this.table.columnFilters.update(f => ({ ...f, currentStep: [] }));
+  }
+
   clear() {
     this.table.clearFilters();
     this.selectedRole.set('View');

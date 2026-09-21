@@ -24,7 +24,7 @@
   </button>
 
   <select class="select select-sm select-bordered" style="min-width: 12rem"
-          [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)">
+          [ngModel]="selectedRole()" (ngModelChange)="onRoleChange($event)">
     @for (o of roleOptions; track o.value) {
       <option [ngValue]="o.value">{{ o.label }}</option>
     }
