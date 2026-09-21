@@ -506,9 +506,7 @@ export class WorkflowService {
     return { ...next, history: [...prev.history, entry] };
   }
 
-  /* Serializing every workflow (~35 KB per job) on each field edit made multi-field changes like
-     WTN take seconds. Saves are now coalesced and only workflows the user actually edited are written;
-     untouched jobs regenerate from their seed. */
+  /* debounced; writes only edited workflows (saving all of them per field edit made WTN take seconds) */
   private persist() {
     this.sync.markDirty();   // a local change is now waiting to sync to a backend
     if (this.persistTimer === null) this.persistTimer = setTimeout(() => this.flushPersist(), 250);

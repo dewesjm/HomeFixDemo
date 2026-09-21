@@ -2,7 +2,7 @@
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
-  hull: string;        /* letter + 4 digits, e.g. K7234; NOT unique — many jobs share a hull */
+  hull: string;        /* letter + 4 digits, e.g. K7234; not unique, many jobs share a hull */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   drawing: string;           /* drawing number */

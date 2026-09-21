@@ -327,7 +327,7 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];
 
-/* Override Requirements fields — appended to every welding stage (shown when a matching WTN is selected) */
+/* Override Requirements fields, appended to every welding stage (shown for matching WTNs) */
 export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
   { key: 'overridePhMax', label: 'Override PH Max', type: 'number' },
