@@ -78,7 +78,7 @@ export class TableSearchComponent {
   roleOptions = ROLES.map(r => ({ label: r, value: r }));
 
   table = new TableState<Row>(
-    ['id', 'jobNumber', 'title', 'drawing', 'joint', 'order', 'sequenceNumber'],
+    ['id', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber'],
     { currentStep: inArray }
   );
 
@@ -202,7 +202,7 @@ export class TableSearchComponent {
   exportCsv() {
     downloadCsv('work-orders', [
       { header: 'XREFID', value: (r: Row) => r.id },
-      { header: 'Hull', value: (r: Row) => r.jobNumber },
+      { header: 'Hull', value: (r: Row) => r.hull },
       { header: 'Drawing', value: (r: Row) => r.drawing },
       { header: 'Joint', value: (r: Row) => r.joint },
       { header: 'Order', value: (r: Row) => r.order },

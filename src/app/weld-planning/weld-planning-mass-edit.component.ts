@@ -17,7 +17,7 @@ type EditableRow = {
   _errors: string[];
   _saved: boolean;
   jointNumber: string;
-  projectNumber: string;
+  hull: string;
   joint: string;
   title: string;
   description: string;
@@ -126,7 +126,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                     <input class="input input-xs w-full" [(ngModel)]="row.jointNumber" [class.input-error]="!row.jointNumber" />
                   </td>
                   <td>
-                    <input class="input input-xs w-full" [(ngModel)]="row.projectNumber" />
+                    <input class="input input-xs w-full" [(ngModel)]="row.hull" />
                   </td>
                   <td>
                     <input class="input input-xs w-full" [(ngModel)]="row.joint" />
@@ -246,7 +246,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
       _errors: [],
       _saved: false,
       jointNumber: j.jointNumber,
-      projectNumber: j.projectNumber,
+      hull: j.hull,
       joint: j.joint,
       title: j.title,
       description: j.description,
@@ -295,7 +295,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
           _id: '',
           _raw: raw, _errors: [], _saved: false,
           jointNumber: raw['jointNumber'] || raw['joint_number'] || '',
-          projectNumber: raw['projectNumber'] || raw['project_number'] || '',
+          hull: raw['hull'] || '',
           joint: raw['joint'] || '',
           title: raw['title'] || '',
           description: raw['description'] || '',
@@ -353,7 +353,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
         if (this.isEditMode() && row._id) {
           updateJointPlan(row._id, {
             jointNumber: row.jointNumber,
-            projectNumber: row.projectNumber,
+            hull: row.hull,
             joint: row.joint,
             title: row.title,
             description: row.description,
@@ -378,7 +378,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
         } else {
           addJointPlan({
             jointNumber: row.jointNumber,
-            projectNumber: row.projectNumber,
+            hull: row.hull,
             joint: row.joint,
             title: row.title,
             description: row.description,
@@ -430,11 +430,11 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-001', projectNumber: 'PRJ-001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: '', estimatedHours: 4.5, notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-002', projectNumber: 'PRJ-001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: '', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-003', projectNumber: 'PRJ-002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.5, notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-004', projectNumber: 'PRJ-002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: '', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-005', projectNumber: 'PRJ-003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.0, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-001', hull: 'K1001', joint: 'J-001', title: 'Header to Reducer Weld', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: 'Carbon Steel', materialType2: 'ER70S-6', wps: 'WPS-001', ndt: 'VT + RT', pwht: 'Required - 600C/2hr', assignedTo: '', estimatedHours: 4.5, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-002', hull: 'K1001', joint: 'J-002', title: 'Elbow to Pipe Joint', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'DWG-101', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-002', ndt: 'VT + UT', pwht: 'None', assignedTo: '', estimatedHours: 2.0, notes: 'Standard procedure', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-003', hull: 'K1002', joint: 'J-003', title: 'Structural Beam Weld', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'DWG-205', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: 'Alloy Steel', materialType2: 'ER70S-6', wps: 'WPS-003', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.5, notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-004', hull: 'K1002', joint: 'J-004', title: 'Nozzle Attachment', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'DWG-205', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: 'Stainless Steel 316', materialType2: '316L SS', wps: 'WPS-004', ndt: 'VT + 5X', pwht: 'Required - 620C/1hr', assignedTo: '', estimatedHours: 6.0, notes: 'PWHT required', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'JP-005', hull: 'K1003', joint: 'J-005', title: 'Support Lug Weld', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'DWG-310', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: 'Carbon Steel', materialType2: 'E7018', wps: 'WPS-001', ndt: 'VT only', pwht: 'None', assignedTo: '', estimatedHours: 1.0, notes: '', createdBy: 'Sample' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -468,7 +468,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
         _id: j.id,
         _raw: {}, _errors: [], _saved: false,
         jointNumber: j.jointNumber,
-        projectNumber: j.projectNumber,
+        hull: j.hull,
         joint: j.joint,
         title: j.title,
         description: j.description,

@@ -26,7 +26,7 @@ export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
 export interface JointPlan {
   id: string;
   jointNumber: string;
-  projectNumber: string;
+  hull: string;
   joint: string;
   title: string;
   description: string;
@@ -63,7 +63,7 @@ const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600C/2hr', 'Required - 620C/1hr', 'Pending review'];
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
-const PROJECTS = ['PRJ-001', 'PRJ-002', 'PRJ-003', 'PRJ-004', 'PRJ-005'];
+const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
 function seeded(n: number) {
@@ -97,7 +97,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
       jointNumber: `JP-${String(1000 + i).slice(1)}`,
-      projectNumber: pick(PROJECTS),
+      hull: pick(HULLS),
       joint: pick(JOINTS_POOL),
       title: `Joint Plan ${String.fromCharCode(65 + (i % 26))}-${i}`,
       description: `${jt} weld joint plan for ${pick(JOINT_DESIGNS)} connection`,
@@ -130,7 +130,7 @@ function generateSeededJoints(count = 80): JointPlan[] {
 const LS_KEY = 'wp:joint-plans:v1';
 
 function loadJointPlans(): JointPlan[] {
-  const projPool = [...PROJECTS];
+  const hullPool = [...HULLS];
   const jointPool = [...JOINTS_POOL];
   const pickFrom = <T>(arr: T[], idx: number): T => arr[idx % arr.length];
 
@@ -145,7 +145,7 @@ function loadJointPlans(): JointPlan[] {
       return parsed.map((j: any, i: number) => ({
         ...j,
         jointType: j.jointType || 'pipe',
-        projectNumber: j.projectNumber || pickFrom(projPool, i),
+        hull: j.hull || pickFrom(hullPool, i),
         joint: j.joint || pickFrom(jointPool, i),
         status: statusMap[j.status] || j.status || 'development',
       }));
@@ -269,7 +269,7 @@ export function persistAdminPwhtOptions(opts: string[]) {
 export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
   { header: 'XREFID', value: r => r.id },
   { header: 'Joint #', value: r => r.jointNumber },
-  { header: 'Hull', value: r => r.projectNumber },
+  { header: 'Hull', value: r => r.hull },
   { header: 'Joint', value: r => r.joint },
   { header: 'Type', value: r => r.jointType },
   { header: 'Title', value: r => r.title },
@@ -317,7 +317,7 @@ export async function parseXlsxImport(file: File): Promise<Record<string, string
 export async function downloadXlsxTemplate(): Promise<void> {
   const XLSX = await import('xlsx');
   const headers = [
-    'jointNumber', 'projectNumber', 'joint', 'title', 'description',
+    'jointNumber', 'hull', 'joint', 'title', 'description',
     'status', 'priority', 'jointType', 'drawing', 'drawingRev',
     'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
     'materialType1', 'materialType2', 'wps', 'ndt', 'pwht',

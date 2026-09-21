@@ -25,7 +25,7 @@ import {
 import { WorkflowService } from '../services/workflow.service';
 import { currentStepLabel } from '../data/workflow';
 
-const DEFAULT_KEYS = ['title', 'id', 'drawing', 'joint', 'ndt'];
+const DEFAULT_KEYS = ['hull', 'id', 'drawing', 'joint', 'ndt'];
 
 /* ── Result column definitions ── */
 export interface ResultColumn {
@@ -38,7 +38,7 @@ export interface ResultColumn {
 
 const ALL_COLUMNS: ResultColumn[] = [
   { key: 'id', label: 'XREFID', field: 'id', sortField: 'id', width: 'min-w-8' },
-  { key: 'title',           label: 'Hull',         field: 'title',           sortField: 'title',           width: 'min-w-14' },
+  { key: 'hull',            label: 'Hull',         field: 'hull',            sortField: 'hull',            width: 'min-w-14' },
   { key: 'trade',           label: 'Trade',           field: 'trade',           sortField: 'trade',           width: 'min-w-11' },
   { key: 'drawing',         label: 'Drawing',         field: 'drawing',         sortField: 'drawing',         width: 'min-w-12' },
   { key: 'drawingRev',      label: 'Drawing Rev',     field: 'drawingRev',      sortField: 'drawingRev',      width: 'min-w-10' },
@@ -90,7 +90,7 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'currentStep',     label: 'Current routing',                                                                     width: 'min-w-13' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['id', 'title', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];
+const DEFAULT_COLUMN_KEYS = ['id', 'hull', 'drawing', 'joint', 'jointDesign', 'weldType', 'ndt', 'currentStep'];
 const COLUMNS_LS_KEY = 'pn-demo:result-columns';
 
 function loadColumnKeys(): string[] {
@@ -132,7 +132,7 @@ export class AdaptiveSearchComponent {
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
 
-  table = new TableState<Job>(['jobNumber', 'title', 'trade', 'technician']);
+  table = new TableState<Job>(['hull', 'trade', 'technician']);
 
   /* current workflow step label for a job */
   currentStep(job: Job): string {

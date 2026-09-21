@@ -18,7 +18,7 @@ const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
-const PROJECTS = ['PRJ-001', 'PRJ-002', 'PRJ-003', 'PRJ-004', 'PRJ-005'];
+const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 
@@ -37,7 +37,7 @@ export class WeldPlanningFormComponent implements OnInit {
   jointId = signal('');
 
   form: JointPlan = {
-    id: '', jointNumber: '', projectNumber: '', joint: '',
+    id: '', jointNumber: '', hull: '', joint: '',
     title: '', description: '',
     status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
@@ -57,7 +57,7 @@ export class WeldPlanningFormComponent implements OnInit {
   materials2 = MATERIALS_2;
   weldTypes = WELD_TYPES;
   wpsPool = WPS_POOL;
-  projects = PROJECTS;
+  hulls = HULLS;
   jointsPool = JOINTS_POOL;
   technicians = TECHNICIANS;
 

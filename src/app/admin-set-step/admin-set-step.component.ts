@@ -21,7 +21,7 @@ export class AdminSetStepComponent {
   private wfService = inject(WorkflowService);
   private confirm = inject(ConfirmService);
 
-  jobOptions = JOBS.map(j => ({ label: `${j.jobNumber} · ${j.title}`, value: j.id }));
+  jobOptions = JOBS.map(j => ({ label: j.hull, value: j.id }));
   selectedJobId = signal<string | null>(null);
   targetIndex = signal<number | null>(null);
 
@@ -55,7 +55,7 @@ export class AdminSetStepComponent {
     const label = this.stepOptions()[idx]?.label ?? `routing ${idx + 1}`;
     this.confirm.confirm({
       header: 'Force routing?',
-      message: `This re-opens "${label}" and every stage after it, discarding their sign-offs on ${job.jobNumber}. Continue?`,
+      message: `This re-opens "${label}" and every stage after it, discarding their sign-offs on ${job.hull}. Continue?`,
       acceptLabel: 'Force routing',
       rejectLabel: 'Cancel',
       accept: () => {

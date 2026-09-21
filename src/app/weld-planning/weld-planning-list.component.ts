@@ -84,8 +84,8 @@ type Row = JointPlan;
                 <th (click)="table.toggleSort('id')" style="cursor: pointer; min-width: 5rem">
                   XREFID {{ sortIcon('id') }}
                 </th>
-                <th (click)="table.toggleSort('projectNumber')" style="cursor: pointer; min-width: 6rem">
-                  Hull {{ sortIcon('projectNumber') }}
+                <th (click)="table.toggleSort('hull')" style="cursor: pointer; min-width: 6rem">
+                  Hull {{ sortIcon('hull') }}
                 </th>
                 <th (click)="table.toggleSort('joint')" style="cursor: pointer; min-width: 5rem">
                   Joint {{ sortIcon('joint') }}
@@ -112,7 +112,7 @@ type Row = JointPlan;
               @for (row of table.paged(); track row.id) {
                 <tr>
                   <td class="mono fw-bold">{{ row.id }}</td>
-                  <td>{{ row.projectNumber }}</td>
+                  <td>{{ row.hull }}</td>
                   <td>{{ row.joint }}</td>
                   <td>{{ row.jointType === 'pipe' ? 'Pipe' : 'Structural' }}</td>
                   <td class="mono">{{ row.drawing }}</td>
@@ -165,7 +165,7 @@ export class WeldPlanningListComponent {
   }
 
   table = new TableState<Row>(
-    ['id', 'projectNumber', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType'],
+    ['id', 'hull', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType'],
     {
       status: inArray,
     }

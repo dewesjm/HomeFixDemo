@@ -21,14 +21,14 @@ interface TeamGroup {
 
 const PERMISSIONS: Permission[] = [
   // General
-  { key: 'view-project', label: 'View project information', category: 'General' },
-  { key: 'edit-project', label: 'Edit project-level information', category: 'General' },
-  { key: 'delete-project', label: 'Delete project', category: 'General' },
+  { key: 'view-hull', label: 'View hull information', category: 'General' },
+  { key: 'edit-hull', label: 'Edit hull-level information', category: 'General' },
+  { key: 'delete-hull', label: 'Delete hull', category: 'General' },
   // Routing & Stages
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing & Stages' },
   { key: 'manage-templates', label: 'Manage stage templates', category: 'Routing & Stages' },
   { key: 'force-step', label: 'Force routing override', category: 'Routing & Stages' },
-  { key: 'view-all-stages', label: 'View all project stages', category: 'Routing & Stages' },
+  { key: 'view-all-stages', label: 'View all hull stages', category: 'Routing & Stages' },
   // Sign-off
   { key: 'signoff-fitup-release', label: 'Sign off Fit-Up Release', category: 'Sign-off' },
   { key: 'signoff-visual', label: 'Sign off Visual Inspection', category: 'Sign-off' },
@@ -54,7 +54,7 @@ const COLORS = ['#1976d2', '#e53935', '#f57c00', '#388e3c', '#7b1fa2', '#00838f'
 
 const DEFAULT_GROUPS: TeamGroup[] = [
   {
-    id: 'g1', name: 'Project Administrators', description: 'Members of this group can perform all operations in the team project.',
+    id: 'g1', name: 'Hull Administrators', description: 'Members of this group can perform all operations on hull records.',
     type: 'Group', avatarColor: '#1976d2', memberCount: 2,
     permissions: Object.fromEntries(PERMISSIONS.map(p => [p.key, 'allow'])),
   },
@@ -64,7 +64,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
-        if (p.key.startsWith('signoff-') || p.key === 'view-project' || p.key === 'view-all-stages' || p.key.startsWith('edit-')) {
+        if (p.key.startsWith('signoff-') || p.key === 'view-hull' || p.key === 'view-all-stages' || p.key.startsWith('edit-')) {
           perms[p.key] = 'allow';
         } else {
           perms[p.key] = 'not-set';
@@ -79,7 +79,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
-        if (['signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'view-project'].includes(p.key)) {
+        if (['signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'view-hull'].includes(p.key)) {
           perms[p.key] = 'allow';
         } else {
           perms[p.key] = 'not-set';
@@ -94,7 +94,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
-        if (['edit-fabrication', 'edit-inspection', 'edit-er-ir', 'view-project'].includes(p.key)) {
+        if (['edit-fabrication', 'edit-inspection', 'edit-er-ir', 'view-hull'].includes(p.key)) {
           perms[p.key] = 'allow';
         } else {
           perms[p.key] = 'not-set';
@@ -104,12 +104,12 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     })(),
   },
   {
-    id: 'g5', name: 'Viewers', description: 'Members of this group have read-only access to the team project.',
+    id: 'g5', name: 'Viewers', description: 'Members of this group have read-only access to hull records.',
     type: 'Group', avatarColor: '#5d4037', memberCount: 8,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
-        perms[p.key] = p.key === 'view-project' ? 'allow' : 'not-set';
+        perms[p.key] = p.key === 'view-hull' ? 'allow' : 'not-set';
       }
       return perms;
     })(),

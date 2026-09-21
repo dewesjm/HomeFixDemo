@@ -152,9 +152,6 @@ interface StageTemplate {
   stepOptions?: StageOption[];
 }
 
-const titleHas = (job: Job, ...words: string[]) =>
-  words.some(w => job.title.toLowerCase().includes(w.toLowerCase()));
-
 /* ── Default sign-off fields (pre-populated for admin) ── */
 const DEFAULT_SIGNOFF_FIELDS: SignoffField[] = [
   { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -477,7 +474,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'diagnostic' },
-    { id: 'refrigerant', label: 'Charge',   required: job => titleHas(job, 'AC', 'recharge', 'Heat pump'), fields: [
+    { id: 'refrigerant', label: 'Charge',   required: false, fields: [
       { key: 'refrigerantType', label: 'Refrigerant type', type: 'text',   placeholder: 'e.g. R-410A' },
       { key: 'chargePsi',       label: 'Charge',           type: 'number', unit: 'PSI' }
     ], signoffFields: [
@@ -486,7 +483,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'diagnostic' },
-    { id: 'combustion',  label: 'CO check',      required: job => titleHas(job, 'Furnace'), fields: [
+    { id: 'combustion',  label: 'CO check',      required: false, fields: [
       { key: 'coReading', label: 'CO reading', type: 'number', unit: 'ppm' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -524,7 +521,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ], rejectToStage: 'shutoff' },
-    { id: 'backflow',   label: 'Backflow',required: job => titleHas(job, 'Water heater', 'Sump'), fields: [
+    { id: 'backflow',   label: 'Backflow',required: false, fields: [
       { key: 'deviceSerial', label: 'Device serial #', type: 'text' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -556,7 +553,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'continuity', label: 'Continuity',         required: true, fields: [
       { key: 'resistance', label: 'Resistance', type: 'number', unit: 'Ω' }
     ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
-    { id: 'gfci',       label: 'GFCI',           required: job => titleHas(job, 'GFCI', 'Outlet'), fields: [
+    { id: 'gfci',       label: 'GFCI',           required: false, fields: [
       { key: 'tripTime', label: 'Trip time', type: 'number', unit: 'ms' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -564,7 +561,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: [{ label: 'Visual + functional', value: 'visual-functional' }, { label: 'Meter reading', value: 'meter' }] },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'panel',      label: 'Panel',       required: job => titleHas(job, 'Panel'), fields: [
+    { id: 'panel',      label: 'Panel',       required: false, fields: [
       { key: 'groundResistance', label: 'Ground resistance', type: 'number', unit: 'Ω' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -589,7 +586,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     { id: 'flashing', label: 'Flashing',       required: true, fields: [
       { key: 'sealant', label: 'Sealant type', type: 'text', placeholder: 'e.g. polyurethane' }
     ], signoffFields: DEFAULT_SIGNOFF_FIELDS },
-    { id: 'leaktest', label: 'Leak test',           required: job => titleHas(job, 'Leak', 'patch', 'Skylight'), fields: [
+    { id: 'leaktest', label: 'Leak test',           required: false, fields: [
       { key: 'testDuration', label: 'Test duration', type: 'number', unit: 'min' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
@@ -620,7 +617,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'crewSize', label: 'Crew size', type: 'number', required: false },
       { key: 'notes', label: 'Notes', type: 'text', required: false },
     ] },
-    { id: 'load',    label: 'Load check',       required: job => titleHas(job, 'Deck', 'Shelving', 'Cabinet'), fields: [
+    { id: 'load',    label: 'Load check',       required: false, fields: [
       { key: 'ratedLoad', label: 'Rated load', type: 'number', unit: 'lbs' }
     ], signoffFields: [
       { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },

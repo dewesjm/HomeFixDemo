@@ -2,8 +2,7 @@
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
-  jobNumber: string;   /* letter + 4 digits, e.g. K7234 */
-  title: string;
+  hull: string;        /* letter + 4 digits, e.g. K7234 */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   drawing: string;           /* drawing number */
@@ -80,16 +79,6 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 const WORK_PACKAGES = ['PRJ-4A-01', 'PRJ-4A-02', 'PRJ-4B-01', 'PRJ-4B-03', 'PRJ-5A-01', 'PRJ-5A-02', 'PRJ-5B-01', 'PRJ-5C-02', 'PRJ-6A-01', 'PRJ-6B-01'];
 const ATTR_CODES = ['AB', 'CD', 'EF', 'GH', 'JK', 'MN', 'PQ', 'RS', 'TU', 'VW', 'XY'];
 
-const TITLES_BY_TRADE: Record<Job['trade'], string[]> = {
-  Plumbing:   ['Leaking faucet repair', 'Water heater replacement', 'Clogged drain clearing', 'Pipe leak inspection', 'Toilet reseal', 'Sump pump service'],
-  Electrical: ['Panel upgrade', 'Outlet replacement', 'Lighting install', 'Wiring inspection', 'GFCI installation', 'Ceiling fan mount'],
-  HVAC:       ['Furnace tune-up', 'AC recharge', 'Thermostat install', 'Duct cleaning', 'Filter replacement', 'Heat pump service'],
-  Roofing:    ['Shingle repair', 'Gutter cleaning', 'Leak patch', 'Flashing replacement', 'Roof inspection', 'Skylight reseal'],
-  Carpentry:  ['Door reframe', 'Deck board repair', 'Cabinet install', 'Trim replacement', 'Window sill repair', 'Shelving build'],
-  Inspection: ['Annual safety inspection', 'Pre-sale inspection', 'Mold assessment', 'Foundation check', 'Radon test', 'Code compliance review'],
-  Welding:    ['Pipe weld inspection', 'Structural steel weld', 'Tank repair weld', 'Handrail fabrication', 'Flange weld repair', 'Support bracket weld']
-};
-
 function seeded(n: number) {
   let s = n * 9301 + 49297;
   return () => {
@@ -109,9 +98,9 @@ function makeJobId(seed: number): string {
   return code;
 }
 
-/* stable project number: letter + 4 digits, e.g. K7234 */
+/* stable hull number: letter + 4 digits, e.g. K7234 */
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-function makeJobNumber(seed: number): string {
+function makeHull(seed: number): string {
   const rand = seeded(seed * 53 + 11);
   const letter = LETTERS[Math.floor(rand() * LETTERS.length)];
   const digits = String(1000 + Math.floor(rand() * 9000));
@@ -123,8 +112,6 @@ export function generateJobs(count = 240): Job[] {
   const out: Job[] = [];
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
-    const titlePool = TITLES_BY_TRADE[trade];
-    const title = titlePool[Math.floor(rand() * titlePool.length)];
     const technician = TECHNICIANS[Math.floor(rand() * TECHNICIANS.length)];
     const estimatedCost = Math.round((75 + rand() * 1925) * 100) / 100;
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
@@ -137,8 +124,7 @@ export function generateJobs(count = 240): Job[] {
 
     out.push({
       id: makeJobId(i + 1),
-      jobNumber: makeJobNumber(i + 1),
-      title,
+      hull: makeHull(i + 1),
       trade,
       technician,
       drawing: pick(DRAWINGS),
@@ -205,8 +191,7 @@ export function addTestJob(trade: string): Job {
   const id = makeJobId(numId);
   const job: Job = {
     id,
-    jobNumber: makeJobNumber(numId),
-    title: `${trade} test job`,
+    hull: makeHull(numId),
     trade,
     technician: TECHNICIANS[numId % TECHNICIANS.length],
     drawing: '',

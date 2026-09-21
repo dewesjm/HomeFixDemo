@@ -5,13 +5,11 @@ export interface Assignment {
   id: string;
   assignmentNumber: string;
   jobId: string;
-  jobNumber: string;
-  jobTitle: string;
+  hull: string;
   drawing: string;
   joint: string;
   trade: string;
   step: string;
-  hull: string;
   location: string;
   assignedRoles: string[];
   dueDate: string;
@@ -30,7 +28,6 @@ const STEPS = [
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
-const HULLS = ['Hull A', 'Hull B', 'Hull C', 'Hull D', 'Hull E'];
 const LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Shop A', 'Shop B', 'Yard 1'];
 
 function seeded(n: number) {
@@ -79,13 +76,11 @@ function generateAssignments(): Assignment[] {
       id: `A${String(i + 1).padStart(3, '0')}`,
       assignmentNumber: `ASN-${String(i + 1).padStart(3, '0')}`,
       jobId: job.id,
-      jobNumber: job.jobNumber,
-      jobTitle: job.title,
+      hull: job.hull,
       drawing: job.drawing,
       joint: job.joint,
       trade: job.trade,
       step,
-      hull: pick(HULLS),
       location: pick(LOCATIONS),
       assignedRoles: rolesByStep[step] || ['View'],
       dueDate: due.toISOString().slice(0, 10),

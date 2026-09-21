@@ -44,7 +44,7 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"   placeholder="XREFID, drawing, joint, order…"
+    <input type="text" class="grow"   placeholder="XREFID, hull, drawing, joint, order…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
     @if (table.globalFilter()) {
       <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
@@ -62,7 +62,7 @@
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
       <th appSortHeader class="min-w-16" [table]="table" field="id" label="XREFID"></th>
-      <th appSortHeader class="min-w-32" [table]="table" field="jobNumber" label="Hull" filter="text"></th>
+      <th appSortHeader class="min-w-32" [table]="table" field="hull" label="Hull" filter="text"></th>
       <th appSortHeader class="min-w-24" [table]="table" field="drawing" label="Drawing" filter="text"></th>
       <th appSortHeader class="min-w-20" [table]="table" field="joint" label="Joint" filter="text"></th>
       <th appSortHeader class="min-w-28" [table]="table" field="order" label="Order" filter="text"></th>
@@ -78,7 +78,7 @@
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
         <td class="text-xs">{{ job.id }}</td>
-        <td>{{ job.jobNumber }}</td>
+        <td>{{ job.hull }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>
         <td>{{ job.order || '—' }}</td>

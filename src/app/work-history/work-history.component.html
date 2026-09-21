@@ -21,7 +21,7 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">
     <svg lucideBriefcase class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"            placeholder="Hull # or XREFID"
+    <input type="text" class="grow"            placeholder="Hull or XREFID"
            [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)" />
   </label>
 
@@ -57,7 +57,7 @@
       <th class="min-w-12">Old value</th>
       <th class="min-w-12">New value</th>
       <th appSortHeader class="min-w-12" [table]="table" field="step" label="Routing"></th>
-      <th appSortHeader class="min-w-13" [table]="table" field="jobNumber" label="Hull"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="hull" label="Hull"></th>
       <th class="min-w-11">Actions</th>
     </tr>
   </thead>
@@ -71,8 +71,7 @@
         <td class="hist-new">{{ r.to || '—' }}</td>
         <td>{{ r.step }}</td>
         <td>
-          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobNumber || r.jobTitle }}</a>
-          <div class="meta">{{ r.jobTitle }}</div>
+          <a [routerLink]="['/jobs', r.jobId]">{{ r.hull }}</a>
         </td>
         <td>
           @if (isLatestEntry(r)) {

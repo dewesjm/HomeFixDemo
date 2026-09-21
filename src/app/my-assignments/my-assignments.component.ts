@@ -27,7 +27,7 @@ export class MyAssignmentsComponent implements OnInit {
     const q = this.keyword().toLowerCase().trim();
     if (!q) return list;
     return list.filter(a =>
-      a.jobNumber.toLowerCase().includes(q) ||
+      a.hull.toLowerCase().includes(q) ||
       a.drawing.toLowerCase().includes(q) ||
       a.step.toLowerCase().includes(q) ||
       a.joint.toLowerCase().includes(q) ||

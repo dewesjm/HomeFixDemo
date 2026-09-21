@@ -17,8 +17,7 @@ import { downloadCsv } from '../data/export-csv';
 
 interface ActivityRow extends HistoryEntry {
   jobId: string;
-  jobNumber: string;
-  jobTitle: string;
+  hull: string;
   drawing: string;
 }
 
@@ -47,7 +46,7 @@ export class WorkHistoryComponent {
   deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
-    ['jobTitle', 'action', 'from', 'to', 'step'],
+    ['hull', 'action', 'from', 'to', 'step'],
     {}
   );
 
@@ -76,8 +75,8 @@ export class WorkHistoryComponent {
     if (this.person()) parts.push(`by ${this.person()}`);
     const jq = this.jobQuery().trim();
     if (jq) {
-      const match = JOBS.find(j => String(j.id) === jq || j.jobNumber.toLowerCase() === jq.toLowerCase());
-      parts.push(match ? match.title : `project "${jq}"`);
+      const match = JOBS.find(j => String(j.id) === jq || j.hull.toLowerCase() === jq.toLowerCase());
+      parts.push(`Hull ${match ? match.hull : jq}`);
     }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
@@ -93,8 +92,7 @@ export class WorkHistoryComponent {
         rows.push({
           ...e,
           jobId: wf.jobId,
-          jobNumber: job?.jobNumber ?? '',
-          jobTitle: job?.title ?? `Hull #${wf.jobId}`,
+          hull: job?.hull ?? `#${wf.jobId}`,
           drawing: job?.drawing ?? '',
         });
       }
@@ -105,8 +103,7 @@ export class WorkHistoryComponent {
       rows.push({
         ...m.entry,
         jobId: m.jobId,
-        jobNumber: job?.jobNumber ?? '',
-        jobTitle: job?.title ?? `Hull #${m.jobId}`,
+        hull: job?.hull ?? `#${m.jobId}`,
         drawing: job?.drawing ?? '',
       });
     }
@@ -118,7 +115,7 @@ export class WorkHistoryComponent {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
     return this.allActivity().filter(r =>
-      (!jq || r.jobId.toLowerCase() === jq || r.jobTitle.toLowerCase().includes(jq) || r.jobNumber.toLowerCase().includes(jq)) &&
+      (!jq || r.jobId.toLowerCase() === jq || r.hull.toLowerCase().includes(jq)) &&
       (!p || r.who === p)
     );
   });
@@ -167,8 +164,8 @@ export class WorkHistoryComponent {
       { header: 'Old value', value: (r: ActivityRow) => r.from ?? '' },
       { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
       { header: 'Routing',      value: (r: ActivityRow) => r.step },
-      { header: 'Hull #', value: (r: ActivityRow) => r.jobId },
-      { header: 'Hull',      value: (r: ActivityRow) => r.jobTitle }
+      { header: 'XREFID', value: (r: ActivityRow) => r.jobId },
+      { header: 'Hull',      value: (r: ActivityRow) => r.hull }
     ], this.table.sorted());
   }
 }
