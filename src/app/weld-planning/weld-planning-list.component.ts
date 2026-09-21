@@ -107,7 +107,7 @@ type Row = JointPlan;
                   <td class="mono">{{ row.drawing }}</td>
                   <td class="mono">{{ row.jointDesign }}</td>
                   <td>{{ row.weldType }}</td>
-                  <td>{{ row.status }}</td>
+                  <td>{{ statusLabel(row.status) }}</td>
                   <td>
                     <div class="row-tight">
                       <a [routerLink]="['/weld-planning', row.id]"
@@ -143,8 +143,13 @@ export class WeldPlanningListComponent {
   private confirm = inject(ConfirmService);
 
   statusOptions = JOINT_STATUS_OPTIONS;
+  private statusMap: Record<string, string> = Object.fromEntries(JOINT_STATUS_OPTIONS.map(o => [o.value, o.label]));
 
   statusFilter = '';
+
+  statusLabel(value: string): string {
+    return this.statusMap[value] ?? value;
+  }
 
   table = new TableState<Row>(
     ['id', 'projectNumber', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType'],

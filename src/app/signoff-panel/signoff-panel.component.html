@@ -602,7 +602,7 @@
     @if (st.required) {
       <div class="signoff-fields">
         <!-- Fit stage: consumable row + consumable insert + backing ring row + comments + defer tack -->
-        @if (st.id === 'fit') {
+        @if (st.id === 'fit' && st.stepType !== 'weld-buildup') {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
               @for (f of ctx().visibleSignoffFields(st); track f.key) {

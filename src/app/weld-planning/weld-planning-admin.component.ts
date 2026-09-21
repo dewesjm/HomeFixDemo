@@ -1,7 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideSave, LucidePlus, LucideTrash2, LucideSettings } from '@lucide/angular';
+import { RouterLink } from '@angular/router';
+import { LucideSave, LucidePlus, LucideTrash2, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
@@ -15,7 +16,7 @@ import {
 @Component({
   selector: 'app-weld-planning-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideSave, LucidePlus, LucideTrash2, LucideSettings],
+  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucidePlus, LucideTrash2, LucideArrowLeft],
   templateUrl: './weld-planning-admin.component.html'
 })
 export class WeldPlanningAdminComponent {
