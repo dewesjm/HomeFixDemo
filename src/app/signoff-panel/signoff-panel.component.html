@@ -12,6 +12,7 @@
   }
 
   @if (stage(); as st) {
+    {{ logRender(st) }}
     <!-- Inspection Type / Step Type dropdown -->
     @if (st.stepOptions && st.stepOptions.length > 0) {
       <div class="mb-sm">
@@ -36,10 +37,10 @@
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" class="checkbox checkbox-sm"
                    [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="st.inputs['affectedItems'].includes('joiningItem')"
+                   [checked]="(st.inputs['affectedItems'] ?? []).includes('joiningItem')"
                    (change)="ctx().toggleAffectedItem(st, 'joiningItem', $event)" />
             <span class="text-sm">{{ ctx().job.joiningItem }}</span>
-            @if (st.inputs['affectedItems'].includes('joiningItem')) {
+            @if ((st.inputs['affectedItems'] ?? []).includes('joiningItem')) {
               <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl1 || '—' }}</span></span>
               <label class="flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-xs"
@@ -55,10 +56,10 @@
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" class="checkbox checkbox-sm"
                    [disabled]="!ctx().inputsEditable(st, ctx().selectedStep())"
-                   [checked]="st.inputs['affectedItems'].includes('joinToItem')"
+                   [checked]="(st.inputs['affectedItems'] ?? []).includes('joinToItem')"
                    (change)="ctx().toggleAffectedItem(st, 'joinToItem', $event)" />
             <span class="text-sm">{{ ctx().job.joinToItem }}</span>
-            @if (st.inputs['affectedItems'].includes('joinToItem')) {
+            @if ((st.inputs['affectedItems'] ?? []).includes('joinToItem')) {
               <span class="text-xs opacity-70">MIC: <span class="mono">{{ ctx().job.mcl2 || '—' }}</span></span>
               <label class="flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-xs"
