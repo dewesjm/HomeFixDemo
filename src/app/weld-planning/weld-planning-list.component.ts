@@ -114,7 +114,7 @@ type Row = JointPlan;
                   <td class="mono fw-bold">{{ row.id }}</td>
                   <td>{{ row.projectNumber }}</td>
                   <td>{{ row.joint }}</td>
-                  <td>{{ row.jointType }}</td>
+                  <td>{{ row.jointType === 'pipe' ? 'Pipe' : 'Structural' }}</td>
                   <td class="mono">{{ row.drawing }}</td>
                   <td class="mono">{{ row.jointDesign }}</td>
                   <td>{{ row.weldType }}</td>

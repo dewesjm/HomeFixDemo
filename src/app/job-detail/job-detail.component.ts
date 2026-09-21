@@ -405,9 +405,17 @@ export class JobDetailComponent implements OnDestroy {
     }
     const result = stage.fields.filter(f => {
       if (f.showIf) {
-        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType : stage.inputs[f.showIf.key];
+        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
+          : f.showIf.key === 'result' ? stage.result
+          : stage.inputs[f.showIf.key];
         if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
         else if (checkVal !== f.showIf.equals) return false;
+        if (f.showIf.and) {
+          for (const cond of f.showIf.and) {
+            const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
+            if (v !== cond.equals) return false;
+          }
+        }
       }
       // MIC fields only visible when traceability is required
       if (f.key === 'consumableId' || f.key === 'backingRingId') {
@@ -722,8 +730,11 @@ export class JobDetailComponent implements OnDestroy {
     const errors: Record<string, string> = {};
     const fields = stage.fields ?? [];
     const nInd = this.job?.nInd;
+    const visible = this.visibleFields(stage);
+    const visibleKeys = new Set(visible.map(f => f.key));
     for (const f of fields) {
       if (f.key === 'comments') continue;
+      if (!visibleKeys.has(f.key)) continue;
       const val = stage.inputs?.[f.key];
       const empty = val === undefined || val === null || val === '';
       /* weldPosition required only when N Ind. is 1 */
