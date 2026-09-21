@@ -212,10 +212,10 @@
       } @else if (st.id === 'tack' || st.id === 'deferred-tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.routingType === 'weld-buildup')) {
         <!-- Weld stages: cards and layout driven by WELD_GROUPS (see component) -->
         <div class="flex flex-col gap-3 stage-inputs">
-          @for (g of weldGroups; track g.title) {
+          @for (g of weldGroups; track $index) {
             @if (groupVisible(g)) {
               <div class="signoff-card">
-                <div class="signoff-card-title">{{ g.title }}</div>
+                @if (g.title) { <div class="signoff-card-title">{{ g.title }}</div> }
                 <div class="flex flex-col gap-3">
                   @for (sec of g.sections; track $index) {
                     @if (sectionVisible(sec)) {
@@ -258,7 +258,7 @@
             @if (ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') { <span class="stage-field-break"></span> }
             @if (f.key === 'partial') {
               <div class="flex items-end gap-4 w-full">
-                <label class="flex items-center gap-2 cursor-pointer mb-6">
+                <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
                   <input type="checkbox" class="checkbox checkbox-sm"
                          [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                          [checked]="st.inputs[f.key] === 'yes'"
@@ -281,7 +281,7 @@
               </div>
             } @else if (f.key === 'hasProbationary') {
               <div class="flex items-end gap-4 w-full">
-                <label class="flex items-center gap-2 cursor-pointer mb-6">
+                <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
                   <input type="checkbox" class="checkbox checkbox-sm"
                          [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                          [checked]="st.inputs[f.key] === 'yes'"
@@ -558,7 +558,7 @@
 <!-- One weld-stage field cell (label, control, validation error) -->
 <ng-template #weldField let-f let-width="width">
   <div class="flex-1 min-w-0" [style.max-width.px]="width">
-    <label class="stage-field" [attr.title]="lockReason(f) || null">
+    <label class="stage-field">
       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
       @if (f.key === 'qualificationCheck') {
         <input class="input input-bordered w-full bg-error/15 border-error text-error font-semibold" type="text"
@@ -567,7 +567,7 @@
         @if (stage().inputs[f.key] === 'NC') {
           <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
         } @else {
-          <input class="input input-bordered w-full" type="number" [disabled]="true" [value]="stage().inputs[f.key] || ''" />
+          <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'" [disabled]="true" [value]="stage().inputs[f.key] || ''" />
         }
       } @else if (f.type === 'select') {
         <select class="select select-bordered w-full" [disabled]="!fieldsEditable() || isLocked(f)"

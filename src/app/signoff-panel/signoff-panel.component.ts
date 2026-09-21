@@ -61,13 +61,17 @@ interface WeldSection {
   when?: (st: WorkflowStage, ctx: SignoffContext) => boolean;
 }
 
-const READONLY_LIMITS = new Set(['phMin', 'phMax', 'ipMin', 'ipMax']);
+/* set from the WTN, never typed: PH/IP limits and their overrides */
+const READONLY_LIMITS = new Set([
+  'phMin', 'phMax', 'ipMin', 'ipMax',
+  'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
+]);
 const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
 
-interface WeldGroup { title: string; sections: WeldSection[] }
+interface WeldGroup { title?: string; sections: WeldSection[] }
 
 const WELD_GROUPS: WeldGroup[] = [
-  { title: 'Procedure & requirements', sections: [
+  { sections: [
     { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
     { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
     { title: 'PH/IP Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
@@ -82,7 +86,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160 }] },
   ] },
-  { title: 'Inspection & notes', sections: [
+  { sections: [
     { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
     { rows: [{ keys: ['comments'], width: null }] },
   ] },
@@ -136,22 +140,6 @@ export class SignoffPanelComponent {
   isLocked(f: StageField): boolean {
     return f.key === 'weldProcess'
       || (FILLER_KEYS.has(f.key) && this.stage().inputs['consumableInsertOnly'] === 'yes');
-  }
-
-  /* why a weld field can't be edited (tooltip); empty when it is editable */
-  lockReason(f: StageField): string {
-    const st = this.stage();
-    const wtn = (st.inputs['wtn'] ?? '').toUpperCase();
-    if (f.key === 'qualificationCheck') return 'Set by the qualification check';
-    if (READONLY_LIMITS.has(f.key)) return wtn ? `Set by ${wtn}` : 'Set when a WTN is selected';
-    if (st.signed) {
-      const who = st.signoffRecords[st.signoffRecords.length - 1]?.who;
-      return who ? `Signed off by ${who}` : 'Signed off';
-    }
-    if (!this.fieldsEditable()) return 'Locked: not the current routing';
-    if (f.key === 'weldProcess') return wtn ? `Set by ${wtn}` : 'Set when a WTN is selected';
-    if (this.isLocked(f)) return 'Not needed: only consumable insert used as filler';
-    return '';
   }
 
   onSelect(f: StageField, value: string | null) {
