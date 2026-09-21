@@ -59,7 +59,8 @@ export interface Job {
 
 
 /* welding-specific seed pools */
-const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
+/* letter + 7 digits, e.g. H7111234 */
+const DRAWINGS = ['H7111234', 'H7111235', 'H7204518', 'H7204519', 'H7315002', 'H7315003', 'H7422871', 'H7530116', 'H7530117'];
 const DRAWING_REVS = ['A', 'B', 'C', 'D', 'E', 'A-2', 'B-1'];
 const JOINTS = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];

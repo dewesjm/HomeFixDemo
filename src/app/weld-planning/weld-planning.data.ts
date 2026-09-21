@@ -102,14 +102,14 @@ function generateSeededJoints(count = 160): WeldJoint[] {
 
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
-      jointNumber: `JP-${String(1000 + i).slice(1)}`,
+      jointNumber: `${jt === 'structural' ? 'ST' : 'PI'}-J${String(1 + i).padStart(5, '0')}`,   /* 2-letter prefix, hyphen, J + 5 digits */
       hull: pick(HULLS),
       joint: pick(JOINTS_POOL),
       description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
       priority: pick(priorities),
       jointType: jt,
-      drawing: `DWG-${100 + i}`,
+      drawing: `H7${String(111000 + i * 37).padStart(6, '0')}`,   /* letter + 7 digits */
       drawingRev: pick(['A', 'B', 'C', 'D']),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
