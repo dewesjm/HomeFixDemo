@@ -423,6 +423,8 @@ export class JobDetailComponent implements OnDestroy {
         const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
         return mcl1Traceable || mcl2Traceable;
       }
+      // Override fields only visible when a matching WTN is selected on any weld stage
+      if (f.key.startsWith('override') && !this.showOverrideForStage(stage)) return false;
       return true;
     });
     return result;
@@ -633,7 +635,7 @@ export class JobDetailComponent implements OnDestroy {
           if (f) this.wfService.setStageInput(this.job, stage.id, f, val);
         }
       }
-      /* Populate/clear override fields on weld stages when WTN changes (disabled for demo)
+      /* Populate/clear override fields on weld stages when WTN changes */
       if (field.key === 'wtn' && this.job && this.wf) {
         const weldStages = ['tack', 'root-weld', 'final-weld'];
         const ov = this.WTN_OVERRIDE_VALUES[v];
@@ -647,7 +649,7 @@ export class JobDetailComponent implements OnDestroy {
             if (f) this.wfService.setStageInput(this.job, s.id, f, val);
           }
         }
-      }*/
+      }
     }
     /* clear validation error for this field */
     const key = `${stage.id}:${field.key}`;
