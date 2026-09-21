@@ -1,6 +1,6 @@
-<!-- Admin → Banner Message: set a banner that displays on the main list. -->
+<!-- Admin → Banner Message: set a banner that displays on specific pages. -->
 <h2 class="section-title">Banner Message</h2>
-<p class="section-sub">Configure a banner message that appears at the top of the project list for all users.</p>
+<p class="section-sub">Configure a banner message that appears on selected pages for all users.</p>
 
 <div class="flex flex-col gap-4 max-w-xl">
   <label class="stage-field">
@@ -24,6 +24,20 @@
              [checked]="enabled()" (change)="enabled.set($any($event.target).checked)" />
       <span>Enabled</span>
     </label>
+  </div>
+
+  <div>
+    <span class="stage-field-label">Apply To</span>
+    <div class="flex gap-2 mt-1">
+      @for (opt of pageOptions; track opt.value) {
+        <label class="flex items-center gap-1.5 cursor-pointer text-sm">
+          <input type="checkbox" class="checkbox checkbox-xs"
+                 [checked]="pages().includes(opt.value)"
+                 (change)="togglePage(opt.value)" />
+          {{ opt.label }}
+        </label>
+      }
+    </div>
   </div>
 
   <!-- Preview -->

@@ -187,7 +187,8 @@ export class TableSearchComponent {
       const raw = localStorage.getItem('homefix:banner');
       if (raw) {
         const data = JSON.parse(raw);
-        if (data.enabled && data.message) {
+        const pages = data.pages ?? ['all'];
+        if (data.enabled && data.message && (pages.includes('all') || pages.includes('ewr'))) {
           this.banner.set(data);
         } else {
           this.banner.set(null);

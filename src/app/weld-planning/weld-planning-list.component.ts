@@ -1,8 +1,8 @@
-﻿import { Component, computed, effect, inject } from '@angular/core';
+﻿import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit } from '@lucide/angular';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone } from '@lucide/angular';
 
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { TableState, inArray } from '../shared/table-state';
@@ -23,7 +23,7 @@ type Row = JointPlan;
   imports: [
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone
   ],
   template: `
     <div style="max-width: 100%">
@@ -43,6 +43,17 @@ type Row = JointPlan;
             <svg lucideFileSpreadsheet class="size-4"></svg> Export
           </button>
         </div>
+
+        @if (banner(); as b) {
+          <div class="alert text-sm mx-1 mb-2"
+               [class.alert-info]="b.type === 'info'"
+               [class.alert-warning]="b.type === 'warning'"
+               [class.alert-error]="b.type === 'error'"
+               [class.alert-success]="b.type === 'success'">
+            <svg lucideMegaphone class="size-4"></svg>
+            <span>{{ b.message }}</span>
+          </div>
+        }
 
         <div class="facet-row" style="margin: 0 1rem 0.75rem">
           <div style="position: relative; flex: 1 1 280px">
@@ -147,6 +158,8 @@ export class WeldPlanningListComponent {
 
   statusFilter = '';
 
+  banner = signal<{ message: string; type: string; enabled: boolean } | null>(null);
+
   statusLabel(value: string): string {
     return this.statusMap[value] ?? value;
   }
@@ -160,6 +173,20 @@ export class WeldPlanningListComponent {
 
   constructor() {
     effect(() => this.table.setRows(jointPlans()));
+    this.loadBanner();
+  }
+
+  private loadBanner() {
+    try {
+      const raw = localStorage.getItem('homefix:banner');
+      if (raw) {
+        const data = JSON.parse(raw);
+        const pages = data.pages ?? ['all'];
+        if (data.enabled && data.message && (pages.includes('all') || pages.includes('weld-planning'))) {
+          this.banner.set(data);
+        }
+      }
+    } catch {}
   }
 
   sortIcon(field: string): string {
