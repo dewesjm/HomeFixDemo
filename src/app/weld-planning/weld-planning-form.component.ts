@@ -6,10 +6,10 @@ import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import {
-  addJointPlan, updateJointPlan, getJointPlan, NDT_FIELDS, NDT_MARKS,
+  addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS, NDT_MARKS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
   adminJointDesigns,
-  type JointPlan
+  type WeldJoint
 } from './weld-planning.data';
 
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
@@ -34,9 +34,9 @@ export class WeldPlanningFormComponent implements OnInit {
   isEdit = signal(false);
   jointId = signal('');
 
-  form: JointPlan = {
+  form: WeldJoint = {
     id: '', jointNumber: '', hull: '', joint: '',
-    title: '', description: '',
+    description: '',
     status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
     jointDesign: '', weldType: '', pipeSize: '', wallThickness: '',
@@ -67,12 +67,12 @@ export class WeldPlanningFormComponent implements OnInit {
     if (id) {
       this.isEdit.set(true);
       this.jointId.set(id);
-      const existing = getJointPlan(id);
+      const existing = getWeldJoint(id);
       if (existing) {
         this.form = { ...existing };
         if (existing.status === 'locked') {
           this.isLocked.set(true);
-          this.toast.add({ severity: 'warn', summary: 'Locked', detail: 'This joint plan is locked and cannot be edited' });
+          this.toast.add({ severity: 'warn', summary: 'Locked', detail: 'This joint is locked and cannot be edited' });
           this.router.navigate(['/weld-planning', id]);
         }
       } else {
@@ -82,17 +82,17 @@ export class WeldPlanningFormComponent implements OnInit {
   }
 
   save() {
-    if (!this.form.jointNumber || !this.form.title) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Joint Number and Title are required' });
+    if (!this.form.jointNumber) {
+      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Joint Number is required' });
       return;
     }
 
     if (this.isEdit()) {
-      updateJointPlan(this.jointId(), this.form);
+      updateWeldJoint(this.jointId(), this.form);
       this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.jointNumber} updated` });
     } else {
       const { id, createdAt, updatedAt, ...rest } = this.form;
-      addJointPlan(rest);
+      addWeldJoint(rest);
       this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.jointNumber} created` });
     }
     this.router.navigate(['/weld-planning']);

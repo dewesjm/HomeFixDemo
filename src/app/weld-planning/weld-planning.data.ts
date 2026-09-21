@@ -6,7 +6,7 @@ import { STORAGE } from '../data/storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
-/* ── Joint Planning ── */
+/* ── Joints ── */
 export type JointStatus = 'development' | 'locked' | 'unlocked';
 
 export const JOINT_STATUS_OPTIONS: { label: string; value: JointStatus }[] = [
@@ -32,12 +32,11 @@ export const NDT_FIELDS = [
 ] as const;
 export const NDT_MARKS = ['', 'X', '5X'];
 
-export interface JointPlan {
+export interface WeldJoint {
   id: string;
   jointNumber: string;
   hull: string;
   joint: string;
-  title: string;
   description: string;
   status: JointStatus;
   priority: JointPriority;
@@ -89,10 +88,10 @@ function makeId(seed: number): string {
   return code;
 }
 
-function generateSeededJoints(count = 160): JointPlan[] {
+function generateSeededJoints(count = 160): WeldJoint[] {
   const rand = seeded(12345);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
-  const out: JointPlan[] = [];
+  const out: WeldJoint[] = [];
 
   for (let i = 0; i < count; i++) {
     const statuses: JointStatus[] = ['development', 'locked', 'unlocked'];
@@ -106,8 +105,7 @@ function generateSeededJoints(count = 160): JointPlan[] {
       jointNumber: `JP-${String(1000 + i).slice(1)}`,
       hull: pick(HULLS),
       joint: pick(JOINTS_POOL),
-      title: `Joint Plan ${String.fromCharCode(65 + (i % 26))}-${i}`,
-      description: `${jt} weld joint plan for ${pick(JOINT_DESIGNS)} connection`,
+      description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
       priority: pick(priorities),
       jointType: jt,
@@ -131,9 +129,9 @@ function generateSeededJoints(count = 160): JointPlan[] {
 }
 
 /* ── localStorage persistence ── */
-const LS_KEY = STORAGE.jointPlans;
+const LS_KEY = STORAGE.weldJoints;
 
-function loadJointPlans(): JointPlan[] {
+function loadWeldJoints(): WeldJoint[] {
   const hullPool = [...HULLS];
   const jointPool = [...JOINTS_POOL];
   const pickFrom = <T>(arr: T[], idx: number): T => arr[idx % arr.length];
@@ -156,51 +154,51 @@ function loadJointPlans(): JointPlan[] {
     }
   } catch { /* ignore */ }
   const seeded = generateSeededJoints();
-  persistJointPlans(seeded);
+  persistWeldJoints(seeded);
   return seeded;
 }
 
-function persistJointPlans(joints: JointPlan[]) {
+function persistWeldJoints(joints: WeldJoint[]) {
   try { localStorage.setItem(LS_KEY, JSON.stringify(joints)); } catch { /* */ }
 }
 
 /* ── Reactive store ── */
-export const jointPlans = signal<JointPlan[]>(loadJointPlans());
+export const weldJoints = signal<WeldJoint[]>(loadWeldJoints());
 
-export function addJointPlan(joint: Omit<JointPlan, 'id' | 'createdAt' | 'updatedAt'>): JointPlan {
+export function addWeldJoint(joint: Omit<WeldJoint, 'id' | 'createdAt' | 'updatedAt'>): WeldJoint {
   const now = new Date().toISOString();
-  const newJoint: JointPlan = {
+  const newJoint: WeldJoint = {
     ...joint,
     id: makeId(Date.now()),
     createdAt: now,
     updatedAt: now,
   };
-  jointPlans.update(list => {
+  weldJoints.update(list => {
     const next = [...list, newJoint];
-    persistJointPlans(next);
+    persistWeldJoints(next);
     return next;
   });
   return newJoint;
 }
 
-export function updateJointPlan(id: string, updates: Partial<JointPlan>): void {
-  jointPlans.update(list => {
+export function updateWeldJoint(id: string, updates: Partial<WeldJoint>): void {
+  weldJoints.update(list => {
     const next = list.map(j => j.id === id ? { ...j, ...updates, updatedAt: new Date().toISOString() } : j);
-    persistJointPlans(next);
+    persistWeldJoints(next);
     return next;
   });
 }
 
-export function deleteJointPlan(id: string): void {
-  jointPlans.update(list => {
+export function deleteWeldJoint(id: string): void {
+  weldJoints.update(list => {
     const next = list.filter(j => j.id !== id);
-    persistJointPlans(next);
+    persistWeldJoints(next);
     return next;
   });
 }
 
-export function getJointPlan(id: string): JointPlan | undefined {
-  return jointPlans().find(j => j.id === id);
+export function getWeldJoint(id: string): WeldJoint | undefined {
+  return weldJoints().find(j => j.id === id);
 }
 
 /* ── Admin: Joint Design options (persisted to localStorage) ── */
@@ -234,13 +232,12 @@ export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
 }
 
 /* ── CSV Export columns ── */
-export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
+export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
   { header: 'XREFID', value: r => r.id },
   { header: 'Joint #', value: r => r.jointNumber },
   { header: 'Hull', value: r => r.hull },
   { header: 'Joint', value: r => r.joint },
   { header: 'Type', value: r => r.jointType },
-  { header: 'Title', value: r => r.title },
   { header: 'Status', value: r => r.status },
   { header: 'Priority', value: r => r.priority },
   { header: 'Drawing', value: r => r.drawing },
@@ -251,7 +248,7 @@ export const JOINT_PLAN_CSV_COLUMNS: CsvColumn<JointPlan>[] = [
   { header: 'Wall Thickness', value: r => r.wallThickness },
   { header: 'Material 1', value: r => r.materialType1 },
   { header: 'Material 2', value: r => r.materialType2 },
-  ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: JointPlan) => r[f.key] })),
+  ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
   { header: 'Notes', value: r => r.notes },
 ];
 
@@ -281,7 +278,7 @@ export async function parseXlsxImport(file: File): Promise<Record<string, string
 export async function downloadXlsxTemplate(): Promise<void> {
   const XLSX = await import('xlsx');
   const headers = [
-    'jointNumber', 'hull', 'joint', 'title', 'description',
+    'jointNumber', 'hull', 'joint', 'description',
     'status', 'priority', 'jointType', 'drawing', 'drawingRev',
     'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
     'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),

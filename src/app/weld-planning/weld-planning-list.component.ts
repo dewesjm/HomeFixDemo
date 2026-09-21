@@ -11,12 +11,12 @@ import { downloadCsv } from '../data/export-csv';
 import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
 import {
-  jointPlans, deleteJointPlan,
+  weldJoints, deleteWeldJoint,
   JOINT_STATUS_OPTIONS,
-  JOINT_PLAN_CSV_COLUMNS, type JointPlan
+  WELD_JOINT_CSV_COLUMNS, type WeldJoint
 } from './weld-planning.data';
 
-type Row = JointPlan;
+type Row = WeldJoint;
 
 @Component({
   selector: 'app-weld-planning-list',
@@ -62,7 +62,7 @@ type Row = JointPlan;
             <input
               class="input input-sm w-full search-input"
               style="padding-left: 2rem"
-              placeholder="Search joint plans..."
+              placeholder="Search joints..."
               [ngModel]="table.globalFilter()"
               (ngModelChange)="table.setGlobalFilter($event)"
             />
@@ -138,7 +138,7 @@ type Row = JointPlan;
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="empty">No joint plans found.</td>
+                  <td colspan="8" class="empty">No joints found.</td>
                 </tr>
               }
             </tbody>
@@ -173,7 +173,7 @@ export class WeldPlanningListComponent {
   );
 
   constructor() {
-    effect(() => this.table.setRows(jointPlans()));
+    effect(() => this.table.setRows(weldJoints()));
   }
 
   sortIcon(field: string): string {
@@ -202,24 +202,24 @@ export class WeldPlanningListComponent {
     this.router.navigate(['/weld-planning/import'], { queryParams: { mode: 'edit' } });
   }
 
-  editRow(row: JointPlan) {
+  editRow(row: WeldJoint) {
     this.router.navigate(['/weld-planning', row.id, 'edit']);
   }
 
-  deleteRow(row: JointPlan) {
+  deleteRow(row: WeldJoint) {
     this.confirm.confirm({
-      header: 'Delete Joint Plan',
-      message: `Delete ${row.jointNumber} - ${row.title}?`,
+      header: 'Delete Joint',
+      message: `Delete ${row.jointNumber}?`,
       acceptLabel: 'Delete',
       accept: () => {
-        deleteJointPlan(row.id);
+        deleteWeldJoint(row.id);
         this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${row.jointNumber} deleted` });
       }
     });
   }
 
   exportCsv() {
-    downloadCsv('weld-planning-export', JOINT_PLAN_CSV_COLUMNS, this.table.sorted());
+    downloadCsv('weld-planning-export', WELD_JOINT_CSV_COLUMNS, this.table.sorted());
     this.toast.add({ severity: 'info', summary: 'Exported', detail: 'CSV download started' });
   }
 }

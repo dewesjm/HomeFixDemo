@@ -48,11 +48,11 @@ export const routes: Routes = [
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'Weld Planning' },
-  { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'Create Joint Plan' },
+  { path: 'weld-planning/new', component: WeldPlanningFormComponent, title: 'Create Joint' },
   { path: 'weld-planning/admin', component: WeldPlanningAdminComponent, title: 'Weld Planning Admin' },
-  { path: 'weld-planning/import', component: WeldPlanningMassEditComponent, title: 'Mass Import Joint Plans' },
-  { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'Joint Plan Details' },
-  { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'Edit Joint Plan' },
+  { path: 'weld-planning/import', component: WeldPlanningMassEditComponent, title: 'Mass Import Joints' },
+  { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'Joint Details' },
+  { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'Edit Joint' },
 
   { path: '**', redirectTo: 'table' }
 ];

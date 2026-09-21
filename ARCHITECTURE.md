@@ -13,7 +13,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 
 | Term | Meaning |
 |---|---|
-| **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title`. |
+| **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
 | **XREFID** | Internal 5-char alphanumeric job id (`job.id`). Unique. |
 | **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
@@ -55,7 +55,7 @@ src/app/
   fabrication/           Cross-stage fabrication fields (Welding)
   signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
   attachments/           Attachments list
-  weld-planning/         Weld Planning — joint plans list/form/detail/mass-edit/admin (own data in weld-planning.data.ts)
+  weld-planning/         Weld Planning — joints list/form/detail/mass-edit/admin (own data in weld-planning.data.ts)
   sync-status/           Online/offline indicator (stubbed)
   theme-picker/          DaisyUI theme switcher (32 themes, default: forest)
 
@@ -149,8 +149,8 @@ src/app/
 ### My Assignments, History, Weld Planning
 - My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, Location, Assigned To, Assignment #, Expires), keyword filter, banner. `expirationDate` is seeded 0-6 days out (always within a week).
 - History: When, Who (name + title held at the time), Action, Old/New, Routing, Hull, Actions. **It records what was input at each sign-off**: a sign-off row expands to every editable field the user was shown, with its value at that moment, blanks included (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage). It needs a required comment.
-- Weld Planning: separate joint-plan data (`wp` list/form/detail/mass edit; the admin page has only Joint Designs, the NDT and PWHT option tabs were removed) with its own `hull` field and joint-plan `title`.
-  A joint plan has no WPS, PWHT, assignee or estimated hours (removed). Its NDT requirements are the same seven fields as the weld record's joint details (`NDT_FIELDS` in `weld-planning.data.ts`: RT Root/Final, NDT Root/Each/Final, UT, VT; each blank, `X` or `5X`). Material 2 is labelled plainly (no "(Filler)"). The form, detail, admin and mass-edit pages fill the content area like every other screen (no centred max-width box). Plans saved in the browser before this change lack the NDT fields and show them blank.
+- Weld Planning: separate weld-joint data (`WeldJoint`; list/form/detail/mass edit; the admin page has only Joint Designs, the NDT and PWHT option tabs were removed) with its own `hull` field .
+  A joint has no title, WPS, PWHT, assignee or estimated hours (removed). Its NDT requirements are the same seven fields as the weld record's joint details (`NDT_FIELDS` in `weld-planning.data.ts`: RT Root/Final, NDT Root/Each/Final, UT, VT; each blank, `X` or `5X`). Material 2 is labelled plainly (no "(Filler)"). The form, detail, admin and mass-edit pages fill the content area like every other screen (no centred max-width box). Plans saved in the browser before this change lack the NDT fields and show them blank.
 
 ## Data schema
 
