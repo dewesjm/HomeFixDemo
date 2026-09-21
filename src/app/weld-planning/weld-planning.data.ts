@@ -2,6 +2,7 @@
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
+import { TECHNICIAN_NAMES } from '../data/people';
 import { STORAGE } from '../data/storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
@@ -63,7 +64,6 @@ const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600C/2hr', 'Required - 620C/1hr', 'Pending review'];
-const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
@@ -116,7 +116,7 @@ function generateSeededJoints(count = 160): JointPlan[] {
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
-      assignedTo: pick(TECHNICIANS),
+      assignedTo: pick(TECHNICIAN_NAMES),
       estimatedHours: Math.round((0.5 + rand() * 16) * 10) / 10,
       notes: i % 4 === 0 ? 'Standard GWP per WPS' : '',
       createdBy: 'System',

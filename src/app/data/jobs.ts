@@ -1,4 +1,5 @@
 /* mock Job model + seeded generator, stands in for a backend */
+import { TECHNICIAN_NAMES } from './people';
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
@@ -56,7 +57,6 @@ export interface Job {
   _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }
 
-const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 
 /* welding-specific seed pools */
 const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
@@ -120,7 +120,7 @@ export function generateJobs(count = 480): Job[] {
   const usedIdentity = new Set<string>();
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
-    const technician = TECHNICIANS[Math.floor(rand() * TECHNICIANS.length)];
+    const technician = TECHNICIAN_NAMES[Math.floor(rand() * TECHNICIAN_NAMES.length)];
     const estimatedCost = Math.round((75 + rand() * 1925) * 100) / 100;
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
 
@@ -193,7 +193,7 @@ export function generateJobs(count = 480): Job[] {
 }
 
 export const JOBS: Job[] = generateJobs();
-export const TECHNICIAN_OPTIONS = TECHNICIANS.map(t => ({ label: t, value: t }));
+export const TECHNICIAN_OPTIONS = TECHNICIAN_NAMES.map(t => ({ label: t, value: t }));
 
 
 /* add a test job for a given trade (for testing admin-added trades) */
@@ -205,7 +205,7 @@ export function addTestJob(trade: string): Job {
     id,
     hull: makeHull(numId),
     trade,
-    technician: TECHNICIANS[numId % TECHNICIANS.length],
+    technician: TECHNICIAN_NAMES[numId % TECHNICIAN_NAMES.length],
     drawing: '',
     drawingRev: '',
     joint: '',

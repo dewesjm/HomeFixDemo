@@ -1,5 +1,6 @@
 /* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
+import { stampWho } from './people';
 import { HistoryEntry, StageField, STAGE_TEMPLATES } from './workflow';
 
 export interface MockActivity {
@@ -69,7 +70,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   const routingAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
   const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
-    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, section, action, from, to, routing } });
+    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing } });
   };
 
   /* stages progressed through; some jobs fully signed, most a step or two in */

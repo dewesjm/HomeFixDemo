@@ -1,4 +1,5 @@
 /* workflow model + stage helpers, no UI */
+import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
@@ -104,7 +105,9 @@ export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
 
 export interface HistoryEntry {
   when: string;          /* ISO string */
-  who: string;
+  who: string;           /* person's full name */
+  whoId?: string;        /* their identifier */
+  whoTitle?: string;     /* title held at the time of the event */
   section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
@@ -944,7 +947,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const DAY = 24 * 60 * 60 * 1000, MIN = 60 * 1000;
   let t = Date.now() - (2 + Math.floor(rand() * 40)) * DAY;
 
-  const names = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
+  const names = SEEDED_INSPECTOR_NAMES;
   wf.stages = wf.stages.map((s, i) => {
     if (i >= k) return s;
     t += (20 + Math.floor(rand() * 180)) * MIN;
@@ -960,6 +963,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     wf.history.push({
       when: new Date(t).toISOString(),
       who,
+      ...stampWho(who),
       section: 'Sign-off',
       action: s.label,
       from: '',

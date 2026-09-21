@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
+import { TECHNICIAN_NAMES } from '../data/people';
 import { ToastService } from '../shared/toast.service';
 import {
   addJointPlan, updateJointPlan, getJointPlan,
@@ -20,7 +21,6 @@ const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
-const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
 
 @Component({
   selector: 'app-weld-planning-form',
@@ -59,7 +59,7 @@ export class WeldPlanningFormComponent implements OnInit {
   wpsPool = WPS_POOL;
   hulls = HULLS;
   jointsPool = JOINTS_POOL;
-  technicians = TECHNICIANS;
+  technicians = TECHNICIAN_NAMES;
 
   designOptions = adminJointDesigns;
   ndtOpts = adminNdtOptions;

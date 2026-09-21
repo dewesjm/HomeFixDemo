@@ -4,6 +4,7 @@ import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { ToastService } from '../shared/toast.service';
 import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
+import { stampWho } from '../data/people';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData
@@ -19,7 +20,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.7.0';
+const CURRENT_VERSION = '1.8.0';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -500,6 +501,7 @@ export class WorkflowService {
   private withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'routing'>): JobWorkflow {
     const entry: HistoryEntry = {
       ...e,
+      ...stampWho(e.who),
       when: new Date().toISOString(),
       routing: currentRoutingLabel(next.stages)
     };
