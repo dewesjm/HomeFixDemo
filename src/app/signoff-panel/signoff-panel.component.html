@@ -210,34 +210,43 @@
           }
         </div>
       } @else if (st.id === 'tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.routingType === 'weld-buildup')) {
-        <!-- Weld stages: layout driven by weldSections (see component) -->
+        <!-- Weld stages: cards and layout driven by WELD_GROUPS (see component) -->
         <div class="flex flex-col gap-3 stage-inputs">
-          @for (sec of weldSections; track $index) {
-            @if (sectionVisible(sec)) {
-              <div>
-                @if (sec.title) { <div class="font-semibold text-sm mb-1">{{ sec.title }}</div> }
-                @if (sec.kind === 'checkbox') {
-                  @for (f of rowFields(sec.rows[0]); track f.key) {
-                    <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" class="checkbox checkbox-sm"
-                             [disabled]="!fieldsEditable()"
-                             [checked]="st.inputs[f.key] === 'yes'"
-                             (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
-                      <span>{{ f.label }}</span>
-                    </label>
-                  }
-                } @else {
-                  @for (row of sec.rows; track $index) {
-                    <div class="flex gap-4" [class.mt-2]="$index > 0">
-                      @for (f of rowFields(row); track f.key) {
-                        @if (row.spacerBefore === f.key) {
-                          <div class="flex-1 invisible" [style.max-width.px]="row.width"></div>
+          @for (g of weldGroups; track g.title) {
+            @if (groupVisible(g)) {
+              <div class="signoff-card">
+                <div class="signoff-card-title">{{ g.title }}</div>
+                <div class="flex flex-col gap-3">
+                  @for (sec of g.sections; track $index) {
+                    @if (sectionVisible(sec)) {
+                      <div>
+                        @if (sec.title) { <div class="font-semibold text-sm mb-1">{{ sec.title }}</div> }
+                        @if (sec.kind === 'checkbox') {
+                          @for (f of rowFields(sec.rows[0]); track f.key) {
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" class="checkbox checkbox-sm"
+                                     [disabled]="!fieldsEditable()"
+                                     [checked]="st.inputs[f.key] === 'yes'"
+                                     (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
+                              <span>{{ f.label }}</span>
+                            </label>
+                          }
+                        } @else {
+                          @for (row of sec.rows; track $index) {
+                            <div class="flex gap-4" [class.mt-2]="$index > 0">
+                              @for (f of rowFields(row); track f.key) {
+                                @if (row.spacerBefore === f.key) {
+                                  <div class="flex-1 invisible" [style.max-width.px]="row.width"></div>
+                                }
+                                <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.width }" />
+                              }
+                            </div>
+                          }
                         }
-                        <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.width }" />
-                      }
-                    </div>
+                      </div>
+                    }
                   }
-                }
+                </div>
               </div>
             }
           }
@@ -514,7 +523,7 @@
         }
       }
 
-      <div class="signoff-actions">
+      <div class="signoff-actions signoff-bar">
         @if (st.id === 'sold') {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed — deprogress to reopen</span>
@@ -522,6 +531,11 @@
           <button type="button" class="btn btn-primary" [disabled]="!ctx().canSignStage(st)" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
+          @if (ctx().signBlockers(st); as why) {
+            @if (why.length) {
+              <span class="signoff-why">Can't sign off yet: {{ why.join(' · ') }}</span>
+            }
+          }
         } @else {
           <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
             {{ (st.result || '') | uppercase }}

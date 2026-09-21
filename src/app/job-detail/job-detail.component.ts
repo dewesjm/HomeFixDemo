@@ -23,6 +23,11 @@ import {
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
 
+/* fabrication values that must be present before Fit can be signed */
+const FIT_REQUIRED_FABRICATION: Record<string, string> = {
+  id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
+};
+
 @Component({
   selector: 'app-job-detail',
   standalone: true,
@@ -162,6 +167,7 @@ export class JobDetailComponent implements OnDestroy {
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
+      signBlockers: (s) => self.signBlockers(s),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
@@ -303,28 +309,27 @@ export class JobDetailComponent implements OnDestroy {
     }
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
-  canSignStage(stage: WorkflowStage): boolean {
-    if (!this.editable(stage)) return false;
+  /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
+  signBlockers(stage: WorkflowStage): string[] {
+    if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
     // Auto-accept non-inspection steps
-    if (!stage.rejectToStage && !stage.result) {
-      return true;
-    }
-    if (!stage.result) return false;
-    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) return false;
-    if (stage.repeatable && !stage.routingType) return false;
+    if (!stage.rejectToStage && !stage.result) return [];
+    const reasons: string[] = [];
+    if (!stage.result) reasons.push('Choose SAT or UNSAT');
+    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
+    if (stage.repeatable && !stage.routingType) reasons.push('Choose the routing type');
     // Fit: fabrication data must have MIC 1, MIC 2, Drawing Rev, Actual Thickness
     if (stage.id === 'fit' && this.wf) {
       const fab = this.wf().fabricationData;
-      const required = ['id1', 'id2', 'drawingRev', 'actualThickness'];
-      if (!required.every(k => fab[k]?.trim())) return false;
+      const missing = Object.entries(FIT_REQUIRED_FABRICATION).filter(([k]) => !fab[k]?.trim()).map(([, label]) => label);
+      if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
     }
     // Fit-Up Insp: all verification checkboxes must be checked
     if (stage.id === 'fitup-insp') {
-      const allVerified = stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes');
-      if (!allVerified) return false;
-      if (Object.keys(this.fabErrors()).length > 0) return false;
+      if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
+      if (Object.keys(this.fabErrors()).length > 0) reasons.push('Fix the fabrication errors');
     }
-    return stage.signoffFields
+    const missingSignoff = stage.signoffFields
       .filter(f => {
         if (!f.required) return false;
         // For fit stage, make consumable and backing ring fields conditionally required
@@ -336,10 +341,24 @@ export class JobDetailComponent implements OnDestroy {
         }
         return true;
       })
-      .every(f => {
-        const val = stage.signoffInputs[f.key] ?? '';
-        return val.trim().length > 0;
-      });
+      .filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0)
+      .map(f => f.label);
+    if (missingSignoff.length) reasons.push(`Fill in ${missingSignoff.join(', ')}`);
+    return reasons;
+  }
+
+  canSignStage(stage: WorkflowStage): boolean {
+    return this.signBlockers(stage).length === 0;
+  }
+
+  /* after a failed sign attempt: bring the first validation error into view and focus its field */
+  private focusFirstError() {
+    setTimeout(() => {
+      const err = document.querySelector('.signoff-panel div.text-error.text-xs');
+      if (!err) return;
+      err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });
+    });
   }
 
   updateRoutingType(stage: WorkflowStage, value: string) {
@@ -806,7 +825,7 @@ export class JobDetailComponent implements OnDestroy {
     /* validate required fields + range constraints */
     const errors = this.validateStageFields(stage);
     this.fieldErrors.set(errors);
-    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
     // Auto-accept non-inspection steps
     if (!stage.rejectToStage && !stage.result) {
       this.setStageResult(stage, 'sat' as StageResult);

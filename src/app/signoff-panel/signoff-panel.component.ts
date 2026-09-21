@@ -34,6 +34,7 @@ export interface SignoffContext {
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;
+  signBlockers: (stage: WorkflowStage) => string[];
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;
@@ -63,20 +64,28 @@ interface WeldSection {
 const READONLY_LIMITS = new Set(['phMin', 'phMax', 'ipMin', 'ipMax']);
 const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
 
-const WELD_SECTIONS: WeldSection[] = [
-  { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
-  { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
-  { title: 'PH/IP Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
-  { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
-    { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
-    { keys: ['overrideNote'], width: null },
+interface WeldGroup { title: string; sections: WeldSection[] }
+
+const WELD_GROUPS: WeldGroup[] = [
+  { title: 'Procedure & requirements', sections: [
+    { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
+    { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
+    { title: 'PH/IP Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
+    { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
+      { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
+      { keys: ['overrideNote'], width: null },
+    ] },
   ] },
-  { title: 'PH/IP Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
-  { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
-  { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
-  { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160 }] },
-  { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
-  { rows: [{ keys: ['comments'], width: null }] },
+  { title: 'Readings', sections: [
+    { title: 'PH/IP Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
+    { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
+    { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
+    { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160 }] },
+  ] },
+  { title: 'Inspection & notes', sections: [
+    { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
+    { rows: [{ keys: ['comments'], width: null }] },
+  ] },
 ];
 
 @Component({
@@ -90,7 +99,7 @@ export class SignoffPanelComponent {
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();
 
-  weldSections = WELD_SECTIONS;
+  weldGroups = WELD_GROUPS;
 
   /* the two joint members a weld build-up can affect, with their MCL and MIC-verified keys */
   affectedItemSlots = [
@@ -100,6 +109,10 @@ export class SignoffPanelComponent {
 
   isAffected(key: string): boolean {
     return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
+  }
+
+  groupVisible(g: WeldGroup): boolean {
+    return g.sections.some(sec => this.sectionVisible(sec) && sec.rows.some(r => this.rowFields(r).length > 0));
   }
 
   sectionVisible(sec: WeldSection): boolean {

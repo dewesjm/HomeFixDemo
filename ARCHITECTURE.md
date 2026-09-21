@@ -135,10 +135,11 @@ src/app/
 
 ### Signoff panel (`signoff-panel`)
 - **Type dropdown** for stages with `routingOptions`. On inspector/NDT stages it starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired`).
-- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_SECTIONS` config in `signoff-panel.component.ts` through one field template: GWP / WTN / Weld Process (auto-set from WTN, locked), PH/IP limits (read-only, `NC` = no limit), **Override Requirements** (shown for matching WTNs on every weld stage), PH/IP actuals, weld position (Nuclear Indicator 1), Consumable Insert checkbox (Root; unchecking clears filler type/size/MIC), Filler Metal, 5X (Root/Final), Comments.
+- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_GROUPS` config in `signoff-panel.component.ts` — three cards (Procedure & requirements, Readings, Inspection & notes) — through one field template. Alignment (e.g. PH Min over Override PH Min) is set by each row's `width`, not by a grid: GWP / WTN / Weld Process (auto-set from WTN, locked), PH/IP limits (read-only, `NC` = no limit), **Override Requirements** (shown for matching WTNs on every weld stage), PH/IP actuals, weld position (Nuclear Indicator 1), Consumable Insert checkbox (Root; unchecking clears filler type/size/MIC), Filler Metal, 5X (Root/Final), Comments.
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
 - **PH/IP validation** — blur-triggered range checks; NC skips that limit.
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
+- **Sticky sign-off bar** — shows *why* Signoff is unavailable (`signBlockers()` in job-detail is the single source; `canSignStage()` is derived from it). A failed attempt scrolls to and focuses the first validation error.
 - **Fit-Up Insp** — verification grid against fabrication data, Release-to-welding checkbox.
 - **Deprogress** — reverse the last signed stage with a required comment.
 - **Interim Layer** signs off and navigates away; **5X** auto-signs the matching VT/5X stage.
