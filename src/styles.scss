@@ -16,8 +16,11 @@
   --app-border: var(--color-base-300);   /* borders / dividers */
   --app-muted: var(--color-base-200);    /* subtle/disabled fills */
   --app-text: var(--color-base-content);
-  --app-text-muted: color-mix(in oklch, var(--color-base-content) 60%, transparent);
+  --app-text-muted: color-mix(in oklch, var(--color-base-content) 80%, transparent);
 }
+
+/* Global text size: everything sized in rem scales from this one value (16px = 100%). */
+html { font-size: 112.5%; }
 
 html, body {
   margin: 0;
@@ -84,10 +87,10 @@ html, body {
 .row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 .row-tight { display: flex; gap: 0.25rem; }
 .field-col { display: flex; flex-direction: column; min-width: 12rem; }
-.field-label { font-size: 0.75rem; color: var(--app-text-muted); }
+.field-label { font-size: 0.875rem; color: var(--app-text-muted); }
 .required-mark { color: var(--color-error); }
 .chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-.match-count { font-size: 0.85rem; color: var(--app-text-muted); }
+.match-count { font-size: 0.9rem; color: var(--app-text-muted); }
 .tag-list > * { margin-right: 0.25rem; }
 .note-area {                          /* multi-line text inputs styled to match the rest of the form controls */
   width: 100%;
@@ -109,16 +112,16 @@ html, body {
 .min-w-13 { min-width: 13rem; }
 .min-w-14 { min-width: 14rem; }
 .search-input { min-width: 280px; }
-.slider-value { font-size: 0.75rem; color: var(--app-text-muted); margin-top: 0.5rem; }
+.slider-value { font-size: 0.875rem; color: var(--app-text-muted); margin-top: 0.5rem; }
 
 /* Adaptive-search filter bar + adapt dialog */
 .fw-bold { font-weight: 600; }
 .flex-1 { flex: 1; }
 .my-sm { margin: 0.5rem 0; }
 .mb-sm { margin-bottom: 0.75rem; }
-.range-value { font-size: 0.75rem; }
+.range-value { font-size: 0.875rem; }
 .tag-left { margin-left: 0.25rem; }
-.dialog-hint { margin-top: 0; color: var(--app-text-muted); font-size: 0.85rem; }
+.dialog-hint { margin-top: 0; color: var(--app-text-muted); font-size: 0.9rem; }
 .field-scroll { max-height: 360px; overflow-y: auto; padding-right: 0.25rem; }
 .group-head {
   display: flex;
@@ -130,7 +133,7 @@ html, body {
 }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.75rem; }
 .field-check { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
-.required-tag { color: var(--color-error); font-size: 0.75rem; }
+.required-tag { color: var(--color-error); font-size: 0.875rem; }
 
 /* Job detail page helpers */
 .mt-sm { margin-top: 0.5rem; }
@@ -169,7 +172,7 @@ html, body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem 1.5rem;
-  .meta { font-size: 0.78rem; color: var(--app-text-muted); margin-bottom: 0.15rem; }
+  .meta { font-size: 0.9rem; color: var(--app-text-muted); margin-bottom: 0.15rem; }
 }
 @media (max-width: 640px) { .detail-grid { grid-template-columns: 1fr 1fr; } }
 
@@ -192,7 +195,7 @@ html, body {
   display: flex;
   gap: 0.5rem;
   align-items: baseline;
-  .meta { flex-shrink: 0; width: 8.5rem; font-size: 0.78rem; color: var(--app-text-muted); }
+  .meta { flex-shrink: 0; width: 9.5rem; font-size: 0.9rem; color: var(--app-text-muted); }
   span:last-child { min-width: 0; }
 }
 
@@ -201,7 +204,7 @@ html, body {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   color: var(--app-text-muted);
   margin-bottom: 0.75rem;
   span { display: inline-flex; align-items: center; gap: 0.3rem; }
@@ -220,8 +223,8 @@ html, body {
   border-radius: 8px;
   padding: 0.6rem 0.7rem;
   background: var(--app-surface);
-  .stage-head { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.85rem; }
-  .stage-sub { font-size: 0.72rem; color: var(--app-text-muted); margin: 0.2rem 0 0.4rem; }
+  .stage-head { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.95rem; }
+  .stage-sub { font-size: 0.85rem; color: var(--app-text-muted); margin: 0.2rem 0 0.4rem; }
   .stage-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 }
 
@@ -233,7 +236,7 @@ html, body {
   padding: 0.6rem 0.7rem;
   background: var(--app-surface);
 }
-.validation-stage-label { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; }
+.validation-stage-label { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem; }
 .stage-inputs { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .stage-field { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 160px; }
 .stage-field-break { flex-basis: 100%; height: 0; }   /* forces a wrap so a trigger field starts a fresh row */
@@ -242,28 +245,28 @@ html, body {
 .stage--done    { border-color: var(--color-success); background: color-mix(in oklch, var(--color-success) 12%, var(--app-surface)); i, svg { color: var(--color-success); } }
 .stage--fail    { border-color: var(--color-error);   background: color-mix(in oklch, var(--color-error) 12%, var(--app-surface));   i, svg { color: var(--color-error); } }
 .stage--current { border-color: var(--color-warning); background: color-mix(in oklch, var(--color-warning) 14%, var(--app-surface)); box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-warning) 40%, transparent); i, svg { color: var(--color-warning); } }
-.stage--locked  { opacity: 0.75; i, svg { color: var(--app-text-muted); } }
+.stage--locked  { opacity: 0.9; i, svg { color: var(--app-text-muted); } }
 .stage--skip    { opacity: 0.5; background: var(--app-muted); i, svg { color: color-mix(in oklch, var(--color-base-content) 45%, transparent); } }
 
 /* Stages-as-sign-offs: Steps indicator (job detail); readings/sign-off live in the Sign-off panel */
 /* Keep the horizontal Steps indicator legible on narrow viewports: scroll instead of cram. */
 .steps-scroll { width: 100%; }
 .steps-scroll .steps { display: flex; width: 100%; flex-wrap: nowrap; gap: 0.125rem; }
-.steps-scroll .steps .step { flex: 1 1 0; min-width: 0; font-size: 0.7rem; padding: 0.35rem 0.25rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps-scroll .steps .step { flex: 1 1 0; min-width: 0; font-size: 0.85rem; padding: 0.35rem 0.25rem; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* Routing horizontal scroll */
 .routing-scroll { display: flex; gap: 0; overflow-x: auto; padding: 0.3rem 0 0.25rem 0; }
 .routing-step { display: flex; flex-direction: column; align-items: center; flex: 1 1 0; min-width: 3.5rem; }
-.routing-step.disabled { opacity: 0.8; }
-.routing-num { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; background: var(--app-muted); color: var(--app-text-muted); transition: all 0.15s; flex-shrink: 0; }
+.routing-step.disabled { opacity: 0.9; }
+.routing-num { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; background: var(--app-muted); color: var(--app-text-muted); transition: all 0.15s; flex-shrink: 0; }
 .routing-num.active { background: var(--color-success); color: #fff; transform: scale(1.15); box-shadow: 0 0 0 3px color-mix(in oklch, var(--color-success) 35%, transparent); }
 .routing-num.done { background: var(--color-info); color: #fff; }
-.routing-label { font-size: 0.65rem; text-align: center; margin-top: 0.3rem; white-space: nowrap; color: var(--app-text-muted); overflow: hidden; text-overflow: ellipsis; }
+.routing-label { font-size: 0.8rem; text-align: center; margin-top: 0.3rem; white-space: nowrap; color: var(--app-text-muted); overflow: hidden; text-overflow: ellipsis; }
 .routing-step.active .routing-label { color: var(--color-success); font-weight: 700; }
 .routing-step.done .routing-label { color: var(--app-text); }
-@media (max-width: 640px) { .routing-step { min-width: 0; flex: 1 1 0; } .routing-num { width: 1.6rem; height: 1.6rem; font-size: 0.7rem; } .routing-label { font-size: 0.55rem; } }
+@media (max-width: 640px) { .routing-step { min-width: 0; flex: 1 1 0; } .routing-num { width: 1.6rem; height: 1.6rem; font-size: 0.8rem; } .routing-label { font-size: 0.7rem; } }
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
-.result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 0.85rem; }
+.result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 1rem; }
 .req { color: var(--color-error); }
 
 /* Work-history old/new value columns */
@@ -310,7 +313,7 @@ html, body {
 .signoff-fit-row > * { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 0; min-width: 0; }
 
 /* Signoff panel: one consistent text size for everything except bold headings */
-.signoff-panel { --signoff-text: 1.05rem; font-size: var(--signoff-text); }
+.signoff-panel { --signoff-text: 1rem; font-size: var(--signoff-text); }
 .signoff-panel .table,
 .signoff-panel .table th,
 .signoff-panel .table td,
@@ -347,3 +350,27 @@ input[type="number"] { -moz-appearance: textfield; }
 .toast-info    { background: color-mix(in oklch, var(--color-info) 15%, var(--app-surface));    border: 1px solid color-mix(in oklch, var(--color-info) 40%, transparent);    color: var(--app-text); }
 .toast-warn    { background: color-mix(in oklch, var(--color-warning) 15%, var(--app-surface)); border: 1px solid color-mix(in oklch, var(--color-warning) 40%, transparent); color: var(--app-text); }
 .toast-error   { background: color-mix(in oklch, var(--color-error) 15%, var(--app-surface));   border: 1px solid color-mix(in oklch, var(--color-error) 40%, transparent);   color: var(--app-text); }
+
+/* ───────── Readability overrides ─────────
+   Tailwind/DaisyUI's small sizes (12-14px) are too small at 100% zoom, and DaisyUI
+   dims disabled/locked controls to ~40% contrast. These keep sizes and contrast legible. */
+.text-xs { font-size: 0.875rem; line-height: 1.25rem; }
+.text-sm { font-size: 0.95rem; line-height: 1.375rem; }
+.table-sm, .table.table-sm { font-size: 0.95rem; }
+.btn-xs, .badge-xs, .input-xs, .select-xs { font-size: 0.875rem; }
+.btn-sm, .badge-sm, .input-sm, .select-sm { font-size: 0.95rem; }
+
+/* dimmed text utilities: still a visible hierarchy, but readable */
+.opacity-50 { opacity: 0.7; }
+.opacity-60 { opacity: 0.8; }
+.opacity-70 { opacity: 0.85; }
+
+/* locked / read-only controls: keep the value readable; the not-allowed cursor + tinted fill signal "locked" */
+.input:is(:disabled, [disabled]),
+.select:is(:disabled, [disabled]),
+.textarea:is(:disabled, [disabled]) {
+  color: color-mix(in oklch, var(--color-base-content) 85%, transparent);
+  -webkit-text-fill-color: currentColor;
+  cursor: not-allowed;
+}
+.checkbox:disabled, .radio:disabled { opacity: 0.55; }

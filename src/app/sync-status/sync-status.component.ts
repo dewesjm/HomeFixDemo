@@ -14,7 +14,7 @@ import { SyncService } from '../services/sync.service';
     </span>
   `,
   styles: [`
-    .sync-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; font-weight: 600; }
+    .sync-status { display: inline-flex; align-items: center; gap: .4rem; font-size: .9rem; font-weight: 600; }
     .sync-dot { width: .65rem; height: .65rem; border-radius: 50%; flex: 0 0 auto; }
     .sync-status--synced  .sync-dot { background: var(--color-success); }
     .sync-status--pending .sync-dot { background: var(--color-warning); animation: sync-pulse 1s ease-in-out infinite; }
