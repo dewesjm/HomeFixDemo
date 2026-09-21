@@ -13,7 +13,8 @@
      elements match whatever theme is selected. Custom CSS should reference THESE. */
   --app-bg: var(--color-base-200);       /* page background */
   --app-surface: var(--color-base-100);  /* cards / panels / sidebar (elevated) */
-  --app-border: var(--color-base-300);   /* borders / dividers */
+  /* text-colour based: base-300 is nearly the panel colour in dark themes, which made borders invisible */
+  --app-border: color-mix(in oklch, var(--color-base-content) 25%, transparent);   /* borders / dividers */
   --app-muted: var(--color-base-200);    /* subtle/disabled fills */
   --app-text: var(--color-base-content);
   --app-text-muted: color-mix(in oklch, var(--color-base-content) 80%, transparent);
@@ -323,8 +324,7 @@ html, body {
 .signoff-panel .text-sm:not(.font-semibold) { font-size: var(--signoff-text); }
 
 /* Signoff: grouped cards for the weld form */
-/* text-colour based, because --app-border is nearly the panel colour in dark themes */
-.signoff-card { border: 1px solid color-mix(in oklch, var(--color-base-content) 30%, transparent); border-radius: 8px; padding: 0.75rem 1rem; }
+.signoff-card { border: 1px solid var(--app-border); border-radius: 8px; padding: 0.75rem 1rem; }
 .signoff-card-title { font-weight: 600; margin-bottom: 0.5rem; }
 
 /* Hide number input spinners */
