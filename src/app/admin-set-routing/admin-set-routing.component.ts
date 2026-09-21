@@ -21,7 +21,7 @@ export class AdminSetRoutingComponent {
   private wfService = inject(WorkflowService);
   private confirm = inject(ConfirmService);
 
-  jobOptions = JOBS.map(j => ({ label: j.hull, value: j.id }));
+  jobOptions = JOBS.map(j => ({ label: `${j.hull} · ${j.drawing} · ${j.joint} (${j.id})`, value: j.id }));
   selectedJobId = signal<string | null>(null);
   targetIndex = signal<number | null>(null);
 

@@ -2,7 +2,7 @@
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
-  hull: string;        /* letter + 4 digits, e.g. K7234 */
+  hull: string;        /* letter + 4 digits, e.g. K7234; NOT unique — many jobs share a hull */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   drawing: string;           /* drawing number */
@@ -107,9 +107,15 @@ function makeHull(seed: number): string {
   return letter + digits;
 }
 
+/* Hulls repeat across many jobs. A job is identified by its XREFID (id) or by the unique
+   combination of hull + drawing + joint; generateJobs guarantees both are unique. */
+const HULL_COUNT = 48;
+
 export function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
+  const hulls = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
+  const usedIdentity = new Set<string>();
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
     const technician = TECHNICIANS[Math.floor(rand() * TECHNICIANS.length)];
@@ -122,14 +128,20 @@ export function generateJobs(count = 480): Job[] {
 
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
+    let hull: string, drawing: string, joint: string;
+    do {
+      hull = pick(hulls); drawing = pick(DRAWINGS); joint = pick(JOINTS);
+    } while (usedIdentity.has(`${hull}|${drawing}|${joint}`));
+    usedIdentity.add(`${hull}|${drawing}|${joint}`);
+
     out.push({
       id: makeJobId(i + 1),
-      hull: makeHull(i + 1),
+      hull,
       trade,
       technician,
-      drawing: pick(DRAWINGS),
+      drawing,
       drawingRev: pick(DRAWING_REVS),
-      joint: pick(JOINTS),
+      joint,
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
       pipeSize: pick(PIPE_SIZES),

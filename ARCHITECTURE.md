@@ -13,8 +13,9 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 
 | Term | Meaning |
 |---|---|
-| **Hull** | The record a job is for (`job.hull`, letter + 4 digits, e.g. `K7234`). Replaces the old "Project" / job number / title. There is no job `title`. |
-| **XREFID** | Internal 5-char alphanumeric job id (`job.id`). |
+| **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title`. |
+| **XREFID** | Internal 5-char alphanumeric job id (`job.id`). Unique. |
+| **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
 | **Stage** | One unit of a routing (`WorkflowStage`): Fit, Tack, Root, NDT, … |
 | **GWP** | Label of the `weldProcedure` field (formerly "Weld Procedure"). |
@@ -103,7 +104,7 @@ src/app/
 
 ## Data flow
 
-1. **Jobs** — 480 seeded Welding jobs in `jobs.ts`. XREFID is 5-char alphanumeric (`makeJobId()`); hull is letter + 4 digits (`makeHull()`).
+1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). XREFID is 5-char alphanumeric (`makeJobId()`); hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees both identity rules: unique XREFID and unique hull + drawing + joint.
 2. **Stage templates** — `workflow.ts`. Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
 3. **Per-job workflow** — `WorkflowService`, keyed by job id, exposed as signals. Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
 4. **Assignments** — 36 seeded, assigned to "John Johnson".
@@ -196,8 +197,9 @@ src/app/
 
 ```ts
 {
-  id: string;          // XREFID, 5-char alphanumeric
-  hull: string;        // letter + 4 digits, e.g. K7234
+  id: string;          // XREFID, 5-char alphanumeric, unique
+  hull: string;        // letter + 4 digits, e.g. K7234 — shared by many jobs
+  // identity: id  OR  (hull + drawing + joint), each unique
   trade: string;       // 'Welding'
   technician: string;
   drawing: string; drawingRev: string; joint: string; jointDesign: string; weldType: string;
@@ -213,6 +215,7 @@ src/app/
 
 ## Data patterns
 
+- **Job identity** — hulls repeat by design. Any new seed data or import must keep `id` unique and `(hull, drawing, joint)` unique; pickers and labels should show all three, not the hull alone.
 - **Seeded workflows** are deterministic per job id and pre-sign random leading stages with full `signoffRecords`.
 - **Nuclear Indicator** '1'/'2'/'3' drives weld-position visibility, pre-fit visibility and NDT role routing (1–2 → NQC Inspector).
 - **NDT routing** — `job.ndt` is regex-matched: `hasUTorRT`, `hasMTorPT`, `hasVT`.
