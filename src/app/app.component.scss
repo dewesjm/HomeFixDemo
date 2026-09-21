@@ -15,9 +15,9 @@
   z-index: 50;
 }
 
-.topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; }
+.topnav-left { display: flex; align-items: center; gap: 1.5rem; min-width: 0; flex: 1 1 auto; }
 
-.topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; width: 11rem; display: inline-block; }
+.topnav-brand { font-size: 1.1rem; font-weight: 700; white-space: nowrap; width: 11rem; display: inline-block; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; min-width: 0; }
 
 .topnav-menu {
   display: flex;
@@ -46,7 +46,7 @@
   a:hover, summary:hover { background: var(--app-muted); }
 }
 
-.topnav-right { display: flex; align-items: center; gap: 0.75rem; }
+.topnav-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
 
 /* Admin dropdown */
 .dropdown-wrapper > details > summary { list-style: none; }
@@ -184,4 +184,16 @@
   background: var(--app-border);
   margin: 0 0.25rem;
   align-self: center;
+}
+
+/* Narrow windows: top-level groups collapse to icons (labels stay in the dropdowns and as tooltips),
+   and the brand gives up its space, so the menu never runs into the theme picker. */
+@media (max-width: 1280px) {
+  .topnav { padding: 0 0.75rem; }
+  .topnav-left { gap: 0.75rem; }
+  .topnav-brand { width: auto; max-width: 9rem; }
+  .topnav-menu > li > details > summary .nav-label { display: none; }
+}
+@media (max-width: 720px) {
+  .topnav-brand { display: none; }
 }

@@ -9,7 +9,7 @@
         <!-- Weld Engineering group dropdown -->
         <li class="dropdown-wrapper">
           <details #weDetails (toggle)="onWeToggle($event)">
-            <summary><svg lucideWorkflow class="size-4"></svg> Weld Engineering</summary>
+            <summary title="Weld Engineering"><svg lucideWorkflow class="size-4"></svg><span class="nav-label"> Weld Engineering</span></summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideSearch class="size-4"></svg> Procedure Lookup</a></li>
               <li class="dropdown-divider"></li>
@@ -29,7 +29,7 @@
         <!-- Weld Planning group dropdown -->
         <li class="dropdown-wrapper">
           <details #wpDetails (toggle)="onWpToggle($event)">
-            <summary><svg lucideLayers class="size-4"></svg> Weld Planning</summary>
+            <summary title="Weld Planning"><svg lucideLayers class="size-4"></svg><span class="nav-label"> Weld Planning</span></summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/weld-planning" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Joint Search</a></li>
               <li><a routerLink="/weld-planning/import" routerLinkActive="menu-active"><svg lucideUpload class="size-4"></svg> Import Joints</a></li>
@@ -52,7 +52,7 @@
         <!-- Weld Assignment group dropdown -->
         <li class="dropdown-wrapper">
           <details #waDetails (toggle)="onWaToggle($event)">
-            <summary><svg lucideClipboardList class="size-4"></svg> Weld Assignment</summary>
+            <summary title="Weld Assignment"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Weld Assignment</span></summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Active WICCs</a></li>
               <li><a class="menu-disabled"><svg lucidePlus class="size-4"></svg> Create WICC</a></li>
@@ -75,7 +75,7 @@
         <!-- Weld Record (EWR) group dropdown -->
         <li class="dropdown-wrapper">
           <details #pipeWeldingDetails (toggle)="onPipeWeldingToggle($event)">
-            <summary><svg lucideTable class="size-4"></svg> Weld Record</summary>
+            <summary title="Weld Record"><svg lucideTable class="size-4"></svg><span class="nav-label"> Weld Record</span></summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/table" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding</a></li>
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Structural Welding</a></li>
