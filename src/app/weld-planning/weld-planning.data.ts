@@ -70,8 +70,6 @@ const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Aluminum'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
-const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X'];
-const PWHT_POOL = ['None', 'Required - 600C/2hr', 'Required - 620C/1hr', 'Pending review'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
@@ -233,42 +231,6 @@ function loadAdminDesigns(): AdminJointDesign[] {
 export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
   adminJointDesigns.set(designs);
   try { localStorage.setItem(ADMIN_DESIGNS_KEY, JSON.stringify(designs)); } catch { /* */ }
-}
-
-/* ── Admin: NDT options ── */
-const ADMIN_NDT_KEY = STORAGE.adminNdt;
-
-export const adminNdtOptions = signal<string[]>(loadAdminNdt());
-
-function loadAdminNdt(): string[] {
-  try {
-    const raw = localStorage.getItem(ADMIN_NDT_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* */ }
-  return [...NDT_POOL];
-}
-
-export function persistAdminNdtOptions(opts: string[]) {
-  adminNdtOptions.set(opts);
-  try { localStorage.setItem(ADMIN_NDT_KEY, JSON.stringify(opts)); } catch { /* */ }
-}
-
-/* ── Admin: PWHT options ── */
-const ADMIN_PWHT_KEY = STORAGE.adminPwht;
-
-export const adminPwhtOptions = signal<string[]>(loadAdminPwht());
-
-function loadAdminPwht(): string[] {
-  try {
-    const raw = localStorage.getItem(ADMIN_PWHT_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch { /* */ }
-  return [...PWHT_POOL];
-}
-
-export function persistAdminPwhtOptions(opts: string[]) {
-  adminPwhtOptions.set(opts);
-  try { localStorage.setItem(ADMIN_PWHT_KEY, JSON.stringify(opts)); } catch { /* */ }
 }
 
 /* ── CSV Export columns ── */

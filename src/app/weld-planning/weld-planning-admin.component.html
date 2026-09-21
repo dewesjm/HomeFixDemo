@@ -7,13 +7,6 @@
     <h2 class="section-title">Admin</h2>
   </div>
 
-  <div style="display: flex; gap: 0.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--app-border); padding-bottom: 0.25rem">
-    <button class="btn btn-sm" [class.btn-primary]="activeTab() === 'designs'" (click)="setTab('designs')">Joint Designs</button>
-    <button class="btn btn-sm" [class.btn-primary]="activeTab() === 'ndt'" (click)="setTab('ndt')">NDT Options</button>
-    <button class="btn btn-sm" [class.btn-primary]="activeTab() === 'pwht'" (click)="setTab('pwht')">PWHT Options</button>
-  </div>
-
-  @if (activeTab() === 'designs') {
     <div class="panel">
       <div class="panel-title">Joint Design Options</div>
       <p class="section-sub">Manage available joint design codes. Inactive designs are hidden from form dropdowns.</p>
@@ -41,49 +34,4 @@
         <button class="btn btn-sm btn-primary" (click)="saveDesigns()"><svg lucideSave class="size-4"></svg> Save</button>
       </div>
     </div>
-  }
-
-  @if (activeTab() === 'ndt') {
-    <div class="panel">
-      <div class="panel-title">NDT Options</div>
-      <p class="section-sub">Manage available NDT requirement options.</p>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
-        <input class="input input-sm" [(ngModel)]="newNdtOption" placeholder="New NDT option..." (keyup.enter)="addNdtOption()" />
-        <button class="btn btn-sm btn-primary" (click)="addNdtOption()"><svg lucidePlus class="size-4"></svg> Add</button>
-      </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem">
-        @for (opt of ndtOptions(); track opt) {
-          <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; border: 1px solid var(--app-border); border-radius: 6px; background: var(--app-surface)">
-            <span style="font-size: 0.85rem">{{ opt }}</span>
-            <button class="btn btn-xs btn-ghost text-error" (click)="removeNdtOption(opt)"><svg lucideTrash2 class="size-3"></svg></button>
-          </div>
-        }
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-        <button class="btn btn-sm btn-primary" (click)="saveNdtOptions()"><svg lucideSave class="size-4"></svg> Save</button>
-      </div>
-    </div>
-  }
-
-  @if (activeTab() === 'pwht') {
-    <div class="panel">
-      <div class="panel-title">PWHT Options</div>
-      <p class="section-sub">Manage available Post Weld Heat Treatment options.</p>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
-        <input class="input input-sm" [(ngModel)]="newPwhtOption" placeholder="New PWHT option..." (keyup.enter)="addPwhtOption()" />
-        <button class="btn btn-sm btn-primary" (click)="addPwhtOption()"><svg lucidePlus class="size-4"></svg> Add</button>
-      </div>
-      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem">
-        @for (opt of pwhtOptions(); track opt) {
-          <div style="display: flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; border: 1px solid var(--app-border); border-radius: 6px; background: var(--app-surface)">
-            <span style="font-size: 0.85rem">{{ opt }}</span>
-            <button class="btn btn-xs btn-ghost text-error" (click)="removePwhtOption(opt)"><svg lucideTrash2 class="size-3"></svg></button>
-          </div>
-        }
-      </div>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-        <button class="btn btn-sm btn-primary" (click)="savePwhtOptions()"><svg lucideSave class="size-4"></svg> Save</button>
-      </div>
-    </div>
-  }
 </div>

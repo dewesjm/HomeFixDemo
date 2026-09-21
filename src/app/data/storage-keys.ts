@@ -16,8 +16,6 @@ export const STORAGE = {
   filterVariants: 'welding:filter-variants',
   jointPlans: 'welding:joint-plans:v1',
   adminJointDesigns: 'welding:admin-joint-designs:v1',
-  adminNdt: 'welding:admin-ndt:v1',
-  adminPwht: 'welding:admin-pwht:v1',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated). */
