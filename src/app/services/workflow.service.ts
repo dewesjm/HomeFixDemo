@@ -6,7 +6,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import { stampWho } from '../data/people';
 import {
-  JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
+  JobWorkflow, HistoryEntry, SignoffInput, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData
 } from '../data/workflow';
 
@@ -20,7 +20,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.8.0';
+const CURRENT_VERSION = '1.9.0';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
@@ -227,7 +227,7 @@ export class WorkflowService {
   }
 
   /* lock a stage's sign-off and advance (or route back on reject) */
-  signStage(job: Job, stageId: string) {
+  signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
     this.workflowFor(job).update(wf => {
       let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? {
@@ -352,7 +352,8 @@ export class WorkflowService {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${st.label} — Signed off`,
-        to: decision
+        to: decision,
+        inputs
       });
     });
     this.persist();

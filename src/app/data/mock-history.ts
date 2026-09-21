@@ -1,7 +1,7 @@
 /* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
 import { stampWho } from './people';
-import { HistoryEntry, StageField, STAGE_TEMPLATES } from './workflow';
+import { HistoryEntry, StageField, WorkflowStage, STAGE_TEMPLATES, snapshotInputs, fieldsShown } from './workflow';
 
 export interface MockActivity {
   jobId: string;
@@ -68,9 +68,9 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
   const routingAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
-  const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string) => {
+  const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string, inputs?: HistoryEntry['inputs']) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
-    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing } });
+    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs } });
   };
 
   /* stages progressed through; some jobs fully signed, most a step or two in */
@@ -78,15 +78,21 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     ? stages.length
     : 1 + Math.floor(rand() * Math.min(2, stages.length));
 
-  /* 1) walk stages in order, record reading then sign off */
+  /* 1) walk stages in order, signing each off with every editable field's value at that moment (some left blank) */
   for (let k = 0; k < signCount; k++) {
     const stage = stages[k];
-    if (stage.fields.length && rand() < 0.85) {
-      const f = stage.fields[0];
-      push('Stages', `${stage.label} — ${f.label}`, stage.label, '—', fieldValue(f, rand));
-    }
     const decision = rand() < 0.85 ? 'ACCEPT' : 'REJECT';
-    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision);
+    const inputs: Record<string, string> = {};
+    for (const f of stage.fields) inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
+    const signoffInputs: Record<string, string> = {};
+    for (const f of stage.signoffFields ?? []) signoffInputs[f.key] = f.key === 'inspectorName' ? who : fieldValue(f as StageField, rand);
+    const view = {
+      id: stage.id, inputs, signoffInputs, routingOptions: stage.routingOptions, routingType: 'standard',
+      inspectionType: stage.routingOptions?.[0]?.value ?? '', result: decision === 'ACCEPT' ? 'sat' : 'unsat',
+      decisionLabel: stage.decisionLabel, fields: stage.fields,
+    } as unknown as WorkflowStage;
+    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision,
+      snapshotInputs(view, fieldsShown(view), stage.signoffFields ?? []));
   }
 
   const restRouting = routingAfter(signCount - 1);

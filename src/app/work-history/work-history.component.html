@@ -90,7 +90,7 @@
         <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
         <td>
-          @if (r.children) {
+          @if (r.inputs?.length) {
             <button type="button" class="flex items-center gap-1" (click)="toggle(r.key)">
               @if (expanded().has(r.key)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
               {{ r.action }}
@@ -122,14 +122,14 @@
           }
         </td>
       </tr>
-      @if (r.children && expanded().has(r.key)) {
-        @for (c of r.children; track c.key) {
+      @if (r.inputs?.length && expanded().has(r.key)) {
+        @for (i of r.inputs; track $index) {
           <tr>
             <td></td>
             <td></td>
-            <td class="pl-8">{{ fieldName(c) }}</td>
-            <td class="hist-old">{{ c.from || '—' }}</td>
-            <td class="hist-new">{{ c.to || '—' }}</td>
+            <td class="pl-8">{{ i.label }}</td>
+            <td></td>
+            <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
             <td colspan="3"></td>
           </tr>
         }
@@ -137,7 +137,7 @@
     } @empty {
       <tr>
         <td colspan="8" class="empty">
-          No matching activity. Activity is recorded when stages, components, or signoffs change on a job's Details page.
+          No matching activity. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>
     }

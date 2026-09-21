@@ -11,25 +11,20 @@ import { SortHeaderComponent } from '../shared/sort-header.component';
 
 import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
-import { HistoryEntry, FABRICATION_FIELDS } from '../data/workflow';
+import { HistoryEntry } from '../data/workflow';
 import { MOCK_ACTIVITY } from '../data/mock-history';
 import { downloadCsv } from '../data/export-csv';
 import { PEOPLE, Person, fullName, searchPeople } from '../data/people';
 
-/* one field edit, or a group of edits made together (children) */
+/* one history entry; sign-offs carry inputs (every editable field and its value at that moment) */
 interface ActivityRow extends HistoryEntry {
   key: string;
   jobId: string;
   hull: string;
   drawing: string;
-  /* searchable text of a group's field changes */
-  detail: string;
-  children?: ActivityRow[];
+  /* searchable text of the sign-off's field values */
+  inputsText: string;
 }
-
-/* field edits by the same person on the same job and stage within this gap read as one change */
-const GROUP_GAP_MS = 15 * 60 * 1000;
-const FABRICATION_LABELS = new Map(FABRICATION_FIELDS.map(f => [f.key, f.label]));
 
 @Component({
   selector: 'app-work-history',
@@ -62,7 +57,7 @@ export class WorkHistoryComponent {
   deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
-    ['hull', 'who', 'action', 'from', 'to', 'routing', 'detail'],
+    ['hull', 'who', 'action', 'from', 'to', 'routing', 'inputsText'],
     {}
   );
 
@@ -75,7 +70,7 @@ export class WorkHistoryComponent {
       this.person.set(p ? PEOPLE.find(x => x.id === p || fullName(x) === p) ?? null : null);
       this.table.setGlobalFilter(pm.get('q') ?? '');
     });
-    effect(() => this.table.setRows(this.grouped()));
+    effect(() => this.table.setRows(this.preFiltered()));
   }
 
   choosePerson(p: Person) {
@@ -114,7 +109,9 @@ export class WorkHistoryComponent {
   private allActivity = computed<ActivityRow[]>(() => {
     const rows: ActivityRow[] = [];
     const realJobIds = new Set<string>();
+    /* per-field edits are not shown: History records what was input at each sign-off */
     const add = (e: HistoryEntry, jobId: string) => {
+      if (e.section === 'Stages' || e.section === 'Fabrication') return;
       const job = this.jobById.get(jobId);
       rows.push({
         ...e,
@@ -122,7 +119,7 @@ export class WorkHistoryComponent {
         jobId,
         hull: job?.hull ?? `#${jobId}`,
         drawing: job?.drawing ?? '',
-        detail: '',
+        inputsText: (e.inputs ?? []).map(i => `${i.label} ${i.value}`).join(' '),
       });
     };
     for (const wf of this.wfService.allWorkflows()) {
@@ -145,56 +142,6 @@ export class WorkHistoryComponent {
       (!p || r.whoId === p.id || r.who === fullName(p))
     );
   });
-
-  /* Field edits made together (same person, job and stage, close in time) collapse into one
-     expandable row. Sign-offs, attachments and every other event stay as their own rows. */
-  private grouped = computed<ActivityRow[]>(() => {
-    const rows = this.preFiltered();
-    const out: ActivityRow[] = [];
-    const buckets = new Map<string, ActivityRow[]>();
-    for (const r of rows) {
-      const isFieldEdit = (r.section === 'Stages' || r.section === 'Fabrication') && r.from !== undefined;
-      if (!isFieldEdit) { out.push(r); continue; }
-      const k = `${r.jobId}|${r.who}|${r.section}|${this.groupLabel(r)}`;
-      buckets.set(k, [...(buckets.get(k) ?? []), r]);
-    }
-    for (const list of buckets.values()) {
-      let run: ActivityRow[] = [];
-      const flush = () => { if (run.length) out.push(this.makeGroup(run)); run = []; };
-      for (const r of list) {   // newest first
-        if (run.length && Date.parse(run[run.length - 1].when) - Date.parse(r.when) > GROUP_GAP_MS) flush();
-        run.push(r);
-      }
-      flush();
-    }
-    return out.sort((a, b) => b.when.localeCompare(a.when));
-  });
-
-  /* "Root" for a stage edit ("Root — Actual PH"), "Fabrication" for fabrication edits */
-  private groupLabel(r: ActivityRow): string {
-    return r.section === 'Fabrication' ? 'Fabrication' : r.action.split(' — ')[0];
-  }
-
-  /* field name shown for one child change */
-  fieldName(r: ActivityRow): string {
-    if (r.section === 'Fabrication') return FABRICATION_LABELS.get(r.action) ?? r.action;
-    return r.action.split(' — ').slice(1).join(' — ') || r.action;
-  }
-
-  private makeGroup(run: ActivityRow[]): ActivityRow {
-    if (run.length === 1) return run[0];
-    const latest = run[0];
-    const label = this.groupLabel(latest);
-    return {
-      ...latest,
-      key: `group|${latest.key}`,
-      action: `${label} — ${run.length} fields changed`,
-      from: undefined,
-      to: undefined,
-      detail: run.map(c => `${this.fieldName(c)} ${c.from ?? ''} ${c.to ?? ''}`).join(' '),
-      children: run,
-    };
-  }
 
   /* Deprogress is only offered on a job's last sign-off that is still in effect. Computed from the job's
      whole history (not the filtered or sorted rows): a re-open cancels the sign-off before it, and where the
@@ -252,21 +199,26 @@ export class WorkHistoryComponent {
     this.router.navigate([], { relativeTo: this.route, queryParams: {} });
   }
 
-  /* export filtered rows to csv, one line per field change (groups expand) */
+  /* export filtered rows to csv; a sign-off becomes one line per field it recorded */
   exportCsv() {
     const p = this.person();
     const name = p ? `work-history-${fullName(p).replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';
+    type Line = { row: ActivityRow; field: string; value: string };
+    const lines: Line[] = this.table.sorted().flatMap(r =>
+      r.inputs?.length
+        ? r.inputs.map(i => ({ row: r, field: i.label, value: i.value }))
+        : [{ row: r, field: '', value: r.to ?? '' }]);
     downloadCsv(name, [
-      { header: 'When',      value: (r: ActivityRow) => new Date(r.when).toLocaleString() },
-      { header: 'Who',       value: (r: ActivityRow) => r.who },
-      { header: 'Identifier', value: (r: ActivityRow) => r.whoId ?? '' },
-      { header: 'Title',     value: (r: ActivityRow) => r.whoTitle ?? '' },
-      { header: 'Action',    value: (r: ActivityRow) => r.action },
-      { header: 'Old value', value: (r: ActivityRow) => r.from ?? '' },
-      { header: 'New value', value: (r: ActivityRow) => r.to ?? '' },
-      { header: 'Routing',   value: (r: ActivityRow) => r.routing },
-      { header: 'XREFID', value: (r: ActivityRow) => r.jobId },
-      { header: 'Hull',      value: (r: ActivityRow) => r.hull }
-    ], this.table.sorted().flatMap(r => r.children ?? [r]));
+      { header: 'When',       value: (l: Line) => new Date(l.row.when).toLocaleString() },
+      { header: 'Who',        value: (l: Line) => l.row.who },
+      { header: 'Identifier', value: (l: Line) => l.row.whoId ?? '' },
+      { header: 'Title',      value: (l: Line) => l.row.whoTitle ?? '' },
+      { header: 'Action',     value: (l: Line) => l.row.action },
+      { header: 'Field',      value: (l: Line) => l.field },
+      { header: 'Value',      value: (l: Line) => l.value },
+      { header: 'Routing',    value: (l: Line) => l.row.routing },
+      { header: 'XREFID',     value: (l: Line) => l.row.jobId },
+      { header: 'Hull',       value: (l: Line) => l.row.hull }
+    ], lines);
   }
 }

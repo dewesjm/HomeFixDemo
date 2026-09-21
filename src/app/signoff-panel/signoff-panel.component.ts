@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen } from '@lucide/angular';
 import { Job } from '../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField } from '../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked } from '../data/workflow';
 
 export interface SignoffContext {
   job: Job;
@@ -59,13 +59,6 @@ interface WeldSection {
   kind?: 'checkbox';
   when?: (st: WorkflowStage, ctx: SignoffContext) => boolean;
 }
-
-/* set from the WTN, never typed: PH/IP limits and their overrides */
-const READONLY_LIMITS = new Set([
-  'phMin', 'phMax', 'ipMin', 'ipMax',
-  'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
-]);
-const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
 
 interface WeldGroup { title?: string; sections: WeldSection[] }
 
@@ -132,13 +125,11 @@ export class SignoffPanelComponent {
   }
 
   isReadonlyLimit(f: StageField): boolean {
-    return READONLY_LIMITS.has(f.key);
+    return READONLY_LIMIT_KEYS.has(f.key);
   }
 
-  /* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox */
   isLocked(f: StageField): boolean {
-    return f.key === 'weldProcess'
-      || (FILLER_KEYS.has(f.key) && this.stage().inputs['consumableInsertOnly'] === 'yes');
+    return isFieldLocked(this.stage(), f);
   }
 
   onSelect(f: StageField, value: string | null) {

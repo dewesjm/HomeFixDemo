@@ -103,6 +103,9 @@ export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
   { label: 'Install', value: 'install' }
 ];
 
+/* one editable field as it stood at sign-off; an empty value means it was left blank */
+export interface SignoffInput { label: string; value: string }
+
 export interface HistoryEntry {
   when: string;          /* ISO string */
   who: string;           /* person's full name */
@@ -113,6 +116,7 @@ export interface HistoryEntry {
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
   routing: string;       /* routing label at time of change */
+  inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
 }
 
 export interface JobWorkflow {
@@ -339,6 +343,64 @@ export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overrideNote', label: 'Override Note', type: 'text' },
 ];
 
+
+/* ── Which weld fields the user cannot type into, and what a sign-off records ── */
+
+/* PH/IP limits and overrides are set from the WTN, never typed */
+export const READONLY_LIMIT_KEYS = new Set([
+  'phMin', 'phMax', 'ipMin', 'ipMax',
+  'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
+]);
+export const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
+
+/* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox */
+export function isFieldLocked(stage: WorkflowStage, f: { key: string }): boolean {
+  return f.key === 'weldProcess'
+    || (FILLER_KEYS.has(f.key) && stage.inputs['consumableInsertOnly'] === 'yes');
+}
+
+/* true when the user can actually type or choose a value for this field */
+export function isUserEditable(stage: WorkflowStage, f: { key: string; disabled?: boolean }): boolean {
+  return !f.disabled && f.key !== 'qualificationCheck' && !READONLY_LIMIT_KEYS.has(f.key) && !isFieldLocked(stage, f);
+}
+
+function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
+  const v = raw ?? '';
+  if (f.type === 'checkbox') return v === 'yes' ? 'Yes' : 'No';
+  if (!v) return '';
+  const opt = f.options?.find(o => o.value === v);
+  if (opt) return opt.label;
+  return f.unit ? `${v} ${f.unit}` : v;
+}
+
+/* Fields whose showIf is met; a simple stand-in for the job page's visibleFields, used only for seeded and mock data. */
+export function fieldsShown(stage: WorkflowStage): StageField[] {
+  return stage.fields.filter(f => {
+    if (!f.showIf) return true;
+    const cur = f.showIf.key === 'inspectionType' ? stage.inspectionType
+      : f.showIf.key === 'result' ? stage.result
+      : stage.inputs[f.showIf.key];
+    if (f.showIf.anyOf ? !f.showIf.anyOf.includes(cur ?? '') : cur !== f.showIf.equals) return false;
+    return (f.showIf.and ?? []).every(c => (c.key === 'result' ? stage.result : stage.inputs[c.key]) === c.equals);
+  });
+}
+
+/* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:
+   what was left empty is part of the record. The caller passes the fields that were visible. */
+export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signoffFields: SignoffField[]): SignoffInput[] {
+  const out: SignoffInput[] = [];
+  const typeOpts = stage.routingOptions ?? [];
+  if (typeOpts.length) {
+    const cur = stage.id === 'fit' ? stage.routingType : stage.inspectionType;
+    out.push({ label: 'Type', value: typeOpts.find(o => o.value === cur)?.label ?? '' });
+  }
+  for (const f of fields) {
+    if (isUserEditable(stage, f)) out.push({ label: f.label, value: displayValue(f, stage.inputs[f.key]) });
+  }
+  for (const f of signoffFields) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
+  if (stage.result) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
+  return out;
+}
 /* ── NDT inspection stages: one template per phase (root/layer/final) x method ── */
 type NdtPhase = 'root' | 'layer' | 'final';
 type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
@@ -960,6 +1022,9 @@ export function seededWorkflow(job: Job): JobWorkflow {
       else signoffInputs[f.key] = seededFieldValue(f, rand);
     }
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
+    const opts = s.routingOptions ?? [];
+    const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
+    const signedView = { ...s, inspectionType, inputs, signoffInputs, result: 'sat' as StageResult };
     wf.history.push({
       when: new Date(t).toISOString(),
       who,
@@ -969,9 +1034,8 @@ export function seededWorkflow(job: Job): JobWorkflow {
       from: '',
       to: 'SAT',
       routing: s.label,
+      inputs: snapshotInputs(signedView, fieldsShown(signedView), s.signoffFields),
     });
-    const opts = s.routingOptions ?? [];
-    const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
     return {
       ...s,
       inspectionType,

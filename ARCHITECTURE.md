@@ -148,7 +148,7 @@ src/app/
 
 ### My Assignments, History, Weld Planning
 - My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, Location, Assigned To, Assignment #, Expires), keyword filter, banner. `expirationDate` is seeded 0-6 days out (always within a week).
-- History: When, Who (name + title held at the time), Action, Old/New, Routing, Hull, Actions. **Person filter is a typeahead** (`searchPeople`: any order of first/last name prefixes, or id; never a full list). **Field edits by the same person on the same job and stage within 15 min collapse into one expandable row** (`grouped` in the component; sign-offs and other events are never grouped; CSV exports one line per field). Each `HistoryEntry` carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable` in the component: computed from the job's whole history, independent of filter/sort; a re-open cancels the sign-off before it; where the live workflow is loaded the entry must match its last signed stage). It needs a required comment.
+- History: When, Who (name + title held at the time), Action, Old/New, Routing, Hull, Actions. **It records what was input at each sign-off**: a sign-off row expands to every editable field the user was shown, with its value at that moment, blanks included (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage). It needs a required comment.
 - Weld Planning: separate joint-plan data (`wp` list/form/detail/mass edit/admin lists) with its own `hull` field and joint-plan `title`.
 
 ## Data schema
@@ -193,6 +193,7 @@ src/app/
   section: 'Sign-off' | 'Stages' | 'Attachments' | 'Fabrication' | 'Release' | 'Work Validation';
   action: string; from?: string; to?: string;
   routing: string;               // routing label at time of change
+  inputs?: { label: string; value: string }[];   // sign-off entries: every editable field + value at sign-off
 }
 ```
 

@@ -19,7 +19,7 @@ import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
 
@@ -585,7 +585,7 @@ export class JobDetailComponent implements OnDestroy {
     const ndtStage = this.wf().stages.find(s => s.id === ndt5xId);
     if (!ndtStage || ndtStage.signed) return;
     /* auto-sign the 5X stage */
-    this.wfService.signStage(this.job, ndt5xId);
+    this.wfService.signStage(this.job, ndt5xId, this.signoffSnapshot(ndtStage));
   }
 
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
@@ -821,6 +821,18 @@ export class JobDetailComponent implements OnDestroy {
     return this.fieldErrors()[`${stageId}:${fieldKey}`];
   }
 
+  /* What History records for a sign-off: every editable field the user was shown, with its value right now
+     (blanks included). Read from the live workflow, since the stage object a click handler holds can be stale. */
+  private signoffSnapshot(stage: WorkflowStage): SignoffInput[] {
+    const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
+    const out = snapshotInputs(st, this.visibleFields(st), this.visibleSignoffFields(st));
+    if (st.id === 'fit' && st.routingType === 'weld-buildup' && this.job) {
+      const names = (st.inputs['affectedItems'] ?? '').split(',').filter(Boolean).map(k => this.job![k as 'joiningItem' | 'joinToItem']);
+      out.push({ label: 'Affected Item', value: names.join(', ') });
+    }
+    return out;
+  }
+
   signStage(stage: WorkflowStage) {
     if (!this.job) return;
     /* validate required fields + range constraints */
@@ -841,7 +853,7 @@ export class JobDetailComponent implements OnDestroy {
         rejectLabel: 'Cancel',
         password: true,
         accept: () => {
-          this.wfService.signStage(this.job!, stage.id);
+          this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
           const from = this.route.snapshot.queryParamMap.get('from');
           this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
         }
@@ -858,7 +870,7 @@ export class JobDetailComponent implements OnDestroy {
       rejectLabel: 'Cancel',
       password: true,
       accept: () => {
-        this.wfService.signStage(this.job!, stage.id);
+        this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
         const from = this.route.snapshot.queryParamMap.get('from');
         this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
       }
