@@ -59,9 +59,4 @@ export class SignoffPanelComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
   stageIndex = input.required<number>();
-
-  logRender(st: WorkflowStage) {
-    console.log('[signoff-panel] RENDER', { id: st.id, stepType: st.stepType, fieldsCount: st.fields?.length, signoffFieldsCount: st.signoffFields?.length });
-    return '';
-  }
 }

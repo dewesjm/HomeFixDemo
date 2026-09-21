@@ -12,7 +12,6 @@
   }
 
   @if (stage(); as st) {
-    {{ logRender(st) }}
     <!-- Inspection Type / Step Type dropdown -->
     @if (st.stepOptions && st.stepOptions.length > 0) {
       <div class="mb-sm">

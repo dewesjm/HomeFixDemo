@@ -337,7 +337,6 @@ export class JobDetailComponent implements OnDestroy {
   }
 
   updateStepType(stage: WorkflowStage, value: string) {
-    console.log('[updateStepType] CALLED', { stageId: stage.id, value });
     if (!this.job || !this.wf) return;
     const templates = getTemplates()[this.job.trade] ?? [];
     /* Fit stage: swap fields when switching between Fit and Weld Build up */
@@ -356,8 +355,6 @@ export class JobDetailComponent implements OnDestroy {
         signoffInputs: {},
         signoffFields: newSignoff,
       }, { action: `${stage.label} — Type changed to ${value}` });
-      const after = this.wf()?.stages.find(s => s.id === stage.id);
-      console.log('[updateStepType] after update', { stepType: after?.stepType, fieldsCount: after?.fields?.length, signoffFieldsCount: after?.signoffFields?.length });
       return;
     }
     this.wfService.updateStageSignoff(this.job!, stage.id, {
