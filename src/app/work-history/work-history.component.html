@@ -53,6 +53,9 @@
     <input type="text" class="grow"            placeholder="Search hulls, changes, routing…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
+  <button type="button" class="btn btn-sm btn-outline" [disabled]="!expandableKeys().length" (click)="toggleAll()">
+    @if (allExpanded()) { <svg lucideChevronsDownUp class="size-4"></svg> Collapse all } @else { <svg lucideChevronsUpDown class="size-4"></svg> Expand all }
+  </button>
 
   <span class="spacer"></span>
   <button type="button" class="btn btn-sm btn-outline" [disabled]="!table.sorted().length" (click)="exportCsv()">
@@ -125,12 +128,14 @@
       @if (r.inputs?.length && expanded().has(r.key)) {
         @for (i of r.inputs; track $index) {
           <tr>
-            <td></td>
-            <td></td>
+            <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+            <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
             <td class="pl-8">{{ i.label }}</td>
-            <td></td>
+            <td class="hist-old">—</td>
             <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
-            <td colspan="3"></td>
+            <td class="hist-old">{{ r.routing }}</td>
+            <td class="hist-old">{{ r.hull }}</td>
+            <td></td>
           </tr>
         }
       }

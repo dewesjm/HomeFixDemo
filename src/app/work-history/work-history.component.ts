@@ -3,7 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideUser, LucideX, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
 import { TableState } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
@@ -33,7 +33,7 @@ interface ActivityRow extends HistoryEntry {
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent, SortHeaderComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft,
-    LucideUser, LucideX, LucideChevronRight, LucideChevronDown
+    LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp
   ],
   templateUrl: './work-history.component.html'
 })
@@ -82,6 +82,17 @@ export class WorkHistoryComponent {
   clearPerson() {
     this.person.set(null);
     this.personQuery.set('');
+  }
+
+  /* every sign-off matching the current filters that has fields to show, across all pages */
+  expandableKeys = computed(() => this.table.sorted().filter(r => r.inputs?.length).map(r => r.key));
+  allExpanded = computed(() => {
+    const keys = this.expandableKeys();
+    return keys.length > 0 && keys.every(k => this.expanded().has(k));
+  });
+
+  toggleAll() {
+    this.expanded.set(this.allExpanded() ? new Set() : new Set(this.expandableKeys()));
   }
 
   toggle(key: string) {
