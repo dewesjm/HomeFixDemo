@@ -128,12 +128,12 @@ export class JobDetailComponent implements OnDestroy {
 
   signoffCtx = computed<SignoffContext | null>(() => {
     if (!this.job || !this.wf) return null;
+    const w = this.wf();
     const job = this.job;
-    const wfService = this.wfService;
     const self = this;
     return {
       job,
-      wf: () => ({ stages: self.wf!().stages, fabricationData: self.wf!().fabricationData, signoffRecords: self.signoffRecords() }),
+      wf: () => ({ stages: w.stages, fabricationData: w.fabricationData, signoffRecords: self.signoffRecords() }),
       selectedStep: () => self.selectedStep(),
       jobComplete: () => self.jobComplete(),
       soldSigned: () => self.soldSigned(),
