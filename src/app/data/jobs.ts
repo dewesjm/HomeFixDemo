@@ -1,5 +1,4 @@
 /* mock Job model + seeded generator, stands in for a backend */
-import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
   id: string;          /* random 5-char alphanumeric code */
@@ -117,19 +116,6 @@ function makeJobNumber(seed: number): string {
   const letter = LETTERS[Math.floor(rand() * LETTERS.length)];
   const digits = String(1000 + Math.floor(rand() * 9000));
   return letter + digits;
-}
-
-/* up to 3 distinct codes per job, own seed stream keyed off id */
-function pickCodes(seed: number): [string, string, string] {
-  const rand = seeded(seed * 17 + 3);
-  const pool = CHARACTERISTIC_CODES.map(c => c.code);
-  const count = 1 + Math.floor(rand() * 3);
-  const chosen: string[] = [];
-  while (chosen.length < count) {
-    const c = pool[Math.floor(rand() * pool.length)];
-    if (!chosen.includes(c)) chosen.push(c);
-  }
-  return [chosen[0] ?? '', chosen[1] ?? '', chosen[2] ?? ''];
 }
 
 export function generateJobs(count = 240): Job[] {

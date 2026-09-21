@@ -1,7 +1,7 @@
 /* workflow model + stage helpers, no UI */
 import { Job } from './jobs';
 
-import { jointDesignOptions, getJointDesign } from './joint-designs';
+import { getJointDesign } from './joint-designs';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records', 'View'] as const;
@@ -70,7 +70,6 @@ export interface WorkflowStage {
   rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
   repeatable: boolean;            /* signing with stepType='repeat' inserts another copy */
   stepType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
-  routeTo: string;                /* stage id to jump to on sign (empty = next in sequence) */
   swapStageId: string;            /* which stage template to use for fields (empty = own) */
   inspectionType: string;         /* admin-managed sub-type (e.g. MT/PT on NDT MT/PT stage) */
   stepOptions?: StageOption[];    /* admin-managed options for this stage */
@@ -78,7 +77,6 @@ export interface WorkflowStage {
   signedAt: string | null;        /* ISO string, set when signed */
   signoffRecords: SignoffRecord[];
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
-  showOverride?: boolean;         /* show Override Requirements section (weld stages only) */
 }
 
 export interface InstalledComponent {
@@ -270,13 +268,6 @@ export function setStageStepOptions(trade: string, stageId: string, options: Sta
   localStorage.setItem(STEP_OPTIONS_LS_KEY, JSON.stringify(all));
 }
 
-export function getStageStepOptions(trade: string, stageId: string): StageOption[] | undefined {
-  const raw = localStorage.getItem(STEP_OPTIONS_LS_KEY);
-  if (!raw) return undefined;
-  const all: Record<string, StageOption[]> = JSON.parse(raw);
-  return all[`${trade}:${stageId}`];
-}
-
 /* ── Penetrant entries (admin-configurable via localStorage) ── */
 export interface PenetrantEntry {
   type: string;
@@ -302,14 +293,6 @@ export function getPenetrants(): PenetrantEntry[] {
 
 export function setPenetrants(entries: PenetrantEntry[]) {
   localStorage.setItem(PENETRANT_LS_KEY, JSON.stringify(entries));
-}
-
-/** Legacy helpers — delegate to the combined list */
-export function getPenetrantTypes(): string[] {
-  return [...new Set(getPenetrants().map(p => p.type))];
-}
-export function getPenetrantManufacturers(): string[] {
-  return [...new Set(getPenetrants().map(p => p.manufacturer))];
 }
 
 /* ── Shared weld stage fields (Tack, Root, Final Weld) ── */
@@ -1018,7 +1001,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
 }
 
 /* invalidate the merged cache so next read re-loads from localStorage */
-export function invalidateTemplateCache() { _merged = null; }
+function invalidateTemplateCache() { _merged = null; }
 
 /* ── CRUD for stage templates (called from admin) ── */
 
@@ -1123,8 +1106,6 @@ export function buildStages(job: Job): WorkflowStage[] {
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
     const isWeldStage = ['tack', 'root-weld', 'root-layer', 'final-weld'].includes(t.id);
-    /* override requirements based on WTN — set dynamically from Fit stage */
-    const showOverride = false;
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : (t.role ?? '');
@@ -1150,7 +1131,6 @@ export function buildStages(job: Job): WorkflowStage[] {
       rejectToStage: t.rejectToStage ?? '',
       repeatable: t.repeatable ?? false,
       stepType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? 'standard',
-      routeTo: '',
       swapStageId: '',
       inspectionType: t.stepOptions?.find(o => o.default)?.value ?? t.stepOptions?.[0]?.value ?? '',
       decisionLabel: t.decisionLabel ?? '',
@@ -1158,7 +1138,6 @@ export function buildStages(job: Job): WorkflowStage[] {
       signed: false,
       signedAt: null,
       signoffRecords: [],
-      showOverride
     };
   };
 

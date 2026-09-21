@@ -9,7 +9,7 @@ import { ToastService } from '../shared/toast.service';
 import { TableState, inArray } from '../shared/table-state';
 import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
 import { Job } from '../data/jobs';
-import { STAGE_TEMPLATES, SignoffField, defaultSignoffFields, getTemplates, getTradeOptions } from '../data/workflow';
+import { STAGE_TEMPLATES, SignoffField, defaultSignoffFields, getTradeOptions } from '../data/workflow';
 
 interface SignoffFieldRow {
   id: string;

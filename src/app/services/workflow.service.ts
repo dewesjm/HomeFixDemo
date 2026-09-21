@@ -5,8 +5,7 @@ import { JOBS, Job } from '../data/jobs';
 import { SyncService } from './sync.service';
 import {
   JobWorkflow, HistoryEntry, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, newWorkflow, stageFieldsFor, signoffFieldsFor,
-  buildStages, getTemplates, REPAIR_STAGE
+  WorkType, WORK_TYPE_OPTIONS, currentStepLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE
 } from '../data/workflow';
 
 
@@ -268,7 +267,6 @@ export class WorkflowService {
           signoffInputs: {},
           signoffRecords: [],
           stepType: 'standard',
-          routeTo: '',
         };
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
@@ -313,7 +311,6 @@ export class WorkflowService {
             rejectToStage: '',
             repeatable: false,
             stepType: 'standard',
-            routeTo: '',
             swapStageId: '',
             inspectionType: '',
             stepOptions: [],
@@ -545,7 +542,6 @@ export class WorkflowService {
           delete (s as unknown as { status?: unknown }).status;
           s.repeatable ??= false;
           s.stepType ??= 'standard';
-          s.routeTo ??= '';
           s.swapStageId ??= '';
           s.role ??= '';
 

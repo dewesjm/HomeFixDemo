@@ -1,7 +1,7 @@
 /* schema-driven filter engine + saved variants in localStorage */
 import {
   Job,
-  TRADE_OPTIONS, TECHNICIAN_OPTIONS, JOBS
+  TECHNICIAN_OPTIONS, JOBS
 } from './jobs';
 
 export type FilterField =

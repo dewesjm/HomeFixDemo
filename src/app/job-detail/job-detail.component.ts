@@ -18,8 +18,7 @@ import { characteristicLabel } from '../data/characteristics';
 import { getJointDesign, jointDesignOptions } from '../data/joint-designs';
 import { WorkflowService } from '../services/workflow.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, WORK_TYPE_OPTIONS,
-  isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentStepLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   getShops, WELD_OVERRIDE_FIELDS
 } from '../data/workflow';
 import { requiresTraceability } from '../data/mcl-traceability';
@@ -179,7 +178,6 @@ export class JobDetailComponent implements OnDestroy {
     const job = this.job;
     const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
     const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-    const anyTraceable = mcl1Traceable || mcl2Traceable;
     return FABRICATION_FIELDS
       .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
       .filter(f => {
@@ -366,7 +364,6 @@ export class JobDetailComponent implements OnDestroy {
   swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
     if (!this.job) return [];
     const templates = getTemplates()[this.job.trade] ?? [];
-    const currentSwap = stage.swapStageId || stage.id;
     return templates
       .filter(t => t.id !== 'prep' && t.id !== 'handover')
       .map(t => ({ label: t.label, value: t.id }));
@@ -661,13 +658,6 @@ export class JobDetailComponent implements OnDestroy {
     }
   }
 
-  /** Check if Override Requirements should show — any weld stage with a matching WTN enables it for all */
-  showOverrideForStage(stage: WorkflowStage): boolean {
-    if (!this.wf) return false;
-    const weldStages = ['tack', 'root-weld', 'final-weld'];
-    return this.wf().stages.some(s => weldStages.includes(s.id) && this.WTN_OVERRIDE_WTNS.has(s.inputs?.['wtn'] ?? ''));
-  }
-
   // ---- per-stage sign-off ----
   private show(v: string | null | undefined): string { return v && v.length ? v : '—'; }
 
@@ -838,7 +828,6 @@ export class JobDetailComponent implements OnDestroy {
       });
       return;
     }
-    const decision = (stage.result ?? '').toUpperCase();
     const stepNote = stage.repeatable && stage.stepType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';

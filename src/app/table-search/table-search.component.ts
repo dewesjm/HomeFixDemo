@@ -1,5 +1,5 @@
 //This is the main search, with filters, keywords, frozen columns, export to excel call
-import { Component, computed, effect, signal, inject } from '@angular/core';
+import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,7 +10,6 @@ import { TablePagerComponent } from '../shared/table-pager.component';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { TableState, inArray } from '../shared/table-state';
 import { downloadCsv } from '../data/export-csv';
-import { AppComponent } from '../app.component';
 
 import {
   JOBS, Job
@@ -33,8 +32,6 @@ type Row = Job & { currentStep: string };
   templateUrl: './table-search.component.html'
 })
 export class TableSearchComponent {
-  private app = inject(AppComponent);
-
   constructor(private router: Router, private wfService: WorkflowService) {
     // Restore saved state
     const saved = this.loadState();
@@ -82,17 +79,8 @@ export class TableSearchComponent {
 
   table = new TableState<Row>(
     ['id', 'jobNumber', 'title', 'drawing', 'joint', 'order', 'sequenceNumber'],
-    {
-      id: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
-      jobNumber: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
-      title: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
-      drawing: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
-      joint: (v, f) => String(v).toLowerCase().includes(String(f).toLowerCase()),
-      currentStep: inArray,
-    }
+    { currentStep: inArray }
   );
-
-  totalLoaded = signal(JOBS.length);
 
   // Row selection
   selectedIds = signal<Set<string>>(new Set());

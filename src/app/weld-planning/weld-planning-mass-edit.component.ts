@@ -1,13 +1,12 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import {
-  addJointPlan, updateJointPlan, jointPlans, getJointPlan,
-  parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
+  addJointPlan, updateJointPlan, jointPlans, parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
   type JointPlan, type JointStatus, type JointType
 } from './weld-planning.data';
@@ -216,7 +215,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
   `
 })
 export class WeldPlanningMassEditComponent implements OnInit {
-  private router = inject(Router);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 

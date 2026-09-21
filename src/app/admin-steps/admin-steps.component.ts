@@ -17,7 +17,7 @@ import { downloadCsv } from '../data/export-csv';
 import { Job, addTestJob } from '../data/jobs';
 import { Router } from '@angular/router';
 import {
-  STAGE_TEMPLATES, StageField, SignoffField, defaultSignoffFields,
+  StageField, SignoffField, defaultSignoffFields,
   addStageTemplate, updateStageTemplate, deleteStageTemplate, addTrade,
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../data/workflow';

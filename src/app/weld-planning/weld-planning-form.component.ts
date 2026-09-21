@@ -9,7 +9,7 @@ import {
   addJointPlan, updateJointPlan, getJointPlan,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
   adminJointDesigns, adminNdtOptions, adminPwhtOptions,
-  type JointPlan, type JointStatus, type JointType
+  type JointPlan
 } from './weld-planning.data';
 
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];

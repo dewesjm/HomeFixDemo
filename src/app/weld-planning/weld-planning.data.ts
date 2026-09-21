@@ -16,13 +16,6 @@ export const JOINT_STATUS_OPTIONS: { label: string; value: JointStatus }[] = [
 
 export type JointPriority = 'low' | 'medium' | 'high' | 'critical';
 
-export const JOINT_PRIORITY_OPTIONS: { label: string; value: JointPriority }[] = [
-  { label: 'Low', value: 'low' },
-  { label: 'Medium', value: 'medium' },
-  { label: 'High', value: 'high' },
-  { label: 'Critical', value: 'critical' },
-];
-
 export type JointType = 'pipe' | 'structural';
 
 export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
@@ -204,47 +197,6 @@ export function deleteJointPlan(id: string): void {
 
 export function getJointPlan(id: string): JointPlan | undefined {
   return jointPlans().find(j => j.id === id);
-}
-
-/* ── Bulk import ── */
-export function importJointPlans(rows: Record<string, string>[]): number {
-  const now = new Date().toISOString();
-  const newJoints: JointPlan[] = rows.map((row, idx) => ({
-    id: (row['id'] as string) || makeId(Date.now() + idx),
-    jointNumber: (row['jointNumber'] || row['joint_number'] || '') as string,
-    projectNumber: (row['projectNumber'] || row['project_number'] || '') as string,
-    joint: (row['joint'] || '') as string,
-    title: (row['title'] || 'Untitled') as string,
-    description: (row['description'] || '') as string,
-        status: (row['status'] || 'development') as JointStatus,
-    priority: (row['priority'] || 'medium') as JointPriority,
-    jointType: (row['jointType'] || row['joint_type'] || 'pipe') as JointType,
-    drawing: (row['drawing'] || '') as string,
-    drawingRev: (row['drawingRev'] || row['drawing_rev'] || '') as string,
-    jointDesign: (row['jointDesign'] || row['joint_design'] || '') as string,
-    weldType: (row['weldType'] || row['weld_type'] || '') as string,
-    pipeSize: (row['pipeSize'] || row['pipe_size'] || '') as string,
-    wallThickness: (row['wallThickness'] || row['wall_thickness'] || '') as string,
-    materialType1: (row['materialType1'] || row['material_1'] || '') as string,
-    materialType2: (row['materialType2'] || row['material_2'] || '') as string,
-    wps: (row['wps'] || '') as string,
-    ndt: (row['ndt'] || '') as string,
-    pwht: (row['pwht'] || '') as string,
-    assignedTo: (row['assignedTo'] || row['assigned_to'] || '') as string,
-    estimatedHours: parseFloat(row['estimatedHours'] || row['estimated_hours'] || '0') || 0,
-    notes: (row['notes'] || '') as string,
-    createdBy: 'Import',
-    createdAt: (row['createdAt'] || row['created_at'] || now) as string,
-    updatedAt: now,
-  }));
-  let count = 0;
-  jointPlans.update(list => {
-    const next = [...list, ...newJoints];
-    count = newJoints.length;
-    persistJointPlans(next);
-    return next;
-  });
-  return count;
 }
 
 /* ── Admin: Joint Design options (persisted to localStorage) ── */

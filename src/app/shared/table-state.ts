@@ -110,21 +110,3 @@ export class TableState<T> {
 
 // --- reusable column filter predicates ---
 export const inArray: FilterPredicate<any> = (rowValue, filterValue: any[]) => filterValue.includes(rowValue);
-
-export const arrayAny: FilterPredicate<any> = (rowValue: string[] | undefined, filterValue: string[]) => {
-  if (!rowValue || rowValue.length === 0) return false;
-  return filterValue.some(f => rowValue.includes(f));
-};
-
-export const numberBetween: FilterPredicate<any> = (rowValue: number, [min, max]: [number | null, number | null]) => {
-  if (min != null && rowValue < min) return false;
-  if (max != null && rowValue > max) return false;
-  return true;
-};
-
-export const dateBetween: FilterPredicate<any> = (rowValue: string, [from, to]: [Date | null, Date | null]) => {
-  const t = new Date(rowValue).getTime();
-  if (from && t < from.getTime()) return false;
-  if (to && t > to.getTime() + 86_400_000 - 1) return false; // inclusive of the "to" day
-  return true;
-};

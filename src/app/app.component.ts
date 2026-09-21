@@ -1,9 +1,9 @@
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
-import { Component, signal, inject, ViewChild, ElementRef, computed } from '@angular/core';
+import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { ToastHostComponent } from './shared/toast-host.component';
