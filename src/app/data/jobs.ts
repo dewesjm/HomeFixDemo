@@ -57,7 +57,6 @@ export interface Job {
 }
 
 const TECHNICIANS = ['Mike R.', 'Sara L.', 'Tom B.', 'Dave K.', 'Priya N.', 'Luis G.', 'Emma W.'];
-const TRADES: Job['trade'][] = ['Welding', 'Plumbing', 'Electrical', 'HVAC', 'Roofing', 'Carpentry', 'Inspection'];
 
 /* welding-specific seed pools */
 const DRAWINGS = ['DWG-101', 'DWG-202', 'DWG-303', 'DWG-404', 'DWG-505', 'P&ID-01', 'P&ID-02', 'ISO-100', 'ISO-200'];
@@ -76,7 +75,10 @@ const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
-const WORK_PACKAGES = ['PRJ-4A-01', 'PRJ-4A-02', 'PRJ-4B-01', 'PRJ-4B-03', 'PRJ-5A-01', 'PRJ-5A-02', 'PRJ-5B-01', 'PRJ-5C-02', 'PRJ-6A-01', 'PRJ-6B-01'];
+/* work package = Hull-Compartment-Detail, e.g. K7234-FWD-D03 */
+const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
+const workPackageFor = (hull: string, i: number) =>
+  `${hull}-${COMPARTMENTS[(i * 7) % COMPARTMENTS.length]}-D${String(1 + (i * 13) % 12).padStart(2, '0')}`;
 const ATTR_CODES = ['AB', 'CD', 'EF', 'GH', 'JK', 'MN', 'PQ', 'RS', 'TU', 'VW', 'XY'];
 
 function seeded(n: number) {
@@ -165,7 +167,7 @@ export function generateJobs(count = 480): Job[] {
       ndtFinal: pick(NDT_RESULTS),
       ut: pick(NDT_RESULTS),
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
-      workPackage: pick(WORK_PACKAGES),
+      workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: i % 5 === 0 ? 'Required' : '',
       serialNumber: `SN-${30000 + i}`,
@@ -193,8 +195,6 @@ export function generateJobs(count = 480): Job[] {
 export const JOBS: Job[] = generateJobs();
 export const TECHNICIAN_OPTIONS = TECHNICIANS.map(t => ({ label: t, value: t }));
 
-/* static fallback for initial load; components should prefer getTradeOptions() from workflow.ts */
-export const TRADE_OPTIONS = TRADES.map(t => ({ label: t, value: t }));
 
 /* add a test job for a given trade (for testing admin-added trades) */
 let _nextCustomId = 10_000;

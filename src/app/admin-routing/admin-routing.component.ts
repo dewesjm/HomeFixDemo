@@ -118,7 +118,7 @@ export class AdminRoutingComponent {
 
   // ── Field config dialog ──
   showFieldDlg = signal(false);
-  fieldDlgTrade = signal<Job['trade']>('HVAC');
+  fieldDlgTrade = signal<Job['trade']>('Welding');
   fieldDlgStageId = signal('');
   fieldDlgStageLabel = signal('');
   readingFields = signal<FieldRow[]>([]);
@@ -161,7 +161,7 @@ export class AdminRoutingComponent {
   /* ── Row CRUD ── */
 
   addRow() {
-    const trade = this.tradeOptions()[0]?.value ?? 'HVAC';
+    const trade = this.tradeOptions()[0]?.value ?? 'Welding';
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved

@@ -138,6 +138,22 @@ export class SignoffPanelComponent {
       || (FILLER_KEYS.has(f.key) && this.stage().inputs['consumableInsertOnly'] === 'yes');
   }
 
+  /* why a weld field can't be edited (tooltip); empty when it is editable */
+  lockReason(f: StageField): string {
+    const st = this.stage();
+    const wtn = (st.inputs['wtn'] ?? '').toUpperCase();
+    if (f.key === 'qualificationCheck') return 'Set by the qualification check';
+    if (READONLY_LIMITS.has(f.key)) return wtn ? `Set by ${wtn}` : 'Set when a WTN is selected';
+    if (st.signed) {
+      const who = st.signoffRecords[st.signoffRecords.length - 1]?.who;
+      return who ? `Signed off by ${who}` : 'Signed off';
+    }
+    if (!this.fieldsEditable()) return 'Locked: not the current routing';
+    if (f.key === 'weldProcess') return wtn ? `Set by ${wtn}` : 'Set when a WTN is selected';
+    if (this.isLocked(f)) return 'Not needed: only consumable insert used as filler';
+    return '';
+  }
+
   onSelect(f: StageField, value: string | null) {
     if (f.key === 'performed5x') this.ctx().on5xChange(this.stage(), value ?? '');
     else this.ctx().stageSelectChange(this.stage(), f, value);

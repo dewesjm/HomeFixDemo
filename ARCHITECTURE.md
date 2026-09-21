@@ -130,12 +130,14 @@ src/app/
 - **Joint details** — 3 columns (stack on mobile): job info, joining/join-to, NDT data (RT/NDT/UT/VT as `X` or `5X`); "Show more" reveals additional data and attribute codes.
 - **Fabrication** (cross-stage) — Location (Ship adds Deck/Frame/P-S-CL/Usage with red `*`), MIC 1/2, Drawing Rev, Actual Thickness, WTN, Revised Joint Design.
 - **Signoff panel** (below).
+- **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`).
 - **Records Review** (`review` stage) — verification grid + immutable `signoffRecords` history table.
 - **Sold** — once signed all stages lock; only deprogress is allowed (Work History, most recent signoff per job).
 
 ### Signoff panel (`signoff-panel`)
 - **Type dropdown** for stages with `routingOptions`. On inspector/NDT stages it starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired`).
 - **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_GROUPS` config in `signoff-panel.component.ts` — three cards (Procedure & requirements, Readings, Inspection & notes) — through one field template. Alignment (e.g. PH Min over Override PH Min) is set by each row's `width`, not by a grid: GWP / WTN / Weld Process (auto-set from WTN, locked), PH/IP limits (read-only, `NC` = no limit), **Override Requirements** (shown for matching WTNs on every weld stage), PH/IP actuals, weld position (Nuclear Indicator 1), Consumable Insert checkbox (Root; unchecking clears filler type/size/MIC), Filler Metal, 5X (Root/Final), Comments.
+- **Lock tooltips** — hovering a locked weld field explains why (`lockReason()`): "Set by WTN-101", "Signed off by X", "Locked: not the current routing", "Not needed: only consumable insert used as filler". Native `title` tooltip (trial; remove if not useful).
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
 - **PH/IP validation** — blur-triggered range checks; NC skips that limit.
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
@@ -223,7 +225,9 @@ src/app/
 - **Repair** is inserted dynamically on NDT rejection; role Foreman.
 - **Affected Items** — `joiningItem`/`joinToItem` with `affectedItems` stored as a comma-separated string.
 - **MIC** values are hyphenated codes such as `250C-1500-290-5` (`seededMic`).
-- **Legacy trades** — Plumbing/Electrical/HVAC/Roofing/Carpentry/Inspection templates remain in `workflow.ts`, but no seeded job uses them (only the admin "Add test hull" tool).
+- **Trades** — only Welding ships with templates (the old HomeFix trades were purged). Admins can still add a trade (`addTrade`, prep + handover stages) and create a test hull for it.
+- **Work package** — `Hull-Compartment-Detail`, e.g. `K7234-FWD-D03` (`workPackageFor()` in `jobs.ts`; compartments FWD/MID/AFT/ENG/CGO/HAB, details D01–D12).
+- **Deferred Tack** — identical form and behavior to Tack (same `WELD_STAGE_FIELDS`, WTN overrides, weld-card layout); it only sits after Fit-Up Release and is activated when Fit signs with Defer Tack = yes.
 
 ## Layout & styling
 

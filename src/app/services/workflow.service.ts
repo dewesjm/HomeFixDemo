@@ -19,7 +19,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '1.6.0';
+const CURRENT_VERSION = '1.7.0';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowService {
