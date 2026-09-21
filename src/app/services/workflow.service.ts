@@ -506,7 +506,7 @@ export class WorkflowService {
     return { ...next, history: [...prev.history, entry] };
   }
 
-  /* Serializing every workflow (~8 MB for 240 jobs) on each field edit made multi-field changes like
+  /* Serializing every workflow (~35 KB per job) on each field edit made multi-field changes like
      WTN take seconds. Saves are now coalesced and only workflows the user actually edited are written;
      untouched jobs regenerate from their seed. */
   private persist() {

@@ -107,7 +107,7 @@ function makeHull(seed: number): string {
   return letter + digits;
 }
 
-export function generateJobs(count = 240): Job[] {
+export function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
   for (let i = 0; i < count; i++) {

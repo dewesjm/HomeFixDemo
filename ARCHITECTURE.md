@@ -67,9 +67,9 @@ src/app/
   admin-joint-designs/, admin-banner/, admin-teams/   Other admin pages
 
   data/
-    jobs.ts              Job model + seeded generator (240 jobs), makeJobId(), makeHull(), addTestJob()
+    jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), addTestJob()
     workflow.ts          Stage templates, types, buildStages(), seededWorkflow(), FABRICATION_FIELDS, ROLES
-    assignments.ts       Assignment model + seeded generator (18)
+    assignments.ts       Assignment model + seeded generator (36)
     mock-history.ts      Seeded activity entries
     filter-schema.ts     Schema-driven filter engine for Advanced Search
     storage-keys.ts      Every localStorage key + clearStaleCaches()
@@ -103,10 +103,10 @@ src/app/
 
 ## Data flow
 
-1. **Jobs** — 240 seeded Welding jobs in `jobs.ts`. XREFID is 5-char alphanumeric (`makeJobId()`); hull is letter + 4 digits (`makeHull()`).
+1. **Jobs** — 480 seeded Welding jobs in `jobs.ts`. XREFID is 5-char alphanumeric (`makeJobId()`); hull is letter + 4 digits (`makeHull()`).
 2. **Stage templates** — `workflow.ts`. Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
 3. **Per-job workflow** — `WorkflowService`, keyed by job id, exposed as signals. Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
-4. **Assignments** — 18 seeded, assigned to "John Johnson".
+4. **Assignments** — 36 seeded, assigned to "John Johnson".
 5. **Work history** — aggregates `WorkflowService.allWorkflows()` into a filterable timeline.
 
 ### Welding stages (in order)

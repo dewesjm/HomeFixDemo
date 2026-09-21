@@ -83,7 +83,7 @@ function makeId(seed: number): string {
   return code;
 }
 
-function generateSeededJoints(count = 80): JointPlan[] {
+function generateSeededJoints(count = 160): JointPlan[] {
   const rand = seeded(12345);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const out: JointPlan[] = [];

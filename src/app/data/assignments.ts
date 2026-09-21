@@ -65,7 +65,7 @@ function generateAssignments(): Assignment[] {
     'Review': ['Records'],
   };
 
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 36; i++) {
     const job = pick(JOBS);
     const routing = pick(ROUTINGS);
     const dayOffset = Math.floor(rand() * 14);

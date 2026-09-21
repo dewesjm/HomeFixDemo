@@ -278,7 +278,8 @@ html, body {
 
 /* Table page — min-height so table scrolls inside when needed, no gap when short */
 .table-page-wrap { display: flex; flex-direction: column; min-height: calc(100vh - 3rem); max-width: 100%; }
-.table-page-wrap .flex-1 { overflow-y: auto; }
+/* the table sits directly above the pager; don't stretch it to the page height (that left a gap) */
+.table-page-wrap > .flex-1 { flex: 0 1 auto; overflow-y: auto; }
 .table-page-wrap app-table-pager { flex-shrink: 0; }
 
 /* Sticky column filter inputs hidden on mobile to save space */
