@@ -174,8 +174,28 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
         </div>
       } @else if (!loading()) {
         @if (isEditMode()) {
-          <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
-            <p>No joint plans to edit.</p>
+          <div style="padding: 1.5rem; border: 1px dashed var(--app-border); border-radius: 0.5rem; max-width: 600px; margin: 2rem auto; text-align: center">
+            <p style="color: var(--app-text); font-weight: 600; margin-bottom: 0.5rem">Paste Joint Numbers</p>
+            <p style="font-size: 0.85rem; color: var(--app-text-muted); margin-bottom: 0.75rem">
+              Enter joint numbers separated by commas or new lines, then click Find to load them for editing.
+            </p>
+            <textarea class="textarea textarea-bordered w-full" rows="4"
+                      placeholder="JP-001, JP-002, JP-003&#10;or one per line"
+                      [ngModel]="pasteInput()" (ngModelChange)="pasteInput.set($event)"></textarea>
+            <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: center">
+              <button class="btn btn-sm btn-primary" (click)="findJoints()" [disabled]="!pasteInput().trim()">
+                Find Joints
+              </button>
+              <button class="btn btn-sm" (click)="fileInput.click()">Import File Instead</button>
+            </div>
+            @if (findResult()) {
+              <div style="margin-top: 0.75rem; font-size: 0.85rem" [style.color]="findResult()!.notFound.length ? 'var(--color-warning)' : 'var(--color-success)'">
+                Found {{ findResult()!.found }} of {{ findResult()!.total }} joints.
+                @if (findResult()!.notFound.length) {
+                  Not found: {{ findResult()!.notFound.join(', ') }}
+                }
+              </div>
+            }
           </div>
         } @else {
           <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
@@ -210,6 +230,8 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   errorCount = signal(0);
   savedCount = signal(0);
+  pasteInput = signal('');
+  findResult = signal<{ found: number; total: number; notFound: string[] } | null>(null);
 
   ngOnInit() {
     if (this.route.snapshot.queryParamMap.get('mode') === 'edit') {
@@ -421,5 +443,61 @@ export class WeldPlanningMassEditComponent implements OnInit {
     this.errorCount.set(0);
     this.savedCount.set(0);
     this.toast.add({ severity: 'info', summary: 'Sample loaded', detail: '5 sample rows ready to review and save' });
+  }
+
+  findJoints() {
+    const raw = this.pasteInput();
+    const ids = raw.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean);
+    if (!ids.length) return;
+
+    const all = jointPlans();
+    const found: JointPlan[] = [];
+    const notFound: string[] = [];
+
+    for (const id of ids) {
+      const match = all.find(j => j.jointNumber === id);
+      if (match) {
+        found.push(match);
+      } else {
+        notFound.push(id);
+      }
+    }
+
+    this.findResult.set({ found: found.length, total: ids.length, notFound });
+
+    if (found.length) {
+      const editable: EditableRow[] = found.map(j => ({
+        _id: j.id,
+        _raw: {}, _errors: [], _saved: false,
+        jointNumber: j.jointNumber,
+        projectNumber: j.projectNumber,
+        joint: j.joint,
+        title: j.title,
+        description: j.description,
+        status: j.status,
+        priority: j.priority || 'medium',
+        jointType: j.jointType,
+        drawing: j.drawing,
+        drawingRev: j.drawingRev,
+        jointDesign: j.jointDesign,
+        weldType: j.weldType,
+        pipeSize: j.pipeSize,
+        wallThickness: j.wallThickness,
+        materialType1: j.materialType1,
+        materialType2: j.materialType2,
+        wps: j.wps,
+        ndt: j.ndt,
+        pwht: j.pwht,
+        assignedTo: j.assignedTo,
+        estimatedHours: j.estimatedHours,
+        notes: j.notes,
+        createdBy: j.createdBy,
+      }));
+      editable.forEach(row => this.validateRow(row));
+      this.rows.set(editable);
+      this.errorCount.set(0);
+      this.savedCount.set(0);
+      this.toast.add({ severity: 'info', summary: 'Found', detail: `${found.length} joints loaded for editing` });
+    }
   }
 }
