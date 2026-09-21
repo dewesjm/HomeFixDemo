@@ -51,33 +51,13 @@
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('when')">
-          When {{ table.sortField() === 'when' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-11">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('who')">
-          Who {{ table.sortField() === 'who' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-14">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('action')">
-          Action {{ table.sortField() === 'action' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
+      <th appSortHeader class="min-w-13" [table]="table" field="when" label="When"></th>
+      <th appSortHeader class="min-w-11" [table]="table" field="who" label="Who"></th>
+      <th appSortHeader class="min-w-14" [table]="table" field="action" label="Action"></th>
       <th class="min-w-12">Old value</th>
       <th class="min-w-12">New value</th>
-      <th class="min-w-12">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('step')">
-          Routing {{ table.sortField() === 'step' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-13">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-            Hull {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
+      <th appSortHeader class="min-w-12" [table]="table" field="step" label="Routing"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="jobNumber" label="Hull"></th>
       <th class="min-w-11">Actions</th>
     </tr>
   </thead>

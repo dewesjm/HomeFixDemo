@@ -61,106 +61,13 @@
       <th class="w-8">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
-      <th class="min-w-16">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('id')">
-          XREFID {{ table.sortField() === 'id' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-32">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('jobNumber')">
-            Hull {{ table.sortField() === 'jobNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <div class="relative col-filter-mobile">
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
-                   [ngModel]="table.columnFilters()['jobNumber'] ?? ''"
-                   (ngModelChange)="table.setColumnFilter('jobNumber', $event)" />
-            @if (table.columnFilters()['jobNumber']) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('jobNumber', '')">
-                <svg lucideX class="size-3 opacity-60"></svg>
-              </button>
-            }
-          </div>
-        </div>
-      </th>
-      <th class="min-w-24">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('drawing')">
-            Drawing {{ table.sortField() === 'drawing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <div class="relative col-filter-mobile">
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
-                   [ngModel]="table.columnFilters()['drawing'] ?? ''"
-                   (ngModelChange)="table.setColumnFilter('drawing', $event)" />
-            @if (table.columnFilters()['drawing']) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('drawing', '')">
-                <svg lucideX class="size-3 opacity-60"></svg>
-              </button>
-            }
-          </div>
-        </div>
-      </th>
-      <th class="min-w-20">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('joint')">
-            Joint {{ table.sortField() === 'joint' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <div class="relative col-filter-mobile">
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
-                   [ngModel]="table.columnFilters()['joint'] ?? ''"
-                   (ngModelChange)="table.setColumnFilter('joint', $event)" />
-            @if (table.columnFilters()['joint']) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('joint', '')">
-                <svg lucideX class="size-3 opacity-60"></svg>
-              </button>
-            }
-          </div>
-        </div>
-      </th>
-      <th class="min-w-28">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('order')">
-            Order {{ table.sortField() === 'order' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <div class="relative col-filter-mobile">
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
-                   [ngModel]="table.columnFilters()['order'] ?? ''"
-                   (ngModelChange)="table.setColumnFilter('order', $event)" />
-            @if (table.columnFilters()['order']) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('order', '')">
-                <svg lucideX class="size-3 opacity-60"></svg>
-              </button>
-            }
-          </div>
-        </div>
-      </th>
-      <th class="min-w-24">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('sequenceNumber')">
-            Sequence {{ table.sortField() === 'sequenceNumber' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <div class="relative col-filter-mobile">
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pr-5" placeholder="Filter…"
-                   [ngModel]="table.columnFilters()['sequenceNumber'] ?? ''"
-                   (ngModelChange)="table.setColumnFilter('sequenceNumber', $event)" />
-            @if (table.columnFilters()['sequenceNumber']) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0" (click)="table.setColumnFilter('sequenceNumber', '')">
-                <svg lucideX class="size-3 opacity-60"></svg>
-              </button>
-            }
-          </div>
-        </div>
-      </th>
-      <th class="min-w-36">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('currentStep')">
-            Current routing {{ table.sortField() === 'currentStep' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="stepOptions()"
-            [selected]="table.columnFilters()['currentStep'] ?? []"
-            (selectedChange)="table.setColumnFilter('currentStep', $event)" />
-        </div>
-      </th>
+      <th appSortHeader class="min-w-16" [table]="table" field="id" label="XREFID"></th>
+      <th appSortHeader class="min-w-32" [table]="table" field="jobNumber" label="Hull" filter="text"></th>
+      <th appSortHeader class="min-w-24" [table]="table" field="drawing" label="Drawing" filter="text"></th>
+      <th appSortHeader class="min-w-20" [table]="table" field="joint" label="Joint" filter="text"></th>
+      <th appSortHeader class="min-w-28" [table]="table" field="order" label="Order" filter="text"></th>
+      <th appSortHeader class="min-w-24" [table]="table" field="sequenceNumber" label="Sequence" filter="text"></th>
+      <th appSortHeader class="min-w-36" [table]="table" field="currentStep" label="Current routing" filter="select" [options]="stepOptions()"></th>
       <th class="Actions col-freeze-actions">Actions</th>
     </tr>
   </thead>

@@ -12,7 +12,7 @@ import {
 import { ToastService } from '../shared/toast.service';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { TableState, inArray } from '../shared/table-state';
-import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
+import { SortHeaderComponent } from '../shared/sort-header.component';
 import { downloadCsv } from '../data/export-csv';
 import { Job, addTestJob } from '../data/jobs';
 import { Router } from '@angular/router';
@@ -84,7 +84,7 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
   selector: 'app-admin-steps',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, MultiselectDropdownComponent, TooltipDirective,
+    CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
   ],

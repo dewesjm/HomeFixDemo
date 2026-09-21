@@ -7,6 +7,7 @@ import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter,
 
 import { TableState } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
+import { SortHeaderComponent } from '../shared/sort-header.component';
 
 import { JOBS, Job } from '../data/jobs';
 import { WorkflowService } from '../services/workflow.service';
@@ -26,7 +27,7 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule, RouterLink,
-    TablePagerComponent,
+    TablePagerComponent, SortHeaderComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft
   ],
   templateUrl: './work-history.component.html'

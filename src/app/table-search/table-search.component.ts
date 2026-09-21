@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX } from '@lucide/angular';
 
-import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.component';
+import { SortHeaderComponent } from '../shared/sort-header.component';
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { TableState, inArray } from '../shared/table-state';
@@ -26,7 +26,7 @@ type Row = Job & { currentStep: string };
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    MultiselectDropdownComponent, TablePagerComponent, SyncStatusComponent,
+    SortHeaderComponent, TablePagerComponent, SyncStatusComponent,
     LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX
   ],
   templateUrl: './table-search.component.html'
