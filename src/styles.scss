@@ -346,7 +346,7 @@ input[type="number"] { -moz-appearance: textfield; }
 }
 
 /* Themed toast alerts */
-.app-toast-host { top: 1.5rem; }
+.app-toast-host { bottom: 1.5rem; }
 .app-toast-host .alert {
   font-size: 1.05rem;
   padding: 1rem 1.25rem;

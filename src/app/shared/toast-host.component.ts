@@ -1,4 +1,4 @@
-/* Renders queued toasts (top-center), DaisyUI toast + alert. Mounted once in app.component.html. */
+/* Renders queued toasts (bottom-center), DaisyUI toast + alert. Mounted once in app.component.html. */
 import { Component, inject } from '@angular/core';
 import { ToastService } from './toast.service';
 
@@ -13,7 +13,7 @@ const ALERT_CLASS: Record<string, string> = {
   selector: 'app-toast-host',
   standalone: true,
   template: `
-    <div class="toast toast-center toast-top z-50 app-toast-host">
+    <div class="toast toast-center toast-bottom z-50 app-toast-host">
       @for (m of toast.messages(); track m.id) {
         <div class="alert" [class]="alertClass(m.severity)">
           <div>
