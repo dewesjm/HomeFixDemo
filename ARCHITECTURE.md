@@ -15,9 +15,10 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 |---|---|
 | **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
 | **XREFID** | Internal 5-char alphanumeric job id (`job.id`). Unique. |
-| **Drawing** | Letter + 7 digits, e.g. `H7111234` (`job.drawing`, weld-joint `drawing`). |
+| **Drawing** | Letter + 7 digits, e.g. `H7111234` or `S7204518` (`job.drawing`, weld-joint `drawing`); both `H` and `S` prefixes appear in seed data. |
 | **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). |
-| **Joint number** | Weld Planning only: 2-letter prefix, hyphen, `J` + 5 digits, e.g. `ST-J00001` (seed: `ST` structural, `PI` pipe). The weld record's own `joint` (`J-001`) is a different field and unchanged. |
+| **Joint number** | Weld Planning's `jointNumber`: 2-letter prefix, hyphen, `J` + 5 digits, e.g. `ST-J00001` (seed: `ST` structural, `PI` pipe). |
+| **Joint (system-joint)** | The weld record's own `joint` field (`job.joint` and Weld Planning's separate `WeldJoint.joint`) — 2-letter system code, hyphen, `J` + 5 digits, e.g. `ST-J10005` (seed system codes: ST/SW/FW/FO/LO/HV, my own unreviewed pick). Was previously free text (`J-001`); changed 2026-09-21. |
 | **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
 | **Stage** | One unit of a routing (`WorkflowStage`): Fit, Tack, Root, NDT, … |
@@ -58,7 +59,8 @@ src/app/
   fabrication/           Cross-stage fabrication fields (Welding)
   signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
   attachments/           Attachments list
-  weld-planning/         Weld Planning — joints list/form/detail/mass-edit/admin (own data in weld-planning.data.ts)
+  weld-planning/         Weld Planning — joints list/form/detail/mass-edit/admin/advanced-search (own data in
+                         weld-planning.data.ts; own filter engine in weld-planning-filter-schema.ts)
   sync-status/           Online/offline indicator (stubbed)
   theme-picker/          DaisyUI theme switcher (32 themes, default: forest)
 
@@ -106,6 +108,10 @@ src/app/
 | `/assignments` | My Assignments |
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-options` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, weld-positions, banner, joint-designs, teams, material-traceability) |
+| `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |
+| `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — same pattern as `/adaptive`, scoped to `WeldJoint`) |
+| `/weld-planning/import` | Weld Planning mass import/edit |
+| `/weld-planning/admin` | Weld Planning admin (Joint Designs & NDT) |
 
 ## Data flow
 
@@ -136,7 +142,7 @@ src/app/
 - **Fabrication** (cross-stage) — Location (Ship adds Deck/Frame/P-S-CL/Usage with red `*`), MIC 1/2, Drawing Rev, Actual Thickness, WTN, Revised Joint Design.
 - **Signoff panel** (below).
 - **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`).
-- **Records Review** (`review` stage) — verification grid + immutable `signoffRecords` history table.
+- **Records Retention Review** (`review` stage, role **Records Retention** — renamed from "Records" 2026-09-21) — verification grid + immutable `signoffRecords` history table.
 - **Sold** — once signed all stages lock; only deprogress is allowed (Work History, most recent signoff per job).
 
 ### Signoff panel (`signoff-panel`)
@@ -147,16 +153,17 @@ src/app/
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
 - **Sign button** — disabled until `canSignStage()` passes; it is derived from `signBlockers()` in job-detail, the single source of the rules. There is deliberately no on-screen "why" text (the sticky bar and then the note beside the button were both removed at the user's request). A failed attempt scrolls to and focuses the first validation error.
 - **Fit-Up Insp** — verification grid against fabrication data, Release-to-welding checkbox.
-- **Records Review's embedded "Signoff History"** — same pattern as the History screen: one row per sign-off event (When, Who, Stage — Action with an expand chevron, Result badge), collapsed by default, with its own **Expand all / Collapse all**. Expanding shows the fields recorded at that sign-off. Local to `SignoffPanelComponent` (`expandedRecords`/`toggleRecord`/`toggleAllRecords`), not wired to the History screen's data or state.
+- **Records Retention Review's embedded "Signoff History"** — same pattern as the History screen: one row per sign-off event (When, Who, Stage — Action with an expand chevron, Result badge), collapsed by default, with its own **Expand all / Collapse all**. Expanding shows the fields recorded at that sign-off. Local to `SignoffPanelComponent` (`expandedRecords`/`toggleRecord`/`toggleAllRecords`), not wired to the History screen's data or state.
 - **Gotcha**: `.stage-field`'s `flex: 1 1 160px` is written for the row-based `.stage-inputs` grid, where 160px is a WIDTH basis. Reused inside a `flex flex-col` wrapper (e.g. Review's own layout), that same value becomes a HEIGHT basis and forces ~160px of dead space below short content. Don't use `.stage-field` inside a column-flex container; use a plain `<div>` (see Review's Comments field and Admin > Banner's Banner Message field, both fixed 2026-09-21).
 - **Deprogress** — reverse the last signed stage with a required comment.
 - **Interim Layer** signs off and navigates away; **5X** auto-signs the matching VT/5X stage.
 
 ### My Assignments, History, Weld Planning
-- My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, **Location** = shop (`getShops()`, same pool as Fabrication's Location), **Specific Location** = bay/rack within it (same idea as Fabrication's Specific Location field), Assigned To, Assignment #, Expires), keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). "Assigned To" column shows a hardcoded "John Johnson", not `a.assignedTo` — pre-existing, not fixed.
+- My Assignments: single-line list (XREFID, Hull, Drawing, Routing, Joint, **Location** = shop (`getShops()`, same pool as Fabrication's Location), **Specific Location** = bay/rack within it (same idea as Fabrication's Specific Location field), Assigned To, Assignment #, Expires), keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). "Assigned To" column shows a hardcoded "John Johnson", not `a.assignedTo` — pre-existing, not fixed. **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; row click/"Details" navigation therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank.
 - History: When, Who (name + title held at the time), Action, Old/New, Routing, Hull, Actions.  Filters: person typeahead; **a job box that matches XREFID, drawing, joint or order** (not hull); and a right-hand **Search all** box covering every column and the sign-off field values. **It records what was input at each sign-off**: a sign-off row expands (per row, or **Expand all / Collapse all** for every sign-off matching the filters) to every editable field the user was shown, with its value at that moment, blanks included; each field row repeats the sign-off's When, Who, Routing and Hull in muted text so it reads on its own (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage). It needs a required comment.
-- Weld Planning: separate weld-joint data (`WeldJoint`; list/form/detail/mass edit; the admin page has only Joint Designs, the NDT and PWHT option tabs were removed) with its own `hull` field .
-  A joint has no title, WPS, PWHT, assignee, estimated hours, description or notes (all removed from the create/edit form; the data fields still exist and still show on the detail page & CSV for seeded joints). Joint is a free-text field (e.g. `J-001`), not a dropdown. Its NDT requirements are the same seven fields as the weld record's joint details (`NDT_FIELDS` in `weld-planning.data.ts`: RT Root/Final, NDT Root/Each/Final, UT, VT; each blank, `X` or `5X`). Material 2 is labelled plainly (no "(Filler)"). The form, detail, admin and mass-edit pages fill the content area like every other screen (no centred max-width box). Plans saved in the browser before this change lack the NDT fields and show them blank.
+- Weld Planning: separate weld-joint data (`WeldJoint`; list/form/detail/mass edit/advanced search; the admin page has only Joint Designs, the NDT and PWHT option tabs were removed) with its own `hull` field .
+  A joint has no title, WPS, PWHT, assignee, estimated hours, description or notes (all removed from the create/edit form; the data fields still exist and still show on the detail page & CSV for seeded joints). Joint is a free-text field in system-joint format (e.g. `ST-J10005`, see Terminology), not a dropdown. Its NDT requirements are the same seven fields as the weld record's joint details (`NDT_FIELDS` in `weld-planning.data.ts`: RT Root/Final, NDT Root/Each/Final, UT, VT; each blank, `X` or `5X`). Material 2 is labelled plainly (no "(Filler)"). The form, detail, admin and mass-edit pages fill the content area like every other screen (no centred max-width box). Plans saved in the browser before this change lack the NDT fields and show them blank.
+  **Advanced Search** (`weld-planning-search`, route `/weld-planning/search`) mirrors the Job Advanced Search screen but scoped to `WeldJoint`: its own filter schema (`weld-planning-filter-schema.ts`), saved variants and result-column picker, both persisted under their own `STORAGE` keys (`weldPlanningFilterVariants`, `weldPlanningResultColumns`) so they don't collide with the Job Advanced Search screen's saved state.
 
 ## Data schema
 
@@ -250,3 +257,4 @@ src/app/
 
 - **Fabrication select labels**: `Location` and `Revised Joint Design` options exist only at runtime (`withRuntimeOptions()` in `job-detail`); the static `FABRICATION_FIELDS` entries have none. Any place that shows a fabrication value (e.g. Fit-Up Insp verification grid) must resolve its label through that helper, or it shows the raw stored code (`bj-g` instead of `BJ-G`).
 - **Consumable insert vs filler metal choices**: they share `METAL_TYPE_OPTIONS` / `METAL_SIZE_OPTIONS` (`workflow.ts`) because "Only Consumable Insert used as filler" copies the Fit stage's insert type/size into the filler fields. If the two lists ever differ, a copied value that is missing from the filler list renders as a blank select. Keep them one list.
+- **`SignoffRecord.fields` labels**: `WorkflowService` (signStage/reopenStage/forceRouting/goBackRouting) builds these from the raw `stage.inputs`/`stage.signoffInputs` key/value pairs, not from the properly-labeled `SignoffInput[]` the caller may pass in. Always resolve the display label via the `labelFor(stage, key)` helper (falls back to the field's key only if no matching `StageField`/`SignoffField` is found) — fixed 2026-09-21 after Signoff History showed raw keys like `consumableInsertType` instead of "Consumable Insert Type".
