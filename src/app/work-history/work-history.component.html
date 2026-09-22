@@ -78,17 +78,17 @@
   <thead>
     <tr>
       <th class="min-w-6"></th>
-      <th appSortHeader class="min-w-13" [table]="table" field="when" label="When"></th>
-      <th appSortHeader class="min-w-11" [table]="table" field="who" label="Who"></th>
-      <th appSortHeader class="min-w-14" [table]="table" field="action" label="Action"></th>
-      <th class="min-w-12">Old value</th>
-      <th class="min-w-12">New value</th>
-      <th appSortHeader class="min-w-12" [table]="table" field="routing" label="Routing"></th>
-      <th appSortHeader style="min-width: 6ch" [table]="table" field="jobId" label="XREFID"></th>
-      <th appSortHeader style="min-width: 6ch" [table]="table" field="hull" label="Hull"></th>
-      <th appSortHeader style="min-width: 9ch" [table]="table" field="drawing" label="Drawing"></th>
-      <th appSortHeader style="min-width: 9ch" [table]="table" field="joint" label="Joint"></th>
-      <th appSortHeader style="min-width: 10ch" [table]="table" field="order" label="Order"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="when" label="When" filter="text"></th>
+      <th appSortHeader class="min-w-11" [table]="table" field="who" label="Who" filter="text"></th>
+      <th appSortHeader class="min-w-14" [table]="table" field="action" label="Action" filter="text"></th>
+      <th appSortHeader class="min-w-12" [table]="table" field="from" label="Old value" filter="text"></th>
+      <th appSortHeader class="min-w-12" [table]="table" field="to" label="New value" filter="text"></th>
+      <th appSortHeader class="min-w-12" [table]="table" field="routing" label="Routing" filter="select" [options]="routingOptions()"></th>
+      <th appSortHeader style="min-width: 6ch" [table]="table" field="jobId" label="XREFID" filter="text"></th>
+      <th appSortHeader style="min-width: 6ch" [table]="table" field="hull" label="Hull" filter="text"></th>
+      <th appSortHeader style="min-width: 9ch" [table]="table" field="drawing" label="Drawing" filter="text"></th>
+      <th appSortHeader style="min-width: 9ch" [table]="table" field="joint" label="Joint" filter="text"></th>
+      <th appSortHeader style="min-width: 10ch" [table]="table" field="order" label="Order" filter="text"></th>
       <th class="min-w-11">Deprogress</th>
     </tr>
   </thead>

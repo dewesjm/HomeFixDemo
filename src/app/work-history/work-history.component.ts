@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
-import { TableState } from '../shared/table-state';
+import { TableState, inArray } from '../shared/table-state';
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { SortHeaderComponent } from '../shared/sort-header.component';
 
@@ -60,8 +60,20 @@ export class WorkHistoryComponent {
 
   table = new TableState<ActivityRow>(
     ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
-    {}
+    {
+      /* match the formatted date shown in the column, not the raw ISO timestamp */
+      when: (rowValue: string, val: string) =>
+        new Date(rowValue).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+          .toLowerCase().includes(String(val).toLowerCase()),
+      routing: inArray,
+    }
   );
+
+  /* distinct routing values among the pre-filtered rows, for the Routing column's multiselect */
+  routingOptions = computed(() =>
+    [...new Set(this.preFiltered().map(r => r.routing))]
+      .sort()
+      .map(s => ({ label: s, value: s })));
 
   constructor() {
     this.table.setPageSize(15);
