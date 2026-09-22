@@ -233,7 +233,10 @@ export class WorkHistoryComponent {
       { header: 'Value',      value: (l: Line) => l.value },
       { header: 'Routing',    value: (l: Line) => l.row.routing },
       { header: 'XREFID',     value: (l: Line) => l.row.jobId },
-      { header: 'Hull',       value: (l: Line) => l.row.hull }
+      { header: 'Hull',       value: (l: Line) => l.row.hull },
+      { header: 'Drawing',    value: (l: Line) => l.row.drawing },
+      { header: 'Joint',      value: (l: Line) => l.row.joint },
+      { header: 'Order',      value: (l: Line) => l.row.order }
     ], lines);
   }
 }

@@ -83,7 +83,11 @@
       <th class="min-w-12">Old value</th>
       <th class="min-w-12">New value</th>
       <th appSortHeader class="min-w-12" [table]="table" field="routing" label="Routing"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="jobId" label="XREFID"></th>
       <th appSortHeader class="min-w-13" [table]="table" field="hull" label="Hull"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="drawing" label="Drawing"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="joint" label="Joint"></th>
+      <th appSortHeader class="min-w-13" [table]="table" field="order" label="Order"></th>
       <th class="min-w-11">Actions</th>
     </tr>
   </thead>
@@ -104,8 +108,12 @@
         <td class="hist-new">{{ r.to || '—' }}</td>
         <td>{{ r.routing }}</td>
         <td>
-          <a [routerLink]="['/jobs', r.jobId]">{{ r.hull }}</a>
+          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobId }}</a>
         </td>
+        <td>{{ r.hull }}</td>
+        <td>{{ r.drawing }}</td>
+        <td>{{ r.joint }}</td>
+        <td>{{ r.order }}</td>
         <td>
           @if (isLatestEntry(r)) {
             @if (deprogressTarget() === r.jobId) {
@@ -134,14 +142,18 @@
             <td class="hist-old">—</td>
             <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
             <td class="hist-old">{{ r.routing }}</td>
+            <td class="hist-old">{{ r.jobId }}</td>
             <td class="hist-old">{{ r.hull }}</td>
+            <td class="hist-old">{{ r.drawing }}</td>
+            <td class="hist-old">{{ r.joint }}</td>
+            <td class="hist-old">{{ r.order }}</td>
             <td></td>
           </tr>
         }
       }
     } @empty {
       <tr>
-        <td colspan="8" class="empty">
+        <td colspan="12" class="empty">
           No matching activity. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>
