@@ -82,8 +82,7 @@
       <th appSortHeader class="min-w-14" [table]="table" field="action" label="Action" filter="text"></th>
       <th appSortHeader class="min-w-13" [table]="table" field="when" label="When" filter="text"></th>
       <th appSortHeader class="min-w-11" [table]="table" field="who" label="Who" filter="text"></th>
-      <th appSortHeader class="min-w-12" [table]="table" field="from" label="Old value" filter="text"></th>
-      <th appSortHeader class="min-w-12" [table]="table" field="to" label="New value" filter="text"></th>
+      <th appSortHeader class="min-w-12" [table]="table" field="to" label="Value" filter="text"></th>
       <th appSortHeader style="min-width: 6ch" [table]="table" field="jobId" label="XREFID" filter="text"></th>
       <th appSortHeader style="min-width: 6ch" [table]="table" field="hull" label="Hull" filter="text"></th>
       <th appSortHeader style="min-width: 9ch" [table]="table" field="drawing" label="Drawing" filter="text"></th>
@@ -106,7 +105,6 @@
         <td>{{ r.action }}</td>
         <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
-        <td class="hist-old">{{ r.from || '—' }}</td>
         <td class="hist-new">{{ r.to || '—' }}</td>
         <td>
           <a [routerLink]="['/jobs', r.jobId]">{{ r.jobId }}</a>
@@ -142,7 +140,6 @@
             <td class="pl-8">{{ i.label }}</td>
             <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
             <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
-            <td class="hist-old">—</td>
             <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
             <td class="hist-old">{{ r.jobId }}</td>
             <td class="hist-old">{{ r.hull }}</td>
@@ -155,7 +152,7 @@
       }
     } @empty {
       <tr>
-        <td colspan="13" class="empty">
+        <td colspan="12" class="empty">
           No matching activity. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>
