@@ -16,7 +16,7 @@ const ALERT_CLASS: Record<string, string> = {
     <div class="toast toast-center toast-bottom z-50 app-toast-host">
       @for (m of toast.messages(); track m.id) {
         <div class="alert" [class]="alertClass(m.severity)">
-          <div>
+          <div class="grow">
             <span class="font-semibold">{{ m.summary }}</span>
             @if (m.detail) {
               <div class="opacity-80">{{ m.detail }}</div>
