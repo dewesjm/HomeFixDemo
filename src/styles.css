@@ -353,13 +353,10 @@ input[type="number"] { -moz-appearance: textfield; }
   min-width: 22rem;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
 }
-/* oklab, not oklch: some themes' surface color is near-achromatic, and mixing a near-gray
-   color in oklch (hue-based) gives it an unstable/near-random hue, tinting the toast wrong
-   (e.g. Forest theme's toasts came out reddish instead of the intended success/info/warn/error tint) */
-.toast-success { background: color-mix(in oklab, var(--color-success) 15%, var(--app-surface)); border: 1px solid color-mix(in oklch, var(--color-success) 40%, transparent); color: var(--app-text); }
-.toast-info    { background: color-mix(in oklab, var(--color-info) 15%, var(--app-surface));    border: 1px solid color-mix(in oklch, var(--color-info) 40%, transparent);    color: var(--app-text); }
-.toast-warn    { background: color-mix(in oklab, var(--color-warning) 15%, var(--app-surface)); border: 1px solid color-mix(in oklch, var(--color-warning) 40%, transparent); color: var(--app-text); }
-.toast-error   { background: color-mix(in oklab, var(--color-error) 15%, var(--app-surface));   border: 1px solid color-mix(in oklch, var(--color-error) 40%, transparent);   color: var(--app-text); }
+.toast-success { background: var(--color-success); border: 1px solid var(--color-success); color: var(--color-success-content); }
+.toast-info    { background: var(--color-info);    border: 1px solid var(--color-info);    color: var(--color-info-content); }
+.toast-warn    { background: var(--color-warning); border: 1px solid var(--color-warning); color: var(--color-warning-content); }
+.toast-error   { background: var(--color-error);   border: 1px solid var(--color-error);   color: var(--color-error-content); }
 
 /* ───────── Readability overrides ─────────
    Tailwind/DaisyUI's small sizes (12-14px) are too small at 100% zoom, and DaisyUI
