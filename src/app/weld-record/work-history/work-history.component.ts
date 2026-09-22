@@ -47,7 +47,7 @@ export class WorkHistoryComponent {
   private confirmSvc = inject(ConfirmService);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
-  back() { this.router.navigate(['/table']); }
+  back() { this.router.navigate(['/pipe-search']); }
   openDetails(jobId: string) { this.router.navigate(['/jobs', jobId], { queryParams: { from: 'history' } }); }
 
   /* person filter: the chosen person, plus the typeahead's text and open state */

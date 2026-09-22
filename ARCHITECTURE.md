@@ -53,7 +53,7 @@ src/app/
                           here 2026-09-23 — was 24 flat top-level folders; every admin-* folder turned out to
                           belong to Weld Record specifically, none to Weld Planning). Nesting is purely file
                           location — routes/URLs/component names are unchanged.
-    table-search/          Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
+    pipe-search/           Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
     adaptive-search/       Advanced Search — schema-driven filter bar + saved variants + column picker (for everyone else)
     work-history/          History — audit-trail activity log with deprogress
     my-assignments/        My Assignments — assignment list with keyword search
@@ -138,7 +138,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 
 ## Screens
 
-### Pipe Welding (`table-search`)
+### Pipe Welding (`pipe-search`)
 - Deliberately the "dumb", fast version. Layout: `table-page-wrap` (fixed header/filters, scrollable table).
 - Columns: XREFID, Hull, Drawing, Joint, Order, Sequence, Current routing, Actions — sortable, with per-column filters via `appSortHeader`.
 - Role dropdown, CSV export (right-aligned, next to the keyword search box — moved 2026-09-23), page-size selector, admin banner pill, frozen Actions column on mobile.

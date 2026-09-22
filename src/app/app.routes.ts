@@ -1,7 +1,7 @@
 /* route table */
 import { Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
-import { TableSearchComponent } from './weld-record/table-search/table-search.component';
+import { PipeSearchComponent } from './weld-record/pipe-search/pipe-search.component';
 import { WorkHistoryComponent } from './weld-record/work-history/work-history.component';
 import { AdaptiveSearchComponent } from './weld-record/adaptive-search/adaptive-search.component';
 import { JobDetailComponent } from './weld-record/job-detail/job-detail.component';
@@ -28,8 +28,8 @@ import { WeldPlanningSearchComponent } from './weld-planning/weld-planning-searc
 
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'table' },
-  { path: 'table', component: TableSearchComponent, title: 'EWR — Hull Search' },
+  { path: '', pathMatch: 'full', redirectTo: 'pipe-search' },
+  { path: 'pipe-search', component: PipeSearchComponent, title: 'EWR — Hull Search' },
   { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR — My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'EWR — History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'EWR — Advanced Search' },
@@ -58,5 +58,5 @@ export const routes: Routes = [
   { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'EWP — Joint Details' },
   { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'EWP — Edit Joint' },
 
-  { path: '**', redirectTo: 'table' }
+  { path: '**', redirectTo: 'pipe-search' }
 ];

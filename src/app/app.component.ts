@@ -88,7 +88,7 @@ export class AppComponent {
     ).subscribe(e => {
       const url = e.urlAfterRedirects || e.url;
       if (url.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
-      else if (url.startsWith('/assignments') || url.startsWith('/history') || url.startsWith('/adaptive') || url.startsWith('/admin') || url.startsWith('/table')) this.activeSystem.set('Weld Record');
+      else if (url.startsWith('/assignments') || url.startsWith('/history') || url.startsWith('/adaptive') || url.startsWith('/admin') || url.startsWith('/pipe-search')) this.activeSystem.set('Weld Record');
       else if (url.startsWith('/weld-assignment')) this.activeSystem.set('Weld Dispatch');
       else if (url.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
     });

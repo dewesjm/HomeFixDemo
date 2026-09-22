@@ -24,16 +24,16 @@ const SEARCH_STATE_KEY = STORAGE.searchState;
 type Row = Job & { currentRouting: string };
 
 @Component({
-  selector: 'app-table-search',
+  selector: 'app-pipe-search',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
     SortHeaderComponent, TablePagerComponent, SyncStatusComponent,
     LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX
   ],
-  templateUrl: './table-search.component.html'
+  templateUrl: './pipe-search.component.html'
 })
-export class TableSearchComponent {
+export class PipeSearchComponent {
   constructor(private router: Router, private wfService: WorkflowService) {
     // Restore saved state
     const saved = this.loadState();

@@ -969,7 +969,7 @@ export class JobDetailComponent implements OnDestroy {
     const from = this.route.snapshot.queryParamMap.get('from');
     if (from === 'assignments') return '/assignments';
     if (from === 'history') return '/history';
-    return '/table';
+    return '/pipe-search';
   }
 
   back() {
