@@ -74,10 +74,13 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     : 1 + Math.floor(rand() * Math.min(2, stages.length));
 
   /* 1) walk stages in order, signing each off with every editable field's value at that moment (some left blank) */
+  let restRouting = stages[0]?.label ?? 'All stages complete';
   for (let k = 0; k < signCount; k++) {
     const stage = stages[k];
-    /* matches WorkflowService.signStage: result is 'sat'/'unsat', recorded uppercase */
-    const decision = rand() < 0.85 ? 'sat' : 'unsat';
+    /* only rejectable stages get a SAT/UNSAT decision — matches the real signoff panel, which
+       hides Decision (and auto-accepts) for stages without a rejectToStage */
+    const isRejectable = !!stage.rejectToStage;
+    const decision: 'sat' | 'unsat' | null = isRejectable ? (rand() < 0.85 ? 'sat' : 'unsat') : null;
     const inputs: Record<string, string> = {};
     for (const f of stage.fields) inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
     const signoffInputs: Record<string, string> = {};
@@ -86,11 +89,17 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
       ...stage, inputs, signoffInputs, result: decision,
       inspectionType: stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '',
     };
-    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision.toUpperCase(),
+    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision ? decision.toUpperCase() : '',
       snapshotInputs(view, fieldsShown(view), stage.signoffFields));
-  }
 
-  const restRouting = routingAfter(signCount - 1);
+    if (decision === 'unsat') {
+      /* an UNSAT rejects work back to an earlier stage rather than advancing — stop here
+         rather than pretending later stages were reached without a resign cycle */
+      restRouting = stages.find(s => s.id === stage.rejectToStage)?.label ?? stage.label;
+      break;
+    }
+    restRouting = routingAfter(k);
+  }
 
   /* 2) sometimes an attachment */
   if (rand() < 0.55) {
