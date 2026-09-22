@@ -83,16 +83,17 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   /* 1) walk stages in order, signing each off with every editable field's value at that moment (some left blank) */
   for (let k = 0; k < signCount; k++) {
     const stage = stages[k];
-    const decision = rand() < 0.85 ? 'ACCEPT' : 'REJECT';
+    /* matches WorkflowService.signStage: result is 'sat'/'unsat', recorded uppercase */
+    const decision = rand() < 0.85 ? 'sat' : 'unsat';
     const inputs: Record<string, string> = {};
     for (const f of stage.fields) inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
     const signoffInputs: Record<string, string> = {};
     for (const f of stage.signoffFields) signoffInputs[f.key] = f.key === 'inspectorName' ? who : fieldValue(f, rand);
     const view: WorkflowStage = {
-      ...stage, inputs, signoffInputs, result: decision === 'ACCEPT' ? 'sat' : 'unsat',
+      ...stage, inputs, signoffInputs, result: decision,
       inspectionType: stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '',
     };
-    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision,
+    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision.toUpperCase(),
       snapshotInputs(view, fieldsShown(view), stage.signoffFields));
   }
 
