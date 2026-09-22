@@ -45,26 +45,59 @@ export class JobDetailComponent implements OnDestroy {
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.wfService.workflowFor(this.job) : null;
 
-  /* Reset fit stage routingType + inputs on navigation so it reverts to default */
+  /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
+     fields, routing type choice) can be discarded when the user leaves without signing */
+  private readonly loadSnapshot = this.wf ? this.captureSnapshot() : null;
+
+  private captureSnapshot(): { fabricationData: Record<string, string>; stages: Record<string, WorkflowStage> } {
+    const w = this.wf!();
+    const stages: Record<string, WorkflowStage> = {};
+    for (const s of w.stages) {
+      stages[s.id] = { ...s, inputs: { ...s.inputs }, signoffInputs: { ...s.signoffInputs }, fields: [...s.fields], signoffFields: [...s.signoffFields] };
+    }
+    return { fabricationData: { ...w.fabricationData }, stages };
+  }
+
+  private recordEquals(a: Record<string, string>, b: Record<string, string>): boolean {
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+    for (const k of keys) if ((a[k] ?? '') !== (b[k] ?? '')) return false;
+    return true;
+  }
+
+  /* true when the technician has entered Fab or sign-off data on an unsigned stage that
+     hasn't been discarded/committed yet */
+  private hasUnsavedChanges(): boolean {
+    if (!this.wf || !this.loadSnapshot) return false;
+    const w = this.wf();
+    const fitSigned = w.stages.find(s => s.id === 'fit')?.signed ?? false;
+    if (!fitSigned && !this.recordEquals(w.fabricationData, this.loadSnapshot.fabricationData)) return true;
+    for (const s of w.stages) {
+      if (s.signed) continue;
+      const snap = this.loadSnapshot.stages[s.id];
+      if (!snap) continue;
+      if (!this.recordEquals(s.inputs, snap.inputs)) return true;
+      if (!this.recordEquals(s.signoffInputs, snap.signoffInputs)) return true;
+      if (s.routingType !== snap.routingType) return true;
+    }
+    return false;
+  }
+
+  /* Discard any unsigned/unsaved Fab and sign-off edits made this visit, so re-entering the
+     joint later doesn't hold onto data that was never signed off. */
   ngOnDestroy() {
-    if (!this.job || !this.wf) return;
-    const templates = getTemplates()[this.job.trade] ?? [];
-    const fitTpl = templates.find(t => t.id === 'fit');
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map(s => {
-        if (s.id !== 'fit') return s;
-        if (s.routingType === 'fit') return s;
-        return {
-          ...s,
-          routingType: 'fit',
-          fields: (fitTpl?.fields ?? []).map(f => ({ ...f })),
-          signoffFields: (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
-          inputs: {},
-          signoffInputs: {},
-        };
-      })
-    }));
+    if (!this.job || !this.wf || !this.loadSnapshot) return;
+    const snapshot = this.loadSnapshot;
+    this.wf.update(wf => {
+      const fitSigned = wf.stages.find(s => s.id === 'fit')?.signed ?? false;
+      const fabricationData = fitSigned ? wf.fabricationData : { ...snapshot.fabricationData };
+      const stages = wf.stages.map(s => {
+        if (s.signed) return s;
+        const snap = snapshot.stages[s.id];
+        if (!snap) return s;
+        return { ...snap, inputs: { ...snap.inputs }, signoffInputs: { ...snap.signoffInputs }, fields: [...snap.fields], signoffFields: [...snap.signoffFields] };
+      });
+      return { ...wf, fabricationData, stages };
+    });
   }
 
   /* new-component form model */
@@ -84,8 +117,6 @@ export class JobDetailComponent implements OnDestroy {
   });
   /* which stage's sign-off shows; defaults to active */
   selectedRouting = signal<number>(this.initialRouting());
-  /* index of the last stage the user modified inputs/signoff on */
-  lastModifiedStageIdx = signal<number>(-1);
   /* inline field validation errors: key = `${stageId}:${fieldKey}` */
   fieldErrors = signal<Record<string, string>>({});
 
@@ -286,14 +317,7 @@ export class JobDetailComponent implements OnDestroy {
     return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned();
   }
   canDeactivate(): boolean {
-    if (!this.wf) return true;
-    const idx = this.lastModifiedStageIdx();
-    if (idx < 0) return true;
-    const stage = this.wf().stages[idx];
-    if (!stage || stage.signed) return true;
-    const hasInputData = Object.values(stage.inputs).some(v => v);
-    const hasSignoffData = Object.values(stage.signoffInputs).some(v => v);
-    return !hasInputData && !hasSignoffData;
+    return !this.hasUnsavedChanges();
   }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
@@ -597,7 +621,6 @@ export class JobDetailComponent implements OnDestroy {
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, value);
       this.clearHidden(stage);
-      if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
     }
     this.onFieldBlur(stage, field);
     /* clear required error if now filled */
@@ -661,7 +684,6 @@ export class JobDetailComponent implements OnDestroy {
       }
       this.wfService.setStageInputs(this.job, stage.id, changes);
       this.clearHidden(stage);
-      if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
       if (field.key === 'wtn' && this.WTN_PROCESS_MAP[v]) {
         /* clear weld process error */
         const wpKey = `${stage.id}:weldProcess`;
@@ -701,7 +723,6 @@ export class JobDetailComponent implements OnDestroy {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(value) });
-    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* generic signoff field select change handler */
@@ -713,7 +734,6 @@ export class JobDetailComponent implements OnDestroy {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
-    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* generic signoff checkbox change handler */
@@ -725,7 +745,6 @@ export class JobDetailComponent implements OnDestroy {
     this.wfService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
-    if (this.wf) this.lastModifiedStageIdx.set(this.wf().stages.indexOf(stage));
   }
 
   /* visibility of a signoff field (showIf support) */
