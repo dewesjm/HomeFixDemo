@@ -22,6 +22,8 @@ interface ActivityRow extends HistoryEntry {
   jobId: string;
   hull: string;
   drawing: string;
+  joint: string;
+  order: string;
   /* searchable text of the sign-off's field values */
   inputsText: string;
 }
@@ -50,14 +52,14 @@ export class WorkHistoryComponent {
   personQuery = signal('');
   suggestOpen = signal(false);
   suggestions = computed(() => searchPeople(this.personQuery()));
-  /* job filter: job number or id */
+  /* job filter: matches XREFID, drawing, joint or order */
   jobQuery = signal<string>('');
   expanded = signal<ReadonlySet<string>>(new Set());
   deprogressTarget = signal<string | null>(null);
   deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
-    ['hull', 'who', 'action', 'from', 'to', 'routing', 'inputsText'],
+    ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
     {}
   );
 
@@ -110,8 +112,8 @@ export class WorkHistoryComponent {
     if (p) parts.push(`by ${fullName(p)}`);
     const jq = this.jobQuery().trim();
     if (jq) {
-      const match = JOBS.find(j => String(j.id) === jq || j.hull.toLowerCase() === jq.toLowerCase());
-      parts.push(`Hull ${match ? match.hull : jq}`);
+      const exact = JOBS.find(j => j.id.toLowerCase() === jq.toLowerCase());
+      parts.push(exact ? `XREFID ${exact.id}` : `matching "${jq}"`);
     }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
@@ -130,6 +132,8 @@ export class WorkHistoryComponent {
         jobId,
         hull: job?.hull ?? `#${jobId}`,
         drawing: job?.drawing ?? '',
+        joint: job?.joint ?? '',
+        order: job?.order ?? '',
         inputsText: (e.inputs ?? []).map(i => `${i.label} ${i.value}`).join(' '),
       });
     };
@@ -149,7 +153,7 @@ export class WorkHistoryComponent {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
     return this.allActivity().filter(r =>
-      (!jq || r.jobId.toLowerCase() === jq || r.hull.toLowerCase().includes(jq)) &&
+      (!jq || [r.jobId, r.drawing, r.joint, r.order].some(v => v.toLowerCase().includes(jq))) &&
       (!p || r.whoId === p.id || r.who === fullName(p))
     );
   });
