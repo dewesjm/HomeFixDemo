@@ -192,7 +192,12 @@ export class WorkHistoryComponent {
       }
       const last = inEffect[inEffect.length - 1];
       if (!last) continue;
-      if (lastSignedLabel.has(jobId) && last.action.split(' — ')[0] !== lastSignedLabel.get(jobId)) continue;
+      /* only distrust the activity log where the live workflow actually has a signed stage to
+         compare against — a job whose live workflow exists but has nothing signed yet (e.g. just
+         from being listed in a table) isn't the source of this row's mock history, so there's
+         nothing real to contradict it */
+      const expected = lastSignedLabel.get(jobId);
+      if (expected && last.action.split(' — ')[0] !== expected) continue;
       keys.add(last.key);
     }
     return keys;
