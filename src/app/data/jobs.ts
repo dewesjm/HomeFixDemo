@@ -174,7 +174,7 @@ export function generateJobs(count = 480): Job[] {
       joiningItem: pick(JOINING_ITEMS),
       joinToItem: pick(JOINING_ITEMS),
       sequenceNumber: '1',
-      engineeringNotes: i % 3 === 0 ? 'Standard GWP per WPS' : '',
+      engineeringNotes: '',
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
