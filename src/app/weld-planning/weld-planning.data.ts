@@ -70,8 +70,8 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Aluminum'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
-/* joint = system-joint, e.g. ST-J10005 */
-const JOINTS_POOL = ['ST-J10005', 'ST-J10012', 'SW-J10008', 'SW-J10021', 'FW-J10014', 'FO-J10009', 'LO-J10017', 'HV-J10003'];
+/* joint = system-joint, e.g. ST-10005 */
+const JOINTS_POOL = ['ST-10005', 'ST-10012', 'SW-10008', 'SW-10021', 'FW-10014', 'FO-10009', 'LO-10017', 'HV-10003'];
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
