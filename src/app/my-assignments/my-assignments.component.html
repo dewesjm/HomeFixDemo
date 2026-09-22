@@ -79,10 +79,19 @@
         <div class="flex flex-wrap gap-x-8 gap-y-2">
           <div><span class="text-xs opacity-60">Assigned By</span><div>{{ a.assignedBy }}</div></div>
           <div><span class="text-xs opacity-60">Assigned Date</span><div>{{ a.assignedDate | date:'MMM d, y' }}</div></div>
-          @if (a.notes) { <div><span class="text-xs opacity-60">Notes</span><div>{{ a.notes }}</div></div> }
+          <div><span class="text-xs opacity-60">Job Description</span><div>{{ a.jobDescription }}</div></div>
           @for (d of a.details; track d.label) {
             <div><span class="text-xs opacity-60">{{ d.label }}</span><div>{{ d.value }}</div></div>
           }
+          <div>
+            <span class="text-xs opacity-60">Charge</span>
+            <div class="flex items-end gap-px h-8 bg-base-100 px-1" title="{{ a.charge }}">
+              @for (w of barcodeBars(a.charge); track $index) {
+                <div class="bg-base-content h-full" [style.width.px]="w"></div>
+              }
+            </div>
+            <div class="font-mono text-xs">{{ a.charge }}</div>
+          </div>
         </div>
       </div>
     }

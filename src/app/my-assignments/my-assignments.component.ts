@@ -55,4 +55,9 @@ export class MyAssignmentsComponent {
       return next;
     });
   }
+
+  /* demo only: purely decorative bar widths for the Charge barcode, derived from the charge digits */
+  barcodeBars(charge: string): number[] {
+    return charge.split('').map(ch => 1 + (ch.charCodeAt(0) % 4));
+  }
 }

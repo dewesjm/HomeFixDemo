@@ -19,7 +19,8 @@ export interface Assignment {
   expirationDate: string;   /* seeded 0-6 days out, so always within a week */
   assignedDate: string;
   assignedBy: string;
-  notes: string;
+  jobDescription: string;
+  charge: string;   /* demo only: barcoded charge number, shown as a barcode in the expanded row */
   /* demo only: role-specific fields eWICC (or whichever source system) would actually carry;
      we're not building those systems, just showing a few of the fields they'd hand off */
   details: { label: string; value: string }[];
@@ -46,6 +47,12 @@ const WTNS = ['WTN-101', 'WTN-102', 'WTN-103', 'WTN-201'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
+
+const JOB_DESCRIPTIONS = [
+  'Main deck framing, structural butt weld', 'Bulkhead penetration, pipe-to-shell weld', 'Hull plating seam, longitudinal joint',
+  'Foundation bracket, fillet weld to deck', 'Ballast tank baffle, structural tee joint', 'Piping spool, header to reducer',
+  'Superstructure frame, corner weld', 'Engine room grating support weld', 'Shell plate insert, repair weld',
+];
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -127,7 +134,8 @@ function generateAssignments(): Assignment[] {
       expirationDate: expires.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
       assignedBy: pick(ASSIGNEES),
-      notes: rand() < 0.3 ? pick(['Priority client', 'Rework required', 'Awaiting materials', '']) : '',
+      jobDescription: pick(JOB_DESCRIPTIONS),
+      charge: String(100000000 + Math.floor(rand() * 900000000)),
       details: primaryRole === 'Welding' ? [
         { label: 'Filler Metal Type', value: pick(FILLER_METAL_TYPES) },
         { label: 'Filler Metal Size', value: pick(FILLER_METAL_SIZES) },
