@@ -602,7 +602,29 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('final', 'utrt'),
     ndtStage('final', 'mtpt'),
     ndtStage('final', 'vt5x'),
-    { id: 'review', label: 'Review', required: true, role: 'Records Retention', fields: [
+    /* split into O63/O04 2026-09-22: O63 when the job has any SFFF/DSS-AAA/SS data, O04 otherwise
+       (see buildStages() Welding filter — exactly one of the two is included per job) */
+    { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'Records Retention', fields: [
+      { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
+      { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
+      { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
+      { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },
+      { key: 'verifyWeldType', label: 'Weld Type', type: 'checkbox' },
+      { key: 'verifyPipeSize', label: 'Pipe Size', type: 'checkbox' },
+      { key: 'verifyWallThickness', label: 'Wall Thickness', type: 'checkbox' },
+      { key: 'verifyMaterial1', label: 'Material Type 1', type: 'checkbox' },
+      { key: 'verifyMaterial2', label: 'Material Type 2', type: 'checkbox' },
+      { key: 'verifyMcl1', label: 'MIC 1', type: 'checkbox' },
+      { key: 'verifyMcl2', label: 'MIC 2', type: 'checkbox' },
+      { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
+      { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
+      { key: 'verifyNInd', label: 'Nuclear Indicator', type: 'checkbox' },
+      { key: 'verifyWps', label: 'WPS', type: 'checkbox' },
+      { key: 'verifyOrder', label: 'Order', type: 'checkbox' },
+      { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
+      { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
+    ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
+    { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'Records Retention', fields: [
       { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
       { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
       { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
@@ -888,6 +910,10 @@ export function buildStages(job: Job): WorkflowStage[] {
       if (t.id.endsWith('-utrt')) return hasUTorRT;
       if (t.id.endsWith('-mtpt')) return hasMTorPT;
       if (t.id.endsWith('-vt5x')) return hasVT;
+      /* Records Review splits in two: O63 when any of SFFF/DSS-AAA/SS is set on the job, O04 otherwise */
+      const hasO63Data = Boolean(job.sfff || job.dssAaa || job.ss);
+      if (t.id === 'review-o63') return hasO63Data;
+      if (t.id === 'review-o04') return !hasO63Data;
       return true;
     }).map(toStage);
   }
