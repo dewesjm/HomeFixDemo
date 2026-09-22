@@ -30,10 +30,6 @@
     }
   </select>
 
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export
-  </button>
-
   @if (canReleaseSelected()) {
     <button type="button" class="btn btn-sm btn-primary" (click)="releaseSelected()">
       <svg lucideCheck class="size-4"></svg> Release to Welding ({{ selectedIds().size }})
@@ -41,6 +37,10 @@
   }
 
   <span class="spacer"></span>
+
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
+  </button>
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
