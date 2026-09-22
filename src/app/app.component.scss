@@ -49,8 +49,11 @@
 .topnav-right { display: flex; align-items: center; gap: 0.75rem; flex-shrink: 0; }
 
 /* Admin dropdown */
-.dropdown-wrapper > details > summary { list-style: none; }
+.dropdown-wrapper { position: relative; }
+.dropdown-wrapper > details > summary { list-style: none; padding: 0.45rem 0.75rem; border-radius: 0.375rem; cursor: pointer; color: var(--app-text); display: flex; align-items: center; }
 .dropdown-wrapper > details > summary::-webkit-details-marker { display: none; }
+.dropdown-wrapper > details > summary:hover { background: var(--app-muted); }
+.topnav-right .dropdown-menu { left: auto; right: 0; }
 
 .dropdown-menu {
   position: absolute;

@@ -49,10 +49,10 @@
           </details>
         </li>
 
-        <!-- Weld Assignment group dropdown -->
+        <!-- Weld Dispatch group dropdown -->
         <li class="dropdown-wrapper">
           <details #waDetails (toggle)="onWaToggle($event)">
-            <summary title="Weld Assignment"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Weld Assignment</span></summary>
+            <summary title="Weld Dispatch"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Weld Dispatch</span></summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Active WICCs</a></li>
               <li><a class="menu-disabled"><svg lucidePlus class="size-4"></svg> Create WICC</a></li>
@@ -99,6 +99,7 @@
                     <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
                     <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
                     <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
+                    <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
                   </ul>
                 </details>
               </li>
@@ -108,6 +109,21 @@
       </ul>
     </div>
     <div class="topnav-right">
+      <!-- Quick Links: admin-configurable shortcuts, demo only -->
+      <div class="dropdown-wrapper">
+        <details #qlDetails (toggle)="onQlToggle($event)">
+          <summary title="Quick Links"><svg lucideExternalLink class="size-4"></svg></summary>
+          <ul class="dropdown-menu">
+            @for (link of quickLinks(); track link.id) {
+              <li><a [href]="link.url" target="_blank" rel="noopener"><svg lucideExternalLink class="size-4"></svg> {{ link.label }}</a></li>
+            } @empty {
+              <li class="menu-disabled"><svg lucideExternalLink class="size-4"></svg> No quick links configured</li>
+            }
+            <li class="dropdown-divider"></li>
+            <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Manage Quick Links</a></li>
+          </ul>
+        </details>
+      </div>
       <app-theme-picker />
     </div>
   </nav>

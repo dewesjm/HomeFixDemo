@@ -17,6 +17,7 @@ import { AdminBannerComponent } from './admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './admin-joint-designs/admin-joint-designs.component';
 import { AdminTeamsComponent } from './admin-teams/admin-teams.component';
 import { AdminMaterialTraceabilityComponent } from './admin-material-traceability/admin-material-traceability.component';
+import { AdminQuickLinksComponent } from './admin-quick-links/admin-quick-links.component';
 import { MyAssignmentsComponent } from './my-assignments/my-assignments.component';
 import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
 import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
@@ -44,6 +45,7 @@ export const routes: Routes = [
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'Joint Designs' },
   { path: 'admin/teams', component: AdminTeamsComponent, title: 'Teams & Permissions' },
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'Material Traceability' },
+  { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'Quick Links' },
 
   { path: 'jobs/:id', component: JobDetailComponent, title: 'Hull Details', canDeactivate: [canDeactivateGuard] },
 

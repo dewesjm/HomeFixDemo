@@ -12,8 +12,9 @@ import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
-    LucideShield, LucideLink, LucideUpload, LucideSearch
+    LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink
 } from '@lucide/angular';
+import { getQuickLinks, QuickLink } from './data/quick-links';
 
 // check for version updates periodically, only full refresh will check
 const UPDATE_POLL_MS = 5 * 60 * 1000;
@@ -27,7 +28,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
-  LucideShield, LucideLink, LucideUpload, LucideSearch
+  LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -44,6 +45,10 @@ export class AppComponent {
   @ViewChild('wpDetails') wpDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('qlDetails') qlDetails?: ElementRef<HTMLDetailsElement>;
+
+  /* demo only: admin-configurable shortcut links, shown in the top nav */
+  quickLinks = signal<QuickLink[]>(getQuickLinks());
 
   private suppressToggle = false;
 
@@ -51,7 +56,7 @@ export class AppComponent {
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
-    [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails].forEach(ref => {
+    [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails, this.qlDetails].forEach(ref => {
       if (ref && ref !== except) {
         ref.nativeElement.open = false;
         /* also collapse nested Admin submenus so they are closed next time */
@@ -65,6 +70,7 @@ export class AppComponent {
   onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
   onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
   onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
+  onQlToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.qlDetails)); }
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
@@ -83,14 +89,14 @@ export class AppComponent {
       const url = e.urlAfterRedirects || e.url;
       if (url.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
       else if (url.startsWith('/assignments') || url.startsWith('/history') || url.startsWith('/adaptive') || url.startsWith('/admin') || url.startsWith('/table')) this.activeSystem.set('Weld Record');
-      else if (url.startsWith('/weld-assignment')) this.activeSystem.set('Weld Assignment');
+      else if (url.startsWith('/weld-assignment')) this.activeSystem.set('Weld Dispatch');
       else if (url.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
     });
 
     /* also set on initial load */
     const initUrl = this.router.url;
     if (initUrl.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
-    else if (initUrl.startsWith('/weld-assignment')) this.activeSystem.set('Weld Assignment');
+    else if (initUrl.startsWith('/weld-assignment')) this.activeSystem.set('Weld Dispatch');
     else if (initUrl.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
     else this.activeSystem.set('Weld Record');
 
