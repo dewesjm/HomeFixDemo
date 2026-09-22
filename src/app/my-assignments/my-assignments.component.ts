@@ -73,8 +73,8 @@ export class MyAssignmentsComponent {
     '$': '010101000', '/': '010100010', '+': '010001010', '%': '000101010',
     '*': '010010100',
   };
-  private static readonly NARROW_PX = 3;
-  private static readonly WIDE_PX = 9;
+  private static readonly NARROW_PX = 1.5;
+  private static readonly WIDE_PX = 4.5;
 
   /* real Code 39 bar/space encoding, framed by start/stop '*' characters, sized wide enough
      for a handheld scanner to read off the screen */

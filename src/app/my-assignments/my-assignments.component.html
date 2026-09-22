@@ -32,7 +32,7 @@
 <div class="overflow-x-auto">
 <div class="flex flex-col" style="min-width: 62rem">
   <!-- Header -->
-  <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_1fr_11rem_9rem_7rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+  <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_7rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
     <div></div>
     <div>XREFID</div>
     <div>Hull</div>
@@ -49,7 +49,7 @@
 
   <!-- Rows -->
   @for (a of assignments(); track a.id) {
-    <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_1fr_11rem_9rem_7rem_7rem_6rem_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
+    <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_7rem_7rem_6rem_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
          [class.border-b-0]="expanded().has(a.id)"
          (click)="toggle(a.id)">
       @if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4 opacity-60"></svg> } @else { <svg lucideChevronRight class="size-4 opacity-60"></svg> }
@@ -85,12 +85,14 @@
           }
           <div>
             <span class="text-xs opacity-60">Charge</span>
-            <div class="flex items-stretch h-16 bg-base-100 px-8" title="{{ a.charge }}">
-              @for (el of barcodeElements(a.charge); track $index) {
-                <div class="h-full" [class.bg-base-content]="el.bar" [style.width.px]="el.width"></div>
-              }
+            <div class="flex flex-col items-center">
+              <div class="flex items-stretch h-8 bg-base-100 px-4" title="{{ a.charge }}">
+                @for (el of barcodeElements(a.charge); track $index) {
+                  <div class="h-full" [class.bg-base-content]="el.bar" [style.width.px]="el.width"></div>
+                }
+              </div>
+              <div class="font-mono text-xs mt-1 text-center">{{ a.charge }}</div>
             </div>
-            <div class="font-mono text-xs mt-1">{{ a.charge }}</div>
           </div>
         </div>
       </div>
