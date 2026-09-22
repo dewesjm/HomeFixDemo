@@ -1,5 +1,6 @@
 /* mock Job model + seeded generator, stands in for a backend */
 import { TECHNICIAN_NAMES } from './people';
+import { CHARACTERISTIC_CODES } from './characteristics';
 
 export interface Job {
   id: string;          /* internal key, always present — never shown; the real (sometimes-missing) source
@@ -89,7 +90,10 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
   `${hull}-${COMPARTMENTS[(i * 7) % COMPARTMENTS.length]}-D${String(1 + (i * 13) % 12).padStart(2, '0')}`;
-const ATTR_CODES = ['AB', 'CD', 'EF', 'GH', 'JK', 'MN', 'PQ', 'RS', 'TU', 'VW', 'XY'];
+/* real codes from CHARACTERISTIC_CODES (data/characteristics.ts) so Joint Details can show
+   "code description" instead of a bare code; the old ['AB','CD',...] pool never matched that
+   lookup table, so descriptions never resolved */
+const ATTR_CODES = CHARACTERISTIC_CODES.map(c => c.code);
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;

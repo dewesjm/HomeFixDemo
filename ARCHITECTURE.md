@@ -23,7 +23,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
 | **Stage** | One unit of a routing (`WorkflowStage`): Fit, Tack, Root, NDT, … |
 | **GWP** | Label of the `weldProcedure` field (formerly "Weld Procedure"). |
-| **Nuclear Indicator** | Label of `job.nInd` (1/2/3). |
+| **Nuclear Indicator** | Label of `job.nInd` (1/2/3). Joint Details shows a hover tooltip on the value (`N_IND_MEANINGS` in `joint-details.component.ts`): 1 = "N 250-1500-1", 2 = "N TP278", 3 = "Non". |
 
 ## Build & checks
 
@@ -123,7 +123,9 @@ src/app/
 
 ### Welding stages (in order)
 
-1. Pre-Fit → 2. Fit → 3. Tack → 4. Fit-Up Insp → 5. Fit-Up Release → 6. Deferred Tack → 7. Root → 8. Root NDT UT/RT → 9. Root NDT MT/PT → 10. Root NDT VT/5X → 11. Layer → 12. Layer NDT UT/RT → 13. Layer NDT VT/5X → 14. Layer NDT MT/PT → 15. Final Weld → 16. Final NDT UT/RT → 17. Final NDT MT/PT → 18. Final NDT VT/5X → 19. Review → 20. Sold
+1. Pre-Fit → 2. Fit → 3. Tack → 4. Fit-Up Insp → 5. Fit-Up Release → 6. Deferred Tack → 7. Root → 8. Root NDT UT/RT → 9. Root NDT MT/PT → 10. Root NDT VT/5X → 11. Layer → 12. Layer NDT UT/RT → 13. Layer NDT VT/5X → 14. Layer NDT MT/PT → 15. Final Weld → 16. Final NDT UT/RT → 17. Final NDT MT/PT → 18. Final NDT VT/5X → 19. **O63 Records Review** *or* **O04 Records Review** → 20. Sold
+
+Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.ts`, Welding filter) from the job's own data — never both: **O63** (`review-o63`) when any of `job.sfff`, `job.dssAaa`, `job.ss` is set; **O04** (`review-o04`) otherwise. Split from a single `review` stage 2026-09-22. Both share identical fields/behavior (verification grid, `rejectToStage: 'final-ndt-vt5x'`) — only the id/label differ.
 
 ## Screens
 
@@ -138,11 +140,11 @@ src/app/
 
 ### Job detail (`job-detail`)
 - **Routing bar** — numbered pills, horizontal scroll, auto-centers the selected stage. Active = `--color-success`, done = `--color-info`.
-- **Joint details** — 3 columns (stack on mobile): job info, joining/join-to, NDT data (RT/NDT/UT/VT as `X` or `5X`); "Show more" reveals additional data and attribute codes.
+- **Joint details** — 3 columns (stack on mobile): job info, joining/join-to, NDT data (RT/NDT/UT/VT as `X` or `5X`); "Show more" reveals additional data and attribute codes. Attribute codes show as `code description` (`attrCodeDisplay()`, looked up via `characteristicLabel()` in `data/characteristics.ts`, the same table Admin > Attribute Codes manages) — fixed 2026-09-22: `job.attributeCode1-4`'s seed pool used to be unrelated 2-letter codes (`AB`, `CD`, …) that never matched `CHARACTERISTIC_CODES`' real codes, so descriptions could never resolve; `ATTR_CODES` in `jobs.ts` now reuses `CHARACTERISTIC_CODES`' own codes.
 - **Fabrication** (cross-stage) — Location (Ship adds Deck/Frame/P-S-CL/Usage with red `*`), MIC 1/2, Drawing Rev, Actual Thickness, WTN, Revised Joint Design.
 - **Signoff panel** (below).
 - **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`).
-- **Records Retention Review** (`review` stage, role **Records Retention** — renamed from "Records" 2026-09-21) — verification grid + immutable `signoffRecords` history table.
+- **Records Retention Review** (`review-o63` / `review-o04` stages — split 2026-09-22, see "Welding stages" above; role **Records Retention**, renamed from "Records" 2026-09-21) — verification grid + immutable `signoffRecords` history table.
 - **Sold** — once signed all stages lock; only deprogress is allowed (Work History, most recent signoff per job).
 
 ### Signoff panel (`signoff-panel`)
