@@ -11,8 +11,15 @@ export interface Assignment {
   joint: string;
   trade: string;
   routing: string;
-  location: string;           /* shop, same list as Fabrication's Location field */
+  location: string;           /* shop, same list as Fabrication's Location field; 'Ship' when there's no XREFID (see below) */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
+  /* shipboard location — only set when jobId is blank: an XREFID-less assignment isn't tracked
+     against a shop/bay, it's physically aboard the ship, so it's found by deck/frame position instead */
+  deck: string;
+  frame: string;
+  ps: string;      /* Port / Starboard / CL */
+  cl: string;      /* offset from centerline */
+  usage: string;   /* compartment usage/purpose */
   assignedRoles: string[];
   source: string;   /* demo only: which external system the assignment came from, by role */
   dueDate: string;
@@ -47,6 +54,13 @@ const WTNS = ['07:11.5-3', '07:12.0-1', '08:14.2-2', '09:10.8-4'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
+
+/* shipboard location, used instead of shop/bay when there's no XREFID */
+const DECKS = ['01 Level', '02 Level', '03 Level', 'Main Deck', '1st Platform', '2nd Platform', '3rd Platform', 'Hold'];
+const FRAMES = ['Fr 12', 'Fr 26', 'Fr 45', 'Fr 60', 'Fr 88', 'Fr 104', 'Fr 130', 'Fr 156', 'Fr 172'];
+const PS_OPTIONS = ['Port', 'Starboard', 'CL'];
+const CL_OFFSETS = ['On CL', "2'-0\"", "4'-6\"", "6'-3\"", "8'-9\"", "11'-0\""];
+const USAGE_POOL = ['Void', 'Fuel Oil Tank', 'Ballast Tank', 'Machinery Room', 'Berthing', 'Passageway', 'Magazine', 'Sonar Dome', 'Pump Room'];
 
 const JOB_DESCRIPTIONS = [
   'Main deck framing, structural butt weld', 'Bulkhead penetration, pipe-to-shell weld', 'Hull plating seam, longitudinal joint',
@@ -116,18 +130,24 @@ function generateAssignments(): Assignment[] {
     const expires = new Date(Date.now() + ((i * 3) % 7) * 86400000);
     const assignedRoles = routing === 'Fit-Up Insp' ? [pick(['Inspector', 'Foreman'])] : (rolesByRouting[routing] || ['View']);
     const primaryRole = assignedRoles[0];
+    const xrefidBlank = i % 4 === 0;   /* XREFID blank ~25% of the time, same as Weld Planning's records */
 
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
       assignmentNumber: String(i + 1).padStart(6, '0'),
-      jobId: i % 4 === 0 ? '' : job.id,   /* XREFID blank ~25% of the time, same as Weld Planning's records */
+      jobId: xrefidBlank ? '' : job.id,
       hull: job.hull,
       drawing: job.drawing,
       joint: job.joint,
       trade: job.trade,
       routing,
-      location: pick(shops),
-      specificLocation: pick(SPECIFIC_LOCATIONS),
+      location: xrefidBlank ? 'Ship' : pick(shops),
+      specificLocation: xrefidBlank ? '' : pick(SPECIFIC_LOCATIONS),
+      deck: xrefidBlank ? pick(DECKS) : '',
+      frame: xrefidBlank ? pick(FRAMES) : '',
+      ps: xrefidBlank ? pick(PS_OPTIONS) : '',
+      cl: xrefidBlank ? pick(CL_OFFSETS) : '',
+      usage: xrefidBlank ? pick(USAGE_POOL) : '',
       assignedRoles,
       source: pick(SOURCES_BY_ROLE[primaryRole] ?? ['ERP']),
       dueDate: due.toISOString().slice(0, 10),
@@ -142,6 +162,25 @@ function generateAssignments(): Assignment[] {
         { label: 'WTN', value: pick(WTNS) },
       ] : [],
     });
+  }
+
+  /* guarantee at least one XREFID-blank (ship-location) example lands near the top of the
+     default My Assignments view (Welding role, sorted by due date) */
+  const weldingBlankExists = assignments.some(a => a.assignedRoles.includes('Welding') && !a.jobId);
+  if (!weldingBlankExists) {
+    const earliestWelding = [...assignments]
+      .filter(a => a.assignedRoles.includes('Welding'))
+      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+    if (earliestWelding) {
+      earliestWelding.jobId = '';
+      earliestWelding.location = 'Ship';
+      earliestWelding.specificLocation = '';
+      earliestWelding.deck = pick(DECKS);
+      earliestWelding.frame = pick(FRAMES);
+      earliestWelding.ps = pick(PS_OPTIONS);
+      earliestWelding.cl = pick(CL_OFFSETS);
+      earliestWelding.usage = pick(USAGE_POOL);
+    }
   }
 
   return assignments.sort((a, b) => a.dueDate.localeCompare(b.dueDate));

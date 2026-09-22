@@ -14,14 +14,14 @@
   }
   <span class="flex-1"></span>
   <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">
-    <select class="select select-sm select-bordered w-40"
+    <span class="text-xs opacity-60 whitespace-nowrap">Demo role:</span>
+    <select class="select select-sm select-bordered select-error w-40"
             [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
       <option value="">All roles</option>
       @for (r of roles; track r) {
         <option [value]="r">{{ r }}</option>
       }
     </select>
-    <span class="badge badge-ghost badge-xs whitespace-nowrap">Demo only</span>
   </div>
   <input class="input input-sm input-bordered w-48"
          placeholder="Filter…"
@@ -82,6 +82,13 @@
           <div><span class="text-xs opacity-60">Job Description</span><div>{{ a.jobDescription }}</div></div>
           @for (d of a.details; track d.label) {
             <div><span class="text-xs opacity-60">{{ d.label }}</span><div>{{ d.value }}</div></div>
+          }
+          @if (!a.jobId) {
+            <div><span class="text-xs opacity-60">Deck</span><div>{{ a.deck }}</div></div>
+            <div><span class="text-xs opacity-60">Frame</span><div>{{ a.frame }}</div></div>
+            <div><span class="text-xs opacity-60">P/S</span><div>{{ a.ps }}</div></div>
+            <div><span class="text-xs opacity-60">CL</span><div>{{ a.cl }}</div></div>
+            <div><span class="text-xs opacity-60">Usage</span><div>{{ a.usage }}</div></div>
           }
           <div>
             <span class="text-xs opacity-60">Charge</span>
