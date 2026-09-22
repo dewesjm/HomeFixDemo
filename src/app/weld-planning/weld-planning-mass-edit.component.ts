@@ -2,7 +2,7 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { LucideSave, LucideX, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle } from '@lucide/angular';
+import { LucideSave, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
 import {
@@ -47,7 +47,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
 @Component({
   selector: 'app-weld-planning-mass-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideX, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle],
+  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle],
   template: `
     <div>
       <div class="page-header">

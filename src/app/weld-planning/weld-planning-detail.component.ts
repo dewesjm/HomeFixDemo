@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { LucidePencil, LucideArrowLeft } from '@lucide/angular';
 
 import { getWeldJoint, NDT_FIELDS, type WeldJoint } from './weld-planning.data';
@@ -8,7 +8,7 @@ import { getWeldJoint, NDT_FIELDS, type WeldJoint } from './weld-planning.data';
 @Component({
   selector: 'app-weld-planning-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, LucidePencil, LucideArrowLeft],
+  imports: [CommonModule, LucidePencil, LucideArrowLeft],
   templateUrl: './weld-planning-detail.component.html'
 })
 export class WeldPlanningDetailComponent implements OnInit {
