@@ -84,7 +84,13 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     const isRejectable = !!stage.rejectToStage;
     const decision: 'sat' | 'unsat' | null = isRejectable ? (rand() < 0.85 ? 'sat' : 'unsat') : null;
     const inputs: Record<string, string> = {};
-    for (const f of stage.fields) inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
+    /* Fit-Up Insp can't actually be signed off with any box unchecked (signBlockers() in
+       joint-page.component.ts requires every checkbox = 'yes'), so don't fabricate a blank/'No' here */
+    const forceChecked = stage.id === 'fitup-insp';
+    for (const f of stage.fields) {
+      if (forceChecked && f.type === 'checkbox') inputs[f.key] = 'yes';
+      else inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
+    }
     const signoffInputs: Record<string, string> = {};
     for (const f of stage.signoffFields) signoffInputs[f.key] = f.key === 'inspectorName' ? who : fieldValue(f, rand);
     const view: WorkflowStage = {
