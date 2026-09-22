@@ -8,10 +8,11 @@ import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter,
 import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
+import { ConfirmService } from '../../shared/confirm.service';
 
 import { JOBS, Job } from '../../data/jobs';
 import { WorkflowService } from '../../services/workflow.service';
-import { HistoryEntry } from '../../data/workflow';
+import { HistoryEntry, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
@@ -43,6 +44,7 @@ export class WorkHistoryComponent {
   private wfService = inject(WorkflowService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private confirmSvc = inject(ConfirmService);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   back() { this.router.navigate(['/table']); }
@@ -56,8 +58,6 @@ export class WorkHistoryComponent {
   /* job filter: matches XREFID, drawing, joint or order */
   jobQuery = signal<string>('');
   expanded = signal<ReadonlySet<string>>(new Set());
-  deprogressTarget = signal<string | null>(null);
-  deprogressComment = signal('');
 
   table = new TableState<ActivityRow>(
     ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
@@ -70,11 +70,28 @@ export class WorkHistoryComponent {
     }
   );
 
+  /* canonical stage order (first appearance across every trade's template), so the routing
+     filter reads like the actual workflow sequence instead of alphabetically; anything not a
+     real stage (e.g. 'All stages complete') sorts to the end */
+  private routingOrder = computed(() => {
+    const order = new Map<string, number>();
+    let i = 0;
+    for (const stages of Object.values(getTemplates())) {
+      for (const s of stages) {
+        const label = s.displayName || s.label;
+        if (!order.has(label)) order.set(label, i++);
+      }
+    }
+    return order;
+  });
+
   /* distinct routing values among the pre-filtered rows, for the Routing column's multiselect */
-  routingOptions = computed(() =>
-    [...new Set(this.preFiltered().map(r => r.routing))]
-      .sort()
-      .map(s => ({ label: s, value: s })));
+  routingOptions = computed(() => {
+    const order = this.routingOrder();
+    return [...new Set(this.preFiltered().map(r => r.routing))]
+      .sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity) || a.localeCompare(b))
+      .map(s => ({ label: s, value: s }));
+  });
 
   constructor() {
     this.table.setPageSize(15);
@@ -212,17 +229,16 @@ export class WorkHistoryComponent {
     const job = this.jobById.get(jobId);
     if (!job) return;
     this.wfService.goBackRouting(job, comment);
-    this.cancelDeprogress();
   }
 
-  confirmDeprogress(jobId: string) {
-    if (!this.deprogressComment().trim()) return;
-    this.goBack(jobId, this.deprogressComment().trim());
-  }
-
-  cancelDeprogress() {
-    this.deprogressTarget.set(null);
-    this.deprogressComment.set('');
+  deprogress(jobId: string) {
+    this.confirmSvc.confirm({
+      header: 'Deprogress',
+      message: 'This reverses the job\'s most recent sign-off. Enter a reason for the record.',
+      acceptLabel: 'Deprogress',
+      textInput: { label: 'Reason for deprogress', placeholder: 'Reason for deprogress…' },
+      accept: (reason) => { if (reason?.trim()) this.goBack(jobId, reason.trim()); }
+    });
   }
 
   clear() {
