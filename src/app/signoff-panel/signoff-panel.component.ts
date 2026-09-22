@@ -154,6 +154,17 @@ export class SignoffPanelComponent {
     return isFieldLocked(this.stage(), f);
   }
 
+  isActual(f: StageField): boolean {
+    return f.key === 'actualPh' || f.key === 'actualIp';
+  }
+
+  /* strips anything but digits as the user types/pastes (Actual PH/IP only — whole numbers, no
+     minus, decimal or scientific notation, unlike a native number input) */
+  digitsOnly(input: HTMLInputElement) {
+    const clean = input.value.replace(/[^0-9]/g, '');
+    if (clean !== input.value) input.value = clean;
+  }
+
   onSelect(f: StageField, value: string | null) {
     if (f.key === 'performed5x') this.ctx().on5xChange(this.stage(), value ?? '');
     else this.ctx().stageSelectChange(this.stage(), f, value);

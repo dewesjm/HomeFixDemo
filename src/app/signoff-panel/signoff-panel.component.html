@@ -572,6 +572,7 @@
         <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
                [disabled]="!fieldsEditable() || isLocked(f)"
                [ngModel]="stage().inputs[f.key]"
+               (input)="isActual(f) ? digitsOnly($any($event.target)) : null"
                (blur)="ctx().stageInputBlur(stage(), f, $any($event.target).value)" />
       }
     </label>
