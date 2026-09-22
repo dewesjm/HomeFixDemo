@@ -25,6 +25,8 @@ import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detai
 import { WeldPlanningAdminComponent } from './weld-planning/weld-planning-admin.component';
 import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mass-edit.component';
 import { WeldPlanningSearchComponent } from './weld-planning/weld-planning-search.component';
+import { ProcedureLookupComponent } from './weld-engineering/procedure-lookup/procedure-lookup.component';
+import { ProcedureDetailComponent } from './weld-engineering/procedure-detail/procedure-detail.component';
 
 
 export const routes: Routes = [
@@ -57,6 +59,10 @@ export const routes: Routes = [
   { path: 'weld-planning/import', component: WeldPlanningMassEditComponent, title: 'EWP — Mass Import Joints' },
   { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'EWP — Joint Details' },
   { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'EWP — Edit Joint' },
+
+  /* ── Weld Engineering routes (separate system) ── */
+  { path: 'weld-engineering', component: ProcedureLookupComponent, title: 'EWE — Procedure Lookup' },
+  { path: 'weld-engineering/procedures/:id', component: ProcedureDetailComponent, title: 'EWE — Procedure' },
 
   { path: '**', redirectTo: 'pipe-search' }
 ];

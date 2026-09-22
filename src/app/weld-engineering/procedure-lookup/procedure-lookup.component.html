@@ -1,0 +1,53 @@
+<!-- Procedure Lookup: ~100 rows, all shown at once, sortable, keyword search. -->
+<div class="table-page-wrap">
+<div class="page-header">
+  <h2 class="section-title">Procedure Lookup</h2>
+  <span class="spacer"></span>
+</div>
+
+<div class="facet-row">
+  <span class="text-sm" style="color: var(--app-text-muted)">{{ table.sorted().length }} procedures</span>
+  <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search procedures…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
+  </label>
+</div>
+
+<div style="overflow-x: auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th appSortHeader class="min-w-16" [table]="table" field="id" label="Procedure" filter="text"></th>
+        <th appSortHeader class="min-w-32" [table]="table" field="title" label="Title" filter="text"></th>
+        <th appSortHeader class="min-w-20" [table]="table" field="status" label="Status"
+            [filter]="'select'" [options]="statusOptions"></th>
+        <th appSortHeader class="min-w-24" [table]="table" field="weldProcess" label="Weld Process"></th>
+        <th appSortHeader class="min-w-28" [table]="table" field="wtnsText" label="WTNs" filter="text"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.sorted(); track row.id) {
+        <tr class="cursor-pointer" (click)="openProcedure(row)">
+          <td class="font-semibold">
+            <svg lucideFileText class="size-3.5 opacity-60" style="display: inline; margin-right: 0.25rem"></svg>
+            {{ row.id }}
+          </td>
+          <td>{{ row.title }}</td>
+          <td class="capitalize">{{ row.status }}</td>
+          <td>{{ row.weldProcess }}</td>
+          <td>{{ row.wtnsText }}</td>
+        </tr>
+      } @empty {
+        <tr><td colspan="5" class="empty">No procedures found.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+</div>
