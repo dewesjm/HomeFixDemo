@@ -376,12 +376,16 @@ input[type="number"] { -moz-appearance: textfield; }
 .opacity-60 { opacity: 0.8; }
 .opacity-70 { opacity: 0.85; }
 
-/* locked / read-only controls: keep the value readable; the not-allowed cursor + tinted fill signal "locked" */
+/* locked / read-only controls: keep the value readable; the not-allowed cursor + tinted fill +
+   muted background signal "locked" consistently for every field type. Selects need the explicit
+   background because our unconditional .select border rule above (for dark-mode visibility) would
+   otherwise leave a disabled dropdown looking just as crisp/editable as an active one. */
 .input:is(:disabled, [disabled]),
 .select:is(:disabled, [disabled]),
 .textarea:is(:disabled, [disabled]) {
   color: color-mix(in oklch, var(--color-base-content) 85%, transparent);
   -webkit-text-fill-color: currentColor;
+  background-color: var(--app-muted);
   cursor: not-allowed;
 }
 .checkbox:disabled, .radio:disabled { opacity: 0.55; }
