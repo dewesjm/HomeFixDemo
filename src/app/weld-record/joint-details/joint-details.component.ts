@@ -1,0 +1,54 @@
+import { Component, input, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
+import { Job } from '../../data/jobs';
+import { TooltipDirective } from '../../shared/tooltip.directive';
+import { characteristicLabel } from '../../data/characteristics';
+
+/* what each Nuclear Indicator code means, shown as a hover tooltip since the raw digit alone isn't self-explanatory */
+const N_IND_MEANINGS: Record<string, string> = {
+  '1': 'N 250-1500-1',
+  '2': 'N TP278',
+  '3': 'Non',
+};
+
+@Component({
+  selector: 'app-joint-details',
+  standalone: true,
+  imports: [CommonModule, LucideInfo, LucideChevronDown, LucideChevronUp, TooltipDirective],
+  templateUrl: './joint-details.component.html'
+})
+export class JointDetailsComponent {
+  job = input.required<Job>();
+  currentRouting = input.required<string>();
+
+  showAudit = signal(false);
+
+  nIndTooltip(): string {
+    return N_IND_MEANINGS[this.job().nInd] ?? '';
+  }
+
+  /* "AB123 Description" when the code is known, otherwise just the bare code */
+  attrCodeDisplay(code: string): string {
+    if (!code) return '';
+    const desc = characteristicLabel(code);
+    return desc ? `${code} ${desc}` : code;
+  }
+
+  ndtLabel(method: string): string {
+    const ndt = (this.job().ndt || '').toUpperCase();
+    const has = (m: string) => ndt.includes(m);
+    if (method === 'rtRoot' || method === 'rtFinal') return has('RT') ? 'X' : '—';
+    if (method === 'ut') return has('UT') ? 'X' : '—';
+    if (method === 'vt') {
+      if (has('5X')) return '5X';
+      return has('VT') || has('VISUAL') ? 'X' : '—';
+    }
+    if (method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
+      if (has('5X')) return '5X';
+      if (has('UT') || has('RT') || has('MT') || has('PT') || has('VISUAL') || has('VT')) return 'X';
+      return '—';
+    }
+    return '—';
+  }
+}
