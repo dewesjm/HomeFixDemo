@@ -20,20 +20,29 @@ export interface Assignment {
   assignedDate: string;
   assignedBy: string;
   notes: string;
+  /* demo only: role-specific fields eWICC (or whichever source system) would actually carry;
+     we're not building those systems, just showing a few of the fields they'd hand off */
+  details: { label: string; value: string }[];
 }
 
-/* demo only: shows that different roles get assigned from different upstream systems */
-export const SOURCE_BY_ROLE: Record<string, string> = {
-  'Welding': 'EWICC',
-  'Fitting': 'SWIMS',
-  'Foreman': 'EWR',
-  'Inspector': 'SAIL',
-  'NQC Inspector': 'NCS',
-  'Records Retention': 'EWR',
-  'View': 'ERP',
+/* demo only: shows that different roles get assigned from different upstream systems.
+   Inspector and NQC Inspector draw from either of two systems, so each shows a mix. */
+export const SOURCES_BY_ROLE: Record<string, string[]> = {
+  'Fitting': ['SWIMS'],
+  'Welding': ['EWICC'],
+  'Foreman': ['EWR'],
+  'Inspector': ['SAIL', 'NCS'],
+  'NQC Inspector': ['SAIL', 'NCS'],
+  'Records Retention': ['EWR'],
+  'View': ['ERP'],
 };
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
+
+/* demo only: same option lists Weld Planning's welding stages use, standing in for what eWICC would send over */
+const FILLER_METAL_TYPES = ['E6010', 'E6013', 'E7018', 'ER70S-6', 'ER80S-D2', 'ENiCrMo-3'];
+const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];
+const WTNS = ['WTN-101', 'WTN-102', 'WTN-103', 'WTN-201'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
@@ -56,7 +65,7 @@ function generateAssignments(): Assignment[] {
     'Pre-Fit': ['NQC Inspector'],
     'Fit': ['Fitting'],
     'Tack': ['Welding'],
-    'Fit-Up Insp': ['Inspector', 'Foreman'],
+    /* picked per assignment below, split between the two roles rather than both at once */
     'Fit-Up Release': ['Foreman'],
     'Deferred Tack': ['Welding'],
     'Root': ['Welding'],
@@ -98,10 +107,12 @@ function generateAssignments(): Assignment[] {
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
     const expires = new Date(Date.now() + ((i * 3) % 7) * 86400000);
+    const assignedRoles = routing === 'Fit-Up Insp' ? [pick(['Inspector', 'Foreman'])] : (rolesByRouting[routing] || ['View']);
+    const primaryRole = assignedRoles[0];
 
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
-      assignmentNumber: String(i + 1).padStart(3, '0'),
+      assignmentNumber: String(i + 1).padStart(6, '0'),
       jobId: i % 4 === 0 ? '' : job.id,   /* XREFID blank ~25% of the time, same as Weld Planning's records */
       hull: job.hull,
       drawing: job.drawing,
@@ -110,13 +121,18 @@ function generateAssignments(): Assignment[] {
       routing,
       location: pick(shops),
       specificLocation: pick(SPECIFIC_LOCATIONS),
-      assignedRoles: rolesByRouting[routing] || ['View'],
-      source: SOURCE_BY_ROLE[(rolesByRouting[routing] || ['View'])[0]] ?? 'ERP',
+      assignedRoles,
+      source: pick(SOURCES_BY_ROLE[primaryRole] ?? ['ERP']),
       dueDate: due.toISOString().slice(0, 10),
       expirationDate: expires.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
       assignedBy: pick(ASSIGNEES),
       notes: rand() < 0.3 ? pick(['Priority client', 'Rework required', 'Awaiting materials', '']) : '',
+      details: primaryRole === 'Welding' ? [
+        { label: 'Filler Metal Type', value: pick(FILLER_METAL_TYPES) },
+        { label: 'Filler Metal Size', value: pick(FILLER_METAL_SIZES) },
+        { label: 'WTN', value: pick(WTNS) },
+      ] : [],
     });
   }
 

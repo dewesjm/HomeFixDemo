@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone } from '@lucide/angular';
+import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 
 import { ASSIGNMENTS, Assignment } from '../data/assignments';
 import { JOBS } from '../data/jobs';
@@ -11,7 +11,7 @@ import { bannerFor } from '../data/banner';
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone],
+  imports: [CommonModule, FormsModule, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {
@@ -20,8 +20,9 @@ export class MyAssignmentsComponent {
   keyword = signal('');
   banner = signal(bannerFor('all'));
 
-  /* demo only: lets you show that different roles' assignments come from different source systems */
-  roleFilter = signal('');
+  /* demo only: lets you show that different roles' assignments come from different source systems;
+     defaults to Welding since that's the role with the most to show */
+  roleFilter = signal('Welding');
   roles = [...new Set(ASSIGNMENTS.flatMap(a => a.assignedRoles))].sort();
 
   assignments = computed(() => {
@@ -43,5 +44,15 @@ export class MyAssignmentsComponent {
   openDetails(a: Assignment) {
     const job = JOBS.find(j => j.hull === a.hull && j.drawing === a.drawing && j.joint === a.joint);
     if (job) this.router.navigate(['/jobs', job.id], { queryParams: { from: 'assignments' } });
+  }
+
+  /* row click expands/collapses; the Details button (own click, stopped from bubbling) navigates */
+  expanded = signal<ReadonlySet<string>>(new Set());
+  toggle(id: string) {
+    this.expanded.update(s => {
+      const next = new Set(s);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
   }
 }
