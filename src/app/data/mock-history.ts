@@ -1,7 +1,7 @@
 /* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
 import { stampWho } from './people';
-import { HistoryEntry, StageField, WorkflowStage, STAGE_TEMPLATES, snapshotInputs, fieldsShown } from './workflow';
+import { HistoryEntry, StageField, WorkflowStage, buildStages, snapshotInputs, fieldsShown } from './workflow';
 
 export interface MockActivity {
   jobId: string;
@@ -61,7 +61,9 @@ function fieldValue(f: StageField, rand: () => number): string {
 
 /* short believable activity sequence for one job */
 function activityForJob(job: Job, rand: () => number, now: number): MockActivity[] {
-  const stages = STAGE_TEMPLATES[job.trade];
+  /* the job's real routing (buildStages), not the raw trade template — that still carries the
+     old generic Prep/Handover stages (Customer walkthrough, etc.) that Welding never uses */
+  const stages = buildStages(job);
   const who = job.technician;
   const out: MockActivity[] = [];
 
@@ -85,14 +87,13 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     const inputs: Record<string, string> = {};
     for (const f of stage.fields) inputs[f.key] = rand() < 0.85 ? fieldValue(f, rand) : '';
     const signoffInputs: Record<string, string> = {};
-    for (const f of stage.signoffFields ?? []) signoffInputs[f.key] = f.key === 'inspectorName' ? who : fieldValue(f as StageField, rand);
-    const view = {
-      id: stage.id, inputs, signoffInputs, routingOptions: stage.routingOptions, routingType: 'standard',
-      inspectionType: stage.routingOptions?.[0]?.value ?? '', result: decision === 'ACCEPT' ? 'sat' : 'unsat',
-      decisionLabel: stage.decisionLabel, fields: stage.fields,
-    } as unknown as WorkflowStage;
+    for (const f of stage.signoffFields) signoffInputs[f.key] = f.key === 'inspectorName' ? who : fieldValue(f, rand);
+    const view: WorkflowStage = {
+      ...stage, inputs, signoffInputs, result: decision === 'ACCEPT' ? 'sat' : 'unsat',
+      inspectionType: stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '',
+    };
     push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision,
-      snapshotInputs(view, fieldsShown(view), stage.signoffFields ?? []));
+      snapshotInputs(view, fieldsShown(view), stage.signoffFields));
   }
 
   const restRouting = routingAfter(signCount - 1);

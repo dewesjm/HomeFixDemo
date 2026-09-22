@@ -74,7 +74,8 @@ src/app/
     jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), addTestJob()
     workflow.ts          Stage templates, types, buildStages(), seededWorkflow(), FABRICATION_FIELDS, ROLES
     assignments.ts       Assignment model + seeded generator (36)
-    mock-history.ts      Seeded activity entries
+    mock-history.ts      Seeded activity entries; walks the job's real routing (`buildStages()`), not the raw trade
+                         template — that still carries the old generic Prep/Handover stages, unused by Welding
     filter-schema.ts     Schema-driven filter engine for Advanced Search
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     storage-keys.ts      Every localStorage key + clearStaleCaches()
