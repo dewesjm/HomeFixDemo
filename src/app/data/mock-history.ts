@@ -25,6 +25,14 @@ const FILES = [
   'weld-map.pdf', 'site-photo.png', 'nameplate.jpg'
 ];
 
+const FREEFORM_NOTES = [
+  'Weld completed per WPS requirements.',
+  'NDT report attached — no indications found.',
+  'Fit-up verified against drawing revision.',
+  'Preheat temperature recorded before welding.',
+  'Post-weld visual inspection passed.'
+];
+
 /* plausible recorded value for a stage field */
 function fieldValue(f: StageField, rand: () => number): string {
   if (f.type === 'select' && f.options?.length) {
@@ -37,7 +45,11 @@ function fieldValue(f: StageField, rand: () => number): string {
     const n = 1 + Math.floor(rand() * 120);
     return f.unit ? `${n} ${f.unit}` : `${n}`;
   }
-  return 'recorded';
+  if (f.key === 'comments' || f.key === 'notes') {
+    return FREEFORM_NOTES[Math.floor(rand() * FREEFORM_NOTES.length)];
+  }
+  /* no plausible canned value for this field type — leave it blank rather than fabricate one */
+  return '';
 }
 
 /* short believable activity sequence for one job */
