@@ -140,7 +140,7 @@ export class TableSearchComponent {
       // Filter jobs where the current unsignoff'd routing has matching role
       rows = JOBS.filter(j => {
         const wf = this.wfService.workflowFor(j)();
-        const current = wf.stages.find(s => !s.signed);
+        const current = wf.stages.find(s => s.required && !s.signed);   /* same "current routing" as the routing label */
         const stageRoles = (current?.role ?? '').split('|');
         return stageRoles.includes(role);
       });

@@ -574,7 +574,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
     ],
       signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
-    { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Welding', fields: [], signoffFields: [] },
+    { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
     /* same form as Tack; only its position differs (after Fit-Up Insp) */
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
       { label: 'Tack', value: 'standard', default: true },
@@ -1006,7 +1006,10 @@ function seededFieldValue(f: StageField, rand: () => number): string {
 export function seededWorkflow(job: Job): JobWorkflow {
   const wf = newWorkflow(job);
   const total = wf.stages.length;
-  const k = signedStageCount(job, total);
+  /* a handful of jobs wait at Fit-Up Release for a Foreman: everything up to it signed, release box unchecked */
+  const releaseIdx = wf.stages.findIndex(s => s.id === 'fitup-release');
+  const awaitingRelease = releaseIdx >= 0 && [...job.id].reduce((a, c) => a + c.charCodeAt(0) * 31, 0) % 60 === 0;
+  const k = awaitingRelease ? releaseIdx : signedStageCount(job, total);
   if (k <= 0) return wf;
 
   const rand = seeded(job.id.charCodeAt(0) * 97 + job.id.charCodeAt(1) * 13);
@@ -1015,10 +1018,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
 
   const names = SEEDED_INSPECTOR_NAMES;
   wf.stages = wf.stages.map((s, i) => {
-    if (i >= k) return s;
+    if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
     t += (20 + Math.floor(rand() * 180)) * MIN;
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
+    if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
     const signoffInputs: Record<string, string> = {};
     for (const f of s.signoffFields) {
       if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;

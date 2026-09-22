@@ -49,7 +49,7 @@ function generateAssignments(): Assignment[] {
     'Fit': ['Fitting'],
     'Tack': ['Welding'],
     'Fit-Up Insp': ['Inspector', 'Foreman'],
-    'Fit-Up Release': ['Welding'],
+    'Fit-Up Release': ['Foreman'],
     'Deferred Tack': ['Welding'],
     'Root': ['Welding'],
     'Root NDT UT/RT': ['NQC Inspector'],
