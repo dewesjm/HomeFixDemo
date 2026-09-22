@@ -3,7 +3,7 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone } from '@lucide/angular';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone, LucideListFilter, LucideX } from '@lucide/angular';
 
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { TableState, inArray } from '../shared/table-state';
@@ -24,13 +24,38 @@ type Row = WeldJoint;
   imports: [
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone, LucideListFilter, LucideX
   ],
   template: `
     <div style="max-width: 100%">
         <div class="page-header" style="padding: 0.75rem 1rem">
           <h2 class="section-title">Weld Planning</h2>
           <span class="spacer"></span>
+        </div>
+
+        @if (banner(); as b) {
+          <div class="alert text-sm mx-1 mb-2"
+               [class.alert-info]="b.type === 'info'"
+               [class.alert-warning]="b.type === 'warning'"
+               [class.alert-error]="b.type === 'error'"
+               [class.alert-success]="b.type === 'success'">
+            <svg lucideMegaphone class="size-4"></svg>
+            <span>{{ b.message }}</span>
+          </div>
+        }
+
+        <div class="facet-row" style="margin: 0 1rem 0.75rem">
+          <button class="btn btn-sm btn-outline" (click)="clearFilters()">
+            <svg lucideListFilter class="size-4"></svg> Clear filters
+          </button>
+
+          <select class="select select-sm" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
+            <option value="">All Statuses</option>
+            @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+
           <button class="btn btn-sm btn-primary" (click)="createNew()">
             <svg lucidePlus class="size-4"></svg> Create
           </button>
@@ -46,39 +71,19 @@ type Row = WeldJoint;
           <button class="btn btn-sm" (click)="exportCsv()">
             <svg lucideFileSpreadsheet class="size-4"></svg> Export
           </button>
-        </div>
 
-        @if (banner(); as b) {
-          <div class="alert text-sm mx-1 mb-2"
-               [class.alert-info]="b.type === 'info'"
-               [class.alert-warning]="b.type === 'warning'"
-               [class.alert-error]="b.type === 'error'"
-               [class.alert-success]="b.type === 'success'">
-            <svg lucideMegaphone class="size-4"></svg>
-            <span>{{ b.message }}</span>
-          </div>
-        }
+          <span class="spacer"></span>
 
-        <div class="facet-row" style="margin: 0 1rem 0.75rem">
-          <div style="position: relative; flex: 1 1 280px">
-            <svg lucideSearch class="size-4" style="position: absolute; left: 0.5rem; top: 50%; transform: translateY(-50%); color: var(--app-text-muted)"></svg>
-            <input
-              class="input input-sm w-full search-input"
-              style="padding-left: 2rem"
-              placeholder="Search joints..."
-              [ngModel]="table.globalFilter()"
-              (ngModelChange)="table.setGlobalFilter($event)"
-            />
-          </div>
-          <select class="select select-sm" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
-            <option value="">All Statuses</option>
-            @for (opt of statusOptions; track opt.value) {
-              <option [value]="opt.value">{{ opt.label }}</option>
+          <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+            <svg lucideSearch class="size-4 opacity-60"></svg>
+            <input type="text" class="grow" placeholder="Search joints…"
+                   [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+            @if (table.globalFilter()) {
+              <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+                <svg lucideX class="size-3.5 opacity-60"></svg>
+              </button>
             }
-          </select>
-          <button class="btn btn-sm btn-ghost" (click)="clearFilters()">
-            Clear
-          </button>
+          </label>
         </div>
 
         <div style="overflow-x: auto; padding: 0 1rem">
