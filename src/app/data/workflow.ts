@@ -6,7 +6,7 @@ import { Job } from './jobs';
 import { getJointDesign } from './joint-designs';
 
 /* ── Role-based queue routing ── */
-export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records', 'View'] as const;
+export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records Retention', 'View'] as const;
 export type Role = typeof ROLES[number];
 export const DEFAULT_ROLE: Role = 'View';
 
@@ -602,7 +602,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('final', 'utrt'),
     ndtStage('final', 'mtpt'),
     ndtStage('final', 'vt5x'),
-    { id: 'review', label: 'Review', required: true, role: 'Records', fields: [
+    { id: 'review', label: 'Review', required: true, role: 'Records Retention', fields: [
       { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
       { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
       { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
@@ -622,7 +622,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
-    { id: 'sold', label: 'Sold', required: true, role: 'Records', fields: [], signoffFields: [] }
+    { id: 'sold', label: 'Sold', required: true, role: 'Records Retention', fields: [], signoffFields: [] }
   ]
 };
 
