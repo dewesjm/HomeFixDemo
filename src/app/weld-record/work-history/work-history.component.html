@@ -89,6 +89,7 @@
       <th appSortHeader style="min-width: 9ch" [table]="table" field="joint" label="Joint" filter="text"></th>
       <th appSortHeader style="min-width: 10ch" [table]="table" field="order" label="Order" filter="text"></th>
       <th class="min-w-11">Deprogress</th>
+      <th class="min-w-6"></th>
     </tr>
   </thead>
   <tbody>
@@ -106,14 +107,7 @@
         <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
         <td class="hist-new">{{ r.to || '—' }}</td>
-        <td>
-          <div class="flex items-center gap-1">
-            <span>{{ r.jobId }}</span>
-            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
-              <svg lucideArrowUpRight class="size-3"></svg>
-            </button>
-          </div>
-        </td>
+        <td>{{ r.jobId }}</td>
         <td>{{ r.hull }}</td>
         <td>{{ r.drawing }}</td>
         <td>{{ r.joint }}</td>
@@ -136,6 +130,11 @@
             }
           }
         </td>
+        <td>
+          <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
+            <svg lucideArrowUpRight class="size-3"></svg>
+          </button>
+        </td>
       </tr>
       @if (r.inputs?.length && expanded().has(r.key)) {
         @for (i of r.inputs; track $index) {
@@ -152,12 +151,13 @@
             <td class="hist-old">{{ r.joint }}</td>
             <td class="hist-old">{{ r.order }}</td>
             <td></td>
+            <td></td>
           </tr>
         }
       }
     } @empty {
       <tr>
-        <td colspan="12" class="empty">
+        <td colspan="13" class="empty">
           No matching activity. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>

@@ -35,7 +35,7 @@
       @switch (f.type) {
         @case ('text') {
           <div class="join">
-            <select class="select select-sm select-bordered join-item" style="max-width: 9.5rem"
+            <select class="select select-sm select-bordered join-item shrink-0" style="width: 9.5rem"
                     [ngModel]="textValue(f.key).negate" (ngModelChange)="setTextValue(f.key, textValue(f.key).text, $event)">
               <option [ngValue]="false">Contains</option>
               <option [ngValue]="true">Does not contain</option>
