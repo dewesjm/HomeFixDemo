@@ -14,6 +14,13 @@ import {
 /* value as shown in the history Old/New columns; em dash when empty */
 const show = (v: string | null | undefined) => (v && v.length ? v : '—');
 
+/* display label for a raw stage input key, falling back to the key itself if undefined */
+function labelFor(stage: WorkflowStage, key: string): string {
+  return stage.fields.find(f => f.key === key)?.label
+    ?? stage.signoffFields.find(f => f.key === key)?.label
+    ?? key;
+}
+
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = STORAGE.workflows;
 const APP_VERSION_KEY = STORAGE.appVersion;
@@ -240,7 +247,7 @@ export class WorkflowService {
               stageLabel: s.label,
               fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
                 .filter(([, v]) => v)
-                .map(([key, value]) => ({ key, label: key, value })),
+                .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
               result: s.result,
               who: s.signoffInputs['inspectorName'] || wf.technician,
               when: new Date().toISOString(),
@@ -303,7 +310,7 @@ export class WorkflowService {
                 stageLabel: stages[i].label,
                 fields: Object.entries({ ...stages[i].inputs, ...stages[i].signoffInputs })
                   .filter(([, v]) => v)
-                  .map(([key, value]) => ({ key, label: key, value })),
+                  .map(([key, value]) => ({ key, label: labelFor(stages[i], key), value })),
                 result: stages[i].result,
                 who: wf.technician,
                 when: now,
@@ -377,7 +384,7 @@ export class WorkflowService {
               stageLabel: s.label,
               fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
                 .filter(([, v]) => v)
-                .map(([key, value]) => ({ key, label: key, value })),
+                .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
               result: s.result,
               who,
               when: now,
@@ -437,7 +444,7 @@ export class WorkflowService {
             stageLabel: s.label,
             fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
               .filter(([, v]) => v)
-              .map(([key, value]) => ({ key, label: key, value })),
+              .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
             result: s.result,
             who: 'Admin',
             when,
@@ -469,7 +476,7 @@ export class WorkflowService {
         fields: [
           ...Object.entries({ ...s.inputs, ...s.signoffInputs })
             .filter(([, v]) => v)
-            .map(([key, value]) => ({ key, label: key, value })),
+            .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
           ...(comment ? [{ key: 'comment', label: 'Comment', value: comment }] : []),
         ],
         result: s.result,
