@@ -29,14 +29,14 @@ const FIT_REQUIRED_FABRICATION: Record<string, string> = {
 };
 
 @Component({
-  selector: 'app-job-detail',
+  selector: 'app-joint-page',
   standalone: true,
   imports: [
     CommonModule, FormsModule, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent
   ],
-  templateUrl: './job-detail.component.html'
+  templateUrl: './joint-page.component.html'
 })
-export class JobDetailComponent implements OnDestroy {
+export class JointPageComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private wfService = inject(WorkflowService);

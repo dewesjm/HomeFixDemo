@@ -4,7 +4,7 @@ import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { PipeSearchComponent } from './weld-record/pipe-search/pipe-search.component';
 import { WorkHistoryComponent } from './weld-record/work-history/work-history.component';
 import { AdaptiveSearchComponent } from './weld-record/adaptive-search/adaptive-search.component';
-import { JobDetailComponent } from './weld-record/job-detail/job-detail.component';
+import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-routing.component';
 import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
 import { AdminSetRoutingComponent } from './weld-record/admin/admin-set-routing/admin-set-routing.component';
@@ -47,7 +47,7 @@ export const routes: Routes = [
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR — Material Traceability' },
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR — Quick Links' },
 
-  { path: 'jobs/:id', component: JobDetailComponent, title: 'EWR — Hull Details', canDeactivate: [canDeactivateGuard] },
+  { path: 'jobs/:id', component: JointPageComponent, title: 'EWR — Hull Details', canDeactivate: [canDeactivateGuard] },
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'EWP — Weld Planning' },

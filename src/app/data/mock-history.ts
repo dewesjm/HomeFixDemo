@@ -67,7 +67,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     t += (3 + Math.floor(rand() * 40)) * MIN;
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs } });
   };
-  /* matches JobDetailComponent.isNdtStage: Attachments only shows for NDT stages + Repair */
+  /* matches JointPageComponent.isNdtStage: Attachments only shows for NDT stages + Repair */
   const isNdtStageId = (id: string) => id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt') || id === 'repair';
 
   /* stages progressed through; some jobs fully signed, most a step or two in */
