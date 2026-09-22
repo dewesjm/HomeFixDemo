@@ -235,6 +235,7 @@ export class WorkflowService {
 
   /* lock a stage's sign-off and advance (or route back on reject) */
   signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
+    let signedLabel = '';
     this.workflowFor(job).update(wf => {
       let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? {
@@ -257,6 +258,7 @@ export class WorkflowService {
         } : s);
       const st = stages.find(s => s.id === stageId)!;
       const decision = (st.result ?? '').toUpperCase();
+      signedLabel = st.label;
 
       /* Defer Tack logic: when fit stage signs with deferTack='yes', activate deferred-tack and skip regular tack */
       if (stageId === 'fit' && st.signoffInputs['deferTack'] === 'yes') {
@@ -364,7 +366,7 @@ export class WorkflowService {
       });
     });
     this.persist();
-    this.notify('success', 'Stage signed off');
+    this.notify('success', 'Stage signed off', signedLabel);
   }
 
   /* re-open a signed stage for edits */
