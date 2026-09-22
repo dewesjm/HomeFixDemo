@@ -2,11 +2,20 @@ import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
 import { Job } from '../data/jobs';
+import { TooltipDirective } from '../shared/tooltip.directive';
+import { characteristicLabel } from '../data/characteristics';
+
+/* what each Nuclear Indicator code means, shown as a hover tooltip since the raw digit alone isn't self-explanatory */
+const N_IND_MEANINGS: Record<string, string> = {
+  '1': 'N 250-1500-1',
+  '2': 'N TP278',
+  '3': 'Non',
+};
 
 @Component({
   selector: 'app-joint-details',
   standalone: true,
-  imports: [CommonModule, LucideInfo, LucideChevronDown, LucideChevronUp],
+  imports: [CommonModule, LucideInfo, LucideChevronDown, LucideChevronUp, TooltipDirective],
   templateUrl: './joint-details.component.html'
 })
 export class JointDetailsComponent {
@@ -14,6 +23,17 @@ export class JointDetailsComponent {
   currentRouting = input.required<string>();
 
   showAudit = signal(false);
+
+  nIndTooltip(): string {
+    return N_IND_MEANINGS[this.job().nInd] ?? '';
+  }
+
+  /* "AB123 Description" when the code is known, otherwise just the bare code */
+  attrCodeDisplay(code: string): string {
+    if (!code) return '';
+    const desc = characteristicLabel(code);
+    return desc ? `${code} ${desc}` : code;
+  }
 
   ndtLabel(method: string): string {
     const ndt = (this.job().ndt || '').toUpperCase();

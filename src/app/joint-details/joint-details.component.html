@@ -13,7 +13,7 @@
         <div class="detail-row"><span class="meta">Weld Type</span><span>{{ job().weldType || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Pipe Size</span><span>{{ job().pipeSize || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Wall Thickness</span><span>{{ job().wallThickness || '—' }}</span></div>
-        <div class="detail-row"><span class="meta">Nuclear Indicator</span><span>{{ job().nInd || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Nuclear Indicator</span><span [appTooltip]="nIndTooltip()">{{ job().nInd || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Sequence #</span><span>{{ job().sequenceNumber || '—' }}</span></div>
         <div class="detail-row"><span class="meta">Routing</span><span>{{ currentRouting() }}</span></div>
         <div class="detail-row"><span class="meta">Engineering Notes</span><span>{{ job().engineeringNotes || '—' }}</span></div>
@@ -98,10 +98,10 @@
     <div class="mt-sm">
       <div class="font-semibold text-sm mb-1">Attribute Codes</div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-6">
-        <div class="detail-row"><span class="meta">Attribute Code 1</span><span>{{ job().attributeCode1 || '—' }}</span></div>
-        <div class="detail-row"><span class="meta">Attribute Code 2</span><span>{{ job().attributeCode2 || '—' }}</span></div>
-        <div class="detail-row"><span class="meta">Attribute Code 3</span><span>{{ job().attributeCode3 || '—' }}</span></div>
-        <div class="detail-row"><span class="meta">Attribute Code 4</span><span>{{ job().attributeCode4 || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 1</span><span>{{ attrCodeDisplay(job().attributeCode1) || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 2</span><span>{{ attrCodeDisplay(job().attributeCode2) || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 3</span><span>{{ attrCodeDisplay(job().attributeCode3) || '—' }}</span></div>
+        <div class="detail-row"><span class="meta">Attribute Code 4</span><span>{{ attrCodeDisplay(job().attributeCode4) || '—' }}</span></div>
       </div>
     </div>
   }
