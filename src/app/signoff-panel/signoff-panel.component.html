@@ -254,7 +254,7 @@
         <div class="stage-inputs">
           @for (f of ctx().visibleFields(stage()); track f.key) {
             <!-- the checkbox+field rows below are full-width blocks already; a break before them only adds an empty line of gap -->
-            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantBrand') { <span class="stage-field-break"></span> }
+            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantBrand' && f.key !== 'defectCode') { <span class="stage-field-break"></span> }
             @if (f.key === 'partial') {
               <div class="flex items-end gap-4 w-full">
                 <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
@@ -320,7 +320,7 @@
                   }
                 }
               </div>
-            } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantManufacturer') {
+            } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantManufacturer' && f.key !== 'defectCode') {
             <div class="w-full">
             @if (f.type === 'checkbox') {
               <label class="flex items-center gap-2 cursor-pointer">
@@ -491,6 +491,22 @@
             }
           </div>
         </div>
+      }
+
+      <!-- Defect Code — shown after Decision since it only applies once the result is UNSAT -->
+      @for (f of ctx().visibleFields(stage()); track f.key) {
+        @if (f.key === 'defectCode') {
+          <div class="mb-sm">
+            <label class="stage-field" style="max-width: 320px">
+              <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+              <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
+                      [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
+                <option [ngValue]="null">Select</option>
+                @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            </label>
+          </div>
+        }
       }
 
       <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
