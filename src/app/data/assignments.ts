@@ -67,7 +67,7 @@ function generateAssignments(): Assignment[] {
     'Final NDT UT/RT': ['NQC Inspector'],
     'Final NDT MT/PT': ['NQC Inspector'],
     'Final NDT VT/5X': ['NQC Inspector'],
-    'Review': ['Records'],
+    'Review': ['Records Retention'],
   };
 
   for (let i = 0; i < 36; i++) {
@@ -81,7 +81,7 @@ function generateAssignments(): Assignment[] {
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
       assignmentNumber: `ASN-${String(i + 1).padStart(3, '0')}`,
-      jobId: job.id,
+      jobId: i % 4 === 0 ? '' : job.id,   /* XREFID blank ~25% of the time, same as Weld Planning's records */
       hull: job.hull,
       drawing: job.drawing,
       joint: job.joint,

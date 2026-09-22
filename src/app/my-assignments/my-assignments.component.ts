@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone } from '@lucide/angular';
 
-import { ASSIGNMENTS } from '../data/assignments';
+import { ASSIGNMENTS, Assignment } from '../data/assignments';
+import { JOBS } from '../data/jobs';
 import { bannerFor } from '../data/banner';
 
 @Component({
@@ -32,7 +33,9 @@ export class MyAssignmentsComponent {
     );
   });
 
-  openDetails(jobId: string) {
-    this.router.navigate(['/jobs', jobId], { queryParams: { from: 'assignments' } });
+  /* XREFID is sometimes blank (mock data imperfection); a job's real key is hull + drawing + joint */
+  openDetails(a: Assignment) {
+    const job = JOBS.find(j => j.hull === a.hull && j.drawing === a.drawing && j.joint === a.joint);
+    if (job) this.router.navigate(['/jobs', job.id], { queryParams: { from: 'assignments' } });
   }
 }
