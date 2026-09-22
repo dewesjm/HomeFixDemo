@@ -35,7 +35,7 @@ Pre-existing SCSS "rules skipped due to selector errors" warnings come from Tail
 
 ## Version bumps
 
-`CURRENT_VERSION` in `src/app/services/workflow.service.ts` (~line 21). Bump when stage definitions, field names, data models, or seed data structure change. On mismatch the app clears the caches listed in `clearStaleCaches()` (`data/storage-keys.ts`).
+The "new version available" Reload button does NOT clear saved data; only a `CURRENT_VERSION` change does (on the next load). `CURRENT_VERSION` in `src/app/services/workflow.service.ts` (~line 21): bump when stage definitions, field names, data models, or seed data structure change. On mismatch the app clears the caches listed in `clearStaleCaches()` (`data/storage-keys.ts`).
 
 ## Storage
 

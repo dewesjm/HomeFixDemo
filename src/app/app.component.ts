@@ -1,7 +1,6 @@
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
-import { clearStaleCaches } from './data/storage-keys';
 import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
@@ -100,10 +99,11 @@ export class AppComponent {
       this.swUpdate.versionUpdates
         .pipe(filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY'))
         .subscribe(() => this.updateReady.set(true));
+      /* a corrupted worker cache (e.g. mid-deploy) falls back to the network silently; offer the same reload */
+      this.swUpdate.unrecoverable.subscribe(() => this.updateReady.set(true));
 
-      // Check now, on an interval, and whenever the tab regains focus.
+      // On an interval and whenever the tab regains focus (the worker also checks by itself on page load).
       const check = () => this.swUpdate.checkForUpdate().catch(() => { /* offline / transient */ });
-      check();
       setInterval(check, UPDATE_POLL_MS);
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'visible') check();
@@ -111,10 +111,9 @@ export class AppComponent {
     }
   }
 
-  /* activate the waiting worker, clear stale caches, and reload */
+  /* activate the waiting worker and reload. Saved data is left alone: outdated caches are cleared on the
+     next load only when CURRENT_VERSION changed (see WorkflowService), not on every deploy. */
   reloadForUpdate() {
-    // Clear persisted workflow & template caches so new stage definitions take effect
-    clearStaleCaches();
-    this.swUpdate.activateUpdate().then(() => document.location.reload());
+    this.swUpdate.activateUpdate().catch(() => false).then(() => document.location.reload());
   }
 }
