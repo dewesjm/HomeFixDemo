@@ -153,6 +153,10 @@ export function generateJobs(count = 480): Job[] {
 
     const id = makeJobId(i + 1);
     const xrefidBlank = i % 4 === 0;
+    /* placeholder until real engineering notes text is wired up: a couple of "SEE NOTE ####" references */
+    const engineeringNotes = i % 3 === 0
+      ? Array.from({ length: 2 + Math.floor(rand() * 2) }, () => `SEE NOTE ${1000 + Math.floor(rand() * 9000)}`).join(', ')
+      : '';
 
     out.push({
       id,
@@ -174,7 +178,7 @@ export function generateJobs(count = 480): Job[] {
       joiningItem: pick(JOINING_ITEMS),
       joinToItem: pick(JOINING_ITEMS),
       sequenceNumber: '1',
-      engineeringNotes: '',
+      engineeringNotes,
       wps: pick(WPS_POOL),
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
