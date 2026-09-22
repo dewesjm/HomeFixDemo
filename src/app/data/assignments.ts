@@ -1,5 +1,6 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
+import { getShops } from './workflow';
 
 export interface Assignment {
   id: string;
@@ -10,7 +11,8 @@ export interface Assignment {
   joint: string;
   trade: string;
   routing: string;
-  location: string;
+  location: string;           /* shop, same list as Fabrication's Location field */
+  specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
   assignedRoles: string[];
   dueDate: string;
   expirationDate: string;   /* seeded 0-6 days out, so always within a week */
@@ -29,7 +31,8 @@ const ROUTINGS = [
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
-const LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Shop A', 'Shop B', 'Yard 1'];
+/* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
+const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -43,6 +46,7 @@ function generateAssignments(): Assignment[] {
   const rand = seeded(42);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const assignments: Assignment[] = [];
+  const shops = getShops();
 
   const rolesByRouting: Record<string, string[]> = {
     'Pre-Fit': ['NQC Inspector'],
@@ -83,7 +87,8 @@ function generateAssignments(): Assignment[] {
       joint: job.joint,
       trade: job.trade,
       routing,
-      location: pick(LOCATIONS),
+      location: pick(shops),
+      specificLocation: pick(SPECIFIC_LOCATIONS),
       assignedRoles: rolesByRouting[routing] || ['View'],
       dueDate: due.toISOString().slice(0, 10),
       expirationDate: expires.toISOString().slice(0, 10),
