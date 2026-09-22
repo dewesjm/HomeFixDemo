@@ -34,8 +34,15 @@
 
       @switch (f.type) {
         @case ('text') {
-          <input type="text" class="input input-sm input-bordered" placeholder="Contains…"
-                 [ngModel]="valueOf(f.key)" (ngModelChange)="setValue(f.key, $event)" />
+          <div class="join">
+            <select class="select select-sm select-bordered join-item" style="max-width: 9.5rem"
+                    [ngModel]="textValue(f.key).negate" (ngModelChange)="setTextValue(f.key, textValue(f.key).text, $event)">
+              <option [ngValue]="false">Contains</option>
+              <option [ngValue]="true">Does not contain</option>
+            </select>
+            <input type="text" class="input input-sm input-bordered join-item flex-1" placeholder="Value…"
+                   [ngModel]="textValue(f.key).text" (ngModelChange)="setTextValue(f.key, $event, textValue(f.key).negate)" />
+          </div>
         }
         @case ('multiselect') {
           <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any"

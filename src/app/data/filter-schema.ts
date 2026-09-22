@@ -71,6 +71,7 @@ export const FILTER_SCHEMA: FilterField[] = [
 ];
 
 export type FilterValues = Record<string, any>;
+export interface TextFilterValue { text: string; negate: boolean }
 
 export function getField(key: string): FilterField | undefined {
   return FILTER_SCHEMA.find(f => f.key === key);
@@ -79,6 +80,8 @@ export function getField(key: string): FilterField | undefined {
 export function isEmpty(field: FilterField, value: any): boolean {
   if (value === null || value === undefined || value === '') return true;
   switch (field.type) {
+    case 'text':
+      return !(value as TextFilterValue).text;
     case 'multiselect':
       return !Array.isArray(value) || value.length === 0;
     case 'range':
@@ -99,9 +102,12 @@ export function applyFilters(rows: Job[], values: FilterValues): Job[] {
       const cell = row[f.field] as any;
 
       switch (f.type) {
-        case 'text':
-          if (!String(cell).toLowerCase().includes(String(v).toLowerCase())) return false;
+        case 'text': {
+          const { text, negate } = v as TextFilterValue;
+          const matches = String(cell).toLowerCase().includes(String(text).toLowerCase());
+          if (negate ? matches : !matches) return false;
           break;
+        }
         case 'multiselect':
           if (!(v as any[]).includes(cell)) return false;
           break;
@@ -144,6 +150,10 @@ export function loadVariants(): FilterVariant[] {
         if (f.type === 'daterange' && Array.isArray(v.values[f.key])) {
           v.values[f.key] = v.values[f.key].map((d: any) => (d ? new Date(d) : null));
         }
+        /* variants saved before "does not contain" stored text values as plain strings */
+        if (f.type === 'text' && typeof v.values[f.key] === 'string') {
+          v.values[f.key] = { text: v.values[f.key], negate: false };
+        }
       }
     }
     return parsed;
@@ -165,6 +175,7 @@ export function defaultValuesFor(keys: string[]): FilterValues {
       case 'range':       out[key] = [f.min, f.max]; break;
       case 'multiselect': out[key] = []; break;
       case 'daterange':   out[key] = null; break;
+      case 'text':        out[key] = { text: '', negate: false } satisfies TextFilterValue; break;
       default:            out[key] = null;
     }
   }

@@ -19,7 +19,7 @@ import { downloadCsv } from '../../data/export-csv';
 
 import { JOBS, Job } from '../../data/jobs';
 import {
-  FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
+  FILTER_SCHEMA, FilterField, FilterValues, FilterVariant, TextFilterValue,
   applyFilters, defaultValuesFor, getField, isEmpty,
   loadVariants, saveVariants
 } from '../../data/filter-schema';
@@ -324,6 +324,13 @@ export class AdaptiveSearchComponent {
   }
   valueOf(key: string): any { return this.values()[key]; }
 
+  textValue(key: string): TextFilterValue {
+    return this.valueOf(key) ?? { text: '', negate: false };
+  }
+  setTextValue(key: string, text: string, negate: boolean) {
+    this.setValue(key, { text, negate } satisfies TextFilterValue);
+  }
+
   rangeValue(key: string, field: Extract<FilterField, { type: 'range' }>): [number, number] {
     return this.valueOf(key) ?? [field.min, field.max];
   }
@@ -355,7 +362,10 @@ export class AdaptiveSearchComponent {
 
   chipLabelFor(f: FilterField, v: any): string {
     switch (f.type) {
-      case 'text':        return `${f.label}: "${v}"`;
+      case 'text': {
+        const { text, negate } = v as TextFilterValue;
+        return `${f.label}: ${negate ? 'not ' : ''}"${text}"`;
+      }
       case 'multiselect': return `${f.label}: ${(v as any[]).join(', ')}`;
       case 'select':      return `${f.label}: ${v}`;
       case 'range':       return `${f.label}: ${v[0]}–${v[1]}`;
