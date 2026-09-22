@@ -2,8 +2,8 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
+import { ActivatedRoute, Router } from '@angular/router';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight, LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
 import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
@@ -32,9 +32,9 @@ interface ActivityRow extends HistoryEntry {
   selector: 'app-work-history',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RouterLink,
+    CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent,
-    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft,
+    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight,
     LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp
   ],
   templateUrl: './work-history.component.html'
@@ -46,6 +46,7 @@ export class WorkHistoryComponent {
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   back() { this.router.navigate(['/table']); }
+  openDetails(jobId: string) { this.router.navigate(['/jobs', jobId]); }
 
   /* person filter: the chosen person, plus the typeahead's text and open state */
   person = signal<Person | null>(null);

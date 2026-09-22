@@ -107,7 +107,12 @@
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
         <td class="hist-new">{{ r.to || '—' }}</td>
         <td>
-          <a [routerLink]="['/jobs', r.jobId]">{{ r.jobId }}</a>
+          <div class="flex items-center gap-1">
+            <span>{{ r.jobId }}</span>
+            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
+              <svg lucideArrowUpRight class="size-3"></svg>
+            </button>
+          </div>
         </td>
         <td>{{ r.hull }}</td>
         <td>{{ r.drawing }}</td>
