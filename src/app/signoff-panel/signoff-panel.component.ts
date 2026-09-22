@@ -67,6 +67,7 @@ const WELD_GROUPS: WeldGroup[] = [
   { sections: [
     { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
     { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
+    { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { title: 'PH/IP', sections: [
@@ -79,7 +80,6 @@ const WELD_GROUPS: WeldGroup[] = [
   ] },
   { title: 'Readings', sections: [
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
-    { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
   ] },
   { sections: [
     { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },

@@ -148,9 +148,9 @@ src/app/
 ### Signoff panel (`signoff-panel`)
 - **Type dropdown** for stages with `routingOptions`. On inspector/NDT stages it starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired`).
 - **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_GROUPS` config in `signoff-panel.component.ts` — four cards (only "PH/IP" and "Readings" have headers; the other two were untitled at the user's request) — through one field template, restructured 2026-09-22 so PH/IP requirements and actuals share one dedicated card instead of being split across the signoffs and Readings cards:
-  1. **Signoffs** (untitled) — GWP / WTN / Weld Process (auto-set from WTN, locked), Qualification Check, **Filler Metal** (moved here from Readings).
+  1. **Signoffs** (untitled) — GWP / WTN / Weld Process (auto-set from WTN, locked), Qualification Check, **Consumable Insert checkbox** (Root; unchecking clears filler type/size/MIC) directly above **Filler Metal** (both moved here from Readings, checkbox positioned immediately above the fields it affects).
   2. **PH/IP** — Requirements (limits), Actuals, then **Override Requirements** incl. Override Note (all read-only, set from the WTN; `NC` = no limit; shown only for matching WTNs — moved here, under Actuals, 2026-09-22).
-  3. **Readings** — weld position (Nuclear Indicator 1), Consumable Insert checkbox (Root; unchecking clears filler type/size/MIC).
+  3. **Readings** — weld position (Nuclear Indicator 1).
   4. (untitled) — 5X (Root/Final), Comments.
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
 - **PH/IP validation** — blur-triggered range checks; NC skips that limit.
