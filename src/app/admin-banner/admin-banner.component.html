@@ -3,11 +3,14 @@
 <p class="section-sub">Configure a banner message that appears on selected pages for all users.</p>
 
 <div class="flex flex-col gap-4 max-w-xl">
-  <label class="stage-field">
-    <span class="stage-field-label">Banner Message</span>
+  <!-- Plain div, not .stage-field: its flex-basis (160px, meant for width in row layouts) becomes a
+       height basis in this flex-column wrapper and left dead space below the textarea. Same bug as
+       Records Review's Comments field (see signoff-panel.component.html and ARCHITECTURE.md). -->
+  <div>
+    <div class="stage-field-label">Banner Message</div>
     <textarea class="textarea textarea-bordered w-full" rows="3" placeholder="e.g. Scheduled maintenance tonight — all records will be locked after 6 PM"
               [ngModel]="message()" (ngModelChange)="message.set($event)"></textarea>
-  </label>
+  </div>
 
   <div class="flex gap-4 items-end">
     <label class="stage-field flex-1 max-w-[200px]">
