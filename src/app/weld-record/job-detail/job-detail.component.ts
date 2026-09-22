@@ -879,8 +879,7 @@ export class JobDetailComponent implements OnDestroy {
         accept: () => {
           this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
           this.signRelated5xIfNeeded(stage);
-          const from = this.route.snapshot.queryParamMap.get('from');
-          this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
+          this.router.navigate([this.backDestination()]);
         }
       });
       return;
@@ -897,8 +896,7 @@ export class JobDetailComponent implements OnDestroy {
       accept: () => {
         this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
         this.signRelated5xIfNeeded(stage);
-        const from = this.route.snapshot.queryParamMap.get('from');
-        this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
+        this.router.navigate([this.backDestination()]);
       }
     });
   }
@@ -966,9 +964,16 @@ export class JobDetailComponent implements OnDestroy {
     }));
   }
 
-  back() {
+  /* where "Back"/post-signoff navigation returns to, based on how this screen was opened */
+  private backDestination(): string {
     const from = this.route.snapshot.queryParamMap.get('from');
-    this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
+    if (from === 'assignments') return '/assignments';
+    if (from === 'history') return '/history';
+    return '/table';
+  }
+
+  back() {
+    this.router.navigate([this.backDestination()]);
   }
 
 }

@@ -46,7 +46,7 @@ export class WorkHistoryComponent {
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   back() { this.router.navigate(['/table']); }
-  openDetails(jobId: string) { this.router.navigate(['/jobs', jobId]); }
+  openDetails(jobId: string) { this.router.navigate(['/jobs', jobId], { queryParams: { from: 'history' } }); }
 
   /* person filter: the chosen person, plus the typeahead's text and open state */
   person = signal<Person | null>(null);
