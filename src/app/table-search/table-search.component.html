@@ -61,7 +61,7 @@
       <th class="w-8">
         <input type="checkbox" class="checkbox checkbox-xs" [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
-      <th appSortHeader class="min-w-16" [table]="table" field="id" label="XREFID" filter="text"></th>
+      <th appSortHeader class="min-w-16" [table]="table" field="xrefid" label="XREFID" filter="text"></th>
       <th appSortHeader class="min-w-32" [table]="table" field="hull" label="Hull" filter="text"></th>
       <th appSortHeader class="min-w-24" [table]="table" field="drawing" label="Drawing" filter="text"></th>
       <th appSortHeader class="min-w-20" [table]="table" field="joint" label="Joint" filter="text"></th>
@@ -77,7 +77,7 @@
         <td class="w-8">
           <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(job.id)" (change)="toggleSelect(job.id)" />
         </td>
-        <td>{{ job.id }}</td>
+        <td>{{ job.xrefid || '—' }}</td>
         <td>{{ job.hull }}</td>
         <td>{{ job.drawing || '—' }}</td>
         <td>{{ job.joint || '—' }}</td>

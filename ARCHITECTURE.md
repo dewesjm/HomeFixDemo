@@ -14,9 +14,9 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 | Term | Meaning |
 |---|---|
 | **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
-| **XREFID** | Internal 5-char alphanumeric job id (`job.id`). Unique. |
+| **XREFID** | The user-facing identifier shown everywhere (`job.xrefid`), 5-char alphanumeric, matching `job.id` when present. **Blank on ~25% of jobs** (`i % 4 === 0`), same imperfect-source-data pattern as My Assignments and Weld Planning; `job.id` itself is a separate, always-populated internal key (never shown) that routing, workflow lookups, and row selection use, so a blank XREFID never breaks navigation or workflow state. |
 | **Drawing** | Letter + 7 digits, e.g. `H7111234` or `S7204518` (`job.drawing`, weld-joint `drawing`); both `H` and `S` prefixes appear in seed data. |
-| **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). |
+| **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). **Blank whenever XREFID is blank** — neither was captured for that record. |
 | **Joint number** | Weld Planning's `jointNumber`: 2-letter prefix, hyphen, 5 digits, e.g. `ST-00001` (seed: `ST` structural, `PI` pipe). |
 | **Joint (system-joint)** | The weld record's own `joint` field (`job.joint` and Weld Planning's separate `WeldJoint.joint`) — 2-letter system code, hyphen, 5 digits, e.g. `ST-10005` (seed system codes: ST/SW/FW/FO/LO/HV, my own unreviewed pick). Was previously free text (`J-001`); changed 2026-09-21, dropped the stray `J` before the digits 2026-09-22. |
 | **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
@@ -115,7 +115,7 @@ src/app/
 
 ## Data flow
 
-1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). XREFID is 5-char alphanumeric (`makeJobId()`); hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees both identity rules: unique XREFID and unique hull + drawing + joint.
+1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). Internal `id` is 5-char alphanumeric (`makeJobId()`), always populated, unique; `xrefid` mirrors it except on ~25% of rows where it's blank (imperfect source data). Hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees the identity rule of unique hull + drawing + joint (the true key when XREFID is blank).
 2. **Stage templates** — `workflow.ts`. Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
 3. **Per-job workflow** — `WorkflowService`, keyed by job id, exposed as signals. Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
 4. **Assignments** — 36 seeded, assigned to "John Johnson".
@@ -215,9 +215,10 @@ src/app/
 
 ```ts
 {
-  id: string;          // XREFID, 5-char alphanumeric, unique
+  id: string;          // internal key, 5-char alphanumeric, always populated, unique — never shown
+  xrefid: string;      // user-facing XREFID; mirrors id, but blank on ~25% of jobs
   hull: string;        // letter + 4 digits, e.g. K7234 — shared by many jobs
-  // identity: id  OR  (hull + drawing + joint), each unique
+  // identity: id  OR  (hull + drawing + joint), each unique — xrefid is display-only, not an identity key
   trade: string;       // 'Welding'
   technician: string;
   drawing: string; drawingRev: string; joint: string; jointDesign: string; weldType: string;

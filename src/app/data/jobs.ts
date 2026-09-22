@@ -2,7 +2,11 @@
 import { TECHNICIAN_NAMES } from './people';
 
 export interface Job {
-  id: string;          /* random 5-char alphanumeric code */
+  id: string;          /* internal key, always present — never shown; the real (sometimes-missing) source
+                           identifier users see is xrefid, below */
+  xrefid: string;       /* XREFID as captured from the source system; blank ~25% of the time, same
+                           imperfect-data pattern as My Assignments and Weld Planning. When blank,
+                           serialNumber is blank too, since neither was captured for that record. */
   hull: string;        /* letter + 4 digits, e.g. K7234; not unique, many jobs share a hull */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
@@ -111,8 +115,9 @@ function makeHull(seed: number): string {
   return letter + digits;
 }
 
-/* Hulls repeat across many jobs. A job is identified by its XREFID (id) or by the unique
-   combination of hull + drawing + joint; generateJobs guarantees both are unique. */
+/* Hulls repeat across many jobs. A job is identified by its internal id (always populated, never
+   shown) or by the unique combination of hull + drawing + joint, which generateJobs guarantees
+   are both unique; the user-facing xrefid is a display-only copy of id that can be blank. */
 const HULL_COUNT = 48;
 
 export function generateJobs(count = 480): Job[] {
@@ -138,8 +143,12 @@ export function generateJobs(count = 480): Job[] {
     } while (usedIdentity.has(`${hull}|${drawing}|${joint}`));
     usedIdentity.add(`${hull}|${drawing}|${joint}`);
 
+    const id = makeJobId(i + 1);
+    const xrefidBlank = i % 4 === 0;
+
     out.push({
-      id: makeJobId(i + 1),
+      id,
+      xrefid: xrefidBlank ? '' : id,
       hull,
       trade,
       technician,
@@ -172,7 +181,7 @@ export function generateJobs(count = 480): Job[] {
       workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: i % 5 === 0 ? 'Required' : '',
-      serialNumber: `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
+      serialNumber: xrefidBlank ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
       refitNumber: '00',
       repairNumber: '00',
       ss: i % 8 === 0 ? 'Yes' : '',
@@ -205,6 +214,7 @@ export function addTestJob(trade: string): Job {
   const id = makeJobId(numId);
   const job: Job = {
     id,
+    xrefid: id,
     hull: makeHull(numId),
     trade,
     technician: TECHNICIAN_NAMES[numId % TECHNICIAN_NAMES.length],

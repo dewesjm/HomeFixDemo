@@ -130,7 +130,7 @@
         @for (col of visibleColumns(); track col.key) {
           <td>
             @switch (col.key) {
-              @case ('id') { <span class="mono">{{ job.id }}</span> }
+              @case ('id') { <span class="mono">{{ job.xrefid || '—' }}</span> }
               @case ('currentRouting') { {{ currentRouting(job) }} }
               @case ('scheduledFor') { {{ job.scheduledFor | date:'shortDate' }} }
               @default { {{ job[col.field!] || '—' }} }
