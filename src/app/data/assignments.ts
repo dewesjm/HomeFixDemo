@@ -141,13 +141,15 @@ function generateAssignments(): Assignment[] {
       joint: job.joint,
       trade: job.trade,
       routing,
-      location: xrefidBlank ? 'Ship' : pick(shops),
-      specificLocation: xrefidBlank ? '' : pick(SPECIFIC_LOCATIONS),
-      deck: xrefidBlank ? pick(DECKS) : '',
-      frame: xrefidBlank ? pick(FRAMES) : '',
-      ps: xrefidBlank ? pick(PS_OPTIONS) : '',
-      cl: xrefidBlank ? pick(CL_OFFSETS) : '',
-      usage: xrefidBlank ? pick(USAGE_POOL) : '',
+      /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
+         like any other assignment; only a couple of examples get the shipboard treatment below */
+      location: pick(shops),
+      specificLocation: pick(SPECIFIC_LOCATIONS),
+      deck: '',
+      frame: '',
+      ps: '',
+      cl: '',
+      usage: '',
       assignedRoles,
       source: pick(SOURCES_BY_ROLE[primaryRole] ?? ['ERP']),
       dueDate: due.toISOString().slice(0, 10),
@@ -164,24 +166,25 @@ function generateAssignments(): Assignment[] {
     });
   }
 
-  /* guarantee at least one XREFID-blank (ship-location) example lands near the top of the
-     default My Assignments view (Welding role, sorted by due date) */
-  const weldingBlankExists = assignments.some(a => a.assignedRoles.includes('Welding') && !a.jobId);
-  if (!weldingBlankExists) {
-    const earliestWelding = [...assignments]
-      .filter(a => a.assignedRoles.includes('Welding'))
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
-    if (earliestWelding) {
-      earliestWelding.jobId = '';
-      earliestWelding.location = 'Ship';
-      earliestWelding.specificLocation = '';
-      earliestWelding.deck = pick(DECKS);
-      earliestWelding.frame = pick(FRAMES);
-      earliestWelding.ps = pick(PS_OPTIONS);
-      earliestWelding.cl = pick(CL_OFFSETS);
-      earliestWelding.usage = pick(USAGE_POOL);
-    }
-  }
+  /* just a couple of shipboard-location examples, not every XREFID-blank record: one guaranteed
+     near the top of the default My Assignments view (Welding role, sorted by due date), one more
+     picked from elsewhere among the blank-XREFID records for variety */
+  const toShip = (a: Assignment) => {
+    a.jobId = '';
+    a.location = 'Ship';
+    a.specificLocation = '';
+    a.deck = pick(DECKS);
+    a.frame = pick(FRAMES);
+    a.ps = pick(PS_OPTIONS);
+    a.cl = pick(CL_OFFSETS);
+    a.usage = pick(USAGE_POOL);
+  };
+  const earliestWelding = [...assignments]
+    .filter(a => a.assignedRoles.includes('Welding'))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+  if (earliestWelding) toShip(earliestWelding);
+  const anotherBlank = assignments.find(a => !a.jobId && a !== earliestWelding && a.deck === '');
+  if (anotherBlank) toShip(anotherBlank);
 
   return assignments.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
