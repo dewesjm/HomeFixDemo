@@ -6,7 +6,7 @@ import { Job } from './jobs';
 import { getJointDesign } from './joint-designs';
 
 /* ── Role-based queue routing ── */
-export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'Records Retention', 'View'] as const;
+export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
 export type Role = typeof ROLES[number];
 export const DEFAULT_ROLE: Role = 'View';
 
@@ -604,7 +604,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('final', 'vt5x'),
     /* split into O63/O04 2026-09-22: O63 when the job has any SFFF/DSS-AAA/SS data, O04 otherwise
        (see buildStages() Welding filter — exactly one of the two is included per job) */
-    { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'Records Retention', fields: [
+    { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', fields: [
       { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
       { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
       { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
@@ -624,7 +624,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
-    { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'Records Retention', fields: [
+    { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', fields: [
       { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
       { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
       { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
@@ -644,7 +644,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
       { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
     ], signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
-    { id: 'sold', label: 'Sold', required: true, role: 'Records Retention', fields: [], signoffFields: [] }
+    { id: 'sold', label: 'Sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
   ]
 };
 
@@ -851,15 +851,17 @@ export function buildStages(job: Job): WorkflowStage[] {
   const templates = getTemplates();
   const tradeStages = templates[job.trade] ?? [];
   const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
+  /* which Records track the job is on — same test buildStages() uses below to pick review-o63 vs review-o04 */
+  const hasO63Data = Boolean(job.sfff || job.dssAaa || job.ss);
 
   const toStage = (t: StageTemplate): WorkflowStage => {
     const required = typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
     const isWeldStage = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'].includes(t.id);
-    /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2 */
+    /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2; Sold follows whichever Records track reviewed the job */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
-      ? 'NQC Inspector' : (t.role ?? '');
+      ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     /* Root and Final Weld get a 5X inspection field */
     let fields = (t.id === 'root-weld' || t.id === 'final-weld')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
@@ -911,7 +913,6 @@ export function buildStages(job: Job): WorkflowStage[] {
       if (t.id.endsWith('-mtpt')) return hasMTorPT;
       if (t.id.endsWith('-vt5x')) return hasVT;
       /* Records Review splits in two: O63 when any of SFFF/DSS-AAA/SS is set on the job, O04 otherwise */
-      const hasO63Data = Boolean(job.sfff || job.dssAaa || job.ss);
       if (t.id === 'review-o63') return hasO63Data;
       if (t.id === 'review-o04') return !hasO63Data;
       return true;

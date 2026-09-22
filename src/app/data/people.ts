@@ -24,7 +24,7 @@ export const PEOPLE: Person[] = [
   p('E20414', 'Samantha', 'Williams', 'NQC Inspector'),
   p('E20415', 'Tina', 'Garcia', 'Inspector'),
   p('E20416', 'Amar', 'Singh', 'Inspector'),
-  p('E20417', 'Kate', 'Brown', 'Records Retention Specialist'),
+  p('E20417', 'Kate', 'Brown', 'O63 Records Specialist'),
   p('E20418', 'Lily', 'Chen', 'NQC Inspector'),
   /* supervisors and others, with repeated names so search has to disambiguate */
   p('E30501', 'John', 'Johnson', 'Foreman'),
@@ -32,7 +32,7 @@ export const PEOPLE: Person[] = [
   p('E30503', 'Mike', 'Roberts', 'Fitter'),
   p('E30504', 'Sara', 'Lee', 'Inspector'),
   p('E30505', 'David', 'Kim', 'Foreman'),
-  p('E30506', 'Maria', 'Santos', 'Records Retention Specialist'),
+  p('E30506', 'Maria', 'Santos', 'O04 Records Specialist'),
   p('E30507', 'Tom', 'Brown', 'Welder'),
   p('E30508', 'Anna', 'Petrov', 'Fitter'),
   p('E30509', 'Chris', 'Okafor', 'NQC Inspector'),

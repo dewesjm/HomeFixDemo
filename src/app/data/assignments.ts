@@ -41,7 +41,8 @@ export const SOURCES_BY_ROLE: Record<string, string[]> = {
   'Foreman': ['EWR'],
   'Inspector': ['SAIL', 'NCS'],
   'NQC Inspector': ['SAIL', 'NCS'],
-  'Records Retention': ['EWR'],
+  'O63 Records': ['EWR'],
+  'O04 Records': ['EWR'],
   'View': ['ERP'],
 };
 
@@ -101,11 +102,12 @@ function generateAssignments(): Assignment[] {
     'Final NDT UT/RT': ['NQC Inspector'],
     'Final NDT MT/PT': ['NQC Inspector'],
     'Final NDT VT/5X': ['NQC Inspector'],
-    'Review': ['Records Retention'],
+    'O63 Review': ['O63 Records'],
+    'O04 Review': ['O04 Records'],
   };
 
   /* explicit routing mix (rather than a flat random pick across all 19 routings) so every role
-     the demo cares about — including the rarer ones like Fitting and Records Retention — ends up
+     the demo cares about — including the rarer ones like Fitting and O63/O04 Records — ends up
      with a handful of assignments instead of maybe zero or one */
   const ROUTING_SEQUENCE = [
     ...Array(8).fill('Tack'), ...Array(4).fill('Root'), ...Array(4).fill('Layer'), ...Array(4).fill('Final Weld'), ...Array(2).fill('Deferred Tack'),   // Welding
@@ -113,7 +115,7 @@ function generateAssignments(): Assignment[] {
     ...Array(4).fill('Fit'),               // Fitting
     ...Array(4).fill('Fit-Up Insp'),        // Inspector (+ Foreman)
     ...Array(2).fill('Fit-Up Release'),     // Foreman
-    ...Array(3).fill('Review'),             // Records Retention
+    ...Array(2).fill('O63 Review'), ...Array(2).fill('O04 Review'),   // O63/O04 Records
   ];
   /* seeded shuffle so the mix above doesn't render in the same block order every time */
   for (let i = ROUTING_SEQUENCE.length - 1; i > 0; i--) {
