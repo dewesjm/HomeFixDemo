@@ -14,12 +14,24 @@ export interface Assignment {
   location: string;           /* shop, same list as Fabrication's Location field */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
   assignedRoles: string[];
+  source: string;   /* demo only: which external system the assignment came from, by role */
   dueDate: string;
   expirationDate: string;   /* seeded 0-6 days out, so always within a week */
   assignedDate: string;
   assignedBy: string;
   notes: string;
 }
+
+/* demo only: shows that different roles get assigned from different upstream systems */
+export const SOURCE_BY_ROLE: Record<string, string> = {
+  'Welding': 'EWICC',
+  'Fitting': 'SWIMS',
+  'Foreman': 'EWR',
+  'Inspector': 'SAIL',
+  'NQC Inspector': 'NCS',
+  'Records Retention': 'EWR',
+  'View': 'ERP',
+};
 
 const ROUTINGS = [
   'Pre-Fit', 'Fit', 'Tack', 'Fit-Up Insp', 'Fit-Up Release', 'Deferred Tack',
@@ -80,7 +92,7 @@ function generateAssignments(): Assignment[] {
 
     assignments.push({
       id: `A${String(i + 1).padStart(3, '0')}`,
-      assignmentNumber: `ASN-${String(i + 1).padStart(3, '0')}`,
+      assignmentNumber: String(i + 1).padStart(3, '0'),
       jobId: i % 4 === 0 ? '' : job.id,   /* XREFID blank ~25% of the time, same as Weld Planning's records */
       hull: job.hull,
       drawing: job.drawing,
@@ -90,6 +102,7 @@ function generateAssignments(): Assignment[] {
       location: pick(shops),
       specificLocation: pick(SPECIFIC_LOCATIONS),
       assignedRoles: rolesByRouting[routing] || ['View'],
+      source: SOURCE_BY_ROLE[(rolesByRouting[routing] || ['View'])[0]] ?? 'ERP',
       dueDate: due.toISOString().slice(0, 10),
       expirationDate: expires.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),

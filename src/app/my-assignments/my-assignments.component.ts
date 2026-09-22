@@ -20,8 +20,14 @@ export class MyAssignmentsComponent {
   keyword = signal('');
   banner = signal(bannerFor('all'));
 
+  /* demo only: lets you show that different roles' assignments come from different source systems */
+  roleFilter = signal('');
+  roles = [...new Set(ASSIGNMENTS.flatMap(a => a.assignedRoles))].sort();
+
   assignments = computed(() => {
     let list = ASSIGNMENTS;
+    const role = this.roleFilter();
+    if (role) list = list.filter(a => a.assignedRoles.includes(role));
     const q = this.keyword().toLowerCase().trim();
     if (!q) return list;
     return list.filter(a =>
