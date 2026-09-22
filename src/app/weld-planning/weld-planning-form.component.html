@@ -33,12 +33,7 @@
       </div>
       <div class="detail-col">
         <label class="field-label">Joint</label>
-        <select class="select select-sm" [(ngModel)]="form.joint">
-          <option value="">Select...</option>
-          @for (j of jointsPool; track j) {
-            <option [value]="j">{{ j }}</option>
-          }
-        </select>
+        <input class="input input-sm" [(ngModel)]="form.joint" placeholder="J-001" />
       </div>
       <div class="detail-col">
         <label class="field-label">Drawing</label>
@@ -55,10 +50,6 @@
             <option [value]="opt.value">{{ opt.label }}</option>
           }
         </select>
-      </div>
-      <div class="detail-col col-span-all">
-        <label class="field-label">Description</label>
-        <textarea class="textarea textarea-sm w-full" [(ngModel)]="form.description" rows="2" placeholder="Describe the joint..."></textarea>
       </div>
     </div>
   </div>
@@ -139,11 +130,6 @@
         </div>
       }
     </div>
-  </div>
-
-  <div class="panel">
-    <div class="panel-title">Notes</div>
-    <textarea class="textarea textarea-sm w-full" [(ngModel)]="form.notes" rows="3" placeholder="Additional notes..."></textarea>
   </div>
 
   <div style="display: flex; gap: 0.75rem; justify-content: flex-end; padding: 1rem 0">

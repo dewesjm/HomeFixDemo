@@ -126,66 +126,62 @@
           </div>
 
           <div>
-            <div class="font-semibold text-sm">Signoff History</div>
+            <div class="flex items-center justify-between mb-1">
+              <div class="font-semibold text-sm">Signoff History</div>
+              @if (ctx().wf().signoffRecords.length) {
+                <button type="button" class="btn btn-ghost btn-xs" (click)="toggleAllRecords(ctx().wf().signoffRecords)">
+                  @if (allRecordsExpanded(ctx().wf().signoffRecords)) { Collapse all } @else { Expand all }
+                </button>
+              }
+            </div>
+            <!-- Same pattern as the History screen: one row per sign-off event, expandable to its recorded fields -->
             @if (ctx().wf().signoffRecords.length) {
               <div class="overflow-x-auto">
               <table class="table table-sm">
                 <thead>
                   <tr>
-                    <th>Stage</th>
-                    <th>Action</th>
-                    <th>Field</th>
-                    <th>Value</th>
+                    <th>When</th>
                     <th>Who</th>
-                    <th>Date</th>
+                    <th>Stage — Action</th>
+                    <th>Result</th>
                   </tr>
                 </thead>
                 <tbody>
-                  @for (r of ctx().wf().signoffRecords; track r.when) {
-                    @if (r.fields.length) {
-                      @for (f of r.fields; track f.key; let i = $index) {
+                  @for (r of ctx().wf().signoffRecords; track $index; let ri = $index) {
+                    <tr>
+                      <td class="text-xs hist-old">{{ r.when | date:'short' }}</td>
+                      <td class="text-xs hist-old">{{ r.who }}</td>
+                      <td>
+                        @if (r.fields.length) {
+                          <button type="button" class="flex items-center gap-1" (click)="toggleRecord(ri)">
+                            @if (expandedRecords().has(ri)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+                            {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : 'Signed off' }}
+                          </button>
+                        } @else {
+                          {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : 'Signed off' }}
+                        }
+                      </td>
+                      <td>
+                        @if (r.action === 'reopened') {
+                          <span class="badge badge-sm badge-warning">RE-OPENED</span>
+                        } @else if (r.result === 'sat') {
+                          <span class="badge badge-sm badge-success">SAT</span>
+                        } @else if (r.result === 'unsat') {
+                          <span class="badge badge-sm badge-error">UNSAT</span>
+                        } @else {
+                          <span>—</span>
+                        }
+                      </td>
+                    </tr>
+                    @if (r.fields.length && expandedRecords().has(ri)) {
+                      @for (f of r.fields; track f.key) {
                         <tr>
-                          @if (i === 0) {
-                            <td [attr.rowspan]="r.fields.length" class="font-medium align-top">{{ r.stageLabel }}</td>
-                            <td [attr.rowspan]="r.fields.length" class="align-top">
-                              @if (r.action === 'reopened') {
-                                <span class="badge badge-sm badge-warning">RE-OPENED</span>
-                              } @else if (r.result === 'sat') {
-                                <span class="badge badge-sm badge-success">SAT</span>
-                              } @else if (r.result === 'unsat') {
-                                <span class="badge badge-sm badge-error">UNSAT</span>
-                              } @else {
-                                <span>—</span>
-                              }
-                            </td>
-                          }
-                          <td class="text-xs opacity-70">{{ f.label }}</td>
-                          <td class="text-xs">{{ f.value }}</td>
-                          @if (i === 0) {
-                            <td [attr.rowspan]="r.fields.length" class="text-xs align-top">{{ r.who }}</td>
-                            <td [attr.rowspan]="r.fields.length" class="text-xs align-top">{{ r.when | date:'short' }}</td>
-                          }
+                          <td></td>
+                          <td></td>
+                          <td class="pl-8 text-xs hist-old">{{ f.label }}</td>
+                          <td [class.hist-new]="f.value" [class.hist-old]="!f.value">{{ f.value || '(left blank)' }}</td>
                         </tr>
                       }
-                    } @else {
-                      <tr>
-                        <td class="font-medium">{{ r.stageLabel }}</td>
-                        <td>
-                          @if (r.action === 'reopened') {
-                            <span class="badge badge-sm badge-warning">RE-OPENED</span>
-                          } @else if (r.result === 'sat') {
-                            <span class="badge badge-sm badge-success">SAT</span>
-                          } @else if (r.result === 'unsat') {
-                            <span class="badge badge-sm badge-error">UNSAT</span>
-                          } @else {
-                            <span>—</span>
-                          }
-                        </td>
-                        <td class="opacity-50">—</td>
-                        <td class="opacity-50">—</td>
-                        <td class="text-xs">{{ r.who }}</td>
-                        <td class="text-xs">{{ r.when | date:'short' }}</td>
-                      </tr>
                     }
                   }
                 </tbody>
@@ -196,16 +192,18 @@
             }
           </div>
 
-          <!-- Comments from visible fields -->
+          <!-- Comments from visible fields. Plain div, not .stage-field: that class's flex-basis (160px,
+               meant for width in the row-based stage-inputs grid) becomes a height basis in this flex-column
+               wrapper and left ~160px of dead space below the input. -->
           @for (f of ctx().visibleFields(stage()); track f.key) {
             @if (f.key === 'comments') {
-              <label class="stage-field">
-                <span class="stage-field-label">{{ f.label }}</span>
+              <div>
+                <div class="stage-field-label">{{ f.label }}</div>
                 <input class="input input-bordered w-full" type="text"
                        [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                        [ngModel]="st.inputs[f.key]"
                        (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-              </label>
+              </div>
             }
           }
         </div>

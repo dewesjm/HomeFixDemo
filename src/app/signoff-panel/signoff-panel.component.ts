@@ -1,7 +1,7 @@
-import { Component, input } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideBadgeCheck, LucideCheck, LucideLockOpen } from '@lucide/angular';
+import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 import { Job } from '../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked } from '../data/workflow';
 
@@ -88,7 +88,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen],
+  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {
@@ -97,6 +97,25 @@ export class SignoffPanelComponent {
   stageIndex = input.required<number>();
 
   weldGroups = WELD_GROUPS;
+
+  /* Records Review's embedded Signoff History: collapsed by default, same expand-per-row and
+     Expand/Collapse all pattern as the History screen, indexed by position in signoffRecords() */
+  expandedRecords = signal<ReadonlySet<number>>(new Set());
+  toggleRecord(i: number) {
+    this.expandedRecords.update(s => {
+      const next = new Set(s);
+      if (!next.delete(i)) next.add(i);
+      return next;
+    });
+  }
+  allRecordsExpanded(records: { fields: unknown[] }[]): boolean {
+    const keys = records.map((r, i) => r.fields.length ? i : -1).filter(i => i >= 0);
+    return keys.length > 0 && keys.every(i => this.expandedRecords().has(i));
+  }
+  toggleAllRecords(records: { fields: unknown[] }[]) {
+    const keys = records.map((r, i) => r.fields.length ? i : -1).filter(i => i >= 0);
+    this.expandedRecords.set(this.allRecordsExpanded(records) ? new Set() : new Set(keys));
+  }
 
   /* the two joint members a weld build-up can affect, with their MCL and MIC-verified keys */
   affectedItemSlots = [

@@ -18,7 +18,6 @@ const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
-const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
 
 @Component({
   selector: 'app-weld-planning-form',
@@ -56,7 +55,6 @@ export class WeldPlanningFormComponent implements OnInit {
   materials2 = MATERIALS_2;
   weldTypes = WELD_TYPES;
   hulls = HULLS;
-  jointsPool = JOINTS_POOL;
 
   ndtFields = NDT_FIELDS;
   ndtMarks = NDT_MARKS;
