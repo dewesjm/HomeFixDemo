@@ -7,7 +7,8 @@ import { SyncService } from './sync.service';
 import { stampWho } from '../data/people';
 import {
   JobWorkflow, HistoryEntry, SignoffInput, InstalledComponent, Attachment, StageField, WorkflowStage,
-  WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData
+  WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData,
+  fabricationSnapshot
 } from '../data/workflow';
 
 
@@ -515,7 +516,9 @@ export class WorkflowService {
       when: new Date().toISOString(),
       /* the routing active when this action happened, not what it moved to afterward
          (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
-      routing: currentRoutingLabel(prev.stages)
+      routing: currentRoutingLabel(prev.stages),
+      /* sign-offs also capture fabrication data as it stood at that moment, not just the stage's own fields */
+      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData) : undefined
     };
     return { ...next, history: [...prev.history, entry] };
   }

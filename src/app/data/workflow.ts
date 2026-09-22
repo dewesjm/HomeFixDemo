@@ -3,7 +3,7 @@ import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
-import { getJointDesign } from './joint-designs';
+import { getJointDesign, jointDesignOptions } from './joint-designs';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
@@ -117,6 +117,7 @@ export interface HistoryEntry {
   to?: string;           /* new value, when the action changed one */
   routing: string;       /* routing label at time of change */
   inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
+  fabInputs?: SignoffInput[];  /* sign-off entries only: fabrication data as it stood at that moment */
 }
 
 export interface JobWorkflow {
@@ -532,6 +533,21 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'changeNumber', label: 'ER/IR Number', type: 'text', row: 5,
     requiredWhen: { key: 'revisedJointDesign', notEmpty: true } },
 ];
+
+/* fabrication data as it stood at some moment (e.g. a sign-off) — every field, blanks included, with
+   Location/Revised Joint Design resolved to their display label the same way the live form does */
+export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[] {
+  return FABRICATION_FIELDS
+    .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
+    .map(f => {
+      const options = f.key === 'location' ? shopOptions()
+        : f.key === 'revisedJointDesign' ? jointDesignOptions()
+        : f.options;
+      const raw = fab[f.key] ?? '';
+      const value = options?.find(o => o.value === raw)?.label ?? raw;
+      return { label: f.label, value };
+    });
+}
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   Welding: [

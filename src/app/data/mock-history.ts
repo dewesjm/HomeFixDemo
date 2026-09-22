@@ -1,7 +1,7 @@
 /* seeded mock activity for Work history, mirrors WorkflowService shapes */
 import { JOBS, Job } from './jobs';
 import { stampWho } from './people';
-import { HistoryEntry, StageField, WorkflowStage, buildStages, snapshotInputs, fieldsShown } from './workflow';
+import { HistoryEntry, StageField, WorkflowStage, buildStages, snapshotInputs, fieldsShown, seedFabricationData, fabricationSnapshot } from './workflow';
 
 export interface MockActivity {
   jobId: string;
@@ -63,9 +63,12 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
   const stageAfter = (k: number): WorkflowStage | undefined => stages[k + 1];
+  /* fabrication data doesn't get its own history in the mock, so every sign-off for this job
+     snapshots the same seeded values — matches the real app closely enough since fab fields change rarely */
+  const fabInputs = job.trade === 'Welding' ? fabricationSnapshot(seedFabricationData(job)) : undefined;
   const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string, inputs?: HistoryEntry['inputs']) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
-    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs } });
+    out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs, fabInputs: section === 'Sign-off' ? fabInputs : undefined } });
   };
   /* matches JointPageComponent.isNdtStage: Attachments only shows for NDT stages + Repair */
   const isNdtStageId = (id: string) => id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt') || id === 'repair';

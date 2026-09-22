@@ -58,6 +58,8 @@ export class WorkHistoryComponent {
   /* job filter: matches XREFID, drawing, joint or order */
   jobQuery = signal<string>('');
   expanded = signal<ReadonlySet<string>>(new Set());
+  /* nested "Fabrication at this sign-off" toggle, independent of the row's own expand state */
+  fabExpanded = signal<ReadonlySet<string>>(new Set());
 
   table = new TableState<ActivityRow>(
     ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
@@ -135,6 +137,14 @@ export class WorkHistoryComponent {
     });
   }
 
+  toggleFab(key: string) {
+    this.fabExpanded.update(s => {
+      const next = new Set(s);
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }
+
   /* scope label for the header */
   scopeLabel = computed(() => {
     const parts: string[] = [];
@@ -164,7 +174,7 @@ export class WorkHistoryComponent {
         drawing: job?.drawing ?? '',
         joint: job?.joint ?? '',
         order: job?.order ?? '',
-        inputsText: (e.inputs ?? []).map(i => `${i.label} ${i.value}`).join(' '),
+        inputsText: [...(e.inputs ?? []), ...(e.fabInputs ?? [])].map(i => `${i.label} ${i.value}`).join(' '),
       });
     };
     for (const wf of this.wfService.allWorkflows()) {
