@@ -18,18 +18,18 @@ import { TableState } from './table-state';
       <div class="flex flex-col items-start gap-1 min-w-0">
         <a class="cursor-pointer select-none" (click)="table().toggleSort(field())">{{ label() }} {{ arrow() }}</a>
         @if (filter() === 'text') {
-          <div class="relative col-filter-mobile">
-            <svg lucideListFilter class="size-3 opacity-60 absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none"></svg>
-            <input type="text" class="input input-xs input-bordered w-full min-w-0 pl-5 pr-5" [title]="'Filter ' + label()"
+          <label class="input input-xs input-bordered flex items-center gap-1 w-full min-w-0 col-filter-mobile" [title]="'Filter ' + label()">
+            <svg lucideListFilter class="size-3 opacity-60 shrink-0"></svg>
+            <input type="text" class="grow min-w-0"
                    [ngModel]="table().columnFilters()[field()] ?? ''"
                    (ngModelChange)="table().setColumnFilter(field(), $event)" />
             @if (table().columnFilters()[field()]) {
-              <button type="button" class="absolute right-1 top-1/2 -translate-y-1/2 btn btn-ghost btn-xs p-0"
+              <button type="button" class="btn btn-ghost btn-xs p-0 shrink-0"
                       (click)="table().setColumnFilter(field(), '')">
                 <svg lucideX class="size-3 opacity-60"></svg>
               </button>
             }
-          </div>
+          </label>
         } @else {
           <app-multiselect-dropdown class="block w-full min-w-0" [options]="options()"
             [selected]="table().columnFilters()[field()] ?? []"
