@@ -63,7 +63,6 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
   const stageAfter = (k: number): WorkflowStage | undefined => stages[k + 1];
-  const routingAfter = (k: number) => stageAfter(k)?.label ?? 'All stages complete';
   const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string, inputs?: HistoryEntry['inputs']) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs } });
@@ -92,7 +91,8 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
       ...stage, inputs, signoffInputs, result: decision,
       inspectionType: stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '',
     };
-    push('Sign-off', `${stage.label} — Signed off`, routingAfter(k), undefined, decision ? decision.toUpperCase() : '',
+    /* routing = the stage this action was for, not what it moved to afterward */
+    push('Sign-off', `${stage.label} — Signed off`, stage.label, undefined, decision ? decision.toUpperCase() : '',
       snapshotInputs(view, fieldsShown(view), stage.signoffFields));
 
     if (decision === 'unsat') {

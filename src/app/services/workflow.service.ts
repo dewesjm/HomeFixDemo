@@ -513,7 +513,9 @@ export class WorkflowService {
       ...e,
       ...stampWho(e.who),
       when: new Date().toISOString(),
-      routing: currentRoutingLabel(next.stages)
+      /* the routing active when this action happened, not what it moved to afterward
+         (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
+      routing: currentRoutingLabel(prev.stages)
     };
     return { ...next, history: [...prev.history, entry] };
   }
