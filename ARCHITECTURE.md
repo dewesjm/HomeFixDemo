@@ -14,7 +14,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 | Term | Meaning |
 |---|---|
 | **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
-| **XREFID** | The user-facing identifier shown everywhere (`job.xrefid`), 5-char alphanumeric, matching `job.id` when present. **Blank on ~25% of jobs** (`i % 4 === 0`), same imperfect-source-data pattern as My Assignments and Weld Planning; `job.id` itself is a separate, always-populated internal key (never shown) that routing, workflow lookups, and row selection use, so a blank XREFID never breaks navigation or workflow state. |
+| **XREFID** | The user-facing identifier shown everywhere (`job.xrefid`), 5-char alphanumeric, matching `job.id` when present. **Blank on ~25% of jobs** (`i % 4 === 0`), same imperfect-source-data pattern as My Assignments and Weld Planning; `job.id` itself is a separate, always-populated internal key (never shown) that routing, workflow lookups, and row selection use, so a blank XREFID never breaks navigation or workflow state. Renders **blank**, not a `'—'` placeholder, on the Weld Record table and Advanced Search lists (fixed 2026-09-22 — the dash was only a display fallback, never a real value, and read as if it were stored data); Joint Details keeps its own `'—'` fallback since that's a single-value detail view, not a list. |
 | **Drawing** | Letter + 7 digits, e.g. `H7111234` or `S7204518` (`job.drawing`, weld-joint `drawing`); both `H` and `S` prefixes appear in seed data. |
 | **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). **Blank whenever XREFID is blank** — neither was captured for that record. |
 | **Joint number** | Weld Planning's `jointNumber`: 2-letter prefix, hyphen, 5 digits, e.g. `ST-00001` (seed: `ST` structural, `PI` pipe). |
@@ -49,28 +49,34 @@ src/app/
   app.component.*        Shell: top nav + <router-outlet>. Admin dropdown, theme picker, PWA update prompt.
   app.routes.ts          URL → screen mapping
 
-  table-search/          Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
-  adaptive-search/       Advanced Search — schema-driven filter bar + saved variants + column picker (for everyone else)
-  work-history/          History — audit-trail activity log with deprogress
-  my-assignments/        My Assignments — assignment list with keyword search
-  job-detail/            Job detail — routing bar, joint details, fabrication, signoff, records review
-  routing-bar/           Horizontal numbered routing pills (auto-scrolls to the selected stage)
-  joint-details/         Read-only joint/NDT/additional data panel
-  fabrication/           Cross-stage fabrication fields (Welding)
-  signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
-  attachments/           Attachments list
-  weld-planning/         Weld Planning — joints list/form/detail/mass-edit/admin/advanced-search (own data in
-                         weld-planning.data.ts; own filter engine in weld-planning-filter-schema.ts)
-  sync-status/           Online/offline indicator (stubbed)
-  theme-picker/          DaisyUI theme switcher (32 themes, default: forest)
+  weld-record/            All Weld Record (EWR) screens + their admin pages, grouped under one folder (moved
+                          here 2026-09-23 — was 24 flat top-level folders; every admin-* folder turned out to
+                          belong to Weld Record specifically, none to Weld Planning). Nesting is purely file
+                          location — routes/URLs/component names are unchanged.
+    table-search/          Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
+    adaptive-search/       Advanced Search — schema-driven filter bar + saved variants + column picker (for everyone else)
+    work-history/          History — audit-trail activity log with deprogress
+    my-assignments/        My Assignments — assignment list with keyword search
+    job-detail/            Job detail — routing bar, joint details, fabrication, signoff, records review
+    routing-bar/           Horizontal numbered routing pills (auto-scrolls to the selected stage)
+    joint-details/         Read-only joint/NDT/additional data panel
+    fabrication/           Cross-stage fabrication fields (Welding)
+    signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
+    attachments/           Attachments list
+    sync-status/           Online/offline indicator (stubbed)
+    admin/
+      admin-routing/         Admin → Routing (stage templates per trade)
+      admin-set-routing/     Admin → Set routing (force a job's stage)
+      admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
+      admin-signoff-fields/  Admin → Signoff fields
+      admin-characteristics/ Admin → Attribute codes
+      admin-material-traceability/, admin-ndt/, admin-locations/, admin-weld-positions/,
+      admin-joint-designs/, admin-banner/, admin-teams/, admin-quick-links/   Other admin pages
 
-  admin-routing/         Admin → Routing (stage templates per trade)
-  admin-set-routing/     Admin → Set routing (force a job's stage)
-  admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
-  admin-signoff-fields/  Admin → Signoff fields
-  admin-characteristics/ Admin → Attribute codes
-  admin-material-traceability/, admin-ndt/, admin-locations/, admin-weld-positions/,
-  admin-joint-designs/, admin-banner/, admin-teams/   Other admin pages
+  weld-planning/          Weld Planning — joints list/form/detail/mass-edit/admin/advanced-search (own data in
+                          weld-planning.data.ts; own filter engine in weld-planning-filter-schema.ts). Its own
+                          admin screen (weld-planning-admin.component.ts) lives inside this folder, not split out.
+  theme-picker/           DaisyUI theme switcher (32 themes, default: forest)
 
   data/
     jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), addTestJob()
@@ -94,7 +100,10 @@ src/app/
     sort-header.component  th[appSortHeader]: sort link + optional text/multiselect column filter
     table-pager.component, multiselect-dropdown.component, date-range.component
     toast.service / toast-host.component   Themed toast notifications
-    confirm.service / confirm-dialog.component   Password-protected confirm dialogs
+    confirm.service / confirm-dialog.component   Confirm dialogs; optional password field OR a generic
+                       textInput field (label + placeholder), both captured via one `inputValue` signal —
+                       generalized 2026-09-23 so any screen can prompt for a short piece of text (e.g.
+                       History's Deprogress reason) without building its own dialog.
 ```
 
 ## Routes
@@ -104,7 +113,7 @@ src/app/
 | `/table` | Pipe Welding (default) |
 | `/history` | History (`?job=<id>` deep-link) |
 | `/adaptive` | Advanced Search |
-| `/jobs/:id` | Job detail (`?from=assignments` returns there after signoff) |
+| `/jobs/:id` | Job detail (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `job-detail.component.ts`) |
 | `/assignments` | My Assignments |
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-options` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, weld-positions, banner, joint-designs, teams, material-traceability) |
@@ -132,11 +141,12 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 ### Pipe Welding (`table-search`)
 - Deliberately the "dumb", fast version. Layout: `table-page-wrap` (fixed header/filters, scrollable table).
 - Columns: XREFID, Hull, Drawing, Joint, Order, Sequence, Current routing, Actions — sortable, with per-column filters via `appSortHeader`.
-- Role dropdown, CSV export, page-size selector, admin banner pill, frozen Actions column on mobile.
+- Role dropdown, CSV export (right-aligned, next to the keyword search box — moved 2026-09-23), page-size selector, admin banner pill, frozen Actions column on mobile.
 - Persists filter/sort/page/role to `STORAGE.searchState`.
 
 ### Advanced Search (`adaptive-search`)
 - For everyone who needs more than Pipe Welding: schema-driven filter bar, saved variants, column picker, CSV export. All NDT and additional-data fields.
+- Text filters carry a `{ text, negate }` value (`TextFilterValue` in `data/filter-schema.ts`) with a **Contains / Does not contain** selector next to the input (fixed-width select, added 2026-09-23) instead of a plain contains-only string. Old saved variants (plain-string text values) are migrated to the new shape on load in `loadVariants()`.
 
 ### Job detail (`job-detail`)
 - **Routing bar** — numbered pills, horizontal scroll, auto-centers the selected stage. Active = `--color-success`, done = `--color-info`.
@@ -146,6 +156,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 - **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`).
 - **Records Retention Review** (`review-o63` / `review-o04` stages — split 2026-09-22, see "Welding stages" above; role **Records Retention**, renamed from "Records" 2026-09-21) — verification grid + immutable `signoffRecords` history table.
 - **Sold** — once signed all stages lock; only deprogress is allowed (Work History, most recent signoff per job).
+- **Unsigned edits are discarded on leaving, with a warning if there are any** — `canDeactivateGuard` (`shared/can-deactivate.guard.ts`) calls `JobDetailComponent.canDeactivate()`, which now compares the live workflow against a snapshot taken on load (`loadSnapshot`/`hasUnsavedChanges()`) covering *every* unsigned stage's inputs/signoffInputs/routingType **and** `fabricationData` — not just the one stage the user last touched. `ngOnDestroy()` reverts all of that back to the snapshot for any stage that's still unsigned (and Fab data, unless the Fit stage got signed this visit) once the route actually changes, whether the user confirmed the warning or there was nothing to warn about. Before this fix (session ending 2026-09-23), Fab data was written straight into the persisted workflow on blur with no revert at all, so it silently survived navigating away without signing.
 
 ### Signoff panel (`signoff-panel`)
 - **Type dropdown** for stages with `routingOptions`. On inspector/NDT stages it starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired`).
@@ -157,6 +168,8 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
 - **PH/IP validation** — blur-triggered range checks; NC skips that limit.
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
+- **Defect Code** (RT, UNSAT only) renders in its own row right after Decision, not above it in the general fields loop — fixed 2026-09-22, since it only applies once UNSAT is chosen, showing it first read backwards.
+- **Penetrant Manufacturer** select (MT/PT) was missing `w-full` (the app's `.stage-field input { width: 100% }` rule doesn't cover `<select>`), so it shrank to its selected option's text width inside its `flex-1` half of the row, leaving a gap next to Penetrant Brand — fixed 2026-09-22.
 - **Sign button** — disabled until `canSignStage()` passes; it is derived from `signBlockers()` in job-detail, the single source of the rules. There is deliberately no on-screen "why" text (the sticky bar and then the note beside the button were both removed at the user's request). A failed attempt scrolls to and focuses the first validation error.
 - **Fit-Up Insp** — verification grid against fabrication data, Release-to-welding checkbox.
 - **Records Retention Review's embedded "Signoff History"** — same pattern as the History screen: one row per sign-off event (When, Who, Stage — Action with an expand chevron, Result badge), collapsed by default, with its own **Expand all / Collapse all**. Expanding shows the fields recorded at that sign-off. Local to `SignoffPanelComponent` (`expandedRecords`/`toggleRecord`/`toggleAllRecords`), not wired to the History screen's data or state.
@@ -165,8 +178,13 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 - **Interim Layer** signs off and navigates away; **5X** — answering the "Did you perform 5X inspection…" question only records the answer; auto-signing the matching VT/5X stage happens when the parent stage (Root/Final Weld) is itself signed off, not when the dropdown is changed (fixed 2026-09-22 — it previously fired on the dropdown change alone, signing a stage with no confirmation).
 
 ### My Assignments, History, Weld Planning
-- My Assignments: expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location), **Specific Location** = bay/rack within it (same idea as Fabrication's Specific Location field), Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, Records Retention EWR). Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, a Charge field rendered as a decorative barcode (`barcodeBars()`, purely cosmetic — bar widths derived from the charge digits, not a real symbology), and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet). The separate "Details" button still navigates to the job page. A demo-only **role filter dropdown** (badged "Demo only", defaults to **Welding**) filters by `assignedRoles`; also a keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). No "Assigned To" column (removed; it previously showed a hardcoded "John Johnson", not `a.assignedTo`). **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; the Details button therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank.
-- History: When, Who (name + title held at the time), Action, Old/New, Routing, XREFID, Hull, Drawing, Joint, Order, Actions (XREFID links to the job). Filters: person typeahead; **a job box that matches XREFID, drawing, joint or order** (not hull); and a right-hand **Search all** box covering every column and the sign-off field values. **It records what was input at each sign-off**: a sign-off row expands (per row, or **Expand all / Collapse all** for every sign-off matching the filters) to every editable field the user was shown, with its value at that moment, blanks included; each field row repeats the sign-off's When, Who, Routing, XREFID, Hull, Drawing and Joint in muted text so it reads on its own (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field, including Drawing/Joint/Order alongside XREFID/Hull. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`. **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage). It needs a required comment.
+- My Assignments is **first** in the Weld Record nav dropdown (moved above Pipe Welding 2026-09-23 — it's the most common thing a tech opens). Column widths: Routing fixed at 8rem (was `1fr`, grew far past its longest value), Specific Location `1fr` (absorbs the freed space; was a cramped 9rem, truncating values). Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, Records Retention EWR). Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet). A Charge field renders as a real **Code 39 (3 of 9) barcode** (`barcodeElements()` in `my-assignments.component.ts`: narrow/wide bar-and-space patterns per the ISO/IEC 16388 character set, wrapped in `*` start/stop characters — replaced the old decorative random-width bars 2026-09-22), centered with the charge number underneath it. The separate "Details" button still navigates to the job page. A demo-only **role filter dropdown** (red-outlined `select-error` + an inline "Demo role:" label — replaced the small "Demo only" badge 2026-09-23 for visibility, defaults to **Welding**) filters by `assignedRoles`; also a keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). No "Assigned To" column (removed; it previously showed a hardcoded "John Johnson", not `a.assignedTo`). **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; the Details button therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank. A blank XREFID does **not** by itself mean shipboard work — most such records still track to a shop/bay like any other assignment. Only **two** assignments (`assignments.ts`, `toShip()`) get the shipboard-location treatment: Location = 'Ship', and the expanded row shows **Deck / Frame / P/S / CL (centerline offset) / Usage** instead of Specific Location. One is guaranteed to be the earliest-due Welding assignment (so it's visible near the top of the default view); the other is picked from elsewhere among the blank-XREFID records for variety.
+- History: leftmost icon-only chevron column (expand/collapse), then **Routing, Action**, When, Who, **Value** (was Old value/New value — Old value dropped 2026-09-23: it was dash almost everywhere in practice, see below), XREFID, Hull, Drawing, Joint, Order, **Deprogress**, then a trailing details-button column (small primary icon button, same pattern as My Assignments' — plain XREFID text is no longer itself a clickable link, replaced 2026-09-23 since the whole-cell link was an easy accidental-click target; opening it sets `?from=history` so Back/sign-off returns to History instead of the Pipe Welding table, via `backDestination()` in `job-detail.component.ts`). Identity columns (XREFID/Hull/Drawing/Joint/Order) are sized to their real fixed-length content in `ch` units, not a blanket rem width. Every column has its own filter via `appSortHeader` (text, or a multiselect for Routing) alongside the top-bar Person/XREFID/search filters — the filter inputs show a small filter icon instead of "Filter…" placeholder text, which was clipping to "Fil"/a single letter in the narrow identity columns. Filters: person typeahead; **a job box that matches XREFID, drawing, joint or order** (not hull); and a right-hand **Search all** box covering every column and the sign-off field values. **It records what was input at each sign-off**: a sign-off row expands (per row, or **Expand all / Collapse all** for every sign-off matching the filters) to every editable field the user was shown, with its value at that moment, blanks included; each field row repeats the sign-off's When, Who, Routing, XREFID, Hull, Drawing and Joint in muted text so it reads on its own (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field, including Drawing/Joint/Order alongside XREFID/Hull. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`.
+  - **`routing` is the stage the action was *for*, not what it moved to afterward** (fixed 2026-09-23): `WorkflowService.withHistory()` now derives it from `currentRoutingLabel(prev.stages)` (pre-update state) instead of `next.stages` — a `'Fit — Signed off'` entry used to record whatever became active next (e.g. `'Tack'`) instead of `'Fit'`. `seededWorkflow()`'s own entries already got this right (`routing: s.label`); `mock-history.ts`'s generator was fixed the same way (records `stage.label`, not the next stage).
+  - **Old value dropped** (2026-09-23): the only field types that ever populated `from` either never reach the grid (Stages/Fabrication are filtered out of `allActivity()`) or belonged to the dead Work Validation feature (see below), aside from one edge case (pre-signoff Decision flip-flopping) not worth a whole column.
+  - **Routing filter sorts by workflow order**, not alphabetically (`routingOrder` in `work-history.component.ts`: each stage's first-appearance index across every trade's `getTemplates()`); anything not a real stage (e.g. `'All stages complete'`) sorts to the end.
+  - **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage — only when that live workflow actually *has* a signed stage to compare against: `lastSignedLabel.has(jobId)` used to be true even for a job whose live workflow was merely instantiated with nothing signed (e.g. just from appearing in the Pipe Welding table), which silently hid Deprogress on jobs whose real history is the mock fallback; fixed 2026-09-23). Clicking it now opens the shared **confirm modal** (`ConfirmService.textInput`) for the required reason, instead of an inline input/Go/Cancel row in the cell.
+  - **Mock history realism fixes** (2026-09-23, all in `data/mock-history.ts`): dropped `Component added`/`Validation notes` entries (Work Validation has no UI anywhere in `job-detail` anymore — nothing can produce them); only stages with a `rejectToStage` ever get a SAT/UNSAT decision (matches the real signoff panel's auto-accept for the rest) and an UNSAT stops the mock sign-off chain there instead of pretending later stages were reached; `Attachment added` only fires when the current stage is one that actually shows Attachments (`isNdtStageId`, mirrors `job-detail`'s `isNdtStage`); free-text fields with no plausible value (Comments/Notes) pick from a small sentence pool instead of the literal fallback string `'recorded'`.
 - Weld Planning: separate weld-joint data (`WeldJoint`; list/form/detail/mass edit/advanced search; the admin page has only Joint Designs, the NDT and PWHT option tabs were removed) with its own `hull` field .
   A joint has no title, WPS, PWHT, assignee, estimated hours, description or notes (all removed from the create/edit form; the data fields still exist and still show on the detail page & CSV for seeded joints). Joint is a free-text field in system-joint format (e.g. `ST-J10005`, see Terminology), not a dropdown. Its NDT requirements are the same seven fields as the weld record's joint details (`NDT_FIELDS` in `weld-planning.data.ts`: RT Root/Final, NDT Root/Each/Final, UT, VT; each blank, `X` or `5X`). Material 2 is labelled plainly (no "(Filler)"). The form, detail, admin and mass-edit pages fill the content area like every other screen (no centred max-width box). Plans saved in the browser before this change lack the NDT fields and show them blank.
   **Advanced Search** (`weld-planning-search`, route `/weld-planning/search`) mirrors the Job Advanced Search screen but scoped to `WeldJoint`: its own filter schema (`weld-planning-filter-schema.ts`), saved variants and result-column picker, both persisted under their own `STORAGE` keys (`weldPlanningFilterVariants`, `weldPlanningResultColumns`) so they don't collide with the Job Advanced Search screen's saved state.
