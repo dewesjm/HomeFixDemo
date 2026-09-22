@@ -309,7 +309,7 @@
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
                         @if (g.type === 'select') {
-                          <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
+                          <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                                   [ngModel]="st.inputs[g.key]" (ngModelChange)="ctx().stageSelectChange(st, g, $event)">
                             <option [ngValue]="null">Select</option>
                             @for (o of g.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
