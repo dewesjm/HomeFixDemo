@@ -60,9 +60,10 @@ export interface Job {
 
 /* welding-specific seed pools */
 /* letter + 7 digits, e.g. H7111234 */
-const DRAWINGS = ['H7111234', 'H7111235', 'H7204518', 'H7204519', 'H7315002', 'H7315003', 'H7422871', 'H7530116', 'H7530117'];
+const DRAWINGS = ['H7111234', 'H7111235', 'S7204518', 'S7204519', 'H7315002', 'S7315003', 'H7422871', 'S7530116', 'H7530117'];
 const DRAWING_REVS = ['A', 'B', 'C', 'D', 'E', 'A-2', 'B-1'];
-const JOINTS = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
+/* joint = system-joint, e.g. ST-J10005 */
+const JOINTS = ['ST-J10005', 'ST-J10012', 'SW-J10008', 'SW-J10021', 'FW-J10014', 'FO-J10009', 'LO-J10017', 'HV-J10003'];
 const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
 const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];

@@ -70,7 +70,8 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
 const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Aluminum'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
-const JOINTS_POOL = ['J-001', 'J-002', 'J-003', 'J-004', 'J-005', 'J-006', 'J-007', 'J-008'];
+/* joint = system-joint, e.g. ST-J10005 */
+const JOINTS_POOL = ['ST-J10005', 'ST-J10012', 'SW-J10008', 'SW-J10021', 'FW-J10014', 'FO-J10009', 'LO-J10017', 'HV-J10003'];
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -109,7 +110,7 @@ function generateSeededJoints(count = 160): WeldJoint[] {
       status: pick(statuses),
       priority: pick(priorities),
       jointType: jt,
-      drawing: `H7${String(111000 + i * 37).padStart(6, '0')}`,   /* letter + 7 digits */
+      drawing: `${i % 3 === 0 ? 'S' : 'H'}7${String(111000 + i * 37).padStart(6, '0')}`,   /* letter + 7 digits */
       drawingRev: pick(['A', 'B', 'C', 'D']),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),
