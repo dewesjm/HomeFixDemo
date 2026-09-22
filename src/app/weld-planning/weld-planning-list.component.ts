@@ -34,6 +34,9 @@ type Row = WeldJoint;
           <button class="btn btn-sm btn-primary" (click)="createNew()">
             <svg lucidePlus class="size-4"></svg> Create
           </button>
+          <button class="btn btn-sm" (click)="advancedSearch()">
+            <svg lucideSearch class="size-4"></svg> Advanced Search
+          </button>
           <button class="btn btn-sm" (click)="importFile()">
             <svg lucideUpload class="size-4"></svg> Import
           </button>
@@ -192,6 +195,10 @@ export class WeldPlanningListComponent {
 
   createNew() {
     this.router.navigate(['/weld-planning/new']);
+  }
+
+  advancedSearch() {
+    this.router.navigate(['/weld-planning/search']);
   }
 
   importFile() {
