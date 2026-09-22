@@ -78,7 +78,7 @@ const WELD_GROUPS: WeldGroup[] = [
       { keys: ['overrideNote'], width: null },
     ] },
   ] },
-  { title: 'Readings', sections: [
+  { sections: [
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
   ] },
   { sections: [
