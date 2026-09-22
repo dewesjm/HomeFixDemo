@@ -571,20 +571,25 @@ export class JobDetailComponent implements OnDestroy {
     if (fillerMic && consumableInsertId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableInsertId);
   }
 
-  /* 5X inspection dropdown: when Yes, auto-sign the corresponding 5X NDT stage */
+  /* 5X inspection dropdown: just records the answer. The corresponding 5X NDT stage is only
+     auto-signed once THIS stage is itself signed off (see signStage()) — answering the question
+     must never sign anything on its own. */
   on5xChange(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    /* save the value to the stage input */
+    if (!this.job) return;
     const field = stage.fields.find(f => f.key === 'performed5x');
     if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
-    if (value !== 'yes') return;
-    /* determine which 5X stage to auto-sign based on parent stage */
+  }
+
+  /* called right after `stage` itself is signed off: if it answered "yes" to the 5X question,
+     auto-sign the matching VT/5X NDT stage now that the real sign-off has actually happened */
+  private signRelated5xIfNeeded(stage: WorkflowStage) {
+    if (!this.job || !this.wf) return;
+    if ((stage.inputs['performed5x'] ?? '') !== 'yes') return;
     const ndt5xId = stage.id === 'root-weld' ? 'root-ndt-vt5x'
       : stage.id === 'final-weld' ? 'final-ndt-vt5x' : '';
     if (!ndt5xId) return;
     const ndtStage = this.wf().stages.find(s => s.id === ndt5xId);
     if (!ndtStage || ndtStage.signed) return;
-    /* auto-sign the 5X stage */
     this.wfService.signStage(this.job, ndt5xId, this.signoffSnapshot(ndtStage));
   }
 
@@ -616,21 +621,21 @@ export class JobDetailComponent implements OnDestroy {
   }
   /* WTN → Weld Process mapping */
   private readonly WTN_PROCESS_MAP: Record<string, string> = {
-    'wtn-101': 'smaw', 'wtn-102': 'gtaw', 'wtn-103': 'gmaw', 'wtn-201': 'fcaw'
+    '07:11.5-3': 'smaw', '07:12.0-1': 'gtaw', '08:14.2-2': 'gmaw', '09:10.8-4': 'fcaw'
   };
   /* WTN → PH/IP requirements mapping (NC = non-critical, no limit) */
   private readonly WTN_PHIP_MAP: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string }> = {
-    'wtn-101': { phMin: '120', phMax: '180', ipMin: '90', ipMax: 'NC' },
-    'wtn-102': { phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140' },
-    'wtn-103': { phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145' },
-    'wtn-201': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
+    '07:11.5-3': { phMin: '120', phMax: '180', ipMin: '90', ipMax: 'NC' },
+    '07:12.0-1': { phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140' },
+    '08:14.2-2': { phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145' },
+    '09:10.8-4': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
   };
   /* WTNs that show Override Requirements on weld stages */
-  private readonly WTN_OVERRIDE_WTNS = new Set(['wtn-101', 'wtn-201']);
+  private readonly WTN_OVERRIDE_WTNS = new Set(['07:11.5-3', '09:10.8-4']);
   /* Override field values per WTN */
   private readonly WTN_OVERRIDE_VALUES: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string; note: string }> = {
-    'wtn-101': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140', note: 'Approved deviation per WPS-001' },
-    'wtn-201': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', note: 'Approved deviation per WPS-002' },
+    '07:11.5-3': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140', note: 'Approved deviation per WPS-001' },
+    '09:10.8-4': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', note: 'Approved deviation per WPS-002' },
   };
 
   /* select fields commit on change, clear maps to '' */
@@ -854,6 +859,7 @@ export class JobDetailComponent implements OnDestroy {
         password: true,
         accept: () => {
           this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
+          this.signRelated5xIfNeeded(stage);
           const from = this.route.snapshot.queryParamMap.get('from');
           this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
         }
@@ -871,6 +877,7 @@ export class JobDetailComponent implements OnDestroy {
       password: true,
       accept: () => {
         this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
+        this.signRelated5xIfNeeded(stage);
         const from = this.route.snapshot.queryParamMap.get('from');
         this.router.navigate([from === 'assignments' ? '/assignments' : '/table']);
       }

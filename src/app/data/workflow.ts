@@ -318,11 +318,11 @@ const METAL_SIZE_OPTIONS = [
 /* ── Shared weld stage fields (Tack, Root, Final Weld) ── */
 const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'weldProcedure', label: 'GWP', type: 'select', required: true,
-    options: [{ label: 'WPS-001', value: 'wps-001' }, { label: 'WPS-002', value: 'wps-002' },
-      { label: 'WPS-003', value: 'wps-003' }, { label: 'WPS-004', value: 'wps-004' }] },
+    options: [{ label: 'W-101', value: 'w-101' }, { label: 'W-102', value: 'w-102' },
+      { label: 'W-103', value: 'w-103' }, { label: 'W-104', value: 'w-104' }] },
   { key: 'wtn', label: 'WTN', type: 'select', required: true,
-    options: [{ label: 'WTN-101', value: 'wtn-101' }, { label: 'WTN-102', value: 'wtn-102' },
-      { label: 'WTN-103', value: 'wtn-103' }, { label: 'WTN-201', value: 'wtn-201' }] },
+    options: [{ label: '07:11.5-3', value: '07:11.5-3' }, { label: '07:12.0-1', value: '07:12.0-1' },
+      { label: '08:14.2-2', value: '08:14.2-2' }, { label: '09:10.8-4', value: '09:10.8-4' }] },
   { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true,
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
@@ -929,7 +929,7 @@ export function seedFabricationData(job: Job): Record<string, string> {
     weldMemo: seedWeMemo(rand),
     revisedJointDesign: revised ? 'bj-g' : '',
     changeNumber: revised ? `ER-${1000 + Math.floor(rand() * 9000)}` : '',
-    wtn: rand() < 0.5 ? 'wtn-101' : 'wtn-201',
+    wtn: rand() < 0.5 ? '07:11.5-3' : '09:10.8-4',
   };
 }
 
