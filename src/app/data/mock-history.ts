@@ -20,28 +20,9 @@ function seeded(n: number) {
 const DAY = 24 * 60 * 60 * 1000;
 const MIN = 60 * 1000;
 
-const COMPONENTS = [
-  { name: 'Welding rod', part: 'E7018-3/32' },
-  { name: 'TIG filler wire', part: 'ER70S-6-1/16' },
-  { name: 'Backing ring', part: 'BR-ST-200' },
-  { name: 'Consumable insert', part: 'CI-316L' },
-  { name: 'Nozzle tip', part: 'NT-12AG' },
-  { name: 'Gas lens collet', part: 'GLC-3/32' },
-  { name: 'Clamp strap', part: 'CS-200' },
-  { name: 'Gasket set', part: 'GKS-316' }
-];
-
 const FILES = [
   'before.jpg', 'after.jpg', 'wps.pdf', 'permit.pdf', 'ndt-report.jpg',
   'weld-map.pdf', 'site-photo.png', 'nameplate.jpg'
-];
-
-const NOTES = [
-  'Weld completed per WPS requirements.',
-  'NDT report attached — no indications found.',
-  'Fit-up verified against drawing revision.',
-  'Preheat temperature recorded before welding.',
-  'Post-weld visual inspection passed.'
 ];
 
 /* plausible recorded value for a stage field */
@@ -99,17 +80,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
 
   const restRouting = routingAfter(signCount - 1);
 
-  /* 2) work validation: component and/or condition code with count */
-  if (rand() < 0.6) {
-    const c = COMPONENTS[Math.floor(rand() * COMPONENTS.length)];
-    const qty = 1 + Math.floor(rand() * 3);
-    push('Work Validation', 'Component added', restRouting, undefined, `${c.name} (×${qty}, P/N ${c.part})`);
-  }
-  if (rand() < 0.4) {
-    push('Work Validation', 'Validation notes', restRouting, '—', NOTES[Math.floor(rand() * NOTES.length)]);
-  }
-
-  /* 3) sometimes an attachment */
+  /* 2) sometimes an attachment */
   if (rand() < 0.55) {
     push('Attachments', 'Attachment added', restRouting, undefined, FILES[Math.floor(rand() * FILES.length)]);
   }
