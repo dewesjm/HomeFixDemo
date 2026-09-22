@@ -62,11 +62,14 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
 
   /* anchor to a random moment in past ~45 days, then step forward */
   let t = now - Math.floor(rand() * 45) * DAY - Math.floor(rand() * 8) * 60 * MIN;
-  const routingAfter = (k: number) => (k + 1 < stages.length ? stages[k + 1].label : 'All stages complete');
+  const stageAfter = (k: number): WorkflowStage | undefined => stages[k + 1];
+  const routingAfter = (k: number) => stageAfter(k)?.label ?? 'All stages complete';
   const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string, inputs?: HistoryEntry['inputs']) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs } });
   };
+  /* matches JobDetailComponent.isNdtStage: Attachments only shows for NDT stages + Repair */
+  const isNdtStageId = (id: string) => id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt') || id === 'repair';
 
   /* stages progressed through; some jobs fully signed, most a step or two in */
   const signCount = rand() < 0.3
@@ -74,7 +77,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     : 1 + Math.floor(rand() * Math.min(2, stages.length));
 
   /* 1) walk stages in order, signing each off with every editable field's value at that moment (some left blank) */
-  let restRouting = stages[0]?.label ?? 'All stages complete';
+  let restStage: WorkflowStage | undefined = stages[0];
   for (let k = 0; k < signCount; k++) {
     const stage = stages[k];
     /* only rejectable stages get a SAT/UNSAT decision — matches the real signoff panel, which
@@ -95,14 +98,15 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     if (decision === 'unsat') {
       /* an UNSAT rejects work back to an earlier stage rather than advancing — stop here
          rather than pretending later stages were reached without a resign cycle */
-      restRouting = stages.find(s => s.id === stage.rejectToStage)?.label ?? stage.label;
+      restStage = stages.find(s => s.id === stage.rejectToStage) ?? stage;
       break;
     }
-    restRouting = routingAfter(k);
+    restStage = stageAfter(k);
   }
+  const restRouting = restStage?.label ?? 'All stages complete';
 
-  /* 2) sometimes an attachment */
-  if (rand() < 0.55) {
+  /* 2) sometimes an attachment — only on the NDT/Repair stages that actually show Attachments */
+  if (restStage && isNdtStageId(restStage.id) && rand() < 0.55) {
     push('Attachments', 'Attachment added', restRouting, undefined, FILES[Math.floor(rand() * FILES.length)]);
   }
 
