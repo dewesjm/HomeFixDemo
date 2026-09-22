@@ -56,8 +56,38 @@ export class MyAssignmentsComponent {
     });
   }
 
-  /* demo only: purely decorative bar widths for the Charge barcode, derived from the charge digits */
-  barcodeBars(charge: string): number[] {
-    return charge.split('').map(ch => 1 + (ch.charCodeAt(0) % 4));
+  /* Code 39 (3 of 9): each character is 5 bars + 4 spaces, alternating starting with a bar;
+     '0' = narrow, '1' = wide. Standard ISO/IEC 16388 character set. */
+  private static readonly CODE39_PATTERNS: Record<string, string> = {
+    '0': '000110100', '1': '100100001', '2': '001100001', '3': '101100000',
+    '4': '000110001', '5': '100110000', '6': '001110000', '7': '000100101',
+    '8': '100100100', '9': '001100100',
+    A: '100001001', B: '001001001', C: '101001000', D: '000011001',
+    E: '100011000', F: '001011000', G: '000001101', H: '100001100',
+    I: '001001100', J: '000011100', K: '100000011', L: '001000011',
+    M: '101000010', N: '000010011', O: '100010010', P: '001010010',
+    Q: '000000111', R: '100000110', S: '001000110', T: '000010110',
+    U: '110000001', V: '011000001', W: '111000000', X: '010010001',
+    Y: '110010000', Z: '011010000',
+    '-': '010000101', '.': '110000100', ' ': '011000100',
+    '$': '010101000', '/': '010100010', '+': '010001010', '%': '000101010',
+    '*': '010010100',
+  };
+  private static readonly NARROW_PX = 3;
+  private static readonly WIDE_PX = 9;
+
+  /* real Code 39 bar/space encoding, framed by start/stop '*' characters, sized wide enough
+     for a handheld scanner to read off the screen */
+  barcodeElements(charge: string): { bar: boolean; width: number }[] {
+    const chars = `*${charge.toUpperCase()}*`;
+    const out: { bar: boolean; width: number }[] = [];
+    for (let i = 0; i < chars.length; i++) {
+      const pattern = MyAssignmentsComponent.CODE39_PATTERNS[chars[i]] ?? MyAssignmentsComponent.CODE39_PATTERNS['*'];
+      for (let j = 0; j < pattern.length; j++) {
+        out.push({ bar: j % 2 === 0, width: pattern[j] === '1' ? MyAssignmentsComponent.WIDE_PX : MyAssignmentsComponent.NARROW_PX });
+      }
+      if (i < chars.length - 1) out.push({ bar: false, width: MyAssignmentsComponent.NARROW_PX }); /* inter-character gap */
+    }
+    return out;
   }
 }
