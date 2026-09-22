@@ -72,7 +72,11 @@ const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', '
 const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
-const MATERIALS_1 = ['Carbon Steel', 'Stainless Steel 304', 'Stainless Steel 316', 'Alloy Steel', 'Cast Iron', 'Titanium', 'Aluminum', 'Copper Nickel', 'Inconel', 'Duplex Stainless'];
+/* base material codes: 02CS Carbon Steel, SS-304 Stainless Steel 304, SS-316 Stainless Steel 316,
+   40-AS Alloy Steel, 11CI Cast Iron, TI-6400 Titanium, AL-1010 Aluminum, 30-CUNI Copper Nickel,
+   60-INC Inconel, DS-2205 Duplex Stainless. 02CS/30-CUNI/AL-1010 are the user's own convention;
+   the rest were invented to match, so double-check them against any real numbering scheme. */
+const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', '11CI', 'TI-6400', 'AL-1010', '30-CUNI', '60-INC', 'DS-2205'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
 const MCL_POOL = ['Standard', 'Control 1', 'Control 2'];
 const JOINING_ITEMS = ['Spool A', 'Spool B', 'Pipe Section 1', 'Pipe Section 2', 'Elbow 90', 'Tee', 'Reducer', 'Flange'];

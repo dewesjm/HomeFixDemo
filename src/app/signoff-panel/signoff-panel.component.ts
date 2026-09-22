@@ -67,17 +67,19 @@ const WELD_GROUPS: WeldGroup[] = [
   { sections: [
     { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
     { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
-    { title: 'PH/IP Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
+    { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
     { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
       { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
       { keys: ['overrideNote'], width: null },
     ] },
   ] },
+  { title: 'PH/IP', sections: [
+    { title: 'Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
+    { title: 'Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
+  ] },
   { title: 'Readings', sections: [
-    { title: 'PH/IP Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
     { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
-    { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { sections: [
     { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
