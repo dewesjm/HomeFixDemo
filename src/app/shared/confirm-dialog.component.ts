@@ -18,11 +18,21 @@ import { ConfirmService } from './confirm.service';
           @if (req.password) {
             <div class="mb-4">
               <label class="meta mb-1 block">Password</label>
-              <input #pwInput type="password" class="input input-bordered w-full"
+              <input #focusInput type="password" class="input input-bordered w-full"
                      autocomplete="off" data-lpignore="true" data-1p-ignore="true"
                      placeholder="Enter password to confirm"
-                     [ngModel]="confirm.password()"
-                     (ngModelChange)="confirm.password.set($event)"
+                     [ngModel]="confirm.inputValue()"
+                     (ngModelChange)="confirm.inputValue.set($event)"
+                     (keydown.enter)="respond(true)" />
+            </div>
+          }
+          @if (req.textInput; as ti) {
+            <div class="mb-4">
+              <label class="meta mb-1 block">{{ ti.label }}</label>
+              <input #focusInput type="text" class="input input-bordered w-full"
+                     [placeholder]="ti.placeholder ?? ''"
+                     [ngModel]="confirm.inputValue()"
+                     (ngModelChange)="confirm.inputValue.set($event)"
                      (keydown.enter)="respond(true)" />
             </div>
           }
@@ -31,7 +41,7 @@ import { ConfirmService } from './confirm.service';
               {{ req.rejectLabel ?? 'Cancel' }}
             </button>
             <button type="button" class="btn btn-primary"
-                    [disabled]="req.password && !confirm.password()"
+                    [disabled]="(req.password || req.textInput) && !confirm.inputValue().trim()"
                     (click)="respond(true)">
               {{ req.acceptLabel ?? 'Confirm' }}
             </button>
@@ -47,7 +57,7 @@ import { ConfirmService } from './confirm.service';
 export class ConfirmDialogComponent {
   confirm = inject(ConfirmService);
   private dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
-  private pwInput = viewChild<ElementRef<HTMLInputElement>>('pwInput');
+  private focusInput = viewChild<ElementRef<HTMLInputElement>>('focusInput');
 
   constructor() {
     effect(() => {
@@ -57,8 +67,8 @@ export class ConfirmDialogComponent {
       if (!open && el.open) el.close();
     });
     effect(() => {
-      const pw = this.pwInput();
-      if (pw) pw.nativeElement.focus();
+      const el = this.focusInput();
+      if (el) el.nativeElement.focus();
     });
   }
 
