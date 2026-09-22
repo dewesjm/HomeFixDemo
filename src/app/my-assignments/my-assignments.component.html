@@ -13,13 +13,16 @@
     </span>
   }
   <span class="flex-1"></span>
-  <select class="select select-sm select-bordered w-40"
-          [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
-    <option value="">All roles</option>
-    @for (r of roles; track r) {
-      <option [value]="r">{{ r }}</option>
-    }
-  </select>
+  <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">
+    <select class="select select-sm select-bordered w-40"
+            [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
+      <option value="">All roles</option>
+      @for (r of roles; track r) {
+        <option [value]="r">{{ r }}</option>
+      }
+    </select>
+    <span class="badge badge-ghost badge-xs whitespace-nowrap">Demo only</span>
+  </div>
   <input class="input input-sm input-bordered w-48"
          placeholder="Filter…"
          [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />

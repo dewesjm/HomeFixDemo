@@ -33,14 +33,6 @@ export const SOURCE_BY_ROLE: Record<string, string> = {
   'View': 'ERP',
 };
 
-const ROUTINGS = [
-  'Pre-Fit', 'Fit', 'Tack', 'Fit-Up Insp', 'Fit-Up Release', 'Deferred Tack',
-  'Root', 'Root NDT UT/RT', 'Root NDT MT/PT', 'Root NDT VT/5X',
-  'Layer', 'Layer NDT UT/RT', 'Layer NDT VT/5X', 'Layer NDT MT/PT',
-  'Final Weld', 'Final NDT UT/RT', 'Final NDT MT/PT', 'Final NDT VT/5X',
-  'Review',
-];
-
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
@@ -82,9 +74,26 @@ function generateAssignments(): Assignment[] {
     'Review': ['Records Retention'],
   };
 
-  for (let i = 0; i < 36; i++) {
+  /* explicit routing mix (rather than a flat random pick across all 19 routings) so every role
+     the demo cares about — including the rarer ones like Fitting and Records Retention — ends up
+     with a handful of assignments instead of maybe zero or one */
+  const ROUTING_SEQUENCE = [
+    ...Array(8).fill('Tack'), ...Array(4).fill('Root'), ...Array(4).fill('Layer'), ...Array(4).fill('Final Weld'), ...Array(2).fill('Deferred Tack'),   // Welding
+    ...Array(4).fill('Pre-Fit'), ...Array(3).fill('Root NDT UT/RT'), ...Array(3).fill('Layer NDT VT/5X'), ...Array(3).fill('Final NDT MT/PT'),          // NQC Inspector
+    ...Array(4).fill('Fit'),               // Fitting
+    ...Array(4).fill('Fit-Up Insp'),        // Inspector (+ Foreman)
+    ...Array(2).fill('Fit-Up Release'),     // Foreman
+    ...Array(3).fill('Review'),             // Records Retention
+  ];
+  /* seeded shuffle so the mix above doesn't render in the same block order every time */
+  for (let i = ROUTING_SEQUENCE.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [ROUTING_SEQUENCE[i], ROUTING_SEQUENCE[j]] = [ROUTING_SEQUENCE[j], ROUTING_SEQUENCE[i]];
+  }
+
+  for (let i = 0; i < ROUTING_SEQUENCE.length; i++) {
     const job = pick(JOBS);
-    const routing = pick(ROUTINGS);
+    const routing = ROUTING_SEQUENCE[i];
     const dayOffset = Math.floor(rand() * 14);
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
