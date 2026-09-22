@@ -360,6 +360,10 @@ input[type="number"] { -moz-appearance: textfield; }
 .btn-xs, .badge-xs, .input-xs, .select-xs { font-size: 0.875rem; }
 .btn-sm, .badge-sm, .input-sm, .select-sm { font-size: 0.95rem; }
 
+/* Dropdowns always get a visible border: DaisyUI's default select border color can end up
+   nearly the same as the field background in dark mode ("black on black"). */
+.select { border: 1px solid var(--app-border); }
+
 /* dimmed text utilities: still a visible hierarchy, but readable */
 .opacity-50 { opacity: 0.7; }
 .opacity-60 { opacity: 0.8; }
