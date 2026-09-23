@@ -340,10 +340,11 @@
                     <div class="flex-1">
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="text"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                               [ngModel]="st.inputs[g.key]"
-                               (blur)="ctx().stageInputBlur(st, g, $any($event.target).value)" />
+                        <app-person-search-input
+                          [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
+                          [hasError]="!!ctx().fieldError(st.id, g.key)"
+                          [value]="st.inputs[g.key]"
+                          (commit)="ctx().stageInputBlur(st, g, $event)" />
                       </label>
                     </div>
                   }

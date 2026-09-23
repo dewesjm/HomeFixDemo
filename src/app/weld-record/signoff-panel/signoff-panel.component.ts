@@ -5,6 +5,7 @@ import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, Luci
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
+import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 export interface SignoffContext {
   job: Job;
@@ -93,7 +94,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown],
+  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, PersonSearchInputComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

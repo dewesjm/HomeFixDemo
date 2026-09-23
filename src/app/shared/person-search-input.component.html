@@ -1,0 +1,17 @@
+<div class="relative">
+  <input type="text" class="input input-bordered w-full" [class.input-error]="hasError()"
+         [disabled]="disabled()"
+         [ngModel]="text()" (ngModelChange)="onInput($event)"
+         (focus)="suggestOpen.set(true)" (blur)="onBlur()" />
+  @if (suggestOpen() && text().trim()) {
+    <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
+      @for (s of suggestions(); track s.id) {
+        <li><a (mousedown)="choose(s); $event.preventDefault()">
+          <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · PERN {{ s.pern }} · {{ s.id }}</span>
+        </a></li>
+      } @empty {
+        <li class="px-3 py-2 hist-old">No match</li>
+      }
+    </ul>
+  }
+</div>
