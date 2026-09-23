@@ -47,10 +47,10 @@ export class MakeupComponent {
     return isGrantActive(g);
   }
 
-  /* days remaining for the year, as of this grant -- i.e. counting every OTHER grant that
-     person holds this year, so the column reads "what's left after this one" */
+  /* true remaining balance for the year, counting every grant that person holds -- including this
+     one's own days, so 16 used (anywhere) reads as 90 - 16, not 90 minus everything else */
   remainingFor(g: MakeupGrant): number {
-    return daysRemaining(g.personId, this.grantYear(g), this.grants(), g.id);
+    return daysRemaining(g.personId, this.grantYear(g), this.grants());
   }
 
   usedFor(g: MakeupGrant): number {
