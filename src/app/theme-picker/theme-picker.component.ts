@@ -47,11 +47,11 @@ const THEME_KEY = STORAGE.theme;
   standalone: true,
   imports: [LucidePalette],
   template: `
-    <div class="dropdown dropdown-bottom w-full">
+    <div class="dropdown dropdown-bottom dropdown-end w-full">
       <div tabindex="0" role="button" class="btn btn-ghost btn-sm w-full justify-start">
         <svg lucidePalette class="size-4"></svg> Theme
       </div>
-      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow max-h-[70vh] overflow-y-auto">
+      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow max-h-[60vh] overflow-y-auto overflow-x-hidden flex-nowrap">
         @for (t of themes; track t.name) {
           <li>
             <a [class.menu-active]="active() === t.name" (click)="pick(t.name)">{{ t.label }}</a>
