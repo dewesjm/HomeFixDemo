@@ -40,6 +40,10 @@ Pre-existing SCSS "rules skipped due to selector errors" warnings come from Tail
 
 The "new version available" Reload button does NOT clear saved data; only a `CURRENT_VERSION` change does (on the next load). `CURRENT_VERSION` in `src/app/weld-record/services/workflow-store.service.ts`: bump when stage definitions, field names, data models, or seed data structure change. On mismatch the app clears the caches listed in `clearStaleCaches()` (`data/storage-keys.ts`).
 
+## Deploy
+
+Vercel (`vercel.json`), build output `dist/primeng-search-demo/browser`. The production build registers Angular's Service Worker (`serviceWorker: ngsw-config.json` under the `production` configuration in `angular.json`); `app.component.ts` uses `SwUpdate` for the "new version available" reload prompt. Offline caching itself isn't otherwise exercised as a demo feature yet, but the update-check plumbing is real and user-facing. `vercel.json`'s rewrite must exclude real static files (`ngsw.json`, `ngsw-worker.js`, hashed bundle files, `public/`'s icons/manifest) from the SPA catch-all, or the service worker's own update-manifest request (`/ngsw.json`) gets rewritten to `index.html` instead of the real file, which the SW can't parse as JSON — it retries forever (visible in DevTools Network as endless failed `ngsw.json?ngsw-cache-bust=...` requests) and can get stuck serving a stale cached build indefinitely. **Fixed 2026-09-23** (found while chasing an intermittent My Assignments click bug that turned out to be a stale-cache red herring, not a real code issue): the rewrite's `source` now excludes any path ending in a file extension (`/((?!.*\.[a-zA-Z0-9]+$).*)`) instead of blanket-matching everything (`/(.*)`), the standard SPA-hosting pattern (same idea as nginx's `try_files $uri $uri/ /index.html;`) — only extensionless paths (real app routes; nothing in this app's routes has a dot) fall back to `index.html`.
+
 ## Storage
 
 All `localStorage` keys live in `data/storage-keys.ts` (`STORAGE.*`, all prefixed `welding:`). Never write a key literal elsewhere. The site banner has one loader/saver in `data/banner.ts` (`bannerFor(page)`).

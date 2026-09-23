@@ -3,6 +3,6 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/primeng-search-demo/browser",
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }
   ]
 }
