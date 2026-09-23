@@ -21,6 +21,9 @@
                        [ngModel]="fabricationData()[f.key]"
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               }
+              @if (fabErrors()[f.key]) {
+                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+              }
             </div>
             }
           }
@@ -51,6 +54,9 @@
                      [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                      [ngModel]="fabricationData()[f.key]"
                      (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+              @if (fabErrors()[f.key]) {
+                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+              }
             </div>
           }
         }
@@ -73,6 +79,9 @@
                        [ngModel]="fabricationData()[f.key]"
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               }
+              @if (fabErrors()[f.key]) {
+                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+              }
             </div>
           }
         }
@@ -83,7 +92,7 @@
         @for (f of fields(); track f.key) {
           @if (f.row === 5) {
             <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}{{ fabFieldRequired()(f) ? ' *' : '' }}</div>
+              <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}@if (fabFieldRequired()(f)) { <span class="text-error">*</span> }</div>
               @if (f.type === 'select') {
                 <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
                         [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">

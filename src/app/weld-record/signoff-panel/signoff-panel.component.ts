@@ -141,6 +141,14 @@ export class SignoffPanelComponent {
     return this.ctx().wf().fabricationData[mic] ?? '';
   }
 
+  /* Fit stage's Consumable Insert MIC / Backing Ring MIC (joint-wide, not per-item like the
+     Weld Build-up MIC verified checkboxes above) are only required when either joint member's
+     MCL requires traceability */
+  micSignoffRequired(): boolean {
+    const job = this.ctx().job;
+    return requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2);
+  }
+
   groupVisible(g: WeldGroup): boolean {
     return g.sections.some(sec => this.sectionVisible(sec) && sec.rows.some(r => this.rowFields(r).length > 0));
   }

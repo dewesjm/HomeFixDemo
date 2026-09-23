@@ -31,9 +31,10 @@ import {
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
 } from '../../data/procedures';
 
-/* fabrication values that must be present before Fit can be signed */
+/* fabrication values that must be present before Fit can be signed -- id1/id2 (MIC 1/MIC 2) are
+   only checked when that joint member's MCL requires traceability, same as their visibility */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
+  location: 'Location', id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
 };
 
 @Component({
@@ -249,6 +250,9 @@ export class JointPageComponent implements OnDestroy {
   fabErrors = computed(() => {
     if (!this.wf) return {};
     const fab = this.wf().fabricationData;
+    const job = this.job;
+    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
+    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
     const errors: Record<string, string> = {};
     for (const f of FABRICATION_FIELDS) {
       if (f.requiredWhen) {
@@ -259,6 +263,15 @@ export class JointPageComponent implements OnDestroy {
       }
       if (f.showIf && f.required) {
         if (fab[f.showIf.key] === f.showIf.equals && !(fab[f.key] ?? '').trim()) {
+          errors[f.key] = `${f.label} is required`;
+        }
+      }
+      // Plain required fields (no showIf): id1/id2 (MIC 1/2) only when that member's MCL requires
+      // traceability -- same condition FIT_REQUIRED_FABRICATION and fabFields() use
+      if (f.required && !f.showIf) {
+        if (f.key === 'id1' && !mcl1Traceable) continue;
+        if (f.key === 'id2' && !mcl2Traceable) continue;
+        if (!(fab[f.key] ?? '').trim()) {
           errors[f.key] = `${f.label} is required`;
         }
       }
@@ -350,10 +363,16 @@ export class JointPageComponent implements OnDestroy {
     if (!stage.result) reasons.push('Choose SAT or UNSAT');
     if (this.inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
     if (stage.repeatable && !stage.routingType) reasons.push('Choose the routing type');
-    // Fit: fabrication data must have MIC 1, MIC 2, Drawing Rev, Actual Thickness
+    // Fit: fabrication data must have Location, MIC 1, MIC 2, Drawing Rev, Actual Thickness
     if (stage.id === 'fit' && this.wf) {
       const fab = this.wf().fabricationData;
-      const missing = Object.entries(FIT_REQUIRED_FABRICATION).filter(([k]) => !fab[k]?.trim()).map(([, label]) => label);
+      const mcl1Traceable = this.job ? requiresTraceability(this.job.mcl1) : false;
+      const mcl2Traceable = this.job ? requiresTraceability(this.job.mcl2) : false;
+      const missing = Object.entries(FIT_REQUIRED_FABRICATION)
+        .filter(([k]) => k !== 'id1' || mcl1Traceable)
+        .filter(([k]) => k !== 'id2' || mcl2Traceable)
+        .filter(([k]) => !fab[k]?.trim())
+        .map(([, label]) => label);
       if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
     }
     // Fit-Up Insp: all verification checkboxes must be checked
@@ -363,15 +382,21 @@ export class JointPageComponent implements OnDestroy {
     }
     const missingSignoff = stage.signoffFields
       .filter(f => {
-        if (!f.required) return false;
-        // For fit stage, make consumable insert and backing ring fields conditionally required
+        // Fit stage: Consumable Insert/Backing Ring fields are required only while that group
+        // applies (per the joint design); their MIC is required only when that group applies AND
+        // either joint member's MCL requires traceability (see SignoffPanelComponent.micSignoffRequired)
         if (stage.id === 'fit') {
-          const isConsumableInsert = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'].includes(f.key);
-          const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
-          if (isConsumableInsert && !this.jointDesignRequiresInsert()) return false;
-          if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
+          const insertApplies = this.jointDesignRequiresInsert();
+          const backingApplies = this.jointDesignRequiresBackingRing();
+          const micApplies = this.job
+            ? requiresTraceability(this.job.mcl1) || requiresTraceability(this.job.mcl2) : false;
+          if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize') return insertApplies;
+          if (f.key === 'consumableInsertId') return insertApplies && micApplies;
+          if (f.key === 'backingRingType') return backingApplies;
+          if (f.key === 'backingRingId') return backingApplies && micApplies;
+          return !!f.required;
         }
-        return true;
+        return !!f.required;
       })
       .filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0)
       .map(f => f.label);
@@ -450,16 +475,19 @@ export class JointPageComponent implements OnDestroy {
   /* fields with no showIf always show; conditional ones show when their trigger matches */
   visibleFields(stage: WorkflowStage): StageField[] {
     const job = this.job;
-    /* Weld build-up on fit stage: compute fields from the tack template definition
-       rather than relying on stage.fields, which may not have propagated yet
-       when Angular re-evaluates the @if gate in the same change-detection tick. */
-    if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
-      const templates = job ? (getTemplates()[job.trade] ?? []) : [];
-      const tackTpl = templates.find(t => t.id === 'tack');
-      const base = tackTpl ? tackTpl.fields.map(f => this.withStageRuntimeOptions({ ...f }, stage)) : [];
-      return [...base, { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }];
-    }
-    const result = stage.fields
+    const isFitWeldBuildup = stage.id === 'fit' && stage.routingType === 'weld-buildup';
+    /* Weld build-up on fit stage: compute fields from the tack template definition (plus override
+       fields, which Fit doesn't get at buildStages() time since it isn't itself a weld stage)
+       rather than relying on stage.fields, which may not have propagated yet when Angular
+       re-evaluates the @if gate in the same change-detection tick. */
+    const rawFields = isFitWeldBuildup
+      ? (() => {
+          const templates = job ? (getTemplates()[job.trade] ?? []) : [];
+          const tackTpl = templates.find(t => t.id === 'tack');
+          return [...(tackTpl?.fields ?? []), ...WELD_OVERRIDE_FIELDS];
+        })()
+      : stage.fields;
+    const result = rawFields
       .map(f => this.withStageRuntimeOptions(f, stage))
       .filter(f => {
         if (f.showIf) {
@@ -481,6 +509,10 @@ export class JointPageComponent implements OnDestroy {
           const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
           return mcl1Traceable || mcl2Traceable;
         }
+        // Weld Position's row is only rendered when N Ind. is '1' (see WELD_GROUPS in
+        // signoff-panel.component.ts) -- keep this in step so required-ness isn't enforced
+        // against a field the user can't see or fill in
+        if (f.key === 'weldPosition') return job?.nInd === '1';
         // Override fields only visible when the selected GWP+WTN's WPS has override values set
         if (f.key.startsWith('override')) {
           const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');

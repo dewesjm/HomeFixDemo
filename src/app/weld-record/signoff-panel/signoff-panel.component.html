@@ -383,7 +383,7 @@
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
                 @if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize' || f.key === 'consumableInsertId') {
                   <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                    <div class="meta">{{ f.label }}@if (f.required || (f.key === 'consumableInsertId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
                     @if (f.type === 'select') {
                       <select class="select select-bordered w-full" [disabled]="!ctx().editable(st)"
                               [ngModel]="st.signoffInputs[f.key]"
@@ -406,7 +406,7 @@
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
                 @if (f.key === 'backingRingType' || f.key === 'backingRingId') {
                   <div>
-                    <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                    <div class="meta">{{ f.label }}@if (f.required || (f.key === 'backingRingId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
                     @if (f.type === 'select') {
                       <select class="select select-bordered w-full" [disabled]="!ctx().editable(st)"
                               [ngModel]="st.signoffInputs[f.key]"

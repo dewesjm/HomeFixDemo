@@ -495,7 +495,7 @@ export interface FabricationField {
 
 export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
-  { key: 'location', label: 'Location', type: 'select', row: 1, options: shopOptions() },
+  { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship)
   { key: 'deck', label: 'Deck', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
@@ -514,12 +514,13 @@ export const FABRICATION_FIELDS: FabricationField[] = [
       { label: 'Machinery', value: 'machinery' },
       { label: 'Other', value: 'other' },
     ] },
-  // Line 3: MIC 1 and MIC 2
-  { key: 'id1', label: 'MIC 1', type: 'text', row: 3 },
-  { key: 'id2', label: 'MIC 2', type: 'text', row: 3 },
+  // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see joint-page.component.ts
+  // fabFields()) when that joint member's MCL requires traceability, so required is unconditional here
+  { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },
+  { key: 'id2', label: 'MIC 2', type: 'text', row: 3, required: true },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
-  { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4 },
-  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4 },
+  { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4, required: true },
+  { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4, required: true },
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
@@ -562,11 +563,13 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         options: METAL_TYPE_OPTIONS },
       { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', required: true,
         options: METAL_SIZE_OPTIONS },
-      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: true },
+      /* Consumable Insert MIC/Backing Ring MIC are only required when either joint member's MCL
+         requires traceability -- see SignoffPanelComponent.micSignoffRequired() */
+      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: false },
       { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
-      { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', required: true },
+      { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', required: false },
       { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
       { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
     ], routingOptions: [
