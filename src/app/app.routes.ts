@@ -17,6 +17,7 @@ import { AdminBannerComponent } from './weld-record/admin/admin-banner/admin-ban
 import { AdminJointDesignsComponent } from './weld-record/admin/admin-joint-designs/admin-joint-designs.component';
 import { AdminTeamsComponent } from './weld-record/admin/admin-teams/admin-teams.component';
 import { AdminMaterialTraceabilityComponent } from './weld-record/admin/admin-material-traceability/admin-material-traceability.component';
+import { AdminMaterialClassificationComponent } from './weld-record/admin/admin-material-classification/admin-material-classification.component';
 import { AdminQuickLinksComponent } from './weld-record/admin/admin-quick-links/admin-quick-links.component';
 import { MyAssignmentsComponent } from './weld-record/my-assignments/my-assignments.component';
 import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
@@ -50,6 +51,7 @@ export const routes: Routes = [
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR — Joint Designs' },
   { path: 'admin/teams', component: AdminTeamsComponent, title: 'EWR — Teams & Permissions' },
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR — Material Traceability' },
+  { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR — Material Classification' },
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR — Quick Links' },
 
   { path: 'jobs/:id', component: JointPageComponent, title: 'EWR — Hull Details', canDeactivate: [canDeactivateGuard] },

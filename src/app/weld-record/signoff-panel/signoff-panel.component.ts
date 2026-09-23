@@ -36,6 +36,7 @@ export interface SignoffContext {
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;
+  repairRouteLabel: (stage: WorkflowStage) => string;
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;

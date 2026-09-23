@@ -687,7 +687,12 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   ]
 };
 
-/* Repair stage template — inserted dynamically when NDT is UNSAT */
+/* Repair stage template — inserted dynamically when NDT is UNSAT. Its own routing on signoff
+   (SignoffService.signStage()): Allowable thickness exceeded -> back to that phase's NDT UT/RT;
+   else Grind Only -> that phase's NDT VT/5X; Weld Repair -> inserts EXCAVATION_NDT_STAGE next;
+   Cut -> no special routing, proceeds normally. Single-option Type droplist (routingOptions),
+   same convention every other stage with a Type dropdown follows -- Foreman isn't an Inspector
+   role so inspectionTypeRequired() leaves it pre-filled rather than a required blank choice. */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'repairType', label: 'Repair Code', type: 'radio',
@@ -695,7 +700,46 @@ export const REPAIR_STAGE: StageTemplate = {
     { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [], decisionLabel: 'Inspection Results',
+  routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
+
+/* Excavation NDT -- inserted after Repair when Repair Code = Weld Repair. Plain NDT stage (the
+   same common fields every NDT stage shares), no method choice of its own. UNSAT routes back to
+   Repair like any other NDT stage; SAT just continues to the next stage normally. */
+export const EXCAVATION_NDT_STAGE: StageTemplate = {
+  id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
+  fields: NDT_COMMON_FIELDS.map(f => ({ ...f })),
+  signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+  rejectToStage: 'repair', decisionLabel: 'Inspection Results',
+};
+
+/* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
+   NDT) -- same shape toStage() builds from TRADE_STAGES, minus the parts only a job's real
+   routing needs (role remap, override fields, etc.), since these are always the same regardless
+   of job. */
+export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
+  return {
+    id: t.id,
+    label: t.label,
+    required: true,
+    role: t.role ?? '',
+    fields: t.fields.map(f => ({ ...f })),
+    inputs,
+    signoffFields: (t.signoffFields ?? []).map(f => ({ ...f })),
+    signoffInputs: {},
+    signoffRecords: [],
+    result: null,
+    rejectToStage: t.rejectToStage ?? '',
+    repeatable: false,
+    routingType: 'standard',
+    swapStageId: '',
+    inspectionType: '',
+    routingOptions: t.routingOptions ?? [],
+    signed: false,
+    signedAt: null,
+    decisionLabel: t.decisionLabel,
+  };
+}
 
 /* prep stage, trade stages, then handover */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(

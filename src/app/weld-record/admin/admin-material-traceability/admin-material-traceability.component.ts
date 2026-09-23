@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LucidePlus, LucideTrash2 } from '@lucide/angular';
 import { ToastService } from '../../../shared/toast.service';
 import {
@@ -10,7 +11,7 @@ import {
 @Component({
   selector: 'app-admin-material-traceability',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucidePlus, LucideTrash2],
+  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2],
   templateUrl: './admin-material-traceability.component.html'
 })
 export class AdminMaterialTraceabilityComponent {

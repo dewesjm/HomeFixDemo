@@ -23,9 +23,10 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_STAGE
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
+import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
   gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
@@ -208,6 +209,7 @@ export class JointPageComponent implements OnDestroy {
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
+      repairRouteLabel: (s) => self.repairRouteLabel(s),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
@@ -279,14 +281,16 @@ export class JointPageComponent implements OnDestroy {
     }
     return errors;
   });
-  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- only UT/RT, VT/5X and Repair do */
+  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- UT/RT, VT/5X, Repair and
+     Excavation NDT do (Excavation NDT inferred, not explicitly asked -- it's "just" another NDT
+     stage, so it's treated like UT/RT/VT/5X rather than MT/PT's carve-out) */
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedRouting()];
     const id = stage?.id ?? '';
     if (id.endsWith('-mtpt')) return false;
     return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
-      || id === 'repair';
+      || id === 'repair' || id === 'excavation-ndt';
   });
 
 //extra fields when you press show more
@@ -546,6 +550,51 @@ export class JointPageComponent implements OnDestroy {
   private rtDegreeRequired(stage: WorkflowStage): string {
     if (stage.id === 'root-ndt-utrt') return this.job?.rtRoot ?? '';
     if (stage.id === 'final-ndt-utrt') return this.job?.rtFinal ?? '';
+    return '';
+  }
+
+  /* Demo aid: shows where Repair (or the Excavation NDT it can insert) will actually route to on
+     signoff, given current inputs -- mirrors SignoffService.signStage()'s routing exactly:
+       Repair: Allowable thickness exceeded takes priority -> that phase's NDT UT/RT; else Grind
+         Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; Cut/no code
+         chosen has no special routing.
+       Excavation NDT (SAT only -- UNSAT already routes back to Repair via rejectToStage): "the
+         original joint inspection" (whatever NDT stage/method actually rejected the joint),
+         unless that was PT and the job's material (Material Type 1 or 2, Admin > Material
+         Classification) is non-ferrous or austenitic, in which case 5X instead of PT. */
+  repairRouteLabel(stage: WorkflowStage): string {
+    if (!this.job) return '';
+    const templates = getTemplates()[this.job.trade] ?? [];
+    const labelOf = (id: string) => templates.find(t => t.id === id)?.label ?? id;
+    if (stage.id === 'repair') {
+      const phase = stage.inputs['originPhase'] ?? '';
+      if (stage.inputs['allowableThicknessExceeded'] === 'yes') {
+        return phase ? `On signoff, this routes back to ${labelOf(`${phase}-ndt-utrt`)}.` : '';
+      }
+      const repairType = stage.inputs['repairType'] ?? '';
+      if (repairType === 'grind') {
+        return phase ? `On signoff, this routes to ${labelOf(`${phase}-ndt-vt5x`)}.` : '';
+      }
+      if (repairType === 'weld-repair') {
+        return `On signoff, this routes to ${EXCAVATION_NDT_STAGE.label}; SAT there routes back to the original joint inspection (or 5X, see below), UNSAT routes back to Repair.`;
+      }
+      return '';
+    }
+    if (stage.id === 'excavation-ndt' && this.wf) {
+      const repair = this.wf().stages.find(s => s.id === 'repair');
+      const phase = repair?.inputs['originPhase'] ?? '';
+      const originStageId = repair?.inputs['originStageId'] ?? '';
+      const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
+      const needs5xInstead = originInspectionType === 'pt' && phase
+        && (isNonFerrousOrAustenitic(this.job.materialType1) || isNonFerrousOrAustenitic(this.job.materialType2));
+      if (needs5xInstead) {
+        return `On SAT, this routes to ${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT — material is non-ferrous or austenitic). UNSAT routes back to Repair.`;
+      }
+      if (originStageId) {
+        return `On SAT, this routes back to the original joint inspection, ${labelOf(originStageId)}. UNSAT routes back to Repair.`;
+      }
+      return '';
+    }
     return '';
   }
 
