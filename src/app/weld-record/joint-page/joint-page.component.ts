@@ -23,12 +23,12 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import {
   gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
-  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
+  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
 } from '../../data/procedures';
 
 /* fabrication values that must be present before Fit can be signed -- id1/id2 (MIC 1/MIC 2) are
@@ -279,10 +279,12 @@ export class JointPageComponent implements OnDestroy {
     }
     return errors;
   });
+  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- only UT/RT, VT/5X and Repair do */
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedRouting()];
     const id = stage?.id ?? '';
+    if (id.endsWith('-mtpt')) return false;
     return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
       || id === 'repair';
   });
@@ -400,6 +402,13 @@ export class JointPageComponent implements OnDestroy {
     if (stage.id === 'fitup-insp') {
       if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
       if (Object.keys(this.fabErrors()).length > 0) reasons.push('Fix the fabrication errors');
+    }
+    // RT NDT: Degree of RT Performed must match the job's required degree (rtRoot/rtFinal)
+    if (stage.inspectionType === 'rt') {
+      const required = this.rtDegreeRequired(stage);
+      if (required && stage.inputs['degreeRt'] !== required) {
+        reasons.push(`Degree of RT Performed must be ${required}`);
+      }
     }
     const missingSignoff = this.requiredSignoffFields(stage)
       .filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0)
@@ -532,12 +541,31 @@ export class JointPageComponent implements OnDestroy {
      are qualified for this job's base metal pair (Material Type 1/2), WTN is then filtered to
      whichever GWP is currently selected on this stage. Filler Metal Type/Size then cascade from the
      Procedure that GWP+WTN resolves to -- same pattern, one step further down the chain. */
+  /* Root's RT requirement is job.rtRoot, Final Weld's is job.rtFinal; Layer's RT NDT has no
+     matching requirement field on Job, so nothing is enforced there. */
+  private rtDegreeRequired(stage: WorkflowStage): string {
+    if (stage.id === 'root-ndt-utrt') return this.job?.rtRoot ?? '';
+    if (stage.id === 'final-ndt-utrt') return this.job?.rtFinal ?? '';
+    return '';
+  }
+
   private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
+    if (f.key === 'degreeRt') {
+      const required = this.rtDegreeRequired(stage);
+      return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
+    }
     if (f.key === 'weldProcedure') {
       return { ...f, options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '') };
     }
     if (f.key === 'wtn') return { ...f, options: wtnOptionsForGwp(stage.inputs?.['weldProcedure'] ?? '') };
     if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
+      /* Locked (consumable insert copied the value): show the full option set, not the
+         current WPS's narrower list, so a value copied from Fit's Consumable Insert Type/Size
+         always has a matching <option> and renders instead of appearing blank -- the field
+         isn't user-selectable in this state anyway, so the WPS-specific filtering is moot. */
+      if (isFieldLocked(stage, f)) {
+        return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
+      }
       const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
       return {
         ...f,
@@ -677,13 +705,10 @@ export class JointPageComponent implements OnDestroy {
      auto-sign the matching VT/5X NDT stage now that the real sign-off has actually happened */
   private signRelated5xIfNeeded(stage: WorkflowStage) {
     if (!this.job || !this.wf) return;
-    if ((stage.inputs['performed5x'] ?? '') !== 'yes') return;
-    const ndt5xId = stage.id === 'root-weld' ? 'root-ndt-vt5x'
-      : stage.id === 'final-weld' ? 'final-ndt-vt5x' : '';
-    if (!ndt5xId) return;
-    const ndtStage = this.wf().stages.find(s => s.id === ndt5xId);
+    if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
+    const ndtStage = this.wf().stages.find(s => s.id === 'root-ndt-vt5x');
     if (!ndtStage || ndtStage.signed) return;
-    this.signoffService.signStage(this.job, ndt5xId, this.signoffSnapshot(ndtStage));
+    this.signoffService.signStage(this.job, 'root-ndt-vt5x', this.signoffSnapshot(ndtStage));
   }
 
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
@@ -922,6 +947,14 @@ export class JointPageComponent implements OnDestroy {
     for (const f of this.requiredSignoffFields(stage)) {
       if ((stage.signoffInputs[f.key] ?? '').trim().length === 0) {
         errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
+      }
+    }
+    /* RT NDT: Degree of RT Performed must match the job's required degree -- same condition
+       signBlockers() uses. */
+    if (stage.inspectionType === 'rt') {
+      const required = this.rtDegreeRequired(stage);
+      if (required && stage.inputs['degreeRt'] !== required) {
+        errors[`${stage.id}:degreeRt`] = `Degree of RT Performed must be ${required}`;
       }
     }
     return errors;

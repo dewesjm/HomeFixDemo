@@ -281,7 +281,7 @@
         <div class="stage-inputs">
           @for (f of ctx().visibleFields(stage()); track f.key) {
             <!-- the checkbox+field rows below are full-width blocks already; a break before them only adds an empty line of gap -->
-            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantBrand' && f.key !== 'defectCode') { <span class="stage-field-break"></span> }
+            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantManufacturer' && f.key !== 'defectCode') { <span class="stage-field-break"></span> }
             @if (f.key === 'partial') {
               <div class="flex items-end gap-4 w-full">
                 <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
@@ -328,10 +328,10 @@
                   }
                 }
               </div>
-            } @else if (f.key === 'penetrantBrand') {
+            } @else if (f.key === 'penetrantManufacturer') {
               <div class="flex items-end gap-4 w-full">
                 @for (g of ctx().visibleFields(stage()); track g.key) {
-                  @if (g.key === 'penetrantBrand' || g.key === 'penetrantManufacturer') {
+                  @if (g.key === 'penetrantManufacturer' || g.key === 'penetrantType') {
                     <div class="flex-1">
                       <label class="stage-field">
                         <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
@@ -347,7 +347,7 @@
                   }
                 }
               </div>
-            } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantManufacturer' && f.key !== 'defectCode') {
+            } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantType' && f.key !== 'defectCode') {
             <div class="w-full">
             @if (f.type === 'checkbox') {
               <label class="flex items-center gap-2 cursor-pointer">

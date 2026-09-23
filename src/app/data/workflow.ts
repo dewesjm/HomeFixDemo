@@ -287,6 +287,14 @@ export function setPenetrants(entries: PenetrantEntry[]) {
   localStorage.setItem(PENETRANT_LS_KEY, JSON.stringify(entries));
 }
 
+const toOption = (v: string) => ({ label: v, value: v });
+export function penetrantManufacturerOptions(): { label: string; value: string }[] {
+  return Array.from(new Set(getPenetrants().map(p => p.manufacturer))).map(toOption);
+}
+export function penetrantTypeOptions(): { label: string; value: string }[] {
+  return Array.from(new Set(getPenetrants().map(p => p.type))).map(toOption);
+}
+
 /* Consumable insert and filler metal share these choices: "Only Consumable Insert used as filler" copies the
    Fit stage's insert type/size into the filler fields, so a value missing from either list shows up blank.
    MIL-spec designations, same convention as Weld Engineering's FILLER_METAL_TYPES (data/procedures.ts) --
@@ -420,13 +428,22 @@ const NDT_COMMON_FIELDS: StageField[] = [
   { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
 ];
 
+/* Degree of RT required/performed -- NA, or an angular/percentage coverage value. Shared by the
+   Degree of RT Performed signoff field and Job.rtRoot/rtFinal (the requirement each one must match
+   before its RT NDT stage can be signed off -- see JointPageComponent.signBlockers()). */
+export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
+  ['NA', '10', '100', '360', '60', '75'].map(v => ({ label: v, value: v }));
+
 const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options: StageOption[] }> = {
   utrt: {
     label: 'UT/RT',
     options: [{ label: 'UT', value: 'ut' }, { label: 'RT', value: 'rt' }],
     fields: [
-      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'radio', showIf: { key: 'inspectionType', equals: 'rt' },
-        options: [{ label: '60', value: '60' }, { label: '360', value: '360' }] },
+      /* must equal the job's required degree (rtRoot/rtFinal) before this stage can be signed off
+         -- see JointPageComponent.signBlockers() -- so it's a droplist (blank or the value), not a
+         fixed radio choice */
+      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'inspectionType', equals: 'rt' },
+        options: RT_DEGREE_OPTIONS },
       { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'inspectionType', equals: 'rt' } },
       { key: 'defectCode', label: 'Defect Code', type: 'select', required: true,
         showIf: { key: 'inspectionType', equals: 'rt', and: [{ key: 'result', equals: 'unsat' }] },
@@ -441,12 +458,14 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
     fields: [
       { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
         options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-      { key: 'penetrantBrand', label: 'Penetrant Brand', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
-        options: [{ label: 'Magnaflux', value: 'magnaflux' }, { label: 'Sherwin-Williams', value: 'sherwin-williams' },
-          { label: 'NDT Systems', value: 'ndt-systems' }, { label: 'Research Institute', value: 'research-institute' }] },
+      /* Manufacturer and Type both cascade from the admin-managed Penetrant table (getPenetrants(),
+         Admin > Penetrant) -- distinct manufacturers and distinct types across all entries, e.g.
+         "Magnaflux" vs "Type I - Fluorescent", so the two droplists actually mean different things
+         instead of listing the same companies twice under different labels. */
       { key: 'penetrantManufacturer', label: 'Penetrant Manufacturer', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
-        options: [{ label: 'Magnaflux Corp', value: 'magnaflux-corp' }, { label: 'Sherwin Williams', value: 'sherwin-williams' },
-          { label: 'NDT Systems Inc', value: 'ndt-systems-inc' }, { label: 'Research Institute', value: 'research-institute' }] },
+        options: penetrantManufacturerOptions() },
+      { key: 'penetrantType', label: 'Penetrant Type', type: 'select', showIf: { key: 'inspectionType', equals: 'pt' },
+        options: penetrantTypeOptions() },
     ],
   },
   vt5x: {
@@ -606,7 +625,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('root', 'mtpt'),
     ndtStage('root', 'vt5x'),
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
-      fields: WELD_STAGE_FIELDS,
+      fields: [...WELD_STAGE_FIELDS,
+        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
+      ],
       signoffFields: [], routingOptions: [
         { label: 'Interim Layer', value: 'interim', default: true },
         { label: 'Final Layer', value: 'final' },
@@ -880,8 +901,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2; Sold follows whichever Records track reviewed the job */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
-    /* Root and Final Weld get a 5X inspection field */
-    let fields = (t.id === 'root-weld' || t.id === 'final-weld')
+    /* Only Root gets the 5X inspection field (user: should only appear on Root, not Final Weld) */
+    let fields = (t.id === 'root-weld')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
           options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
       : [...t.fields];

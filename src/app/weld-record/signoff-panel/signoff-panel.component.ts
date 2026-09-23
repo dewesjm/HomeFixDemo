@@ -69,7 +69,7 @@ const WELD_GROUPS: WeldGroup[] = [
   { sections: [
     { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
     { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
-    { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
+    { kind: 'checkbox', when: st => st.id === 'root-weld' || st.id === 'root-layer', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { title: 'Preheat/Interpass', sections: [
@@ -84,7 +84,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
   ] },
   { sections: [
-    { when: st => st.id === 'root-weld' || st.id === 'final-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
+    { when: st => st.id === 'root-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
     { rows: [{ keys: ['comments'], width: null }] },
   ] },
 ];

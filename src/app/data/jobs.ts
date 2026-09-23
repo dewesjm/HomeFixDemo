@@ -95,6 +95,10 @@ const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
+/* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
+   data/workflow.ts's RT_DEGREE_OPTIONS to avoid a circular import (workflow.ts already imports
+   Job from this file); the Degree of RT Performed signoff field must match this to sign off */
+const RT_DEGREES = ['NA', '10', '100', '360', '60', '75'];
 /* work package = Hull-Compartment-Detail, e.g. K7234-FWD-D03 */
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
@@ -200,8 +204,8 @@ export function generateJobs(count = 480): Job[] {
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
       nInd: pick(N_IND_POOL),
-      rtRoot: pick(NDT_RESULTS),
-      rtFinal: pick(NDT_RESULTS),
+      rtRoot: pick(RT_DEGREES),
+      rtFinal: pick(RT_DEGREES),
       ndtRoot: pick(NDT_RESULTS),
       ndtEach: pick(NDT_RESULTS),
       ndtFinal: pick(NDT_RESULTS),

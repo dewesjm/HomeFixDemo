@@ -71,7 +71,9 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs, fabInputs: section === 'Sign-off' ? fabInputs : undefined } });
   };
   /* matches JointPageComponent.isNdtStage: Attachments only shows for NDT stages + Repair */
-  const isNdtStageId = (id: string) => id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt') || id === 'repair';
+  /* mirrors JointPageComponent.isNdtStage -- MT/PT stages don't get Attachments */
+  const isNdtStageId = (id: string) => !id.endsWith('-mtpt')
+    && (id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt') || id === 'repair');
 
   /* stages progressed through; some jobs fully signed, most a step or two in */
   const signCount = rand() < 0.3
