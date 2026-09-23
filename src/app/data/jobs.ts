@@ -216,7 +216,7 @@ export function generateJobs(count = 480): Job[] {
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
       workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
-      waff: i % 5 === 0 ? 'Required' : '',
+      waff: '',   /* blanked for now, 2026-09-23 -- was `i % 5 === 0 ? 'Required' : ''` */
       serialNumber: xrefidBlank ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
       refitNumber: '00',
       repairNumber: '00',
