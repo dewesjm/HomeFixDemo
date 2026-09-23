@@ -157,7 +157,7 @@ export class SignoffService {
         inputs
       });
     });
-    this.messages.add({ severity: 'success', summary: 'Stage signed off', detail: signedLabel, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
   }
 
   /* re-open a signed stage for edits */
