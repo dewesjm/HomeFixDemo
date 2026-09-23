@@ -562,6 +562,24 @@ export class JointPageComponent implements OnDestroy {
          original joint inspection" (whatever NDT stage/method actually rejected the joint),
          unless that was PT and the job's material (Material Type 1 or 2, Admin > Material
          Classification) is non-ferrous or austenitic, in which case 5X instead of PT. */
+  /* Names the actual stage Excavation NDT's SAT routes back to (the exact NDT stage that
+     originally rejected the joint, or that phase's VT/5X if the PT/material override applies) --
+     shared by the Repair-stage hint (names it up front, before Excavation NDT even exists yet)
+     and the Excavation NDT-stage hint (names it there too). `repair` is the Repair stage carrying
+     the origin bookkeeping (`inputs['originPhase'/'originStageId'/'originInspectionType']`). */
+  private originInspectionLabel(repair: WorkflowStage | undefined, labelOf: (id: string) => string): string {
+    if (!this.job || !repair) return 'the original joint inspection';
+    const phase = repair.inputs['originPhase'] ?? '';
+    const originStageId = repair.inputs['originStageId'] ?? '';
+    const originInspectionType = repair.inputs['originInspectionType'] ?? '';
+    const needs5xInstead = originInspectionType === 'pt' && phase
+      && (isNonFerrousOrAustenitic(this.job.materialType1) || isNonFerrousOrAustenitic(this.job.materialType2));
+    if (needs5xInstead) {
+      return `${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT — material is non-ferrous or austenitic)`;
+    }
+    return originStageId ? labelOf(originStageId) : 'the original joint inspection';
+  }
+
   repairRouteLabel(stage: WorkflowStage): string {
     if (!this.job) return '';
     const templates = getTemplates()[this.job.trade] ?? [];
@@ -576,7 +594,7 @@ export class JointPageComponent implements OnDestroy {
         return phase ? `On signoff, this routes to ${labelOf(`${phase}-ndt-vt5x`)}.` : '';
       }
       if (repairType === 'weld-repair') {
-        return `On signoff, this routes to ${EXCAVATION_NDT_STAGE.label}; SAT there routes back to the original joint inspection (or 5X, see below), UNSAT routes back to Repair.`;
+        return `On signoff, this routes to ${EXCAVATION_NDT_STAGE.label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to Repair.`;
       }
       /* Cut has no defined routing yet -- placeholder so it isn't forgotten (user: "put ... so i
          remember to find out what it needs to do"); not a real routing decision. */
@@ -587,18 +605,7 @@ export class JointPageComponent implements OnDestroy {
     }
     if (stage.id === 'excavation-ndt' && this.wf) {
       const repair = this.wf().stages.find(s => s.id === 'repair');
-      const phase = repair?.inputs['originPhase'] ?? '';
-      const originStageId = repair?.inputs['originStageId'] ?? '';
-      const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
-      const needs5xInstead = originInspectionType === 'pt' && phase
-        && (isNonFerrousOrAustenitic(this.job.materialType1) || isNonFerrousOrAustenitic(this.job.materialType2));
-      if (needs5xInstead) {
-        return `On SAT, this routes to ${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT — material is non-ferrous or austenitic). UNSAT routes back to Repair.`;
-      }
-      if (originStageId) {
-        return `On SAT, this routes back to the original joint inspection, ${labelOf(originStageId)}. UNSAT routes back to Repair.`;
-      }
-      return '';
+      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to Repair.`;
     }
     return '';
   }
