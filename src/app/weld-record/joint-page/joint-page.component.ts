@@ -199,6 +199,7 @@ export class JointPageComponent implements OnDestroy {
       visibleSignoffFields: (s) => self.visibleSignoffFields(s),
       startsGroup: (s, f) => self.startsGroup(s, f),
       fieldError: (sid, fk) => self.fieldError(sid, fk),
+      clearFieldError: (sid, fk) => self.clearFieldError(sid, fk),
       getFabValue: (k) => self.getFabValue(k),
       getReviewValue: (k) => self.getReviewValue(k),
       fabFieldRequired: (f) => self.fabFieldRequired(f),
@@ -864,6 +865,16 @@ export class JointPageComponent implements OnDestroy {
         }
       }
     }
+    /* Fit-Up Insp: every verification checkbox must be checked -- signBlockers() already blocks
+       signoff with one summary reason ("Verify every fitting value"); this adds a per-field error
+       so the specific unchecked row(s) can be highlighted, same as any other required field. */
+    if (stage.id === 'fitup-insp') {
+      for (const f of visible) {
+        if (stage.inputs?.[f.key] !== 'yes') {
+          errors[`${stage.id}:${f.key}`] = `${f.label} must be verified`;
+        }
+      }
+    }
     /* Weld build-up: affectedItems + micVerified */
     if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
       const raw = stage.inputs?.['affectedItems'] ?? '';
@@ -915,6 +926,18 @@ export class JointPageComponent implements OnDestroy {
 
   fieldError(stageId: string, fieldKey: string): string | undefined {
     return this.fieldErrors()[`${stageId}:${fieldKey}`];
+  }
+
+  /* clears one field's error the moment its value changes, so a red highlight from a failed
+     signoff attempt (e.g. Fit-Up Insp's unchecked verification boxes) doesn't linger after it's fixed */
+  clearFieldError(stageId: string, fieldKey: string) {
+    const key = `${stageId}:${fieldKey}`;
+    const prev = this.fieldErrors();
+    if (prev[key]) {
+      const next = { ...prev };
+      delete next[key];
+      this.fieldErrors.set(next);
+    }
   }
 
   /* What History records for a sign-off: every editable field the user was shown, with its value right now

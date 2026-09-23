@@ -27,6 +27,7 @@ export interface SignoffContext {
   visibleSignoffFields: (stage: WorkflowStage) => SignoffField[];
   startsGroup: (stage: WorkflowStage, field: StageField) => boolean;
   fieldError: (stageId: string, fieldKey: string) => string | undefined;
+  clearFieldError: (stageId: string, fieldKey: string) => void;
   getFabValue: (fieldKey: string) => string;
   getReviewValue: (fieldKey: string) => string;
   fabFieldRequired: (f: FabricationField) => boolean;

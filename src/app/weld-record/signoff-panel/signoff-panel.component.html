@@ -31,6 +31,20 @@
         </div>
       }
 
+    <!-- Type / Layer (Fit-Up Insp only) -- fixed, informational, not a real choice -->
+    @if (st.id === 'fitup-insp') {
+      <div class="flex gap-4 mb-sm">
+        <label class="stage-field">
+          <span class="stage-field-label font-semibold">Type</span>
+          <input class="input input-bordered" type="text" value="Fit-Up Inspection" disabled />
+        </label>
+        <label class="stage-field">
+          <span class="stage-field-label font-semibold">Layer</span>
+          <input class="input input-bordered" type="text" value="Fit" disabled />
+        </label>
+      </div>
+    }
+
     <!-- Affected Items + MIC (weld build-up only) -->
     @if (isFitBuildup(st)) {
       <div class="flex flex-col gap-1 mb-sm">
@@ -81,14 +95,15 @@
             </thead>
             <tbody>
               @for (f of ctx().visibleFields(stage()); track f.key) {
-                <tr>
-                  <td>{{ f.label }}</td>
+                <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
+                  <td [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
                   <td>{{ ctx().getFabValue(f.key) || '—' }}</td>
                   <td>
                     <input type="checkbox" class="checkbox checkbox-sm"
+                           [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
                            [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                            [checked]="st.inputs[f.key] === 'yes'"
-                           (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
+                           (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''; $any($event.target).checked && ctx().clearFieldError(st.id, f.key)" />
                   </td>
                 </tr>
               }
@@ -548,7 +563,9 @@
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed — deprogress to reopen</span>
         } @else if (!st.signed) {
-          <button type="button" class="btn btn-primary" [disabled]="!ctx().canSignStage(st)" (click)="ctx().signStage(st)">
+          <!-- Always enabled: it's the only way to trigger validation and see what's missing.
+               signStage() itself won't actually sign if there are errors or other blockers. -->
+          <button type="button" class="btn btn-primary" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
         } @else {
