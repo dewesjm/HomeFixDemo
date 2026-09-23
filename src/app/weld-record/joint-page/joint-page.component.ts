@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_STAGE
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_LABEL
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -594,7 +594,7 @@ export class JointPageComponent implements OnDestroy {
         return phase ? `On signoff, this routes to ${labelOf(`${phase}-ndt-vt5x`)}.` : '';
       }
       if (repairType === 'weld-repair') {
-        return `On signoff, this routes to ${EXCAVATION_NDT_STAGE.label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to Repair.`;
+        return `On signoff, this routes to ${EXCAVATION_NDT_LABEL}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to Repair.`;
       }
       /* Cut has no defined routing yet -- placeholder so it isn't forgotten (user: "put ... so i
          remember to find out what it needs to do"); not a real routing decision. */

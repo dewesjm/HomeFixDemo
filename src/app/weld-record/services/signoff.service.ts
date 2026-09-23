@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, REPAIR_STAGE, EXCAVATION_NDT_STAGE, stageFromTemplate, labelFor } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -13,6 +13,17 @@ import { WorkflowStore } from './workflow-store.service';
 function allowableThicknessText(nInd: string): string {
   const inches = nInd === '1' ? '3/8' : '3/16';
   return `Allowable thickness: ${inches} inch or 20% of material thickness, whichever is less`;
+}
+
+/* Excavation NDT "requires the same inspection that was noted as reject" -- same method as
+   whatever originally rejected the joint, UNLESS that was PT on non-ferrous/austenitic material
+   (Material Type 1 or 2, Admin > Material Classification), which requires 5X instead of PT. Single
+   source of truth for this decision -- used both when Excavation NDT is created (to build its
+   fields/Type) and when its own SAT decides which stage to route back to. */
+function resolveExcavationInspectionType(originInspectionType: string, phase: string, job: Job): string {
+  const needs5xInstead = originInspectionType === 'pt' && phase
+    && (isNonFerrousOrAustenitic(job.materialType1) || isNonFerrousOrAustenitic(job.materialType2));
+  return needs5xInstead ? '5x' : originInspectionType;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -173,9 +184,10 @@ export class SignoffService {
          and sends the joint back to that phase's NDT UT/RT stage; otherwise Grind Only sends it to
          that phase's NDT VT/5X stage ("the applicable VT signoff for which the inspection was
          rejected" -- always VT/5X, regardless of which method actually failed); Weld Repair inserts
-         Excavation NDT right after Repair (a plain NDT stage -- SAT continues normally, UNSAT routes
-         back to Repair like any other NDT reject, via its own rejectToStage). Cut, or no repair
-         code chosen: no special routing, proceeds to whatever's next as normal. */
+         Excavation NDT right after Repair, built to require the same inspection method that
+         originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
+         above -- its own SAT/UNSAT routing is handled further down). Cut, or no repair code
+         chosen: no special routing, proceeds to whatever's next as normal. */
       if (stageId === 'repair') {
         const phase = st.inputs['originPhase'] ?? '';
         const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
@@ -188,7 +200,16 @@ export class SignoffService {
           const repairIdx = stages.findIndex(s => s.id === 'repair');
           const hasExcavationAlready = stages.some(s => s.id === 'excavation-ndt');
           if (repairIdx >= 0 && !hasExcavationAlready) {
-            const excavationStage = stageFromTemplate(EXCAVATION_NDT_STAGE);
+            const originInspectionType = st.inputs['originInspectionType'] ?? '';
+            const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
+            /* Inspector role gets the same NQC Inspector remap every other NDT stage gets in
+               buildStages() -- this stage bypasses that (built at runtime, not from TRADE_STAGES),
+               so it's applied by hand here. */
+            const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
+            const excavationStage = {
+              ...stageFromTemplate(excavationNdtStage(resolvedType), {}, resolvedType),
+              role,
+            };
             stages = [...stages.slice(0, repairIdx + 1), excavationStage, ...stages.slice(repairIdx + 1)];
           }
         }
@@ -196,18 +217,17 @@ export class SignoffService {
 
       /* Excavation NDT SAT (2026-09-23): "all weld repairs require the original joint inspection
          unless otherwise stated" -- reopens the exact NDT stage that originally rejected the joint
-         (read off the still-present Repair stage's own inputs), UNLESS that original inspection was
-         PT and the job's material (either Material Type 1 or 2, Admin > Material Classification)
-         is non-ferrous or austenitic, in which case it requires 5X instead of PT. Excavation NDT's
-         own UNSAT is handled generically above via its rejectToStage: 'repair'. */
+         (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
+         override applied when Excavation NDT was created (resolveExcavationInspectionType), in
+         which case it reopens that phase's VT/5X stage instead. Excavation NDT's own UNSAT is
+         handled generically above via its rejectToStage: 'repair'. */
       if (stageId === 'excavation-ndt' && st.result === 'sat') {
         const repair = stages.find(s => s.id === 'repair');
         const phase = repair?.inputs['originPhase'] ?? '';
         const originStageId = repair?.inputs['originStageId'] ?? '';
         const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
-        const needs5xInstead = originInspectionType === 'pt' && phase
-          && (isNonFerrousOrAustenitic(job.materialType1) || isNonFerrousOrAustenitic(job.materialType2));
-        if (needs5xInstead) {
+        const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
+        if (resolvedType !== originInspectionType && phase) {
           reopenById(`${phase}-ndt-vt5x`);
         } else if (originStageId) {
           reopenById(originStageId);

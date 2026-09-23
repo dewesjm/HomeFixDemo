@@ -689,8 +689,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 
 /* Repair stage template — inserted dynamically when NDT is UNSAT. Its own routing on signoff
    (SignoffService.signStage()): Allowable thickness exceeded -> back to that phase's NDT UT/RT;
-   else Grind Only -> that phase's NDT VT/5X; Weld Repair -> inserts EXCAVATION_NDT_STAGE next;
-   Cut -> no special routing, proceeds normally. Single-option Type droplist (routingOptions),
+   else Grind Only -> that phase's NDT VT/5X; Weld Repair -> inserts Excavation NDT next (see
+   excavationNdtStage() below); Cut -> no special routing, proceeds normally. Single-option Type
+   droplist (routingOptions),
    same convention every other stage with a Type dropdown follows -- Foreman isn't an Inspector
    role so inspectionTypeRequired() leaves it pre-filled rather than a required blank choice. */
 export const REPAIR_STAGE: StageTemplate = {
@@ -703,21 +704,39 @@ export const REPAIR_STAGE: StageTemplate = {
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
 
-/* Excavation NDT -- inserted after Repair when Repair Code = Weld Repair. Plain NDT stage (the
-   same common fields every NDT stage shares), no method choice of its own. UNSAT routes back to
-   Repair like any other NDT stage; SAT just continues to the next stage normally. */
-export const EXCAVATION_NDT_STAGE: StageTemplate = {
-  id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
-  fields: NDT_COMMON_FIELDS.map(f => ({ ...f })),
-  signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
-  rejectToStage: 'repair', decisionLabel: 'Inspection Results',
-};
+export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
+
+/* Excavation NDT -- inserted after Repair when Repair Code = Weld Repair. The excavation is the
+   removal of the rejected material; this stage is effectively signing off that it was cleaned out
+   correctly, so it "requires the same inspection that was noted as reject" -- same fields and the
+   same single-option Type as whatever method (UT/RT/MT/PT/VT/5X) originally rejected the joint,
+   not a fresh generic NDT check. `inspectionType` is the resolved single value the caller
+   (SignoffService) passes in -- normally the origin's own inspectionType, except PT on
+   non-ferrous/austenitic material requires 5X instead (the caller decides that, since it needs the
+   job's material classification; this function just builds whichever kind the value resolves to).
+   UNSAT routes back to Repair like any other NDT reject, via rejectToStage. */
+export function excavationNdtStage(inspectionType: string): StageTemplate {
+  const kind: NdtKind = (inspectionType === 'ut' || inspectionType === 'rt') ? 'utrt'
+    : (inspectionType === 'mt' || inspectionType === 'pt') ? 'mtpt'
+    : 'vt5x';
+  const k = NDT_KINDS[kind];
+  const opt = k.options.find(o => o.value === inspectionType) ?? k.options[0];
+  return {
+    id: 'excavation-ndt', label: EXCAVATION_NDT_LABEL, required: true, role: 'Inspector',
+    fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
+    signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+    rejectToStage: 'repair', decisionLabel: 'Inspection Results',
+    routingOptions: [{ label: opt.label, value: opt.value, default: true }],
+  };
+}
 
 /* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
    NDT) -- same shape toStage() builds from TRADE_STAGES, minus the parts only a job's real
    routing needs (role remap, override fields, etc.), since these are always the same regardless
-   of job. */
-export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
+   of job. `inspectionType` pre-fills the Type droplist (e.g. Excavation NDT's single resolved
+   method) so an Inspector-role stage with exactly one real option doesn't force a redundant click
+   on something that isn't really a choice -- see inspectionTypeRequired(). */
+export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}, inspectionType = ''): WorkflowStage {
   return {
     id: t.id,
     label: t.label,
@@ -733,7 +752,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     repeatable: false,
     routingType: 'standard',
     swapStageId: '',
-    inspectionType: '',
+    inspectionType,
     routingOptions: t.routingOptions ?? [],
     signed: false,
     signedAt: null,
