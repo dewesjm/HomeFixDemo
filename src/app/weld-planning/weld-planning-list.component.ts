@@ -214,11 +214,11 @@ export class WeldPlanningListComponent {
   deleteRow(row: WeldJoint) {
     this.confirm.confirm({
       header: 'Delete Joint',
-      message: `Delete ${row.jointNumber}?`,
+      message: `Delete ${row.joint}?`,
       acceptLabel: 'Delete',
       accept: () => {
         deleteWeldJoint(row.id);
-        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${row.jointNumber} deleted` });
+        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${row.joint} deleted` });
       }
     });
   }

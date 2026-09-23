@@ -19,10 +19,6 @@
         </select>
       </div>
       <div class="detail-col">
-        <label class="field-label">System <span class="required-mark">*</span></label>
-        <input class="input input-sm" [(ngModel)]="form.jointNumber" placeholder="ST-00001" />
-      </div>
-      <div class="detail-col">
         <label class="field-label">Hull</label>
         <select class="select select-sm" [(ngModel)]="form.hull">
           <option value="">Select...</option>
@@ -32,7 +28,7 @@
         </select>
       </div>
       <div class="detail-col">
-        <label class="field-label">Joint</label>
+        <label class="field-label">Joint <span class="required-mark">*</span></label>
         <input class="input input-sm" [(ngModel)]="form.joint" placeholder="ST-10005" />
       </div>
       <div class="detail-col">

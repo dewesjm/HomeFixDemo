@@ -16,7 +16,6 @@ type EditableRow = {
   _raw: Record<string, string>;
   _errors: string[];
   _saved: boolean;
-  jointNumber: string;
   hull: string;
   joint: string;
   description: string;
@@ -95,7 +94,6 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
             <thead>
               <tr>
                 <th style="min-width: 3rem; text-align: center">#</th>
-                <th style="min-width: 6rem">System</th>
                 <th style="min-width: 5rem">Hull</th>
                 <th style="min-width: 5rem">Joint</th>
                 <th style="min-width: 5rem">Type</th>
@@ -122,13 +120,10 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
                     }
                   </td>
                   <td>
-                    <input class="input input-xs w-full" [(ngModel)]="row.jointNumber" [class.input-error]="!row.jointNumber" />
-                  </td>
-                  <td>
                     <input class="input input-xs w-full" [(ngModel)]="row.hull" />
                   </td>
                   <td>
-                    <input class="input input-xs w-full" [(ngModel)]="row.joint" />
+                    <input class="input input-xs w-full" [(ngModel)]="row.joint" [class.input-error]="!row.joint" />
                   </td>
                   <td>
                     <select class="select select-xs w-full" [(ngModel)]="row.jointType">
@@ -167,12 +162,12 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
       } @else if (!loading()) {
         @if (isEditMode()) {
           <div style="padding: 1.5rem; border: 1px dashed var(--app-border); border-radius: 0.5rem; max-width: 600px; margin: 2rem auto; text-align: center">
-            <p style="color: var(--app-text); font-weight: 600; margin-bottom: 0.5rem">Paste System Numbers</p>
+            <p style="color: var(--app-text); font-weight: 600; margin-bottom: 0.5rem">Paste Joints</p>
             <p style="font-size: 0.85rem; color: var(--app-text-muted); margin-bottom: 0.75rem">
-              Enter System numbers separated by commas or new lines, then click Find to load them for editing.
+              Enter joints separated by commas or new lines, then click Find to load them for editing.
             </p>
             <textarea class="textarea textarea-bordered w-full" rows="4"
-                      placeholder="ST-00001, PI-00002, ST-00003&#10;or one per line"
+                      placeholder="ST-10005, ST-10012, SW-10008&#10;or one per line"
                       [ngModel]="pasteInput()" (ngModelChange)="pasteInput.set($event)"></textarea>
             <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; justify-content: center">
               <button class="btn btn-sm btn-primary" (click)="findJoints()" [disabled]="!pasteInput().trim()">
@@ -238,7 +233,6 @@ export class WeldPlanningMassEditComponent implements OnInit {
       _raw: {},
       _errors: [],
       _saved: false,
-      jointNumber: j.jointNumber,
       hull: j.hull,
       joint: j.joint,
       description: j.description,
@@ -283,7 +277,6 @@ export class WeldPlanningMassEditComponent implements OnInit {
         const row: EditableRow = {
           _id: '',
           _raw: raw, _errors: [], _saved: false,
-          jointNumber: raw['jointNumber'] || raw['joint_number'] || '',
           hull: raw['hull'] || '',
           joint: raw['joint'] || '',
           description: raw['description'] || '',
@@ -321,7 +314,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   validateRow(row: EditableRow) {
     const errors: string[] = [];
-    if (!row.jointNumber) errors.push('System required');
+    if (!row.joint) errors.push('Joint required');
     if (!VALID_TYPES.has(row.jointType)) errors.push('Invalid joint type');
     row._errors = errors;
   }
@@ -336,7 +329,6 @@ export class WeldPlanningMassEditComponent implements OnInit {
       try {
         if (this.isEditMode() && row._id) {
           updateWeldJoint(row._id, {
-            jointNumber: row.jointNumber,
             hull: row.hull,
             joint: row.joint,
             description: row.description,
@@ -357,7 +349,6 @@ export class WeldPlanningMassEditComponent implements OnInit {
           });
         } else {
           addWeldJoint({
-            jointNumber: row.jointNumber,
             hull: row.hull,
             joint: row.joint,
             description: row.description,
@@ -406,11 +397,11 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'PI-00001', hull: 'K1001', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'PI-00002', hull: 'K1001', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'ST-00003', hull: 'K1002', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S7204518', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'PI-00004', hull: 'K1002', joint: 'LO-10017', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S7204518', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '16-SS316', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, jointNumber: 'ST-00005', hull: 'K1003', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H7315002', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1001', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'BJ-G', weldType: 'GTAW', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1001', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'FJ-G', weldType: 'SMAW', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1002', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S7204518', drawingRev: 'A', jointDesign: 'CJ-G', weldType: 'FCAW', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1002', joint: 'LO-10017', description: 'Vessel nozzle to shell', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S7204518', drawingRev: 'C', jointDesign: 'TJ-G', weldType: 'GTAW', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '16-SS316', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1003', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H7315002', drawingRev: 'A', jointDesign: 'LJ-G', weldType: 'SMAW', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -429,7 +420,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
     const notFound: string[] = [];
 
     for (const id of ids) {
-      const match = all.find(j => j.jointNumber === id);
+      const match = all.find(j => j.joint === id);
       if (match) {
         found.push(match);
       } else {
@@ -443,7 +434,6 @@ export class WeldPlanningMassEditComponent implements OnInit {
       const editable: EditableRow[] = found.map(j => ({
         _id: j.id,
         _raw: {}, _errors: [], _saved: false,
-        jointNumber: j.jointNumber,
         hull: j.hull,
         joint: j.joint,
         description: j.description,

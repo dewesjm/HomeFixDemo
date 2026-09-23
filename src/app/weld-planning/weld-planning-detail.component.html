@@ -5,7 +5,7 @@
         <svg lucideArrowLeft class="size-4"></svg> Weld Planning
       </a>
       <span style="color: var(--app-text-muted)">/</span>
-      <h2 class="section-title">{{ j.jointNumber }}</h2>
+      <h2 class="section-title">{{ j.joint }}</h2>
       <span class="spacer"></span>
       @if (isLocked()) {
         <span class="badge badge-sm badge-ghost">Locked</span>
@@ -26,7 +26,6 @@
       <div class="panel-title">Basic Information</div>
       <div class="detail-grid inline">
         <div><div class="meta">XREFID</div><span class="mono fw-bold">{{ j.id }}</span></div>
-        <div><div class="meta">System</div><span class="mono">{{ j.jointNumber }}</span></div>
         <div><div class="meta">Hull</div><span>{{ j.hull || '-' }}</span></div>
         <div><div class="meta">Joint</div><span>{{ j.joint || '-' }}</span></div>
         <div><div class="meta">Description</div><span>{{ j.description || '-' }}</span></div>

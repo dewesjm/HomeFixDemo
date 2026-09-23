@@ -24,7 +24,7 @@ import {
   loadVariants, saveVariants
 } from './weld-planning-filter-schema';
 
-const DEFAULT_KEYS = ['jointNumber', 'hull', 'joint', 'status'];
+const DEFAULT_KEYS = ['hull', 'joint', 'status'];
 
 export interface ResultColumn {
   key: string;
@@ -35,7 +35,6 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'jointNumber',   label: 'System',         field: 'jointNumber',   sortField: 'jointNumber',   width: 'min-w-10' },
   { key: 'id',            label: 'XREFID',         field: 'id',            sortField: 'id',            width: 'min-w-8' },
   { key: 'hull',          label: 'Hull',           field: 'hull',          sortField: 'hull',          width: 'min-w-10' },
   { key: 'joint',         label: 'Joint',          field: 'joint',         sortField: 'joint',         width: 'min-w-11' },
@@ -63,7 +62,7 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'createdAt',     label: 'Created',        field: 'createdAt',    sortField: 'createdAt',     width: 'min-w-11' },
 ];
 
-const DEFAULT_COLUMN_KEYS = ['jointNumber', 'hull', 'joint', 'status', 'jointDesign', 'weldType', 'drawing'];
+const DEFAULT_COLUMN_KEYS = ['hull', 'joint', 'status', 'jointDesign', 'weldType', 'drawing'];
 const COLUMNS_LS_KEY = STORAGE.weldPlanningResultColumns;
 
 function loadColumnKeys(): string[] {
@@ -105,7 +104,7 @@ export class WeldPlanningSearchComponent {
   schema = FILTER_SCHEMA;
   groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
 
-  table = new TableState<WeldJoint>(['jointNumber', 'hull', 'joint', 'description']);
+  table = new TableState<WeldJoint>(['hull', 'joint', 'description']);
 
   openDetails(joint: WeldJoint) {
     this.router.navigate(['/weld-planning', joint.id]);

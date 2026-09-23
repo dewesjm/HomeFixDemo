@@ -34,7 +34,6 @@ export const NDT_MARKS = ['', 'X', '5X'];
 
 export interface WeldJoint {
   id: string;
-  jointNumber: string;
   hull: string;
   joint: string;
   description: string;
@@ -105,7 +104,6 @@ function generateSeededJoints(count = 160): WeldJoint[] {
 
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
-      jointNumber: `${jt === 'structural' ? 'ST' : 'PI'}-J${String(1 + i).padStart(5, '0')}`,   /* 2-letter prefix, hyphen, J + 5 digits */
       hull: pick(HULLS),
       joint: pick(JOINTS_POOL),
       description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
@@ -237,7 +235,6 @@ export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
 /* ── CSV Export columns ── */
 export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
   { header: 'XREFID', value: r => r.id },
-  { header: 'System', value: r => r.jointNumber },
   { header: 'Hull', value: r => r.hull },
   { header: 'Joint', value: r => r.joint },
   { header: 'Type', value: r => r.jointType },
@@ -281,7 +278,7 @@ export async function parseXlsxImport(file: File): Promise<Record<string, string
 export async function downloadXlsxTemplate(): Promise<void> {
   const XLSX = await import('xlsx');
   const headers = [
-    'jointNumber', 'hull', 'joint', 'description',
+    'hull', 'joint', 'description',
     'status', 'priority', 'jointType', 'drawing', 'drawingRev',
     'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
     'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),

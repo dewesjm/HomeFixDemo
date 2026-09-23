@@ -36,7 +36,7 @@ export class WeldPlanningFormComponent implements OnInit {
   jointId = signal('');
 
   form: WeldJoint = {
-    id: '', jointNumber: '', hull: '', joint: '',
+    id: '', hull: '', joint: '',
     description: '',
     status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
@@ -82,18 +82,18 @@ export class WeldPlanningFormComponent implements OnInit {
   }
 
   save() {
-    if (!this.form.jointNumber) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'System is required' });
+    if (!this.form.joint) {
+      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Joint is required' });
       return;
     }
 
     if (this.isEdit()) {
       updateWeldJoint(this.jointId(), this.form);
-      this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.jointNumber} updated` });
+      this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.joint} updated` });
     } else {
       const { id, createdAt, updatedAt, ...rest } = this.form;
       addWeldJoint(rest);
-      this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.jointNumber} created` });
+      this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.joint} created` });
     }
     this.router.navigate(['/weld-planning']);
   }
