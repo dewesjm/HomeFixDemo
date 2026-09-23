@@ -511,19 +511,6 @@
         }
       }
 
-      <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
-      @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-        @if (f.fullWidth) {
-          <div class="mb-sm">
-            <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
-            <input class="input input-bordered w-full" type="text"
-                   [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
-                   [ngModel]="st.signoffInputs[f.key]"
-                   (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
-          </div>
-        }
-      }
-
       <!-- Defer Tack checkbox (fit stage only) -->
       @if (st.id === 'fit') {
         @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
@@ -537,6 +524,19 @@
               </label>
             </div>
           }
+        }
+      }
+
+      <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
+      @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
+        @if (f.fullWidth) {
+          <div class="mb-sm">
+            <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
+            <input class="input input-bordered w-full" type="text"
+                   [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
+                   [ngModel]="st.signoffInputs[f.key]"
+                   (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
+          </div>
         }
       }
 
