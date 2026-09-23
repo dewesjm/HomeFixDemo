@@ -452,7 +452,7 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
         showIf: { key: 'inspectionType', equals: 'rt', and: [{ key: 'result', equals: 'unsat' }] },
         options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
           { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
-          { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }, { label: 'None', value: 'none' }] },
+          { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }] },
     ],
   },
   mtpt: {
