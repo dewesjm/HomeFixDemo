@@ -11,12 +11,12 @@
             <div class="flex-1 max-w-xs">
               <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
               @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
+                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
                         [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else {
-                <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" [type]="f.type === 'number' ? 'number' : 'text'"
                        [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="fabricationData()[f.key]"
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
@@ -35,10 +35,13 @@
           @if (f.row === 2) {
             <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
               <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-              <input class="input input-bordered w-full" type="text"
+              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
                      [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                      [ngModel]="fabricationData()[f.key]"
                      (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+              @if (fabErrors()[f.key]) {
+                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+              }
             </div>
           }
         }
@@ -50,7 +53,7 @@
           @if (f.row === 3) {
             <div class="flex-1 max-w-xs">
               <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-              <input class="input input-bordered w-full" type="text"
+              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
                      [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                      [ngModel]="fabricationData()[f.key]"
                      (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
@@ -69,12 +72,12 @@
             <div class="flex-1 max-w-xs">
               <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
               @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
+                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
                         [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else {
-                <input class="input input-bordered w-full" type="text"
+                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
                        [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="fabricationData()[f.key]"
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
@@ -94,12 +97,12 @@
             <div class="flex-1 max-w-xs">
               <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}@if (fabFieldRequired()(f)) { <span class="text-error">*</span> }</div>
               @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [disabled]="fabLocked() || jobComplete()"
+                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
                         [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else {
-                <input class="input input-bordered w-full" type="text"
+                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
                        [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
                        [ngModel]="fabricationData()[f.key]"
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />

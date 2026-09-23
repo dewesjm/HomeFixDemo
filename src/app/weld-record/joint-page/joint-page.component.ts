@@ -355,6 +355,26 @@ export class JointPageComponent implements OnDestroy {
     }
     return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
+  /* Signoff fields currently required, accounting for Fit/Pre-Fit's joint-design + traceability
+     conditions on Consumable Insert/Backing Ring -- shared by signBlockers() (reasons list) and
+     validateStageFields() (per-field highlighting) so they can't drift out of sync. */
+  private requiredSignoffFields(stage: WorkflowStage): SignoffField[] {
+    return stage.signoffFields.filter(f => {
+      if (stage.id === 'fit' || stage.id === 'pre-fit') {
+        const insertApplies = this.jointDesignRequiresInsert();
+        const backingApplies = this.jointDesignRequiresBackingRing();
+        const micApplies = this.job
+          ? requiresTraceability(this.job.mcl1) || requiresTraceability(this.job.mcl2) : false;
+        if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize') return insertApplies;
+        if (f.key === 'consumableInsertId') return insertApplies && micApplies;
+        if (f.key === 'backingRingType') return backingApplies;
+        if (f.key === 'backingRingId') return backingApplies && micApplies;
+        return !!f.required;
+      }
+      return !!f.required;
+    });
+  }
+
   /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
   signBlockers(stage: WorkflowStage): string[] {
     if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
@@ -381,24 +401,7 @@ export class JointPageComponent implements OnDestroy {
       if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
       if (Object.keys(this.fabErrors()).length > 0) reasons.push('Fix the fabrication errors');
     }
-    const missingSignoff = stage.signoffFields
-      .filter(f => {
-        // Fit/Pre-Fit: Consumable Insert/Backing Ring fields are required only while that group
-        // applies (per the joint design); their MIC is required only when that group applies AND
-        // either joint member's MCL requires traceability (see SignoffPanelComponent.micSignoffRequired)
-        if (stage.id === 'fit' || stage.id === 'pre-fit') {
-          const insertApplies = this.jointDesignRequiresInsert();
-          const backingApplies = this.jointDesignRequiresBackingRing();
-          const micApplies = this.job
-            ? requiresTraceability(this.job.mcl1) || requiresTraceability(this.job.mcl2) : false;
-          if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize') return insertApplies;
-          if (f.key === 'consumableInsertId') return insertApplies && micApplies;
-          if (f.key === 'backingRingType') return backingApplies;
-          if (f.key === 'backingRingId') return backingApplies && micApplies;
-          return !!f.required;
-        }
-        return !!f.required;
-      })
+    const missingSignoff = this.requiredSignoffFields(stage)
       .filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0)
       .map(f => f.label);
     if (missingSignoff.length) reasons.push(`Fill in ${missingSignoff.join(', ')}`);
@@ -421,6 +424,7 @@ export class JointPageComponent implements OnDestroy {
 
   updateRoutingType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
+    if (value) this.clearFieldError(stage.id, '__routingType');
     const templates = getTemplates()[this.job.trade] ?? [];
     /* Fit stage: swap fields when switching between Fit and Weld Build up */
     if (stage.id === 'fit') {
@@ -705,6 +709,7 @@ export class JointPageComponent implements OnDestroy {
     const raw = stage.inputs['affectedItems'] ?? '';
     const current = raw ? raw.split(',') : [];
     const next = checked ? [...current, item] : current.filter(i => i !== item);
+    if (next.length) this.clearFieldError(stage.id, 'affectedItem');
     this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
   }
   /* select fields commit on change, clear maps to '' */
@@ -786,6 +791,7 @@ export class JointPageComponent implements OnDestroy {
 
   setStageResult(stage: WorkflowStage, result: StageResult) {
     if (!this.job || result === stage.result) return;
+    this.clearFieldError(stage.id, '__decision');
     const old = stage.result;
     this.signoffService.updateStageSignoff(this.job, stage.id, { result },
       { action: `${stage.label} — Decision`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
@@ -794,6 +800,7 @@ export class JointPageComponent implements OnDestroy {
   /* generic signoff field blur handler */
   blurSignoffField(stage: WorkflowStage, field: SignoffField, value: string) {
     if (!this.job) return;
+    if (value) this.clearFieldError(stage.id, field.key);
     const prev = stage.signoffInputs[field.key] ?? '';
     if (value === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
@@ -805,6 +812,7 @@ export class JointPageComponent implements OnDestroy {
   signoffSelectChange(stage: WorkflowStage, field: SignoffField, value: string | null) {
     const v = value ?? '';
     if (!this.job) return;
+    if (v) this.clearFieldError(stage.id, field.key);
     const prev = stage.signoffInputs[field.key] ?? '';
     if (v === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
@@ -891,6 +899,31 @@ export class JointPageComponent implements OnDestroy {
         errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
       }
     }
+    /* Decision, Type and Routing Type -- same conditions signBlockers() uses, kept in sync via
+       synthetic keys (no real StageField backs these) so they highlight red like any other
+       required field instead of only appearing in signBlockers()' un-displayed reason list. */
+    if (stage.rejectToStage && !stage.result) {
+      errors[`${stage.id}:__decision`] = 'Choose SAT or UNSAT';
+    }
+    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) {
+      errors[`${stage.id}:__inspectionType`] = 'Select the inspection performed';
+    }
+    if (stage.repeatable && !stage.routingType) {
+      errors[`${stage.id}:__routingType`] = 'Choose the routing type';
+    }
+    /* Fit: fabrication data must have Location, MIC 1, MIC 2, Drawing Rev, Actual Thickness --
+       highlighting for these lives on the Fabrication panel itself (fabErrors(), always live, not
+       gated to a signoff attempt); this only needs to block signing via the errors-length check. */
+    if (stage.id === 'fit' && Object.keys(this.fabErrors()).length > 0) {
+      errors[`${stage.id}:__fabrication`] = 'Fix the fabrication errors';
+    }
+    /* Required signoff fields (e.g. Fit/Pre-Fit's Consumable Insert/Backing Ring, or any other
+       stage's required signoffFields) -- same rules signBlockers() uses (requiredSignoffFields()). */
+    for (const f of this.requiredSignoffFields(stage)) {
+      if ((stage.signoffInputs[f.key] ?? '').trim().length === 0) {
+        errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
+      }
+    }
     return errors;
   }
 
@@ -961,6 +994,12 @@ export class JointPageComponent implements OnDestroy {
     // Auto-accept non-inspection steps
     if (!stage.rejectToStage && !stage.result) {
       this.setStageResult(stage, 'sat' as StageResult);
+      /* setStageResult() writes through the store synchronously, but `stage` is the object this
+         click handler was called with, not re-read from the signal -- without re-fetching, the
+         canSignStage() check below still sees the old (falsy) result and signBlockers()' auto-accept
+         early return (!stage.rejectToStage && !stage.result) fires again, bypassing every other
+         requirement (fabrication, signoff fields, ...) for every auto-accept stage. */
+      stage = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     }
     if (!this.canSignStage(stage)) return;
     /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
@@ -1033,6 +1072,7 @@ export class JointPageComponent implements OnDestroy {
     const idx = this.selectedRouting();
     const stage = this.wf().stages[idx];
     if (!stage) return;
+    if (value) this.clearFieldError(stage.id, '__inspectionType');
     this.wf.update(wf => ({
       ...wf,
       stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)

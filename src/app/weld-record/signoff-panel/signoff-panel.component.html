@@ -17,7 +17,7 @@
       <div class="mb-sm">
           <label class="stage-field">
             <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
-            <select class="select select-bordered"
+            <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
                     [ngModel]="st.id === 'fit' ? (st.routingType || ctx().defaultRoutingOption(st)) : ctx().inspectionTypeRequired(st) ? st.inspectionType : (st.inspectionType || ctx().defaultRoutingOption(st))"
                     (ngModelChange)="st.id === 'fit' ? ctx().updateRoutingType(st, $event) : ctx().setInspectionType($event)">
               @if (ctx().inspectionTypeRequired(st)) {
@@ -28,19 +28,29 @@
               }
             </select>
           </label>
+          @if (ctx().fieldError(st.id, '__inspectionType'); as err) {
+            <div class="text-error text-xs mt-0.5">{{ err }}</div>
+          }
         </div>
       }
 
-    <!-- Type / Layer (Fit-Up Insp only) -- fixed, informational, not a real choice -->
+    <!-- Type / Layer (Fit-Up Insp only) -- fixed, informational, not a real choice. Same droplist
+         convention as the Type dropdown above (one per line), just with a single option. -->
     @if (st.id === 'fitup-insp') {
-      <div class="flex gap-4 mb-sm">
+      <div class="mb-sm">
         <label class="stage-field">
           <span class="stage-field-label font-semibold">Type</span>
-          <input class="input input-bordered" type="text" value="Fit-Up Inspection" disabled />
+          <select class="select select-bordered" disabled>
+            <option>Fit-Up Inspection</option>
+          </select>
         </label>
+      </div>
+      <div class="mb-sm">
         <label class="stage-field">
           <span class="stage-field-label font-semibold">Layer</span>
-          <input class="input input-bordered" type="text" value="Fit" disabled />
+          <select class="select select-bordered" disabled>
+            <option>Fit</option>
+          </select>
         </label>
       </div>
     }
@@ -53,7 +63,7 @@
           @if (ctx().job[it.key]) {
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
               <label class="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm"
+                <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem')"
                        [disabled]="!fieldsEditable()"
                        [checked]="isAffected(it.key)"
                        (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
@@ -62,10 +72,10 @@
               @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
                 <span>{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
                 <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" class="checkbox checkbox-xs"
+                  <input type="checkbox" class="checkbox checkbox-xs" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem') && st.inputs[it.micVerified] !== 'yes'"
                          [disabled]="!fieldsEditable()"
                          [checked]="st.inputs[it.micVerified] === 'yes'"
-                         (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''" />
+                         (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''; ctx().clearFieldError(st.id, 'affectedItem')" />
                   <span>{{ it.micLabel }} verified<span class="text-error">*</span></span>
                 </label>
               }
@@ -341,7 +351,7 @@
             <div class="w-full">
             @if (f.type === 'checkbox') {
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm"
+                <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
                        [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                        [checked]="st.inputs[f.key] === 'yes'"
                        (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
@@ -349,11 +359,11 @@
               </label>
             } @else if (f.type === 'radio') {
               <div>
-                <div class="meta mb-1">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
+                <div class="meta mb-1" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
                 <div class="flex gap-4">
                   @for (o of f.options || []; track o.value) {
                     <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" class="radio radio-sm" [name]="'field-' + st.id + '-' + f.key"
+                      <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, f.key)" [name]="'field-' + st.id + '-' + f.key"
                              [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                              [checked]="st.inputs[f.key] === o.value"
                              (change)="ctx().stageInputBlur(st, f, o.value)" />
@@ -366,12 +376,12 @@
               <label class="stage-field">
                 <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
                 @if (f.type === 'select') {
-                  <select class="select select-bordered" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
+                  <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                           [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
-                  <input class="input input-bordered" [type]="f.type === 'number' ? 'number' : 'text'"
+                  <input class="input input-bordered" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
                          [placeholder]="f.placeholder || ''"
                          [disabled]="f.disabled || !ctx().inputsEditable(st, ctx().selectedRouting())"
                          [ngModel]="st.inputs[f.key]"
@@ -402,16 +412,19 @@
                   <div>
                     <div class="meta">{{ f.label }}@if (f.required || (f.key === 'consumableInsertId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
                     @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [disabled]="!ctx().editable(st)"
+                      <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
                               [ngModel]="st.signoffInputs[f.key]"
                               (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     } @else {
-                      <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+                      <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
                              [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
                              [ngModel]="st.signoffInputs[f.key]"
                              (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
+                    }
+                    @if (ctx().fieldError(st.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
                     }
                   </div>
                 }
@@ -425,16 +438,19 @@
                   <div>
                     <div class="meta">{{ f.label }}@if (f.required || (f.key === 'backingRingId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
                     @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [disabled]="!ctx().editable(st)"
+                      <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
                               [ngModel]="st.signoffInputs[f.key]"
                               (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
                         @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                       </select>
                     } @else {
-                      <input class="input input-bordered w-full" type="text"
+                      <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(st.id, f.key)" type="text"
                              [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
                              [ngModel]="st.signoffInputs[f.key]"
                              (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
+                    }
+                    @if (ctx().fieldError(st.id, f.key); as err) {
+                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
                     }
                   </div>
                 }
@@ -446,18 +462,21 @@
           @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
             @if (f.key !== '_spacer' && !f.fullWidth) {
               <div class="signoff-field-row">
-                <div class="meta">{{ f.label }}{{ f.required ? ' *' : '' }}</div>
+                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
                 @if (f.type === 'select') {
-                  <select class="select select-bordered w-64" [disabled]="!ctx().editable(st)"
+                  <select class="select select-bordered w-64" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
                           [ngModel]="st.signoffInputs[f.key]"
                           (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
                     @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                   </select>
                 } @else {
-                  <input class="input input-bordered w-64" [type]="f.type === 'number' ? 'number' : 'text'"
+                  <input class="input input-bordered w-64" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
                          [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
                          [ngModel]="st.signoffInputs[f.key]"
                          (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
+                }
+                @if (ctx().fieldError(st.id, f.key); as err) {
+                  <div class="text-error text-xs mt-0.5">{{ err }}</div>
                 }
               </div>
             }
@@ -466,20 +485,23 @@
         <!-- Routing type (repeatable stages only) -->
         @if (st.repeatable && !st.signed) {
           <div>
-            <div class="meta">Routing type <span class="req">*</span></div>
+            <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__routingType')">Routing type <span class="text-error">*</span></div>
             <div class="result-radios">
               <label>
-                <input type="radio" class="radio radio-sm" [name]="'routing-type-' + st.id"
+                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__routingType')" [name]="'routing-type-' + st.id"
                        [checked]="st.routingType === 'repeat'" (change)="ctx().updateRoutingType(st, 'repeat')" />
                 <span>Repeat</span>
               </label>
               <label>
-                <input type="radio" class="radio radio-sm" [name]="'routing-type-' + st.id"
+                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__routingType')" [name]="'routing-type-' + st.id"
                        [checked]="st.routingType === 'final' || st.routingType === 'standard'"
                        (change)="ctx().updateRoutingType(st, 'final')" />
                 <span>Final</span>
               </label>
             </div>
+            @if (ctx().fieldError(st.id, '__routingType'); as err) {
+              <div class="text-error text-xs mt-0.5">{{ err }}</div>
+            }
           </div>
         }
       </div>
@@ -499,16 +521,19 @@
       <!-- Decision (SAT/UNSAT) — own dedicated line -->
       @if (st.rejectToStage) {
         <div class="mb-sm">
-          <div class="meta">{{ st.decisionLabel || 'Decision' }} <span class="req">*</span></div>
+          <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__decision')">{{ st.decisionLabel || 'Decision' }} <span class="text-error">*</span></div>
           <div class="result-radios">
             @for (o of ctx().resultOptions; track o.value) {
               <label>
-                <input type="radio" class="radio radio-sm" [name]="'result-' + st.id" [disabled]="!ctx().editable(st)"
+                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__decision')" [name]="'result-' + st.id" [disabled]="!ctx().editable(st)"
                        [checked]="st.result === o.value" (change)="ctx().setStageResult(st, o.value)" />
                 <span>{{ o.label }}</span>
               </label>
             }
           </div>
+          @if (ctx().fieldError(st.id, '__decision'); as err) {
+            <div class="text-error text-xs mt-0.5">{{ err }}</div>
+          }
         </div>
       }
 
@@ -602,12 +627,12 @@
           <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'" [disabled]="true" [value]="stage().inputs[f.key] || ''" />
         }
       } @else if (f.type === 'select') {
-        <select class="select select-bordered w-full" [disabled]="!fieldsEditable() || isLocked(f)"
+        <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
                 [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
           @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
         </select>
       } @else {
-        <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'"
+        <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
                [disabled]="!fieldsEditable() || isLocked(f)"
                [ngModel]="stage().inputs[f.key]"
                (input)="isActual(f) ? digitsOnly($any($event.target)) : null"
