@@ -141,6 +141,15 @@ export class SignoffPanelComponent {
     return this.ctx().wf().fabricationData[mic] ?? '';
   }
 
+  /* Single source of truth for "is this the Fit stage routed as Weld Build-up" -- Weld Build-up
+     gets its fields/layout from WELD_GROUPS (like Tack) instead of Fit's own signoff-field
+     rendering below, so every fit-specific block in the template must agree on this same check.
+     Comments/Defer Tack duplicating from the generic signoff-fields renderer (2026-09-23) happened
+     because each block re-wrote the id/routingType check inline and one of them didn't match. */
+  isFitBuildup(st: WorkflowStage): boolean {
+    return st.id === 'fit' && st.routingType === 'weld-buildup';
+  }
+
   /* Fit stage's Consumable Insert MIC / Backing Ring MIC (joint-wide, not per-item like the
      Weld Build-up MIC verified checkboxes above) are only required when either joint member's
      MCL requires traceability */

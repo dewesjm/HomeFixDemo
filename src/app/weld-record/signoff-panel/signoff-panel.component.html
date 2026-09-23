@@ -32,7 +32,7 @@
       }
 
     <!-- Affected Items + MIC (weld build-up only) -->
-    @if (st.id === 'fit' && st.routingType === 'weld-buildup') {
+    @if (isFitBuildup(st)) {
       <div class="flex flex-col gap-1 mb-sm">
         <span class="stage-field-label">Affected Item<span class="text-error">*</span></span>
         @for (it of affectedItemSlots; track it.key) {
@@ -209,7 +209,7 @@
             }
           }
         </div>
-      } @else if (st.id === 'tack' || st.id === 'deferred-tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || (st.id === 'fit' && st.routingType === 'weld-buildup')) {
+      } @else if (st.id === 'tack' || st.id === 'deferred-tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || isFitBuildup(st)) {
         <!-- Weld stages: cards and layout driven by WELD_GROUPS (see component) -->
         <div class="flex flex-col gap-3 stage-inputs">
           @for (g of weldGroups; track $index) {
@@ -376,8 +376,10 @@
 
     @if (st.required) {
       <div class="signoff-fields">
-        <!-- Fit stage: consumable insert row + backing ring row + comments + defer tack -->
-        @if (st.id === 'fit' && st.routingType !== 'weld-buildup') {
+        <!-- Fit stage (not weld build-up): consumable insert row + backing ring row. Weld build-up
+             renders none of Fit's own signoff fields here -- its Comments comes from WELD_GROUPS
+             (stage fields, above) and it has no Defer Tack/Consumable Insert/Backing Ring concept. -->
+        @if (st.id === 'fit' && !isFitBuildup(st)) {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
@@ -424,8 +426,8 @@
               }
             </div>
           }
-        } @else {
-          <!-- Default: one per row -->
+        } @else if (!isFitBuildup(st)) {
+          <!-- Default: one per row (every stage except Fit and Fit weld build-up) -->
           @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
             @if (f.key !== '_spacer' && !f.fullWidth) {
               <div class="signoff-field-row">
@@ -511,8 +513,8 @@
         }
       }
 
-      <!-- Defer Tack checkbox (fit stage only) -->
-      @if (st.id === 'fit') {
+      <!-- Defer Tack checkbox (fit stage only, not weld build-up -- it has no Tack to defer) -->
+      @if (st.id === 'fit' && !isFitBuildup(st)) {
         @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
           @if (f.key === 'deferTack') {
             <div class="mb-sm">
@@ -527,9 +529,10 @@
         }
       }
 
-      <!-- fullWidth signoff fields (Comments, Notes) — own line(s) -->
+      <!-- fullWidth signoff fields (Comments, Notes) — own line(s). Weld build-up excluded: its
+           Comments already comes from WELD_GROUPS (stage fields, above), so this would duplicate it. -->
       @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-        @if (f.fullWidth) {
+        @if (f.fullWidth && !isFitBuildup(st)) {
           <div class="mb-sm">
             <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
             <input class="input input-bordered w-full" type="text"
