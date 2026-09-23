@@ -6,6 +6,14 @@ import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, REPAIR_STAGE, labelFor } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
+/* Repair's Allowable Thickness text depends on the job's Nuclear Indicator (see the nInd tooltip,
+   joint-details.component.ts's N_IND_MEANINGS: '1' = N 250-1500-1, '2' = N TP278, '3' = Non).
+   '3' (Non) has no stated rule -- falls back to the TP278 value, unreviewed. */
+function allowableThicknessText(nInd: string): string {
+  const inches = nInd === '1' ? '3/8' : '3/16';
+  return `Allowable thickness: ${inches} inch or 20% of material thickness, whichever is less`;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SignoffService {
   private store = inject(WorkflowStore);
@@ -124,7 +132,7 @@ export class SignoffService {
             required: true,
             role: REPAIR_STAGE.role ?? '',
             fields: REPAIR_STAGE.fields.map(f => ({ ...f })),
-            inputs: { allowableThickness: 'Allowable thickness: 3/16 inch or 20% of material thickness, whichever is less' },
+            inputs: { allowableThickness: allowableThicknessText(job.nInd) },
             signoffFields: [],
             signoffInputs: {},
             signoffRecords: [],

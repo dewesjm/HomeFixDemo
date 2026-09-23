@@ -908,20 +908,23 @@ export class JointPageComponent implements OnDestroy {
         }
       }
     }
-    /* Weld build-up: affectedItems + micVerified */
-    if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
+    /* Weld build-up: affectedItems + micVerified. Repair: affectedItems only, no MIC verification. */
+    if ((stage.id === 'fit' && stage.routingType === 'weld-buildup') || stage.id === 'repair') {
       const raw = stage.inputs?.['affectedItems'] ?? '';
       const items = raw ? raw.split(',') : [];
       if (!items.length) {
         errors[`${stage.id}:affectedItem`] = 'Select at least one Affected Item';
       }
       /* MIC verified is only shown (and so only required) when that item's MCL requires
-         traceability -- same condition signoff-panel.component.ts uses to render the checkbox */
-      if (items.includes('joiningItem') && requiresTraceability(this.job?.mcl1 ?? '') && stage.inputs?.['micVerified1'] !== 'yes') {
-        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joiningItem || 'item');
-      }
-      if (items.includes('joinToItem') && requiresTraceability(this.job?.mcl2 ?? '') && stage.inputs?.['micVerified2'] !== 'yes') {
-        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
+         traceability -- same condition signoff-panel.component.ts uses to render the checkbox.
+         Repair has no MIC verification at all (user: "no MICs this time"). */
+      if (stage.id === 'fit') {
+        if (items.includes('joiningItem') && requiresTraceability(this.job?.mcl1 ?? '') && stage.inputs?.['micVerified1'] !== 'yes') {
+          errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joiningItem || 'item');
+        }
+        if (items.includes('joinToItem') && requiresTraceability(this.job?.mcl2 ?? '') && stage.inputs?.['micVerified2'] !== 'yes') {
+          errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
+        }
       }
     }
     /* Decision, Type and Routing Type -- same conditions signBlockers() uses, kept in sync via
@@ -1011,7 +1014,7 @@ export class JointPageComponent implements OnDestroy {
   private signoffSnapshot(stage: WorkflowStage): SignoffInput[] {
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const out = snapshotInputs(st, this.visibleFields(st), this.visibleSignoffFields(st));
-    if (st.id === 'fit' && st.routingType === 'weld-buildup' && this.job) {
+    if (((st.id === 'fit' && st.routingType === 'weld-buildup') || st.id === 'repair') && this.job) {
       const names = (st.inputs['affectedItems'] ?? '').split(',').filter(Boolean).map(k => this.job![k as 'joiningItem' | 'joinToItem']);
       out.push({ label: 'Affected Item', value: names.join(', ') });
     }
