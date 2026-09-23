@@ -3,6 +3,7 @@
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
 import { STORAGE } from '../data/storage-keys';
+import { jointNumbers } from '../data/jobs';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
@@ -71,8 +72,9 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
 const MATERIALS_1 = ['02-CS', '12-SS304', '13-SS316', '04-AS', '63-AL10'];
 const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '15-SS308', '16-SS316'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
-/* joint = system-joint, e.g. ST-10005 */
-const JOINTS_POOL = ['ST-10005', 'ST-10012', 'SW-10008', 'SW-10021', 'FW-10014', 'FO-10009', 'LO-10017', 'HV-10003'];
+/* joint = system-joint, e.g. ST-10005; each number repeats only 1-3 times, same generator as Weld Record's jobs */
+const SEED_COUNT = 160;
+const JOINTS_POOL = jointNumbers(SEED_COUNT, 11);
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -90,7 +92,7 @@ function makeId(seed: number): string {
   return code;
 }
 
-function generateSeededJoints(count = 160): WeldJoint[] {
+function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
   const rand = seeded(12345);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const out: WeldJoint[] = [];
@@ -105,7 +107,7 @@ function generateSeededJoints(count = 160): WeldJoint[] {
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
       hull: pick(HULLS),
-      joint: pick(JOINTS_POOL),
+      joint: JOINTS_POOL[i % JOINTS_POOL.length],
       description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
       priority: pick(priorities),

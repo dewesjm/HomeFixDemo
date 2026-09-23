@@ -68,8 +68,25 @@ export interface Job {
 /* letter + 7 digits, e.g. H7111234 */
 const DRAWINGS = ['H7111234', 'H7111235', 'S7204518', 'S7204519', 'H7315002', 'S7315003', 'H7422871', 'S7530116', 'H7530117'];
 const DRAWING_REVS = ['A', 'B', 'C', 'D', 'E', 'A-2', 'B-1'];
-/* joint = system-joint, e.g. ST-10005 */
-const JOINTS = ['ST-10005', 'ST-10012', 'SW-10008', 'SW-10021', 'FW-10014', 'FO-10009', 'LO-10017', 'HV-10003'];
+/* joint = system-joint, e.g. ST-10005. Not unique in real data, but for the demo each joint number
+   only repeats a couple of times (1-3 records each) instead of 8 numbers shared by every record, so
+   searching one joint number turns up a short list. Exported so Weld Planning's seed uses the same. */
+const JOINT_SYSTEMS = ['ST', 'SW', 'FW', 'FO', 'LO', 'HV'];
+export function jointNumbers(count: number, seed: number): string[] {
+  const rand = seeded(seed);
+  const out: string[] = [];
+  for (let n = 0; out.length < count; n++) {
+    const joint = `${JOINT_SYSTEMS[Math.floor(rand() * JOINT_SYSTEMS.length)]}-${10001 + n * 7}`;
+    const copies = 1 + Math.floor(rand() * 3);
+    for (let c = 0; c < copies && out.length < count; c++) out.push(joint);
+  }
+  /* shuffle so a joint's copies don't sit next to each other */
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
 const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
 const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
@@ -160,6 +177,7 @@ export function generateJobs(count = 480): Job[] {
   const hulls = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
   const shipByHull = new Map(hulls.map((h, k) => [h, makeShip(k + 1)]));
   const usedIdentity = new Set<string>();
+  const joints = jointNumbers(count, 7);
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
     const technician = TECHNICIAN_NAMES[Math.floor(rand() * TECHNICIAN_NAMES.length)];
@@ -172,9 +190,10 @@ export function generateJobs(count = 480): Job[] {
 
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
 
-    let hull: string, drawing: string, joint: string;
+    const joint = joints[i];
+    let hull: string, drawing: string;
     do {
-      hull = pick(hulls); drawing = pick(DRAWINGS); joint = pick(JOINTS);
+      hull = pick(hulls); drawing = pick(DRAWINGS);
     } while (usedIdentity.has(`${hull}|${drawing}|${joint}`));
     usedIdentity.add(`${hull}|${drawing}|${joint}`);
 
