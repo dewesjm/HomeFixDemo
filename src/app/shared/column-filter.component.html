@@ -1,0 +1,20 @@
+<span class="relative inline-flex items-center">
+  <button type="button" class="btn btn-ghost btn-xs px-1 min-h-0 h-5" [class.text-primary]="value()"
+          (click)="toggle()" [title]="'Filter ' + label()">
+    <svg lucideListFilter class="size-3"></svg>
+  </button>
+  @if (open()) {
+    <div class="absolute z-20 top-full left-0 mt-1 bg-base-100 border border-base-300 rounded-box shadow-lg p-1" style="min-width: 10rem">
+      <label class="input input-xs input-bordered flex items-center gap-1 w-full">
+        <input #inputEl type="text" class="grow min-w-0" [placeholder]="label()"
+               [ngModel]="value()" (ngModelChange)="valueChange.emit($event)"
+               (keydown.escape)="close()" (blur)="close()" />
+        @if (value()) {
+          <button type="button" class="btn btn-ghost btn-xs p-0 shrink-0" (mousedown)="$event.preventDefault(); clear()">
+            <svg lucideX class="size-3 opacity-60"></svg>
+          </button>
+        }
+      </label>
+    </div>
+  }
+</span>

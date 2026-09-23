@@ -34,16 +34,16 @@
   <!-- Header -->
   <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_7rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
     <div></div>
-    <div>XREFID</div>
-    <div>Hull</div>
-    <div>Drawing</div>
-    <div>Joint</div>
-    <div>Routing</div>
-    <div>Location</div>
-    <div>Specific Location</div>
-    <div>Assignment #</div>
-    <div>WICC Date</div>
-    <div>Source</div>
+    <div class="flex items-center gap-1">XREFID <app-column-filter label="XREFID" [value]="columnFilter('jobId')" (valueChange)="setColumnFilter('jobId', $event)" /></div>
+    <div class="flex items-center gap-1">Hull <app-column-filter label="Hull" [value]="columnFilter('hull')" (valueChange)="setColumnFilter('hull', $event)" /></div>
+    <div class="flex items-center gap-1">Drawing <app-column-filter label="Drawing" [value]="columnFilter('drawing')" (valueChange)="setColumnFilter('drawing', $event)" /></div>
+    <div class="flex items-center gap-1">Joint <app-column-filter label="Joint" [value]="columnFilter('joint')" (valueChange)="setColumnFilter('joint', $event)" /></div>
+    <div class="flex items-center gap-1">Routing <app-column-filter label="Routing" [value]="columnFilter('routing')" (valueChange)="setColumnFilter('routing', $event)" /></div>
+    <div class="flex items-center gap-1">Location <app-column-filter label="Location" [value]="columnFilter('location')" (valueChange)="setColumnFilter('location', $event)" /></div>
+    <div class="flex items-center gap-1">Specific Location <app-column-filter label="Specific Location" [value]="columnFilter('specificLocation')" (valueChange)="setColumnFilter('specificLocation', $event)" /></div>
+    <div class="flex items-center gap-1">Assignment # <app-column-filter label="Assignment #" [value]="columnFilter('assignmentNumber')" (valueChange)="setColumnFilter('assignmentNumber', $event)" /></div>
+    <div class="flex items-center gap-1">WICC Date <app-column-filter label="WICC Date" [value]="columnFilter('expirationDate')" (valueChange)="setColumnFilter('expirationDate', $event)" /></div>
+    <div class="flex items-center gap-1">Source <app-column-filter label="Source" [value]="columnFilter('source')" (valueChange)="setColumnFilter('source', $event)" /></div>
     <div></div>
   </div>
 

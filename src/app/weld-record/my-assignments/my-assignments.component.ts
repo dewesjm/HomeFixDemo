@@ -7,11 +7,27 @@ import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphon
 import { ASSIGNMENTS, Assignment } from '../../data/assignments';
 import { JOBS } from '../../data/jobs';
 import { bannerFor } from '../../data/banner';
+import { ColumnFilterComponent } from '../../shared/column-filter.component';
+
+/* per-column filter keys -> how to read the matching text off an Assignment (WICC Date matches
+   against the same formatted display text the column shows, not the raw ISO date) */
+const COLUMN_FIELDS: Record<string, (a: Assignment) => string> = {
+  jobId: a => a.jobId,
+  hull: a => a.hull,
+  drawing: a => a.drawing,
+  joint: a => a.joint,
+  routing: a => a.routing,
+  location: a => a.location,
+  specificLocation: a => a.specificLocation,
+  assignmentNumber: a => a.assignmentNumber,
+  expirationDate: a => new Date(a.expirationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+  source: a => a.source,
+};
 
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
+  imports: [CommonModule, FormsModule, ColumnFilterComponent, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {
@@ -25,19 +41,34 @@ export class MyAssignmentsComponent {
   roleFilter = signal('Welding');
   roles = [...new Set(ASSIGNMENTS.flatMap(a => a.assignedRoles))].sort();
 
+  /* unobtrusive per-column filters (app-column-filter): a small icon until clicked, not an
+     always-open box -- keyed by the same keys as COLUMN_FIELDS */
+  columnFilters = signal<Record<string, string>>({});
+  columnFilter(key: string): string {
+    return this.columnFilters()[key] ?? '';
+  }
+  setColumnFilter(key: string, value: string) {
+    this.columnFilters.update(f => ({ ...f, [key]: value }));
+  }
+
   assignments = computed(() => {
     let list = ASSIGNMENTS;
     const role = this.roleFilter();
     if (role) list = list.filter(a => a.assignedRoles.includes(role));
     const q = this.keyword().toLowerCase().trim();
-    if (!q) return list;
+    if (q) {
+      list = list.filter(a =>
+        a.hull.toLowerCase().includes(q) ||
+        a.drawing.toLowerCase().includes(q) ||
+        a.routing.toLowerCase().includes(q) ||
+        a.joint.toLowerCase().includes(q) ||
+        a.location.toLowerCase().includes(q)
+      );
+    }
+    const filters = Object.entries(this.columnFilters()).filter(([, v]) => v.trim());
+    if (!filters.length) return list;
     return list.filter(a =>
-      a.hull.toLowerCase().includes(q) ||
-      a.drawing.toLowerCase().includes(q) ||
-      a.routing.toLowerCase().includes(q) ||
-      a.joint.toLowerCase().includes(q) ||
-      a.location.toLowerCase().includes(q)
-    );
+      filters.every(([key, v]) => COLUMN_FIELDS[key](a).toLowerCase().includes(v.toLowerCase().trim())));
   });
 
   /* XREFID is sometimes blank (mock data imperfection); a job's real key is hull + drawing + joint */
