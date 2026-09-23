@@ -422,10 +422,10 @@ const NDT_COMMON_FIELDS: StageField[] = [
     options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
       { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
   { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
-  { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
-  { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', showIf: { key: 'hasProbationary', equals: 'yes' } },
+  { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', required: true, showIf: { key: 'hasProbationary', equals: 'yes' } },
+  { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', required: true, showIf: { key: 'hasProbationary', equals: 'yes' } },
   { key: 'partial', label: 'Partial', type: 'checkbox' },
-  { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', showIf: { key: 'partial', equals: 'yes' } },
+  { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', required: true, showIf: { key: 'partial', equals: 'yes' } },
 ];
 
 /* Degree of RT required/performed -- NA, or an angular/percentage coverage value. Shared by the
