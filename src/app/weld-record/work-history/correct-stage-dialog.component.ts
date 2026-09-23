@@ -10,13 +10,18 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
 import { AttachmentsComponent } from '../attachments/attachments.component';
+import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
+
+/* fields the live signoff panel already gives a person-search assist to (see workflow.ts's
+   NDT_COMMON_FIELDS) -- Correct should offer the same help, not just a plain text box */
+const PERSON_SEARCH_FIELDS = new Set(['probationaryInspector', 'oversightInspector']);
 
 export interface CorrectTarget { job: Job; stageId: string }
 
 @Component({
   selector: 'app-correct-stage-dialog',
   standalone: true,
-  imports: [FormsModule, AttachmentsComponent],
+  imports: [FormsModule, AttachmentsComponent, PersonSearchInputComponent],
   templateUrl: './correct-stage-dialog.component.html'
 })
 export class CorrectStageDialogComponent {
@@ -60,6 +65,10 @@ export class CorrectStageDialogComponent {
   isLocked(key: string): boolean {
     const t = this.target();
     return !!t && isRoutingLockedField(t.stageId, key);
+  }
+
+  isPersonField(key: string): boolean {
+    return PERSON_SEARCH_FIELDS.has(key);
   }
 
   value(key: string, fromSignoff = false): string {

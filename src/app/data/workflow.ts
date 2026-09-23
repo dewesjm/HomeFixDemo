@@ -1192,6 +1192,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       to: 'SAT',
       routing: s.label,
       inputs: snapshotInputs(signedView, fieldsShown(signedView), s.signoffFields),
+      stageId: s.id,
     });
     return {
       ...s,

@@ -42,6 +42,9 @@
                     </label>
                   }
                 </div>
+              } @else if (isPersonField(f.key)) {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <app-person-search-input [value]="value(f.key)" (commit)="setValue(f.key, $event)" />
               } @else {
                 <div class="meta mb-1">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
                 <input [type]="f.type === 'number' ? 'number' : 'text'" class="input input-bordered w-full"
