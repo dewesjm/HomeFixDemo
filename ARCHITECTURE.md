@@ -22,7 +22,9 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 | **Job identity** | A job is identified by **either** its XREFID **or** the unique combination of **hull + drawing + joint**. Never use hull alone as an identifier (labels/pickers show hull · drawing · joint). |
 | **Routing** | The ordered sequence of stages for a job, and the label of the current one (`currentRouting`). Replaces the old "Step". |
 | **Stage** | One unit of a routing (`WorkflowStage`): Fit, Tack, Root, NDT, … |
-| **GWP** | Label of the `weldProcedure` field (formerly "Weld Procedure"). |
+| **GWP** (Governing WPS) | Label of the `weldProcedure` field. Groups several Weld Engineering `Procedure` rows, one per WTN (e.g. GWP `W-101` covers WTN `05.5-1`, `05.5-2`, `05.5A-3`, each its own WPS document/PDF). A GWP's base metal 1/2 is fixed across all its WTN rows; Weld Record's GWP droplist is filtered to whichever GWPs match the job's Material Type 1/2 (`gwpOptionsForMaterials()` in `data/procedures.ts`). Picking a WTN then drives Weld Process, PH/IP requirements and override values by looking up the matching `Procedure` row — see "Weld Engineering" below. |
+| **WPS** | One Weld Engineering `Procedure` row/PDF, id `<gwp>-<n>` (e.g. `W-101-2`), shown as "WPS" throughout Weld Engineering screens. |
+| **Ship** | `job.ship`, a 3-digit number shown just above Hull in Joint Details. Stable per hull (jobs sharing a hull share a ship), same idea as Hull itself. |
 | **Nuclear Indicator** | Label of `job.nInd` (1/2/3). Joint Details shows a hover tooltip on the value (`N_IND_MEANINGS` in `joint-details.component.ts`): 1 = "N 250-1500-1", 2 = "N TP278", 3 = "Non". |
 
 ## Build & checks
@@ -132,20 +134,39 @@ src/app/
                           one store for state/persistence, one service per domain concern on top of it).
 
   weld-engineering/       Weld Engineering — Procedure Lookup (added 2026-09-23). Own data in data/procedures.ts.
-    procedure-lookup/       ~100 procedures shown at once (no pager), sortable/searchable
-    procedure-detail/       Renders the generated PDF inline (iframe) + Download
-    procedure-pdf.ts        Pure Procedure -> pdfmake document-definition transform (unit-tested)
+                          One Procedure row per GWP+WTN pair (id `<gwp>-<n>`, e.g. `W-101-2`); a GWP's base
+                          metal 1/2 is fixed across its WTN rows, one GWP per Material Type 1 x Material
+                          Type 2 combination (same codes as Job.materialType1/2, see "GWP" in Terminology).
+                          Weld Record's GWP/WTN stage fields cascade from this data (gwpOptionsForMaterials(),
+                          wtnOptionsForGwp(), getProcedureByGwpWtn() — no longer "kept separate", integrated
+                          2026-09-23; see "Signoff panel" below for what replaced the old static WTN maps).
+    procedure-lookup/       All procedures shown at once (no pager), sortable/searchable. Columns: WPS, Rev
+                            (narrow — wpsRev is max 5 chars), Effective Date, GWP, WTN, Title, Status, Weld
+                            Process, Process Type, Base Metal 1/2 Type, Filler Metal Type. Search also covers
+                            GWP, Weld Process, Process Type, Base Metal 1/2 Type, Filler Metal Type.
+    procedure-detail/       Renders the generated PDF inline (iframe) + Download; page title shows WPS id + WTN.
+    procedure-pdf.ts        Pure Procedure -> pdfmake document-definition transform (unit-tested). Layout:
+                            Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position,
+                            4. Filler Metal, 5. Welder Qualifications, 6. Preheat & Interpass Temperatures,
+                            7. Equipment, 8. Gas, 9. Heat Input, 10. Parameters, 11. Heat Treatment, then
+                            Rules/Specific Conditions. Every page has a header ("printed from Weld
+                            Engineering, verify revision prior to use") and footer (GWP - WTN, Rev N left;
+                            pagination right).
     procedure-pdf-actions.ts  The only file touching the real pdfmake renderer (open/download/getDataUrl + vfs fonts)
     admin/
-      manage-procedures/     List (search/sort/Edit/Delete/CSV export) + procedure-form (create/edit)
+      manage-procedures/     List (search/sort/Edit/Delete/CSV export) + procedure-form (create/edit, organized
+                              into the same 11 sections as the PDF). Saving blocks a duplicate GWP+WTN pair and
+                              a base metal pair that disagrees with other WPS rows already on that GWP. Editing
+                              a WPS that's (or was) Active requires a Revision Note, appended to that
+                              procedure's `revisionHistory` (shown at the top of the PDF as Revision Record).
       load-procedures/       Bulk import via .xlsx/.csv or "Use Sample", same pattern as Weld Planning's mass-edit
-    Kept separate from Weld Record's WTN maps in joint-page.component.ts for now — integration is a deliberate
-    future step, not done yet.
 
   theme-picker/           DaisyUI theme switcher (32 themes, default: forest)
 
   data/
-    jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), addTestJob()
+    jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), makeShip(),
+                         addTestJob(); exports MATERIALS_1/MATERIALS_2 (base metal codes) reused by
+                         Weld Engineering's procedures.ts for baseMetal1Type/baseMetal2Type
     workflow.ts          Stage templates, types, buildStages(), seededWorkflow(), FABRICATION_FIELDS, ROLES
     assignments.ts       Assignment model + seeded generator (36)
     mock-history.ts      Seeded activity entries; walks the job's real routing (`buildStages()`), not the raw trade
@@ -155,7 +176,11 @@ src/app/
     storage-keys.ts      Every localStorage key + clearStaleCaches()
     banner.ts            Admin banner load/save/bannerFor(page)
     joint-designs.ts, characteristics.ts, mcl-traceability.ts, export-csv.ts
-    procedures.ts         Weld Engineering Procedure model + seeded generator (~100), CRUD, CSV export/import
+    procedures.ts         Weld Engineering Procedure model (one row per GWP+WTN pair, 11 WPS sections +
+                          revisionHistory) + seeded generator (one GWP per Material Type 1 x 2 combination,
+                          imported from jobs.ts's MATERIALS_1/MATERIALS_2), CRUD, GWP/WTN cascade helpers
+                          (gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn,
+                          hasOverride, allWtns), CSV export/import
 
   shared/
     table-state.ts       Sorting, filtering, paging (one instance per table screen)
@@ -215,7 +240,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 
 ### Job detail (`joint-page`)
 - **Routing bar** — numbered pills, horizontal scroll, auto-centers the selected stage. Active = `--color-success`, done = `--color-info`.
-- **Joint details** — 3 columns (stack on mobile): job info, joining/join-to, NDT data (RT/NDT/UT/VT as `X` or `5X`); "Show more" reveals additional data and attribute codes. Attribute codes show as `code description` (`attrCodeDisplay()`, looked up via `characteristicLabel()` in `data/characteristics.ts`, the same table Admin > Attribute Codes manages) — fixed 2026-09-22: `job.attributeCode1-4`'s seed pool used to be unrelated 2-letter codes (`AB`, `CD`, …) that never matched `CHARACTERISTIC_CODES`' real codes, so descriptions could never resolve; `ATTR_CODES` in `jobs.ts` now reuses `CHARACTERISTIC_CODES`' own codes.
+- **Joint details** — 3 columns (stack on mobile): job info (XREFID, **Ship** — 3-digit, added 2026-09-23, sits right above Hull —, Hull, ...), joining/join-to (MCL 1/2, Material Type 1/2, Joining/Join To Item — seeded as invented piece-mark codes like `HPF-D120-1`, not generic names), NDT data (RT/NDT/UT/VT as `X` or `5X`); "Show more" reveals additional data and attribute codes. Attribute codes show as `code description` (`attrCodeDisplay()`, looked up via `characteristicLabel()` in `data/characteristics.ts`, the same table Admin > Attribute Codes manages) — fixed 2026-09-22: `job.attributeCode1-4`'s seed pool used to be unrelated 2-letter codes (`AB`, `CD`, …) that never matched `CHARACTERISTIC_CODES`' real codes, so descriptions could never resolve; `ATTR_CODES` in `jobs.ts` now reuses `CHARACTERISTIC_CODES`' own codes.
 - **Fabrication** (cross-stage) — Location (Ship adds Deck/Frame/P-S-CL/Usage with red `*`), MIC 1/2, Drawing Rev, Actual Thickness, WTN, Revised Joint Design.
 - **Signoff panel** (below).
 - **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`).
@@ -225,9 +250,9 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 
 ### Signoff panel (`signoff-panel`)
 - **Type dropdown** for stages with `routingOptions`. On inspector/NDT stages it starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired`).
-- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_GROUPS` config in `signoff-panel.component.ts` — four cards (only "PH/IP" has a header; the other three are untitled at the user's request, including "Readings" — un-headered 2026-09-22) — through one field template, restructured 2026-09-22 so PH/IP requirements and actuals share one dedicated card instead of being split across the signoffs and Readings cards:
-  1. **Signoffs** (untitled) — GWP / WTN / Weld Process (auto-set from WTN, locked), Qualification Check, **Consumable Insert checkbox** (Root; unchecking clears filler type/size/MIC) directly above **Filler Metal** (both moved here from Readings, checkbox positioned immediately above the fields it affects).
-  2. **PH/IP** — Requirements (limits), Actuals, then **Override Requirements** incl. Override Note (all read-only, set from the WTN; `NC` = no limit; shown only for matching WTNs — moved here, under Actuals, 2026-09-22).
+- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up) render from the `WELD_GROUPS` config in `signoff-panel.component.ts` — four cards (only "Preheat/Interpass" has a header, renamed from "PH/IP" 2026-09-23 — group header only, field labels unchanged; the other three are untitled at the user's request, including "Readings" — un-headered 2026-09-22) — through one field template, restructured 2026-09-22 so PH/IP requirements and actuals share one dedicated card instead of being split across the signoffs and Readings cards:
+  1. **Signoffs** (untitled) — GWP / WTN / Weld Process, Qualification Check, **Consumable Insert checkbox** (Root; unchecking clears filler type/size/MIC) directly above **Filler Metal** (both moved here from Readings, checkbox positioned immediately above the fields it affects). GWP/WTN/Weld Process/PH-IP/override values cascade from Weld Engineering's procedures data (integrated 2026-09-23, `data/procedures.ts` + `joint-page.component.ts`), replacing the old static `WTN_PROCESS_MAP`/`WTN_PHIP_MAP`/`WTN_OVERRIDE_WTNS`/`WTN_OVERRIDE_VALUES`: the GWP droplist (`withStageRuntimeOptions()`) is filtered to GWPs matching the job's Material Type 1/2 (`gwpOptionsForMaterials()`); picking a GWP narrows WTN's droplist to that GWP's WTNs (`wtnOptionsForGwp()`); picking a WTN looks up the matching WPS (`getProcedureByGwpWtn()`) and sets Weld Process (locked, `isFieldLocked()` already treated it as WTN-driven), PH Min/Max, IP Min/Max, and the override fields (blank unless that WPS has `hasOverride()` true) — see `stageSelectChange()`.
+  2. **Preheat/Interpass** — Requirements (limits), Actuals, then **Override Requirements** incl. Override Note (all read-only, set from the WTN; `NC` = no limit; shown only when the selected WPS has override values — moved here, under Actuals, 2026-09-22).
   3. **Readings** (untitled) — weld position (Nuclear Indicator 1).
   4. (untitled) — 5X (Root/Final), Comments.
 - Non-weld stages use the generic field loop; `showIf` / `requiredWhen` drive conditional fields.
@@ -243,7 +268,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 - **Interim Layer** signs off and navigates away; **5X** — answering the "Did you perform 5X inspection…" question only records the answer; auto-signing the matching VT/5X stage happens when the parent stage (Root/Final Weld) is itself signed off, not when the dropdown is changed (fixed 2026-09-22 — it previously fired on the dropdown change alone, signing a stage with no confirmation).
 
 ### My Assignments, History, Weld Planning
-- My Assignments is **first** in the Weld Record nav dropdown (moved above Pipe Welding 2026-09-23 — it's the most common thing a tech opens). Column widths: Routing fixed at 8rem (was `1fr`, grew far past its longest value), Specific Location `1fr` (absorbs the freed space; was a cramped 9rem, truncating values). Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR). Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet). A Charge field renders as a real **Code 39 (3 of 9) barcode** (`barcodeElements()` in `my-assignments.component.ts`: narrow/wide bar-and-space patterns per the ISO/IEC 16388 character set, wrapped in `*` start/stop characters — replaced the old decorative random-width bars 2026-09-22), centered with the charge number underneath it. The separate "Details" button still navigates to the job page. A demo-only **role filter dropdown** (red-outlined `select-error` + an inline "Demo role:" label — replaced the small "Demo only" badge 2026-09-23 for visibility, defaults to **Welding**) filters by `assignedRoles`; also a keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). No "Assigned To" column (removed; it previously showed a hardcoded "John Johnson", not `a.assignedTo`). **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; the Details button therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank. A blank XREFID does **not** by itself mean shipboard work — most such records still track to a shop/bay like any other assignment. Only **two** assignments (`assignments.ts`, `toShip()`) get the shipboard-location treatment: Location = 'Ship', and the expanded row shows **Deck / Frame / P/S / CL (centerline offset) / Usage** instead of Specific Location. One is guaranteed to be the earliest-due Welding assignment (so it's visible near the top of the default view); the other is picked from elsewhere among the blank-XREFID records for variety.
+- My Assignments is **first** in the Weld Record nav dropdown (moved above Pipe Welding 2026-09-23 — it's the most common thing a tech opens). Column widths: Routing fixed at 8rem (was `1fr`, grew far past its longest value), Specific Location `1fr` (absorbs the freed space; was a cramped 9rem, truncating values). Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR). Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet). A Charge field renders as a real **Code 39 (3 of 9) barcode** (`barcodeElements()` in `my-assignments.component.ts`: narrow/wide bar-and-space patterns per the ISO/IEC 16388 character set, wrapped in `*` start/stop characters — replaced the old decorative random-width bars 2026-09-22), centered with the charge number underneath it. The separate "Details" button still navigates to the job page. A demo-only **role filter dropdown** (red-outlined `select-error` + an inline "Demo role:" label — replaced the small "Demo only" badge 2026-09-23 for visibility, defaults to **Welding**) filters by `assignedRoles`; also a keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). No "Assigned To" column (removed; it previously showed a hardcoded "John Johnson", not `a.assignedTo`). **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; the Details button therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank. A blank XREFID does **not** by itself mean shipboard work — most such records still track to a shop/bay like any other assignment. Only **two** assignments (`assignments.ts`, `toShip()`) get the shipboard-location treatment: Location = 'Ship', and the expanded row shows **Deck / Frame / P/S / CL (centerline offset) / Usage** instead of Specific Location — on its own forced second line (`class="w-full ..."`, fixed 2026-09-23) below Assigned By/Date/Job Description/details/Charge, which now always ends the first line since it's unconditional and Deck/Frame/etc. only render for these two records. One is guaranteed to be the earliest-due Welding assignment (so it's visible near the top of the default view); the other is picked from elsewhere among the blank-XREFID records for variety.
 - History: leftmost icon-only chevron column (expand/collapse), then **Routing, Action**, When, Who, **Value** (was Old value/New value — Old value dropped 2026-09-23: it was dash almost everywhere in practice, see below), XREFID, Hull, Drawing, Joint, Order, **Deprogress**, then a trailing details-button column (small primary icon button, same pattern as My Assignments' — plain XREFID text is no longer itself a clickable link, replaced 2026-09-23 since the whole-cell link was an easy accidental-click target; opening it sets `?from=history` so Back/sign-off returns to History instead of the Pipe Welding table, via `backDestination()` in `joint-page.component.ts`). Identity columns (XREFID/Hull/Drawing/Joint/Order) are sized to their real fixed-length content in `ch` units, not a blanket rem width. Every column has its own filter via `appSortHeader` (text, or a multiselect for Routing) alongside the top-bar Person/XREFID/search filters — the filter inputs show a small filter icon instead of "Filter…" placeholder text, which was clipping to "Fil"/a single letter in the narrow identity columns. Filters: person typeahead; **a job box that matches XREFID, drawing, joint or order** (not hull); and a right-hand **Search all** box covering every column and the sign-off field values. **It records what was input at each sign-off**: a sign-off row expands (per row, or **Expand all / Collapse all** for every sign-off matching the filters) to every editable field the user was shown, with its value at that moment, blanks included; each field row repeats the sign-off's When, Who, Routing, XREFID, Hull, Drawing and Joint in muted text so it reads on its own (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field, including Drawing/Joint/Order alongside XREFID/Hull. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`.
   - **`routing` is the stage the action was *for*, not what it moved to afterward** (fixed 2026-09-23): `withHistory()` (now on `WorkflowStore`, was on `RoutingService` before the 2026-09-22 service split) derives it from `currentRoutingLabel(prev.stages)` (pre-update state) instead of `next.stages` — a `'Fit — Signed off'` entry used to record whatever became active next (e.g. `'Tack'`) instead of `'Fit'`. `seededWorkflow()`'s own entries already got this right (`routing: s.label`); `mock-history.ts`'s generator was fixed the same way (records `stage.label`, not the next stage).
   - **Old value dropped** (2026-09-23): the only field types that ever populated `from` either never reach the grid (Stages/Fabrication are filtered out of `allActivity()`) or belonged to the dead Work Validation feature (see below), aside from one edge case (pre-signoff Decision flip-flopping) not worth a whole column.
@@ -306,6 +331,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 {
   id: string;          // internal key, 5-char alphanumeric, always populated, unique — never shown
   xrefid: string;      // user-facing XREFID; mirrors id, but blank on ~25% of jobs
+  ship: string;        // 3-digit, e.g. 692 — stable per hull, shown above Hull in Joint Details
   hull: string;        // letter + 4 digits, e.g. K7234 — shared by many jobs
   // identity: id  OR  (hull + drawing + joint), each unique — xrefid is display-only, not an identity key
   trade: string;       // 'Welding'
@@ -313,7 +339,9 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
   drawing: string; drawingRev: string; joint: string; jointDesign: string; weldType: string;
   pipeSize: string; wallThickness: string;
   materialType1: string; materialType2: string; mcl1: string; mcl2: string;
-  joiningItem: string; joinToItem: string;   // comma-separated
+  // materialType1/2 use MATERIALS_1/MATERIALS_2 (jobs.ts, exported) -- same codes as Weld Engineering's
+  // Procedure.baseMetal1Type/baseMetal2Type (data/procedures.ts), matched by gwpOptionsForMaterials()
+  joiningItem: string; joinToItem: string;   // piece-mark style codes, e.g. HPF-D120-1; comma-separated in affectedItems
   sequenceNumber: string; order: string; engineeringNotes: string;
   wps: string; ndt: string; pwht: string;
   nInd: string;        // Nuclear Indicator: 1, 2 or 3
@@ -328,7 +356,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 - **Nuclear Indicator** '1'/'2'/'3' drives weld-position visibility, pre-fit visibility and NDT role routing (1–2 → NQC Inspector).
 - **NDT routing** — `job.ndt` is regex-matched: `hasUTorRT`, `hasMTorPT`, `hasVT`.
 - **Repair** is inserted dynamically on NDT rejection; role Foreman.
-- **Affected Items** — `joiningItem`/`joinToItem` with `affectedItems` stored as a comma-separated string.
+- **Affected Items** — `joiningItem`/`joinToItem` with `affectedItems` stored as a comma-separated string. Each affected item's MIC 1/MIC 2 line (`signoff-panel.component.ts`) reads the real MIC value from `fabricationData.id1`/`id2`, and only shows when that item's MCL requires traceability per the admin MCL Traceability table (`requiresTraceability()`, `mcl-traceability.ts`) — fixed 2026-09-23: it was previously showing `job.mcl1`/`mcl2` (the MCL code) mislabeled "MIC:", unconditionally.
 - **MIC** values are hyphenated codes such as `250C-1500-290-5` (`seededMic`).
 - **Trades** — only Welding ships with templates (the old HomeFix trades were purged). Admins can still add a trade (`addTrade`, prep + handover stages) and create a test hull for it.
 - **Work package** — `Hull-Compartment-Detail`, e.g. `K7234-FWD-D03` (`workPackageFor()` in `jobs.ts`; compartments FWD/MID/AFT/ENG/CGO/HAB, details D01–D12).

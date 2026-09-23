@@ -83,13 +83,6 @@
           @for (d of a.details; track d.label) {
             <div><span class="text-xs opacity-60">{{ d.label }}</span><div>{{ d.value }}</div></div>
           }
-          @if (!a.jobId) {
-            <div><span class="text-xs opacity-60">Deck</span><div>{{ a.deck }}</div></div>
-            <div><span class="text-xs opacity-60">Frame</span><div>{{ a.frame }}</div></div>
-            <div><span class="text-xs opacity-60">P/S</span><div>{{ a.ps }}</div></div>
-            <div><span class="text-xs opacity-60">CL</span><div>{{ a.cl }}</div></div>
-            <div><span class="text-xs opacity-60">Usage</span><div>{{ a.usage }}</div></div>
-          }
           <div>
             <span class="text-xs opacity-60">Charge</span>
             <div class="flex flex-col items-center">
@@ -101,6 +94,15 @@
               <div class="font-mono text-xs mt-1 text-center">{{ a.charge }}</div>
             </div>
           </div>
+          @if (!a.jobId) {
+            <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
+              <div><span class="text-xs opacity-60">Deck</span><div>{{ a.deck }}</div></div>
+              <div><span class="text-xs opacity-60">Frame</span><div>{{ a.frame }}</div></div>
+              <div><span class="text-xs opacity-60">P/S</span><div>{{ a.ps }}</div></div>
+              <div><span class="text-xs opacity-60">CL</span><div>{{ a.cl }}</div></div>
+              <div><span class="text-xs opacity-60">Usage</span><div>{{ a.usage }}</div></div>
+            </div>
+          }
         </div>
       </div>
     }
