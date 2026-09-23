@@ -7,7 +7,17 @@
    10. Parameters, 11. Heat Treatment -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure, hasOverride } from '../data/procedures';
+import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../data/procedures';
+
+function fillerMetalTypeLabels(values: string[]): string {
+  if (!values.length) return '';
+  return values.map(v => FILLER_METAL_TYPE_OPTIONS.find(o => o.value === v)?.label ?? v).join(', ');
+}
+
+function fillerMetalSizeLabels(values: string[]): string {
+  if (!values.length) return '';
+  return values.map(v => FILLER_METAL_SIZE_OPTIONS.find(o => o.value === v)?.label ?? v).join(', ');
+}
 
 function limitsTable(rows: [string, string][]): Content {
   return {
@@ -88,8 +98,8 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     ]),
 
     ...numberedSection(4, 'Filler Metal', [
-      ['Filler Metal Type', p.fillerMetalType], ['Classification', p.fillerMetalClassification],
-      ['Size Range', p.fillerMetalSizeRange],
+      ['Filler Metal Type(s)', fillerMetalTypeLabels(p.fillerMetalTypes)], ['Classification', p.fillerMetalClassification],
+      ['Size(s)', fillerMetalSizeLabels(p.fillerMetalSizes)],
     ]),
 
     { text: '5. Welder Qualifications', style: 'sectionHeader' },

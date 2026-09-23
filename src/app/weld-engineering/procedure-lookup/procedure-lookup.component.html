@@ -36,7 +36,7 @@
         <th appSortHeader class="min-w-28" [table]="table" field="processType" label="Process Type"></th>
         <th appSortHeader class="min-w-28" [table]="table" field="baseMetal1Type" label="Base Metal 1 Type"></th>
         <th appSortHeader class="min-w-28" [table]="table" field="baseMetal2Type" label="Base Metal 2 Type"></th>
-        <th appSortHeader class="min-w-28" [table]="table" field="fillerMetalType" label="Filler Metal Type"></th>
+        <th appSortHeader class="min-w-28" [table]="table" field="fillerMetalTypes" label="Filler Metal Types"></th>
       </tr>
     </thead>
     <tbody>
@@ -56,7 +56,7 @@
           <td>{{ row.processType }}</td>
           <td>{{ row.baseMetal1Type }}</td>
           <td>{{ row.baseMetal2Type }}</td>
-          <td>{{ row.fillerMetalType }}</td>
+          <td>{{ row.fillerMetalTypes.join(', ') }}</td>
         </tr>
       } @empty {
         <tr><td colspan="12" class="empty">No procedures found.</td></tr>

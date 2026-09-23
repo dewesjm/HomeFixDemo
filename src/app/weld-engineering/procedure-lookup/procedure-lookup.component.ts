@@ -18,7 +18,7 @@ import { procedures, Procedure, PROCEDURE_STATUS_OPTIONS } from '../../data/proc
 })
 export class ProcedureLookupComponent {
   table = new TableState<Procedure>(
-    ['id', 'title', 'wtn', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalType'],
+    ['id', 'title', 'wtn', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'],
     { status: inArray }
   );
   statusOptions = PROCEDURE_STATUS_OPTIONS;

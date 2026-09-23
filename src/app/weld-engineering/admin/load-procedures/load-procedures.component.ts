@@ -27,7 +27,8 @@ type EditableRow = {
   processType: string;
   baseMetal1Type: string;
   baseMetal2Type: string;
-  fillerMetalType: string;
+  fillerMetalTypes: string;
+  fillerMetalSizes: string;
   phMin: string; phMax: string; ipMin: string; ipMax: string;
   rules: string;
   conditions: string;
@@ -36,6 +37,10 @@ type EditableRow = {
 
 const VALID_STATUSES = new Set(['active', 'draft', 'retired']);
 const splitList = (s: string) => s.split(';').map(v => v.trim()).filter(Boolean);
+/* Filler Metal Types/Sizes must match FILLER_METAL_TYPE_OPTIONS/FILLER_METAL_SIZE_OPTIONS values
+   (procedures.ts) for the Weld Record cascade to pick them up -- normalize casing and stray quotes
+   from a pasted size like '1/16"' so a plain lowercase/no-quote entry isn't required. */
+const splitFillerList = (s: string) => splitList(s).map(v => v.toLowerCase().replace(/"/g, ''));
 
 @Component({
   selector: 'app-load-procedures',
@@ -83,7 +88,8 @@ export class LoadProceduresComponent {
         processType: raw['processType'] || raw['Process Type'] || '',
         baseMetal1Type: raw['baseMetal1Type'] || raw['Base Metal 1 Type'] || '',
         baseMetal2Type: raw['baseMetal2Type'] || raw['Base Metal 2 Type'] || '',
-        fillerMetalType: raw['fillerMetalType'] || raw['Filler Metal Type'] || '',
+        fillerMetalTypes: raw['fillerMetalTypes'] || raw['Filler Metal Types'] || raw['fillerMetalType'] || raw['Filler Metal Type'] || '',
+        fillerMetalSizes: raw['fillerMetalSizes'] || raw['Filler Metal Sizes'] || '',
         phMin: raw['phMin'] || raw['PH Min'] || '',
         phMax: raw['phMax'] || raw['PH Max'] || '',
         ipMin: raw['ipMin'] || raw['IP Min'] || '',
@@ -117,9 +123,9 @@ export class LoadProceduresComponent {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalType: 'MIL-70S-6', phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.', qualificationsRequired: 'ASME Section IX welder qualification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalType: 'MIL-80S-50', phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.', qualificationsRequired: 'AWS D1.1 structural welder certification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semi-Automatic', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalType: 'MIL-70S-3', phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.', qualificationsRequired: 'Position qualification: 6G' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalTypes: 'mil-70s-6; mil-70s-3', fillerMetalSizes: '1/16; 3/32', phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.', qualificationsRequired: 'ASME Section IX welder qualification' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalTypes: 'mil-80s-50', fillerMetalSizes: '3/32; 1/8', phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.', qualificationsRequired: 'AWS D1.1 structural welder certification' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semi-Automatic', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalTypes: 'mil-70s-3', fillerMetalSizes: '1/8; 5/32; 3/16', phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.', qualificationsRequired: 'Position qualification: 6G' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -157,8 +163,9 @@ export class LoadProceduresComponent {
           jointType: existing?.jointType ?? '', grooveAngle: existing?.grooveAngle ?? '',
           rootOpening: existing?.rootOpening ?? '', backing: existing?.backing ?? '',
           weldPosition: existing?.weldPosition ?? '', weldProgression: existing?.weldProgression ?? '',
-          fillerMetalType: row.fillerMetalType,
-          fillerMetalClassification: existing?.fillerMetalClassification ?? '', fillerMetalSizeRange: existing?.fillerMetalSizeRange ?? '',
+          fillerMetalTypes: splitFillerList(row.fillerMetalTypes),
+          fillerMetalClassification: existing?.fillerMetalClassification ?? '',
+          fillerMetalSizes: row.fillerMetalSizes ? splitFillerList(row.fillerMetalSizes) : existing?.fillerMetalSizes ?? [],
           phMin: row.phMin, phMax: row.phMax, ipMin: row.ipMin, ipMax: row.ipMax,
           overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
           currentType: existing?.currentType ?? '', powerSource: existing?.powerSource ?? '',

@@ -26,9 +26,20 @@ export const PROCESS_TYPES = ['Manual', 'Semi-Automatic', 'Machine', 'Automatic'
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
 export const BASE_METAL_1_TYPES = MATERIALS_1;
 export const BASE_METAL_2_TYPES = MATERIALS_2;
-/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- distinct from Weld Record's AWS-style
-   stage field choices (workflow.ts METAL_TYPE_OPTIONS) */
+/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- used for the free-text Classification field.
+   Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
+   AWS-style {label, value} shape (workflow.ts METAL_TYPE_OPTIONS) -- a WPS's fillerMetalTypes/
+   fillerMetalSizes list which of those option VALUES are valid for that WPS. */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
+export const FILLER_METAL_TYPE_OPTIONS: { label: string; value: string }[] = [
+  { label: 'MIL-70S-3', value: 'mil-70s-3' }, { label: 'MIL-70S-6', value: 'mil-70s-6' },
+  { label: 'MIL-80S-50', value: 'mil-80s-50' }, { label: 'MIL-80S-D2', value: 'mil-80s-d2' },
+  { label: 'MIL-90S-B3', value: 'mil-90s-b3' }, { label: 'MIL-100S-1', value: 'mil-100s-1' },
+];
+export const FILLER_METAL_SIZE_OPTIONS: { label: string; value: string }[] = [
+  { label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' }, { label: '1/8"', value: '1/8' },
+  { label: '5/32"', value: '5/32' }, { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' },
+];
 export const JOINT_TYPES = ['Groove', 'Fillet', 'Plug', 'Edge'];
 export const BACKING_OPTIONS = ['None', 'Backing Strip', 'Consumable Insert', 'Gas Backing'];
 export const WELD_PROGRESSIONS = ['N/A', 'Uphill', 'Downhill'];
@@ -72,10 +83,13 @@ export interface Procedure {
   weldPosition: string;
   weldProgression: string;
 
-  /* 4. Filler Metal */
-  fillerMetalType: string;
+  /* 4. Filler Metal -- fillerMetalTypes/fillerMetalSizes are the valid FILLER_METAL_TYPE_OPTIONS/
+     FILLER_METAL_SIZE_OPTIONS values for this WPS; Weld Record's Filler Metal Type/Size fields
+     (workflow.ts) filter to these once GWP+WTN resolve to this Procedure (see
+     fillerMetalTypeOptionsForProcedure/fillerMetalSizeOptionsForProcedure below) */
+  fillerMetalTypes: string[];
   fillerMetalClassification: string;
-  fillerMetalSizeRange: string;
+  fillerMetalSizes: string[];
 
   /* 5. Welder Qualifications -- see qualificationsRequired below */
 
@@ -242,9 +256,9 @@ function generateProcedures(): Procedure[] {
         backing: pick(BACKING_OPTIONS),
         weldPosition: pick(getWeldPositions()).code,
         weldProgression: pick(WELD_PROGRESSIONS),
-        fillerMetalType: pick(FILLER_METAL_TYPES),
+        fillerMetalTypes: pickSome(FILLER_METAL_TYPE_OPTIONS.map(o => o.value), rand, 1, 3),
         fillerMetalClassification: pick(FILLER_METAL_TYPES),
-        fillerMetalSizeRange: pick(['1/16" - 3/32"', '3/32" - 1/8"', '1/8" - 5/32"']),
+        fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
         phMin: rand() < 0.15 ? 'NC' : String(100 + Math.floor(rand() * 60)),
         phMax: String(160 + Math.floor(rand() * 60)),
         ipMin: rand() < 0.15 ? 'NC' : String(80 + Math.floor(rand() * 40)),
@@ -368,6 +382,20 @@ export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | unde
   return procedures().find(p => p.gwp === gwp && p.wtn === wtn);
 }
 
+/* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
+   Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
+   Unlike weldProcess/PH/IP, filler metal stays user-selected among these options rather than
+   auto-populated -- a WPS commonly allows more than one valid filler type/size. */
+export function fillerMetalTypeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
+  if (!p) return [];
+  return FILLER_METAL_TYPE_OPTIONS.filter(o => p.fillerMetalTypes.includes(o.value));
+}
+
+export function fillerMetalSizeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
+  if (!p) return [];
+  return FILLER_METAL_SIZE_OPTIONS.filter(o => p.fillerMetalSizes.includes(o.value));
+}
+
 /* every distinct WTN across all GWPs -- for demo data (assignments.ts) that just needs a plausible WTN */
 export function allWtns(): string[] {
   return Array.from(new Set(procedures().map(p => p.wtn)));
@@ -394,9 +422,9 @@ export const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Backing', value: r => r.backing },
   { header: 'Weld Position', value: r => r.weldPosition },
   { header: 'Weld Progression', value: r => r.weldProgression },
-  { header: 'Filler Metal Type', value: r => r.fillerMetalType },
+  { header: 'Filler Metal Types', value: r => r.fillerMetalTypes.join('; ') },
   { header: 'Filler Metal Classification', value: r => r.fillerMetalClassification },
-  { header: 'Filler Metal Size Range', value: r => r.fillerMetalSizeRange },
+  { header: 'Filler Metal Sizes', value: r => r.fillerMetalSizes.join('; ') },
   { header: 'PH Min', value: r => r.phMin },
   { header: 'PH Max', value: r => r.phMax },
   { header: 'IP Min', value: r => r.ipMin },
@@ -447,7 +475,7 @@ export async function downloadProcedureXlsxTemplate(): Promise<void> {
     'baseMetal1Type', 'baseMetal2Type', 'baseMetalThicknessMin', 'baseMetalThicknessMax',
     'jointType', 'grooveAngle', 'rootOpening', 'backing',
     'weldPosition', 'weldProgression',
-    'fillerMetalType', 'fillerMetalClassification', 'fillerMetalSizeRange',
+    'fillerMetalTypes', 'fillerMetalClassification', 'fillerMetalSizes',
     'phMin', 'phMax', 'ipMin', 'ipMax',
     'currentType', 'powerSource',
     'shieldingGas', 'gasFlowRate', 'backingGas',

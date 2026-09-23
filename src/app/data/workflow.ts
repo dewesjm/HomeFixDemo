@@ -320,10 +320,10 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'actualIp', label: 'Actual IP', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
   { key: 'weldPosition', label: 'Weld Position', type: 'select',
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
-  { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true,
-    options: METAL_TYPE_OPTIONS },
-  { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true,
-    options: METAL_SIZE_OPTIONS },
+  /* options cascade from the resolved GWP+WTN Procedure at render time (see joint-page.component.ts
+     withStageRuntimeOptions), same pattern as weldProcedure/wtn above */
+  { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true },
+  { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', required: true },
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];

@@ -54,7 +54,8 @@
             <th style="min-width: 8rem">Process Type</th>
             <th style="min-width: 8rem">Base Metal 1 Type</th>
             <th style="min-width: 8rem">Base Metal 2 Type</th>
-            <th style="min-width: 8rem">Filler Metal Type</th>
+            <th style="min-width: 10rem">Filler Metal Types</th>
+            <th style="min-width: 10rem">Filler Metal Sizes</th>
             <th style="min-width: 5rem">PH Min</th>
             <th style="min-width: 5rem">PH Max</th>
             <th style="min-width: 5rem">IP Min</th>
@@ -102,7 +103,8 @@
               <td><input class="input input-xs w-full" [(ngModel)]="row.processType" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal1Type" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal2Type" /></td>
-              <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalType" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalTypes" placeholder="mil-70s-3; mil-70s-6" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalSizes" placeholder="1/16; 3/32" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.phMin" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.phMax" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.ipMin" /></td>

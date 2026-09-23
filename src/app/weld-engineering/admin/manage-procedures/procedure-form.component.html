@@ -143,28 +143,41 @@
   </div>
 
   <h3 class="section-sub" style="margin-top: 1rem">4. Filler Metal</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Filler Metal Type</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalType">
-        <option value="">—</option>
-        @for (m of fillerMetalTypes; track m) {
-          <option [value]="m">{{ m }}</option>
-        }
-      </select>
+  <div class="stage-field mb-2">
+    <label class="stage-field-label">Valid Filler Metal Types (Weld Record's Filler Metal Type field filters to these)</label>
+    <div class="flex flex-wrap gap-3">
+      @for (o of fillerMetalTypeOptions; track o.value) {
+        <label class="label cursor-pointer justify-start gap-2">
+          <input type="checkbox" class="checkbox checkbox-sm"
+                 [checked]="form.fillerMetalTypes.includes(o.value)"
+                 (change)="toggleFillerMetalType(o.value)" />
+          <span class="label-text">{{ o.label }}</span>
+        </label>
+      }
     </div>
+  </div>
+  <div class="stage-inputs">
     <div class="stage-field">
       <label class="stage-field-label">Classification</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalClassification">
         <option value="">—</option>
-        @for (m of fillerMetalTypes; track m) {
+        @for (m of fillerMetalClassificationOptions; track m) {
           <option [value]="m">{{ m }}</option>
         }
       </select>
     </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Size Range</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.fillerMetalSizeRange" />
+  </div>
+  <div class="stage-field mb-2">
+    <label class="stage-field-label">Valid Filler Metal Sizes (Weld Record's Filler Metal Size field filters to these)</label>
+    <div class="flex flex-wrap gap-3">
+      @for (o of fillerMetalSizeOptions; track o.value) {
+        <label class="label cursor-pointer justify-start gap-2">
+          <input type="checkbox" class="checkbox checkbox-sm"
+                 [checked]="form.fillerMetalSizes.includes(o.value)"
+                 (change)="toggleFillerMetalSize(o.value)" />
+          <span class="label-text">{{ o.label }}</span>
+        </label>
+      }
     </div>
   </div>
 

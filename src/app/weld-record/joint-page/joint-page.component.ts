@@ -26,7 +26,10 @@ import {
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
-import { gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride } from '../../data/procedures';
+import {
+  gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
+  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
+} from '../../data/procedures';
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
@@ -490,12 +493,20 @@ export class JointPageComponent implements OnDestroy {
 
   /* GWP and WTN cascade from Weld Engineering's procedures data: GWP is filtered to whichever GWPs
      are qualified for this job's base metal pair (Material Type 1/2), WTN is then filtered to
-     whichever GWP is currently selected on this stage. */
+     whichever GWP is currently selected on this stage. Filler Metal Type/Size then cascade from the
+     Procedure that GWP+WTN resolves to -- same pattern, one step further down the chain. */
   private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
     if (f.key === 'weldProcedure') {
       return { ...f, options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '') };
     }
     if (f.key === 'wtn') return { ...f, options: wtnOptionsForGwp(stage.inputs?.['weldProcedure'] ?? '') };
+    if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
+      const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
+      return {
+        ...f,
+        options: f.key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc)
+      };
+    }
     return f;
   }
 
@@ -673,6 +684,9 @@ export class JointPageComponent implements OnDestroy {
         if (f) changes.push({ field: f, value: val });
       };
       let matchedProc = false;
+      /* Filler Metal Type/Size are locked (not user-cleared) while "Only Consumable Insert used as
+         filler" is checked -- see onConsumableInsertChange, which owns them in that case */
+      const fillerFieldsLocked = stage.inputs['consumableInsertOnly'] === 'yes';
       if (field.key === 'weldProcedure') {
         /* GWP drives which WTNs are selectable; clear WTN and everything WTN used to drive */
         setIfPresent('wtn', '');
@@ -680,10 +694,13 @@ export class JointPageComponent implements OnDestroy {
         setIfPresent('phMin', ''); setIfPresent('phMax', ''); setIfPresent('ipMin', ''); setIfPresent('ipMax', '');
         setIfPresent('overridePhMin', ''); setIfPresent('overridePhMax', '');
         setIfPresent('overrideIpMin', ''); setIfPresent('overrideIpMax', ''); setIfPresent('overrideNote', '');
+        if (!fillerFieldsLocked) { setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', ''); }
       }
       if (field.key === 'wtn') {
         /* GWP+WTN identifies one Weld Engineering WPS document; it drives Weld Process,
-           the PH/IP requirements and the override values -- never typed directly */
+           the PH/IP requirements and the override values -- never typed directly. Filler Metal
+           Type/Size options narrow to this WPS too, but stay user-selected, so just clear any
+           choice that's no longer valid under the new WPS. */
         const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', v);
         matchedProc = !!proc;
         setIfPresent('weldProcess', proc ? proc.weldProcess.toLowerCase() : '');
@@ -697,6 +714,16 @@ export class JointPageComponent implements OnDestroy {
         setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
         setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
         setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
+        if (!fillerFieldsLocked) {
+          const currentType = stage.inputs['fillerMetalType'] ?? '';
+          const currentSize = stage.inputs['fillerMetalSize'] ?? '';
+          if (currentType && !fillerMetalTypeOptionsForProcedure(proc).some(o => o.value === currentType)) {
+            setIfPresent('fillerMetalType', '');
+          }
+          if (currentSize && !fillerMetalSizeOptionsForProcedure(proc).some(o => o.value === currentSize)) {
+            setIfPresent('fillerMetalSize', '');
+          }
+        }
       }
       this.wfService.setStageInputs(this.job, stage.id, changes);
       this.clearHidden(stage);

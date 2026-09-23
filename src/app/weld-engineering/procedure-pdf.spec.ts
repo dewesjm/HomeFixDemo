@@ -9,7 +9,7 @@ const baseProcedure: Procedure = {
   baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', baseMetalThicknessMin: '0.125"', baseMetalThicknessMax: '0.75"',
   jointType: 'Groove', grooveAngle: '37.5°', rootOpening: '0.0625"', backing: 'None',
   weldPosition: 'F', weldProgression: 'N/A',
-  fillerMetalType: 'MIL-80S-50', fillerMetalClassification: 'MIL-80S-50', fillerMetalSizeRange: '1/8" - 5/32"',
+  fillerMetalTypes: ['mil-80s-50'], fillerMetalClassification: 'MIL-80S-50', fillerMetalSizes: ['1/8', '5/32'],
   phMin: '120', phMax: '180', ipMin: '90', ipMax: '150',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: 'DCEP', powerSource: 'Constant Current',

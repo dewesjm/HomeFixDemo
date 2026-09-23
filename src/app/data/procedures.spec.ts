@@ -1,6 +1,7 @@
 import {
   procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure, hasOverride,
   gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn,
+  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
   BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
 } from './procedures';
 
@@ -12,7 +13,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
-  fillerMetalType: '', fillerMetalClassification: '', fillerMetalSizeRange: '',
+  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: '', powerSource: '',
@@ -171,6 +172,27 @@ describe('procedures data layer', () => {
     it('gwpOptionsForMaterials returns an empty list when either material is blank', () => {
       expect(gwpOptionsForMaterials('', 'E6010')).toEqual([]);
       expect(gwpOptionsForMaterials('02CS', '')).toEqual([]);
+    });
+  });
+
+  describe('Filler Metal Type/Size cascade', () => {
+    it('fillerMetalTypeOptionsForProcedure only returns that WPS\'s valid types', () => {
+      const p = addProcedure(blankProcedure('TEST-FILLER-1', 'TEST-GWP-FILLER', '08.8-1'));
+      updateProcedure('TEST-FILLER-1', { fillerMetalTypes: ['mil-70s-3', 'mil-80s-50'] });
+      const opts = fillerMetalTypeOptionsForProcedure(getProcedure(p.id)).map(o => o.value);
+      expect(opts).toEqual(['mil-70s-3', 'mil-80s-50']);
+    });
+
+    it('fillerMetalSizeOptionsForProcedure only returns that WPS\'s valid sizes', () => {
+      const p = addProcedure(blankProcedure('TEST-FILLER-2', 'TEST-GWP-FILLER-2', '09.9-1'));
+      updateProcedure('TEST-FILLER-2', { fillerMetalSizes: ['1/16', '3/32'] });
+      const opts = fillerMetalSizeOptionsForProcedure(getProcedure(p.id)).map(o => o.value);
+      expect(opts).toEqual(['1/16', '3/32']);
+    });
+
+    it('returns an empty list for an undefined procedure', () => {
+      expect(fillerMetalTypeOptionsForProcedure(undefined)).toEqual([]);
+      expect(fillerMetalSizeOptionsForProcedure(undefined)).toEqual([]);
     });
   });
 });

@@ -9,7 +9,8 @@ import { ToastService } from '../../../shared/toast.service';
 import { getWeldPositions } from '../../../data/workflow';
 import {
   addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
-  PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
+  PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS,
+  FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
 
@@ -21,7 +22,7 @@ const EMPTY_FORM: Procedure = {
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
-  fillerMetalType: '', fillerMetalClassification: '', fillerMetalSizeRange: '',
+  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: '', powerSource: '',
@@ -56,7 +57,9 @@ export class ProcedureFormComponent implements OnInit {
   processTypes = PROCESS_TYPES;
   baseMetal1Types = BASE_METAL_1_TYPES;
   baseMetal2Types = BASE_METAL_2_TYPES;
-  fillerMetalTypes = FILLER_METAL_TYPES;
+  fillerMetalClassificationOptions = FILLER_METAL_TYPES;
+  fillerMetalTypeOptions = FILLER_METAL_TYPE_OPTIONS;
+  fillerMetalSizeOptions = FILLER_METAL_SIZE_OPTIONS;
   jointTypes = JOINT_TYPES;
   backingOptions = BACKING_OPTIONS;
   weldProgressions = WELD_PROGRESSIONS;
@@ -76,7 +79,8 @@ export class ProcedureFormComponent implements OnInit {
       if (existing) {
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
-          qualificationsRequired: [...existing.qualificationsRequired], revisionHistory: [...existing.revisionHistory]
+          qualificationsRequired: [...existing.qualificationsRequired], revisionHistory: [...existing.revisionHistory],
+          fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes]
         };
         this.wasActive = existing.status === 'active';
       } else {
@@ -96,6 +100,20 @@ export class ProcedureFormComponent implements OnInit {
 
   removeListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', index: number) {
     this.form[field] = this.form[field].filter((_, i) => i !== index);
+  }
+
+  /* Filler Metal Type/Size: checkbox lists against the fixed option sets, not free text -- these
+     are what Weld Record's Filler Metal Type/Size fields filter to once this WPS is selected. */
+  toggleFillerMetalType(value: string) {
+    this.form.fillerMetalTypes = this.form.fillerMetalTypes.includes(value)
+      ? this.form.fillerMetalTypes.filter(v => v !== value)
+      : [...this.form.fillerMetalTypes, value];
+  }
+
+  toggleFillerMetalSize(value: string) {
+    this.form.fillerMetalSizes = this.form.fillerMetalSizes.includes(value)
+      ? this.form.fillerMetalSizes.filter(v => v !== value)
+      : [...this.form.fillerMetalSizes, value];
   }
 
   save() {
