@@ -74,11 +74,11 @@ const WELD_GROUPS: WeldGroup[] = [
   ] },
   { title: 'Preheat/Interpass', sections: [
     { title: 'Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
-    { title: 'Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
     { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
       { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
       { keys: ['overrideNote'], width: null },
     ] },
+    { title: 'Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
   ] },
   { sections: [
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
