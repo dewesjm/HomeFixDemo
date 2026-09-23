@@ -237,7 +237,7 @@ export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
 /* ── CSV Export columns ── */
 export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
   { header: 'XREFID', value: r => r.id },
-  { header: 'Joint #', value: r => r.jointNumber },
+  { header: 'System', value: r => r.jointNumber },
   { header: 'Hull', value: r => r.hull },
   { header: 'Joint', value: r => r.joint },
   { header: 'Type', value: r => r.jointType },

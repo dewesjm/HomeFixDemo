@@ -83,7 +83,7 @@ export class WeldPlanningFormComponent implements OnInit {
 
   save() {
     if (!this.form.jointNumber) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Joint Number is required' });
+      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'System is required' });
       return;
     }
 

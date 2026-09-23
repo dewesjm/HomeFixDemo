@@ -35,7 +35,7 @@ export interface ResultColumn {
 }
 
 const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'jointNumber',   label: 'Joint #',        field: 'jointNumber',   sortField: 'jointNumber',   width: 'min-w-10' },
+  { key: 'jointNumber',   label: 'System',         field: 'jointNumber',   sortField: 'jointNumber',   width: 'min-w-10' },
   { key: 'id',            label: 'XREFID',         field: 'id',            sortField: 'id',            width: 'min-w-8' },
   { key: 'hull',          label: 'Hull',           field: 'hull',          sortField: 'hull',          width: 'min-w-10' },
   { key: 'joint',         label: 'Joint',          field: 'joint',         sortField: 'joint',         width: 'min-w-11' },

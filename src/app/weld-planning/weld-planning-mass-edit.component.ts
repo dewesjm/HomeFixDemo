@@ -95,7 +95,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
             <thead>
               <tr>
                 <th style="min-width: 3rem; text-align: center">#</th>
-                <th style="min-width: 6rem">Joint #</th>
+                <th style="min-width: 6rem">System</th>
                 <th style="min-width: 5rem">Hull</th>
                 <th style="min-width: 5rem">Joint</th>
                 <th style="min-width: 5rem">Type</th>
@@ -167,9 +167,9 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
       } @else if (!loading()) {
         @if (isEditMode()) {
           <div style="padding: 1.5rem; border: 1px dashed var(--app-border); border-radius: 0.5rem; max-width: 600px; margin: 2rem auto; text-align: center">
-            <p style="color: var(--app-text); font-weight: 600; margin-bottom: 0.5rem">Paste Joint Numbers</p>
+            <p style="color: var(--app-text); font-weight: 600; margin-bottom: 0.5rem">Paste System Numbers</p>
             <p style="font-size: 0.85rem; color: var(--app-text-muted); margin-bottom: 0.75rem">
-              Enter joint numbers separated by commas or new lines, then click Find to load them for editing.
+              Enter System numbers separated by commas or new lines, then click Find to load them for editing.
             </p>
             <textarea class="textarea textarea-bordered w-full" rows="4"
                       placeholder="ST-00001, PI-00002, ST-00003&#10;or one per line"
@@ -321,7 +321,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   validateRow(row: EditableRow) {
     const errors: string[] = [];
-    if (!row.jointNumber) errors.push('Joint # required');
+    if (!row.jointNumber) errors.push('System required');
     if (!VALID_TYPES.has(row.jointType)) errors.push('Invalid joint type');
     row._errors = errors;
   }

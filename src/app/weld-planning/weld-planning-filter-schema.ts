@@ -22,7 +22,7 @@ const PRIORITY_OPTIONS: { label: string; value: JointPriority }[] = [
 const NDT_MARK_OPTIONS = NDT_MARKS.map(m => ({ label: m || 'Blank', value: m }));
 
 export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'jointNumber',   label: 'Joint Number',  type: 'text',        group: 'Joint',   field: 'jointNumber', required: true },
+  { key: 'jointNumber',   label: 'System',        type: 'text',        group: 'Joint',   field: 'jointNumber' },
   { key: 'id',            label: 'XREFID',        type: 'text',        group: 'Joint',   field: 'id' },
   { key: 'hull',          label: 'Hull',          type: 'multiselect', group: 'Joint',   field: 'hull',        options: uniqueOpts(j => j.hull) },
   { key: 'joint',         label: 'Joint',         type: 'text',        group: 'Joint',   field: 'joint' },
