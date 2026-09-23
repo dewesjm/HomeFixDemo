@@ -14,9 +14,10 @@ import {
 
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
-/* same codes as jobs.ts: 02CS Carbon Steel, SS-304/SS-316 Stainless Steel, 40-AS Alloy Steel, AL-1010 Aluminum */
-const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', 'AL-1010'];
-const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS'];
+/* same codes as jobs.ts (see its MATERIALS_1/2 comment): 02-CS Carbon Steel, 12-SS304/13-SS316
+   Stainless Steel, 04-AS Alloy Steel, 63-AL10 Aluminum */
+const MATERIALS_1 = ['02-CS', '12-SS304', '13-SS316', '04-AS', '63-AL10'];
+const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '15-SS308', '16-SS316'];
 const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 

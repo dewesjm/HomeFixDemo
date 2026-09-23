@@ -74,15 +74,19 @@ const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', '
 const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
-/* base material codes: 02CS Carbon Steel, SS-304 Stainless Steel 304, SS-316 Stainless Steel 316,
-   40-AS Alloy Steel, 11CI Cast Iron, TI-6400 Titanium, AL-1010 Aluminum, 30-CUNI Copper Nickel,
-   60-INC Inconel, DS-2205 Duplex Stainless. 02CS/30-CUNI/AL-1010 are the user's own convention;
-   the rest were invented to match, so double-check them against any real numbering scheme. */
+/* Base metal (Material Type 1) and filler metal (Material Type 2) codes, redesigned 2026-09-23 as
+   one coherent internal numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
+   groups by family and the letters stay recognizable (real alloy chemistry/grade abbreviations,
+   e.g. CUNI for copper-nickel, SS304 for stainless 304) rather than reusing raw industry codes
+   verbatim. The two lists share the same family-block numbering (1x = stainless, 6x = nonferrous)
+   so a base metal and its typical filler read as part of one system. Replaces the earlier mixed
+   bag (some invented to match the user's own 02CS/30-CUNI/AL-1010, the rest ad hoc; Material Type 2
+   was real AWS electrode classifications, inconsistent with Material Type 1's own style). */
 /* exported so Weld Engineering's procedures data (baseMetal1Type/baseMetal2Type) can use the same
    vocabulary -- a GWP's base metal pair is matched against a job's Material Type 1/2 to filter the
    GWP droplist (see procedures.ts gwpOptionsForMaterials, joint-page.component.ts). */
-export const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', '11CI', 'TI-6400', 'AL-1010', '30-CUNI', '60-INC', 'DS-2205'];
-export const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
+export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205', '61-TI64', '63-AL10', '65-CUNI', '67-IN625'];
+export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
 const MCL_POOL = ['Standard', 'Control 1', 'Control 2'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14 (user-specified format,
    2026-09-23, replacing the earlier invented piece-mark style like HPF-D120-1). Leading letter

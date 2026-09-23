@@ -7,27 +7,27 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 
 export interface MaterialClassificationEntry {
-  code: string;                       /* e.g. '02CS', 'SS-304', 'AL-1010' -- Job.materialType1/2 values */
+  code: string;                       /* e.g. '02-CS', '12-SS304', '63-AL10' -- Job.materialType1/2 values */
   nonFerrousOrAustenitic: boolean;
 }
 
 const LS_KEY = STORAGE.materialClassification;
 
-/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIALS_1 codes, several of which were
-   invented to match style (see ARCHITECTURE.md). Duplex stainless (DS-2205) is a mixed
-   austenitic/ferritic structure, defaulted to false here since it isn't purely austenitic; the
-   admin table is exactly how this gets corrected without a code change. */
+/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIALS_1 codes (redesigned 2026-09-23
+   into a coherent NN-LETTERS numbering scheme, see jobs.ts). Duplex stainless (25-DS2205) is a
+   mixed austenitic/ferritic structure, defaulted to false here since it isn't purely austenitic;
+   the admin table is exactly how this gets corrected without a code change. */
 const DEFAULT_ENTRIES: MaterialClassificationEntry[] = [
-  { code: '02CS', nonFerrousOrAustenitic: false },     /* Carbon Steel */
-  { code: 'SS-304', nonFerrousOrAustenitic: true },    /* austenitic stainless */
-  { code: 'SS-316', nonFerrousOrAustenitic: true },    /* austenitic stainless */
-  { code: '40-AS', nonFerrousOrAustenitic: false },    /* alloy steel */
-  { code: '11CI', nonFerrousOrAustenitic: false },     /* cast iron */
-  { code: 'TI-6400', nonFerrousOrAustenitic: true },   /* titanium -- non-ferrous */
-  { code: 'AL-1010', nonFerrousOrAustenitic: true },   /* aluminum -- non-ferrous */
-  { code: '30-CUNI', nonFerrousOrAustenitic: true },   /* copper-nickel -- non-ferrous */
-  { code: '60-INC', nonFerrousOrAustenitic: true },    /* Inconel / nickel alloy -- non-ferrous */
-  { code: 'DS-2205', nonFerrousOrAustenitic: false },  /* duplex stainless -- mixed, see note above */
+  { code: '02-CS', nonFerrousOrAustenitic: false },      /* Carbon Steel */
+  { code: '12-SS304', nonFerrousOrAustenitic: true },    /* austenitic stainless */
+  { code: '13-SS316', nonFerrousOrAustenitic: true },    /* austenitic stainless */
+  { code: '04-AS', nonFerrousOrAustenitic: false },      /* alloy steel */
+  { code: '06-CI', nonFerrousOrAustenitic: false },      /* cast iron */
+  { code: '61-TI64', nonFerrousOrAustenitic: true },     /* titanium -- non-ferrous */
+  { code: '63-AL10', nonFerrousOrAustenitic: true },     /* aluminum -- non-ferrous */
+  { code: '65-CUNI', nonFerrousOrAustenitic: true },     /* copper-nickel -- non-ferrous */
+  { code: '67-IN625', nonFerrousOrAustenitic: true },    /* Inconel / nickel alloy -- non-ferrous */
+  { code: '25-DS2205', nonFerrousOrAustenitic: false },  /* duplex stainless -- mixed, see note above */
 ];
 
 function load(): MaterialClassificationEntry[] {

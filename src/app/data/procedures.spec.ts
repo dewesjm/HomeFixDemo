@@ -160,18 +160,18 @@ describe('procedures data layer', () => {
 
     it('gwpOptionsForMaterials only returns GWPs matching that base metal pair', () => {
       addProcedure(blankProcedure('TEST-MAT-1', 'TEST-GWP-MAT-A', '06.6-1'));
-      updateProcedure('TEST-MAT-1', { baseMetal1Type: '02CS', baseMetal2Type: 'E6010' });
+      updateProcedure('TEST-MAT-1', { baseMetal1Type: '02-CS', baseMetal2Type: '01-E60' });
       addProcedure(blankProcedure('TEST-MAT-2', 'TEST-GWP-MAT-B', '07.7-1'));
-      updateProcedure('TEST-MAT-2', { baseMetal1Type: 'SS-304', baseMetal2Type: 'E7018' });
+      updateProcedure('TEST-MAT-2', { baseMetal1Type: '12-SS304', baseMetal2Type: '02-E70' });
 
-      const opts = gwpOptionsForMaterials('02CS', 'E6010').map(o => o.value);
+      const opts = gwpOptionsForMaterials('02-CS', '01-E60').map(o => o.value);
       expect(opts).toContain('TEST-GWP-MAT-A');
       expect(opts).not.toContain('TEST-GWP-MAT-B');
     });
 
     it('gwpOptionsForMaterials returns an empty list when either material is blank', () => {
-      expect(gwpOptionsForMaterials('', 'E6010')).toEqual([]);
-      expect(gwpOptionsForMaterials('02CS', '')).toEqual([]);
+      expect(gwpOptionsForMaterials('', '01-E60')).toEqual([]);
+      expect(gwpOptionsForMaterials('02-CS', '')).toEqual([]);
     });
   });
 
