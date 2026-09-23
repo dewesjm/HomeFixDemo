@@ -91,7 +91,7 @@
     <!-- Repair / Excavation NDT only, demo aid: shows where this will actually route to on
          signoff, given the current Repair Code / Allowable thickness exceeded selections -->
     @if ((st.id === 'repair' || st.id === 'excavation-ndt') && ctx().repairRouteLabel(st); as routeHint) {
-      <div class="alert alert-info mb-sm py-2 text-sm">{{ routeHint }}</div>
+      <div class="alert mb-sm py-2 text-sm" [class.alert-info]="!routeHint.startsWith('No route identified')" [class.alert-warning]="routeHint.startsWith('No route identified')">{{ routeHint }}</div>
     }
 
     <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->

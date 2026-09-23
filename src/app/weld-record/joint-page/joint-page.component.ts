@@ -556,8 +556,8 @@ export class JointPageComponent implements OnDestroy {
   /* Demo aid: shows where Repair (or the Excavation NDT it can insert) will actually route to on
      signoff, given current inputs -- mirrors SignoffService.signStage()'s routing exactly:
        Repair: Allowable thickness exceeded takes priority -> that phase's NDT UT/RT; else Grind
-         Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; Cut/no code
-         chosen has no special routing.
+         Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; Cut has no
+         defined routing yet (shows a placeholder reminder instead); no code chosen -> nothing shown.
        Excavation NDT (SAT only -- UNSAT already routes back to Repair via rejectToStage): "the
          original joint inspection" (whatever NDT stage/method actually rejected the joint),
          unless that was PT and the job's material (Material Type 1 or 2, Admin > Material
@@ -577,6 +577,11 @@ export class JointPageComponent implements OnDestroy {
       }
       if (repairType === 'weld-repair') {
         return `On signoff, this routes to ${EXCAVATION_NDT_STAGE.label}; SAT there routes back to the original joint inspection (or 5X, see below), UNSAT routes back to Repair.`;
+      }
+      /* Cut has no defined routing yet -- placeholder so it isn't forgotten (user: "put ... so i
+         remember to find out what it needs to do"); not a real routing decision. */
+      if (repairType === 'cut') {
+        return 'No route identified, back to fitting?';
       }
       return '';
     }
