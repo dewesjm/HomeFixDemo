@@ -1,6 +1,6 @@
 /* The only file that touches the actual pdfmake renderer -- keeps procedure-pdf.ts's document-
    definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency. */
-import { Procedure } from '../data/procedures';
+import { Procedure } from '../../data/procedures';
 import { procedureDocDefinition } from './procedure-pdf';
 
 let vfsReady: Promise<any> | null = null;

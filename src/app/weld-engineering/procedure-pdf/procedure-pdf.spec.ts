@@ -1,5 +1,5 @@
 import { procedureDocDefinition } from './procedure-pdf';
-import { type Procedure } from '../data/procedures';
+import { type Procedure } from '../../data/procedures';
 
 const baseProcedure: Procedure = {
   id: 'W-999-1', title: 'Test title', status: 'active',

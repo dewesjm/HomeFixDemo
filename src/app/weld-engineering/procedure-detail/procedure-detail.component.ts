@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideArrowLeft, LucideDownload } from '@lucide/angular';
 
 import { getProcedure, type Procedure } from '../../data/procedures';
-import { procedurePdfDataUrl, downloadProcedurePdf } from '../procedure-pdf-actions';
+import { procedurePdfDataUrl, downloadProcedurePdf } from '../procedure-pdf/procedure-pdf-actions';
 
 @Component({
   selector: 'app-procedure-detail',

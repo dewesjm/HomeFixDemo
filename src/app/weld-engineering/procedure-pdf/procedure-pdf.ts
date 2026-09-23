@@ -7,7 +7,7 @@
    10. Parameters, 11. Heat Treatment -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../data/procedures';
+import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
 
 function fillerMetalTypeLabels(values: string[]): string {
   if (!values.length) return '';
