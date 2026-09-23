@@ -49,8 +49,10 @@ export const SOURCES_BY_ROLE: Record<string, string[]> = {
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
-/* demo only: same option lists Weld Planning's welding stages use, standing in for what eWICC would send over */
-const FILLER_METAL_TYPES = ['E6010', 'E6013', 'E7018', 'ER70S-6', 'ER80S-D2', 'ENiCrMo-3'];
+/* demo only, standing in for what eWICC would send over -- same MIL-spec designations as Weld
+   Record's own Filler Metal Type/Size (METAL_TYPE_OPTIONS/METAL_SIZE_OPTIONS in data/workflow.ts),
+   not duplicated as options here since this is just a random pick, not a real cascade */
+const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
