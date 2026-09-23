@@ -33,16 +33,18 @@
 
     <!-- Affected Items + MIC (weld build-up only) -->
     @if (st.id === 'fit' && st.routingType === 'weld-buildup') {
-      <div class="flex flex-wrap items-end gap-x-4 gap-y-1 mb-sm">
-        <span class="stage-field-label mb-1">Affected Item<span class="text-error">*</span></span>
+      <div class="flex flex-col gap-1 mb-sm">
+        <span class="stage-field-label">Affected Item<span class="text-error">*</span></span>
         @for (it of affectedItemSlots; track it.key) {
           @if (ctx().job[it.key]) {
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm"
-                     [disabled]="!fieldsEditable()"
-                     [checked]="isAffected(it.key)"
-                     (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
-              <span>{{ ctx().job[it.key] }}</span>
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <label class="flex items-center gap-1.5 cursor-pointer">
+                <input type="checkbox" class="checkbox checkbox-sm"
+                       [disabled]="!fieldsEditable()"
+                       [checked]="isAffected(it.key)"
+                       (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
+                <span>{{ ctx().job[it.key] }}</span>
+              </label>
               @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
                 <span>{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
                 <label class="flex items-center gap-1 cursor-pointer">
@@ -50,10 +52,10 @@
                          [disabled]="!fieldsEditable()"
                          [checked]="st.inputs[it.micVerified] === 'yes'"
                          (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''" />
-                  <span>MIC verified</span>
+                  <span>{{ it.micLabel }} verified</span>
                 </label>
               }
-            </label>
+            </div>
           }
         }
         @if (ctx().fieldError(st.id, 'affectedItem'); as err) {
