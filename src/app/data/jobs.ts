@@ -80,7 +80,12 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
 const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', '11CI', 'TI-6400', 'AL-1010', '30-CUNI', '60-INC', 'DS-2205'];
 const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
 const MCL_POOL = ['Standard', 'Control 1', 'Control 2'];
-const JOINING_ITEMS = ['Spool A', 'Spool B', 'Pipe Section 1', 'Pipe Section 2', 'Elbow 90', 'Tee', 'Reducer', 'Flange'];
+/* piece-mark style item codes, invented to look like a real numbering scheme */
+const JOINING_ITEMS = [
+  'HPF-D120-1', 'HPF-D120-2', 'MCH-P045-3', 'MCH-P045-4', 'AUX-E210-1', 'AUX-E210-2',
+  'FWD-H080-5', 'AFT-H080-6', 'PSD-F033-1', 'STB-F033-2', 'DKH-B150-7', 'DKH-B150-8',
+  'MCH-P061-1', 'AUX-E188-3', 'FWD-D095-2', 'STB-H140-4',
+];
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
