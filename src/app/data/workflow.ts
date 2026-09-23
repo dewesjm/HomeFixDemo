@@ -288,10 +288,13 @@ export function setPenetrants(entries: PenetrantEntry[]) {
 }
 
 /* Consumable insert and filler metal share these choices: "Only Consumable Insert used as filler" copies the
-   Fit stage's insert type/size into the filler fields, so a value missing from either list shows up blank. */
+   Fit stage's insert type/size into the filler fields, so a value missing from either list shows up blank.
+   MIL-spec designations, same convention as Weld Engineering's FILLER_METAL_TYPES (data/procedures.ts) --
+   duplicated here rather than imported to avoid a circular import (procedures.ts already imports this file). */
 const METAL_TYPE_OPTIONS = [
-  { label: 'E6010', value: 'e6010' }, { label: 'E6013', value: 'e6013' }, { label: 'E7018', value: 'e7018' },
-  { label: 'ER70S-6', value: 'er70s-6' }, { label: 'ER80S-D2', value: 'er80s-d2' }, { label: 'ENiCrMo-3', value: 'enicrmo-3' },
+  { label: 'MIL-70S-3', value: 'mil-70s-3' }, { label: 'MIL-70S-6', value: 'mil-70s-6' },
+  { label: 'MIL-80S-50', value: 'mil-80s-50' }, { label: 'MIL-80S-D2', value: 'mil-80s-d2' },
+  { label: 'MIL-90S-B3', value: 'mil-90s-b3' }, { label: 'MIL-100S-1', value: 'mil-100s-1' },
 ];
 const METAL_SIZE_OPTIONS = [
   { label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' }, { label: '1/8"', value: '1/8' },
