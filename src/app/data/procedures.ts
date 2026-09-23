@@ -10,6 +10,7 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './workflow';
+import { MATERIALS_1, MATERIALS_2 } from './jobs';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -21,7 +22,10 @@ export const PROCEDURE_STATUS_OPTIONS: { label: string; value: ProcedureStatus }
 
 export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
 export const PROCESS_TYPES = ['Manual', 'Semi-Automatic', 'Machine', 'Automatic'];
-export const BASE_METAL_TYPES = ['Carbon Steel', 'Low Alloy Steel', 'Stainless Steel', 'Duplex Stainless', 'Nickel Alloy', 'Aluminum'];
+/* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
+   pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
+export const BASE_METAL_1_TYPES = MATERIALS_1;
+export const BASE_METAL_2_TYPES = MATERIALS_2;
 /* MIL-spec filler metal designations, e.g. MIL-80S-50 -- distinct from Weld Record's AWS-style
    stage field choices (workflow.ts METAL_TYPE_OPTIONS) */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
@@ -175,19 +179,35 @@ function generateWtnsForGwp(rand: () => number, count: number): string[] {
   return wtns;
 }
 
-function generateProcedures(gwpCount = 40): Procedure[] {
+/* One GWP per (Material Type 1, Material Type 2) combination, so every combination a job can
+   have has at least one applicable GWP (and, per generateProcedures below, at least one of that
+   GWP's WPS rows has override values populated). */
+function materialCombos(): [string, string][] {
+  const combos: [string, string][] = [];
+  for (const m1 of BASE_METAL_1_TYPES) {
+    for (const m2 of BASE_METAL_2_TYPES) {
+      combos.push([m1, m2]);
+    }
+  }
+  return combos;
+}
+
+function generateProcedures(): Procedure[] {
   const rand = seeded(777);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const out: Procedure[] = [];
+  const combos = materialCombos();
 
-  for (let g = 0; g < gwpCount; g++) {
+  combos.forEach(([baseMetal1Type, baseMetal2Type], g) => {
     const gwp = `W-${101 + g}`;
     const wtnCount = 1 + Math.floor(rand() * 4);
     const wtns = generateWtnsForGwp(rand, wtnCount);
+    /* guarantee at least one WPS under this GWP has override values, rather than leaving it to chance */
+    const overrideRowIndex = Math.floor(rand() * wtns.length);
 
     wtns.forEach((wtn, n) => {
       const createdAt = new Date(Date.now() - Math.floor(rand() * 400) * 24 * 60 * 60 * 1000);
-      const hasOverride = rand() < 0.3;
+      const hasOverride = n === overrideRowIndex || rand() < 0.3;
       const statuses: ProcedureStatus[] = ['active', 'active', 'active', 'draft', 'retired']; /* mostly active */
 
       const id = `${gwp}-${n + 1}`;
@@ -212,8 +232,8 @@ function generateProcedures(gwpCount = 40): Procedure[] {
         wpsRev,
         effectiveDate: effectiveDate.toISOString().slice(0, 10),
         processType: pick(PROCESS_TYPES),
-        baseMetal1Type: pick(BASE_METAL_TYPES),
-        baseMetal2Type: pick(BASE_METAL_TYPES),
+        baseMetal1Type,
+        baseMetal2Type,
         baseMetalThicknessMin: `${(0.125 + rand() * 0.25).toFixed(3)}"`,
         baseMetalThicknessMax: `${(0.5 + rand() * 1.5).toFixed(3)}"`,
         jointType: pick(JOINT_TYPES),
@@ -255,7 +275,7 @@ function generateProcedures(gwpCount = 40): Procedure[] {
         updatedAt: createdAt.toISOString(),
       });
     });
-  }
+  });
   return out;
 }
 
@@ -320,6 +340,19 @@ export function hasOverride(p: Procedure): boolean {
    joint-page.component.ts). A GWP groups several Procedure rows, one per WTN. ── */
 export function gwpOptions(): { label: string; value: string }[] {
   const distinct = Array.from(new Set(procedures().map(p => p.gwp))).sort();
+  return distinct.map(g => ({ label: g, value: g }));
+}
+
+/* GWP droplist filtered to whichever GWPs are qualified for a job's base metal pair -- a GWP's
+   base metal 1/2 (fixed per GWP, see materialCombos() above) must match the job's Material Type
+   1/2 (Job.materialType1/materialType2, jobs.ts). */
+export function gwpOptionsForMaterials(materialType1: string, materialType2: string): { label: string; value: string }[] {
+  if (!materialType1 || !materialType2) return [];
+  const distinct = Array.from(new Set(
+    procedures()
+      .filter(p => p.baseMetal1Type === materialType1 && p.baseMetal2Type === materialType2)
+      .map(p => p.gwp)
+  )).sort();
   return distinct.map(g => ({ label: g, value: g }));
 }
 

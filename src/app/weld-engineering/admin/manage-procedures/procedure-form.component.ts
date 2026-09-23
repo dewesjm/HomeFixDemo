@@ -9,7 +9,7 @@ import { ToastService } from '../../../shared/toast.service';
 import { getWeldPositions } from '../../../data/workflow';
 import {
   addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
-  PROCESS_TYPES, BASE_METAL_TYPES, FILLER_METAL_TYPES, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
+  PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
 
@@ -54,7 +54,8 @@ export class ProcedureFormComponent implements OnInit {
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   weldProcesses = WELD_PROCESSES;
   processTypes = PROCESS_TYPES;
-  baseMetalTypes = BASE_METAL_TYPES;
+  baseMetal1Types = BASE_METAL_1_TYPES;
+  baseMetal2Types = BASE_METAL_2_TYPES;
   fillerMetalTypes = FILLER_METAL_TYPES;
   jointTypes = JOINT_TYPES;
   backingOptions = BACKING_OPTIONS;
@@ -109,6 +110,19 @@ export class ProcedureFormComponent implements OnInit {
     const gwpWtnClash = procedures().find(p => p.id !== this.form.id && p.gwp === this.form.gwp && p.wtn === this.form.wtn);
     if (gwpWtnClash) {
       this.toast.add({ severity: 'warn', summary: 'Duplicate GWP/WTN', detail: `${gwpWtnClash.id} already covers GWP ${this.form.gwp} / WTN ${this.form.wtn}` });
+      return;
+    }
+    /* base metal is fixed per GWP (it's what filters the GWP droplist in Weld Record by the job's
+       Material Type 1/2) -- every WPS sharing a GWP must agree on it */
+    const baseMetalMismatch = procedures().find(p =>
+      p.id !== this.form.id && p.gwp === this.form.gwp
+      && (p.baseMetal1Type !== this.form.baseMetal1Type || p.baseMetal2Type !== this.form.baseMetal2Type)
+    );
+    if (baseMetalMismatch) {
+      this.toast.add({
+        severity: 'warn', summary: 'Base metal mismatch',
+        detail: `GWP ${this.form.gwp} is already ${baseMetalMismatch.baseMetal1Type} / ${baseMetalMismatch.baseMetal2Type} (see ${baseMetalMismatch.id})`
+      });
       return;
     }
     if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {

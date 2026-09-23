@@ -78,8 +78,11 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
    40-AS Alloy Steel, 11CI Cast Iron, TI-6400 Titanium, AL-1010 Aluminum, 30-CUNI Copper Nickel,
    60-INC Inconel, DS-2205 Duplex Stainless. 02CS/30-CUNI/AL-1010 are the user's own convention;
    the rest were invented to match, so double-check them against any real numbering scheme. */
-const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', '11CI', 'TI-6400', 'AL-1010', '30-CUNI', '60-INC', 'DS-2205'];
-const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
+/* exported so Weld Engineering's procedures data (baseMetal1Type/baseMetal2Type) can use the same
+   vocabulary -- a GWP's base metal pair is matched against a job's Material Type 1/2 to filter the
+   GWP droplist (see procedures.ts gwpOptionsForMaterials, joint-page.component.ts). */
+export const MATERIALS_1 = ['02CS', 'SS-304', 'SS-316', '40-AS', '11CI', 'TI-6400', 'AL-1010', '30-CUNI', '60-INC', 'DS-2205'];
+export const MATERIALS_2 = ['E6010', 'E7018', 'ER70S-6', '308L SS', '316L SS', 'ER80S-D2', 'ENiCrMo-3', 'ER5356', 'ERCuSi-A', 'ERNiCr-3'];
 const MCL_POOL = ['Standard', 'Control 1', 'Control 2'];
 /* piece-mark style item codes, invented to look like a real numbering scheme */
 const JOINING_ITEMS = [

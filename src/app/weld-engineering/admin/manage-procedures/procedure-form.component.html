@@ -66,7 +66,7 @@
       <label class="stage-field-label">Base Metal 1 Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal1Type">
         <option value="">—</option>
-        @for (m of baseMetalTypes; track m) {
+        @for (m of baseMetal1Types; track m) {
           <option [value]="m">{{ m }}</option>
         }
       </select>
@@ -75,7 +75,7 @@
       <label class="stage-field-label">Base Metal 2 Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal2Type">
         <option value="">—</option>
-        @for (m of baseMetalTypes; track m) {
+        @for (m of baseMetal2Types; track m) {
           <option [value]="m">{{ m }}</option>
         }
       </select>

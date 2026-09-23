@@ -1,6 +1,7 @@
 import {
-  procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure,
-  gwpOptions, wtnOptionsForGwp, getProcedureByGwpWtn, type Procedure
+  procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure, hasOverride,
+  gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn,
+  BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
 } from './procedures';
 
 const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
@@ -121,6 +122,55 @@ describe('procedures data layer', () => {
       const found = getProcedureByGwpWtn('TEST-GWP-LOOKUP', '04.4-1');
       expect(found?.id).toBe('TEST-CASCADE-5');
       expect(getProcedureByGwpWtn('TEST-GWP-LOOKUP', 'no-such-wtn')).toBeUndefined();
+    });
+  });
+
+  describe('GWP is fixed to one base metal pair, matched against a job\'s Material Type 1/2', () => {
+    it('every seeded GWP has exactly one base metal 1/2 pair across all its WTN rows', () => {
+      const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+      const pairByGwp = new Map<string, string>();
+      for (const p of seeded) {
+        const pair = `${p.baseMetal1Type}::${p.baseMetal2Type}`;
+        const existing = pairByGwp.get(p.gwp);
+        if (existing) expect(pair).toBe(existing);
+        else pairByGwp.set(p.gwp, pair);
+      }
+    });
+
+    it('covers every Material Type 1/2 combination with at least one GWP', () => {
+      const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+      for (const m1 of BASE_METAL_1_TYPES) {
+        for (const m2 of BASE_METAL_2_TYPES) {
+          const match = seeded.find(p => p.baseMetal1Type === m1 && p.baseMetal2Type === m2);
+          expect(match).withContext(`${m1} / ${m2}`).toBeTruthy();
+        }
+      }
+    });
+
+    it('every Material Type 1/2 combination has at least one WPS with override values populated', () => {
+      const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+      for (const m1 of BASE_METAL_1_TYPES) {
+        for (const m2 of BASE_METAL_2_TYPES) {
+          const rows = seeded.filter(p => p.baseMetal1Type === m1 && p.baseMetal2Type === m2);
+          expect(rows.some(hasOverride)).withContext(`${m1} / ${m2}`).toBeTrue();
+        }
+      }
+    });
+
+    it('gwpOptionsForMaterials only returns GWPs matching that base metal pair', () => {
+      addProcedure(blankProcedure('TEST-MAT-1', 'TEST-GWP-MAT-A', '06.6-1'));
+      updateProcedure('TEST-MAT-1', { baseMetal1Type: '02CS', baseMetal2Type: 'E6010' });
+      addProcedure(blankProcedure('TEST-MAT-2', 'TEST-GWP-MAT-B', '07.7-1'));
+      updateProcedure('TEST-MAT-2', { baseMetal1Type: 'SS-304', baseMetal2Type: 'E7018' });
+
+      const opts = gwpOptionsForMaterials('02CS', 'E6010').map(o => o.value);
+      expect(opts).toContain('TEST-GWP-MAT-A');
+      expect(opts).not.toContain('TEST-GWP-MAT-B');
+    });
+
+    it('gwpOptionsForMaterials returns an empty list when either material is blank', () => {
+      expect(gwpOptionsForMaterials('', 'E6010')).toEqual([]);
+      expect(gwpOptionsForMaterials('02CS', '')).toEqual([]);
     });
   });
 });

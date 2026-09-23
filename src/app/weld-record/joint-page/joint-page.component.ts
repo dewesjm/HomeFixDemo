@@ -26,7 +26,7 @@ import {
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
-import { gwpOptions, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride } from '../../data/procedures';
+import { gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride } from '../../data/procedures';
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
@@ -488,10 +488,13 @@ export class JointPageComponent implements OnDestroy {
     return result;
   }
 
-  /* GWP and WTN cascade from Weld Engineering's procedures data: GWP lists every distinct GWP,
-     WTN is filtered to whichever GWP is currently selected on this stage. */
+  /* GWP and WTN cascade from Weld Engineering's procedures data: GWP is filtered to whichever GWPs
+     are qualified for this job's base metal pair (Material Type 1/2), WTN is then filtered to
+     whichever GWP is currently selected on this stage. */
   private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
-    if (f.key === 'weldProcedure') return { ...f, options: gwpOptions() };
+    if (f.key === 'weldProcedure') {
+      return { ...f, options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '') };
+    }
     if (f.key === 'wtn') return { ...f, options: wtnOptionsForGwp(stage.inputs?.['weldProcedure'] ?? '') };
     return f;
   }
