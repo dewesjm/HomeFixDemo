@@ -43,8 +43,8 @@
                      [checked]="isAffected(it.key)"
                      (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
               <span>{{ ctx().job[it.key] }}</span>
-              @if (isAffected(it.key)) {
-                <span>MIC: <span class="mono">{{ ctx().job[it.mcl] || '—' }}</span></span>
+              @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
+                <span>{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
                 <label class="flex items-center gap-1 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-xs"
                          [disabled]="!fieldsEditable()"

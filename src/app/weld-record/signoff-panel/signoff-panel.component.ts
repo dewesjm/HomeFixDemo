@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked } from '../../data/workflow';
+import { requiresTraceability } from '../../data/mcl-traceability';
 
 export interface SignoffContext {
   job: Job;
@@ -119,14 +120,25 @@ export class SignoffPanelComponent {
     this.expandedRecords.set(this.allRecordsExpanded(records) ? new Set() : new Set(keys));
   }
 
-  /* the two joint members a weld build-up can affect, with their MCL and MIC-verified keys */
+  /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)
+     and MIC-verified keys */
   affectedItemSlots = [
-    { key: 'joiningItem', mcl: 'mcl1', micVerified: 'micVerified1' },
-    { key: 'joinToItem', mcl: 'mcl2', micVerified: 'micVerified2' },
+    { key: 'joiningItem', mcl: 'mcl1', mic: 'id1', micLabel: 'MIC 1', micVerified: 'micVerified1' },
+    { key: 'joinToItem', mcl: 'mcl2', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2' },
   ] as const;
 
   isAffected(key: string): boolean {
     return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
+  }
+
+  /* MIC 1/MIC 2 (fabricationData id1/id2) only show for a joint member whose MCL requires
+     traceability per the admin MCL Traceability table (mcl-traceability.ts) */
+  micRequired(mclValue: string): boolean {
+    return requiresTraceability(mclValue);
+  }
+
+  micValue(mic: string): string {
+    return this.ctx().wf().fabricationData[mic] ?? '';
   }
 
   groupVisible(g: WeldGroup): boolean {
