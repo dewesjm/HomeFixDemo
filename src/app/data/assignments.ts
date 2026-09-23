@@ -87,55 +87,53 @@ function generateAssignments(): Assignment[] {
   const assignments: Assignment[] = [];
   const shops = getShops();
 
-  const rolesByRouting: Record<string, string[]> = {
-    'Pre-Fit': ['NQC Inspector'],
-    'Fit': ['Fitting'],
-    'Tack': ['Welding'],
-    /* picked per assignment below, split between the two roles rather than both at once */
-    'Fit-Up Release': ['Foreman'],
-    'Deferred Tack': ['Welding'],
-    'Root': ['Welding'],
-    'Root NDT UT/RT': ['NQC Inspector'],
-    'Root NDT MT/PT': ['NQC Inspector'],
-    'Root NDT VT/5X': ['NQC Inspector'],
-    'Layer': ['Welding'],
-    'Layer NDT UT/RT': ['NQC Inspector'],
-    'Layer NDT VT/5X': ['NQC Inspector'],
-    'Layer NDT MT/PT': ['NQC Inspector'],
-    'Final Weld': ['Welding'],
-    'Final NDT UT/RT': ['NQC Inspector'],
-    'Final NDT MT/PT': ['NQC Inspector'],
-    'Final NDT VT/5X': ['NQC Inspector'],
-    'O63 Review': ['O63 Records'],
-    'O04 Review': ['O04 Records'],
+  /* one or more real routing labels a role's assignments draw from, for variety within the role's
+     own block -- role is assigned directly per entry below, not derived from the routing label, so
+     every role (including the rarer ones like Inspector/Fitting/O63/O04 Records) gets an even,
+     guaranteed count instead of some being a random coin-flip off another role's block (Inspector
+     used to only exist as a 50/50 split of Fit-Up Insp with Foreman -- easy to end up with just
+     one, or none). 2026-09-23, per the user: every role should land in the 5-10 range. */
+  const ROLE_ROUTINGS: Record<string, string[]> = {
+    'Welding': ['Tack', 'Root', 'Layer', 'Final Weld', 'Deferred Tack'],
+    'NQC Inspector': ['Pre-Fit', 'Root NDT UT/RT', 'Layer NDT VT/5X', 'Final NDT MT/PT'],
+    'Fitting': ['Fit'],
+    'Inspector': ['Fit-Up Insp'],
+    'Foreman': ['Fit-Up Insp', 'Fit-Up Release'],
+    'O63 Records': ['O63 Review'],
+    'O04 Records': ['O04 Review'],
   };
-
-  /* explicit routing mix (rather than a flat random pick across all 19 routings) so every role
-     the demo cares about — including the rarer ones like Fitting and O63/O04 Records — ends up
-     with a handful of assignments instead of maybe zero or one */
-  const ROUTING_SEQUENCE = [
-    ...Array(8).fill('Tack'), ...Array(4).fill('Root'), ...Array(4).fill('Layer'), ...Array(4).fill('Final Weld'), ...Array(2).fill('Deferred Tack'),   // Welding
-    ...Array(4).fill('Pre-Fit'), ...Array(3).fill('Root NDT UT/RT'), ...Array(3).fill('Layer NDT VT/5X'), ...Array(3).fill('Final NDT MT/PT'),          // NQC Inspector
-    ...Array(4).fill('Fit'),               // Fitting
-    ...Array(4).fill('Fit-Up Insp'),        // Inspector (+ Foreman)
-    ...Array(2).fill('Fit-Up Release'),     // Foreman
-    ...Array(2).fill('O63 Review'), ...Array(2).fill('O04 Review'),   // O63/O04 Records
-  ];
+  const PER_ROLE = 7;   // within the user's 5-10 ask
+  const ROUTING_SEQUENCE: { role: string; routing: string }[] = [];
+  for (const [role, routings] of Object.entries(ROLE_ROUTINGS)) {
+    for (let j = 0; j < PER_ROLE; j++) {
+      ROUTING_SEQUENCE.push({ role, routing: routings[j % routings.length] });
+    }
+  }
   /* seeded shuffle so the mix above doesn't render in the same block order every time */
   for (let i = ROUTING_SEQUENCE.length - 1; i > 0; i--) {
     const j = Math.floor(rand() * (i + 1));
     [ROUTING_SEQUENCE[i], ROUTING_SEQUENCE[j]] = [ROUTING_SEQUENCE[j], ROUTING_SEQUENCE[i]];
   }
 
+  /* alternates a role's sources deterministically (not a random pick) so a role with more than one
+     upstream system -- Inspector/NQC Inspector, SAIL and NCS -- is guaranteed to show at least one
+     assignment from each, not left to chance with only PER_ROLE picks */
+  const roleSourceIndex: Record<string, number> = {};
+  const nextSource = (role: string): string => {
+    const pool = SOURCES_BY_ROLE[role] ?? ['ERP'];
+    const idx = (roleSourceIndex[role] ?? 0) % pool.length;
+    roleSourceIndex[role] = idx + 1;
+    return pool[idx];
+  };
+
   for (let i = 0; i < ROUTING_SEQUENCE.length; i++) {
     const job = pick(JOBS);
-    const routing = ROUTING_SEQUENCE[i];
+    const { role: primaryRole, routing } = ROUTING_SEQUENCE[i];
     const dayOffset = Math.floor(rand() * 14);
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
     const expires = new Date(Date.now() + ((i * 3) % 7) * 86400000);
-    const assignedRoles = routing === 'Fit-Up Insp' ? [pick(['Inspector', 'Foreman'])] : (rolesByRouting[routing] || ['View']);
-    const primaryRole = assignedRoles[0];
+    const assignedRoles = [primaryRole];
     const xrefidBlank = i % 4 === 0;   /* XREFID blank ~25% of the time, same as Weld Planning's records */
 
     assignments.push({
@@ -156,7 +154,7 @@ function generateAssignments(): Assignment[] {
       pscl: '',
       usage: '',
       assignedRoles,
-      source: pick(SOURCES_BY_ROLE[primaryRole] ?? ['ERP']),
+      source: nextSource(primaryRole),
       dueDate: due.toISOString().slice(0, 10),
       expirationDate: expires.toISOString().slice(0, 10),
       assignedDate: assigned.toISOString().slice(0, 10),
