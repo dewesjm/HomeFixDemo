@@ -20,12 +20,15 @@ export const STORAGE = {
   weldPlanningResultColumns: 'welding:weld-planning-result-columns',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants',
   quickLinks: 'welding:quick-links:v1',
-  procedures: 'welding:procedures:v4',
+  procedures: 'welding:procedures:v5',
   makeup: 'welding:makeup:v2',
 } as const;
 
-/* Caches that must be rebuilt when stage definitions change (new app version or new build activated). */
-const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.weldPositions];
+/* Caches that must be rebuilt when stage definitions change (new app version or new build activated).
+   procedures is included because its seeded GWP/WPS rows are generated from MATERIALS_1/MATERIALS_2
+   (jobs.ts) -- a change to those codes without a matching cache clear leaves the GWP/WTN cascade
+   silently blank (see storage-keys history, and the v4->v5 bump this line was added for). */
+const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.weldPositions, STORAGE.procedures];
 
 export function clearStaleCaches() {
   STALE_ON_UPDATE.forEach(k => localStorage.removeItem(k));
