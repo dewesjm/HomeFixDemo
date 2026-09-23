@@ -7,9 +7,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft } from '@lucide/angular';
+import { LucidePlus, LucideTrash2, LucideUserCog, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft } from '@lucide/angular';
 import { ToastService } from '../../shared/toast.service';
-import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
+import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
+import { PEOPLE, Person, fullName } from '../../data/people';
 import {
   makeupGrants, addMakeupGrant, removeMakeupGrant, updateMakeupGrant, isGrantActive,
   daySpan, daysRemaining, ANNUAL_MAKEUP_DAYS, MakeupGrant
@@ -18,7 +19,7 @@ import {
 @Component({
   selector: 'app-makeup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft],
+  imports: [CommonModule, FormsModule, RouterLink, PersonSearchInputComponent, LucidePlus, LucideTrash2, LucideUserCog, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft],
   templateUrl: './makeup.component.html'
 })
 export class MakeupComponent {
@@ -39,10 +40,7 @@ export class MakeupComponent {
       Number(this.isActive(b)) - Number(this.isActive(a)) || b.startDate.localeCompare(a.startDate));
   });
 
-  /* person search: below-foreman only -- a Foreman doesn't need to be granted makeup as one */
-  personQuery = signal('');
-  suggestOpen = signal(false);
-  suggestions = computed(() => searchPeople(this.personQuery()).filter(p => p.title !== 'Foreman'));
+  /* below-foreman only -- a Foreman doesn't need to be granted makeup as one (app-person-search-input's excludeTitle) */
   newPerson = signal<Person | null>(null);
   newStartDate = signal(new Date().toISOString().slice(0, 10));
   newEndDate = signal('');
@@ -73,13 +71,10 @@ export class MakeupComponent {
 
   choosePerson(p: Person) {
     this.newPerson.set(p);
-    this.personQuery.set('');
-    this.suggestOpen.set(false);
   }
 
   clearPerson() {
     this.newPerson.set(null);
-    this.personQuery.set('');
   }
 
   /* remaining days for whoever's picked in the add row, before this grant counts against it */

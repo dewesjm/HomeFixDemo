@@ -12,34 +12,9 @@
 
 <div class="facet-row">
   <!-- Person: type a first or last name (or id); pick from the matches. Never a full list. -->
-  <div class="relative" style="min-width: 16rem">
-    @if (person(); as p) {
-      <div class="input input-sm input-bordered flex items-center gap-2">
-        <svg lucideUser class="size-4 opacity-60"></svg>
-        <span class="grow">{{ p.first }} {{ p.last }} <span class="hist-old">· {{ p.title }} · {{ p.id }}</span></span>
-        <button type="button" class="btn btn-ghost btn-xs" (click)="clearPerson()" title="Clear person">
-          <svg lucideX class="size-4"></svg>
-        </button>
-      </div>
-    } @else {
-      <label class="input input-sm input-bordered flex items-center gap-2">
-        <svg lucideUser class="size-4 opacity-60"></svg>
-        <input type="text" class="grow" placeholder="Person: last or first name"
-               [ngModel]="personQuery()" (ngModelChange)="personQuery.set($event); suggestOpen.set(true)"
-               (focus)="suggestOpen.set(true)" (blur)="suggestOpen.set(false)" />
-      </label>
-      @if (suggestOpen() && personQuery().trim()) {
-        <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
-          @for (s of suggestions(); track s.id) {
-            <li><a (mousedown)="choosePerson(s); $event.preventDefault()">
-              <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · {{ s.id }}</span>
-            </a></li>
-          } @empty {
-            <li class="px-3 py-2 hist-old">No one matches "{{ personQuery() }}"</li>
-          }
-        </ul>
-      }
-    }
+  <div style="min-width: 16rem">
+    <app-person-search-input mode="picker" size="sm" placeholder="Person: last or first name"
+      [selected]="person()" (select)="choosePerson($event)" (clear)="clearPerson()" />
   </div>
 
   <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">

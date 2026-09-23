@@ -3,12 +3,13 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight, LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
 import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
+import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
@@ -16,7 +17,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { HistoryEntry, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
-import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
+import { PEOPLE, Person, fullName } from '../../data/people';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { LucidePencil } from '@lucide/angular';
 
@@ -37,9 +38,9 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    TablePagerComponent, SortHeaderComponent, CorrectStageDialogComponent,
+    TablePagerComponent, SortHeaderComponent, CorrectStageDialogComponent, PersonSearchInputComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight,
-    LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp, LucidePencil
+    LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp, LucidePencil
   ],
   templateUrl: './work-history.component.html'
 })
@@ -54,11 +55,8 @@ export class WorkHistoryComponent {
   back() { this.router.navigate(['/pipe-search']); }
   openDetails(jobId: string) { this.router.navigate(['/jobs', jobId], { queryParams: { from: 'history' } }); }
 
-  /* person filter: the chosen person, plus the typeahead's text and open state */
+  /* person filter: the chosen person (search assist itself is app-person-search-input) */
   person = signal<Person | null>(null);
-  personQuery = signal('');
-  suggestOpen = signal(false);
-  suggestions = computed(() => searchPeople(this.personQuery()));
   /* job filter: matches XREFID, drawing, joint or order */
   jobQuery = signal<string>('');
   expanded = signal<ReadonlySet<string>>(new Set());
@@ -113,13 +111,10 @@ export class WorkHistoryComponent {
 
   choosePerson(p: Person) {
     this.person.set(p);
-    this.personQuery.set('');
-    this.suggestOpen.set(false);
   }
 
   clearPerson() {
     this.person.set(null);
-    this.personQuery.set('');
   }
 
   /* every sign-off matching the current filters that has fields to show, across all pages */

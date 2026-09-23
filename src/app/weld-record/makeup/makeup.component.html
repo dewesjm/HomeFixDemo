@@ -82,34 +82,10 @@
           <tr><td colspan="7" class="empty">No makeup grants.</td></tr>
         }
         <tr>
-          <td class="relative" style="min-width: 14rem">
-            @if (newPerson(); as p) {
-              <div class="input input-xs input-bordered flex items-center gap-2">
-                <svg lucideUser class="size-4 opacity-60"></svg>
-                <span class="grow">{{ fullName(p) }} <span class="hist-old">· {{ p.title }}</span></span>
-                <button type="button" class="btn btn-ghost btn-xs" (click)="clearPerson()" title="Clear person">
-                  <svg lucideX class="size-4"></svg>
-                </button>
-              </div>
-            } @else {
-              <label class="input input-xs input-bordered flex items-center gap-2">
-                <svg lucideUser class="size-4 opacity-60"></svg>
-                <input type="text" class="grow" placeholder="Search: last or first name"
-                       [ngModel]="personQuery()" (ngModelChange)="personQuery.set($event); suggestOpen.set(true)"
-                       (focus)="suggestOpen.set(true)" (blur)="suggestOpen.set(false)" />
-              </label>
-              @if (suggestOpen() && personQuery().trim()) {
-                <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
-                  @for (s of suggestions(); track s.id) {
-                    <li><a (mousedown)="choosePerson(s); $event.preventDefault()">
-                      <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · {{ s.id }}</span>
-                    </a></li>
-                  } @empty {
-                    <li class="px-3 py-2 hist-old">No one below foreman level matches "{{ personQuery() }}"</li>
-                  }
-                </ul>
-              }
-            }
+          <td style="min-width: 14rem">
+            <app-person-search-input mode="picker" size="xs" placeholder="Search: last or first name"
+              excludeTitle="Foreman" emptyHint="below foreman level"
+              [selected]="newPerson()" (select)="choosePerson($event)" (clear)="clearPerson()" />
           </td>
           <td></td>
           <td>

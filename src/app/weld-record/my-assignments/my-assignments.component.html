@@ -63,12 +63,12 @@
       <div class="font-mono text-xs truncate">{{ a.assignmentNumber }}</div>
       <div class="text-xs opacity-60 truncate">{{ a.expirationDate | date:'MMM d, y' }}</div>
       <div class="text-xs opacity-60 truncate">{{ a.source }}</div>
-      <div class="flex items-center gap-1 justify-end">
+      <div class="flex items-center gap-1 justify-end" (click)="$event.stopPropagation()">
         <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
-           target="_blank" rel="noopener" title="View assignment" (click)="$event.stopPropagation()">
+           target="_blank" rel="noopener" title="View assignment">
           <svg lucideFileText class="size-3.5"></svg>
         </a>
-        <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(a); $event.stopPropagation()">
+        <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(a)">
           <svg lucideArrowUpRight class="size-3"></svg>
         </button>
       </div>
