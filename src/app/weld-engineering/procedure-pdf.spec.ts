@@ -1,9 +1,9 @@
 import { procedureDocDefinition } from './procedure-pdf';
-import { WTN_POOL, type Procedure } from '../data/procedures';
+import { type Procedure } from '../data/procedures';
 
 const baseProcedure: Procedure = {
-  id: 'W-999', title: 'Test title', status: 'active',
-  wtns: [WTN_POOL[0], WTN_POOL[1]], weldProcess: 'GTAW',
+  id: 'W-999-1', title: 'Test title', status: 'active',
+  wtn: '05.5-1', weldProcess: 'GTAW',
   gwp: 'W-999', wpsRev: '0', effectiveDate: '2026-01-01',
   processType: 'Manual',
   baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', baseMetalThicknessMin: '0.125"', baseMetalThicknessMax: '0.75"',
@@ -45,7 +45,7 @@ describe('procedureDocDefinition', () => {
       '1. Base Metal', '2. Joint Design', '3. Welding Position', '4. Filler Metal',
       '5. Welder Qualifications', '6. Preheat & Interpass Temperatures',
       '7. Equipment', '8. Gas', '9. Heat Input', '10. Parameters', '11. Heat Treatment',
-      'Applicable WTNs', 'Rules', 'Specific Conditions',
+      'Rules', 'Specific Conditions',
     ]);
   });
 
@@ -63,14 +63,13 @@ describe('procedureDocDefinition', () => {
 
   it('list lengths match the input arrays', () => {
     const doc = procedureDocDefinition(baseProcedure);
-    expect(ulFor(doc, 'Applicable WTNs').length).toBe(baseProcedure.wtns.length);
     expect(ulFor(doc, 'Rules').length).toBe(baseProcedure.rules.length);
     expect(ulFor(doc, 'Specific Conditions').length).toBe(baseProcedure.conditions.length);
     expect(ulFor(doc, '5. Welder Qualifications').length).toBe(baseProcedure.qualificationsRequired.length);
   });
 
   it('renders a placeholder instead of an empty list when arrays are empty', () => {
-    const empty: Procedure = { ...baseProcedure, wtns: [], rules: [], conditions: [], qualificationsRequired: [] };
+    const empty: Procedure = { ...baseProcedure, rules: [], conditions: [], qualificationsRequired: [] };
     const doc = procedureDocDefinition(empty);
     expect(ulFor(doc, 'Rules')).toEqual(['—']);
   });
@@ -78,7 +77,7 @@ describe('procedureDocDefinition', () => {
   it('includes the procedure id and title as content', () => {
     const doc = procedureDocDefinition(baseProcedure);
     const content = doc.content as any[];
-    expect(content.some(c => c.text === 'W-999')).toBeTrue();
+    expect(content.some(c => c.text === 'W-999-1')).toBeTrue();
     expect(content.some(c => c.text === 'Test title')).toBeTrue();
   });
 

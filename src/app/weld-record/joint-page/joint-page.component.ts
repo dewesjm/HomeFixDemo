@@ -26,6 +26,7 @@ import {
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
+import { gwpOptions, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride } from '../../data/procedures';
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
@@ -455,31 +456,44 @@ export class JointPageComponent implements OnDestroy {
       const base = tackTpl ? tackTpl.fields.map(f => ({ ...f })) : [];
       return [...base, { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }];
     }
-    const result = stage.fields.filter(f => {
-      if (f.showIf) {
-        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
-          : f.showIf.key === 'result' ? stage.result
-          : stage.inputs[f.showIf.key];
-        if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
-        else if (checkVal !== f.showIf.equals) return false;
-        if (f.showIf.and) {
-          for (const cond of f.showIf.and) {
-            const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
-            if (v !== cond.equals) return false;
+    const result = stage.fields
+      .map(f => this.withStageRuntimeOptions(f, stage))
+      .filter(f => {
+        if (f.showIf) {
+          const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
+            : f.showIf.key === 'result' ? stage.result
+            : stage.inputs[f.showIf.key];
+          if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
+          else if (checkVal !== f.showIf.equals) return false;
+          if (f.showIf.and) {
+            for (const cond of f.showIf.and) {
+              const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
+              if (v !== cond.equals) return false;
+            }
           }
         }
-      }
-      // MIC fields only visible when traceability is required
-      if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
-        const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
-        const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-        return mcl1Traceable || mcl2Traceable;
-      }
-      // Override fields only visible when a matching WTN is selected on this stage
-      if (f.key.startsWith('override') && !this.WTN_OVERRIDE_WTNS.has(stage.inputs?.['wtn'] ?? '')) return false;
-      return true;
-    });
+        // MIC fields only visible when traceability is required
+        if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
+          const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
+          const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
+          return mcl1Traceable || mcl2Traceable;
+        }
+        // Override fields only visible when the selected GWP+WTN's WPS has override values set
+        if (f.key.startsWith('override')) {
+          const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
+          if (!proc || !procedureHasOverride(proc)) return false;
+        }
+        return true;
+      });
     return result;
+  }
+
+  /* GWP and WTN cascade from Weld Engineering's procedures data: GWP lists every distinct GWP,
+     WTN is filtered to whichever GWP is currently selected on this stage. */
+  private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
+    if (f.key === 'weldProcedure') return { ...f, options: gwpOptions() };
+    if (f.key === 'wtn') return { ...f, options: wtnOptionsForGwp(stage.inputs?.['weldProcedure'] ?? '') };
+    return f;
   }
 
   /* check if the current joint design requires consumable insert or backing ring */
@@ -646,25 +660,6 @@ export class JointPageComponent implements OnDestroy {
     const next = checked ? [...current, item] : current.filter(i => i !== item);
     this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
   }
-  /* WTN → Weld Process mapping */
-  private readonly WTN_PROCESS_MAP: Record<string, string> = {
-    '07:11.5-3': 'smaw', '07:12.0-1': 'gtaw', '08:14.2-2': 'gmaw', '09:10.8-4': 'fcaw'
-  };
-  /* WTN → PH/IP requirements mapping (NC = non-critical, no limit) */
-  private readonly WTN_PHIP_MAP: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string }> = {
-    '07:11.5-3': { phMin: '120', phMax: '180', ipMin: '90', ipMax: 'NC' },
-    '07:12.0-1': { phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140' },
-    '08:14.2-2': { phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145' },
-    '09:10.8-4': { phMin: '125', phMax: '185', ipMin: '95', ipMax: '155' },
-  };
-  /* WTNs that show Override Requirements on weld stages */
-  private readonly WTN_OVERRIDE_WTNS = new Set(['07:11.5-3', '09:10.8-4']);
-  /* Override field values per WTN */
-  private readonly WTN_OVERRIDE_VALUES: Record<string, { phMin: string; phMax: string; ipMin: string; ipMax: string; note: string }> = {
-    '07:11.5-3': { phMin: '110', phMax: '170', ipMin: '85', ipMax: '140', note: 'Approved deviation per WPS-001' },
-    '09:10.8-4': { phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', note: 'Approved deviation per WPS-002' },
-  };
-
   /* select fields commit on change, clear maps to '' */
   stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
     const v = value ?? '';
@@ -674,21 +669,35 @@ export class JointPageComponent implements OnDestroy {
         const f = stage.fields.find(ff => ff.key === key);
         if (f) changes.push({ field: f, value: val });
       };
+      let matchedProc = false;
+      if (field.key === 'weldProcedure') {
+        /* GWP drives which WTNs are selectable; clear WTN and everything WTN used to drive */
+        setIfPresent('wtn', '');
+        setIfPresent('weldProcess', '');
+        setIfPresent('phMin', ''); setIfPresent('phMax', ''); setIfPresent('ipMin', ''); setIfPresent('ipMax', '');
+        setIfPresent('overridePhMin', ''); setIfPresent('overridePhMax', '');
+        setIfPresent('overrideIpMin', ''); setIfPresent('overrideIpMax', ''); setIfPresent('overrideNote', '');
+      }
       if (field.key === 'wtn') {
-        /* WTN drives Weld Process, the PH/IP requirements and the override values */
-        if (this.WTN_PROCESS_MAP[v]) setIfPresent('weldProcess', this.WTN_PROCESS_MAP[v]);
-        const phip = this.WTN_PHIP_MAP[v];
-        if (phip) for (const [k, val] of Object.entries(phip)) setIfPresent(k, val);
-        const ov = this.WTN_OVERRIDE_VALUES[v];
-        setIfPresent('overridePhMin', ov?.phMin ?? '');
-        setIfPresent('overridePhMax', ov?.phMax ?? '');
-        setIfPresent('overrideIpMin', ov?.ipMin ?? '');
-        setIfPresent('overrideIpMax', ov?.ipMax ?? '');
-        setIfPresent('overrideNote', ov?.note ?? '');
+        /* GWP+WTN identifies one Weld Engineering WPS document; it drives Weld Process,
+           the PH/IP requirements and the override values -- never typed directly */
+        const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', v);
+        matchedProc = !!proc;
+        setIfPresent('weldProcess', proc ? proc.weldProcess.toLowerCase() : '');
+        setIfPresent('phMin', proc?.phMin ?? '');
+        setIfPresent('phMax', proc?.phMax ?? '');
+        setIfPresent('ipMin', proc?.ipMin ?? '');
+        setIfPresent('ipMax', proc?.ipMax ?? '');
+        const hasOv = !!proc && procedureHasOverride(proc);
+        setIfPresent('overridePhMin', hasOv ? proc!.overridePhMin : '');
+        setIfPresent('overridePhMax', hasOv ? proc!.overridePhMax : '');
+        setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
+        setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
+        setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
       }
       this.wfService.setStageInputs(this.job, stage.id, changes);
       this.clearHidden(stage);
-      if (field.key === 'wtn' && this.WTN_PROCESS_MAP[v]) {
+      if (field.key === 'wtn' && matchedProc) {
         /* clear weld process error */
         const wpKey = `${stage.id}:weldProcess`;
         const prev = this.fieldErrors();

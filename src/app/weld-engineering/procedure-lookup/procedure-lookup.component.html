@@ -28,6 +28,7 @@
         <th appSortHeader class="min-w-16" [table]="table" field="wpsRev" label="WPS Rev"></th>
         <th appSortHeader class="min-w-24" [table]="table" field="effectiveDate" label="Effective Date"></th>
         <th appSortHeader class="min-w-16" [table]="table" field="gwp" label="GWP" filter="text"></th>
+        <th appSortHeader class="min-w-24" [table]="table" field="wtn" label="WTN" filter="text"></th>
         <th appSortHeader class="min-w-32" [table]="table" field="title" label="Title" filter="text"></th>
         <th appSortHeader class="min-w-20" [table]="table" field="status" label="Status"
             [filter]="'select'" [options]="statusOptions"></th>
@@ -36,7 +37,6 @@
         <th appSortHeader class="min-w-28" [table]="table" field="baseMetal1Type" label="Base Metal 1 Type"></th>
         <th appSortHeader class="min-w-28" [table]="table" field="baseMetal2Type" label="Base Metal 2 Type"></th>
         <th appSortHeader class="min-w-28" [table]="table" field="fillerMetalType" label="Filler Metal Type"></th>
-        <th appSortHeader class="min-w-28" [table]="table" field="wtnsText" label="WTNs" filter="text"></th>
       </tr>
     </thead>
     <tbody>
@@ -49,6 +49,7 @@
           <td>{{ row.wpsRev }}</td>
           <td>{{ row.effectiveDate | date:'mediumDate' }}</td>
           <td>{{ row.gwp }}</td>
+          <td>{{ row.wtn }}</td>
           <td>{{ row.title }}</td>
           <td class="capitalize">{{ row.status }}</td>
           <td>{{ row.weldProcess }}</td>
@@ -56,7 +57,6 @@
           <td>{{ row.baseMetal1Type }}</td>
           <td>{{ row.baseMetal2Type }}</td>
           <td>{{ row.fillerMetalType }}</td>
-          <td>{{ row.wtnsText }}</td>
         </tr>
       } @empty {
         <tr><td colspan="12" class="empty">No procedures found.</td></tr>

@@ -7,10 +7,7 @@
    10. Parameters, 11. Heat Treatment -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure } from '../data/procedures';
-
-const hasOverride = (p: Procedure): boolean =>
-  !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
+import { Procedure, hasOverride } from '../data/procedures';
 
 function limitsTable(rows: [string, string][]): Content {
   return {
@@ -72,7 +69,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },
     { text: `Status: ${p.status}    Weld Process: ${p.weldProcess}`, style: 'meta', margin: [0, 0, 0, 4] },
-    { text: `WPS Rev: ${p.wpsRev || '—'}    Effective Date: ${p.effectiveDate || '—'}    GWP: ${p.gwp || '—'}`, style: 'meta', margin: [0, 0, 0, 12] },
+    { text: `WPS Rev: ${p.wpsRev || '—'}    Effective Date: ${p.effectiveDate || '—'}    GWP: ${p.gwp || '—'}    WTN: ${p.wtn || '—'}`, style: 'meta', margin: [0, 0, 0, 12] },
 
     ...revisionRecord(p),
 
@@ -135,9 +132,6 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
       ['PWHT Temp', p.pwhtTemp], ['PWHT Time', p.pwhtTime],
     ]),
 
-    { text: 'Applicable WTNs', style: 'sectionHeader' },
-    { ul: p.wtns.length ? p.wtns : ['—'], margin: [0, 4, 0, 12] },
-
     { text: 'Rules', style: 'sectionHeader' },
     { ul: p.rules.length ? p.rules : ['—'], margin: [0, 4, 0, 12] },
 
@@ -154,7 +148,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     }),
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
-        { text: `${p.gwp || '—'} - ${p.wtns.join(', ') || '—'}, Rev ${p.wpsRev || '—'}`, alignment: 'left' },
+        { text: `${p.gwp || '—'} - ${p.wtn || '—'}, Rev ${p.wpsRev || '—'}`, alignment: 'left' },
         { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right' },
       ],
       style: 'pageFooter',

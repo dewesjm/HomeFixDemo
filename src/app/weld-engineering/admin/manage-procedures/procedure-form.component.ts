@@ -8,14 +8,14 @@ import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angula
 import { ToastService } from '../../../shared/toast.service';
 import { getWeldPositions } from '../../../data/workflow';
 import {
-  addProcedure, updateProcedure, getProcedure, PROCEDURE_STATUS_OPTIONS, WTN_POOL, WELD_PROCESSES,
+  addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
   PROCESS_TYPES, BASE_METAL_TYPES, FILLER_METAL_TYPES, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
 
 const EMPTY_FORM: Procedure = {
   id: '', title: '', status: 'draft',
-  wtns: [], weldProcess: '',
+  wtn: '', weldProcess: '',
   gwp: '', wpsRev: '', effectiveDate: '',
   processType: '',
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
@@ -52,7 +52,6 @@ export class ProcedureFormComponent implements OnInit {
   revisionNote = '';
 
   statusOptions = PROCEDURE_STATUS_OPTIONS;
-  wtnPool = WTN_POOL;
   weldProcesses = WELD_PROCESSES;
   processTypes = PROCESS_TYPES;
   baseMetalTypes = BASE_METAL_TYPES;
@@ -75,7 +74,7 @@ export class ProcedureFormComponent implements OnInit {
       const existing = getProcedure(id);
       if (existing) {
         this.form = {
-          ...existing, wtns: [...existing.wtns], rules: [...existing.rules], conditions: [...existing.conditions],
+          ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
           qualificationsRequired: [...existing.qualificationsRequired], revisionHistory: [...existing.revisionHistory]
         };
         this.wasActive = existing.status === 'active';
@@ -83,10 +82,6 @@ export class ProcedureFormComponent implements OnInit {
         this.router.navigate(['/weld-engineering/admin']);
       }
     }
-  }
-
-  toggleWtn(wtn: string, checked: boolean) {
-    this.form.wtns = checked ? [...this.form.wtns, wtn] : this.form.wtns.filter(w => w !== wtn);
   }
 
   addListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', value: string) {
@@ -105,6 +100,15 @@ export class ProcedureFormComponent implements OnInit {
   save() {
     if (!this.form.id.trim()) {
       this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Procedure ID is required' });
+      return;
+    }
+    if (!this.form.gwp.trim() || !this.form.wtn.trim()) {
+      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'GWP and WTN are required' });
+      return;
+    }
+    const gwpWtnClash = procedures().find(p => p.id !== this.form.id && p.gwp === this.form.gwp && p.wtn === this.form.wtn);
+    if (gwpWtnClash) {
+      this.toast.add({ severity: 'warn', summary: 'Duplicate GWP/WTN', detail: `${gwpWtnClash.id} already covers GWP ${this.form.gwp} / WTN ${this.form.wtn}` });
       return;
     }
     if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {

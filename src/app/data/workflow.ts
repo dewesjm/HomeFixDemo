@@ -300,13 +300,12 @@ const METAL_SIZE_OPTIONS = [
 
 /* ── Shared weld stage fields (Tack, Root, Final Weld) ── */
 const WELD_STAGE_FIELDS: StageField[] = [
-  { key: 'weldProcedure', label: 'GWP', type: 'select', required: true,
-    options: [{ label: 'W-101', value: 'w-101' }, { label: 'W-102', value: 'w-102' },
-      { label: 'W-103', value: 'w-103' }, { label: 'W-104', value: 'w-104' }] },
-  { key: 'wtn', label: 'WTN', type: 'select', required: true,
-    options: [{ label: '07:11.5-3', value: '07:11.5-3' }, { label: '07:12.0-1', value: '07:12.0-1' },
-      { label: '08:14.2-2', value: '08:14.2-2' }, { label: '09:10.8-4', value: '09:10.8-4' }] },
-  { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true,
+  /* GWP and WTN cascade from Weld Engineering's procedures data at render time (see
+     joint-page.component.ts withStageRuntimeOptions) -- a GWP groups several WPS documents, one
+     per WTN. weldProcess is then read-only, driven by the matching Procedure's own weldProcess. */
+  { key: 'weldProcedure', label: 'GWP', type: 'select', required: true },
+  { key: 'wtn', label: 'WTN', type: 'select', required: true },
+  { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true, disabled: true,
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
   { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },

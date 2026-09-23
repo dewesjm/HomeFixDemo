@@ -1,6 +1,7 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
 import { getShops } from './workflow';
+import { allWtns } from './procedures';
 
 export interface Assignment {
   id: string;
@@ -51,7 +52,6 @@ const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garc
 /* demo only: same option lists Weld Planning's welding stages use, standing in for what eWICC would send over */
 const FILLER_METAL_TYPES = ['E6010', 'E6013', 'E7018', 'ER70S-6', 'ER80S-D2', 'ENiCrMo-3'];
 const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];
-const WTNS = ['07:11.5-3', '07:12.0-1', '08:14.2-2', '09:10.8-4'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
@@ -163,7 +163,7 @@ function generateAssignments(): Assignment[] {
       details: primaryRole === 'Welding' ? [
         { label: 'Filler Metal Type', value: pick(FILLER_METAL_TYPES) },
         { label: 'Filler Metal Size', value: pick(FILLER_METAL_SIZES) },
-        { label: 'WTN', value: pick(WTNS) },
+        { label: 'WTN', value: pick(allWtns()) },
       ] : [],
     });
   }

@@ -43,12 +43,12 @@
         <thead>
           <tr>
             <th style="min-width: 3rem; text-align: center">#</th>
-            <th style="min-width: 6rem">Procedure</th>
+            <th style="min-width: 6rem">WPS</th>
             <th style="min-width: 10rem">Title</th>
             <th style="min-width: 6rem">Status</th>
-            <th style="min-width: 8rem">WTNs</th>
-            <th style="min-width: 6rem">Weld Process</th>
             <th style="min-width: 6rem">GWP</th>
+            <th style="min-width: 6rem">WTN</th>
+            <th style="min-width: 6rem">Weld Process</th>
             <th style="min-width: 5rem">WPS Rev</th>
             <th style="min-width: 8rem">Effective Date</th>
             <th style="min-width: 8rem">Process Type</th>
@@ -87,7 +87,8 @@
                   }
                 </select>
               </td>
-              <td><input class="input input-xs w-full" [(ngModel)]="row.wtns" placeholder="a; b" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.gwp" [class.input-error]="!row.gwp" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.wtn" [class.input-error]="!row.wtn" /></td>
               <td>
                 <select class="select select-xs w-full" [(ngModel)]="row.weldProcess">
                   <option value="">—</option>
@@ -96,7 +97,6 @@
                   }
                 </select>
               </td>
-              <td><input class="input input-xs w-full" [(ngModel)]="row.gwp" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.wpsRev" /></td>
               <td><input type="date" class="input input-xs w-full" [(ngModel)]="row.effectiveDate" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.processType" /></td>

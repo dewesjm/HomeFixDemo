@@ -34,8 +34,12 @@
       </select>
     </div>
     <div class="stage-field">
-      <label class="stage-field-label">GWP</label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. W-123" [(ngModel)]="form.gwp" />
+      <label class="stage-field-label">GWP<span class="req">*</span></label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. W-101" [(ngModel)]="form.gwp" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">WTN<span class="req">*</span></label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. 05.5-1" [(ngModel)]="form.wtn" />
     </div>
     <div class="stage-field">
       <label class="stage-field-label">WPS Rev</label>
@@ -162,17 +166,6 @@
       <label class="stage-field-label">Size Range</label>
       <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.fillerMetalSizeRange" />
     </div>
-  </div>
-
-  <h3 class="section-sub" style="margin-top: 1rem">Applicable WTNs</h3>
-  <div class="flex flex-wrap gap-3">
-    @for (wtn of wtnPool; track wtn) {
-      <label class="flex items-center gap-1.5 text-sm">
-        <input type="checkbox" class="checkbox checkbox-sm"
-               [checked]="form.wtns.includes(wtn)" (change)="toggleWtn(wtn, $any($event.target).checked)" />
-        {{ wtn }}
-      </label>
-    }
   </div>
 
   <!-- Welder Qualifications -->

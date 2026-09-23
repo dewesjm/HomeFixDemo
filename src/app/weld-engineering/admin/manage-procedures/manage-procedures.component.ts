@@ -1,5 +1,5 @@
 /* Weld Engineering Admin - Manage Procedures: list with Edit/Delete, create/edit form is procedure-form.component.ts. */
-import { Component, computed, effect } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -14,8 +14,6 @@ import {
   procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, PROCEDURE_CSV_COLUMNS, type Procedure
 } from '../../../data/procedures';
 
-type Row = Procedure & { wtnsText: string };
-
 @Component({
   selector: 'app-manage-procedures',
   standalone: true,
@@ -26,24 +24,22 @@ type Row = Procedure & { wtnsText: string };
   templateUrl: './manage-procedures.component.html'
 })
 export class ManageProceduresComponent {
-  table = new TableState<Row>(['id', 'title', 'wtnsText'], { status: inArray });
+  table = new TableState<Procedure>(['id', 'title', 'wtn', 'gwp'], { status: inArray });
   statusOptions = PROCEDURE_STATUS_OPTIONS;
 
-  private rows = computed<Row[]>(() => procedures().map(p => ({ ...p, wtnsText: p.wtns.join(', ') })));
-
   constructor(private router: Router, private confirm: ConfirmService, private toast: ToastService) {
-    effect(() => this.table.setRows(this.rows()));
+    effect(() => this.table.setRows(procedures()));
   }
 
   addNew() {
     this.router.navigate(['/weld-engineering/admin/new']);
   }
 
-  edit(row: Row) {
+  edit(row: Procedure) {
     this.router.navigate(['/weld-engineering/admin', row.id, 'edit']);
   }
 
-  deleteRow(row: Row) {
+  deleteRow(row: Procedure) {
     this.confirm.confirm({
       header: 'Delete Procedure',
       message: `Delete ${row.id}?`,

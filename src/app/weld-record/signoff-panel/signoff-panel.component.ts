@@ -70,7 +70,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
-  { title: 'PH/IP', sections: [
+  { title: 'Preheat/Interpass', sections: [
     { title: 'Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
     { title: 'Actuals', rows: [{ keys: ['actualPh', 'actualIp'], width: 120, spacerBefore: 'actualIp' }] },
     { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
