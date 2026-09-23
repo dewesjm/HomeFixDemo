@@ -21,8 +21,9 @@ export const WTN_POOL = ['07:11.5-3', '07:12.0-1', '08:14.2-2', '09:10.8-4'];
 export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
 export const PROCESS_TYPES = ['Manual', 'Semi-Automatic', 'Machine', 'Automatic'];
 export const BASE_METAL_TYPES = ['Carbon Steel', 'Low Alloy Steel', 'Stainless Steel', 'Duplex Stainless', 'Nickel Alloy', 'Aluminum'];
-/* same filler metal choices as Weld Record's stage fields (workflow.ts METAL_TYPE_OPTIONS) */
-export const FILLER_METAL_TYPES = ['E6010', 'E6013', 'E7018', 'ER70S-6', 'ER80S-D2', 'ENiCrMo-3'];
+/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- distinct from Weld Record's AWS-style
+   stage field choices (workflow.ts METAL_TYPE_OPTIONS) */
+export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 export const JOINT_TYPES = ['Groove', 'Fillet', 'Plug', 'Edge'];
 export const BACKING_OPTIONS = ['None', 'Backing Strip', 'Consumable Insert', 'Gas Backing'];
 export const WELD_PROGRESSIONS = ['N/A', 'Uphill', 'Downhill'];
