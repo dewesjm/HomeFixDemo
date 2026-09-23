@@ -8,6 +8,7 @@ export interface Job {
   xrefid: string;       /* XREFID as captured from the source system; blank ~25% of the time, same
                            imperfect-data pattern as My Assignments and Weld Planning. When blank,
                            serialNumber is blank too, since neither was captured for that record. */
+  ship: string;         /* 3-digit ship number, e.g. '692'; stable per hull, same idea as hull below */
   hull: string;        /* letter + 4 digits, e.g. K7234; not unique, many jobs share a hull */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
@@ -128,6 +129,12 @@ function makeHull(seed: number): string {
   return letter + digits;
 }
 
+/* stable 3-digit ship number, e.g. '692' -- one per hull, same jobs that share a hull share a ship */
+function makeShip(seed: number): string {
+  const rand = seeded(seed * 71 + 29);
+  return String(100 + Math.floor(rand() * 900));
+}
+
 /* Hulls repeat across many jobs. A job is identified by its internal id (always populated, never
    shown) or by the unique combination of hull + drawing + joint, which generateJobs guarantees
    are both unique; the user-facing xrefid is a display-only copy of id that can be blank. */
@@ -137,6 +144,7 @@ export function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
   const hulls = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
+  const shipByHull = new Map(hulls.map((h, k) => [h, makeShip(k + 1)]));
   const usedIdentity = new Set<string>();
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
@@ -166,6 +174,7 @@ export function generateJobs(count = 480): Job[] {
     out.push({
       id,
       xrefid: xrefidBlank ? '' : id,
+      ship: shipByHull.get(hull)!,
       hull,
       trade,
       technician,
@@ -232,6 +241,7 @@ export function addTestJob(trade: string): Job {
   const job: Job = {
     id,
     xrefid: id,
+    ship: makeShip(numId),
     hull: makeHull(numId),
     trade,
     technician: TECHNICIAN_NAMES[numId % TECHNICIAN_NAMES.length],
