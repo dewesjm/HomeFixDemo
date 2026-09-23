@@ -17,8 +17,12 @@ import { characteristicLabel } from '../../data/characteristics';
 
 import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
 import { RoutingService } from '../services/routing.service';
+import { SignoffService } from '../services/signoff.service';
+import { AttachmentService } from '../services/attachment.service';
+import { FabricationDataService } from '../services/fabrication-data.service';
+import { WorkflowStore } from '../services/workflow-store.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
@@ -39,11 +43,15 @@ const FIT_REQUIRED_FABRICATION: Record<string, string> = {
 export class JointPageComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
+  private signoffService = inject(SignoffService);
+  private attachmentService = inject(AttachmentService);
+  private fabricationService = inject(FabricationDataService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
-  wf = this.job ? this.wfService.workflowFor(this.job) : null;
+  wf = this.job ? this.store.workflowFor(this.job) : null;
 
   /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
      fields, routing type choice) can be discarded when the user leaves without signing */
@@ -100,10 +108,6 @@ export class JointPageComponent implements OnDestroy {
     });
   }
 
-  /* new-component form model */
-  newName = signal('');
-  newPart = signal('');
-  newQty = signal(1);
 
   /* routing model: only show stages that are signed, required, or the current active stage */
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
@@ -398,7 +402,7 @@ export class JointPageComponent implements OnDestroy {
       const newSignoff = value === 'weld-buildup'
         ? []
         : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
-      this.wfService.updateStageSignoff(this.job!, stage.id, {
+      this.signoffService.updateStageSignoff(this.job!, stage.id, {
         routingType: value,
         fields: newFields,
         signoffInputs: {},
@@ -406,7 +410,7 @@ export class JointPageComponent implements OnDestroy {
       }, { action: `${stage.label} — Type changed to ${value}` });
       return;
     }
-    this.wfService.updateStageSignoff(this.job!, stage.id, {
+    this.signoffService.updateStageSignoff(this.job!, stage.id, {
       routingType: value,
     }, { action: `${stage.label} — Type changed to ${value}` });
   }
@@ -614,7 +618,7 @@ export class JointPageComponent implements OnDestroy {
     if (!ndt5xId) return;
     const ndtStage = this.wf().stages.find(s => s.id === ndt5xId);
     if (!ndtStage || ndtStage.signed) return;
-    this.wfService.signStage(this.job, ndt5xId, this.signoffSnapshot(ndtStage));
+    this.signoffService.signStage(this.job, ndt5xId, this.signoffSnapshot(ndtStage));
   }
 
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
@@ -711,7 +715,7 @@ export class JointPageComponent implements OnDestroy {
   setStageResult(stage: WorkflowStage, result: StageResult) {
     if (!this.job || result === stage.result) return;
     const old = stage.result;
-    this.wfService.updateStageSignoff(this.job, stage.id, { result },
+    this.signoffService.updateStageSignoff(this.job, stage.id, { result },
       { action: `${stage.label} — Decision`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
   }
 
@@ -720,7 +724,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job) return;
     const prev = stage.signoffInputs[field.key] ?? '';
     if (value === prev) return;
-    this.wfService.updateStageSignoff(this.job, stage.id,
+    this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(value) });
   }
@@ -731,7 +735,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job) return;
     const prev = stage.signoffInputs[field.key] ?? '';
     if (v === prev) return;
-    this.wfService.updateStageSignoff(this.job, stage.id,
+    this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
   }
@@ -742,7 +746,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job) return;
     const prev = stage.signoffInputs[field.key] ?? '';
     if (v === prev) return;
-    this.wfService.updateStageSignoff(this.job, stage.id,
+    this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
       { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
   }
@@ -877,7 +881,7 @@ export class JointPageComponent implements OnDestroy {
         rejectLabel: 'Cancel',
         password: true,
         accept: () => {
-          this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
+          this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
           this.signRelated5xIfNeeded(stage);
           this.router.navigate([this.backDestination()]);
         }
@@ -894,7 +898,7 @@ export class JointPageComponent implements OnDestroy {
       rejectLabel: 'Cancel',
       password: true,
       accept: () => {
-        this.wfService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
+        this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
         this.signRelated5xIfNeeded(stage);
         this.router.navigate([this.backDestination()]);
       }
@@ -902,7 +906,7 @@ export class JointPageComponent implements OnDestroy {
   }
   reopenStage(stage: WorkflowStage) {
     if (!this.job) return;
-    this.wfService.reopenStage(this.job, stage.id);
+    this.signoffService.reopenStage(this.job, stage.id);
     const idx = this.wf!().stages.findIndex(s => s.id === stage.id);
     if (idx >= 0) this.selectedRouting.set(idx);
   }
@@ -910,30 +914,10 @@ export class JointPageComponent implements OnDestroy {
   // ---- attachments ----
   addAttachments(files: FileList) {
     if (!this.job) return;
-    for (const f of Array.from(files)) this.wfService.addAttachment(this.job, f.name);
+    for (const f of Array.from(files)) this.attachmentService.addAttachment(this.job, f.name);
   }
   removeAttachment(id: string) {
-    if (this.job) this.wfService.removeAttachment(this.job, id);
-  }
-
-  // ---- cross-stage work validation ----
-  addComponent() {
-    const name = this.newName().trim();
-    if (!name || !this.job) return;
-    this.wfService.addComponent(this.job, name, this.newPart().trim(), this.newQty() || 1);
-    this.newName.set('');
-    this.newPart.set('');
-    this.newQty.set(1);
-  }
-  removeComponent(id: string) {
-    if (this.job) this.wfService.removeComponent(this.job, id);
-  }
-  blurValidationNotes(value: string) {
-    const old = this.wf!().validationNotes;
-    if (this.job && value !== old) this.wfService.setValidationNotes(this.job, value);
-  }
-  setWorkType(workType: WorkType | null) {
-    if (this.job && workType !== this.wf!().workType) this.wfService.setWorkType(this.job, workType);
+    if (this.job) this.attachmentService.removeAttachment(this.job, id);
   }
 
   /* code description, shown on hover */
@@ -942,13 +926,13 @@ export class JointPageComponent implements OnDestroy {
   /* fabrication data input handlers */
   fabInputBlur(key: string, value: string) {
     if (this.job && this.wf && value !== (this.wf().fabricationData[key] ?? '')) {
-      this.wfService.setFabricationData(this.job, key, value);
+      this.fabricationService.setFabricationData(this.job, key, value);
     }
   }
   fabSelectChange(key: string, value: string | null) {
     const v = value ?? '';
     if (this.job && this.wf && v !== (this.wf().fabricationData[key] ?? '')) {
-      this.wfService.setFabricationData(this.job, key, v);
+      this.fabricationService.setFabricationData(this.job, key, v);
     }
   }
 

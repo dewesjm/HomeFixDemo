@@ -16,7 +16,8 @@ import { downloadCsv } from '../../data/export-csv';
 import {
   JOBS, Job
 } from '../../data/jobs';
-import { RoutingService } from '../services/routing.service';
+import { SignoffService } from '../services/signoff.service';
+import { WorkflowStore } from '../services/workflow-store.service';
 import { currentRoutingLabel, ROLES, DEFAULT_ROLE, type Role } from '../../data/workflow';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
@@ -34,7 +35,7 @@ type Row = Job & { currentRouting: string };
   templateUrl: './pipe-search.component.html'
 })
 export class PipeSearchComponent {
-  constructor(private router: Router, private wfService: RoutingService) {
+  constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
     // Restore saved state
     const saved = this.loadState();
     if (saved['globalFilter']) this.table['globalFilter'].set(saved['globalFilter']);
@@ -123,7 +124,7 @@ export class PipeSearchComponent {
     const ids = this.selectedIds();
     for (const job of this.table.paged()) {
       if (ids.has(job.id)) {
-        this.wfService.releaseFitUp(job);
+        this.signoffService.releaseFitUp(job);
       }
     }
     this.selectedIds.set(new Set());
@@ -139,7 +140,7 @@ export class PipeSearchComponent {
     } else {
       // Filter jobs where the current unsignoff'd routing has matching role
       rows = JOBS.filter(j => {
-        const wf = this.wfService.workflowFor(j)();
+        const wf = this.store.workflowFor(j)();
         const current = wf.stages.find(s => s.required && !s.signed);   /* same "current routing" as the routing label */
         const stageRoles = (current?.role ?? '').split('|');
         return stageRoles.includes(role);
@@ -156,7 +157,7 @@ export class PipeSearchComponent {
 
   //The current routing
   currentRouting(job: Job): string {
-    return currentRoutingLabel(this.wfService.workflowFor(job)().stages);
+    return currentRoutingLabel(this.store.workflowFor(job)().stages);
   }
 
 //nav to details

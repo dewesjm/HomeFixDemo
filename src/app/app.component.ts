@@ -118,7 +118,7 @@ export class AppComponent {
   }
 
   /* activate the waiting worker and reload. Saved data is left alone: outdated caches are cleared on the
-     next load only when CURRENT_VERSION changed (see RoutingService), not on every deploy. */
+     next load only when CURRENT_VERSION changed (see WorkflowStore), not on every deploy. */
   reloadForUpdate() {
     this.swUpdate.activateUpdate().catch(() => false).then(() => document.location.reload());
   }

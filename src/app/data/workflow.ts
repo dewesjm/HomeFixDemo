@@ -81,27 +81,12 @@ export interface WorkflowStage {
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
 }
 
-export interface InstalledComponent {
-  id: string;
-  name: string;
-  partNumber: string;
-  quantity: number;
-}
-
 export interface Attachment {
   id: string;
   name: string;           /* filename, files not actually uploaded here */
   addedBy: string;
   addedAt: string;        /* ISO string */
 }
-
-/* build vs install phase */
-export type WorkType = 'build' | 'install';
-
-export const WORK_TYPE_OPTIONS: { label: string; value: WorkType }[] = [
-  { label: 'Build', value: 'build' },
-  { label: 'Install', value: 'install' }
-];
 
 /* one editable field as it stood at sign-off; an empty value means it was left blank */
 export interface SignoffInput { label: string; value: string }
@@ -111,7 +96,7 @@ export interface HistoryEntry {
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Work Validation' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release';
+  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -124,10 +109,7 @@ export interface JobWorkflow {
   jobId: string;
   technician: string;
   stages: WorkflowStage[];
-  components: InstalledComponent[];
   attachments: Attachment[];
-  validationNotes: string;   /* free-text for Work Validation section */
-  workType: WorkType | null; /* build vs install, set on Work Validation */
   conditionCode: string;     /* see conditions.ts, '' if none */
   conditionCount: number;    /* pairs with conditionCode */
   history: HistoryEntry[];
@@ -381,6 +363,16 @@ function displayValue(f: { type: string; options?: { label: string; value: strin
   const opt = f.options?.find(o => o.value === v);
   if (opt) return opt.label;
   return f.unit ? `${v} ${f.unit}` : v;
+}
+
+/* value as shown in the history Old/New columns; em dash when empty */
+export const show = (v: string | null | undefined) => (v && v.length ? v : '—');
+
+/* display label for a raw stage input key, falling back to the key itself if undefined */
+export function labelFor(stage: WorkflowStage, key: string): string {
+  return stage.fields.find(f => f.key === key)?.label
+    ?? stage.signoffFields.find(f => f.key === key)?.label
+    ?? key;
 }
 
 /* Fields whose showIf is met; a simple stand-in for the job page's visibleFields, used only for seeded and mock data. */
@@ -983,10 +975,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     jobId: job.id,
     technician: job.technician,
     stages: buildStages(job),
-    components: [],
     attachments: [],
-    validationNotes: '',
-    workType: null,
     conditionCode: '',
     conditionCount: 0,
     history: [],

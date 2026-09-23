@@ -229,25 +229,11 @@ html, body {
   .stage-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 }
 
-// Per-routing input groups, shown in the Work validation section.
-.validation-stages { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
-.validation-stage {
-  border: 1px solid var(--app-border);
-  border-radius: 8px;
-  padding: 0.6rem 0.7rem;
-  background: var(--app-surface);
-}
-.validation-stage-label { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.5rem; }
 .stage-inputs { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .stage-field { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 160px; }
 .stage-field-break { flex-basis: 100%; height: 0; }   /* forces a wrap so a trigger field starts a fresh row */
 .stage-field-label { color: var(--app-text-muted); }
 .stage-field input { width: 100%; }
-.stage--done    { border-color: var(--color-success); background: color-mix(in oklab, var(--color-success) 12%, var(--app-surface)); i, svg { color: var(--color-success); } }
-.stage--fail    { border-color: var(--color-error);   background: color-mix(in oklab, var(--color-error) 12%, var(--app-surface));   i, svg { color: var(--color-error); } }
-.stage--current { border-color: var(--color-warning); background: color-mix(in oklab, var(--color-warning) 14%, var(--app-surface)); box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-warning) 40%, transparent); i, svg { color: var(--color-warning); } }
-.stage--locked  { opacity: 0.9; i, svg { color: var(--app-text-muted); } }
-.stage--skip    { opacity: 0.5; background: var(--app-muted); i, svg { color: color-mix(in oklch, var(--color-base-content) 45%, transparent); } }
 
 /* Routing horizontal scroll */
 .routing-scroll { display: flex; gap: 0; overflow-x: auto; padding: 0.3rem 0 0.25rem 0; }

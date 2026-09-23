@@ -12,6 +12,7 @@ import { ConfirmService } from '../../shared/confirm.service';
 
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
+import { WorkflowStore } from '../services/workflow-store.service';
 import { HistoryEntry, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
@@ -41,6 +42,7 @@ interface ActivityRow extends HistoryEntry {
   templateUrl: './work-history.component.html'
 })
 export class WorkHistoryComponent {
+  private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -177,7 +179,7 @@ export class WorkHistoryComponent {
         inputsText: [...(e.inputs ?? []), ...(e.fabInputs ?? [])].map(i => `${i.label} ${i.value}`).join(' '),
       });
     };
-    for (const wf of this.wfService.allWorkflows()) {
+    for (const wf of this.store.allWorkflows()) {
       if (wf.history.length) realJobIds.add(wf.jobId);
       for (const e of wf.history) add(e, wf.jobId);
     }
@@ -203,7 +205,7 @@ export class WorkHistoryComponent {
      job's live workflow is loaded the entry must also be its last signed stage, since that is what deprogress reverses. */
   private deprogressable = computed<ReadonlySet<string>>(() => {
     const lastSignedLabel = new Map<string, string | undefined>();
-    for (const wf of this.wfService.allWorkflows()) {
+    for (const wf of this.store.allWorkflows()) {
       lastSignedLabel.set(wf.jobId, wf.stages.filter(s => s.signed).pop()?.label);
     }
     const byJob = new Map<string, ActivityRow[]>();

@@ -9,6 +9,7 @@ import { ConfirmService } from '../../../shared/confirm.service';
 
 import { JOBS, Job } from '../../../data/jobs';
 import { RoutingService } from '../../services/routing.service';
+import { WorkflowStore } from '../../services/workflow-store.service';
 import { currentRoutingLabel } from '../../../data/workflow';
 
 @Component({
@@ -18,6 +19,7 @@ import { currentRoutingLabel } from '../../../data/workflow';
   templateUrl: './admin-set-routing.component.html'
 })
 export class AdminSetRoutingComponent {
+  private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private confirm = inject(ConfirmService);
 
@@ -30,7 +32,7 @@ export class AdminSetRoutingComponent {
   /* reactive read of the selected job's workflow */
   private workflow = computed(() => {
     const job = this.selectedJob();
-    return job ? this.wfService.workflowFor(job)() : null;
+    return job ? this.store.workflowFor(job)() : null;
   });
 
   routingOptions = computed(() => {
