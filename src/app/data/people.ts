@@ -1,4 +1,4 @@
-/* Mock people directory. In the real system this is a live lookup (HR/SAP), not a list in the bundle. */
+/* Mock people directory. In the real system this is a live lookup against an external system, not a list in the bundle. */
 export interface Person {
   id: string;      /* employee identifier, unused by the UI for now */
   first: string;
