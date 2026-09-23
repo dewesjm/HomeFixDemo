@@ -376,10 +376,10 @@
 
     @if (st.required) {
       <div class="signoff-fields">
-        <!-- Fit stage (not weld build-up): consumable insert row + backing ring row. Weld build-up
-             renders none of Fit's own signoff fields here -- its Comments comes from WELD_GROUPS
-             (stage fields, above) and it has no Defer Tack/Consumable Insert/Backing Ring concept. -->
-        @if (st.id === 'fit' && !isFitBuildup(st)) {
+        <!-- Fit/Pre-Fit (not weld build-up): consumable insert row + backing ring row, same rules for
+             both. Weld build-up renders none of Fit's own signoff fields here -- its Comments comes
+             from WELD_GROUPS (stage fields, above) and it has no Defer Tack/Insert/Backing Ring concept. -->
+        @if ((st.id === 'fit' || st.id === 'pre-fit') && !isFitBuildup(st)) {
           @if (ctx().jointDesignRequiresInsert()) {
             <div class="signoff-fit-row">
               @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
@@ -427,7 +427,7 @@
             </div>
           }
         } @else if (!isFitBuildup(st)) {
-          <!-- Default: one per row (every stage except Fit and Fit weld build-up) -->
+          <!-- Default: one per row (every stage except Fit, Pre-Fit, and Fit weld build-up) -->
           @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
             @if (f.key !== '_spacer' && !f.fullWidth) {
               <div class="signoff-field-row">

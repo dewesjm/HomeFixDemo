@@ -382,10 +382,10 @@ export class JointPageComponent implements OnDestroy {
     }
     const missingSignoff = stage.signoffFields
       .filter(f => {
-        // Fit stage: Consumable Insert/Backing Ring fields are required only while that group
+        // Fit/Pre-Fit: Consumable Insert/Backing Ring fields are required only while that group
         // applies (per the joint design); their MIC is required only when that group applies AND
         // either joint member's MCL requires traceability (see SignoffPanelComponent.micSignoffRequired)
-        if (stage.id === 'fit') {
+        if (stage.id === 'fit' || stage.id === 'pre-fit') {
           const insertApplies = this.jointDesignRequiresInsert();
           const backingApplies = this.jointDesignRequiresBackingRing();
           const micApplies = this.job
@@ -826,8 +826,8 @@ export class JointPageComponent implements OnDestroy {
   visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
     return stage.signoffFields.filter(f => {
       if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return false;
-      // For fit stage, hide consumable insert and backing ring fields when not required
-      if (stage.id === 'fit') {
+      // For fit/pre-fit, hide consumable insert and backing ring fields when not required
+      if (stage.id === 'fit' || stage.id === 'pre-fit') {
         const isConsumableInsert = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'].includes(f.key);
         const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
         if (isConsumableInsert && !this.jointDesignRequiresInsert()) return false;

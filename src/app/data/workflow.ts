@@ -546,18 +546,23 @@ export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[]
 
 const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
   Welding: [
-    { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [
-      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select',
+    /* Same Consumable Insert/Backing Ring rules as Fit (joint-design-gated visibility, MIC required
+       only when traceability also applies -- see SignoffPanelComponent.micSignoffRequired()), minus
+       Defer Tack -- there's no Tack yet to defer at Pre-Fit. As signoffFields (not fields) so it
+       renders through the same signoff-fit-row layout as Fit, gated by joint-page's
+       jointDesignRequiresInsert()/jointDesignRequiresBackingRing() (see signBlockers). */
+    { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: [
+      { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,
         options: METAL_TYPE_OPTIONS },
-      { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select',
+      { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', required: true,
         options: METAL_SIZE_OPTIONS },
-      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text' },
-      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select',
+      { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: false },
+      { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
         options: [{ label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
           { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' }] },
-      { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text' },
-      { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
-    ], signoffFields: [] },
+      { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', required: false },
+      { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true },
+    ] },
     { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
       { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,
         options: METAL_TYPE_OPTIONS },
