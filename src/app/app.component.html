@@ -5,7 +5,45 @@
   <nav class="topnav">
     <div class="topnav-left">
       <span class="topnav-brand">{{ activeSystem() }}</span>
+      <button type="button" class="flat-nav-toggle" (click)="toggleFlatWeldRecordNav()"
+              [title]="flatWeldRecordNav() ? 'Show all systems' : 'Flatten Weld Record into the top bar'">
+        @if (flatWeldRecordNav()) {
+          <svg lucideListTree class="size-4"></svg>
+        } @else {
+          <svg lucideList class="size-4"></svg>
+        }
+      </button>
       <ul class="topnav-menu">
+        @if (flatWeldRecordNav()) {
+          <!-- Weld Record's items flattened into the top bar; Admin stays a dropdown -->
+          <li><a routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> My Assignments</span></a></li>
+          <li><a routerLink="/pipe-search" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
+          <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural Welding</span></a></li>
+          <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
+          <li><a routerLink="/adaptive" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
+          <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
+          <li class="dropdown-wrapper">
+            <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
+              <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
+              <ul class="dropdown-menu">
+                <li><a routerLink="/admin/routing" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
+                <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
+                <li><a routerLink="/admin/set-routing" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Routing</a></li>
+                <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
+                <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
+                <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+                <li><a routerLink="/admin/routing-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Options</a></li>
+                <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
+                <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
+                <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
+                <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
+                <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
+                <li><a routerLink="/admin/material-classification" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Material Classification</a></li>
+                <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
+              </ul>
+            </details>
+          </li>
+        } @else {
         <!-- Weld Engineering group dropdown -->
         <li class="dropdown-wrapper">
           <details #weDetails (toggle)="onWeToggle($event)">
@@ -108,6 +146,7 @@
             </ul>
           </details>
         </li>
+        }
       </ul>
     </div>
     <div class="topnav-right">

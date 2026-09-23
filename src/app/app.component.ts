@@ -12,7 +12,8 @@ import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
-    LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog
+    LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog,
+    LucideList, LucideListTree
 } from '@lucide/angular';
 import { getQuickLinks, QuickLink } from './data/quick-links';
 
@@ -28,7 +29,8 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
-  LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog
+  LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog,
+  LucideList, LucideListTree
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -46,6 +48,7 @@ export class AppComponent {
   @ViewChild('waDetails') waDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('weDetails') weDetails?: ElementRef<HTMLDetailsElement>;
   @ViewChild('qlDetails') qlDetails?: ElementRef<HTMLDetailsElement>;
+  @ViewChild('flatAdminDetails') flatAdminDetails?: ElementRef<HTMLDetailsElement>;
 
   /* demo only: admin-configurable shortcut links, shown in the top nav */
   quickLinks = signal<QuickLink[]>(getQuickLinks());
@@ -54,9 +57,15 @@ export class AppComponent {
 
   activeSystem = signal('Weld Record');
 
+  /* demo only: pulls Weld Record's own items up into the top-level horizontal bar (in place of the
+     4 system dropdowns), Admin still as its own dropdown -- for a Weld Record-focused demo where
+     clicking into the "Weld Record" dropdown every time is one click too many. */
+  flatWeldRecordNav = signal(false);
+  toggleFlatWeldRecordNav() { this.flatWeldRecordNav.update(v => !v); }
+
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
-    [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails, this.qlDetails].forEach(ref => {
+    [this.pipeWeldingDetails, this.wpDetails, this.waDetails, this.weDetails, this.qlDetails, this.flatAdminDetails].forEach(ref => {
       if (ref && ref !== except) {
         ref.nativeElement.open = false;
         /* also collapse nested Admin submenus so they are closed next time */
@@ -71,6 +80,7 @@ export class AppComponent {
   onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
   onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
   onQlToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.qlDetails)); }
+  onFlatAdminToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.flatAdminDetails)); }
 
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
