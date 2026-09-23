@@ -453,7 +453,7 @@ export class JointPageComponent implements OnDestroy {
     if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
       const templates = job ? (getTemplates()[job.trade] ?? []) : [];
       const tackTpl = templates.find(t => t.id === 'tack');
-      const base = tackTpl ? tackTpl.fields.map(f => ({ ...f })) : [];
+      const base = tackTpl ? tackTpl.fields.map(f => this.withStageRuntimeOptions({ ...f }, stage)) : [];
       return [...base, { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }];
     }
     const result = stage.fields
