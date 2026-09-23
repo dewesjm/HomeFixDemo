@@ -96,20 +96,20 @@
         <!-- Fit-Up Insp: verification grid against fabrication data -->
         <div class="stage-inputs">
           <div class="font-semibold text-sm mb-2">Verify fitting values</div>
-          <table class="table table-sm">
+          <table class="table table-sm w-auto">
             <thead>
               <tr>
-                <th>Field</th>
-                <th>Fabrication Value</th>
-                <th class="w-20">Verified</th>
+                <th class="py-1.5">Field</th>
+                <th class="py-1.5">Fabrication Value</th>
+                <th class="py-1.5 w-16 text-center bg-base-200">Verified</th>
               </tr>
             </thead>
             <tbody>
               @for (f of ctx().visibleFields(stage()); track f.key) {
                 <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
-                  <td [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
-                  <td>{{ ctx().getFabValue(f.key) || '—' }}</td>
-                  <td>
+                  <td class="py-1" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
+                  <td class="py-1">{{ ctx().getFabValue(f.key) || '—' }}</td>
+                  <td class="py-1 text-center bg-base-200/40">
                     <input type="checkbox" class="checkbox checkbox-sm"
                            [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
                            [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
@@ -126,21 +126,21 @@
         <div class="stage-inputs flex flex-col gap-4">
           <div>
             <div class="font-semibold text-sm mb-2">Verify record fields</div>
-            <table class="table table-sm">
+            <table class="table table-sm w-auto">
               <thead>
                 <tr>
-                  <th>Field</th>
-                  <th>Record Value</th>
-                  <th class="w-20">Verified</th>
+                  <th class="py-1.5">Field</th>
+                  <th class="py-1.5">Record Value</th>
+                  <th class="py-1.5 w-16 text-center bg-base-200">Verified</th>
                 </tr>
               </thead>
               <tbody>
                 @for (f of ctx().visibleFields(stage()); track f.key) {
                   @if (f.key !== 'comments') {
                   <tr>
-                    <td>{{ f.label }}</td>
-                    <td>{{ ctx().getReviewValue(f.key) || '—' }}</td>
-                    <td>
+                    <td class="py-1">{{ f.label }}</td>
+                    <td class="py-1">{{ ctx().getReviewValue(f.key) || '—' }}</td>
+                    <td class="py-1 text-center bg-base-200/40">
                       <input type="checkbox" class="checkbox checkbox-sm"
                              [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                              [checked]="st.inputs[f.key] === 'yes'"

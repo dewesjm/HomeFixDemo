@@ -102,10 +102,12 @@ function generateAssignments(): Assignment[] {
     'O63 Records': ['O63 Review'],
     'O04 Records': ['O04 Review'],
   };
-  const PER_ROLE = 7;   // within the user's 5-10 ask
+  /* each role gets its own random count in [5, 10] (not a flat number) -- deterministic since rand()
+     is seeded, so the mix varies role to role the way real assignment volume would */
   const ROUTING_SEQUENCE: { role: string; routing: string }[] = [];
   for (const [role, routings] of Object.entries(ROLE_ROUTINGS)) {
-    for (let j = 0; j < PER_ROLE; j++) {
+    const count = 5 + Math.floor(rand() * 6);   // 5-10 inclusive
+    for (let j = 0; j < count; j++) {
       ROUTING_SEQUENCE.push({ role, routing: routings[j % routings.length] });
     }
   }
