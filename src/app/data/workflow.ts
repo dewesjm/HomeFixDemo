@@ -442,7 +442,7 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
       /* must equal the job's required degree (rtRoot/rtFinal) before this stage can be signed off
          -- see JointPageComponent.signBlockers() -- so it's a droplist (blank or the value), not a
          fixed radio choice */
-      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', showIf: { key: 'inspectionType', equals: 'rt' },
+      { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', required: true, showIf: { key: 'inspectionType', equals: 'rt' },
         options: RT_DEGREE_OPTIONS },
       { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'inspectionType', equals: 'rt' } },
       { key: 'defectCode', label: 'Defect Code', type: 'select', required: true,
