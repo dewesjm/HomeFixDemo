@@ -714,13 +714,27 @@ export class JointPageComponent implements OnDestroy {
   startsGroup(stage: WorkflowStage, field: StageField): boolean {
     return stage.fields.some(f => f.showIf?.key === field.key);
   }
-  /* blank any dependent field whose trigger no longer matches, so hidden fields don't keep stale values */
+  /* blank any dependent field whose trigger no longer matches, so hidden fields don't keep stale
+     values -- showIf resolution must match visibleFields()'s exactly (inspectionType/result live
+     on the stage itself, not stage.inputs). Bug fixed 2026-09-23: this always read stage.inputs
+     for every key including 'inspectionType', which is never actually stored there (it's
+     stage.inspectionType) -- so it read undefined, treated any inspectionType-gated field
+     (degreeRt, rtFileNumber, defectCode, penetrantManufacturer/Type, weldColor, idAccessible) as
+     always hidden, and immediately blanked it back out the moment it was set. */
   private clearHidden(stage: WorkflowStage) {
     if (!this.job) return;
     for (const f of stage.fields) {
       if (f.showIf) {
-        const checkVal = stage.inputs[f.showIf.key];
-        const visible = f.showIf.anyOf ? f.showIf.anyOf.includes(checkVal ?? '') : checkVal === f.showIf.equals;
+        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
+          : f.showIf.key === 'result' ? stage.result
+          : stage.inputs[f.showIf.key];
+        let visible = f.showIf.anyOf ? f.showIf.anyOf.includes(checkVal ?? '') : checkVal === f.showIf.equals;
+        if (visible && f.showIf.and) {
+          for (const cond of f.showIf.and) {
+            const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
+            if (v !== cond.equals) { visible = false; break; }
+          }
+        }
         if (!visible && stage.inputs[f.key]) this.wfService.setStageInput(this.job, stage.id, f, '');
       }
     }
