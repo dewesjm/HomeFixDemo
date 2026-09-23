@@ -7,7 +7,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch } from '@lucide/angular';
+import { LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft } from '@lucide/angular';
 import { ToastService } from '../../shared/toast.service';
 import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
 import {
@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-makeup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch],
+  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft],
   templateUrl: './makeup.component.html'
 })
 export class MakeupComponent {
@@ -26,8 +26,8 @@ export class MakeupComponent {
   readonly annualDays = ANNUAL_MAKEUP_DAYS;
 
   grants = makeupGrants;
-  year = new Date().getFullYear();
   fullName = fullName;
+  today = new Date().toISOString().slice(0, 10);
 
   /* search/filter: matches person name/title/id; active grants sort first (not hidden -- inactive
      ones stay reachable by search), then by start date, most recent first */
@@ -97,6 +97,10 @@ export class MakeupComponent {
       this.messages.add({ severity: 'warn', summary: 'Person and end date are required', life: 3000 });
       return;
     }
+    if (start < this.today) {
+      this.messages.add({ severity: 'warn', summary: "Start date can't be in the past", life: 3000 });
+      return;
+    }
     const span = daySpan(start, end);
     const remaining = daysRemaining(person.id, new Date(start + 'T00:00:00').getFullYear(), this.grants());
     if (span > remaining) {
@@ -111,12 +115,38 @@ export class MakeupComponent {
 
   removeGrant(id: string) {
     removeMakeupGrant(id);
+    if (this.editingId() === id) this.editingId.set(null);
     this.messages.add({ severity: 'info', summary: 'Makeup status removed', life: 3000 });
   }
 
-  updateDates(g: MakeupGrant, startDate: string, endDate: string) {
+  /* date edits require an explicit confirm click (editStart()/editEnd() are just a local buffer
+     until then) -- binding straight to (ngModelChange) used to commit and re-validate on every
+     native date-input tick, including scrolling through months with the picker's own controls */
+  editingId = signal<string | null>(null);
+  editStart = signal('');
+  editEnd = signal('');
+
+  startEdit(g: MakeupGrant) {
+    this.editingId.set(g.id);
+    this.editStart.set(g.startDate);
+    this.editEnd.set(g.endDate);
+  }
+
+  cancelEdit() {
+    this.editingId.set(null);
+  }
+
+  confirmEdit(g: MakeupGrant) {
+    const startDate = this.editStart();
+    const endDate = this.editEnd();
     if (!endDate) {
       this.messages.add({ severity: 'warn', summary: 'End date is required', life: 3000 });
+      return;
+    }
+    /* only block a start date that's actively being moved into the past -- an untouched historical
+       grant's original start date shouldn't stop the end date (or anything else) from being edited */
+    if (startDate !== g.startDate && startDate < this.today) {
+      this.messages.add({ severity: 'warn', summary: "Start date can't be in the past", life: 3000 });
       return;
     }
     const span = daySpan(startDate, endDate);
@@ -126,5 +156,6 @@ export class MakeupComponent {
       return;
     }
     updateMakeupGrant(g.id, { startDate, endDate });
+    this.editingId.set(null);
   }
 }

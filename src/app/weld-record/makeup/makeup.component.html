@@ -1,7 +1,7 @@
 <div class="table-page-wrap">
   <div class="flex items-center gap-2 mb-1">
     <button type="button" class="btn btn-ghost btn-sm" routerLink="/pipe-search">
-      Back
+      <svg lucideArrowLeft class="size-4"></svg> Back
     </button>
     <h2 class="section-title m-0">Makeup</h2>
   </div>
@@ -27,7 +27,7 @@
           <th>Start</th>
           <th>End</th>
           <th>Days used</th>
-          <th>Days remaining ({{ year }})</th>
+          <th>Days remaining</th>
           <th></th>
         </tr>
       </thead>
@@ -43,19 +43,39 @@
               }
             </td>
             <td>
-              <input type="date" class="input input-bordered input-xs" [ngModel]="g.startDate"
-                     (ngModelChange)="updateDates(g, $event, g.endDate)" />
+              @if (editingId() === g.id) {
+                <input type="date" class="input input-bordered input-xs" [attr.min]="today"
+                       [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
+              } @else {
+                {{ g.startDate }}
+              }
             </td>
             <td>
-              <input type="date" class="input input-bordered input-xs" [ngModel]="g.endDate"
-                     (ngModelChange)="updateDates(g, g.startDate, $event)" />
+              @if (editingId() === g.id) {
+                <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
+                       [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
+              } @else {
+                {{ g.endDate }}
+              }
             </td>
             <td>{{ usedFor(g) }}</td>
             <td [class.text-error]="remainingFor(g) <= 0">{{ remainingFor(g) }}</td>
             <td>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(g.id)">
-                <svg lucideTrash2 class="size-3"></svg>
-              </button>
+              @if (editingId() === g.id) {
+                <button type="button" class="btn btn-ghost btn-xs text-success" (click)="confirmEdit(g)" title="Confirm">
+                  <svg lucideCheck class="size-3"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit()" title="Cancel">
+                  <svg lucideX class="size-3"></svg>
+                </button>
+              } @else {
+                <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(g)" title="Edit dates">
+                  <svg lucidePencil class="size-3"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(g.id)" title="Remove">
+                  <svg lucideTrash2 class="size-3"></svg>
+                </button>
+              }
             </td>
           </tr>
         } @empty {
@@ -93,10 +113,12 @@
           </td>
           <td></td>
           <td>
-            <input type="date" class="input input-bordered input-xs" [ngModel]="newStartDate()" (ngModelChange)="newStartDate.set($event)" />
+            <input type="date" class="input input-bordered input-xs" [attr.min]="today"
+                   [ngModel]="newStartDate()" (ngModelChange)="newStartDate.set($event)" />
           </td>
           <td>
-            <input type="date" class="input input-bordered input-xs" [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
+            <input type="date" class="input input-bordered input-xs" [attr.min]="newStartDate()"
+                   [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
           </td>
           <td colspan="2">
             @if (newPersonRemaining() !== null) {
