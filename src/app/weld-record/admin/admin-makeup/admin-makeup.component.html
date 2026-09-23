@@ -1,0 +1,158 @@
+<div class="table-page-wrap">
+  <div class="flex items-center gap-2 mb-1">
+    @if (selectedGrant(); as g) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="backToList()">
+        <svg lucideChevronLeft class="size-4"></svg> Back
+      </button>
+      <h2 class="section-title m-0">Makeup — {{ personLabel(g.foremanId) }}</h2>
+    } @else {
+      <button type="button" class="btn btn-ghost btn-sm" routerLink="/pipe-search">
+        Back
+      </button>
+      <h2 class="section-title m-0">Makeup</h2>
+    }
+  </div>
+
+  @if (!selectedGrant()) {
+    <p class="section-sub">
+      Grants a Foreman temporary "makeup" status — acting as the foreman for a set period — and the ad hoc team
+      they build under it. Demo only: nothing elsewhere in the app currently reads this.
+    </p>
+
+    <div class="panel">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Foreman</th>
+            <th>Status</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Team</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (g of grants(); track g.id) {
+            <tr class="cursor-pointer" (click)="selectGrant(g.id)">
+              <td class="font-medium"><svg lucideUserCog class="size-4 mr-xs inline"></svg>{{ personLabel(g.foremanId) }}</td>
+              <td>
+                @if (isActive(g)) {
+                  <span class="badge badge-sm badge-success">ACTIVE</span>
+                } @else {
+                  <span class="badge badge-sm badge-ghost">INACTIVE</span>
+                }
+              </td>
+              <td>{{ g.startDate }}</td>
+              <td>{{ g.endDate }}</td>
+              <td>{{ g.members.length }} {{ g.members.length === 1 ? 'person' : 'people' }}</td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(g.id); $event.stopPropagation()">
+                  <svg lucideTrash2 class="size-3"></svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="6" class="empty">No makeup grants.</td></tr>
+          }
+        </tbody>
+      </table>
+
+      @if (showAddForm()) {
+        <div class="flex flex-wrap items-end gap-2 mt-3">
+          <div>
+            <label class="meta mb-1 block">Foreman</label>
+            <select class="select select-bordered select-sm" [ngModel]="newForemanId()" (ngModelChange)="newForemanId.set($event)">
+              <option [ngValue]="''">Select</option>
+              @for (p of foremen; track p.id) { <option [ngValue]="p.id">{{ fullName(p) }}</option> }
+            </select>
+          </div>
+          <div>
+            <label class="meta mb-1 block">Start date</label>
+            <input type="date" class="input input-bordered input-sm" [ngModel]="newStartDate()" (ngModelChange)="newStartDate.set($event)" />
+          </div>
+          <div>
+            <label class="meta mb-1 block">End date<span class="text-error">*</span></label>
+            <input type="date" class="input input-bordered input-sm" [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
+          </div>
+          <button type="button" class="btn btn-sm btn-primary" (click)="addGrant()">
+            <svg lucidePlus class="size-3"></svg> Grant makeup status
+          </button>
+          <button type="button" class="btn btn-sm btn-ghost" (click)="showAddForm.set(false)">Cancel</button>
+        </div>
+      } @else {
+        <div class="flex justify-end mt-3">
+          <button type="button" class="btn btn-sm btn-primary" (click)="showAddForm.set(true)">
+            <svg lucidePlus class="size-3"></svg> Grant makeup status
+          </button>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="panel">
+      <div class="flex flex-wrap items-end gap-2 mb-4">
+        <div>
+          <label class="meta mb-1 block">Start date</label>
+          <input type="date" class="input input-bordered input-sm" [ngModel]="selectedGrant()!.startDate"
+                 (ngModelChange)="updateDates(selectedGrant()!, $event, selectedGrant()!.endDate)" />
+        </div>
+        <div>
+          <label class="meta mb-1 block">End date<span class="text-error">*</span></label>
+          <input type="date" class="input input-bordered input-sm" [ngModel]="selectedGrant()!.endDate"
+                 (ngModelChange)="updateDates(selectedGrant()!, selectedGrant()!.startDate, $event)" />
+        </div>
+        @if (isActive(selectedGrant()!)) {
+          <span class="badge badge-success">ACTIVE</span>
+        } @else {
+          <span class="badge badge-ghost">INACTIVE</span>
+        }
+      </div>
+
+      <h3 class="panel-title">Makeup team</h3>
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Person</th>
+            <th>Assigned role</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of selectedGrant()!.members; track m.personId) {
+            <tr>
+              <td>{{ personLabel(m.personId) }}</td>
+              <td>{{ m.role }}</td>
+              <td>
+                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeMember(selectedGrant()!, m.personId)">
+                  <svg lucideTrash2 class="size-3"></svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="3" class="empty">No one added to this makeup team yet.</td></tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="flex flex-wrap items-end gap-2 mt-3">
+        <div>
+          <label class="meta mb-1 block">Person</label>
+          <select class="select select-bordered select-sm" [ngModel]="newMemberPersonId()" (ngModelChange)="newMemberPersonId.set($event)">
+            <option [ngValue]="''">Select</option>
+            @for (p of people; track p.id) {
+              @if (p.id !== selectedGrant()!.foremanId) { <option [ngValue]="p.id">{{ personLabel(p.id) }}</option> }
+            }
+          </select>
+        </div>
+        <div>
+          <label class="meta mb-1 block">Role</label>
+          <select class="select select-bordered select-sm" [ngModel]="newMemberRole()" (ngModelChange)="newMemberRole.set($event)">
+            @for (r of memberRoles; track r) { <option [ngValue]="r">{{ r }}</option> }
+          </select>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary" (click)="addMember(selectedGrant()!)">
+          <svg lucidePlus class="size-3"></svg> Add to team
+        </button>
+      </div>
+    </div>
+  }
+</div>
