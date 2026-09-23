@@ -19,7 +19,7 @@ import { AdminTeamsComponent } from './weld-record/admin/admin-teams/admin-teams
 import { AdminMaterialTraceabilityComponent } from './weld-record/admin/admin-material-traceability/admin-material-traceability.component';
 import { AdminMaterialClassificationComponent } from './weld-record/admin/admin-material-classification/admin-material-classification.component';
 import { AdminQuickLinksComponent } from './weld-record/admin/admin-quick-links/admin-quick-links.component';
-import { AdminMakeupComponent } from './weld-record/admin/admin-makeup/admin-makeup.component';
+import { MakeupComponent } from './weld-record/makeup/makeup.component';
 import { MyAssignmentsComponent } from './weld-record/my-assignments/my-assignments.component';
 import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
 import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
@@ -40,6 +40,7 @@ export const routes: Routes = [
   { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR — My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'EWR — History' },
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'EWR — Advanced Search' },
+  { path: 'makeup', component: MakeupComponent, title: 'EWR — Makeup' },
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR — Admin Routing' },
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR — Attribute Codes' },
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR — Set Routing' },
@@ -54,7 +55,6 @@ export const routes: Routes = [
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR — Material Traceability' },
   { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR — Material Classification' },
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR — Quick Links' },
-  { path: 'admin/makeup', component: AdminMakeupComponent, title: 'EWR — Makeup' },
 
   { path: 'jobs/:id', component: JointPageComponent, title: 'EWR — Hull Details', canDeactivate: [canDeactivateGuard] },
 

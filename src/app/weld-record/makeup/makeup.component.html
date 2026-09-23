@@ -1,0 +1,107 @@
+<div class="table-page-wrap">
+  <div class="flex items-center gap-2 mb-1">
+    <button type="button" class="btn btn-ghost btn-sm" routerLink="/pipe-search">
+      Back
+    </button>
+    <h2 class="section-title m-0">Makeup</h2>
+  </div>
+  <p class="section-sub">
+    Grants someone below the foreman level temporary "makeup" status — acting as the foreman for a set period.
+    Each person gets {{ annualDays }} makeup days per year. Demo only: nothing elsewhere in the app currently reads this.
+  </p>
+
+  <div class="panel">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Person</th>
+          <th>Status</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Days used</th>
+          <th>Days remaining ({{ year }})</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (g of grants(); track g.id) {
+          <tr>
+            <td class="font-medium"><svg lucideUserCog class="size-4 mr-xs inline"></svg>{{ personLabel(g.personId) }}</td>
+            <td>
+              @if (isActive(g)) {
+                <span class="badge badge-sm badge-success">ACTIVE</span>
+              } @else {
+                <span class="badge badge-sm badge-ghost">INACTIVE</span>
+              }
+            </td>
+            <td>
+              <input type="date" class="input input-bordered input-xs" [ngModel]="g.startDate"
+                     (ngModelChange)="updateDates(g, $event, g.endDate)" />
+            </td>
+            <td>
+              <input type="date" class="input input-bordered input-xs" [ngModel]="g.endDate"
+                     (ngModelChange)="updateDates(g, g.startDate, $event)" />
+            </td>
+            <td>{{ usedFor(g) }}</td>
+            <td [class.text-error]="remainingFor(g) <= 0">{{ remainingFor(g) }}</td>
+            <td>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(g.id)">
+                <svg lucideTrash2 class="size-3"></svg>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">No makeup grants.</td></tr>
+        }
+        <tr>
+          <td class="relative" style="min-width: 14rem">
+            @if (newPerson(); as p) {
+              <div class="input input-xs input-bordered flex items-center gap-2">
+                <svg lucideUser class="size-4 opacity-60"></svg>
+                <span class="grow">{{ fullName(p) }} <span class="hist-old">· {{ p.title }}</span></span>
+                <button type="button" class="btn btn-ghost btn-xs" (click)="clearPerson()" title="Clear person">
+                  <svg lucideX class="size-4"></svg>
+                </button>
+              </div>
+            } @else {
+              <label class="input input-xs input-bordered flex items-center gap-2">
+                <svg lucideUser class="size-4 opacity-60"></svg>
+                <input type="text" class="grow" placeholder="Search: last or first name"
+                       [ngModel]="personQuery()" (ngModelChange)="personQuery.set($event); suggestOpen.set(true)"
+                       (focus)="suggestOpen.set(true)" (blur)="suggestOpen.set(false)" />
+              </label>
+              @if (suggestOpen() && personQuery().trim()) {
+                <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
+                  @for (s of suggestions(); track s.id) {
+                    <li><a (mousedown)="choosePerson(s); $event.preventDefault()">
+                      <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · {{ s.id }}</span>
+                    </a></li>
+                  } @empty {
+                    <li class="px-3 py-2 hist-old">No one below foreman level matches "{{ personQuery() }}"</li>
+                  }
+                </ul>
+              }
+            }
+          </td>
+          <td></td>
+          <td>
+            <input type="date" class="input input-bordered input-xs" [ngModel]="newStartDate()" (ngModelChange)="newStartDate.set($event)" />
+          </td>
+          <td>
+            <input type="date" class="input input-bordered input-xs" [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
+          </td>
+          <td colspan="2">
+            @if (newPersonRemaining() !== null) {
+              <span class="meta" [class.text-error]="newPersonRemaining()! <= 0">{{ newPersonRemaining() }} of {{ annualDays }} days left this year</span>
+            }
+          </td>
+          <td>
+            <button type="button" class="btn btn-ghost btn-xs text-primary" (click)="addGrant()">
+              <svg lucidePlus class="size-3"></svg> Add
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
