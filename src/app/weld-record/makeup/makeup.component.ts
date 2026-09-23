@@ -7,7 +7,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX } from '@lucide/angular';
+import { LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch } from '@lucide/angular';
 import { ToastService } from '../../shared/toast.service';
 import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
 import {
@@ -18,7 +18,7 @@ import {
 @Component({
   selector: 'app-makeup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX],
+  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2, LucideUserCog, LucideUser, LucideX, LucideSearch],
   templateUrl: './makeup.component.html'
 })
 export class MakeupComponent {
@@ -28,6 +28,16 @@ export class MakeupComponent {
   grants = makeupGrants;
   year = new Date().getFullYear();
   fullName = fullName;
+
+  /* search/filter: matches person name/title/id; active grants sort first (not hidden -- inactive
+     ones stay reachable by search), then by start date, most recent first */
+  searchQuery = signal('');
+  filteredGrants = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const rows = !q ? this.grants() : this.grants().filter(g => this.personLabel(g.personId).toLowerCase().includes(q));
+    return [...rows].sort((a, b) =>
+      Number(this.isActive(b)) - Number(this.isActive(a)) || b.startDate.localeCompare(a.startDate));
+  });
 
   /* person search: below-foreman only -- a Foreman doesn't need to be granted makeup as one */
   personQuery = signal('');

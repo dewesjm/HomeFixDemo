@@ -10,6 +10,14 @@
     Each person gets {{ annualDays }} makeup days per year. Demo only: nothing elsewhere in the app currently reads this.
   </p>
 
+  <div class="facet-row mb-1">
+    <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 16rem">
+      <svg lucideSearch class="size-4 opacity-60"></svg>
+      <input type="text" class="grow" placeholder="Search by name, id or title"
+             [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+    </label>
+  </div>
+
   <div class="panel">
     <table class="table table-sm">
       <thead>
@@ -24,7 +32,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (g of grants(); track g.id) {
+        @for (g of filteredGrants(); track g.id) {
           <tr>
             <td class="font-medium"><svg lucideUserCog class="size-4 mr-xs inline"></svg>{{ personLabel(g.personId) }}</td>
             <td>

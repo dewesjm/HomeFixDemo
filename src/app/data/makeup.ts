@@ -18,10 +18,31 @@ export const ANNUAL_MAKEUP_DAYS = 90;
 
 const LS_KEY = STORAGE.makeup;
 
-/* Demo seed: one currently-active grant, one already expired for contrast. */
+/* Demo seed: enough rows (~20) to actually exercise search/sort, a mix of active/inactive and
+   both years, all below-foreman people (never a Foreman -- see the component's search filter). */
 const DEFAULT_GRANTS: MakeupGrant[] = [
-  { id: 'mk1', personId: 'E10231', startDate: '2026-09-15', endDate: '2026-09-30' },
-  { id: 'mk2', personId: 'E20413', startDate: '2026-08-01', endDate: '2026-08-14' },
+  { id: 'mk1', personId: 'E10231', startDate: '2026-09-15', endDate: '2026-09-22' },
+  { id: 'mk2', personId: 'E10232', startDate: '2026-09-10', endDate: '2026-09-25' },
+  { id: 'mk3', personId: 'E10233', startDate: '2026-01-05', endDate: '2026-01-10' },
+  { id: 'mk4', personId: 'E10234', startDate: '2026-09-20', endDate: '2026-10-05' },
+  { id: 'mk5', personId: 'E10235', startDate: '2026-06-01', endDate: '2026-06-10' },
+  { id: 'mk6', personId: 'E10236', startDate: '2025-11-01', endDate: '2025-11-10' },
+  { id: 'mk7', personId: 'E10237', startDate: '2026-09-01', endDate: '2026-09-14' },
+  { id: 'mk8', personId: 'E20411', startDate: '2026-03-01', endDate: '2026-03-05' },
+  { id: 'mk9', personId: 'E20412', startDate: '2026-09-18', endDate: '2026-09-28' },
+  { id: 'mk10', personId: 'E20413', startDate: '2026-08-01', endDate: '2026-08-14' },
+  { id: 'mk11', personId: 'E20414', startDate: '2026-02-10', endDate: '2026-02-20' },
+  { id: 'mk12', personId: 'E20415', startDate: '2026-09-22', endDate: '2026-10-02' },
+  { id: 'mk13', personId: 'E20416', startDate: '2026-05-01', endDate: '2026-05-03' },
+  { id: 'mk14', personId: 'E20417', startDate: '2026-07-01', endDate: '2026-07-10' },
+  { id: 'mk15', personId: 'E20418', startDate: '2026-04-01', endDate: '2026-04-05' },
+  { id: 'mk16', personId: 'E30502', startDate: '2026-09-01', endDate: '2026-09-10' },
+  { id: 'mk17', personId: 'E30503', startDate: '2026-09-23', endDate: '2026-10-10' },
+  { id: 'mk18', personId: 'E30504', startDate: '2025-12-01', endDate: '2025-12-15' },
+  { id: 'mk19', personId: 'E30506', startDate: '2026-09-10', endDate: '2026-09-20' },
+  { id: 'mk20', personId: 'E30507', startDate: '2026-09-16', endDate: '2026-09-24' },
+  { id: 'mk21', personId: 'E30508', startDate: '2026-01-15', endDate: '2026-01-20' },
+  { id: 'mk22', personId: 'E30509', startDate: '2026-09-05', endDate: '2026-09-12' },
 ];
 
 function load(): MakeupGrant[] {
