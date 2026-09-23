@@ -1,0 +1,68 @@
+<div class="table-page-wrap">
+<div class="page-header">
+  <h2 class="section-title">Manage Procedures</h2>
+  <span class="spacer"></span>
+</div>
+
+<div class="facet-row">
+  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search procedures…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
+  </label>
+  <span class="spacer"></span>
+  <a routerLink="/weld-engineering/admin/import" class="btn btn-sm">
+    <svg lucideUpload class="size-4"></svg> Load Procedures
+  </a>
+  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
+  </button>
+  <button type="button" class="btn btn-sm btn-primary" (click)="addNew()">
+    <svg lucidePlus class="size-4"></svg> New Procedure
+  </button>
+</div>
+
+<div style="overflow-x: auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th appSortHeader class="min-w-16" [table]="table" field="id" label="Procedure" filter="text"></th>
+        <th appSortHeader class="min-w-32" [table]="table" field="title" label="Title" filter="text"></th>
+        <th appSortHeader class="min-w-20" [table]="table" field="status" label="Status"
+            [filter]="'select'" [options]="statusOptions"></th>
+        <th appSortHeader class="min-w-24" [table]="table" field="weldProcess" label="Weld Process"></th>
+        <th appSortHeader class="min-w-28" [table]="table" field="wtnsText" label="WTNs" filter="text"></th>
+        <th class="min-w-11"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.sorted(); track row.id) {
+        <tr>
+          <td class="font-semibold">{{ row.id }}</td>
+          <td>{{ row.title }}</td>
+          <td class="capitalize">{{ row.status }}</td>
+          <td>{{ row.weldProcess }}</td>
+          <td>{{ row.wtnsText }}</td>
+          <td>
+            <div class="row-tight">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="edit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="6" class="empty">No procedures found.</td></tr>
+      }
+    </tbody>
+  </table>
+</div>
+</div>

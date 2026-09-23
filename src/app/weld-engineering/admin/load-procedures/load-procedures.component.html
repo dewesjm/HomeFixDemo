@@ -1,0 +1,118 @@
+<div>
+  <div class="page-header">
+    <a routerLink="/weld-engineering/admin" class="back-link">
+      <svg lucideArrowLeft class="size-4"></svg> Manage Procedures
+    </a>
+    <span style="color: var(--app-text-muted)">/</span>
+    <h2 class="section-title">Load Procedures</h2>
+  </div>
+
+  <!-- File picker (hidden) -->
+  <input #fileInput type="file" accept=".xlsx,.csv" style="display: none" (change)="onFileSelected($event)" />
+
+  <div style="display: flex; gap: 0.75rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap">
+    @if (loading()) {
+      <span style="color: var(--app-text-muted)">Processing...</span>
+    }
+    @if (rows().length > 0) {
+      <span style="font-size: 0.85rem; color: var(--app-text-muted)">{{ rows().length }} rows</span>
+      <span style="font-size: 0.85rem" [style.color]="errorCount() > 0 ? 'var(--color-error)' : 'var(--color-success)'">
+        {{ errorCount() }} errors
+      </span>
+      <span style="font-size: 0.85rem; color: var(--color-success)">{{ savedCount() }} saved</span>
+    }
+    <span class="spacer"></span>
+    @if (rows().length === 0 && !loading()) {
+      <button class="btn btn-sm" (click)="downloadTemplate()">Download Template</button>
+      <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
+      <button class="btn btn-sm btn-primary" (click)="loadSample()">Use Sample</button>
+    }
+    @if (rows().length > 0 && savedCount() === 0) {
+      <button class="btn btn-sm btn-primary" (click)="saveAll()" [disabled]="saving()">
+        <svg lucideSave class="size-4"></svg> Save All ({{ rows().length - errorCount() }} valid)
+      </button>
+    }
+    @if (savedCount() > 0 && savedCount() === rows().length) {
+      <a routerLink="/weld-engineering/admin" class="btn btn-sm btn-primary">Done</a>
+    }
+  </div>
+
+  @if (rows().length > 0) {
+    <div style="overflow-x: auto">
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th style="min-width: 3rem; text-align: center">#</th>
+            <th style="min-width: 6rem">Procedure</th>
+            <th style="min-width: 10rem">Title</th>
+            <th style="min-width: 6rem">Status</th>
+            <th style="min-width: 8rem">WTNs</th>
+            <th style="min-width: 6rem">Weld Process</th>
+            <th style="min-width: 5rem">PH Min</th>
+            <th style="min-width: 5rem">PH Max</th>
+            <th style="min-width: 5rem">IP Min</th>
+            <th style="min-width: 5rem">IP Max</th>
+            <th style="min-width: 12rem">Rules</th>
+            <th style="min-width: 12rem">Conditions</th>
+            <th style="min-width: 12rem">Qualifications Required</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows(); track $index; let i = $index) {
+            <tr [class]="row._saved ? 'table-success' : (row._errors.length > 0 ? 'table-error' : '')">
+              <td style="text-align: center; font-size: 0.75rem; color: var(--app-text-muted)">
+                @if (row._saved) {
+                  <svg lucideCheckCircle class="size-4" style="color: var(--color-success)"></svg>
+                } @else if (row._errors.length > 0) {
+                  <div [title]="row._errors.join(', ')" style="cursor: help">
+                    <svg lucideAlertTriangle class="size-4" style="color: var(--color-error)"></svg>
+                  </div>
+                } @else {
+                  {{ i + 1 }}
+                }
+              </td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.id" [class.input-error]="!row.id" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.title" /></td>
+              <td>
+                <select class="select select-xs w-full" [(ngModel)]="row.status">
+                  @for (s of statuses; track s.value) {
+                    <option [value]="s.value">{{ s.label }}</option>
+                  }
+                </select>
+              </td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.wtns" placeholder="a; b" /></td>
+              <td>
+                <select class="select select-xs w-full" [(ngModel)]="row.weldProcess">
+                  <option value="">—</option>
+                  @for (p of weldProcesses; track p) {
+                    <option [value]="p">{{ p }}</option>
+                  }
+                </select>
+              </td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.phMin" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.phMax" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.ipMin" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.ipMax" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.rules" placeholder="a; b" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.conditions" placeholder="a; b" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.qualificationsRequired" placeholder="a; b" /></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (!loading()) {
+    <div style="text-align: center; padding: 3rem; color: var(--app-text-muted)">
+      <p>Import a .xlsx or .csv file to bulk-load procedures.</p>
+      <div style="display: flex; gap: 0.5rem; justify-content: center; margin-top: 1rem">
+        <button class="btn btn-sm" (click)="fileInput.click()">Choose File</button>
+        <button class="btn btn-sm btn-ghost" (click)="downloadTemplate()" style="text-decoration: underline">
+          Download Template
+        </button>
+        <button class="btn btn-sm btn-primary" (click)="loadSample()">
+          Use Sample
+        </button>
+      </div>
+    </div>
+  }
+</div>

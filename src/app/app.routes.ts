@@ -27,6 +27,9 @@ import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mas
 import { WeldPlanningSearchComponent } from './weld-planning/weld-planning-search.component';
 import { ProcedureLookupComponent } from './weld-engineering/procedure-lookup/procedure-lookup.component';
 import { ProcedureDetailComponent } from './weld-engineering/procedure-detail/procedure-detail.component';
+import { ManageProceduresComponent } from './weld-engineering/admin/manage-procedures/manage-procedures.component';
+import { ProcedureFormComponent } from './weld-engineering/admin/manage-procedures/procedure-form.component';
+import { LoadProceduresComponent } from './weld-engineering/admin/load-procedures/load-procedures.component';
 
 
 export const routes: Routes = [
@@ -63,6 +66,10 @@ export const routes: Routes = [
   /* ── Weld Engineering routes (separate system) ── */
   { path: 'weld-engineering', component: ProcedureLookupComponent, title: 'EWE — Procedure Lookup' },
   { path: 'weld-engineering/procedures/:id', component: ProcedureDetailComponent, title: 'EWE — Procedure' },
+  { path: 'weld-engineering/admin', component: ManageProceduresComponent, title: 'EWE — Manage Procedures' },
+  { path: 'weld-engineering/admin/new', component: ProcedureFormComponent, title: 'EWE — New Procedure' },
+  { path: 'weld-engineering/admin/import', component: LoadProceduresComponent, title: 'EWE — Load Procedures' },
+  { path: 'weld-engineering/admin/:id/edit', component: ProcedureFormComponent, title: 'EWE — Edit Procedure' },
 
   { path: '**', redirectTo: 'pipe-search' }
 ];

@@ -1,0 +1,153 @@
+<div class="table-page-wrap" style="max-width: 48rem">
+  <div class="page-header">
+    <a routerLink="/weld-engineering/admin" class="btn btn-ghost btn-sm">
+      <svg lucideArrowLeft class="size-4"></svg> Manage Procedures
+    </a>
+    <h2 class="section-title">{{ isEdit() ? 'Edit Procedure' : 'New Procedure' }}</h2>
+  </div>
+
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Procedure ID<span class="req">*</span></label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. W-123"
+             [(ngModel)]="form.id" [disabled]="isEdit()" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Title</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.title" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Status</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.status">
+        @for (o of statusOptions; track o.value) {
+          <option [ngValue]="o.value">{{ o.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Weld Process</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldProcess">
+        <option value="">—</option>
+        @for (p of weldProcesses; track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">Applicable WTNs</h3>
+  <div class="flex flex-wrap gap-3">
+    @for (wtn of wtnPool; track wtn) {
+      <label class="flex items-center gap-1.5 text-sm">
+        <input type="checkbox" class="checkbox checkbox-sm"
+               [checked]="form.wtns.includes(wtn)" (change)="toggleWtn(wtn, $any($event.target).checked)" />
+        {{ wtn }}
+      </label>
+    }
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">PH/IP Requirements</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">PH Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.phMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">PH Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.phMax" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">IP Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.ipMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">IP Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.ipMax" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">Override Requirements</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Override PH Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overridePhMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Override PH Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overridePhMax" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Override IP Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideIpMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Override IP Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideIpMax" />
+    </div>
+    <div class="stage-field" style="flex: 1 1 100%">
+      <label class="stage-field-label">Override Note</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideNote" />
+    </div>
+  </div>
+
+  <!-- Rules -->
+  <h3 class="section-sub" style="margin-top: 1rem">Rules</h3>
+  <div class="flex flex-wrap gap-2 mb-2">
+    @for (r of form.rules; track $index) {
+      <span class="badge badge-lg gap-1.5">
+        {{ r }}
+        <button type="button" (click)="removeListItem('rules', $index)"><svg lucideX class="size-3"></svg></button>
+      </span>
+    }
+  </div>
+  <div class="flex gap-2">
+    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a rule…"
+           [(ngModel)]="newRule" (keydown.enter)="addListItem('rules', newRule)" />
+    <button type="button" class="btn btn-sm" (click)="addListItem('rules', newRule)">
+      <svg lucidePlus class="size-4"></svg> Add
+    </button>
+  </div>
+
+  <!-- Specific Conditions -->
+  <h3 class="section-sub" style="margin-top: 1rem">Specific Conditions</h3>
+  <div class="flex flex-wrap gap-2 mb-2">
+    @for (c of form.conditions; track $index) {
+      <span class="badge badge-lg gap-1.5">
+        {{ c }}
+        <button type="button" (click)="removeListItem('conditions', $index)"><svg lucideX class="size-3"></svg></button>
+      </span>
+    }
+  </div>
+  <div class="flex gap-2">
+    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a condition…"
+           [(ngModel)]="newCondition" (keydown.enter)="addListItem('conditions', newCondition)" />
+    <button type="button" class="btn btn-sm" (click)="addListItem('conditions', newCondition)">
+      <svg lucidePlus class="size-4"></svg> Add
+    </button>
+  </div>
+
+  <!-- Qualifications Required -->
+  <h3 class="section-sub" style="margin-top: 1rem">Qualifications Required</h3>
+  <div class="flex flex-wrap gap-2 mb-2">
+    @for (q of form.qualificationsRequired; track $index) {
+      <span class="badge badge-lg gap-1.5">
+        {{ q }}
+        <button type="button" (click)="removeListItem('qualificationsRequired', $index)"><svg lucideX class="size-3"></svg></button>
+      </span>
+    }
+  </div>
+  <div class="flex gap-2">
+    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a qualification…"
+           [(ngModel)]="newQualification" (keydown.enter)="addListItem('qualificationsRequired', newQualification)" />
+    <button type="button" class="btn btn-sm" (click)="addListItem('qualificationsRequired', newQualification)">
+      <svg lucidePlus class="size-4"></svg> Add
+    </button>
+  </div>
+
+  <div class="flex gap-2" style="margin-top: 1.5rem">
+    <button type="button" class="btn btn-sm btn-primary" (click)="save()">
+      <svg lucideSave class="size-4"></svg> Save
+    </button>
+    <button type="button" class="btn btn-sm btn-ghost" (click)="cancel()">Cancel</button>
+  </div>
+</div>
