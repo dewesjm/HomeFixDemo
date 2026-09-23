@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_LABEL
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_LABEL, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -159,7 +159,7 @@ export class JointPageComponent implements OnDestroy {
 
   signoffRecords = computed(() => {
     if (!this.wf) return [];
-    const all: { stageLabel: string; fields: { key: string; label: string; value: string }[]; result: string | null; who: string; when: string; action: 'signed' | 'reopened' }[] = [];
+    const all: SignoffRecord[] = [];
     for (const s of this.wf().stages) {
       for (const r of s.signoffRecords) all.push(r);
     }

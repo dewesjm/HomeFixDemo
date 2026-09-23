@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -239,7 +239,8 @@ export class SignoffService {
         who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${st.label} — Signed off`,
         to: decision,
-        inputs
+        inputs,
+        stageId
       });
     });
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
@@ -275,10 +276,66 @@ export class SignoffService {
       return this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
-        action: `${st.label} — Sign-off re-opened`
+        action: `${st.label} — Sign-off re-opened`,
+        stageId
       });
     });
     this.messages.add({ severity: 'info', summary: 'Sign-off re-opened', life: 3000 });
+  }
+
+  /* Correct a signed stage's already-recorded field values without reopening it (Work History —
+     distinct from Deprogress/reopenStage, which unwind the sign-off itself and force a re-sign of
+     everything after). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
+     `routingType`/Decision -- those drive routing directly and are never offered here. Individual
+     field keys that fed a routing decision at the original signoff (see ROUTING_LOCKED_FIELD_KEYS)
+     are rejected even if the caller passes one -- the dialog already disables them, this is
+     defense in depth against a stale form. */
+  correctStage(job: Job, stageId: string, patch: { inputs?: Record<string, string>; signoffInputs?: Record<string, string> }, reason: string) {
+    this.store.update(job, wf => {
+      const st = wf.stages.find(s => s.id === stageId);
+      if (!st || !st.signed) return wf;
+
+      const inputPatch = Object.fromEntries(Object.entries(patch.inputs ?? {}).filter(([k]) => !isRoutingLockedField(stageId, k)));
+      const signoffPatch = Object.fromEntries(Object.entries(patch.signoffInputs ?? {}).filter(([k]) => !isRoutingLockedField(stageId, k)));
+
+      const changes = [
+        ...Object.entries(inputPatch), ...Object.entries(signoffPatch)
+      ]
+        .filter(([key, value]) => (st.inputs[key] ?? st.signoffInputs[key] ?? '') !== value)
+        .map(([key, value]) => ({ key, label: labelFor(st, key), from: (st.inputs[key] ?? st.signoffInputs[key] ?? ''), to: value }));
+      if (!changes.length) return wf;
+
+      const updated: WorkflowStage = {
+        ...st,
+        inputs: { ...st.inputs, ...inputPatch },
+        signoffInputs: { ...st.signoffInputs, ...signoffPatch },
+      };
+      const now = new Date().toISOString();
+      const who = updated.signoffInputs['inspectorName'] || wf.technician;
+      const record = {
+        stageLabel: updated.label,
+        fields: Object.entries({ ...updated.inputs, ...updated.signoffInputs })
+          .filter(([, v]) => v)
+          .map(([key, value]) => ({ key, label: labelFor(updated, key), value })),
+        result: updated.result,
+        who,
+        when: now,
+        action: 'corrected' as const,
+        reason,
+        changes,
+      };
+      const stages = wf.stages.map(s => (s.id === stageId ? { ...updated, signoffRecords: [...updated.signoffRecords, record] } : s));
+      const finalStage = stages.find(s => s.id === stageId)!;
+      const inputsSnapshot = snapshotInputs(finalStage, fieldsShown(finalStage).filter(f => isUserEditable(finalStage, f)), finalStage.signoffFields);
+      return this.store.withHistory(wf, { ...wf, stages }, {
+        section: 'Sign-off',
+        who,
+        action: `${updated.label} — Corrected: ${reason}`,
+        stageId,
+        inputs: inputsSnapshot
+      });
+    });
+    this.messages.add({ severity: 'success', summary: 'Sign-off corrected', life: 3000 });
   }
 
   /* Release a job past the Fit-Up Release stage */

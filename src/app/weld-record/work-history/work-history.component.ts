@@ -17,6 +17,8 @@ import { HistoryEntry, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName, searchPeople } from '../../data/people';
+import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
+import { LucidePencil } from '@lucide/angular';
 
 /* one history entry; sign-offs carry inputs (every editable field and its value at that moment) */
 interface ActivityRow extends HistoryEntry {
@@ -35,9 +37,9 @@ interface ActivityRow extends HistoryEntry {
   standalone: true,
   imports: [
     CommonModule, FormsModule,
-    TablePagerComponent, SortHeaderComponent,
+    TablePagerComponent, SortHeaderComponent, CorrectStageDialogComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight,
-    LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp
+    LucideUser, LucideX, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp, LucidePencil
   ],
   templateUrl: './work-history.component.html'
 })
@@ -234,6 +236,47 @@ export class WorkHistoryComponent {
 
   isLatestEntry(r: ActivityRow): boolean {
     return this.deprogressable().has(r.key);
+  }
+
+  /* Correct is offered on a stage's current sign-off record: the latest Sign-off-section entry
+     for that (job, stage) pair, as long as it's not itself a re-open (a reopened stage has nothing
+     signed to correct) and the live stage is still actually signed — mirrors deprogressable's
+     "trust the live workflow over the log" caveat, but per-stage instead of per-job's last stage,
+     since Correct can fix an earlier stage even after later ones have since been signed. */
+  private correctable = computed<ReadonlySet<string>>(() => {
+    const byStage = new Map<string, ActivityRow[]>();
+    for (const r of this.allActivity()) {
+      if (r.section === 'Sign-off' && r.stageId) {
+        const k = `${r.jobId}|${r.stageId}`;
+        byStage.set(k, [...(byStage.get(k) ?? []), r]);
+      }
+    }
+    const keys = new Set<string>();
+    for (const [k, rows] of byStage) {
+      const stageId = k.slice(k.indexOf('|') + 1);
+      const jobId = k.slice(0, k.indexOf('|'));
+      const latest = [...rows].sort((a, b) => a.when.localeCompare(b.when)).pop();
+      if (!latest || /re-opened/i.test(latest.action)) continue;
+      const stage = this.store.allWorkflows().find(w => w.jobId === jobId)?.stages.find(s => s.id === stageId);
+      if (!stage?.signed) continue;
+      keys.add(latest.key);
+    }
+    return keys;
+  });
+
+  isCorrectable(r: ActivityRow): boolean {
+    return this.correctable().has(r.key);
+  }
+
+  correctTarget = signal<CorrectTarget | null>(null);
+
+  openCorrect(r: ActivityRow) {
+    const job = this.jobById.get(r.jobId);
+    if (job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
+  }
+
+  closeCorrect() {
+    this.correctTarget.set(null);
   }
 
   /* go back one routing for a job */

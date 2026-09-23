@@ -1,0 +1,105 @@
+<dialog #dlg class="modal">
+  @if (target(); as t) {
+    @if (stage(); as st) {
+      <div class="modal-box max-w-2xl">
+        <h3 class="text-lg font-semibold">Correct sign-off — {{ st.label }}</h3>
+        <p class="section-sub">
+          Fixes the values already recorded for this sign-off. It does not reopen the stage or change routing.
+        </p>
+
+        <div class="flex flex-col gap-3 my-3">
+          @for (f of fields(); track f.key) {
+            <div class="w-full">
+              @if (isLocked(f.key)) {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <div class="input input-bordered input-disabled w-full flex items-center opacity-70">
+                  {{ value(f.key) || '(blank)' }}
+                </div>
+                <div class="meta text-error mt-1">
+                  Locked — this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                </div>
+              } @else if (f.type === 'checkbox') {
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm"
+                         [checked]="value(f.key) === 'yes'"
+                         (change)="toggleCheckbox(f.key, $any($event.target).checked)" />
+                  <span>{{ f.label }}</span>
+                </label>
+              } @else if (f.type === 'select') {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <select class="select select-bordered w-full" [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)">
+                  <option [ngValue]="''">Select</option>
+                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                </select>
+              } @else if (f.type === 'radio') {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <div class="flex gap-4">
+                  @for (o of f.options || []; track o.value) {
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" class="radio radio-sm" [name]="'correct-' + st.id + '-' + f.key"
+                             [checked]="value(f.key) === o.value" (change)="setValue(f.key, o.value)" />
+                      <span>{{ o.label }}</span>
+                    </label>
+                  }
+                </div>
+              } @else {
+                <div class="meta mb-1">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+                <input [type]="f.type === 'number' ? 'number' : 'text'" class="input input-bordered w-full"
+                       [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)" />
+              }
+            </div>
+          }
+          @for (f of signoffFields(); track f.key) {
+            <div class="w-full">
+              @if (isLocked(f.key)) {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <div class="input input-bordered input-disabled w-full flex items-center opacity-70">
+                  {{ value(f.key, true) || '(blank)' }}
+                </div>
+                <div class="meta text-error mt-1">
+                  Locked — this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                </div>
+              } @else if (f.type === 'checkbox') {
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm"
+                         [checked]="value(f.key, true) === 'yes'"
+                         (change)="toggleCheckbox(f.key, $any($event.target).checked)" />
+                  <span>{{ f.label }}</span>
+                </label>
+              } @else if (f.type === 'select') {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <select class="select select-bordered w-full" [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)">
+                  <option [ngValue]="''">Select</option>
+                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                </select>
+              } @else {
+                <div class="meta mb-1">{{ f.label }}</div>
+                <input type="text" class="input input-bordered w-full"
+                       [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)" />
+              }
+            </div>
+          }
+          @if (!fields().length && !signoffFields().length) {
+            <div class="meta">This stage has no correctable fields.</div>
+          }
+        </div>
+
+        <app-attachments [attachments]="attachments()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
+
+        <div class="mt-4">
+          <label class="meta mb-1 block">Reason for correction<span class="text-error">*</span></label>
+          <textarea class="textarea textarea-bordered w-full" rows="2" placeholder="Why this is being corrected…"
+                    [ngModel]="reason()" (ngModelChange)="reason.set($event)"></textarea>
+        </div>
+
+        <div class="modal-action">
+          <button type="button" class="btn btn-ghost" (click)="close()">Cancel</button>
+          <button type="button" class="btn btn-primary" [disabled]="!canSave()" (click)="save()">Save correction</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button type="button" (click)="close()">close</button>
+      </form>
+    }
+  }
+</dialog>

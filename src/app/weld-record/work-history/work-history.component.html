@@ -89,6 +89,7 @@
       <th appSortHeader style="min-width: 9ch" [table]="table" field="joint" label="Joint" filter="text"></th>
       <th appSortHeader style="min-width: 10ch" [table]="table" field="order" label="Order" filter="text"></th>
       <th class="min-w-11">Deprogress</th>
+      <th class="min-w-11">Correct</th>
       <th class="min-w-6"></th>
     </tr>
   </thead>
@@ -120,6 +121,13 @@
           }
         </td>
         <td>
+          @if (isCorrectable(r)) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="openCorrect(r)" title="Fix a field recorded at this sign-off">
+              <svg lucidePencil class="size-4"></svg> Correct
+            </button>
+          }
+        </td>
+        <td>
           <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
             <svg lucideArrowUpRight class="size-3"></svg>
           </button>
@@ -141,6 +149,7 @@
             <td class="hist-old">{{ r.order }}</td>
             <td></td>
             <td></td>
+            <td></td>
           </tr>
         }
         @if (r.fabInputs?.length) {
@@ -153,6 +162,7 @@
                 Fabrication at this sign-off ({{ r.fabInputs!.length }} fields)
               </button>
             </td>
+            <td></td>
             <td></td>
           </tr>
           @if (fabExpanded().has(r.key)) {
@@ -171,6 +181,7 @@
                 <td class="hist-old">{{ r.order }}</td>
                 <td></td>
                 <td></td>
+                <td></td>
               </tr>
             }
           }
@@ -178,7 +189,7 @@
       }
     } @empty {
       <tr>
-        <td colspan="13" class="empty">
+        <td colspan="14" class="empty">
           No matching activity. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>
@@ -189,3 +200,5 @@
 
 <app-table-pager [state]="table" [pageSizeOptions]="[15, 30, 50, 100]" />
 </div>
+
+<app-correct-stage-dialog [target]="correctTarget()" (closed)="closeCorrect()" />

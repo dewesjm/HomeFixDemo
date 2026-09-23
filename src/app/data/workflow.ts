@@ -53,7 +53,9 @@ export interface SignoffRecord {
   result: StageResult | null;
   who: string;
   when: string;         /* ISO */
-  action: 'signed' | 'reopened';
+  action: 'signed' | 'reopened' | 'corrected';
+  reason?: string;                                              /* 'corrected' only */
+  changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' only */
 }
 
 export interface WorkflowStage {
@@ -103,6 +105,7 @@ export interface HistoryEntry {
   routing: string;       /* routing label at time of change */
   inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
   fabInputs?: SignoffInput[];  /* sign-off entries only: fabrication data as it stood at that moment */
+  stageId?: string;      /* sign-off entries only: which live stage this recorded, so Correct can find it again */
 }
 
 export interface JobWorkflow {
@@ -703,6 +706,24 @@ export const REPAIR_STAGE: StageTemplate = {
   ], signoffFields: [], decisionLabel: 'Inspection Results',
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
+
+/* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
+   distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
+   moment a stage is signed, to decide what to insert/reopen. Changing the stored value afterward
+   doesn't re-run that decision, so the record and the actual stage list would silently diverge --
+   see [[project-correction-feature-fields]]. Keyed by stage id since these are only special on the
+   stage that actually branches on them; the same key elsewhere (there isn't one, today) would be
+   an ordinary field. Decision/Type/Routing Type aren't in here because Correct never touches
+   `result`/`inspectionType`/`routingType` at all -- only `inputs`/`signoffInputs`. */
+export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
+  repair: ['repairType', 'allowableThicknessExceeded'],
+  'fitup-insp': ['releaseToWelding'],
+  fit: ['deferTack'],
+};
+
+export function isRoutingLockedField(stageId: string, key: string): boolean {
+  return (ROUTING_LOCKED_FIELD_KEYS[stageId] ?? []).includes(key);
+}
 
 export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
 

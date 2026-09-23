@@ -183,15 +183,17 @@
                         @if (r.fields.length) {
                           <button type="button" class="flex items-center gap-1" (click)="toggleRecord(ri)">
                             @if (expandedRecords().has(ri)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-                            {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : 'Signed off' }}
+                            {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                           </button>
                         } @else {
-                          {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : 'Signed off' }}
+                          {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                         }
                       </td>
                       <td>
                         @if (r.action === 'reopened') {
                           <span class="badge badge-sm badge-warning">RE-OPENED</span>
+                        } @else if (r.action === 'corrected') {
+                          <span class="badge badge-sm badge-info">CORRECTED</span>
                         } @else if (r.result === 'sat') {
                           <span class="badge badge-sm badge-success">SAT</span>
                         } @else if (r.result === 'unsat') {
@@ -202,6 +204,24 @@
                       </td>
                     </tr>
                     @if (r.fields.length && expandedRecords().has(ri)) {
+                      @if (r.action === 'corrected' && r.reason) {
+                        <tr>
+                          <td></td>
+                          <td></td>
+                          <td class="pl-8 text-xs hist-old">Reason</td>
+                          <td class="hist-new">{{ r.reason }}</td>
+                        </tr>
+                      }
+                      @if (r.action === 'corrected' && r.changes?.length) {
+                        @for (c of r.changes; track c.key) {
+                          <tr>
+                            <td></td>
+                            <td></td>
+                            <td class="pl-8 text-xs hist-old">{{ c.label }} (was)</td>
+                            <td class="hist-old">{{ c.from || '(left blank)' }}</td>
+                          </tr>
+                        }
+                      }
                       @for (f of r.fields; track f.key) {
                         <tr>
                           <td></td>
