@@ -318,7 +318,7 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'ipMax', label: 'IP Max', type: 'number' },
   { key: 'actualPh', label: 'Actual PH', type: 'number', required: true, minField: 'phMin', maxField: 'phMax' },
   { key: 'actualIp', label: 'Actual IP', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
-  { key: 'weldPosition', label: 'Weld Position', type: 'select',
+  { key: 'weldPosition', label: 'Weld Position', type: 'select', required: true,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   /* options cascade from the resolved GWP+WTN Procedure at render time (see joint-page.component.ts
      withStageRuntimeOptions), same pattern as weldProcedure/wtn above */

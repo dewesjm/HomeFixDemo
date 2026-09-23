@@ -808,7 +808,6 @@ export class JointPageComponent implements OnDestroy {
   private validateStageFields(stage: WorkflowStage): Record<string, string> {
     const errors: Record<string, string> = {};
     const fields = stage.fields ?? [];
-    const nInd = this.job?.nInd;
     const visible = this.visibleFields(stage);
     const visibleKeys = new Set(visible.map(f => f.key));
     for (const f of fields) {
@@ -816,9 +815,7 @@ export class JointPageComponent implements OnDestroy {
       if (!visibleKeys.has(f.key)) continue;
       const val = stage.inputs?.[f.key];
       const empty = val === undefined || val === null || val === '';
-      /* weldPosition required only when N Ind. is 1 */
-      const isRequired = f.key === 'weldPosition' ? nInd === '1' : f.required;
-      if (isRequired && empty) {
+      if (f.required && empty) {
         errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
       }
       if (!empty && f.type === 'number' && (f.minField || f.maxField)) {
@@ -842,10 +839,12 @@ export class JointPageComponent implements OnDestroy {
       if (!items.length) {
         errors[`${stage.id}:affectedItem`] = 'Select at least one Affected Item';
       }
-      if (items.includes('joiningItem') && stage.inputs?.['micVerified1'] !== 'yes') {
+      /* MIC verified is only shown (and so only required) when that item's MCL requires
+         traceability -- same condition signoff-panel.component.ts uses to render the checkbox */
+      if (items.includes('joiningItem') && requiresTraceability(this.job?.mcl1 ?? '') && stage.inputs?.['micVerified1'] !== 'yes') {
         errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joiningItem || 'item');
       }
-      if (items.includes('joinToItem') && stage.inputs?.['micVerified2'] !== 'yes') {
+      if (items.includes('joinToItem') && requiresTraceability(this.job?.mcl2 ?? '') && stage.inputs?.['micVerified2'] !== 'yes') {
         errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
       }
     }
@@ -862,9 +861,7 @@ export class JointPageComponent implements OnDestroy {
     const prev = { ...this.fieldErrors() };
     delete prev[key];
     /* required check on blur */
-    const nInd = this.job?.nInd;
-    const isRequired = field.key === 'weldPosition' ? nInd === '1' : field.required;
-    if (isRequired && empty) {
+    if (field.required && empty) {
       prev[key] = `${field.label} is required`;
     }
     /* range check */

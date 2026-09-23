@@ -52,7 +52,7 @@
                          [disabled]="!fieldsEditable()"
                          [checked]="st.inputs[it.micVerified] === 'yes'"
                          (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''" />
-                  <span>{{ it.micLabel }} verified</span>
+                  <span>{{ it.micLabel }} verified<span class="text-error">*</span></span>
                 </label>
               }
             </div>
