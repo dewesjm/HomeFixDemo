@@ -36,11 +36,47 @@ Pre-existing SCSS "rules skipped due to selector errors" warnings come from Tail
 
 ## Version bumps
 
-The "new version available" Reload button does NOT clear saved data; only a `CURRENT_VERSION` change does (on the next load). `CURRENT_VERSION` in `src/app/weld-record/services/routing.service.ts` (~line 21): bump when stage definitions, field names, data models, or seed data structure change. On mismatch the app clears the caches listed in `clearStaleCaches()` (`data/storage-keys.ts`).
+The "new version available" Reload button does NOT clear saved data; only a `CURRENT_VERSION` change does (on the next load). `CURRENT_VERSION` in `src/app/weld-record/services/workflow-store.service.ts`: bump when stage definitions, field names, data models, or seed data structure change. On mismatch the app clears the caches listed in `clearStaleCaches()` (`data/storage-keys.ts`).
 
 ## Storage
 
 All `localStorage` keys live in `data/storage-keys.ts` (`STORAGE.*`, all prefixed `welding:`). Never write a key literal elsewhere. The site banner has one loader/saver in `data/banner.ts` (`bannerFor(page)`).
+
+## Weld Record services
+
+`weld-record/services/` used to be one file (`routing.service.ts`) that had grown to own per-job
+state/persistence, fabrication data, attachments, sign-off/reject/repair logic, admin routing overrides,
+*and* a whole dead feature (Work Validation) that had lost its UI but nobody had removed. Split 2026-09-22
+into:
+
+| Service | Owns |
+|---|---|
+| `WorkflowStore` | Per-job state (signals), localStorage persistence/migration, history-entry stamping (`withHistory`). No domain logic — every service below builds on it. |
+| `RoutingService` | Filling in a stage's own fields (`setStageInput(s)`); admin routing override (`forceRouting`); reject-and-go-back (`goBackRouting`). |
+| `SignoffService` | Locking/reopening a stage's sign-off (`signStage`, `reopenStage`, `updateStageSignoff`), Fit-Up release, and the side effects a sign-off can trigger (defer-tack, fit-up-release activation, NDT-reject-inserts-Repair). |
+| `AttachmentService` | `addAttachment`/`removeAttachment`. |
+| `FabricationDataService` | `setFabricationData` — cross-stage Welding fields, unrelated to any one stage. |
+
+**Rule for adding new workflow behavior**: don't default to adding a method to whichever service is already
+injected in the component you're editing — that's exactly how `routing.service.ts` grew into a god-service
+last time. Before adding a method, ask:
+- Is this the same *domain concern* as an existing service (sign-off decisions → `SignoffService`, routing
+  navigation → `RoutingService`, etc.)? If yes, add it there.
+- Is it a genuinely new concern (e.g. a future "Components installed" or "Job comments" feature)? Give it its
+  own service, built on `WorkflowStore` the same way the others are — inject `WorkflowStore`, use
+  `store.update(job, mutator)` + `store.withHistory(prev, next, entry)`, don't reinvent persistence.
+- Never add state, persistence, or migration logic outside `WorkflowStore` — it's the single place that
+  touches `localStorage` for workflows and the only place `CURRENT_VERSION` lives.
+- Write the new service's spec file alongside it (see "Testing" below) in the same change, not as follow-up
+  work — that's what let the Work Validation dead code go unnoticed for as long as it did.
+
+## Testing
+
+Karma + Jasmine (`npm test` / `npx ng test --watch=false --browsers=ChromeHeadless`), spec files colocated
+next to their source (`*.spec.ts`). Coverage is currently thin and growing incrementally — the
+`weld-record/services/` files above have full coverage (39 specs) as of the 2026-09-22 split; most other
+modules (admin CRUD, filter-schema, the screen components) still have none. When you touch a module that
+lacks a spec file, adding one is in scope for that change, not a separate task.
 
 ## Folder map
 
@@ -64,11 +100,19 @@ src/app/
     signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
     attachments/           Attachments list
     sync-status/           Online/offline indicator (stubbed)
-    services/
-      routing.service.ts   Per-job workflow state (signals), persists to localStorage; signStage, reopenStage,
-                           goBackRouting, forceRouting, releaseFitUp (moved here 2026-09-23 from a top-level
-                           services/workflow.service.ts — both files were Weld Record-only, same reasoning as
-                           the admin-* move; renamed workflow.service -> routing.service same day)
+    services/             Split 2026-09-22 from one god-service (routing.service.ts had grown to own state,
+                          persistence, fabrication data, attachments, sign-off, and a dead Work Validation
+                          feature) into a shared store + one service per concern. See "Weld Record services"
+                          below for the full split and the rule for adding new ones.
+      workflow-store.service.ts  Per-job workflow state (signals), localStorage persistence + migration,
+                                 history-entry stamping (`withHistory`). The shared primitive every other
+                                 service here builds on — owns no domain logic itself.
+      routing.service.ts   Stage-progression routing: filling in a stage's own fields (setStageInput(s)),
+                           admin routing override (forceRouting), reject-and-go-back (goBackRouting).
+      signoff.service.ts   Per-stage sign-off: signStage, reopenStage, releaseFitUp, updateStageSignoff —
+                           including the defer-tack, fit-up-release, and NDT-reject-to-repair side effects.
+      attachment.service.ts      addAttachment, removeAttachment.
+      fabrication-data.service.ts  setFabricationData (cross-stage Welding fields).
       sync.service.ts      Online/offline + pending-sync count (stubbed)
     admin/
       admin-routing/         Admin → Routing (stage templates per trade)
@@ -84,7 +128,8 @@ src/app/
                           admin screen (weld-planning-admin.component.ts) lives inside this folder, not split out.
                           No services/ yet — addWeldJoint()/updateWeldJoint() are called straight from the form
                           component since there's no business logic beyond persistence today; add one once
-                          create-time rules exist (see RoutingService for the pattern to follow).
+                          create-time rules exist (see "Weld Record services" above for the pattern to follow —
+                          one store for state/persistence, one service per domain concern on top of it).
 
   weld-engineering/       Weld Engineering — Procedure Lookup (added 2026-09-23). Own data in data/procedures.ts.
     procedure-lookup/       ~100 procedures shown at once (no pager), sortable/searchable
@@ -146,9 +191,9 @@ src/app/
 
 1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). Internal `id` is 5-char alphanumeric (`makeJobId()`), always populated, unique; `xrefid` mirrors it except on ~25% of rows where it's blank (imperfect source data). Hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees the identity rule of unique hull + drawing + joint (the true key when XREFID is blank).
 2. **Stage templates** — `workflow.ts`. Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
-3. **Per-job workflow** — `RoutingService`, keyed by job id, exposed as signals. Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
+3. **Per-job workflow** — `WorkflowStore`, keyed by job id, exposed as signals; `RoutingService`/`SignoffService`/`AttachmentService`/`FabricationDataService` mutate it (see "Weld Record services" below). Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
 4. **Assignments** — 36 seeded, assigned to "John Johnson".
-5. **Work history** — aggregates `RoutingService.allWorkflows()` into a filterable timeline.
+5. **Work history** — aggregates `WorkflowStore.allWorkflows()` into a filterable timeline.
 
 ### Welding stages (in order)
 
@@ -200,7 +245,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 ### My Assignments, History, Weld Planning
 - My Assignments is **first** in the Weld Record nav dropdown (moved above Pipe Welding 2026-09-23 — it's the most common thing a tech opens). Column widths: Routing fixed at 8rem (was `1fr`, grew far past its longest value), Specific Location `1fr` (absorbs the freed space; was a cramped 9rem, truncating values). Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR). Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet). A Charge field renders as a real **Code 39 (3 of 9) barcode** (`barcodeElements()` in `my-assignments.component.ts`: narrow/wide bar-and-space patterns per the ISO/IEC 16388 character set, wrapped in `*` start/stop characters — replaced the old decorative random-width bars 2026-09-22), centered with the charge number underneath it. The separate "Details" button still navigates to the job page. A demo-only **role filter dropdown** (red-outlined `select-error` + an inline "Demo role:" label — replaced the small "Demo only" badge 2026-09-23 for visibility, defaults to **Welding**) filters by `assignedRoles`; also a keyword filter, banner, horizontal scroll on narrow windows (`min-width: 62rem`). `expirationDate` is seeded 0-6 days out (always within a week). No "Assigned To" column (removed; it previously showed a hardcoded "John Johnson", not `a.assignedTo`). **XREFID is blanked on ~25% of rows** (`i % 4 === 0`, same pattern as Weld Planning's records) to mimic real imperfect data; the Details button therefore looks the job up by **hull + drawing + joint** (the true identity key), never by the assignment's own `jobId` copy, which may be blank. A blank XREFID does **not** by itself mean shipboard work — most such records still track to a shop/bay like any other assignment. Only **two** assignments (`assignments.ts`, `toShip()`) get the shipboard-location treatment: Location = 'Ship', and the expanded row shows **Deck / Frame / P/S / CL (centerline offset) / Usage** instead of Specific Location. One is guaranteed to be the earliest-due Welding assignment (so it's visible near the top of the default view); the other is picked from elsewhere among the blank-XREFID records for variety.
 - History: leftmost icon-only chevron column (expand/collapse), then **Routing, Action**, When, Who, **Value** (was Old value/New value — Old value dropped 2026-09-23: it was dash almost everywhere in practice, see below), XREFID, Hull, Drawing, Joint, Order, **Deprogress**, then a trailing details-button column (small primary icon button, same pattern as My Assignments' — plain XREFID text is no longer itself a clickable link, replaced 2026-09-23 since the whole-cell link was an easy accidental-click target; opening it sets `?from=history` so Back/sign-off returns to History instead of the Pipe Welding table, via `backDestination()` in `joint-page.component.ts`). Identity columns (XREFID/Hull/Drawing/Joint/Order) are sized to their real fixed-length content in `ch` units, not a blanket rem width. Every column has its own filter via `appSortHeader` (text, or a multiselect for Routing) alongside the top-bar Person/XREFID/search filters — the filter inputs show a small filter icon instead of "Filter…" placeholder text, which was clipping to "Fil"/a single letter in the narrow identity columns. Filters: person typeahead; **a job box that matches XREFID, drawing, joint or order** (not hull); and a right-hand **Search all** box covering every column and the sign-off field values. **It records what was input at each sign-off**: a sign-off row expands (per row, or **Expand all / Collapse all** for every sign-off matching the filters) to every editable field the user was shown, with its value at that moment, blanks included; each field row repeats the sign-off's When, Who, Routing, XREFID, Hull, Drawing and Joint in muted text so it reads on its own (`HistoryEntry.inputs`, built by `snapshotInputs()` in `workflow.ts`, from the job page's `signoffSnapshot()`). Read-only/derived fields (PH/IP limits, overrides, locked Weld Process, disabled fields) are not listed. Per-field edits (sections Stages/Fabrication) are still logged but **hidden** here. **Person filter is a typeahead** (`searchPeople`: first/last name prefixes in any order, or id). CSV has one line per field, including Drawing/Joint/Order alongside XREFID/Hull. Each entry carries `whoId`/`whoTitle`, stamped in `withHistory` via `stampWho()`.
-  - **`routing` is the stage the action was *for*, not what it moved to afterward** (fixed 2026-09-23): `RoutingService.withHistory()` now derives it from `currentRoutingLabel(prev.stages)` (pre-update state) instead of `next.stages` — a `'Fit — Signed off'` entry used to record whatever became active next (e.g. `'Tack'`) instead of `'Fit'`. `seededWorkflow()`'s own entries already got this right (`routing: s.label`); `mock-history.ts`'s generator was fixed the same way (records `stage.label`, not the next stage).
+  - **`routing` is the stage the action was *for*, not what it moved to afterward** (fixed 2026-09-23): `withHistory()` (now on `WorkflowStore`, was on `RoutingService` before the 2026-09-22 service split) derives it from `currentRoutingLabel(prev.stages)` (pre-update state) instead of `next.stages` — a `'Fit — Signed off'` entry used to record whatever became active next (e.g. `'Tack'`) instead of `'Fit'`. `seededWorkflow()`'s own entries already got this right (`routing: s.label`); `mock-history.ts`'s generator was fixed the same way (records `stage.label`, not the next stage).
   - **Old value dropped** (2026-09-23): the only field types that ever populated `from` either never reach the grid (Stages/Fabrication are filtered out of `allActivity()`) or belonged to the dead Work Validation feature (see below), aside from one edge case (pre-signoff Decision flip-flopping) not worth a whole column.
   - **Routing filter sorts by workflow order**, not alphabetically (`routingOrder` in `work-history.component.ts`: each stage's first-appearance index across every trade's `getTemplates()`); anything not a real stage (e.g. `'All stages complete'`) sorts to the end.
   - **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a re-open cancels the sign-off before it; must match the live workflow's last signed stage — only when that live workflow actually *has* a signed stage to compare against: `lastSignedLabel.has(jobId)` used to be true even for a job whose live workflow was merely instantiated with nothing signed (e.g. just from appearing in the Pipe Welding table), which silently hid Deprogress on jobs whose real history is the mock fallback; fixed 2026-09-23). Clicking it now opens the shared **confirm modal** (`ConfirmService.textInput`) for the required reason, instead of an inline input/Go/Cancel row in the cell.
@@ -248,7 +293,7 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 
 ```ts
 { when: string; who: string;
-  section: 'Sign-off' | 'Stages' | 'Attachments' | 'Fabrication' | 'Release' | 'Work Validation';
+  section: 'Sign-off' | 'Stages' | 'Attachments' | 'Fabrication' | 'Release';
   action: string; from?: string; to?: string;
   routing: string;               // routing label at time of change
   inputs?: { label: string; value: string }[];   // sign-off entries: every editable field + value at sign-off
@@ -302,4 +347,4 @@ Step 19 is exactly one of two stages, chosen by `buildStages()` (`data/workflow.
 
 - **Fabrication select labels**: `Location` and `Revised Joint Design` options exist only at runtime (`withRuntimeOptions()` in `joint-page`); the static `FABRICATION_FIELDS` entries have none. Any place that shows a fabrication value (e.g. Fit-Up Insp verification grid) must resolve its label through that helper, or it shows the raw stored code (`bj-g` instead of `BJ-G`).
 - **Consumable insert vs filler metal choices**: they share `METAL_TYPE_OPTIONS` / `METAL_SIZE_OPTIONS` (`workflow.ts`) because "Only Consumable Insert used as filler" copies the Fit stage's insert type/size into the filler fields. If the two lists ever differ, a copied value that is missing from the filler list renders as a blank select. Keep them one list.
-- **`SignoffRecord.fields` labels**: `RoutingService` (signStage/reopenStage/forceRouting/goBackRouting) builds these from the raw `stage.inputs`/`stage.signoffInputs` key/value pairs, not from the properly-labeled `SignoffInput[]` the caller may pass in. Always resolve the display label via the `labelFor(stage, key)` helper (falls back to the field's key only if no matching `StageField`/`SignoffField` is found) — fixed 2026-09-21 after Signoff History showed raw keys like `consumableInsertType` instead of "Consumable Insert Type".
+- **`SignoffRecord.fields` labels**: `SignoffService` (signStage/reopenStage) and `RoutingService` (forceRouting/goBackRouting) build these from the raw `stage.inputs`/`stage.signoffInputs` key/value pairs, not from the properly-labeled `SignoffInput[]` the caller may pass in. Always resolve the display label via the `labelFor(stage, key)` helper — exported from `data/workflow.ts` alongside `show()` (the History Old/New em-dash formatter) so every service that logs history uses the same two helpers instead of each keeping its own copy (falls back to the field's key only if no matching `StageField`/`SignoffField` is found) — fixed 2026-09-21 after Signoff History showed raw keys like `consumableInsertType` instead of "Consumable Insert Type".
