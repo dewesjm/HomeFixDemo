@@ -5,18 +5,20 @@ import { Router } from '@angular/router';
 import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 
 import { ASSIGNMENTS, Assignment } from '../../data/assignments';
-import { JOBS } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
+import { currentRoutingLabel } from '../../data/workflow';
+import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
 import { ColumnFilterComponent } from '../../shared/column-filter.component';
 
 /* per-column filter keys -> how to read the matching text off an Assignment (WICC Date matches
    against the same formatted display text the column shows, not the raw ISO date) */
-const COLUMN_FIELDS: Record<string, (a: Assignment) => string> = {
+const COLUMN_FIELDS: Record<string, (a: Assignment, routing: string) => string> = {
   jobId: a => a.jobId,
   hull: a => a.hull,
   drawing: a => a.drawing,
   joint: a => a.joint,
-  routing: a => a.routing,
+  routing: (_, routing) => routing,
   location: a => a.location,
   specificLocation: a => a.specificLocation,
   assignmentNumber: a => a.assignmentNumber,
@@ -32,6 +34,18 @@ const COLUMN_FIELDS: Record<string, (a: Assignment) => string> = {
 })
 export class MyAssignmentsComponent {
   private router = inject(Router);
+  private store = inject(WorkflowStore);
+
+  /* XREFID is sometimes blank (mock data imperfection); a job's real key is hull + drawing + joint */
+  private jobsByKey = new Map(JOBS.map(j => [`${j.hull}|${j.drawing}|${j.joint}`, j]));
+  private jobFor(a: Assignment): Job | undefined {
+    return this.jobsByKey.get(`${a.hull}|${a.drawing}|${a.joint}`);
+  }
+  /* live current routing of the linked job, same as the joint page and Search show */
+  routingFor(a: Assignment): string {
+    const job = this.jobFor(a);
+    return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
+  }
 
   keyword = signal('');
   banner = signal(bannerFor('all'));
@@ -60,7 +74,7 @@ export class MyAssignmentsComponent {
       list = list.filter(a =>
         a.hull.toLowerCase().includes(q) ||
         a.drawing.toLowerCase().includes(q) ||
-        a.routing.toLowerCase().includes(q) ||
+        this.routingFor(a).toLowerCase().includes(q) ||
         a.joint.toLowerCase().includes(q) ||
         a.location.toLowerCase().includes(q)
       );
@@ -68,12 +82,11 @@ export class MyAssignmentsComponent {
     const filters = Object.entries(this.columnFilters()).filter(([, v]) => v.trim());
     if (!filters.length) return list;
     return list.filter(a =>
-      filters.every(([key, v]) => COLUMN_FIELDS[key](a).toLowerCase().includes(v.toLowerCase().trim())));
+      filters.every(([key, v]) => COLUMN_FIELDS[key](a, this.routingFor(a)).toLowerCase().includes(v.toLowerCase().trim())));
   });
 
-  /* XREFID is sometimes blank (mock data imperfection); a job's real key is hull + drawing + joint */
   openDetails(a: Assignment) {
-    const job = JOBS.find(j => j.hull === a.hull && j.drawing === a.drawing && j.joint === a.joint);
+    const job = this.jobFor(a);
     if (job) this.router.navigate(['/jobs', job.id], { queryParams: { from: 'assignments' } });
   }
 

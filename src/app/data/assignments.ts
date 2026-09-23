@@ -1,6 +1,6 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
-import { getShops } from './workflow';
+import { getShops, seededWorkflow, currentRoutingLabel } from './workflow';
 import { allWtns } from './procedures';
 
 export interface Assignment {
@@ -11,7 +11,8 @@ export interface Assignment {
   drawing: string;
   joint: string;
   trade: string;
-  routing: string;
+  /* no stored routing: My Assignments shows the linked job's live current routing, so it can't drift
+     from what the joint page shows (see my-assignments.component.ts routingFor) */
   location: string;           /* shop, same list as Fabrication's Location field; 'Ship' when there's no XREFID (see below) */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
   /* shipboard location — only set when jobId is blank: an XREFID-less assignment isn't tracked
@@ -95,12 +96,12 @@ function generateAssignments(): Assignment[] {
      one, or none). 2026-09-23, per the user: every role should land in the 5-10 range. */
   const ROLE_ROUTINGS: Record<string, string[]> = {
     'Welding': ['Tack', 'Root', 'Layer', 'Final Weld', 'Deferred Tack'],
-    'NQC Inspector': ['Pre-Fit', 'Root NDT UT/RT', 'Layer NDT VT/5X', 'Final NDT MT/PT'],
+    'NQC Inspector': ['Root NDT UT/RT', 'Layer NDT VT/5X', 'Final NDT MT/PT'],
     'Fitting': ['Fit'],
     'Inspector': ['Fit-Up Insp'],
     'Foreman': ['Fit-Up Insp', 'Fit-Up Release'],
-    'O63 Records': ['O63 Review'],
-    'O04 Records': ['O04 Review'],
+    'O63 Records': ['O63 Records Review'],
+    'O04 Records': ['O04 Records Review'],
   };
   /* each role gets its own random count in [5, 10] (not a flat number) -- deterministic since rand()
      is seeded, so the mix varies role to role the way real assignment volume would */
@@ -128,9 +129,25 @@ function generateAssignments(): Assignment[] {
     return pool[idx];
   };
 
+  /* jobs grouped by the routing they're seeded at, so an assignment lands on a job actually at
+     that step instead of a random one; a label no job is seeded at (e.g. Deferred Tack) falls back
+     to any job at one of the role's other routings */
+  const jobsAtRouting = new Map<string, typeof JOBS>();
+  for (const j of JOBS) {
+    if (j._fresh) continue;
+    const label = currentRoutingLabel(seededWorkflow(j).stages);
+    jobsAtRouting.set(label, [...(jobsAtRouting.get(label) ?? []), j]);
+  }
+  const jobFor = (role: string, routing: string) => {
+    const exact = jobsAtRouting.get(routing);
+    if (exact?.length) return pick(exact);
+    const nearby = ROLE_ROUTINGS[role].flatMap(r => jobsAtRouting.get(r) ?? []);
+    return nearby.length ? pick(nearby) : pick(JOBS);
+  };
+
   for (let i = 0; i < ROUTING_SEQUENCE.length; i++) {
-    const job = pick(JOBS);
     const { role: primaryRole, routing } = ROUTING_SEQUENCE[i];
+    const job = jobFor(primaryRole, routing);
     const dayOffset = Math.floor(rand() * 14);
     const due = new Date(Date.now() + dayOffset * 86400000);
     const assigned = new Date(Date.now() - Math.floor(rand() * 7) * 86400000);
@@ -146,7 +163,6 @@ function generateAssignments(): Assignment[] {
       drawing: job.drawing,
       joint: job.joint,
       trade: job.trade,
-      routing,
       /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
          like any other assignment; only a couple of examples get the shipboard treatment below */
       location: pick(shops),
