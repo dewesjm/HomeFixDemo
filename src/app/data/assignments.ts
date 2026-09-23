@@ -18,9 +18,8 @@ export interface Assignment {
      against a shop/bay, it's physically aboard the ship, so it's found by deck/frame position instead */
   deck: string;
   frame: string;
-  ps: string;      /* Port / Starboard / CL */
-  cl: string;      /* offset from centerline */
-  usage: string;   /* compartment usage/purpose */
+  pscl: string;    /* P / S / CL -- one field, same as Fabrication's own P/S/CL droplist */
+  usage: string;   /* compartment usage/purpose, short code */
   assignedRoles: string[];
   source: string;   /* demo only: which external system the assignment came from, by role */
   dueDate: string;
@@ -58,12 +57,15 @@ const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
 
-/* shipboard location, used instead of shop/bay when there's no XREFID */
-const DECKS = ['01 Level', '02 Level', '03 Level', 'Main Deck', '1st Platform', '2nd Platform', '3rd Platform', 'Hold'];
-const FRAMES = ['Fr 12', 'Fr 26', 'Fr 45', 'Fr 60', 'Fr 88', 'Fr 104', 'Fr 130', 'Fr 156', 'Fr 172'];
-const PS_OPTIONS = ['Port', 'Starboard', 'CL'];
-const CL_OFFSETS = ['On CL', "2'-0\"", "4'-6\"", "6'-3\"", "8'-9\"", "11'-0\""];
-const USAGE_POOL = ['Void', 'Fuel Oil Tank', 'Ballast Tank', 'Machinery Room', 'Berthing', 'Passageway', 'Magazine', 'Sonar Dome', 'Pump Room'];
+/* shipboard location, used instead of shop/bay when there's no XREFID -- compartment-number style
+   codes (e.g. "2 150 P HAB"), not descriptive text; P/S/CL and Usage reuse Fabrication's own
+   pscl/usage option sets (workflow.ts FABRICATION_FIELDS) rather than a separate invented pool,
+   Usage abbreviated to a short code instead of the full label. 2026-09-23, replacing earlier
+   descriptive placeholders ('1st Platform', 'Fr 156', 'Fuel Oil Tank', a separate CL offset field). */
+const DECKS = ['01', '02', '03', '1', '2', '3', '4'];
+const FRAMES = ['12', '26', '45', '60', '88', '104', '130', '150', '156', '172'];
+const PSCL_OPTIONS = ['P', 'S', 'CL'];
+const USAGE_POOL = ['GALY', 'LIVE', 'HAB', 'ENGR', 'CARGO', 'DK', 'TANK', 'MACH', 'OTHR'];
 
 const JOB_DESCRIPTIONS = [
   'Main deck framing, structural butt weld', 'Bulkhead penetration, pipe-to-shell weld', 'Hull plating seam, longitudinal joint',
@@ -151,8 +153,7 @@ function generateAssignments(): Assignment[] {
       specificLocation: pick(SPECIFIC_LOCATIONS),
       deck: '',
       frame: '',
-      ps: '',
-      cl: '',
+      pscl: '',
       usage: '',
       assignedRoles,
       source: pick(SOURCES_BY_ROLE[primaryRole] ?? ['ERP']),
@@ -179,8 +180,7 @@ function generateAssignments(): Assignment[] {
     a.specificLocation = '';
     a.deck = pick(DECKS);
     a.frame = pick(FRAMES);
-    a.ps = pick(PS_OPTIONS);
-    a.cl = pick(CL_OFFSETS);
+    a.pscl = pick(PSCL_OPTIONS);
     a.usage = pick(USAGE_POOL);
   };
   const earliestWelding = [...assignments]
