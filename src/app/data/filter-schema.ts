@@ -18,7 +18,7 @@ function uniqueOpts(getter: (j: Job) => string): { label: string; value: string 
 }
 
 export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'hull',            label: 'Hull',          type: 'text',        group: 'Job',        field: 'hull', required: true },
+  { key: 'hull',            label: 'Hull',          type: 'text',        group: 'Job',        field: 'hull' },
 { key: 'id', label: 'XREFID', type: 'text', group: 'Job', field: 'xrefid' },
   { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',          options: uniqueOpts(j => j.trade) },
   { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician',     options: TECHNICIAN_OPTIONS },
