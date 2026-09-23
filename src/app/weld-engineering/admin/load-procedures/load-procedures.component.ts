@@ -21,6 +21,13 @@ type EditableRow = {
   status: string;
   wtns: string;                    /* semicolon-separated, same as PROCEDURE_CSV_COLUMNS */
   weldProcess: string;
+  gwp: string;
+  wpsRev: string;
+  effectiveDate: string;
+  processType: string;
+  baseMetal1Type: string;
+  baseMetal2Type: string;
+  fillerMetalType: string;
   phMin: string; phMax: string; ipMin: string; ipMax: string;
   rules: string;
   conditions: string;
@@ -70,6 +77,13 @@ export class LoadProceduresComponent {
         status: raw['status'] || raw['Status'] || 'draft',
         wtns: raw['wtns'] || raw['WTNs'] || '',
         weldProcess: raw['weldProcess'] || raw['Weld Process'] || '',
+        gwp: raw['gwp'] || raw['GWP'] || '',
+        wpsRev: raw['wpsRev'] || raw['WPS Rev'] || '',
+        effectiveDate: raw['effectiveDate'] || raw['Effective Date'] || '',
+        processType: raw['processType'] || raw['Process Type'] || '',
+        baseMetal1Type: raw['baseMetal1Type'] || raw['Base Metal 1 Type'] || '',
+        baseMetal2Type: raw['baseMetal2Type'] || raw['Base Metal 2 Type'] || '',
+        fillerMetalType: raw['fillerMetalType'] || raw['Filler Metal Type'] || '',
         phMin: raw['phMin'] || raw['PH Min'] || '',
         phMax: raw['phMax'] || raw['PH Max'] || '',
         ipMin: raw['ipMin'] || raw['IP Min'] || '',
@@ -101,9 +115,9 @@ export class LoadProceduresComponent {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _existing: false, _errors: [], _saved: false, id: 'W-901', title: 'GTAW procedure for pipe joints', status: 'active', wtns: '07:11.5-3', weldProcess: 'GTAW', phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.', qualificationsRequired: 'ASME Section IX welder qualification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-902', title: 'SMAW procedure for structural joints', status: 'active', wtns: '09:10.8-4', weldProcess: 'SMAW', phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.', qualificationsRequired: 'AWS D1.1 structural welder certification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-903', title: 'FCAW procedure for pipe joints', status: 'draft', wtns: '08:14.2-2; 07:12.0-1', weldProcess: 'FCAW', phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.', qualificationsRequired: 'Position qualification: 6G' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-901', title: 'GTAW procedure for pipe joints', status: 'active', wtns: '07:11.5-3', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalType: 'ER70S-6', phMin: '120', phMax: '180', ipMin: '90', ipMax: '150', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.', qualificationsRequired: 'ASME Section IX welder qualification' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-902', title: 'SMAW procedure for structural joints', status: 'active', wtns: '09:10.8-4', weldProcess: 'SMAW', gwp: 'W-902', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalType: 'E7018', phMin: 'NC', phMax: '170', ipMin: '85', ipMax: '140', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.', qualificationsRequired: 'AWS D1.1 structural welder certification' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-903', title: 'FCAW procedure for pipe joints', status: 'draft', wtns: '08:14.2-2; 07:12.0-1', weldProcess: 'FCAW', gwp: 'W-903', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semi-Automatic', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalType: 'E6013', phMin: '115', phMax: 'NC', ipMin: 'NC', ipMax: '145', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.', qualificationsRequired: 'Position qualification: 6G' },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -124,20 +138,39 @@ export class LoadProceduresComponent {
 
     for (const row of pending) {
       try {
+        /* fields the bulk-import grid doesn't collect: keep the existing record's values on update
+           (don't blank out a procedure's WPS detail sections just because it was re-imported) rather
+           than defaulting to '' the way the pre-existing override* fields already do below. */
+        const existing = getProcedure(row.id);
         const payload = {
           id: row.id,
           title: row.title,
           status: row.status as ProcedureStatus,
           wtns: splitList(row.wtns),
           weldProcess: row.weldProcess,
+          gwp: row.gwp, wpsRev: row.wpsRev, effectiveDate: row.effectiveDate,
+          processType: row.processType, baseMetal1Type: row.baseMetal1Type,
+          baseMetal2Type: row.baseMetal2Type,
+          baseMetalThicknessMin: existing?.baseMetalThicknessMin ?? '', baseMetalThicknessMax: existing?.baseMetalThicknessMax ?? '',
+          jointType: existing?.jointType ?? '', grooveAngle: existing?.grooveAngle ?? '',
+          rootOpening: existing?.rootOpening ?? '', backing: existing?.backing ?? '',
+          weldPosition: existing?.weldPosition ?? '', weldProgression: existing?.weldProgression ?? '',
+          fillerMetalType: row.fillerMetalType,
+          fillerMetalClassification: existing?.fillerMetalClassification ?? '', fillerMetalSizeRange: existing?.fillerMetalSizeRange ?? '',
           phMin: row.phMin, phMax: row.phMax, ipMin: row.ipMin, ipMax: row.ipMax,
           overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
+          currentType: existing?.currentType ?? '', powerSource: existing?.powerSource ?? '',
+          shieldingGas: existing?.shieldingGas ?? '', gasFlowRate: existing?.gasFlowRate ?? '', backingGas: existing?.backingGas ?? '',
+          heatInputMin: existing?.heatInputMin ?? '', heatInputMax: existing?.heatInputMax ?? '',
+          amperageRange: existing?.amperageRange ?? '', voltageRange: existing?.voltageRange ?? '', travelSpeedRange: existing?.travelSpeedRange ?? '',
+          pwhtTemp: existing?.pwhtTemp ?? '', pwhtTime: existing?.pwhtTime ?? '',
           rules: splitList(row.rules),
           conditions: splitList(row.conditions),
           qualificationsRequired: splitList(row.qualificationsRequired),
+          revisionHistory: existing?.revisionHistory ?? [],
           createdBy: 'Import',
         };
-        if (getProcedure(row.id)) {
+        if (existing) {
           const { id, ...rest } = payload;
           updateProcedure(id, rest);
         } else {

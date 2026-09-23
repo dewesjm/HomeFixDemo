@@ -33,6 +33,135 @@
         }
       </select>
     </div>
+    <div class="stage-field">
+      <label class="stage-field-label">GWP</label>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. W-123" [(ngModel)]="form.gwp" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">WPS Rev</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.wpsRev" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Effective Date</label>
+      <input type="date" class="input input-sm input-bordered w-full" [(ngModel)]="form.effectiveDate" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Process Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.processType">
+        <option value="">—</option>
+        @for (p of processTypes; track p) {
+          <option [value]="p">{{ p }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">1. Base Metal</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Base Metal 1 Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal1Type">
+        <option value="">—</option>
+        @for (m of baseMetalTypes; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Base Metal 2 Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal2Type">
+        <option value="">—</option>
+        @for (m of baseMetalTypes; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Thickness Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.baseMetalThicknessMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Thickness Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.baseMetalThicknessMax" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">2. Joint Design</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Joint Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.jointType">
+        <option value="">—</option>
+        @for (j of jointTypes; track j) {
+          <option [value]="j">{{ j }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Groove Angle</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.grooveAngle" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Root Opening</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.rootOpening" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Backing</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.backing">
+        <option value="">—</option>
+        @for (b of backingOptions; track b) {
+          <option [value]="b">{{ b }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">3. Welding Position</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Position</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldPosition">
+        <option value="">—</option>
+        @for (wp of weldPositions; track wp.code) {
+          <option [value]="wp.code">{{ wp.code }} - {{ wp.description }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Progression</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldProgression">
+        <option value="">—</option>
+        @for (wp of weldProgressions; track wp) {
+          <option [value]="wp">{{ wp }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">4. Filler Metal</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Filler Metal Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalType">
+        <option value="">—</option>
+        @for (m of fillerMetalTypes; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Classification</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalClassification">
+        <option value="">—</option>
+        @for (m of fillerMetalTypes; track m) {
+          <option [value]="m">{{ m }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Size Range</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.fillerMetalSizeRange" />
+    </div>
   </div>
 
   <h3 class="section-sub" style="margin-top: 1rem">Applicable WTNs</h3>
@@ -46,7 +175,25 @@
     }
   </div>
 
-  <h3 class="section-sub" style="margin-top: 1rem">PH/IP Requirements</h3>
+  <!-- Welder Qualifications -->
+  <h3 class="section-sub" style="margin-top: 1rem">5. Welder Qualifications</h3>
+  <div class="flex flex-wrap gap-2 mb-2">
+    @for (q of form.qualificationsRequired; track $index) {
+      <span class="badge badge-lg gap-1.5">
+        {{ q }}
+        <button type="button" (click)="removeListItem('qualificationsRequired', $index)"><svg lucideX class="size-3"></svg></button>
+      </span>
+    }
+  </div>
+  <div class="flex gap-2">
+    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a qualification…"
+           [(ngModel)]="newQualification" (keydown.enter)="addListItem('qualificationsRequired', newQualification)" />
+    <button type="button" class="btn btn-sm" (click)="addListItem('qualificationsRequired', newQualification)">
+      <svg lucidePlus class="size-4"></svg> Add
+    </button>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">6. Preheat & Interpass Temperatures</h3>
   <div class="stage-inputs">
     <div class="stage-field">
       <label class="stage-field-label">PH Min</label>
@@ -90,6 +237,100 @@
     </div>
   </div>
 
+  <h3 class="section-sub" style="margin-top: 1rem">7. Equipment</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Current Type</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.currentType">
+        <option value="">—</option>
+        @for (c of currentTypes; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
+      </select>
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Power Source</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.powerSource" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">8. Gas</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Shielding Gas</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.shieldingGas" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Gas Flow Rate</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.gasFlowRate" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Backing Gas</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.backingGas" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">9. Heat Input</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Heat Input Min</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.heatInputMin" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Heat Input Max</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.heatInputMax" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">10. Parameters</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">Amperage Range</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.amperageRange" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Voltage Range</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.voltageRange" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Travel Speed Range</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.travelSpeedRange" />
+    </div>
+  </div>
+
+  <h3 class="section-sub" style="margin-top: 1rem">11. Heat Treatment</h3>
+  <div class="stage-inputs">
+    <div class="stage-field">
+      <label class="stage-field-label">PWHT Temp</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.pwhtTemp" />
+    </div>
+    <div class="stage-field">
+      <label class="stage-field-label">PWHT Time</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.pwhtTime" />
+    </div>
+  </div>
+
+  @if (wasActive) {
+    <h3 class="section-sub" style="margin-top: 1rem">Revision Note<span class="req">*</span></h3>
+    <p class="text-sm" style="color: var(--app-text-muted); margin-bottom: 0.5rem">
+      This procedure is Active -- describe what changed. It's added to the revision record shown at the top of the PDF.
+    </p>
+    <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Updated preheat requirements"
+           [(ngModel)]="revisionNote" />
+
+    @if (form.revisionHistory.length) {
+      <h3 class="section-sub" style="margin-top: 1rem">Revision History</h3>
+      <table class="table table-sm">
+        <thead><tr><th>Rev</th><th>Date</th><th>By</th><th>Note</th></tr></thead>
+        <tbody>
+          @for (rv of form.revisionHistory; track $index) {
+            <tr><td>{{ rv.wpsRev }}</td><td>{{ rv.date }}</td><td>{{ rv.by }}</td><td>{{ rv.note }}</td></tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+
   <!-- Rules -->
   <h3 class="section-sub" style="margin-top: 1rem">Rules</h3>
   <div class="flex flex-wrap gap-2 mb-2">
@@ -122,24 +363,6 @@
     <input type="text" class="input input-sm input-bordered grow" placeholder="Add a condition…"
            [(ngModel)]="newCondition" (keydown.enter)="addListItem('conditions', newCondition)" />
     <button type="button" class="btn btn-sm" (click)="addListItem('conditions', newCondition)">
-      <svg lucidePlus class="size-4"></svg> Add
-    </button>
-  </div>
-
-  <!-- Qualifications Required -->
-  <h3 class="section-sub" style="margin-top: 1rem">Qualifications Required</h3>
-  <div class="flex flex-wrap gap-2 mb-2">
-    @for (q of form.qualificationsRequired; track $index) {
-      <span class="badge badge-lg gap-1.5">
-        {{ q }}
-        <button type="button" (click)="removeListItem('qualificationsRequired', $index)"><svg lucideX class="size-3"></svg></button>
-      </span>
-    }
-  </div>
-  <div class="flex gap-2">
-    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a qualification…"
-           [(ngModel)]="newQualification" (keydown.enter)="addListItem('qualificationsRequired', newQualification)" />
-    <button type="button" class="btn btn-sm" (click)="addListItem('qualificationsRequired', newQualification)">
       <svg lucidePlus class="size-4"></svg> Add
     </button>
   </div>

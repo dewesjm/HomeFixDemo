@@ -48,6 +48,13 @@
             <th style="min-width: 6rem">Status</th>
             <th style="min-width: 8rem">WTNs</th>
             <th style="min-width: 6rem">Weld Process</th>
+            <th style="min-width: 6rem">GWP</th>
+            <th style="min-width: 5rem">WPS Rev</th>
+            <th style="min-width: 8rem">Effective Date</th>
+            <th style="min-width: 8rem">Process Type</th>
+            <th style="min-width: 8rem">Base Metal 1 Type</th>
+            <th style="min-width: 8rem">Base Metal 2 Type</th>
+            <th style="min-width: 8rem">Filler Metal Type</th>
             <th style="min-width: 5rem">PH Min</th>
             <th style="min-width: 5rem">PH Max</th>
             <th style="min-width: 5rem">IP Min</th>
@@ -89,6 +96,13 @@
                   }
                 </select>
               </td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.gwp" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.wpsRev" /></td>
+              <td><input type="date" class="input input-xs w-full" [(ngModel)]="row.effectiveDate" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.processType" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal1Type" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal2Type" /></td>
+              <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalType" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.phMin" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.phMax" /></td>
               <td><input class="input input-xs w-full" [(ngModel)]="row.ipMin" /></td>

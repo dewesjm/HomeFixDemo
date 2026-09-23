@@ -19,7 +19,10 @@ type Row = Procedure & { wtnsText: string };
   templateUrl: './procedure-lookup.component.html'
 })
 export class ProcedureLookupComponent {
-  table = new TableState<Row>(['id', 'title', 'wtnsText'], { status: inArray });
+  table = new TableState<Row>(
+    ['id', 'title', 'wtnsText', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalType'],
+    { status: inArray }
+  );
   statusOptions = PROCEDURE_STATUS_OPTIONS;
 
   private rows = computed<Row[]>(() => procedures().map(p => ({ ...p, wtnsText: p.wtns.join(', ') })));

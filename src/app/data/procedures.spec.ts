@@ -6,9 +6,21 @@ import {
 const blankProcedure = (id: string): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
   id, title: 'Test procedure', status: 'draft',
   wtns: [WTN_POOL[0]], weldProcess: 'GTAW',
+  gwp: id, wpsRev: '0', effectiveDate: '',
+  processType: '',
+  baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
+  jointType: '', grooveAngle: '', rootOpening: '', backing: '',
+  weldPosition: '', weldProgression: '',
+  fillerMetalType: '', fillerMetalClassification: '', fillerMetalSizeRange: '',
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
+  currentType: '', powerSource: '',
+  shieldingGas: '', gasFlowRate: '', backingGas: '',
+  heatInputMin: '', heatInputMax: '',
+  amperageRange: '', voltageRange: '', travelSpeedRange: '',
+  pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [], qualificationsRequired: [],
+  revisionHistory: [],
   createdBy: 'Test',
 });
 

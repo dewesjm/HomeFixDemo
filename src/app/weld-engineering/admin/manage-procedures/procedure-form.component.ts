@@ -6,17 +6,31 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { getWeldPositions } from '../../../data/workflow';
 import {
   addProcedure, updateProcedure, getProcedure, PROCEDURE_STATUS_OPTIONS, WTN_POOL, WELD_PROCESSES,
+  PROCESS_TYPES, BASE_METAL_TYPES, FILLER_METAL_TYPES, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
 
 const EMPTY_FORM: Procedure = {
   id: '', title: '', status: 'draft',
   wtns: [], weldProcess: '',
+  gwp: '', wpsRev: '', effectiveDate: '',
+  processType: '',
+  baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
+  jointType: '', grooveAngle: '', rootOpening: '', backing: '',
+  weldPosition: '', weldProgression: '',
+  fillerMetalType: '', fillerMetalClassification: '', fillerMetalSizeRange: '',
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
+  currentType: '', powerSource: '',
+  shieldingGas: '', gasFlowRate: '', backingGas: '',
+  heatInputMin: '', heatInputMax: '',
+  amperageRange: '', voltageRange: '', travelSpeedRange: '',
+  pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [], qualificationsRequired: [],
+  revisionHistory: [],
   createdBy: 'User', createdAt: '', updatedAt: ''
 };
 
@@ -33,10 +47,21 @@ export class ProcedureFormComponent implements OnInit {
 
   isEdit = signal(false);
   form: Procedure = { ...EMPTY_FORM };
+  /* true when the procedure was Active at load time -- a revision note is then required to save any change */
+  wasActive = false;
+  revisionNote = '';
 
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   wtnPool = WTN_POOL;
   weldProcesses = WELD_PROCESSES;
+  processTypes = PROCESS_TYPES;
+  baseMetalTypes = BASE_METAL_TYPES;
+  fillerMetalTypes = FILLER_METAL_TYPES;
+  jointTypes = JOINT_TYPES;
+  backingOptions = BACKING_OPTIONS;
+  weldProgressions = WELD_PROGRESSIONS;
+  currentTypes = CURRENT_TYPES;
+  weldPositions = getWeldPositions();
 
   /* pending text for each "add a new list item" input */
   newRule = '';
@@ -49,7 +74,11 @@ export class ProcedureFormComponent implements OnInit {
       this.isEdit.set(true);
       const existing = getProcedure(id);
       if (existing) {
-        this.form = { ...existing, wtns: [...existing.wtns], rules: [...existing.rules], conditions: [...existing.conditions], qualificationsRequired: [...existing.qualificationsRequired] };
+        this.form = {
+          ...existing, wtns: [...existing.wtns], rules: [...existing.rules], conditions: [...existing.conditions],
+          qualificationsRequired: [...existing.qualificationsRequired], revisionHistory: [...existing.revisionHistory]
+        };
+        this.wasActive = existing.status === 'active';
       } else {
         this.router.navigate(['/weld-engineering/admin']);
       }
@@ -78,7 +107,17 @@ export class ProcedureFormComponent implements OnInit {
       this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Procedure ID is required' });
       return;
     }
+    if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {
+      this.toast.add({ severity: 'warn', summary: 'Revision note required', detail: 'This procedure is Active -- describe the change before saving' });
+      return;
+    }
     if (this.isEdit()) {
+      if (this.wasActive) {
+        this.form.revisionHistory = [
+          ...this.form.revisionHistory,
+          { wpsRev: this.form.wpsRev, date: new Date().toISOString().slice(0, 10), note: this.revisionNote.trim(), by: 'User' }
+        ];
+      }
       const { id, createdAt, updatedAt, ...rest } = this.form;
       updateProcedure(id, rest);
       this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.id} updated` });
