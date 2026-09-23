@@ -12,8 +12,7 @@ import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
-    LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog,
-    LucideList, LucideListTree
+    LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog
 } from '@lucide/angular';
 import { getQuickLinks, QuickLink } from './data/quick-links';
 
@@ -29,8 +28,7 @@ const UPDATE_POLL_MS = 5 * 60 * 1000;
     LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
-  LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog,
-  LucideList, LucideListTree
+  LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -55,10 +53,6 @@ export class AppComponent {
   private suppressToggle = false;
 
   activeSystem = signal('Weld Record');
-
-  /* Weld Record's Admin section: nested submenu (default) vs. all items flattened into one list */
-  weldRecordAdminFlat = signal(false);
-  toggleWeldRecordAdminFlat() { this.weldRecordAdminFlat.update(v => !v); }
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;

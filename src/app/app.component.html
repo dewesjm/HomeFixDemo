@@ -84,55 +84,27 @@
               <li><a routerLink="/adaptive" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search</a></li>
               <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg> Makeup</a></li>
               <li class="dropdown-divider"></li>
-              @if (weldRecordAdminFlat()) {
-                <li class="menu-flat-toggle">
-                  <button type="button" (click)="toggleWeldRecordAdminFlat()" title="Switch Admin back to a nested submenu">
-                    <svg lucideListTree class="size-4"></svg><span> Nested Admin menu</span>
-                  </button>
-                </li>
-                <li><a routerLink="/admin/routing" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
-                <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
-                <li><a routerLink="/admin/set-routing" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Routing</a></li>
-                <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
-                <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
-                <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
-                <li><a routerLink="/admin/routing-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Options</a></li>
-                <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
-                <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
-                <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
-                <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
-                <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
-                <li><a routerLink="/admin/material-classification" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Material Classification</a></li>
-                <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
-              } @else {
-                <li class="has-submenu">
-                  <details>
-                    <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
-                    <ul class="submenu">
-                      <li class="menu-flat-toggle">
-                        <button type="button" (click)="toggleWeldRecordAdminFlat()" title="Switch Admin to a flat list">
-                          <svg lucideList class="size-4"></svg><span> Flatten Admin menu</span>
-                        </button>
-                      </li>
-                      <li class="dropdown-divider"></li>
-                      <li><a routerLink="/admin/routing" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
-                      <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
-                      <li><a routerLink="/admin/set-routing" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Routing</a></li>
-                      <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
-                      <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
-                      <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
-                      <li><a routerLink="/admin/routing-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Options</a></li>
-                      <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
-                      <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
-                      <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
-                      <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
-                      <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
-                      <li><a routerLink="/admin/material-classification" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Material Classification</a></li>
-                      <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
-                    </ul>
-                  </details>
-                </li>
-              }
+              <li class="has-submenu">
+                <details>
+                  <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
+                  <ul class="submenu">
+                    <li><a routerLink="/admin/routing" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>
+                    <li><a routerLink="/admin/characteristics" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Codes</a></li>
+                    <li><a routerLink="/admin/set-routing" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Set Routing</a></li>
+                    <li><a routerLink="/admin/signoff-fields" routerLinkActive="menu-active"><svg lucideBadgeCheck class="size-4"></svg> Signoff Fields</a></li>
+                    <li><a routerLink="/admin/ndt" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Penetrant</a></li>
+                    <li><a routerLink="/admin/locations" routerLinkActive="menu-active"><svg lucideMapPin class="size-4"></svg> Locations</a></li>
+                    <li><a routerLink="/admin/routing-options" routerLinkActive="menu-active"><svg lucideStepForward class="size-4"></svg> Routing Options</a></li>
+                    <li><a routerLink="/admin/weld-positions" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Positions</a></li>
+                    <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
+                    <li><a routerLink="/admin/joint-designs" routerLinkActive="menu-active"><svg lucideLayers class="size-4"></svg> Joint Designs</a></li>
+                    <li><a routerLink="/admin/teams" routerLinkActive="menu-active"><svg lucideShield class="size-4"></svg> Teams</a></li>
+                    <li><a routerLink="/admin/material-traceability" routerLinkActive="menu-active"><svg lucideLink class="size-4"></svg> Material Traceability</a></li>
+                    <li><a routerLink="/admin/material-classification" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Material Classification</a></li>
+                    <li><a routerLink="/admin/quick-links" routerLinkActive="menu-active"><svg lucideExternalLink class="size-4"></svg> Quick Links</a></li>
+                  </ul>
+                </details>
+              </li>
             </ul>
           </details>
         </li>
