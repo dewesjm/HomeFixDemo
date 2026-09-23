@@ -11,7 +11,7 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
 
 import { JOBS, Job } from '../../data/jobs';
-import { WorkflowService } from '../../services/workflow.service';
+import { RoutingService } from '../services/routing.service';
 import { HistoryEntry, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
@@ -41,7 +41,7 @@ interface ActivityRow extends HistoryEntry {
   templateUrl: './work-history.component.html'
 })
 export class WorkHistoryComponent {
-  private wfService = inject(WorkflowService);
+  private wfService = inject(RoutingService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private confirmSvc = inject(ConfirmService);

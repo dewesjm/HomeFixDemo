@@ -23,7 +23,7 @@ import {
   applyFilters, defaultValuesFor, getField, isEmpty,
   loadVariants, saveVariants
 } from '../../data/filter-schema';
-import { WorkflowService } from '../../services/workflow.service';
+import { RoutingService } from '../services/routing.service';
 import { currentRoutingLabel } from '../../data/workflow';
 
 const DEFAULT_KEYS = ['hull', 'id', 'drawing', 'joint', 'ndt'];
@@ -119,7 +119,7 @@ function saveColumnKeys(keys: string[]) {
 export class AdaptiveSearchComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
-  constructor(private router: Router, private wfService: WorkflowService) {
+  constructor(private router: Router, private wfService: RoutingService) {
     effect(() => this.table.setRows(this.filtered()));
     effect(() => {
       const open = this.showAdapt();

@@ -1,15 +1,15 @@
 /* state for each job's workflow; mutations log history + persist */
-import { STORAGE, clearStaleCaches } from '../data/storage-keys';
+import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
-import { ToastService } from '../shared/toast.service';
-import { JOBS, Job } from '../data/jobs';
+import { ToastService } from '../../shared/toast.service';
+import { JOBS, Job } from '../../data/jobs';
 import { SyncService } from './sync.service';
-import { stampWho } from '../data/people';
+import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, SignoffInput, InstalledComponent, Attachment, StageField, WorkflowStage,
   WorkType, WORK_TYPE_OPTIONS, currentRoutingLabel, seededWorkflow, newWorkflow, buildStages, getTemplates, REPAIR_STAGE, seedFabricationData,
   fabricationSnapshot
-} from '../data/workflow';
+} from '../../data/workflow';
 
 
 /* value as shown in the history Old/New columns; em dash when empty */
@@ -31,7 +31,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 const CURRENT_VERSION = '2.7.0';
 
 @Injectable({ providedIn: 'root' })
-export class WorkflowService {
+export class RoutingService {
   private sync = inject(SyncService);
   private messages = inject(ToastService);
   private store = new Map<string, WritableSignal<JobWorkflow>>();
@@ -537,7 +537,7 @@ export class WorkflowService {
   }
 
   private load(): Record<string, JobWorkflow> {
-    WorkflowService.clearStaleCachesIfNeeded();
+    RoutingService.clearStaleCachesIfNeeded();
     try {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};

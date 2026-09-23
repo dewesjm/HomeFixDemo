@@ -1,7 +1,7 @@
 /* sidebar dot showing synced / pending / offline */
 import { Component, computed, inject } from '@angular/core';
 import { TooltipDirective } from '../../shared/tooltip.directive';
-import { SyncService } from '../../services/sync.service';
+import { SyncService } from '../services/sync.service';
 
 @Component({
   selector: 'app-sync-status',

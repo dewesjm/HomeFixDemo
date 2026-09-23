@@ -16,7 +16,7 @@ import { downloadCsv } from '../../data/export-csv';
 import {
   JOBS, Job
 } from '../../data/jobs';
-import { WorkflowService } from '../../services/workflow.service';
+import { RoutingService } from '../services/routing.service';
 import { currentRoutingLabel, ROLES, DEFAULT_ROLE, type Role } from '../../data/workflow';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
@@ -34,7 +34,7 @@ type Row = Job & { currentRouting: string };
   templateUrl: './pipe-search.component.html'
 })
 export class PipeSearchComponent {
-  constructor(private router: Router, private wfService: WorkflowService) {
+  constructor(private router: Router, private wfService: RoutingService) {
     // Restore saved state
     const saved = this.loadState();
     if (saved['globalFilter']) this.table['globalFilter'].set(saved['globalFilter']);

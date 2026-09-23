@@ -8,7 +8,7 @@ import { LucideStepForward } from '@lucide/angular';
 import { ConfirmService } from '../../../shared/confirm.service';
 
 import { JOBS, Job } from '../../../data/jobs';
-import { WorkflowService } from '../../../services/workflow.service';
+import { RoutingService } from '../../services/routing.service';
 import { currentRoutingLabel } from '../../../data/workflow';
 
 @Component({
@@ -18,7 +18,7 @@ import { currentRoutingLabel } from '../../../data/workflow';
   templateUrl: './admin-set-routing.component.html'
 })
 export class AdminSetRoutingComponent {
-  private wfService = inject(WorkflowService);
+  private wfService = inject(RoutingService);
   private confirm = inject(ConfirmService);
 
   jobOptions = JOBS.map(j => ({ label: `${j.hull} · ${j.drawing} · ${j.joint} (${j.id})`, value: j.id }));

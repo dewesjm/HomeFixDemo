@@ -16,7 +16,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { characteristicLabel } from '../../data/characteristics';
 
 import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
-import { WorkflowService } from '../../services/workflow.service';
+import { RoutingService } from '../services/routing.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, WorkType, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput
@@ -39,7 +39,7 @@ const FIT_REQUIRED_FABRICATION: Record<string, string> = {
 export class JointPageComponent implements OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private wfService = inject(WorkflowService);
+  private wfService = inject(RoutingService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));

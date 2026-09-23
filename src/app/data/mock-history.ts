@@ -1,4 +1,4 @@
-/* seeded mock activity for Work history, mirrors WorkflowService shapes */
+/* seeded mock activity for Work history, mirrors RoutingService shapes */
 import { JOBS, Job } from './jobs';
 import { stampWho } from './people';
 import { HistoryEntry, StageField, WorkflowStage, buildStages, snapshotInputs, fieldsShown, seedFabricationData, fabricationSnapshot } from './workflow';
