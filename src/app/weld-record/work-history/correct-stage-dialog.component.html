@@ -28,7 +28,7 @@
               } @else if (f.type === 'select') {
                 <div class="meta mb-1">{{ f.label }}</div>
                 <select class="select select-bordered w-full" [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)">
-                  <option [ngValue]="''">Select</option>
+                  @if (!value(f.key)) { <option [ngValue]="''">Select</option> }
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else if (f.type === 'radio') {
@@ -69,7 +69,7 @@
               } @else if (f.type === 'select') {
                 <div class="meta mb-1">{{ f.label }}</div>
                 <select class="select select-bordered w-full" [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)">
-                  <option [ngValue]="''">Select</option>
+                  @if (!value(f.key, true)) { <option [ngValue]="''">Select</option> }
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else {

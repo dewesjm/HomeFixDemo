@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -327,12 +327,21 @@ export class SignoffService {
       const stages = wf.stages.map(s => (s.id === stageId ? { ...updated, signoffRecords: [...updated.signoffRecords, record] } : s));
       const finalStage = stages.find(s => s.id === stageId)!;
       const inputsSnapshot = snapshotInputs(finalStage, fieldsShown(finalStage).filter(f => isUserEditable(finalStage, f)), finalStage.signoffFields);
+      /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
+         convention -- Work History reads this to show exactly what changed, not just the reason */
+      const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? updated.signoffFields.find(f => f.key === key);
+      const historyChanges = changes.map(c => {
+        const fd = fieldDefFor(c.key);
+        return fd ? { ...c, from: displayValue(fd, c.from), to: displayValue(fd, c.to) } : c;
+      });
       return this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who,
-        action: `${updated.label} — Corrected: ${reason}`,
+        action: `${updated.label} — Corrected ${changes.map(c => c.label).join(', ')}`,
         stageId,
-        inputs: inputsSnapshot
+        inputs: inputsSnapshot,
+        changes: historyChanges,
+        reason
       });
     });
     this.messages.add({ severity: 'success', summary: 'Sign-off corrected', life: 3000 });

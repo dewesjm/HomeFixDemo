@@ -109,6 +109,40 @@
         </td>
       </tr>
       @if (r.inputs?.length && expanded().has(r.key)) {
+        @if (r.changes?.length) {
+          @if (r.reason) {
+            <tr>
+              <td></td>
+              <td class="hist-old">{{ r.routing }}</td>
+              <td class="pl-8">Reason</td>
+              <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+              <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+              <td class="hist-new">{{ r.reason }}</td>
+              <td class="hist-old">{{ r.jobId }}</td>
+              <td class="hist-old">{{ r.hull }}</td>
+              <td class="hist-old">{{ r.drawing }}</td>
+              <td class="hist-old">{{ r.joint }}</td>
+              <td class="hist-old">{{ r.order }}</td>
+              <td></td><td></td><td></td>
+            </tr>
+          }
+          @for (c of r.changes; track c.key) {
+            <tr>
+              <td></td>
+              <td class="hist-old">{{ r.routing }}</td>
+              <td class="pl-8 font-semibold">{{ c.label }}</td>
+              <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+              <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+              <td><span class="hist-old">{{ c.from || '(left blank)' }}</span> → <span class="hist-new">{{ c.to || '(left blank)' }}</span></td>
+              <td class="hist-old">{{ r.jobId }}</td>
+              <td class="hist-old">{{ r.hull }}</td>
+              <td class="hist-old">{{ r.drawing }}</td>
+              <td class="hist-old">{{ r.joint }}</td>
+              <td class="hist-old">{{ r.order }}</td>
+              <td></td><td></td><td></td>
+            </tr>
+          }
+        }
         @for (i of r.inputs; track $index) {
           <tr>
             <td></td>

@@ -106,6 +106,8 @@ export interface HistoryEntry {
   inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
   fabInputs?: SignoffInput[];  /* sign-off entries only: fabrication data as it stood at that moment */
   stageId?: string;      /* sign-off entries only: which live stage this recorded, so Correct can find it again */
+  changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' entries only: just the fields that actually changed */
+  reason?: string;       /* 'corrected' entries only */
 }
 
 export interface JobWorkflow {
@@ -369,7 +371,7 @@ export function isUserEditable(stage: WorkflowStage, f: { key: string; disabled?
   return !f.disabled && f.key !== 'qualificationCheck' && !READONLY_LIMIT_KEYS.has(f.key) && !isFieldLocked(stage, f);
 }
 
-function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
+export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
   const v = raw ?? '';
   if (f.type === 'checkbox') return v === 'yes' ? 'Yes' : 'No';
   if (!v) return '';
