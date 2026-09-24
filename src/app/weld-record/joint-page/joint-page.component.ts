@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -841,6 +841,8 @@ export class JointPageComponent implements OnDestroy {
         setIfPresent('phMin', ''); setIfPresent('phMax', ''); setIfPresent('ipMin', ''); setIfPresent('ipMax', '');
         setIfPresent('overridePhMin', ''); setIfPresent('overridePhMax', '');
         setIfPresent('overrideIpMin', ''); setIfPresent('overrideIpMax', ''); setIfPresent('overrideNote', '');
+        /* an NC actual only existed because of the old requirement */
+        for (const a of Object.keys(ACTUAL_REQUIREMENT)) if (stage.inputs[a] === 'NC') setIfPresent(a, '');
         if (!fillerFieldsLocked) { setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', ''); }
       }
       if (field.key === 'wtn') {
@@ -855,6 +857,11 @@ export class JointPageComponent implements OnDestroy {
         setIfPresent('phMax', proc?.phMax ?? '');
         setIfPresent('ipMin', proc?.ipMin ?? '');
         setIfPresent('ipMax', proc?.ipMax ?? '');
+        /* NC requirement: actual is NC and locked; otherwise an NC left from the previous WTN is cleared */
+        for (const [a, req] of Object.entries(ACTUAL_REQUIREMENT)) {
+          if (proc?.[req as 'phMin'] === 'NC') setIfPresent(a, 'NC');
+          else if (stage.inputs[a] === 'NC') setIfPresent(a, '');
+        }
         const hasOv = !!proc && procedureHasOverride(proc);
         setIfPresent('overridePhMin', hasOv ? proc!.overridePhMin : '');
         setIfPresent('overridePhMax', hasOv ? proc!.overridePhMax : '');
@@ -977,8 +984,7 @@ export class JointPageComponent implements OnDestroy {
         const belowMin = !isNaN(minVal) && num < minVal;
         const aboveMax = !isNaN(maxVal) && num > maxVal;
         if (belowMin || aboveMax) {
-          const label = f.key === 'actualPh' ? 'Actual PH' : 'Actual IP';
-          errors[`${stage.id}:${f.key}`] = `${label} Out of Range`;
+          errors[`${stage.id}:${f.key}`] = `${f.label} Out of Range`;
         }
       }
     }
@@ -1067,8 +1073,7 @@ export class JointPageComponent implements OnDestroy {
       const belowMin = !isNaN(minVal) && num < minVal;
       const aboveMax = !isNaN(maxVal) && num > maxVal;
       if (belowMin || aboveMax) {
-        const label = field.key === 'actualPh' ? 'Actual PH' : 'Actual IP';
-        prev[key] = `${label} Out of Range`;
+        prev[key] = `${field.label} Out of Range`;
       }
     }
     this.fieldErrors.set(prev);

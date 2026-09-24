@@ -333,8 +333,11 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'phMax', label: 'PH Max', type: 'number' },
   { key: 'ipMin', label: 'IP Min', type: 'number' },
   { key: 'ipMax', label: 'IP Max', type: 'number' },
-  { key: 'actualPh', label: 'Actual PH', type: 'number', required: true, minField: 'phMin', maxField: 'phMax' },
-  { key: 'actualIp', label: 'Actual IP', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
+  /* each actual must fall within its requirement pair; NC in its own requirement makes it NC and locked (ACTUAL_REQUIREMENT) */
+  { key: 'actualPhMin', label: 'Actual PH Min', type: 'number', required: true, minField: 'phMin', maxField: 'phMax' },
+  { key: 'actualPhMax', label: 'Actual PH Max', type: 'number', required: true, minField: 'phMin', maxField: 'phMax' },
+  { key: 'actualIpMin', label: 'Actual IP Min', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
+  { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
   { key: 'weldPosition', label: 'Weld Position', type: 'select', required: true,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   /* options cascade from the resolved GWP+WTN Procedure at render time (see joint-page.component.ts
@@ -364,10 +367,17 @@ export const READONLY_LIMIT_KEYS = new Set([
 ]);
 export const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
 
-/* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox */
+/* each actual and the requirement it follows: NC there sets the actual to NC and locks it */
+export const ACTUAL_REQUIREMENT: Record<string, string> = {
+  actualPhMin: 'phMin', actualPhMax: 'phMax', actualIpMin: 'ipMin', actualIpMax: 'ipMax',
+};
+
+/* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox; an actual
+   follows an NC requirement */
 export function isFieldLocked(stage: WorkflowStage, f: { key: string }): boolean {
   return f.key === 'weldProcess'
-    || (FILLER_KEYS.has(f.key) && stage.inputs['consumableInsertOnly'] === 'yes');
+    || (FILLER_KEYS.has(f.key) && stage.inputs['consumableInsertOnly'] === 'yes')
+    || (f.key in ACTUAL_REQUIREMENT && stage.inputs[ACTUAL_REQUIREMENT[f.key]] === 'NC');
 }
 
 /* true when the user can actually type or choose a value for this field */
