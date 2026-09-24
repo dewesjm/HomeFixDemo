@@ -637,9 +637,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
     ndtStage('root', 'mtpt'),
     ndtStage('root', 'utrt'),
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
-      fields: [...WELD_STAGE_FIELDS,
-        { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
-      ],
+      fields: WELD_STAGE_FIELDS,
       signoffFields: [], routingOptions: [
         { label: 'Interim Layer', value: 'interim', default: true },
         { label: 'Final Layer', value: 'final' },
