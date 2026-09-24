@@ -26,11 +26,17 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
   return needs5xInstead ? '5x' : originInspectionType;
 }
 
-/* History names a Fit signed as Weld Build up after that option; the routing column still says Fit */
+/* History names Fit-as-Weld-Build-up and Layer's Interim/Final after the chosen option; the
+   routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
-  if (st.id !== 'fit' || st.routingType !== 'weld-buildup') return st.label;
+  const named = (st.id === 'fit' && st.routingType === 'weld-buildup') || st.id === 'root-layer';
+  if (!named) return st.label;
   return st.routingOptions?.find(o => o.value === st.routingType)?.label ?? st.label;
 }
+
+/* Interim Layer is an end-of-shift signoff: it's recorded, but Layer stays the current routing
+   (not signed) until it's signed as Final Layer */
+const isInterimLayer = (s: WorkflowStage) => s.id === 'root-layer' && s.routingType === 'interim';
 
 @Injectable({ providedIn: 'root' })
 export class SignoffService {
@@ -59,9 +65,9 @@ export class SignoffService {
       let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? {
           ...s,
-          result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
-          signed: true,
-          signedAt: new Date().toISOString(),
+          result: isInterimLayer(s) ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
+          signed: !isInterimLayer(s),
+          signedAt: isInterimLayer(s) ? null : new Date().toISOString(),
           signoffRecords: [
             ...s.signoffRecords,
             {

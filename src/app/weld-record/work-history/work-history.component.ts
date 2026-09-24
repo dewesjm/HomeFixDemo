@@ -14,7 +14,7 @@ import { PersonSearchInputComponent } from '../../shared/person-search-input.com
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { HistoryEntry, getTemplates } from '../../data/workflow';
+import { HistoryEntry, WorkflowStage, getTemplates } from '../../data/workflow';
 import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
@@ -201,9 +201,9 @@ export class WorkHistoryComponent {
      whole history (not the filtered or sorted rows): a re-open cancels the sign-off before it, and where the
      job's live workflow is loaded the entry must also be its last signed stage, since that is what deprogress reverses. */
   private deprogressable = computed<ReadonlySet<string>>(() => {
-    const lastSignedLabel = new Map<string, string | undefined>();
+    const lastSigned = new Map<string, WorkflowStage | undefined>();
     for (const wf of this.store.allWorkflows()) {
-      lastSignedLabel.set(wf.jobId, wf.stages.filter(s => s.signed).pop()?.label);
+      lastSigned.set(wf.jobId, wf.stages.filter(s => s.signed).pop());
     }
     const byJob = new Map<string, ActivityRow[]>();
     for (const r of this.allActivity()) {
@@ -222,8 +222,10 @@ export class WorkHistoryComponent {
          compare against — a job whose live workflow exists but has nothing signed yet (e.g. just
          from being listed in a table) isn't the source of this row's mock history, so there's
          nothing real to contradict it */
-      const expected = lastSignedLabel.get(jobId);
-      if (expected && last.action.split(' — ')[0] !== expected) continue;
+      /* by stage id where the row has one: the action text can name the routing option instead of
+         the stage (Weld Build up, Interim/Final Layer) */
+      const expected = lastSigned.get(jobId);
+      if (expected && (last.stageId ? last.stageId !== expected.id : last.action.split(' — ')[0] !== expected.label)) continue;
       keys.add(last.key);
     }
     return keys;

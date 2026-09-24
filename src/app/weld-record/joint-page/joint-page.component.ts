@@ -893,7 +893,7 @@ export class JointPageComponent implements OnDestroy {
     this.clearFieldError(stage.id, '__decision');
     const old = stage.result;
     this.signoffService.updateStageSignoff(this.job, stage.id, { result },
-      { action: `${stage.label} — Decision`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
+      { action: `${stage.label} — ${stage.decisionLabel || 'Decision'}`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
   }
 
   /* generic signoff field blur handler */
@@ -1102,22 +1102,7 @@ export class JointPageComponent implements OnDestroy {
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
     if (!this.canSignStage(stage)) return;
-    /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
-    if (stage.id === 'root-layer' && stage.routingType === 'interim') {
-      this.confirm.confirm({
-        header: 'Confirm sign-off',
-        message: 'By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.',
-        acceptLabel: 'Signoff',
-        rejectLabel: 'Cancel',
-        password: true,
-        accept: () => {
-          this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
-          this.signRelated5xIfNeeded(stage);
-          this.router.navigate([this.backDestination()]);
-        }
-      });
-      return;
-    }
+    /* Interim Layer goes through the same signoff; SignoffService keeps Layer as the current routing */
     const routingNote = stage.repeatable && stage.routingType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';
