@@ -119,6 +119,9 @@ const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
+/* NDT Each: the Layer NDT requirement (see layerNdtRequirement() in workflow.ts). Blank or NA means
+   no Layer NDT. */
+export const NDT_EACH_VALUES = ['', '5X', 'MT', 'MT/PT', 'NA', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    data/workflow.ts's RT_DEGREE_OPTIONS to avoid a circular import (workflow.ts already imports
    Job from this file); the Degree of RT Performed signoff field must match this to sign off */
@@ -233,7 +236,7 @@ export function generateJobs(count = 480): Job[] {
       rtRoot: pick(RT_DEGREES),
       rtFinal: pick(RT_DEGREES),
       ndtRoot: pick(NDT_RESULTS),
-      ndtEach: pick(NDT_RESULTS),
+      ndtEach: pick(NDT_EACH_VALUES),
       ndtFinal: pick(NDT_RESULTS),
       ut: pick(NDT_RESULTS),
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,

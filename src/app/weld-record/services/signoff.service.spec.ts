@@ -159,6 +159,39 @@ describe('SignoffService', () => {
     });
   });
 
+  describe('Layer NDT follows NDT Each', () => {
+    const layerNdt = (job: Job) => store.workflowFor(job)().stages.filter(s => s.id.startsWith('layer-ndt-'));
+
+    for (const blank of ['', 'NA']) {
+      it(`NDT Each "${blank}" means no Layer NDT, even when the job's NDT lists methods`, () => {
+        expect(layerNdt(weldingJob({ ndt: 'VT + UT + MT', ndtEach: blank })).length).toBe(0);
+      });
+    }
+
+    it('MT uses the MT/PT stage locked to MT', () => {
+      const [st] = layerNdt(weldingJob({ ndtEach: 'MT' }));
+      expect(st.id).toBe('layer-ndt-mtpt');
+      expect(st.routingOptions?.map(o => o.value)).toEqual(['mt']);
+      expect(st.inspectionType).toBe('mt');
+    });
+
+    it('MT/PT leaves the inspector to choose', () => {
+      const [st] = layerNdt(weldingJob({ ndtEach: 'MT/PT' }));
+      expect(st.routingOptions?.map(o => o.value)).toEqual(['mt', 'pt']);
+      expect(st.inspectionType).toBe('');
+    });
+
+    it('UT uses only the UT/RT stage, locked to UT; Root still follows the job NDT', () => {
+      const job = weldingJob({ ndt: 'VT + UT', ndtEach: 'UT' });
+      const stages = layerNdt(job);
+      expect(stages.map(s => s.id)).toEqual(['layer-ndt-utrt']);
+      expect(stages[0].inspectionType).toBe('ut');
+      const ids = store.workflowFor(job)().stages.map(s => s.id);
+      expect(ids).toContain('root-ndt-vt5x');
+      expect(ids).toContain('root-ndt-utrt');
+    });
+  });
+
   it('reopenStage un-signs a stage and logs a reopened signoff record', () => {
     const job = weldingJob();
     service.signStage(job, 'tack');

@@ -44,7 +44,8 @@ export class JointDetailsComponent {
       if (has('5X')) return '5X';
       return has('VT') || has('VISUAL') ? 'X' : '—';
     }
-    if (method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
+    if (method === 'ndtEach') return this.job().ndtEach || '—';
+    if (method === 'ndtRoot' || method === 'ndtFinal') {
       if (has('5X')) return '5X';
       if (has('UT') || has('RT') || has('MT') || has('PT') || has('VISUAL') || has('VT')) return 'X';
       return '—';

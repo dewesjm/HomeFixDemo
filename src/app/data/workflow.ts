@@ -495,6 +495,21 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
   },
 };
 
+/* Layer NDT follows NDT Each (job.ndtEach) alone: blank or NA means no Layer NDT, MT/PT lets the
+   inspector choose, and any other value uses that method's stage with its Type locked to it
+   (e.g. MT -> the MT/PT stage, locked to MT). Root and Final still follow job.ndt. */
+export function layerNdtRequirement(ndtEach: string): { kind: NdtKind; methods: string[] } | null {
+  switch ((ndtEach || '').trim().toUpperCase()) {
+    case 'UT': return { kind: 'utrt', methods: ['ut'] };
+    case 'MT': return { kind: 'mtpt', methods: ['mt'] };
+    case 'PT': return { kind: 'mtpt', methods: ['pt'] };
+    case 'MT/PT': return { kind: 'mtpt', methods: ['mt', 'pt'] };
+    case 'VT': return { kind: 'vt5x', methods: ['vt'] };
+    case '5X': return { kind: 'vt5x', methods: ['5x'] };
+    default: return null;
+  }
+}
+
 function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
   const k = NDT_KINDS[kind];
   return {
@@ -1050,7 +1065,9 @@ export function buildStages(job: Job): WorkflowStage[] {
     const hasUTorRT = /\b(UT|RT)\b/.test(ndt);
     const hasMTorPT = /\b(MT|PT)\b/.test(ndt);
     const hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL');
+    const layerNdt = layerNdtRequirement(job.ndtEach);
     return middle.filter(t => {
+      if (t.id.startsWith('layer-ndt-')) return t.id === `layer-ndt-${layerNdt?.kind}`;
       if (t.id === 'pre-fit') {
         const needsInsertOrRing = job.nInd === '1' || job.nInd === '2';
         const jd = getJointDesign(job.jointDesign);
@@ -1064,7 +1081,12 @@ export function buildStages(job: Job): WorkflowStage[] {
       if (t.id === 'review-o63') return hasO63Data;
       if (t.id === 'review-o04') return !hasO63Data;
       return true;
-    }).map(toStage);
+    }).map(toStage).map(s => {
+      if (!layerNdt || !s.id.startsWith('layer-ndt-')) return s;
+      /* only the method(s) NDT Each allows; a single one is locked in (pre-filled) */
+      const routingOptions = s.routingOptions?.filter(o => layerNdt.methods.includes(o.value));
+      return { ...s, routingOptions, inspectionType: layerNdt.methods.length === 1 ? layerNdt.methods[0] : '' };
+    });
   }
 
   // Other trades: prep + stages + handover
