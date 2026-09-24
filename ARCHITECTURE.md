@@ -13,7 +13,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 
 | Term | Meaning |
 |---|---|
-| **Hull** | The vessel/record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
+| **Hull** | The record a job belongs to (`job.hull`, letter + 4 digits, e.g. `K7234`). **Not unique** — many jobs share a hull. Replaces the old "Project" / job number / title. There is no job `title` and no joint `title` either. |
 | **XREFID** | The user-facing identifier shown everywhere (`job.xrefid`), 5-char alphanumeric, matching `job.id` when present. **Blank on ~25% of jobs** (`i % 4 === 0`), same imperfect-source-data pattern as My Assignments and Weld Planning; `job.id` itself is a separate, always-populated internal key (never shown) that routing, workflow lookups, and row selection use, so a blank XREFID never breaks navigation or workflow state. Renders **blank**, not a `'—'` placeholder, on the Weld Record table and Advanced Search lists (fixed 2026-09-22 — the dash was only a display fallback, never a real value, and read as if it were stored data); Joint Details keeps its own `'—'` fallback since that's a single-value detail view, not a list. |
 | **Drawing** | Letter + 7 digits, e.g. `H7111234` or `S7204518` (`job.drawing`, weld-joint `drawing`); both `H` and `S` prefixes appear in seed data. |
 | **Serial number** | 9 digits starting with 1 or 2, then `A`, e.g. `229348951A` (`job.serialNumber`). **Blank whenever XREFID is blank** — neither was captured for that record. |
