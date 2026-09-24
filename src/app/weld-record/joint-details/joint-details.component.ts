@@ -38,17 +38,13 @@ export class JointDetailsComponent {
   ndtLabel(method: string): string {
     const ndt = (this.job().ndt || '').toUpperCase();
     const has = (m: string) => ndt.includes(m);
-    if (method === 'rtRoot' || method === 'rtFinal') return has('RT') ? 'X' : '—';
+    if (method === 'rtRoot' || method === 'rtFinal' || method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
+      return this.job()[method] || '—';
+    }
     if (method === 'ut') return has('UT') ? 'X' : '—';
     if (method === 'vt') {
       if (has('5X')) return '5X';
       return has('VT') || has('VISUAL') ? 'X' : '—';
-    }
-    if (method === 'ndtEach') return this.job().ndtEach || '—';
-    if (method === 'ndtRoot' || method === 'ndtFinal') {
-      if (has('5X')) return '5X';
-      if (has('UT') || has('RT') || has('MT') || has('PT') || has('VISUAL') || has('VT')) return 'X';
-      return '—';
     }
     return '—';
   }

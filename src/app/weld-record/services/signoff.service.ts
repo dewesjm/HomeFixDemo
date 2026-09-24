@@ -217,8 +217,8 @@ export class SignoffService {
         if (exceeded && phase) {
           reopenById(`${phase}-ndt-utrt`);
         } else if (repairType === 'grind' && phase) {
-          /* Layer has only the one NDT stage NDT Each asks for, so it goes back to the one that failed */
-          reopenById(phase === 'layer' ? st.inputs['originStageId'] ?? '' : `${phase}-ndt-vt5x`);
+          /* each phase has only the one NDT stage its Joint Details value asks for, so it goes back to the one that failed */
+          reopenById(st.inputs['originStageId'] ?? '');
         } else if (repairType === 'cut') {
           /* not a reopen: the joint starts over from Fit. Every stage from Fit on is rebuilt as on a
              new joint, keeping its past signoff records; earlier repair rounds stay as signed records */

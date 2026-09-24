@@ -496,11 +496,11 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
   },
 };
 
-/* Layer NDT follows NDT Each (job.ndtEach) alone: blank or NA means no Layer NDT, MT/PT lets the
-   inspector choose, and any other value uses that method's stage with its Type locked to it
-   (e.g. MT -> the MT/PT stage, locked to MT). Root and Final still follow job.ndt. */
-export function layerNdtRequirement(ndtEach: string): { kind: NdtKind; methods: string[] } | null {
-  switch ((ndtEach || '').trim().toUpperCase()) {
+/* Each phase's NDT follows its own Joint Details value (NDT Root, NDT Each for Layer, NDT Final):
+   blank or NA means no NDT for that phase, MT/PT lets the inspector choose, and any other value
+   uses that method's stage with its Type locked to it (e.g. MT -> the MT/PT stage, locked to MT). */
+export function ndtRequirement(value: string): { kind: NdtKind; methods: string[] } | null {
+  switch ((value || '').trim().toUpperCase()) {
     case 'UT': return { kind: 'utrt', methods: ['ut'] };
     case 'MT': return { kind: 'mtpt', methods: ['mt'] };
     case 'PT': return { kind: 'mtpt', methods: ['pt'] };
@@ -509,6 +509,10 @@ export function layerNdtRequirement(ndtEach: string): { kind: NdtKind; methods: 
     case '5X': return { kind: 'vt5x', methods: ['5x'] };
     default: return null;
   }
+}
+
+export function phaseNdtRequirements(job: Job): Record<NdtPhase, ReturnType<typeof ndtRequirement>> {
+  return { root: ndtRequirement(job.ndtRoot), layer: ndtRequirement(job.ndtEach), final: ndtRequirement(job.ndtFinal) };
 }
 
 function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
@@ -1026,8 +1030,9 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2; Sold follows whichever Records track reviewed the job */
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
-    /* Only Root gets the 5X inspection field (user: should only appear on Root, not Final Weld) */
-    let fields = (t.id === 'root-weld')
+    /* Only Root gets the 5X inspection field (user: should only appear on Root, not Final Weld),
+       and only when NDT Root allows 5X -- answering yes auto-signs the Root VT/5X stage */
+    let fields = (t.id === 'root-weld' && ndtRequirement(job.ndtRoot)?.methods.includes('5x'))
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
           options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
       : [...t.fields];
@@ -1062,31 +1067,28 @@ export function buildStages(job: Job): WorkflowStage[] {
   // Welding: no prep, no handover — SOLD is the end
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    const ndt = (job.ndt || '').toUpperCase();
-    const hasUTorRT = /\b(UT|RT)\b/.test(ndt);
-    const hasMTorPT = /\b(MT|PT)\b/.test(ndt);
-    const hasVT = /\b(VT|5X)\b/.test(ndt) || ndt.includes('VISUAL');
-    const layerNdt = layerNdtRequirement(job.ndtEach);
+    const ndtFor = phaseNdtRequirements(job);
+    const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(id)?.[1] as NdtPhase | undefined;
     return middle.filter(t => {
-      if (t.id.startsWith('layer-ndt-')) return t.id === `layer-ndt-${layerNdt?.kind}`;
+      const phase = phaseOf(t.id);
+      if (phase) return t.id === `${phase}-ndt-${ndtFor[phase]?.kind}`;
       if (t.id === 'pre-fit') {
         const needsInsertOrRing = job.nInd === '1' || job.nInd === '2';
         const jd = getJointDesign(job.jointDesign);
         const jdRequires = jd?.requiresConsumableInsert || jd?.requiresBackingRing || false;
         return needsInsertOrRing || jdRequires;
       }
-      if (t.id.endsWith('-utrt')) return hasUTorRT;
-      if (t.id.endsWith('-mtpt')) return hasMTorPT;
-      if (t.id.endsWith('-vt5x')) return hasVT;
       /* Records Review splits in two: O63 when any of SFFF/DSS-AAA/SS is set on the job, O04 otherwise */
       if (t.id === 'review-o63') return hasO63Data;
       if (t.id === 'review-o04') return !hasO63Data;
       return true;
     }).map(toStage).map(s => {
-      if (!layerNdt || !s.id.startsWith('layer-ndt-')) return s;
-      /* only the method(s) NDT Each allows; a single one is locked in (pre-filled) */
-      const routingOptions = s.routingOptions?.filter(o => layerNdt.methods.includes(o.value));
-      return { ...s, routingOptions, inspectionType: layerNdt.methods.length === 1 ? layerNdt.methods[0] : '' };
+      const phase = phaseOf(s.id);
+      const req = phase ? ndtFor[phase] : null;
+      if (!req) return s;
+      /* only the method(s) the Joint Details value allows; a single one is locked in (pre-filled) */
+      const routingOptions = s.routingOptions?.filter(o => req.methods.includes(o.value));
+      return { ...s, routingOptions, inspectionType: req.methods.length === 1 ? req.methods[0] : '' };
     });
   }
 

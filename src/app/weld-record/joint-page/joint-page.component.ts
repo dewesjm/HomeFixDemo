@@ -593,7 +593,7 @@ export class JointPageComponent implements OnDestroy {
       }
       const repairType = stage.inputs['repairType'] ?? '';
       if (repairType === 'grind') {
-        const target = phase === 'layer' ? stage.inputs['originStageId'] ?? '' : `${phase}-ndt-vt5x`;
+        const target = stage.inputs['originStageId'] ?? '';
         return target ? `On signoff, this routes to ${labelOf(target)}.` : '';
       }
       if (repairType === 'weld-repair') {

@@ -2,7 +2,7 @@
 import { STORAGE } from './storage-keys';
 import {
   Job,
-  TECHNICIAN_OPTIONS, JOBS, NDT_EACH_VALUES
+  TECHNICIAN_OPTIONS, JOBS, NDT_REQUIREMENT_VALUES
 } from './jobs';
 
 export type FilterField =
@@ -42,10 +42,12 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'ndt',             label: 'NDT',              type: 'text',        group: 'NDT',        field: 'ndt' },
   { key: 'rtRoot',          label: 'RT Root',          type: 'text',        group: 'NDT',        field: 'rtRoot' },
   { key: 'rtFinal',         label: 'RT Final',         type: 'text',        group: 'NDT',        field: 'rtFinal' },
-  { key: 'ndtRoot',         label: 'NDT Root',         type: 'text',        group: 'NDT',        field: 'ndtRoot' },
+  { key: 'ndtRoot',         label: 'NDT Root',         type: 'multiselect', group: 'NDT',        field: 'ndtRoot',
+    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
   { key: 'ndtEach',         label: 'NDT Each',         type: 'multiselect', group: 'NDT',        field: 'ndtEach',
-    options: NDT_EACH_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
-  { key: 'ndtFinal',        label: 'NDT Final',        type: 'text',        group: 'NDT',        field: 'ndtFinal' },
+    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
+  { key: 'ndtFinal',        label: 'NDT Final',        type: 'multiselect', group: 'NDT',        field: 'ndtFinal',
+    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
   { key: 'ut',              label: 'UT',               type: 'text',        group: 'NDT',        field: 'ut' },
   { key: 'pwht',            label: 'PWHT',             type: 'text',        group: 'NDT',        field: 'pwht' },
   { key: 'order',           label: 'Order',            type: 'text',        group: 'Additional', field: 'order' },

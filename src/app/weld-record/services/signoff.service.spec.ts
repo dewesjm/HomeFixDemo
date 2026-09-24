@@ -5,10 +5,10 @@ import { WorkflowStore } from './workflow-store.service';
 
 /* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
-   root-weld, root-layer, final-weld, review-o04, sold — no NDT stages (ndt: '') unless noted. */
+   root-weld, root-layer, final-weld, review-o04, sold — no NDT stages (NDT Root/Each/Final blank) unless noted. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
   const job = addTestJob('Welding');
-  Object.assign(job, { ndt: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
+  Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
   return job;
 }
 
@@ -81,7 +81,7 @@ describe('SignoffService', () => {
   });
 
   it('on an NDT reject, inserts a Repair stage right after the rejected NDT stage', () => {
-    const job = weldingJob({ ndt: 'UT' });   // pulls in the root-ndt-utrt stage
+    const job = weldingJob({ ndtRoot: 'UT' });   // NDT Root = UT pulls in the root-ndt-utrt stage
     store.update(job, wf => ({
       ...wf,
       stages: wf.stages.map(s => s.id === 'root-ndt-utrt' ? { ...s, result: 'unsat' } : s),
@@ -107,7 +107,7 @@ describe('SignoffService', () => {
     const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
 
     it('every NDT reject adds a new Repair, and earlier rounds stay signed', () => {
-      const job = weldingJob({ ndt: 'UT' });
+      const job = weldingJob({ ndtRoot: 'UT' });
       failNdt(job, 'root-ndt-utrt');
       signRepair(job, 'repair', 'grind');
       failNdt(job, 'root-ndt-utrt');
@@ -119,7 +119,7 @@ describe('SignoffService', () => {
     });
 
     it("a later round's Weld Repair adds its own Excavation NDT, whose UNSAT goes back to that round's Repair", () => {
-      const job = weldingJob({ ndt: 'UT' });
+      const job = weldingJob({ ndtRoot: 'UT' });
       failNdt(job, 'root-ndt-utrt');
       signRepair(job, 'repair', 'grind');
       failNdt(job, 'root-ndt-utrt');
@@ -135,7 +135,7 @@ describe('SignoffService', () => {
     });
 
     it('Cut starts the joint over from Fit: nothing re-opened, records kept, Refit # up by one', () => {
-      const job = weldingJob({ ndt: 'UT' });
+      const job = weldingJob({ ndtRoot: 'UT' });
       for (const id of ['pre-fit', 'fit', 'tack', 'fitup-insp', 'root-weld']) service.signStage(job, id);
       failNdt(job, 'root-ndt-utrt');
       signRepair(job, 'repair', 'grind');
@@ -143,9 +143,11 @@ describe('SignoffService', () => {
       signRepair(job, 'repair-2', 'cut');
 
       for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
-        const st = stage(job, id);
-        expect(st.signed).withContext(id).toBeFalse();
-        expect(st.signoffRecords.some(r => r.action === 'reopened')).withContext(id).toBeFalse();
+        expect(stage(job, id).signed).withContext(id).toBeFalse();
+      }
+      /* root-ndt-utrt has Grind Only's reopen record from round 1; the Cut itself adds none */
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld']) {
+        expect(stage(job, id).signoffRecords.some(r => r.action === 'reopened')).withContext(id).toBeFalse();
       }
       expect(stage(job, 'fit').signoffRecords.length).toBe(1);   /* the first fit's record is kept */
       expect(stage(job, 'pre-fit').signed).toBeTrue();
@@ -159,7 +161,7 @@ describe('SignoffService', () => {
     });
 
     it('Cut resets fit-up data and keeps what it was on the Refit History entry', () => {
-      const job = weldingJob({ ndt: 'UT' });
+      const job = weldingJob({ ndtRoot: 'UT' });
       store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
       failNdt(job, 'root-ndt-utrt');
       signRepair(job, 'repair', 'cut');
@@ -171,7 +173,7 @@ describe('SignoffService', () => {
     });
 
     it('Repair # goes up with each repair', () => {
-      const job = weldingJob({ ndt: 'UT' });
+      const job = weldingJob({ ndtRoot: 'UT' });
       failNdt(job, 'root-ndt-utrt');
       expect(job.repairNumber).toBe('01');
       signRepair(job, 'repair', 'grind');
@@ -193,7 +195,7 @@ describe('SignoffService', () => {
     const layerNdt = (job: Job) => store.workflowFor(job)().stages.filter(s => s.id.startsWith('layer-ndt-'));
 
     for (const blank of ['', 'NA']) {
-      it(`NDT Each "${blank}" means no Layer NDT, even when the job's NDT lists methods`, () => {
+      it(`NDT Each "${blank}" means no Layer NDT, even when the job's general NDT lists methods`, () => {
         expect(layerNdt(weldingJob({ ndt: 'VT + UT + MT', ndtEach: blank })).length).toBe(0);
       });
     }
@@ -211,14 +213,18 @@ describe('SignoffService', () => {
       expect(st.inspectionType).toBe('');
     });
 
-    it('UT uses only the UT/RT stage, locked to UT; Root still follows the job NDT', () => {
-      const job = weldingJob({ ndt: 'VT + UT', ndtEach: 'UT' });
-      const stages = layerNdt(job);
+    it('UT uses only the UT/RT stage, locked to UT', () => {
+      const stages = layerNdt(weldingJob({ ndtEach: 'UT' }));
       expect(stages.map(s => s.id)).toEqual(['layer-ndt-utrt']);
       expect(stages[0].inspectionType).toBe('ut');
-      const ids = store.workflowFor(job)().stages.map(s => s.id);
-      expect(ids).toContain('root-ndt-vt5x');
-      expect(ids).toContain('root-ndt-utrt');
+    });
+
+    it('Root and Final follow NDT Root and NDT Final the same way, not the general NDT field', () => {
+      const job = weldingJob({ ndt: 'VT + UT + MT', ndtRoot: '5X', ndtFinal: 'MT/PT' });
+      const ndtStages = store.workflowFor(job)().stages.filter(s => s.id.includes('-ndt-'));
+      expect(ndtStages.map(s => s.id)).toEqual(['root-ndt-vt5x', 'final-ndt-mtpt']);
+      expect(ndtStages[0].inspectionType).toBe('5x');
+      expect(ndtStages[1].routingOptions?.map(o => o.value)).toEqual(['mt', 'pt']);
     });
   });
 
