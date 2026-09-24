@@ -70,7 +70,7 @@
         @for (f of fields(); track f.key) {
           @if (f.row === 4) {
             <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
               @if (f.type === 'select') {
                 <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
                         [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
