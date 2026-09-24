@@ -395,26 +395,24 @@ export function wtnDescription(gwp: string, wtn: string): string {
   return procedureDescription(getProcedureByGwpWtn(gwp, wtn));
 }
 
-const withDescription = (code: string, description: string) => description ? `${code} · ${description}` : code;
-
 /* GWP droplist filtered to whichever GWPs are qualified for a job's base metal pair -- a GWP's
    base metal 1/2 (fixed per GWP, see materialCombos() above) must match the job's Material Type
    1/2 (Job.materialType1/materialType2, jobs.ts). */
-export function gwpOptionsForMaterials(materialType1: string, materialType2: string): { label: string; value: string }[] {
+export function gwpOptionsForMaterials(materialType1: string, materialType2: string): { label: string; value: string; detail: string }[] {
   if (!materialType1 || !materialType2) return [];
   const distinct = Array.from(new Set(
     procedures()
       .filter(p => p.baseMetal1Type === materialType1 && p.baseMetal2Type === materialType2)
       .map(p => p.gwp)
   )).sort();
-  return distinct.map(g => ({ label: withDescription(g, gwpDescription(g)), value: g }));
+  return distinct.map(g => ({ label: g, value: g, detail: gwpDescription(g) }));
 }
 
-export function wtnOptionsForGwp(gwp: string): { label: string; value: string }[] {
+export function wtnOptionsForGwp(gwp: string): { label: string; value: string; detail: string }[] {
   if (!gwp) return [];
   return procedures()
     .filter(p => p.gwp === gwp)
-    .map(p => ({ label: withDescription(p.wtn, procedureDescription(p)), value: p.wtn }));
+    .map(p => ({ label: p.wtn, value: p.wtn, detail: procedureDescription(p) }));
 }
 
 export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | undefined {

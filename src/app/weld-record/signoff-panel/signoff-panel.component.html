@@ -661,8 +661,9 @@
         }
       } @else if (f.type === 'select') {
         <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
-                [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
-          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event); openSelect.set(null)"
+                (mousedown)="openSelect.set(f.key)" (keydown)="openSelect.set(f.key)" (blur)="openSelect.set(null)">
+          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ optionText(f, o) }}</option> }
         </select>
       } @else {
         <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"

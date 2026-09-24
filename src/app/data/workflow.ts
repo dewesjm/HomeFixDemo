@@ -25,7 +25,8 @@ export interface StageField {
   type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
   unit?: string;          /* shown by the label, e.g. PSI */
   placeholder?: string;
-  options?: { label: string; value: string }[];
+  /* detail: extra text shown only in the open droplist, never in the closed field (GWP/WTN descriptions) */
+  options?: { label: string; value: string; detail?: string }[];
   showIf?: { key: string; equals?: string; anyOf?: string[]; and?: { key: string; equals: string }[] };   // ← declarative dependency, serializable
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */

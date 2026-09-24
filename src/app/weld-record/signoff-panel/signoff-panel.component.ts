@@ -208,6 +208,13 @@ export class SignoffPanelComponent {
     if (clean !== input.value) input.value = clean;
   }
 
+  /* A native select shows the chosen option's text when closed, so option details (GWP/WTN
+     descriptions) are only added to the option text while that select is being opened. */
+  openSelect = signal<string | null>(null);
+  optionText(f: StageField, o: { label: string; detail?: string }) {
+    return this.openSelect() === f.key && o.detail ? `${o.label} · ${o.detail}` : o.label;
+  }
+
   onSelect(f: StageField, value: string | null) {
     if (f.key === 'performed5x') this.ctx().on5xChange(this.stage(), value ?? '');
     else this.ctx().stageSelectChange(this.stage(), f, value);
