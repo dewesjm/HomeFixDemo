@@ -38,6 +38,11 @@ function signedActionLabel(st: WorkflowStage): string {
    (not signed) until it's signed as Final Layer */
 const isInterimLayer = (s: WorkflowStage) => s.id === 'root-layer' && s.routingType === 'interim';
 
+/* Records Review UNSAT doesn't route anywhere yet (user: "it stays in records review until i figure
+   that out"): the signoff is recorded but the stage isn't signed, so the joint stays there */
+const isRecordsReviewUnsat = (s: WorkflowStage) => (s.id === 'review-o63' || s.id === 'review-o04') && s.result === 'unsat';
+const staysPut = (s: WorkflowStage) => isInterimLayer(s) || isRecordsReviewUnsat(s);
+
 @Injectable({ providedIn: 'root' })
 export class SignoffService {
   private store = inject(WorkflowStore);
@@ -69,8 +74,8 @@ export class SignoffService {
         s.id === stageId ? {
           ...s,
           result: isInterimLayer(s) ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
-          signed: !isInterimLayer(s),
-          signedAt: isInterimLayer(s) ? null : new Date().toISOString(),
+          signed: !staysPut(s),
+          signedAt: staysPut(s) ? null : new Date().toISOString(),
           signoffRecords: [
             ...s.signoffRecords,
             {
@@ -149,7 +154,7 @@ export class SignoffService {
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
 
-      if (st.result === 'unsat' && st.rejectToStage) {
+      if (st.result === 'unsat' && st.rejectToStage && !isRecordsReviewUnsat(st)) {
         const currentIdx = stages.findIndex(s => s.id === stageId);
         /* NDT UNSAT always adds a new Repair right after this stage, however many repairs the joint
            has had. Excavation NDT is left out: its UNSAT goes back to its own round's Repair. */

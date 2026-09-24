@@ -120,9 +120,9 @@ const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
 const N_IND_POOL = ['1', '2', '3'];
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
-/* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see ndtRequirement() in
-   workflow.ts). Blank or NA means no NDT for that phase. */
-export const NDT_REQUIREMENT_VALUES = ['', '5X', 'MT', 'MT/PT', 'NA', 'PT', 'UT', 'VT'];
+/* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
+   workflow.ts). Blank and NA are no longer valid. */
+export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    data/workflow.ts's RT_DEGREE_OPTIONS to avoid a circular import (workflow.ts already imports
    Job from this file); the Degree of RT Performed signoff field must match this to sign off */
@@ -204,6 +204,11 @@ export function generateJobs(count = 480): Job[] {
     const id = makeJobId(i + 1);
     const xrefidBlank = i % 4 === 0;
     /* placeholder until real engineering notes text is wired up: a couple of "SEE NOTE ####" references */
+    /* real data never has UT alongside an RT degree for the same phase */
+    const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
+    const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
+    const rtRoot = ndtRoot === 'UT' ? '' : pick(RT_DEGREES);
+    const rtFinal = ndtFinal === 'UT' ? '' : pick(RT_DEGREES);
     const engineeringNotes = i % 3 === 0
       ? Array.from({ length: 2 + Math.floor(rand() * 2) }, () => `SEE NOTE ${1000 + Math.floor(rand() * 9000)}`).join(', ')
       : '';
@@ -234,11 +239,11 @@ export function generateJobs(count = 480): Job[] {
       ndt: pick(NDT_POOL),
       pwht: pick(PWHT_POOL),
       nInd: pick(N_IND_POOL),
-      rtRoot: pick(RT_DEGREES),
-      rtFinal: pick(RT_DEGREES),
-      ndtRoot: pick(NDT_REQUIREMENT_VALUES),
+      rtRoot,
+      rtFinal,
+      ndtRoot,
       ndtEach: pick(NDT_REQUIREMENT_VALUES),
-      ndtFinal: pick(NDT_REQUIREMENT_VALUES),
+      ndtFinal,
       ut: pick(NDT_RESULTS),
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
       workPackage: workPackageFor(hull, i),

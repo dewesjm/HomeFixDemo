@@ -496,23 +496,31 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
   },
 };
 
-/* Each phase's NDT follows its own Joint Details value (NDT Root, NDT Each for Layer, NDT Final):
-   blank or NA means no NDT for that phase, MT/PT lets the inspector choose, and any other value
-   uses that method's stage with its Type locked to it (e.g. MT -> the MT/PT stage, locked to MT). */
-export function ndtRequirement(value: string): { kind: NdtKind; methods: string[] } | null {
-  switch ((value || '').trim().toUpperCase()) {
-    case 'UT': return { kind: 'utrt', methods: ['ut'] };
-    case 'MT': return { kind: 'mtpt', methods: ['mt'] };
-    case 'PT': return { kind: 'mtpt', methods: ['pt'] };
-    case 'MT/PT': return { kind: 'mtpt', methods: ['mt', 'pt'] };
-    case 'VT': return { kind: 'vt5x', methods: ['vt'] };
-    case '5X': return { kind: 'vt5x', methods: ['5x'] };
-    default: return null;
-  }
+/* Each phase's NDT steps come from its Joint Details values (NDT Root + RT Root, NDT Each for
+   Layer, NDT Final + RT Final), in VT/5X, MT/PT, UT/RT order:
+     - VT always, or 5X instead when the NDT value is 5X
+     - MT, PT or UT adds that step with its Type locked to it; MT/PT adds the MT/PT step with a choice
+     - an RT degree (anything but blank or NA) adds the UT/RT step locked to RT
+   UT and an RT degree never come together in real data; if they did, that step would offer both. */
+export interface NdtStep { kind: NdtKind; methods: string[] }
+
+export function phaseNdtSteps(ndtValue: string, rtDegree = ''): NdtStep[] {
+  const v = (ndtValue || '').trim().toUpperCase();
+  const steps: NdtStep[] = [{ kind: 'vt5x', methods: [v === '5X' ? '5x' : 'vt'] }];
+  if (v === 'MT') steps.push({ kind: 'mtpt', methods: ['mt'] });
+  if (v === 'PT') steps.push({ kind: 'mtpt', methods: ['pt'] });
+  if (v === 'MT/PT') steps.push({ kind: 'mtpt', methods: ['mt', 'pt'] });
+  const rt = !!rtDegree && rtDegree !== 'NA';
+  if (v === 'UT' || rt) steps.push({ kind: 'utrt', methods: [...(v === 'UT' ? ['ut'] : []), ...(rt ? ['rt'] : [])] });
+  return steps;
 }
 
-export function phaseNdtRequirements(job: Job): Record<NdtPhase, ReturnType<typeof ndtRequirement>> {
-  return { root: ndtRequirement(job.ndtRoot), layer: ndtRequirement(job.ndtEach), final: ndtRequirement(job.ndtFinal) };
+export function jobNdtSteps(job: Job): Record<NdtPhase, NdtStep[]> {
+  return {
+    root: phaseNdtSteps(job.ndtRoot, job.rtRoot),
+    layer: phaseNdtSteps(job.ndtEach),
+    final: phaseNdtSteps(job.ndtFinal, job.rtFinal),
+  };
 }
 
 function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
@@ -1032,7 +1040,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     /* Only Root gets the 5X inspection field (user: should only appear on Root, not Final Weld),
        and only when NDT Root allows 5X -- answering yes auto-signs the Root VT/5X stage */
-    let fields = (t.id === 'root-weld' && ndtRequirement(job.ndtRoot)?.methods.includes('5x'))
+    let fields = (t.id === 'root-weld' && (job.ndtRoot || '').trim().toUpperCase() === '5X')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
           options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
       : [...t.fields];
@@ -1067,11 +1075,14 @@ export function buildStages(job: Job): WorkflowStage[] {
   // Welding: no prep, no handover — SOLD is the end
   if (job.trade === 'Welding') {
     const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    const ndtFor = phaseNdtRequirements(job);
+    const ndtFor = jobNdtSteps(job);
     const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(id)?.[1] as NdtPhase | undefined;
+    const stepFor = (id: string) => {
+      const phase = phaseOf(id);
+      return phase ? ndtFor[phase].find(st => id === `${phase}-ndt-${st.kind}`) : undefined;
+    };
     return middle.filter(t => {
-      const phase = phaseOf(t.id);
-      if (phase) return t.id === `${phase}-ndt-${ndtFor[phase]?.kind}`;
+      if (phaseOf(t.id)) return !!stepFor(t.id);
       if (t.id === 'pre-fit') {
         const needsInsertOrRing = job.nInd === '1' || job.nInd === '2';
         const jd = getJointDesign(job.jointDesign);
@@ -1083,12 +1094,11 @@ export function buildStages(job: Job): WorkflowStage[] {
       if (t.id === 'review-o04') return !hasO63Data;
       return true;
     }).map(toStage).map(s => {
-      const phase = phaseOf(s.id);
-      const req = phase ? ndtFor[phase] : null;
-      if (!req) return s;
-      /* only the method(s) the Joint Details value allows; a single one is locked in (pre-filled) */
-      const routingOptions = s.routingOptions?.filter(o => req.methods.includes(o.value));
-      return { ...s, routingOptions, inspectionType: req.methods.length === 1 ? req.methods[0] : '' };
+      const step = stepFor(s.id);
+      if (!step) return s;
+      /* only the method(s) the Joint Details values allow; a single one is locked in (pre-filled) */
+      const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
+      return { ...s, routingOptions, inspectionType: step.methods.length === 1 ? step.methods[0] : '' };
     });
   }
 

@@ -5,7 +5,7 @@ import { WorkflowStore } from './workflow-store.service';
 
 /* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
-   root-weld, root-layer, final-weld, review-o04, sold — no NDT stages (NDT Root/Each/Final blank) unless noted. */
+   root-weld, root-layer, final-weld, review-o04, sold — plus a VT step per phase (NDT Root/Each/Final blank counts as VT only) unless noted. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
   const job = addTestJob('Welding');
   Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
@@ -191,41 +191,57 @@ describe('SignoffService', () => {
     });
   });
 
-  describe('Layer NDT follows NDT Each', () => {
-    const layerNdt = (job: Job) => store.workflowFor(job)().stages.filter(s => s.id.startsWith('layer-ndt-'));
+  describe('NDT steps follow the Joint Details NDT and RT values', () => {
+    const ndtStages = (job: Job, phase: string) =>
+      store.workflowFor(job)().stages.filter(s => s.id.startsWith(`${phase}-ndt-`));
+    const summary = (job: Job, phase: string) =>
+      ndtStages(job, phase).map(s => `${s.id}:${(s.routingOptions ?? []).map(o => o.value).join('/')}`);
 
-    for (const blank of ['', 'NA']) {
-      it(`NDT Each "${blank}" means no Layer NDT, even when the job's general NDT lists methods`, () => {
-        expect(layerNdt(weldingJob({ ndt: 'VT + UT + MT', ndtEach: blank })).length).toBe(0);
-      });
-    }
+    it('VT is always required: a VT value gives only the VT step, locked to VT', () => {
+      expect(summary(weldingJob({ ndtEach: 'VT' }), 'layer')).toEqual(['layer-ndt-vt5x:vt']);
+    });
 
-    it('MT uses the MT/PT stage locked to MT', () => {
-      const [st] = layerNdt(weldingJob({ ndtEach: 'MT' }));
-      expect(st.id).toBe('layer-ndt-mtpt');
-      expect(st.routingOptions?.map(o => o.value)).toEqual(['mt']);
-      expect(st.inspectionType).toBe('mt');
+    it('5X replaces VT', () => {
+      const [st] = ndtStages(weldingJob({ ndtRoot: '5X' }), 'root');
+      expect(st.routingOptions?.map(o => o.value)).toEqual(['5x']);
+      expect(st.inspectionType).toBe('5x');
+    });
+
+    it('MT adds the MT/PT step locked to MT, after VT', () => {
+      const job = weldingJob({ ndtEach: 'MT' });
+      expect(summary(job, 'layer')).toEqual(['layer-ndt-vt5x:vt', 'layer-ndt-mtpt:mt']);
+      expect(ndtStages(job, 'layer')[1].inspectionType).toBe('mt');
     });
 
     it('MT/PT leaves the inspector to choose', () => {
-      const [st] = layerNdt(weldingJob({ ndtEach: 'MT/PT' }));
-      expect(st.routingOptions?.map(o => o.value)).toEqual(['mt', 'pt']);
-      expect(st.inspectionType).toBe('');
+      const job = weldingJob({ ndtFinal: 'MT/PT' });
+      expect(summary(job, 'final')).toEqual(['final-ndt-vt5x:vt', 'final-ndt-mtpt:mt/pt']);
+      expect(ndtStages(job, 'final')[1].inspectionType).toBe('');
     });
 
-    it('UT uses only the UT/RT stage, locked to UT', () => {
-      const stages = layerNdt(weldingJob({ ndtEach: 'UT' }));
-      expect(stages.map(s => s.id)).toEqual(['layer-ndt-utrt']);
-      expect(stages[0].inspectionType).toBe('ut');
+    it('UT adds the UT/RT step locked to UT', () => {
+      expect(summary(weldingJob({ ndtRoot: 'UT' }), 'root')).toEqual(['root-ndt-vt5x:vt', 'root-ndt-utrt:ut']);
     });
 
-    it('Root and Final follow NDT Root and NDT Final the same way, not the general NDT field', () => {
-      const job = weldingJob({ ndt: 'VT + UT + MT', ndtRoot: '5X', ndtFinal: 'MT/PT' });
-      const ndtStages = store.workflowFor(job)().stages.filter(s => s.id.includes('-ndt-'));
-      expect(ndtStages.map(s => s.id)).toEqual(['root-ndt-vt5x', 'final-ndt-mtpt']);
-      expect(ndtStages[0].inspectionType).toBe('5x');
-      expect(ndtStages[1].routingOptions?.map(o => o.value)).toEqual(['mt', 'pt']);
+    it('an RT degree adds the UT/RT step locked to RT; NA does not', () => {
+      expect(summary(weldingJob({ ndtRoot: 'MT', rtRoot: '100' }), 'root'))
+        .toEqual(['root-ndt-vt5x:vt', 'root-ndt-mtpt:mt', 'root-ndt-utrt:rt']);
+      expect(summary(weldingJob({ ndtFinal: 'VT', rtFinal: 'NA' }), 'final')).toEqual(['final-ndt-vt5x:vt']);
     });
+
+    it('the general NDT field no longer changes anything', () => {
+      expect(summary(weldingJob({ ndt: 'VT + UT + MT', ndtRoot: 'VT' }), 'root')).toEqual(['root-ndt-vt5x:vt']);
+    });
+  });
+
+  it('Records Review UNSAT is recorded but the joint stays in Records Review', () => {
+    const job = weldingJob();
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'review-o04' ? { ...s, result: 'unsat' } : s) }));
+    service.signStage(job, 'review-o04');
+    const review = store.workflowFor(job)().stages.find(s => s.id === 'review-o04')!;
+    expect(review.signed).toBeFalse();
+    expect(review.signoffRecords.at(-1)?.result).toBe('unsat');
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'final-ndt-vt5x')?.signed).toBeFalse();
   });
 
   it('reopenStage un-signs a stage and logs a reopened signoff record', () => {
