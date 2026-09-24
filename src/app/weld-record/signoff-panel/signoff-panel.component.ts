@@ -75,12 +75,12 @@ const WELD_GROUPS: WeldGroup[] = [
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { title: 'Preheat/Interpass', sections: [
-    { title: 'Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 120 }] },
+    { title: 'Requirements', rows: [{ keys: ['phMin', 'phMax', 'ipMin', 'ipMax'], width: 150 }] },
     { title: 'Override Requirements', when: (st, ctx) => ctx.hasOverrideFields(st), rows: [
-      { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 120 },
+      { keys: ['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'], width: 150 },
       { keys: ['overrideNote'], width: null },
     ] },
-    { title: 'Actuals', rows: [{ keys: ['actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax'], width: 120 }] },
+    { title: 'Actuals', rows: [{ keys: ['actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax'], width: 150 }] },
   ] },
   { sections: [
     { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
