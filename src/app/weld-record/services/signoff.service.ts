@@ -201,8 +201,9 @@ export class SignoffService {
          rejected" -- always VT/5X, regardless of which method actually failed); Weld Repair inserts
          Excavation NDT right after Repair, built to require the same inspection method that
          originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
-         above -- its own SAT/UNSAT routing is handled further down). Cut, or no repair code
-         chosen: no special routing, proceeds to whatever's next as normal. */
+         above -- its own SAT/UNSAT routing is handled further down). Cut sends the joint back to
+         Fit: every signed stage from Fit up to Repair is re-opened, since a cut joint is refitted
+         and rewelded from the start. No repair code chosen: no special routing. */
       if (stageId === 'repair') {
         const phase = st.inputs['originPhase'] ?? '';
         const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
@@ -211,6 +212,12 @@ export class SignoffService {
           reopenById(`${phase}-ndt-utrt`);
         } else if (repairType === 'grind' && phase) {
           reopenById(`${phase}-ndt-vt5x`);
+        } else if (repairType === 'cut') {
+          const fitIdx = stages.findIndex(s => s.id === 'fit');
+          const repairIdx = stages.findIndex(s => s.id === 'repair');
+          for (let i = fitIdx; fitIdx >= 0 && i < repairIdx; i++) {
+            if (stages[i].signed) reopenById(stages[i].id);
+          }
         } else if (repairType === 'weld-repair') {
           const repairIdx = stages.findIndex(s => s.id === 'repair');
           const hasExcavationAlready = stages.some(s => s.id === 'excavation-ndt');
