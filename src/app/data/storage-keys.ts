@@ -20,7 +20,7 @@ export const STORAGE = {
   weldPlanningResultColumns: 'welding:weld-planning-result-columns',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants',
   quickLinks: 'welding:quick-links:v1',
-  procedures: 'welding:procedures:v5',
+  procedures: 'welding:procedures:v6',
   makeup: 'welding:makeup:v2',
 } as const;
 

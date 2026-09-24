@@ -58,6 +58,15 @@
         }
       </select>
     </div>
+    <div class="stage-field">
+      <label class="stage-field-label">Application</label>
+      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.application">
+        <option value="">—</option>
+        @for (a of applications; track a) {
+          <option [value]="a">{{ a }}</option>
+        }
+      </select>
+    </div>
   </div>
 
   <h3 class="section-sub" style="margin-top: 1rem">1. Base Metal</h3>

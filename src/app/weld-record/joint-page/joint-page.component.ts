@@ -28,7 +28,7 @@ import {
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
-  gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
+  gwpOptionsForMaterials, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
 } from '../../data/procedures';
 
@@ -614,10 +614,18 @@ export class JointPageComponent implements OnDestroy {
       const required = this.rtDegreeRequired(stage);
       return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
     }
+    const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {
-      return { ...f, options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '') };
+      return {
+        ...f,
+        options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? ''),
+        description: gwp ? gwpDescription(gwp) : '',
+      };
     }
-    if (f.key === 'wtn') return { ...f, options: wtnOptionsForGwp(stage.inputs?.['weldProcedure'] ?? '') };
+    if (f.key === 'wtn') {
+      const wtn = stage.inputs?.['wtn'] ?? '';
+      return { ...f, options: wtnOptionsForGwp(gwp), description: wtn ? wtnDescription(gwp, wtn) : '' };
+    }
     if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
       /* Locked (consumable insert copied the value): show the full option set, not the
          current WPS's narrower list, so a value copied from Fit's Consumable Insert Type/Size

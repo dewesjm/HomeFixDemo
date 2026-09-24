@@ -21,7 +21,9 @@ export const PROCEDURE_STATUS_OPTIONS: { label: string; value: ProcedureStatus }
 ];
 
 export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
-export const PROCESS_TYPES = ['Manual', 'Semi-Automatic', 'Machine', 'Automatic'];
+export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic'];
+/* what the WPS is qualified for -- ends the plain-text description (procedureDescription below) */
+export const APPLICATIONS = ['Surface Structure', 'Submarine Structure', 'Piping'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
 export const BASE_METAL_1_TYPES = MATERIALS_1;
@@ -66,6 +68,7 @@ export interface Procedure {
   wpsRev: string;
   effectiveDate: string;     /* ISO date */
   processType: string;
+  application: string;       /* one of APPLICATIONS, e.g. 'Surface Structure' */
 
   /* 1. Base Metal */
   baseMetal1Type: string;
@@ -193,9 +196,9 @@ function generateWtnsForGwp(rand: () => number, count: number): string[] {
   return wtns;
 }
 
-/* One GWP per (Material Type 1, Material Type 2) combination, so every combination a job can
-   have has at least one applicable GWP (and, per generateProcedures below, at least one of that
-   GWP's WPS rows has override values populated). */
+/* Every (Material Type 1, Material Type 2) combination a job can have gets 1-3 GWPs, so it has at
+   least one applicable GWP (and, per generateProcedures below, at least one of each GWP's WPS rows
+   has override values populated). */
 function materialCombos(): [string, string][] {
   const combos: [string, string][] = [];
   for (const m1 of BASE_METAL_1_TYPES) {
@@ -212,83 +215,95 @@ function generateProcedures(): Procedure[] {
   const out: Procedure[] = [];
   const combos = materialCombos();
 
-  combos.forEach(([baseMetal1Type, baseMetal2Type], g) => {
-    const gwp = `W-${101 + g}`;
-    const wtnCount = 1 + Math.floor(rand() * 4);
-    const wtns = generateWtnsForGwp(rand, wtnCount);
-    /* guarantee at least one WPS under this GWP has override values, rather than leaving it to chance */
-    const overrideRowIndex = Math.floor(rand() * wtns.length);
+  let gwpNumber = 101;
+  combos.forEach(([baseMetal1Type, baseMetal2Type]) => {
+    const gwpCount = 1 + Math.floor(rand() * 3);
+    for (let g = 0; g < gwpCount; g++) {
+      const gwp = `W-${gwpNumber++}`;
+      const wtnCount = 2 + Math.floor(rand() * 3);
+      const wtns = generateWtnsForGwp(rand, wtnCount);
+      /* guarantee at least one WPS under this GWP has override values, rather than leaving it to chance */
+      const overrideRowIndex = Math.floor(rand() * wtns.length);
+      /* process and application are the same across a GWP's WPS rows so the GWP has one description;
+         filler metal varies per WTN */
+      const weldProcess = pick(WELD_PROCESSES);
+      const processType = pick(PROCESS_TYPES);
+      const application = pick(APPLICATIONS);
 
-    wtns.forEach((wtn, n) => {
-      const createdAt = new Date(Date.now() - Math.floor(rand() * 400) * 24 * 60 * 60 * 1000);
-      const hasOverride = n === overrideRowIndex || rand() < 0.3;
-      const statuses: ProcedureStatus[] = ['active', 'active', 'active', 'draft', 'retired']; /* mostly active */
+      wtns.forEach((wtn, n) => {
+        const createdAt = new Date(Date.now() - Math.floor(rand() * 400) * 24 * 60 * 60 * 1000);
+        const hasOverride = n === overrideRowIndex || rand() < 0.3;
+        const statuses: ProcedureStatus[] = ['active', 'active', 'active', 'draft', 'retired']; /* mostly active */
 
-      const id = `${gwp}-${n + 1}`;
-      const effectiveDate = new Date(createdAt.getTime() + Math.floor(rand() * 30) * 24 * 60 * 60 * 1000);
-      const status = pick(statuses);
-      const wpsRev = String(Math.floor(rand() * 4));
-      const revisionHistory: RevisionNote[] = status !== 'draft'
-        ? Array.from({ length: Number(wpsRev) }, (_, revIndex) => ({
-            wpsRev: String(revIndex + 1),
-            date: new Date(createdAt.getTime() + (revIndex + 1) * 20 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-            note: pick(REVISION_NOTE_POOL),
-            by: 'System',
-          }))
-        : [];
-      out.push({
-        id,
-        title: `${pick(WELD_PROCESSES)} procedure for ${pick(['pipe', 'structural'])} joints`,
-        status,
-        wtn,
-        weldProcess: pick(WELD_PROCESSES),
-        gwp,
-        wpsRev,
-        effectiveDate: effectiveDate.toISOString().slice(0, 10),
-        processType: pick(PROCESS_TYPES),
-        baseMetal1Type,
-        baseMetal2Type,
-        baseMetalThicknessMin: `${(0.125 + rand() * 0.25).toFixed(3)}"`,
-        baseMetalThicknessMax: `${(0.5 + rand() * 1.5).toFixed(3)}"`,
-        jointType: pick(JOINT_TYPES),
-        grooveAngle: `${30 + Math.floor(rand() * 45)}°`,
-        rootOpening: `${(rand() * 0.1875).toFixed(3)}"`,
-        backing: pick(BACKING_OPTIONS),
-        weldPosition: pick(getWeldPositions()).code,
-        weldProgression: pick(WELD_PROGRESSIONS),
-        fillerMetalTypes: pickSome(FILLER_METAL_TYPE_OPTIONS.map(o => o.value), rand, 1, 3),
-        fillerMetalClassification: pick(FILLER_METAL_TYPES),
-        fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
-        phMin: rand() < 0.15 ? 'NC' : String(100 + Math.floor(rand() * 60)),
-        phMax: String(160 + Math.floor(rand() * 60)),
-        ipMin: rand() < 0.15 ? 'NC' : String(80 + Math.floor(rand() * 40)),
-        ipMax: String(120 + Math.floor(rand() * 60)),
-        overridePhMin: hasOverride ? String(90 + Math.floor(rand() * 40)) : '',
-        overridePhMax: hasOverride ? String(150 + Math.floor(rand() * 60)) : '',
-        overrideIpMin: hasOverride ? String(70 + Math.floor(rand() * 40)) : '',
-        overrideIpMax: hasOverride ? String(110 + Math.floor(rand() * 60)) : '',
-        overrideNote: hasOverride ? `Approved deviation per WPS-${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}` : '',
-        currentType: pick(CURRENT_TYPES),
-        powerSource: pick(['Constant Current', 'Constant Voltage']),
-        shieldingGas: pick(['100% Argon', '75% Ar / 25% CO2', '100% CO2', 'N/A']),
-        gasFlowRate: `${20 + Math.floor(rand() * 20)} CFH`,
-        backingGas: pick(['100% Argon', 'None']),
-        heatInputMin: String(20 + Math.floor(rand() * 10)),
-        heatInputMax: String(40 + Math.floor(rand() * 20)),
-        amperageRange: `${80 + Math.floor(rand() * 40)}-${160 + Math.floor(rand() * 80)} A`,
-        voltageRange: `${16 + Math.floor(rand() * 4)}-${24 + Math.floor(rand() * 6)} V`,
-        travelSpeedRange: `${4 + Math.floor(rand() * 3)}-${8 + Math.floor(rand() * 4)} in/min`,
-        pwhtTemp: pick(['N/A', `${1100 + Math.floor(rand() * 100)}°F`]),
-        pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
-        rules: pickSome(RULE_POOL, rand, 2, 4),
-        conditions: pickSome(CONDITION_POOL, rand, 1, 3),
-        qualificationsRequired: pickSome(QUALIFICATION_POOL, rand, 1, 2),
-        revisionHistory,
-        createdBy: 'System',
-        createdAt: createdAt.toISOString(),
-        updatedAt: createdAt.toISOString(),
+        const id = `${gwp}-${n + 1}`;
+        const effectiveDate = new Date(createdAt.getTime() + Math.floor(rand() * 30) * 24 * 60 * 60 * 1000);
+        const status = pick(statuses);
+        const wpsRev = String(Math.floor(rand() * 4));
+        const revisionHistory: RevisionNote[] = status !== 'draft'
+          ? Array.from({ length: Number(wpsRev) }, (_, revIndex) => ({
+              wpsRev: String(revIndex + 1),
+              date: new Date(createdAt.getTime() + (revIndex + 1) * 20 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+              note: pick(REVISION_NOTE_POOL),
+              by: 'System',
+            }))
+          : [];
+        const fillerMetalTypes = pickSome(FILLER_METAL_TYPE_OPTIONS.map(o => o.value), rand, 1, 3);
+        out.push({
+          id,
+          title: `${weldProcess} procedure for ${application.toLowerCase()}`,
+          status,
+          wtn,
+          weldProcess,
+          gwp,
+          wpsRev,
+          effectiveDate: effectiveDate.toISOString().slice(0, 10),
+          processType,
+          application,
+          baseMetal1Type,
+          baseMetal2Type,
+          baseMetalThicknessMin: `${(0.125 + rand() * 0.25).toFixed(3)}"`,
+          baseMetalThicknessMax: `${(0.5 + rand() * 1.5).toFixed(3)}"`,
+          jointType: pick(JOINT_TYPES),
+          grooveAngle: `${30 + Math.floor(rand() * 45)}°`,
+          rootOpening: `${(rand() * 0.1875).toFixed(3)}"`,
+          backing: pick(BACKING_OPTIONS),
+          weldPosition: pick(getWeldPositions()).code,
+          weldProgression: pick(WELD_PROGRESSIONS),
+          fillerMetalTypes,
+          /* matches the first allowed filler type, so the description names a filler this WPS allows */
+          fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
+          fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
+          phMin: rand() < 0.15 ? 'NC' : String(100 + Math.floor(rand() * 60)),
+          phMax: String(160 + Math.floor(rand() * 60)),
+          ipMin: rand() < 0.15 ? 'NC' : String(80 + Math.floor(rand() * 40)),
+          ipMax: String(120 + Math.floor(rand() * 60)),
+          overridePhMin: hasOverride ? String(90 + Math.floor(rand() * 40)) : '',
+          overridePhMax: hasOverride ? String(150 + Math.floor(rand() * 60)) : '',
+          overrideIpMin: hasOverride ? String(70 + Math.floor(rand() * 40)) : '',
+          overrideIpMax: hasOverride ? String(110 + Math.floor(rand() * 60)) : '',
+          overrideNote: hasOverride ? `Approved deviation per WPS-${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}` : '',
+          currentType: pick(CURRENT_TYPES),
+          powerSource: pick(['Constant Current', 'Constant Voltage']),
+          shieldingGas: pick(['100% Argon', '75% Ar / 25% CO2', '100% CO2', 'N/A']),
+          gasFlowRate: `${20 + Math.floor(rand() * 20)} CFH`,
+          backingGas: pick(['100% Argon', 'None']),
+          heatInputMin: String(20 + Math.floor(rand() * 10)),
+          heatInputMax: String(40 + Math.floor(rand() * 20)),
+          amperageRange: `${80 + Math.floor(rand() * 40)}-${160 + Math.floor(rand() * 80)} A`,
+          voltageRange: `${16 + Math.floor(rand() * 4)}-${24 + Math.floor(rand() * 6)} V`,
+          travelSpeedRange: `${4 + Math.floor(rand() * 3)}-${8 + Math.floor(rand() * 4)} in/min`,
+          pwhtTemp: pick(['N/A', `${1100 + Math.floor(rand() * 100)}°F`]),
+          pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
+          rules: pickSome(RULE_POOL, rand, 2, 4),
+          conditions: pickSome(CONDITION_POOL, rand, 1, 3),
+          qualificationsRequired: pickSome(QUALIFICATION_POOL, rand, 1, 2),
+          revisionHistory,
+          createdBy: 'System',
+          createdAt: createdAt.toISOString(),
+          updatedAt: createdAt.toISOString(),
+        });
       });
-    });
+    }
   });
   return out;
 }
@@ -357,6 +372,30 @@ export function gwpOptions(): { label: string; value: string }[] {
   return distinct.map(g => ({ label: g, value: g }));
 }
 
+/* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface
+   Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */
+export function procedureDescription(p: Procedure | undefined, includeFiller = true): string {
+  if (!p) return '';
+  const metals = [p.baseMetal1Type, p.baseMetal2Type].filter(Boolean).join(' and ');
+  return [
+    [p.processType, p.weldProcess].filter(Boolean).join(' '),
+    metals && `of ${metals}`,
+    includeFiller && p.fillerMetalClassification && `using ${p.fillerMetalClassification}`,
+    p.application && `for ${p.application}`,
+  ].filter(Boolean).join(' ');
+}
+
+/* a GWP's description comes from its first WPS row (seeded rows share process and application) */
+export function gwpDescription(gwp: string): string {
+  return procedureDescription(procedures().find(p => p.gwp === gwp), false);
+}
+
+export function wtnDescription(gwp: string, wtn: string): string {
+  return procedureDescription(getProcedureByGwpWtn(gwp, wtn));
+}
+
+const withDescription = (code: string, description: string) => description ? `${code} · ${description}` : code;
+
 /* GWP droplist filtered to whichever GWPs are qualified for a job's base metal pair -- a GWP's
    base metal 1/2 (fixed per GWP, see materialCombos() above) must match the job's Material Type
    1/2 (Job.materialType1/materialType2, jobs.ts). */
@@ -367,14 +406,14 @@ export function gwpOptionsForMaterials(materialType1: string, materialType2: str
       .filter(p => p.baseMetal1Type === materialType1 && p.baseMetal2Type === materialType2)
       .map(p => p.gwp)
   )).sort();
-  return distinct.map(g => ({ label: g, value: g }));
+  return distinct.map(g => ({ label: withDescription(g, gwpDescription(g)), value: g }));
 }
 
 export function wtnOptionsForGwp(gwp: string): { label: string; value: string }[] {
   if (!gwp) return [];
   return procedures()
     .filter(p => p.gwp === gwp)
-    .map(p => ({ label: p.wtn, value: p.wtn }));
+    .map(p => ({ label: withDescription(p.wtn, procedureDescription(p)), value: p.wtn }));
 }
 
 export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | undefined {
@@ -412,6 +451,7 @@ export const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'WTN', value: r => r.wtn },
   { header: 'Weld Process', value: r => r.weldProcess },
   { header: 'Process Type', value: r => r.processType },
+  { header: 'Application', value: r => r.application },
   { header: 'Base Metal 1 Type', value: r => r.baseMetal1Type },
   { header: 'Base Metal 2 Type', value: r => r.baseMetal2Type },
   { header: 'Base Metal Thickness Min', value: r => r.baseMetalThicknessMin },
@@ -471,7 +511,7 @@ export async function parseProcedureXlsxImport(file: File): Promise<Record<strin
 export async function downloadProcedureXlsxTemplate(): Promise<void> {
   const XLSX = await import('xlsx');
   const headers = [
-    'id', 'title', 'status', 'wtn', 'weldProcess', 'gwp', 'wpsRev', 'effectiveDate', 'processType',
+    'id', 'title', 'status', 'wtn', 'weldProcess', 'gwp', 'wpsRev', 'effectiveDate', 'processType', 'application',
     'baseMetal1Type', 'baseMetal2Type', 'baseMetalThicknessMin', 'baseMetalThicknessMax',
     'jointType', 'grooveAngle', 'rootOpening', 'backing',
     'weldPosition', 'weldProgression',

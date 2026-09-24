@@ -32,6 +32,7 @@ export interface StageField {
   disabled?: boolean;    /* read-only / information only */
   minField?: string;     /* cross-field: value must be >= this field's value */
   maxField?: string;     /* cross-field: value must be <= this field's value */
+  description?: string;  /* runtime only: plain text shown under the control, e.g. the selected GWP/WTN's description */
 }
 
 /* configurable field on the per-stage sign-off panel */

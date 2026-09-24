@@ -668,6 +668,9 @@
                (blur)="ctx().stageInputBlur(stage(), f, $any($event.target).value)" />
       }
     </label>
+    @if (f.description) {
+      <div class="text-sm mt-0.5">{{ f.description }}</div>
+    }
     @if (ctx().fieldError(stage().id, f.key); as err) {
       <div class="text-error text-xs mt-0.5">{{ err }}</div>
     }

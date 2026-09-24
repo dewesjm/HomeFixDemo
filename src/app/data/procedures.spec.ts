@@ -1,6 +1,6 @@
 import {
   procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure, hasOverride,
-  gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn,
+  gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, procedureDescription,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
   BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
 } from './procedures';
@@ -9,7 +9,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   id, title: 'Test procedure', status: 'draft',
   wtn, weldProcess: 'GTAW',
   gwp, wpsRev: '0', effectiveDate: '',
-  processType: '',
+  processType: '', application: '',
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
@@ -167,6 +167,25 @@ describe('procedures data layer', () => {
       const opts = gwpOptionsForMaterials('02-CS', '01-E60').map(o => o.value);
       expect(opts).toContain('TEST-GWP-MAT-A');
       expect(opts).not.toContain('TEST-GWP-MAT-B');
+    });
+
+    it('some material pairs have more than one GWP to choose from', () => {
+      const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+      const gwpsByPair = new Map<string, Set<string>>();
+      for (const p of seeded) {
+        const pair = `${p.baseMetal1Type}::${p.baseMetal2Type}`;
+        gwpsByPair.set(pair, (gwpsByPair.get(pair) ?? new Set()).add(p.gwp));
+      }
+      expect([...gwpsByPair.values()].some(g => g.size > 1)).toBeTrue();
+    });
+
+    it('procedureDescription reads as plain text and skips blank parts', () => {
+      const p = { ...blankProcedure('TEST-DESC-1'), processType: 'Semiautomatic', weldProcess: 'GTAW',
+        baseMetal1Type: '02-CS', baseMetal2Type: '01-E60', fillerMetalClassification: 'MIL-70S-6',
+        application: 'Surface Structure', createdAt: '', updatedAt: '' };
+      expect(procedureDescription(p)).toBe('Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface Structure');
+      expect(procedureDescription(p, false)).toBe('Semiautomatic GTAW of 02-CS and 01-E60 for Surface Structure');
+      expect(procedureDescription({ ...p, processType: '', application: '' })).toBe('GTAW of 02-CS and 01-E60 using MIL-70S-6');
     });
 
     it('gwpOptionsForMaterials returns an empty list when either material is blank', () => {

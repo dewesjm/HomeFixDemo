@@ -5,7 +5,7 @@ const baseProcedure: Procedure = {
   id: 'W-999-1', title: 'Test title', status: 'active',
   wtn: '05.5-1', weldProcess: 'GTAW',
   gwp: 'W-999', wpsRev: '0', effectiveDate: '2026-01-01',
-  processType: 'Manual',
+  processType: 'Manual', application: 'Piping',
   baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', baseMetalThicknessMin: '0.125"', baseMetalThicknessMax: '0.75"',
   jointType: 'Groove', grooveAngle: '37.5°', rootOpening: '0.0625"', backing: 'None',
   weldPosition: 'F', weldProgression: 'N/A',

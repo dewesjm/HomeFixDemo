@@ -69,7 +69,7 @@ interface WeldGroup { title?: string; sections: WeldSection[] }
 
 const WELD_GROUPS: WeldGroup[] = [
   { sections: [
-    { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200 }] },
+    { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200, widths: { weldProcedure: 320, wtn: 320 } }] },
     { rows: [{ keys: ['qualificationCheck'], width: 400 }] },
     { kind: 'checkbox', when: st => st.id === 'root-weld' || st.id === 'root-layer', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
