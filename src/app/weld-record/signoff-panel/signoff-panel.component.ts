@@ -208,11 +208,13 @@ export class SignoffPanelComponent {
     if (clean !== input.value) input.value = clean;
   }
 
-  /* A native select shows the chosen option's text when closed, so option details (GWP/WTN
-     descriptions) are only added to the option text while that select is being opened. */
-  openSelect = signal<string | null>(null);
-  optionText(f: StageField, o: { label: string; detail?: string }) {
-    return this.openSelect() === f.key && o.detail ? `${o.label} · ${o.detail}` : o.label;
+  /* A native select shows the chosen option's text when closed, so selects whose options carry
+     details (GWP/WTN descriptions) hide that text and overlay just the chosen code instead. */
+  hasDetails(f: StageField) {
+    return !!f.options?.some(o => o.detail);
+  }
+  selectedLabel(f: StageField) {
+    return f.options?.find(o => o.value === this.stage().inputs[f.key])?.label ?? '';
   }
 
   onSelect(f: StageField, value: string | null) {

@@ -662,11 +662,19 @@
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
         <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
       } @else if (f.type === 'select') {
-        <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
-                [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event); openSelect.set(null)"
-                (mousedown)="openSelect.set(f.key)" (keydown)="openSelect.set(f.key)" (blur)="openSelect.set(null)">
-          @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ optionText(f, o) }}</option> }
-        </select>
+        <div class="relative">
+          <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
+                  [class.text-transparent]="hasDetails(f)"
+                  [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
+            @for (o of f.options || []; track o.value) {
+              <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option>
+            }
+          </select>
+          @if (hasDetails(f)) {
+            <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
+                  [class.opacity-40]="!fieldsEditable() || isLocked(f)">{{ selectedLabel(f) }}</span>
+          }
+        </div>
       } @else {
         <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
                [disabled]="!fieldsEditable() || isLocked(f)"
