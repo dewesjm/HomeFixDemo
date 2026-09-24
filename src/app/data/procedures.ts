@@ -22,8 +22,9 @@ export const PROCEDURE_STATUS_OPTIONS: { label: string; value: ProcedureStatus }
 
 export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
 export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic'];
-/* what the WPS is qualified for -- ends the plain-text description (procedureDescription below) */
-export const APPLICATIONS = ['Surface Structure', 'Submarine Structure', 'Piping'];
+/* free-text "for ..." that ends the plain-text description (procedureDescription below); these are
+   only placeholder values for the seed data */
+export const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
 export const BASE_METAL_1_TYPES = MATERIALS_1;
@@ -68,7 +69,7 @@ export interface Procedure {
   wpsRev: string;
   effectiveDate: string;     /* ISO date */
   processType: string;
-  application: string;       /* one of APPLICATIONS, e.g. 'Surface Structure' */
+  application: string;       /* free text, e.g. 'Surface Structure' */
 
   /* 1. Base Metal */
   baseMetal1Type: string;

@@ -60,12 +60,7 @@
     </div>
     <div class="stage-field">
       <label class="stage-field-label">Application</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.application">
-        <option value="">—</option>
-        @for (a of applications; track a) {
-          <option [value]="a">{{ a }}</option>
-        }
-      </select>
+      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Surface Structure" [(ngModel)]="form.application" />
     </div>
   </div>
 

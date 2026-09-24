@@ -9,7 +9,7 @@ import { ToastService } from '../../../shared/toast.service';
 import { getWeldPositions } from '../../../data/workflow';
 import {
   addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
-  PROCESS_TYPES, APPLICATIONS, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS,
+  PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS,
   FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
@@ -55,7 +55,6 @@ export class ProcedureFormComponent implements OnInit {
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   weldProcesses = WELD_PROCESSES;
   processTypes = PROCESS_TYPES;
-  applications = APPLICATIONS;
   baseMetal1Types = BASE_METAL_1_TYPES;
   baseMetal2Types = BASE_METAL_2_TYPES;
   fillerMetalClassificationOptions = FILLER_METAL_TYPES;
