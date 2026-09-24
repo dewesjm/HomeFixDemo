@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, buildStages, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -61,6 +61,7 @@ export class SignoffService {
   /* lock a stage's sign-off and advance (or route back on reject) */
   signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
     let signedLabel = '';
+    let refitNumber = '';
     this.store.update(job, wf => {
       /* stages with no SAT/UNSAT choice are accepted by signing */
       let stages: WorkflowStage[] = wf.stages.map(s =>
@@ -203,9 +204,9 @@ export class SignoffService {
          rejected" -- always VT/5X, regardless of which method actually failed); Weld Repair inserts
          Excavation NDT right after Repair, built to require the same inspection method that
          originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
-         above -- its own SAT/UNSAT routing is handled further down). Cut sends the joint back to
-         Fit: every signed stage from Fit up to Repair is re-opened, since a cut joint is refitted
-         and rewelded from the start (earlier repair rounds stay signed as a record). No repair
+         above -- its own SAT/UNSAT routing is handled further down). Cut means the joint is redone:
+         the current routing goes back to Fit and the path starts over (nothing is re-opened; past
+         records are kept), and Refit # goes up by one. No repair
          code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
       if (isRepairStageId(stageId)) {
         const phase = st.inputs['originPhase'] ?? '';
@@ -216,11 +217,17 @@ export class SignoffService {
         } else if (repairType === 'grind' && phase) {
           reopenById(`${phase}-ndt-vt5x`);
         } else if (repairType === 'cut') {
+          /* not a reopen: the joint starts over from Fit. Every stage from Fit on is rebuilt as on a
+             new joint, keeping its past signoff records; earlier repair rounds stay as signed records */
           const fitIdx = stages.findIndex(s => s.id === 'fit');
-          const repairIdx = stages.findIndex(s => s.id === stageId);
-          for (let i = fitIdx; fitIdx >= 0 && i < repairIdx; i++) {
-            const id = stages[i].id;
-            if (stages[i].signed && !isRepairStageId(id) && !isExcavationNdtStageId(id)) reopenById(id);
+          if (fitIdx >= 0) {
+            const fresh = new Map(buildStages(job).map(s => [s.id, s]));
+            stages = stages.map((s, i) => {
+              if (i < fitIdx || isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) return s;
+              const f = fresh.get(s.id);
+              return f ? { ...f, signoffRecords: s.signoffRecords } : s;
+            });
+            refitNumber = String(Number(job.refitNumber || '0') + 1).padStart(2, '0');
           }
         } else if (repairType === 'weld-repair') {
           const repairIdx = stages.findIndex(s => s.id === stageId);
@@ -261,7 +268,7 @@ export class SignoffService {
         }
       }
 
-      return this.store.withHistory(wf, { ...wf, stages }, {
+      const signed = this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${signedActionLabel(st)} — Signed off`,
@@ -269,7 +276,16 @@ export class SignoffService {
         inputs,
         stageId
       });
+      if (!refitNumber) return signed;
+      return this.store.withHistory(signed, { ...signed, refitNumber }, {
+        section: 'Refit',
+        who: st.signoffInputs['inspectorName'] || wf.technician,
+        action: 'Cut — routed back to Fit',
+        from: job.refitNumber || '00',
+        to: `Refit ${refitNumber}`,
+      });
     });
+    if (refitNumber) job.refitNumber = refitNumber;
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
   }
 

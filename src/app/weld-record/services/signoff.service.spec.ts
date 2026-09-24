@@ -134,7 +134,7 @@ describe('SignoffService', () => {
       expect(ids(job).some(id => id === 'repair-3')).toBeFalse();
     });
 
-    it('Cut re-opens Fit through the current Repair, but not earlier repair rounds', () => {
+    it('Cut starts the joint over from Fit: nothing re-opened, records kept, Refit # up by one', () => {
       const job = weldingJob({ ndt: 'UT' });
       for (const id of ['pre-fit', 'fit', 'tack', 'fitup-insp', 'root-weld']) service.signStage(job, id);
       failNdt(job, 'root-ndt-utrt');
@@ -142,11 +142,20 @@ describe('SignoffService', () => {
       failNdt(job, 'root-ndt-utrt');
       signRepair(job, 'repair-2', 'cut');
 
-      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld']) {
-        expect(stage(job, id).signed).withContext(id).toBeFalse();
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
+        const st = stage(job, id);
+        expect(st.signed).withContext(id).toBeFalse();
+        expect(st.signoffRecords.some(r => r.action === 'reopened')).withContext(id).toBeFalse();
       }
+      expect(stage(job, 'fit').signoffRecords.length).toBe(1);   /* the first fit's record is kept */
+      expect(stage(job, 'pre-fit').signed).toBeTrue();
       expect(stage(job, 'repair').signed).toBeTrue();
       expect(stage(job, 'repair-2').signed).toBeTrue();
+
+      const wf = store.workflowFor(job)();
+      expect(wf.refitNumber).toBe('01');
+      expect(job.refitNumber).toBe('01');
+      expect(wf.history.some(h => h.section === 'Refit' && h.to === 'Refit 01')).toBeTrue();
     });
   });
 

@@ -109,6 +109,7 @@ export class WorkflowStore {
         wf.fabricationData ??= {};
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
+        if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
 
         /* backfill empty fabrication data for Welding jobs */
         if (job?.trade === 'Welding' && Object.keys(wf.fabricationData).length === 0) {

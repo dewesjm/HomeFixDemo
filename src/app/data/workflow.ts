@@ -99,7 +99,7 @@ export interface HistoryEntry {
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release';
+  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -120,6 +120,7 @@ export interface JobWorkflow {
   conditionCount: number;    /* pairs with conditionCode */
   history: HistoryEntry[];
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
+  refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
 }
 
 interface StageOption {

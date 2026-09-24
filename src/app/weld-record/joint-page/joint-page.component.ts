@@ -556,7 +556,7 @@ export class JointPageComponent implements OnDestroy {
      signoff, given current inputs -- mirrors SignoffService.signStage()'s routing exactly:
        Repair: Allowable thickness exceeded takes priority -> that phase's NDT UT/RT; else Grind
          Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; else Cut ->
-         back to Fit, re-opening every signed stage from Fit up to Repair; no code chosen -> nothing shown.
+         starts over from Fit, Refit # up by one; no code chosen -> nothing shown.
        Excavation NDT (SAT only -- UNSAT already routes back to Repair via rejectToStage): "the
          original joint inspection" (whatever NDT stage/method actually rejected the joint),
          unless that was PT and the job's material (Material Type 1 or 2, Admin > Material
@@ -596,7 +596,7 @@ export class JointPageComponent implements OnDestroy {
         return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}.`;
       }
       if (repairType === 'cut') {
-        return `On signoff, this routes back to ${labelOf('fit')}. Every stage from ${labelOf('fit')} up to ${stage.label} is re-opened, so the joint is refitted and rewelded.`;
+        return `On signoff, the joint starts over from ${labelOf('fit')} and continues along the path from there. Past records are kept, and Refit # goes up to ${String(Number(this.job.refitNumber || '0') + 1).padStart(2, '0')}.`;
       }
       return '';
     }
