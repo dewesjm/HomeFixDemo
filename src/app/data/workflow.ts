@@ -523,6 +523,11 @@ export function jobNdtSteps(job: Job): Record<NdtPhase, NdtStep[]> {
   };
 }
 
+/* every Type option a kind of NDT stage can offer, before any Joint Details lock */
+export function ndtKindOptions(kind: NdtKind): StageOption[] {
+  return NDT_KINDS[kind].options.map(o => ({ ...o }));
+}
+
 function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
   const k = NDT_KINDS[kind];
   return {

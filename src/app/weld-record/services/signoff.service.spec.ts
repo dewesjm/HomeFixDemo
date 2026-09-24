@@ -182,6 +182,20 @@ describe('SignoffService', () => {
       expect(store.workflowFor(job)().repairNumber).toBe('02');
     });
 
+    it('PT on austenitic material: Excavation NDT SAT reopens that phase VT/5X with 5X allowed', () => {
+      const job = weldingJob({ ndtRoot: 'PT', materialType1: '12-SS304' });
+      patch(job, 'root-ndt-mtpt', { inspectionType: 'pt' });
+      failNdt(job, 'root-ndt-mtpt');
+      signRepair(job, 'repair', 'weld-repair');
+      patch(job, 'excavation-ndt', { result: 'sat' });
+      service.signStage(job, 'excavation-ndt');
+
+      const vt = stage(job, 'root-ndt-vt5x');
+      expect(vt.signed).toBeFalse();
+      expect(vt.routingOptions?.map(o => o.value)).toEqual(['vt', '5x']);
+      expect(vt.inspectionType).toBe('5x');
+    });
+
     it('Grind Only on Layer goes back to the Layer NDT that failed', () => {
       const job = weldingJob({ ndtEach: 'MT' });
       failNdt(job, 'layer-ndt-mtpt');

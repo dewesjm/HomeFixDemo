@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, buildStages, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, buildStages, ndtKindOptions, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -270,7 +270,10 @@ export class SignoffService {
         const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
         const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
         if (resolvedType !== originInspectionType && phase) {
-          reopenById(`${phase}-ndt-vt5x`);
+          /* the VT/5X stage is normally locked to VT; here it must allow the 5X that replaces PT */
+          const vtId = `${phase}-ndt-vt5x`;
+          reopenById(vtId);
+          stages = stages.map(s => s.id === vtId ? { ...s, routingOptions: ndtKindOptions('vt5x'), inspectionType: '5x' } : s);
         } else if (originStageId) {
           reopenById(originStageId);
         }
