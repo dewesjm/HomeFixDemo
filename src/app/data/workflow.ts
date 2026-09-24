@@ -348,7 +348,10 @@ const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];
 
-/* Override Requirements fields, appended to every welding stage (shown for matching WTNs) */
+/* Override Requirements fields, appended to every welding stage (shown for matching WTNs).
+   Hidden and not filled in from the WTN while SHOW_WELD_OVERRIDES is false (2026-09-24): how an
+   override applies is unsettled (likely it replaces the requirement shown), so kept intact but off. */
+export const SHOW_WELD_OVERRIDES = false;
 export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
   { key: 'overridePhMax', label: 'Override PH Max', type: 'number' },
@@ -371,6 +374,17 @@ export const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fille
 export const ACTUAL_REQUIREMENT: Record<string, string> = {
   actualPhMin: 'phMin', actualPhMax: 'phMax', actualIpMin: 'ipMin', actualIpMax: 'ipMax',
 };
+
+/* the lowest reading can't be above the highest: an error for the Max field, or '' */
+export const ACTUAL_MIN_MAX: { min: string; max: string; minLabel: string; maxLabel: string }[] = [
+  { min: 'actualPhMin', max: 'actualPhMax', minLabel: 'Actual PH Min', maxLabel: 'Actual PH Max' },
+  { min: 'actualIpMin', max: 'actualIpMax', minLabel: 'Actual IP Min', maxLabel: 'Actual IP Max' },
+];
+export function actualOrderError(inputs: Record<string, string>, pair: typeof ACTUAL_MIN_MAX[number]): string {
+  const lo = Number(inputs[pair.min]), hi = Number(inputs[pair.max]);
+  if (!inputs[pair.min] || !inputs[pair.max] || isNaN(lo) || isNaN(hi)) return '';
+  return lo > hi ? `${pair.maxLabel} is below ${pair.minLabel}` : '';
+}
 
 /* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox; an actual
    follows an NC requirement */

@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -535,6 +535,7 @@ export class JointPageComponent implements OnDestroy {
         if (f.key === 'weldPosition') return job?.nInd === '1';
         // Override fields only visible when the selected GWP+WTN's WPS has override values set
         if (f.key.startsWith('override')) {
+          if (!SHOW_WELD_OVERRIDES) return false;
           const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
           if (!proc || !procedureHasOverride(proc)) return false;
         }
@@ -862,7 +863,7 @@ export class JointPageComponent implements OnDestroy {
           if (proc?.[req as 'phMin'] === 'NC') setIfPresent(a, 'NC');
           else if (stage.inputs[a] === 'NC') setIfPresent(a, '');
         }
-        const hasOv = !!proc && procedureHasOverride(proc);
+        const hasOv = SHOW_WELD_OVERRIDES && !!proc && procedureHasOverride(proc);
         setIfPresent('overridePhMin', hasOv ? proc!.overridePhMin : '');
         setIfPresent('overridePhMax', hasOv ? proc!.overridePhMax : '');
         setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
@@ -988,6 +989,10 @@ export class JointPageComponent implements OnDestroy {
         }
       }
     }
+    for (const pair of ACTUAL_MIN_MAX) {
+      const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
+      if (err && !errors[`${stage.id}:${pair.max}`]) errors[`${stage.id}:${pair.max}`] = err;
+    }
     /* Fit-Up Insp: every verification checkbox must be checked -- signBlockers() already blocks
        signoff with one summary reason ("Verify every fitting value"); this adds a per-field error
        so the specific unchecked row(s) can be highlighted, same as any other required field. */
@@ -1075,6 +1080,15 @@ export class JointPageComponent implements OnDestroy {
       if (belowMin || aboveMax) {
         prev[key] = `${field.label} Out of Range`;
       }
+    }
+    /* Actual Min above Max: flagged on the Max field, rechecked when either one changes */
+    const pair = ACTUAL_MIN_MAX.find(p => p.min === field.key || p.max === field.key);
+    if (pair) {
+      const maxKey = `${stage.id}:${pair.max}`;
+      const err = actualOrderError(curStage?.inputs ?? {}, pair);
+      const orderMsg = `${pair.maxLabel} is below ${pair.minLabel}`;
+      if (err && !prev[maxKey]) prev[maxKey] = err;
+      if (!err && prev[maxKey] === orderMsg) delete prev[maxKey];
     }
     this.fieldErrors.set(prev);
   }

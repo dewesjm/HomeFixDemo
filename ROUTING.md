@@ -110,7 +110,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
-- Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max, each within its requirement limits. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited.
+- Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max, each within its requirement limits. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max.
 - Filler Metal Type, Size and MIC. On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.
 - Layer also needs Interim Layer or Final Layer chosen.
