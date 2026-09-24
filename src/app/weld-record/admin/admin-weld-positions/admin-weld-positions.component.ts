@@ -1,4 +1,4 @@
-/* Admin → Weld Positions: manage weld position codes used in Tack stage */
+/* Admin → Weld Positions: manage weld position codes used in every weld stage */
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
