@@ -216,7 +216,7 @@ const HANDOVER_STAGE: StageTemplate = {
 
 /* ── Shop locations (admin-configurable via localStorage) ── */
 const SHOPS_LS_KEY = STORAGE.shops;
-const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Field — Onsite', 'Ship'];
+const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Machine Shop — Building 2', 'Structural Shop — Building 7', 'Ship'];
 
 export function getShops(): string[] {
   try {

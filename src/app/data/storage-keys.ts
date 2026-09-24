@@ -6,7 +6,7 @@ export const STORAGE = {
   routingOptions: 'welding:routing-options:v1',
   penetrants: 'welding:penetrants:v1',
   weldPositions: 'welding:weld-positions:v1',
-  shops: 'welding:shops:v1',
+  shops: 'welding:shops:v2',
   jointDesigns: 'welding:joint-designs:v2',
   mclTraceability: 'welding:mcl-traceability:v2',
   materialClassification: 'welding:material-classification:v2',
