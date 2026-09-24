@@ -63,7 +63,7 @@
       <tr>
         <td>
           @if (editingId() === row.code) {
-            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. BJ-G"
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. C-18"
                    [ngModel]="row.code" (ngModelChange)="updateField(row, 'code', $event)" />
           } @else {
             {{ row.code || '—' }}
@@ -71,7 +71,7 @@
         </td>
         <td>
           @if (editingId() === row.code) {
-            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. BJ-G"
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. C-18"
                    [ngModel]="row.label" (ngModelChange)="updateField(row, 'label', $event)" />
           } @else {
             {{ row.label || '—' }}

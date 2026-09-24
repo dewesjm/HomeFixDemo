@@ -1167,7 +1167,7 @@ export function seedFabricationData(job: Job): Record<string, string> {
     drawingRev: job.drawingRev || 'C',
     actualThickness: pick(['0.375', '0.5', '0.625', '0.75', '1.0']),
     weldMemo: seedWeMemo(rand),
-    revisedJointDesign: revised ? 'bj-g' : '',
+    revisedJointDesign: revised ? 'c-18' : '',
     changeNumber: revised ? `ER-${1000 + Math.floor(rand() * 9000)}` : '',
     wtn: rand() < 0.5 ? '07:11.5-3' : '09:10.8-4',
   };

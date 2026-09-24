@@ -1,6 +1,7 @@
 /* mock Job model + seeded generator, stands in for a backend */
 import { TECHNICIAN_NAMES } from './people';
 import { CHARACTERISTIC_CODES } from './characteristics';
+import { JOINT_DESIGN_LABELS } from './joint-designs';
 
 export interface Job {
   id: string;          /* internal key, always present — never shown; the real (sometimes-missing) source
@@ -87,7 +88,7 @@ export function jointNumbers(count: number, seed: number): string[] {
   }
   return out;
 }
-const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
+const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
 export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', 'Transition', 'Overlay', 'Boss', 'Socket'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
