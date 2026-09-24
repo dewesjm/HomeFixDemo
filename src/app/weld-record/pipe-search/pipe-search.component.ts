@@ -75,7 +75,7 @@ export class PipeSearchComponent {
   /* Admin banner — read from localStorage, re-read on construction */
   banner = signal(bannerFor('pipe-welding'));
 
-  roleOptions = ROLES.map(r => ({ label: r, value: r }));
+  roleOptions = ROLES.map(r => ({ label: r === 'View' ? 'View All' : r, value: r }));
 
   table = new TableState<Row>(
     ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber'],
