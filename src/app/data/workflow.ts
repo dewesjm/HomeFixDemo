@@ -626,9 +626,9 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       ], signoffFields: [], routingOptions: [
       { label: 'Root', value: 'standard', default: true },
     ] },
-    ndtStage('root', 'utrt'),
     ndtStage('root', 'vt5x'),
     ndtStage('root', 'mtpt'),
+    ndtStage('root', 'utrt'),
     { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
       fields: [...WELD_STAGE_FIELDS,
         { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
@@ -637,15 +637,15 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
         { label: 'Interim Layer', value: 'interim', default: true },
         { label: 'Final Layer', value: 'final' },
       ] },
-    ndtStage('layer', 'utrt'),
     ndtStage('layer', 'vt5x'),
     ndtStage('layer', 'mtpt'),
+    ndtStage('layer', 'utrt'),
     { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
       { label: 'Final Weld', value: 'standard', default: true },
     ] },
-    ndtStage('final', 'utrt'),
     ndtStage('final', 'vt5x'),
     ndtStage('final', 'mtpt'),
+    ndtStage('final', 'utrt'),
     /* split into O63/O04 2026-09-22: O63 when the job has any SFFF/DSS-AAA/SS data, O04 otherwise
        (see buildStages() Welding filter — exactly one of the two is included per job) */
     { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', fields: [
