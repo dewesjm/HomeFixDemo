@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, REPAIR_STAGE, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -147,51 +147,53 @@ export class SignoffService {
         stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
       }
 
-      /* on unsat: re-open stages from the reject target up to (not including) this stage */
       if (st.result === 'unsat' && st.rejectToStage) {
-        const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
         const currentIdx = stages.findIndex(s => s.id === stageId);
-        if (targetIdx >= 0 && targetIdx < currentIdx) {
-          const now = new Date().toISOString();
-          for (let i = targetIdx; i < currentIdx; i++) {
-            if (stages[i].signed) {
-              const reopenRecord = {
-                stageLabel: stages[i].label,
-                fields: Object.entries({ ...stages[i].inputs, ...stages[i].signoffInputs })
-                  .filter(([, v]) => v)
-                  .map(([key, value]) => ({ key, label: labelFor(stages[i], key), value })),
-                result: stages[i].result,
-                who: wf.technician,
-                when: now,
-                action: 'reopened' as const,
-              };
-              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null, signoffRecords: [...stages[i].signoffRecords, reopenRecord] };
-            }
-          }
-        }
-        /* NDT UNSAT: insert repair stage after this stage if not already present */
-        const isNdtStage = stageId.includes('ndt');
-        const hasRepairAlready = stages.some(s => s.id === 'repair');
-        if (isNdtStage && !hasRepairAlready) {
+        /* NDT UNSAT always adds a new Repair right after this stage, however many repairs the joint
+           has had. Excavation NDT is left out: its UNSAT goes back to its own round's Repair. */
+        const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
+        if (isNdtStage) {
           /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
              method it was checked under (ut/rt/mt/pt/vt/5x) -- Repair's own routing on signoff, and
              Excavation NDT's routing back to "the original joint inspection" after a Weld Repair,
              both need this (see further down). Not real StageFields, just internal bookkeeping on
              stage.inputs. */
           const originPhase = stageId.split('-ndt-')[0];
-          const repairStage = stageFromTemplate(REPAIR_STAGE, {
+          const repairStage = stageFromTemplate(nextRepairStage(stages), {
             allowableThickness: allowableThicknessText(job.nInd),
             originPhase,
             originStageId: stageId,
             originInspectionType: st.inspectionType,
           });
-          /* reopen all stages after the rejected NDT so repair becomes the active stage */
+          /* reopen all stages after the rejected NDT so repair becomes the active stage; earlier
+             repair rounds stay signed as a record */
           for (let i = currentIdx + 1; i < stages.length; i++) {
-            if (stages[i].signed) {
+            if (stages[i].signed && !isRepairStageId(stages[i].id) && !isExcavationNdtStageId(stages[i].id)) {
               stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
             }
           }
           stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
+        } else {
+          /* re-open stages from the reject target up to (not including) this stage */
+          const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
+          if (targetIdx >= 0 && targetIdx < currentIdx) {
+            const now = new Date().toISOString();
+            for (let i = targetIdx; i < currentIdx; i++) {
+              if (stages[i].signed) {
+                const reopenRecord = {
+                  stageLabel: stages[i].label,
+                  fields: Object.entries({ ...stages[i].inputs, ...stages[i].signoffInputs })
+                    .filter(([, v]) => v)
+                    .map(([key, value]) => ({ key, label: labelFor(stages[i], key), value })),
+                  result: stages[i].result,
+                  who: wf.technician,
+                  when: now,
+                  action: 'reopened' as const,
+                };
+                stages[i] = { ...stages[i], signed: false, signedAt: null, result: null, signoffRecords: [...stages[i].signoffRecords, reopenRecord] };
+              }
+            }
+          }
         }
       }
 
@@ -203,8 +205,9 @@ export class SignoffService {
          originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
          above -- its own SAT/UNSAT routing is handled further down). Cut sends the joint back to
          Fit: every signed stage from Fit up to Repair is re-opened, since a cut joint is refitted
-         and rewelded from the start. No repair code chosen: no special routing. */
-      if (stageId === 'repair') {
+         and rewelded from the start (earlier repair rounds stay signed as a record). No repair
+         code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
+      if (isRepairStageId(stageId)) {
         const phase = st.inputs['originPhase'] ?? '';
         const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
         const repairType = st.inputs['repairType'] ?? '';
@@ -214,13 +217,15 @@ export class SignoffService {
           reopenById(`${phase}-ndt-vt5x`);
         } else if (repairType === 'cut') {
           const fitIdx = stages.findIndex(s => s.id === 'fit');
-          const repairIdx = stages.findIndex(s => s.id === 'repair');
+          const repairIdx = stages.findIndex(s => s.id === stageId);
           for (let i = fitIdx; fitIdx >= 0 && i < repairIdx; i++) {
-            if (stages[i].signed) reopenById(stages[i].id);
+            const id = stages[i].id;
+            if (stages[i].signed && !isRepairStageId(id) && !isExcavationNdtStageId(id)) reopenById(id);
           }
         } else if (repairType === 'weld-repair') {
-          const repairIdx = stages.findIndex(s => s.id === 'repair');
-          const hasExcavationAlready = stages.some(s => s.id === 'excavation-ndt');
+          const repairIdx = stages.findIndex(s => s.id === stageId);
+          const excavationTemplate = excavationNdtStage('', stageId);
+          const hasExcavationAlready = stages.some(s => s.id === excavationTemplate.id);
           if (repairIdx >= 0 && !hasExcavationAlready) {
             const originInspectionType = st.inputs['originInspectionType'] ?? '';
             const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
@@ -229,7 +234,7 @@ export class SignoffService {
                so it's applied by hand here. */
             const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
             const excavationStage = {
-              ...stageFromTemplate(excavationNdtStage(resolvedType), {}, resolvedType),
+              ...stageFromTemplate(excavationNdtStage(resolvedType, stageId), {}, resolvedType),
               role,
             };
             stages = [...stages.slice(0, repairIdx + 1), excavationStage, ...stages.slice(repairIdx + 1)];
@@ -242,9 +247,9 @@ export class SignoffService {
          (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
          override applied when Excavation NDT was created (resolveExcavationInspectionType), in
          which case it reopens that phase's VT/5X stage instead. Excavation NDT's own UNSAT is
-         handled generically above via its rejectToStage: 'repair'. */
-      if (stageId === 'excavation-ndt' && st.result === 'sat') {
-        const repair = stages.find(s => s.id === 'repair');
+         handled generically above via its rejectToStage (its own round's Repair). */
+      if (isExcavationNdtStageId(stageId) && st.result === 'sat') {
+        const repair = stages.find(s => s.id === repairIdForExcavation(stageId));
         const phase = repair?.inputs['originPhase'] ?? '';
         const originStageId = repair?.inputs['originStageId'] ?? '';
         const originInspectionType = repair?.inputs['originInspectionType'] ?? '';

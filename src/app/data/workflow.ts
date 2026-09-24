@@ -702,7 +702,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 /* Repair stage template — inserted dynamically when NDT is UNSAT. Its own routing on signoff
    (SignoffService.signStage()): Allowable thickness exceeded -> back to that phase's NDT UT/RT;
    else Grind Only -> that phase's NDT VT/5X; Weld Repair -> inserts Excavation NDT next (see
-   excavationNdtStage() below); Cut -> no special routing, proceeds normally. Single-option Type
+   excavationNdtStage() below); Cut -> back to Fit. Single-option Type
    droplist (routingOptions),
    same convention every other stage with a Type dropdown follows -- Foreman isn't an Inspector
    role so inspectionTypeRequired() leaves it pre-filled rather than a required blank choice. */
@@ -715,6 +715,23 @@ export const REPAIR_STAGE: StageTemplate = {
   ], signoffFields: [], decisionLabel: 'Inspection Results',
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
+
+/* Every NDT UNSAT adds a new Repair, with no limit. Round 1 is 'repair' / 'excavation-ndt', later
+   rounds are 'repair-2' / 'excavation-ndt-2' and so on; a round's Excavation NDT shares its Repair's
+   number. */
+export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
+export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
+const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';
+export const excavationIdForRepair = (repairId: string) => `excavation-ndt${roundSuffix(repairId)}`;
+export const repairIdForExcavation = (excavationId: string) => `repair${roundSuffix(excavationId)}`;
+/* round number after the first, e.g. "Repair 2" */
+export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;
+
+export function nextRepairStage(stages: { id: string }[]): StageTemplate {
+  const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
+  const id = n === 1 ? 'repair' : `repair-${n}`;
+  return { ...REPAIR_STAGE, id, label: roundLabel(REPAIR_STAGE.label, id) };
+}
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
@@ -731,7 +748,7 @@ export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
 };
 
 export function isRoutingLockedField(stageId: string, key: string): boolean {
-  return (ROUTING_LOCKED_FIELD_KEYS[stageId] ?? []).includes(key);
+  return (ROUTING_LOCKED_FIELD_KEYS[isRepairStageId(stageId) ? 'repair' : stageId] ?? []).includes(key);
 }
 
 export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
@@ -744,18 +761,18 @@ export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
    (SignoffService) passes in -- normally the origin's own inspectionType, except PT on
    non-ferrous/austenitic material requires 5X instead (the caller decides that, since it needs the
    job's material classification; this function just builds whichever kind the value resolves to).
-   UNSAT routes back to Repair like any other NDT reject, via rejectToStage. */
-export function excavationNdtStage(inspectionType: string): StageTemplate {
+   UNSAT routes back to its own round's Repair via rejectToStage. */
+export function excavationNdtStage(inspectionType: string, repairId = 'repair'): StageTemplate {
   const kind: NdtKind = (inspectionType === 'ut' || inspectionType === 'rt') ? 'utrt'
     : (inspectionType === 'mt' || inspectionType === 'pt') ? 'mtpt'
     : 'vt5x';
   const k = NDT_KINDS[kind];
   const opt = k.options.find(o => o.value === inspectionType) ?? k.options[0];
   return {
-    id: 'excavation-ndt', label: EXCAVATION_NDT_LABEL, required: true, role: 'Inspector',
+    id: excavationIdForRepair(repairId), label: roundLabel(EXCAVATION_NDT_LABEL, repairId), required: true, role: 'Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
-    rejectToStage: 'repair', decisionLabel: 'Inspection Results',
+    rejectToStage: repairId, decisionLabel: 'Inspection Results',
     routingOptions: [{ label: opt.label, value: opt.value, default: true }],
   };
 }

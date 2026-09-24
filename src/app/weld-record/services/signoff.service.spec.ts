@@ -94,6 +94,62 @@ describe('SignoffService', () => {
     expect(stages[ndtIdx + 1]?.id).toBe('repair');
   });
 
+  describe('repeated repairs', () => {
+    const patch = (job: Job, id: string, p: Record<string, unknown>) =>
+      store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...p } : s) }));
+    const failNdt = (job: Job, id: string) => { patch(job, id, { result: 'unsat' }); service.signStage(job, id); };
+    const signRepair = (job: Job, id: string, repairType: string) => {
+      const st = store.workflowFor(job)().stages.find(s => s.id === id)!;
+      patch(job, id, { inputs: { ...st.inputs, repairType } });
+      service.signStage(job, id);
+    };
+    const ids = (job: Job) => store.workflowFor(job)().stages.map(s => s.id);
+    const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
+
+    it('every NDT reject adds a new Repair, and earlier rounds stay signed', () => {
+      const job = weldingJob({ ndt: 'UT' });
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair', 'grind');
+      failNdt(job, 'root-ndt-utrt');
+
+      expect(ids(job).filter(id => id.startsWith('repair'))).toEqual(['repair-2', 'repair']);
+      expect(stage(job, 'repair-2').label).toBe('Repair 2');
+      expect(stage(job, 'repair-2').signed).toBeFalse();
+      expect(stage(job, 'repair').signed).toBeTrue();
+    });
+
+    it("a later round's Weld Repair adds its own Excavation NDT, whose UNSAT goes back to that round's Repair", () => {
+      const job = weldingJob({ ndt: 'UT' });
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair', 'grind');
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair-2', 'weld-repair');
+
+      const exc = stage(job, 'excavation-ndt-2');
+      expect(exc.rejectToStage).toBe('repair-2');
+      expect(ids(job).indexOf('excavation-ndt-2')).toBe(ids(job).indexOf('repair-2') + 1);
+
+      failNdt(job, 'excavation-ndt-2');
+      expect(stage(job, 'repair-2').signed).toBeFalse();
+      expect(ids(job).some(id => id === 'repair-3')).toBeFalse();
+    });
+
+    it('Cut re-opens Fit through the current Repair, but not earlier repair rounds', () => {
+      const job = weldingJob({ ndt: 'UT' });
+      for (const id of ['pre-fit', 'fit', 'tack', 'fitup-insp', 'root-weld']) service.signStage(job, id);
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair', 'grind');
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair-2', 'cut');
+
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld']) {
+        expect(stage(job, id).signed).withContext(id).toBeFalse();
+      }
+      expect(stage(job, 'repair').signed).toBeTrue();
+      expect(stage(job, 'repair-2').signed).toBeTrue();
+    });
+  });
+
   it('reopenStage un-signs a stage and logs a reopened signoff record', () => {
     const job = weldingJob();
     service.signStage(job, 'tack');

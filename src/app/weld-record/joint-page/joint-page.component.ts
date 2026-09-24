@@ -23,7 +23,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_LABEL, SignoffRecord
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -291,7 +291,7 @@ export class JointPageComponent implements OnDestroy {
     const id = stage?.id ?? '';
     if (id.endsWith('-mtpt')) return false;
     return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
-      || id === 'repair' || id === 'excavation-ndt';
+      || isRepairStageId(id) || isExcavationNdtStageId(id);
   });
 
 //extra fields when you press show more
@@ -583,7 +583,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job) return '';
     const templates = getTemplates()[this.job.trade] ?? [];
     const labelOf = (id: string) => templates.find(t => t.id === id)?.label ?? id;
-    if (stage.id === 'repair') {
+    if (isRepairStageId(stage.id)) {
       const phase = stage.inputs['originPhase'] ?? '';
       if (stage.inputs['allowableThicknessExceeded'] === 'yes') {
         return phase ? `On signoff, this routes back to ${labelOf(`${phase}-ndt-utrt`)}.` : '';
@@ -593,16 +593,16 @@ export class JointPageComponent implements OnDestroy {
         return phase ? `On signoff, this routes to ${labelOf(`${phase}-ndt-vt5x`)}.` : '';
       }
       if (repairType === 'weld-repair') {
-        return `On signoff, this routes to ${EXCAVATION_NDT_LABEL}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to Repair.`;
+        return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}.`;
       }
       if (repairType === 'cut') {
-        return `On signoff, this routes back to ${labelOf('fit')}. Every stage from ${labelOf('fit')} up to Repair is re-opened, so the joint is refitted and rewelded.`;
+        return `On signoff, this routes back to ${labelOf('fit')}. Every stage from ${labelOf('fit')} up to ${stage.label} is re-opened, so the joint is refitted and rewelded.`;
       }
       return '';
     }
-    if (stage.id === 'excavation-ndt' && this.wf) {
-      const repair = this.wf().stages.find(s => s.id === 'repair');
-      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to Repair.`;
+    if (isExcavationNdtStageId(stage.id) && this.wf) {
+      const repair = this.wf().stages.find(s => s.id === repairIdForExcavation(stage.id));
+      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to ${repair?.label ?? 'Repair'}.`;
     }
     return '';
   }
