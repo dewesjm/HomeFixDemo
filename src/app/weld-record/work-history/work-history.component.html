@@ -168,7 +168,7 @@
             <td class="pl-8" colspan="9">
               <button type="button" class="btn btn-ghost btn-xs" (click)="toggleFab(r.key)">
                 @if (fabExpanded().has(r.key)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-                Fabrication at this sign-off ({{ r.fabInputs!.length }} fields)
+                Fabrication {{ r.section === 'Refit' ? 'before the Cut' : 'at this sign-off' }} ({{ r.fabInputs!.length }} fields)
               </button>
             </td>
             <td></td>

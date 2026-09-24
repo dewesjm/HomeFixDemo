@@ -79,7 +79,7 @@ export class WorkflowStore {
          (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
       routing: currentRoutingLabel(prev.stages),
       /* sign-offs also capture fabrication data as it stood at that moment, not just the stage's own fields */
-      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData) : undefined
+      fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData) : e.fabInputs
     };
     return { ...next, history: [...prev.history, entry] };
   }
@@ -110,6 +110,7 @@ export class WorkflowStore {
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
+        if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
 
         /* backfill empty fabrication data for Welding jobs */
         if (job?.trade === 'Welding' && Object.keys(wf.fabricationData).length === 0) {

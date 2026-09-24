@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, buildStages, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, buildStages, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -62,6 +62,7 @@ export class SignoffService {
   signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
     let signedLabel = '';
     let refitNumber = '';
+    let repairNumber = '';
     this.store.update(job, wf => {
       /* stages with no SAT/UNSAT choice are accepted by signing */
       let stages: WorkflowStage[] = wf.stages.map(s =>
@@ -174,6 +175,7 @@ export class SignoffService {
             }
           }
           stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
+          repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');
         } else {
           /* re-open stages from the reject target up to (not including) this stage */
           const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
@@ -215,7 +217,8 @@ export class SignoffService {
         if (exceeded && phase) {
           reopenById(`${phase}-ndt-utrt`);
         } else if (repairType === 'grind' && phase) {
-          reopenById(`${phase}-ndt-vt5x`);
+          /* Layer has only the one NDT stage NDT Each asks for, so it goes back to the one that failed */
+          reopenById(phase === 'layer' ? st.inputs['originStageId'] ?? '' : `${phase}-ndt-vt5x`);
         } else if (repairType === 'cut') {
           /* not a reopen: the joint starts over from Fit. Every stage from Fit on is rebuilt as on a
              new joint, keeping its past signoff records; earlier repair rounds stay as signed records */
@@ -268,7 +271,7 @@ export class SignoffService {
         }
       }
 
-      const signed = this.store.withHistory(wf, { ...wf, stages }, {
+      const signed = this.store.withHistory(wf, { ...wf, stages, ...(repairNumber ? { repairNumber } : {}) }, {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
         action: `${signedActionLabel(st)} — Signed off`,
@@ -277,15 +280,19 @@ export class SignoffService {
         stageId
       });
       if (!refitNumber) return signed;
-      return this.store.withHistory(signed, { ...signed, refitNumber }, {
+      /* a Cut resets the fit-up (fabrication) data; this entry keeps what it was */
+      const fabricationData = Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, '']));
+      return this.store.withHistory(signed, { ...signed, refitNumber, fabricationData }, {
         section: 'Refit',
         who: st.signoffInputs['inspectorName'] || wf.technician,
         action: 'Cut — routed back to Fit',
         from: job.refitNumber || '00',
         to: `Refit ${refitNumber}`,
+        fabInputs: fabricationSnapshot(signed.fabricationData),
       });
     });
     if (refitNumber) job.refitNumber = refitNumber;
+    if (repairNumber) job.repairNumber = repairNumber;
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
   }
 

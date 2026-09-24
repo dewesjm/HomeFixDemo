@@ -157,6 +157,36 @@ describe('SignoffService', () => {
       expect(job.refitNumber).toBe('01');
       expect(wf.history.some(h => h.section === 'Refit' && h.to === 'Refit 01')).toBeTrue();
     });
+
+    it('Cut resets fit-up data and keeps what it was on the Refit History entry', () => {
+      const job = weldingJob({ ndt: 'UT' });
+      store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair', 'cut');
+
+      const wf = store.workflowFor(job)();
+      expect(wf.fabricationData['specificLocation']).toBe('');
+      const refit = wf.history.find(h => h.section === 'Refit')!;
+      expect(refit.fabInputs?.some(i => i.value === 'Bay 3')).toBeTrue();
+    });
+
+    it('Repair # goes up with each repair', () => {
+      const job = weldingJob({ ndt: 'UT' });
+      failNdt(job, 'root-ndt-utrt');
+      expect(job.repairNumber).toBe('01');
+      signRepair(job, 'repair', 'grind');
+      failNdt(job, 'root-ndt-utrt');
+      expect(job.repairNumber).toBe('02');
+      expect(store.workflowFor(job)().repairNumber).toBe('02');
+    });
+
+    it('Grind Only on Layer goes back to the Layer NDT that failed', () => {
+      const job = weldingJob({ ndtEach: 'MT' });
+      failNdt(job, 'layer-ndt-mtpt');
+      signRepair(job, 'repair', 'grind');
+      expect(stage(job, 'layer-ndt-mtpt').signed).toBeFalse();
+      expect(stage(job, 'layer-ndt-mtpt').signoffRecords.at(-1)?.action).toBe('reopened');
+    });
   });
 
   describe('Layer NDT follows NDT Each', () => {

@@ -507,6 +507,9 @@ export class JointPageComponent implements OnDestroy {
     const result = rawFields
       .map(f => this.withStageRuntimeOptions(f, stage))
       .filter(f => {
+        /* "exceeded" sends the joint to that phase's UT/RT, so it only shows when the joint has one */
+        if (f.key === 'allowableThicknessExceeded'
+            && !this.wf?.().stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
         if (f.showIf) {
           const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
             : f.showIf.key === 'result' ? stage.result
@@ -590,7 +593,8 @@ export class JointPageComponent implements OnDestroy {
       }
       const repairType = stage.inputs['repairType'] ?? '';
       if (repairType === 'grind') {
-        return phase ? `On signoff, this routes to ${labelOf(`${phase}-ndt-vt5x`)}.` : '';
+        const target = phase === 'layer' ? stage.inputs['originStageId'] ?? '' : `${phase}-ndt-vt5x`;
+        return target ? `On signoff, this routes to ${labelOf(target)}.` : '';
       }
       if (repairType === 'weld-repair') {
         return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}.`;

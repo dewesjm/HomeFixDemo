@@ -105,7 +105,7 @@ export interface HistoryEntry {
   to?: string;           /* new value, when the action changed one */
   routing: string;       /* routing label at time of change */
   inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
-  fabInputs?: SignoffInput[];  /* sign-off entries only: fabrication data as it stood at that moment */
+  fabInputs?: SignoffInput[];  /* fabrication data as it stood at that moment: every sign-off entry, and a Cut's Refit entry (the data it reset) */
   stageId?: string;      /* sign-off entries only: which live stage this recorded, so Correct can find it again */
   changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' entries only: just the fields that actually changed */
   reason?: string;       /* 'corrected' entries only */
@@ -121,6 +121,7 @@ export interface JobWorkflow {
   history: HistoryEntry[];
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
+  repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
 }
 
 interface StageOption {
