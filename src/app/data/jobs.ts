@@ -16,7 +16,7 @@ export interface Job {
   drawingRev: string;        /* drawing revision */
   joint: string;             /* joint reference */
   jointDesign: string;       /* e.g. Butt, Fillet, Lap */
-  weldType: string;          /* e.g. SMAW, GMAW, GTAW, FCAW */
+  weldType: string;          /* one of WELD_TYPES, e.g. Butt, Fillet, Socket */
   pipeSize: string;          /* pipe size */
   wallThickness: string;     /* wall thickness */
   materialType1: string;     /* base material 1 */
@@ -88,7 +88,7 @@ export function jointNumbers(count: number, seed: number): string[] {
   return out;
 }
 const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
-const WELD_TYPES = ['Butt', 'Fillet', 'Lap', 'Corner', 'Edge', 'T-joint'];
+export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', 'Transition', 'Overlay', 'Boss', 'Socket'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 /* Base metal (Material Type 1) and filler metal (Material Type 2) codes, redesigned 2026-09-23 as

@@ -3,7 +3,7 @@
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
 import { STORAGE } from '../data/storage-keys';
-import { jointNumbers } from '../data/jobs';
+import { jointNumbers, WELD_TYPES } from '../data/jobs';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 
@@ -64,7 +64,6 @@ export interface WeldJoint {
 
 /* ── Seed data pools ── */
 const JOINT_DESIGNS = ['BJ-G', 'BJ-S', 'FJ-G', 'FJ-S', 'LJ-G', 'LJ-S', 'CJ-G', 'CJ-S', 'EJ-G', 'EJ-S', 'TJ-G', 'TJ-S'];
-const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
 const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
 /* same codes as jobs.ts (see its MATERIALS_1/2 comment): 02-CS Carbon Steel, 12-SS304/13-SS316

@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
+import { WELD_TYPES } from '../data/jobs';
 import {
   addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS, NDT_MARKS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
@@ -18,7 +19,6 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
    Stainless Steel, 04-AS Alloy Steel, 63-AL10 Aluminum */
 const MATERIALS_1 = ['02-CS', '12-SS304', '13-SS316', '04-AS', '63-AL10'];
 const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '15-SS308', '16-SS316'];
-const WELD_TYPES = ['SMAW', 'GMAW', 'GTAW', 'FCAW'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 
 @Component({
