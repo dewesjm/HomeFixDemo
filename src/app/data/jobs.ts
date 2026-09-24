@@ -125,8 +125,11 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    data/workflow.ts's RT_DEGREE_OPTIONS to avoid a circular import (workflow.ts already imports
-   Job from this file); the Degree of RT Performed signoff field must match this to sign off */
-const RT_DEGREES = ['', '10', '100', '360', '60', '75', 'NA'];
+   Job from this file); the Degree of RT Performed signoff field must match this to sign off.
+   Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
+   Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */
+const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];
+const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['NA', 29], ['10', 3]];
 /* work package = Hull-Compartment-Detail, e.g. K7234-FWD-D03 */
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
@@ -193,6 +196,11 @@ export function generateJobs(count = 480): Job[] {
     const scheduledFor = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000);
 
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+    const pickWeighted = (weights: [string, number][]): string => {
+      let r = rand() * weights.reduce((sum, [, w]) => sum + w, 0);
+      for (const [v, w] of weights) if ((r -= w) < 0) return v;
+      return weights[weights.length - 1][0];
+    };
 
     const joint = joints[i];
     let hull: string, drawing: string;
@@ -207,8 +215,8 @@ export function generateJobs(count = 480): Job[] {
     /* real data never has UT alongside an RT degree for the same phase */
     const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
-    const rtRoot = ndtRoot === 'UT' ? '' : pick(RT_DEGREES);
-    const rtFinal = ndtFinal === 'UT' ? '' : pick(RT_DEGREES);
+    const rtRoot = ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS);
+    const rtFinal = ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS);
     const engineeringNotes = i % 3 === 0
       ? Array.from({ length: 2 + Math.floor(rand() * 2) }, () => `SEE NOTE ${1000 + Math.floor(rand() * 9000)}`).join(', ')
       : '';
