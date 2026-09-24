@@ -127,7 +127,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - RT: Degree of RT Performed must match the RT Root or RT Final requirement. Defect Code is needed when RT is UNSAT.
 
 **Repair**
-- Nothing is required today. If no Repair Code is chosen, the joint just moves on to the next step.
+- Repair Code (Grind Only, Weld Repair or Cut).
 
 **Records Review**
 - SAT or UNSAT.
@@ -137,4 +137,3 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 ## Not decided yet
 
 - **Records Review UNSAT:** what it should do. For now it's recorded and the joint stays in Records Review.
-- **Repair Code:** whether it should be required. Today a Repair can be signed with no code chosen.

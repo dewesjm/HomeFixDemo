@@ -740,7 +740,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
    role so inspectionTypeRequired() leaves it pre-filled rather than a required blank choice. */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
-    { key: 'repairType', label: 'Repair Code', type: 'select',
+    { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
     { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
