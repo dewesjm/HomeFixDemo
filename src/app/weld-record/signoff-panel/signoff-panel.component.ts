@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, hasDecision } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
@@ -149,6 +149,7 @@ export class SignoffPanelComponent {
      rendering below, so every fit-specific block in the template must agree on this same check.
      Comments/Defer Tack duplicating from the generic signoff-fields renderer (2026-09-23) happened
      because each block re-wrote the id/routingType check inline and one of them didn't match. */
+  readonly hasDecision = hasDecision;
   isFitBuildup(st: WorkflowStage): boolean {
     return st.id === 'fit' && st.routingType === 'weld-buildup';
   }

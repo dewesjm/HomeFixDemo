@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, REPAIR_STAGE, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, REPAIR_STAGE, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -24,6 +24,12 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
   const needs5xInstead = originInspectionType === 'pt' && phase
     && (isNonFerrousOrAustenitic(job.materialType1) || isNonFerrousOrAustenitic(job.materialType2));
   return needs5xInstead ? '5x' : originInspectionType;
+}
+
+/* History names a Fit signed as Weld Build up after that option; the routing column still says Fit */
+function signedActionLabel(st: WorkflowStage): string {
+  if (st.id !== 'fit' || st.routingType !== 'weld-buildup') return st.label;
+  return st.routingOptions?.find(o => o.value === st.routingType)?.label ?? st.label;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,9 +55,11 @@ export class SignoffService {
   signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
     let signedLabel = '';
     this.store.update(job, wf => {
+      /* stages with no SAT/UNSAT choice are accepted by signing */
       let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? {
           ...s,
+          result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
           signed: true,
           signedAt: new Date().toISOString(),
           signoffRecords: [
@@ -61,7 +69,7 @@ export class SignoffService {
               fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
                 .filter(([, v]) => v)
                 .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
-              result: s.result,
+              result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
               who: s.signoffInputs['inspectorName'] || wf.technician,
               when: new Date().toISOString(),
               action: 'signed' as const,
@@ -237,8 +245,8 @@ export class SignoffService {
       return this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who: st.signoffInputs['inspectorName'] || wf.technician,
-        action: `${st.label} — Signed off`,
-        to: decision,
+        action: `${signedActionLabel(st)} — Signed off`,
+        to: hasDecision(st) ? decision : '',
         inputs,
         stageId
       });

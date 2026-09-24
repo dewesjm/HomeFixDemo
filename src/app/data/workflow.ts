@@ -402,6 +402,12 @@ export function fieldsShown(stage: WorkflowStage): StageField[] {
   });
 }
 
+/* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
+   condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
+export function hasDecision(stage: { rejectToStage?: string }): boolean {
+  return !!stage.rejectToStage;
+}
+
 /* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:
    what was left empty is part of the record. The caller passes the fields that were visible. */
 export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signoffFields: SignoffField[]): SignoffInput[] {
@@ -415,7 +421,7 @@ export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signo
     if (isUserEditable(stage, f)) out.push({ label: f.label, value: displayValue(f, stage.inputs[f.key]) });
   }
   for (const f of signoffFields) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
-  if (stage.result) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
+  if (stage.result && hasDecision(stage)) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
   return out;
 }
 /* ── NDT inspection stages: one template per phase (root/layer/final) x method ── */
@@ -1189,7 +1195,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       section: 'Sign-off',
       action: s.label,
       from: '',
-      to: 'SAT',
+      to: hasDecision(s) ? 'SAT' : '',
       routing: s.label,
       inputs: snapshotInputs(signedView, fieldsShown(signedView), s.signoffFields),
       stageId: s.id,

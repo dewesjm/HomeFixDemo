@@ -22,7 +22,7 @@ import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, EXCAVATION_NDT_LABEL, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
@@ -161,7 +161,8 @@ export class JointPageComponent implements OnDestroy {
     if (!this.wf) return [];
     const all: SignoffRecord[] = [];
     for (const s of this.wf().stages) {
-      for (const r of s.signoffRecords) all.push(r);
+      /* no SAT badge on stages where nobody chose SAT/UNSAT */
+      for (const r of s.signoffRecords) all.push(hasDecision(s) ? r : { ...r, result: null });
     }
     return all.sort((a, b) => a.when.localeCompare(b.when));
   });
@@ -384,10 +385,8 @@ export class JointPageComponent implements OnDestroy {
   /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
   signBlockers(stage: WorkflowStage): string[] {
     if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
-    // Auto-accept non-inspection steps
-    if (!stage.rejectToStage && !stage.result) return [];
     const reasons: string[] = [];
-    if (!stage.result) reasons.push('Choose SAT or UNSAT');
+    if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
     if (this.inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
     if (stage.repeatable && !stage.routingType) reasons.push('Choose the routing type');
     // Fit: fabrication data must have Location, MIC 1, MIC 2, Drawing Rev, Actual Thickness
@@ -1102,16 +1101,6 @@ export class JointPageComponent implements OnDestroy {
     const errors = this.validateStageFields(stage);
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
-    // Auto-accept non-inspection steps
-    if (!stage.rejectToStage && !stage.result) {
-      this.setStageResult(stage, 'sat' as StageResult);
-      /* setStageResult() writes through the store synchronously, but `stage` is the object this
-         click handler was called with, not re-read from the signal -- without re-fetching, the
-         canSignStage() check below still sees the old (falsy) result and signBlockers()' auto-accept
-         early return (!stage.rejectToStage && !stage.result) fires again, bypassing every other
-         requirement (fabrication, signoff fields, ...) for every auto-accept stage. */
-      stage = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
-    }
     if (!this.canSignStage(stage)) return;
     /* Interim Layer: sign and insert a fresh layer copy, stay on layer */
     if (stage.id === 'root-layer' && stage.routingType === 'interim') {

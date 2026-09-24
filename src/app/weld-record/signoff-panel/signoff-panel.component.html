@@ -198,8 +198,6 @@
                           <span class="badge badge-sm badge-success">SAT</span>
                         } @else if (r.result === 'unsat') {
                           <span class="badge badge-sm badge-error">UNSAT</span>
-                        } @else {
-                          <span>—</span>
                         }
                       </td>
                     </tr>
@@ -616,9 +614,11 @@
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
         } @else {
-          <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
-            {{ (st.result || '') | uppercase }}
-          </span>
+          @if (hasDecision(st)) {
+            <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
+              {{ (st.result || '') | uppercase }}
+            </span>
+          }
           <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '—' }} on {{ st.signedAt | date:'medium' }}</span>
           <span class="spacer"></span>
           @if (ctx().canReopen(st, ctx().selectedRouting())) {
