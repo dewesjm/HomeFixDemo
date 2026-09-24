@@ -223,7 +223,7 @@ export class WorkHistoryComponent {
          from being listed in a table) isn't the source of this row's mock history, so there's
          nothing real to contradict it */
       /* by stage id where the row has one: the action text can name the routing option instead of
-         the stage (Weld Build up, Interim/Final Layer) */
+         the stage (Weld Build-Up, Interim/Final Layer) */
       const expected = lastSigned.get(jobId);
       if (expected && (last.stageId ? last.stageId !== expected.id : last.action.split(' — ')[0] !== expected.label)) continue;
       keys.add(last.key);

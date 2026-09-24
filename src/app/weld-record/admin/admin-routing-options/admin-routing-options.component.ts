@@ -1,4 +1,4 @@
-/* Admin → Routing Options: manage per-stage dropdown options (e.g. Fit/Weld Build up, MT/PT) */
+/* Admin → Routing Options: manage per-stage dropdown options (e.g. Fit/Weld Build-Up, MT/PT) */
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

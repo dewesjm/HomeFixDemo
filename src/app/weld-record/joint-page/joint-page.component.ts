@@ -438,7 +438,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job || !this.wf) return;
     if (value) this.clearFieldError(stage.id, '__routingType');
     const templates = getTemplates()[this.job.trade] ?? [];
-    /* Fit stage: swap fields when switching between Fit and Weld Build up */
+    /* Fit stage: swap fields when switching between Fit and Weld Build-Up */
     if (stage.id === 'fit') {
       const fitTpl = templates.find(t => t.id === 'fit');
       const tackTpl = templates.find(t => t.id === 'tack');

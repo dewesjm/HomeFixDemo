@@ -148,7 +148,7 @@ interface StageTemplate {
   repeatable?: boolean;
   /* role that this stage routes to */
   role?: string;
-  /* admin-managed routing options (e.g. Fit/Weld Build up, MT/PT) */
+  /* admin-managed routing options (e.g. Fit/Weld Build-Up, MT/PT) */
   routingOptions?: StageOption[];
 }
 
@@ -669,7 +669,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
     ], routingOptions: [
       { label: 'Fit', value: 'fit', default: true },
-      { label: 'Weld Build up', value: 'weld-buildup' },
+      { label: 'Weld Build-Up', value: 'weld-buildup' },
     ] },
     { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
       { label: 'Tack', value: 'standard', default: true },
