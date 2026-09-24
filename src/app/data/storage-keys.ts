@@ -8,7 +8,7 @@ export const STORAGE = {
   weldPositions: 'welding:weld-positions:v1',
   shops: 'welding:shops:v1',
   jointDesigns: 'welding:joint-designs:v1',
-  mclTraceability: 'welding:mcl-traceability:v1',
+  mclTraceability: 'welding:mcl-traceability:v2',
   materialClassification: 'welding:material-classification:v2',
   banner: 'welding:banner',
   theme: 'welding:theme',

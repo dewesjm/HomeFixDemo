@@ -104,7 +104,8 @@ const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.1
    GWP droplist (see procedures.ts gwpOptionsForMaterials, joint-page.component.ts). */
 export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205', '61-TI64', '63-AL10', '65-CUNI', '67-IN625'];
 export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
-const MCL_POOL = ['Standard', 'Control 1', 'Control 2'];
+/* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
+const MCL_POOL = ['STD', 'MC-I'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14 (user-specified format,
    2026-09-23, replacing the earlier invented piece-mark style like HPF-D120-1). Leading letter
    varies (still invented, no real area-code scheme specified). */

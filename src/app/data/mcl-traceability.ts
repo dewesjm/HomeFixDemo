@@ -3,16 +3,15 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 
 export interface MclTraceabilityEntry {
-  mclValue: string;       /* e.g. 'Standard', 'Control 1', 'Control 2' */
+  mclValue: string;       /* e.g. 'STD', 'MC-I' */
   requiresTraceability: boolean;
 }
 
 const LS_KEY = STORAGE.mclTraceability;
 
 const DEFAULT_ENTRIES: MclTraceabilityEntry[] = [
-  { mclValue: 'Standard', requiresTraceability: false },
-  { mclValue: 'Control 1', requiresTraceability: true },
-  { mclValue: 'Control 2', requiresTraceability: true },
+  { mclValue: 'STD', requiresTraceability: false },
+  { mclValue: 'MC-I', requiresTraceability: true },
 ];
 
 function load(): MclTraceabilityEntry[] {
