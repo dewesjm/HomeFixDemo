@@ -43,14 +43,15 @@ export class SignoffService {
   private store = inject(WorkflowStore);
   private messages = inject(ToastService);
 
-  /* patch a stage's sign-off fields and log it */
+  /* patch a stage's sign-off fields (decision, Type, signoff inputs) before it's signed; logged under
+     'Stages' like other field edits, which Work History hides -- the Signed off entry records them all */
   updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>,
                      meta: { action: string; from?: string; to?: string }) {
     this.store.update(job, wf => {
       const stages = wf.stages.map(s => (s.id === stageId ? { ...s, ...patch } : s));
       const st = stages.find(s => s.id === stageId)!;
       return this.store.withHistory(wf, { ...wf, stages }, {
-        section: 'Sign-off',
+        section: 'Stages',
         who: st.signoffInputs['inspectorName'] || wf.technician,
         ...meta
       });
