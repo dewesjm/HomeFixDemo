@@ -110,7 +110,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
-- Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max, each within its requirement limits. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max.
+- Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max. A value outside its requirement limits is a **deviation** (see below), not a hard stop. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max (hard stop).
 - Filler Metal Type, Size and MIC. On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.
 - Layer also needs Interim Layer or Final Layer chosen.
@@ -132,8 +132,22 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 **Records Review**
 - SAT or UNSAT.
 
+## Deviations
+
+Three things can be signed anyway, as accepted deviations. Everything else above stays a hard stop.
+- An Actual PH/IP value outside its requirement limits.
+- A failed Qualification Check.
+- A Filler Metal Type or Size the WPS doesn't allow. These can only be picked after **Report Deviation**, which opens the full filler list for that step.
+
+**Report Deviation** (next to Signoff) records something the app can't detect, in the person's own words. Reports are listed under the button and can be removed until the step is signed; leaving the joint without signing drops them.
+
+When a step has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation accepted" entry with the reason and each item) and signs the step.
+
+**Hold:** after that, the joint is on hold. No later step can be signed, and a banner on the weld record says why. The step the deviation was accepted on can still be re-opened and re-signed. Nothing releases a hold yet; dealing with deviations comes later.
+
 **MCL values:** MCL 1 and MCL 2 are **STD** or **MC-I**. MC-I requires traceability (the MIC fields above); STD doesn't.
 
 ## Not decided yet
 
+- **Deviations:** who deals with them, what they can decide, and how a held joint is released.
 - **Records Review UNSAT:** what it should do. For now it's recorded and the joint stays in Records Review.

@@ -72,6 +72,7 @@ into:
 | `SignoffService` | Locking/reopening a stage's sign-off (`signStage`, `reopenStage`, `updateStageSignoff`, `correctStage`), Fit-Up release, and the side effects a sign-off can trigger: defer-tack, fit-up-release activation, Interim Layer and Records Review UNSAT staying put, NDT reject adding a Repair round (Repair #), Repair's own routing (Grind Only, Weld Repair → Excavation NDT, Cut → start over from Fit with Refit #), and Excavation NDT's routing. See ROUTING.md for the rules. |
 | `AttachmentService` | `addAttachment`/`removeAttachment`. |
 | `FabricationDataService` | `setFabricationData` — cross-stage Welding fields, unrelated to any one stage. |
+| `DeviationService` | `record` (accepted deviations, saved on `JobWorkflow.deviations` with a 'Deviation' History entry), `openDeviations`, `isOnHold`. What counts as a deviation is `detectDeviations()` in `data/deviations.ts`. See "Deviations" below. |
 
 **Rule for adding new workflow behavior**: don't default to adding a method to whichever service is already
 injected in the component you're editing — that's exactly how `routing.service.ts` grew into a god-service
@@ -116,6 +117,7 @@ src/app/
     joint-details/         Read-only joint/NDT/additional data panel
     fabrication/           Cross-stage fabrication fields (Welding)
     signoff-panel/         Per-stage signoff form (weld layout is config-driven, see below)
+    deviation-dialog/      Deviation acceptance screen Signoff opens when the stage has deviations
     attachments/           Attachments list
     sync-status/           Online/offline indicator (stubbed)
     services/             Split 2026-09-22 from one god-service (routing.service.ts had grown to own state,
@@ -131,6 +133,7 @@ src/app/
                            including the defer-tack, fit-up-release, and NDT-reject-to-repair side effects.
       attachment.service.ts      addAttachment, removeAttachment.
       fabrication-data.service.ts  setFabricationData (cross-stage Welding fields).
+      deviation.service.ts  Accepted deviations + the hold they put on the joint.
       sync.service.ts      Online/offline + pending-sync count (stubbed)
     admin/
       admin-routing/         Admin → Routing (stage templates per trade)
@@ -376,7 +379,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
 
 ```ts
 { when: string; who: string; whoId?: string; whoTitle?: string;
-  section: 'Sign-off' | 'Stages' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit';
+  section: 'Sign-off' | 'Stages' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit' | 'Deviation';
   action: string; from?: string; to?: string;
   routing: string;               // routing label at time of change
   inputs?: { label: string; value: string }[];      // sign-off entries: every editable field + value at sign-off
@@ -394,6 +397,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
   fabricationData: Record<string, string>;   // cross-stage fit-up fields
   refitNumber?: string;    // set by each Cut
   repairNumber?: string;   // set by each new Repair round
+  deviations?: Deviation[]; // accepted at sign-off: { id, stageId, stageLabel, items: {kind, label, entered, required}[], reason, who, when, status: 'open' }
 }
 ```
 Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`repairNumber` onto the job (`job.refitNumber`/`job.repairNumber`) — that's what Joint Details, search and filters read.
@@ -448,6 +452,15 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 - `.layout` — `height: 100vh; flex column`; `.topnav` sticky, 3rem, `z-index: 50`; `.content-body` scrolls; `.table-page-wrap` fixes the header/filters and scrolls the table.
 - Theming: 32 DaisyUI themes; default `forest`; app tokens (`--app-bg`, `--app-surface`, `--app-border`, `--app-text-muted`) track the active theme. `--app-border` is a mix of the theme's text colour (25%), not `base-300`, because `base-300` is nearly the panel colour in dark themes and borders vanished; change it in one place to retune every border. Toasts use `color-mix()` with theme variables.
 - Shared components: ToastHost, ConfirmDialog (native `<dialog>`, password), TablePager, MultiselectDropdown, SortHeader.
+
+## Deviations
+
+Added 2026-09-25 (rules in plain language: ROUTING.md "Deviations").
+- **What's acceptable** (`detectDeviations()`, `data/deviations.ts`): Actual PH/IP outside its requirement pair (`isActualOutOfRange()`, NC = no limit), a failed Qualification Check (Test User's quals vs the WPS), and a Filler Metal Type/Size not on the WPS (skipped while "Only Consumable Insert used as filler" locks them). Actual out of range is no longer a field error: `validateStageFields()`/`onFieldBlur()` dropped their range checks, and the field shows a live warning instead (`fieldWarning()`, amber). Actual Min > Max stays a hard stop.
+- **Report Deviation** (joint page `reported` signal, keyed by stage id): typed text, not persisted until signing, dropped on leaving like any unsigned input (`hasUnsavedChanges()` counts it). While a stage has one, `withStageRuntimeOptions()` gives Filler Metal Type/Size the full list and WTN changes stop clearing them; removing the last report clears off-list filler values.
+- **Sign flow**: `signStage()` runs the hard validation first; if `stageDeviations()` finds anything, it opens `DeviationAcceptDialogComponent` (items, required reason, password) instead of the confirm. Accepting calls `DeviationService.record()` then `SignoffService.signStage()`; the Root 5X auto-sign is skipped since the joint is now held.
+- **Hold**: `heldAt(stage)` makes every stage except the deviated one(s) non-editable (`editable()`, `inputsEditable()`, `signBlockers()`); the signoff panel shows `holdNote()`. No release exists (user's decision); disposition comes later.
+- Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.
 
 ## Gotchas
 

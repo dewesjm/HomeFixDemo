@@ -12,6 +12,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-09-25',
     added: [
+      'Deviations: an Actual PH/IP out of range, a failed Qualification Check, or a filler the WPS doesn\'t allow no longer blocks Signoff. Signoff shows what\'s out of spec and asks for a reason, then the joint is put on hold (no way to release it yet).',
+      'Report Deviation button next to Signoff, for anything done differently that the app can\'t detect. It also lets Filler Metal Type and Size be picked from the full list.',
       'Welder qualifications: every WTN now requires 1-3 quals (WELD4xx codes), and the Qualification Check really checks them. It says "Passed, user has ..." or lists the quals that are missing.',
       'Admin > Qualifications: choose which quals the Test User has, to try passing and failing the Qualification Check.',
       'Revised Joint Design droplist shows a short description next to each design. Descriptions can be edited in Admin > Joint Designs.',

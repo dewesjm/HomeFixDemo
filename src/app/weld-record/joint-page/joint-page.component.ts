@@ -11,6 +11,7 @@ import { JointDetailsComponent } from '../joint-details/joint-details.component'
 import { AttachmentsComponent } from '../attachments/attachments.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
 import { SignoffPanelComponent, SignoffContext } from '../signoff-panel/signoff-panel.component';
+import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
 
 import { JOBS, Job } from '../../data/jobs';
 import { characteristicLabel } from '../../data/characteristics';
@@ -20,10 +21,13 @@ import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
+import { DeviationService } from '../services/deviation.service';
+import { detectDeviations, isActualOutOfRange } from '../../data/deviations';
+import { testUserQuals } from '../../data/welder-quals';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -42,7 +46,8 @@ const FIT_REQUIRED_FABRICATION: Record<string, string> = {
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent
+    CommonModule, FormsModule, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent,
+    DeviationAcceptDialogComponent
   ],
   templateUrl: './joint-page.component.html'
 })
@@ -54,6 +59,7 @@ export class JointPageComponent implements OnDestroy {
   private signoffService = inject(SignoffService);
   private attachmentService = inject(AttachmentService);
   private fabricationService = inject(FabricationDataService);
+  private deviationService = inject(DeviationService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
@@ -82,6 +88,7 @@ export class JointPageComponent implements OnDestroy {
      hasn't been discarded/committed yet */
   private hasUnsavedChanges(): boolean {
     if (!this.wf || !this.loadSnapshot) return false;
+    if (Object.values(this.reported()).some(r => r.length)) return true;
     const w = this.wf();
     const fitSigned = w.stages.find(s => s.id === 'fit')?.signed ?? false;
     if (!fitSigned && !this.recordEquals(w.fabricationData, this.loadSnapshot.fabricationData)) return true;
@@ -211,6 +218,11 @@ export class JointPageComponent implements OnDestroy {
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
       repairRouteLabel: (s) => self.repairRouteLabel(s),
+      holdNote: () => self.holdNote(),
+      fieldWarning: (s, k) => self.fieldWarning(s, k),
+      reportedDeviations: (s) => self.reported()[s.id] ?? [],
+      reportDeviation: (s) => self.reportDeviation(s),
+      removeReportedDeviation: (s, i) => self.removeReportedDeviation(s, i),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
@@ -343,14 +355,97 @@ export class JointPageComponent implements OnDestroy {
   }
   /* sign-off editable only on the active stage */
   editable(stage: WorkflowStage): boolean {
-    return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned();
+    return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned() && !this.heldAt(stage);
   }
   canDeactivate(): boolean {
     return !this.hasUnsavedChanges();
   }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
-    return !stage.signed && !this.locked(i) && !this.soldSigned();
+    return !stage.signed && !this.locked(i) && !this.soldSigned() && !this.heldAt(stage);
+  }
+
+  // ---- deviations ----
+  /* Report Deviation entries typed on each unsigned stage, keyed by stage id. Like any other
+     unsigned input they're dropped when leaving the joint; signing records them. */
+  reported = signal<Record<string, string[]>>({});
+  /* the acceptance screen Signoff opens when the stage has deviations */
+  deviationRequest = signal<(DeviationAcceptRequest & { stage: WorkflowStage }) | null>(null);
+
+  private openDeviations = computed(() => (this.wf ? this.deviationService.openDeviations(this.wf()) : []));
+  holdNote = computed(() => {
+    const d = this.openDeviations()[0];
+    if (!d) return '';
+    const when = new Date(d.when).toLocaleDateString();
+    return `On hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until it is dealt with, and that part isn't built yet.`;
+  });
+  /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a re-open */
+  private heldAt(stage: WorkflowStage): boolean {
+    const open = this.openDeviations();
+    return open.length > 0 && !open.some(d => d.stageId === stage.id);
+  }
+
+  /* reporting a deviation lets Filler Metal Type/Size be picked from the full list */
+  private offListUnlocked(stage: WorkflowStage): boolean {
+    return (this.reported()[stage.id] ?? []).length > 0;
+  }
+
+  fieldWarning(stage: WorkflowStage, key: string): string {
+    if (isActualOutOfRange(stage, key)) return 'Out of range, signing will record a deviation';
+    if ((key === 'fillerMetalType' || key === 'fillerMetalSize') && stage.inputs[key]) {
+      const f = stage.fields.find(ff => ff.key === key);
+      const offList = detectDeviations(stage, new Set([key]), testUserQuals()).some(d => d.kind === 'off-list' && d.label === f?.label);
+      if (offList) return 'Not allowed by the WPS, signing will record a deviation';
+    }
+    return '';
+  }
+
+  reportDeviation(stage: WorkflowStage) {
+    const fillerNote = stage.fields.some(f => f.key === 'fillerMetalType')
+      ? ' Reporting also lets Filler Metal Type and Size be picked from the full list, not only what the WPS allows.'
+      : '';
+    this.confirm.confirm({
+      header: `Report deviation — ${stage.label}`,
+      message: `Describe what was done differently from the procedure. It's listed for acceptance when you sign.${fillerNote}`,
+      textInput: { label: 'What was different', placeholder: 'e.g. preheat applied with a different method' },
+      acceptLabel: 'Report',
+      accept: (text) => {
+        const t = (text ?? '').trim();
+        if (t) this.reported.update(r => ({ ...r, [stage.id]: [...(r[stage.id] ?? []), t] }));
+      },
+    });
+  }
+
+  removeReportedDeviation(stage: WorkflowStage, index: number) {
+    this.reported.update(r => ({ ...r, [stage.id]: (r[stage.id] ?? []).filter((_, i) => i !== index) }));
+    if (this.offListUnlocked(stage) || !this.job) return;
+    /* last report removed: the filler droplists narrow back to the WPS, so drop values it doesn't allow */
+    const st = this.wf?.().stages.find(s => s.id === stage.id);
+    if (!st) return;
+    const vis = new Set(this.visibleFields(st).map(f => f.key));
+    const offList = detectDeviations(st, vis, testUserQuals()).filter(d => d.kind === 'off-list');
+    const changes = st.fields
+      .filter(f => (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') && offList.some(d => d.label === f.label))
+      .map(f => ({ field: f, value: '' }));
+    if (changes.length) this.wfService.setStageInputs(this.job, st.id, changes);
+  }
+
+  /* detected deviations plus the reported ones, for the acceptance screen */
+  private stageDeviations(stage: WorkflowStage): DeviationItem[] {
+    const vis = new Set(this.visibleFields(stage).map(f => f.key));
+    const reported = (this.reported()[stage.id] ?? []).map(text => ({ kind: 'reported' as const, label: 'Reported', entered: text, required: '—' }));
+    return [...detectDeviations(stage, vis, testUserQuals()), ...reported];
+  }
+
+  acceptDeviations(reason: string) {
+    const req = this.deviationRequest();
+    this.deviationRequest.set(null);
+    if (!req || !this.job) return;
+    this.deviationService.record(this.job, req.stage.id, req.items, reason);
+    this.reported.update(r => ({ ...r, [req.stage.id]: [] }));
+    this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage));
+    /* no 5X auto-sign: the joint is now on hold */
+    this.router.navigate([this.backDestination()]);
   }
   /* only the last signed stage can reopen */
   canReopen(stage: WorkflowStage, i: number): boolean {
@@ -384,6 +479,7 @@ export class JointPageComponent implements OnDestroy {
 
   /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
   signBlockers(stage: WorkflowStage): string[] {
+    if (this.heldAt(stage)) return ['On hold for an open deviation'];
     if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
     const reasons: string[] = [];
     if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
@@ -634,7 +730,7 @@ export class JointPageComponent implements OnDestroy {
          current WPS's narrower list, so a value copied from Fit's Consumable Insert Type/Size
          always has a matching <option> and renders instead of appearing blank -- the field
          isn't user-selectable in this state anyway, so the WPS-specific filtering is moot. */
-      if (isFieldLocked(stage, f)) {
+      if (isFieldLocked(stage, f) || this.offListUnlocked(stage)) {
         return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
       }
       const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
@@ -869,7 +965,7 @@ export class JointPageComponent implements OnDestroy {
         setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
         setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
         setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
-        if (!fillerFieldsLocked) {
+        if (!fillerFieldsLocked && !this.offListUnlocked(stage)) {
           const currentType = stage.inputs['fillerMetalType'] ?? '';
           const currentSize = stage.inputs['fillerMetalSize'] ?? '';
           if (currentType && !fillerMetalTypeOptionsForProcedure(proc).some(o => o.value === currentType)) {
@@ -976,18 +1072,7 @@ export class JointPageComponent implements OnDestroy {
       if (f.required && empty) {
         errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
       }
-      if (!empty && f.type === 'number' && (f.minField || f.maxField)) {
-        const num = Number(val);
-        const rawMin = f.minField ? stage.inputs?.[f.minField] : undefined;
-        const rawMax = f.maxField ? stage.inputs?.[f.maxField] : undefined;
-        const minVal = rawMin && rawMin !== 'NC' ? Number(rawMin) : NaN;
-        const maxVal = rawMax && rawMax !== 'NC' ? Number(rawMax) : NaN;
-        const belowMin = !isNaN(minVal) && num < minVal;
-        const aboveMax = !isNaN(maxVal) && num > maxVal;
-        if (belowMin || aboveMax) {
-          errors[`${stage.id}:${f.key}`] = `${f.label} Out of Range`;
-        }
-      }
+      /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
     }
     for (const pair of ACTUAL_MIN_MAX) {
       const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
@@ -1055,7 +1140,7 @@ export class JointPageComponent implements OnDestroy {
     return errors;
   }
 
-  /** Called on blur of a single field — validates required + range */
+  /** Called on blur of a single field — validates required + Actual Min/Max order */
   onFieldBlur(stage: WorkflowStage, field: StageField) {
     const key = `${stage.id}:${field.key}`;
     /* read current values from live signal (stage param may be stale) */
@@ -1067,19 +1152,6 @@ export class JointPageComponent implements OnDestroy {
     /* required check on blur */
     if (field.required && empty) {
       prev[key] = `${field.label} is required`;
-    }
-    /* range check */
-    if (!empty && field.type === 'number' && (field.minField || field.maxField)) {
-      const num = Number(val);
-      const rawMin = field.minField ? curStage?.inputs?.[field.minField] : undefined;
-      const rawMax = field.maxField ? curStage?.inputs?.[field.maxField] : undefined;
-      const minVal = rawMin && rawMin !== 'NC' ? Number(rawMin) : NaN;
-      const maxVal = rawMax && rawMax !== 'NC' ? Number(rawMax) : NaN;
-      const belowMin = !isNaN(minVal) && num < minVal;
-      const aboveMax = !isNaN(maxVal) && num > maxVal;
-      if (belowMin || aboveMax) {
-        prev[key] = `${field.label} Out of Range`;
-      }
     }
     /* Actual Min above Max: flagged on the Max field, rechecked when either one changes */
     const pair = ACTUAL_MIN_MAX.find(p => p.min === field.key || p.max === field.key);
@@ -1122,7 +1194,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   signStage(stage: WorkflowStage) {
-    if (!this.job) return;
+    if (!this.job || this.heldAt(stage)) return;
     /* validate required fields + range constraints */
     const errors = this.validateStageFields(stage);
     this.fieldErrors.set(errors);
@@ -1132,6 +1204,12 @@ export class JointPageComponent implements OnDestroy {
     const routingNote = stage.repeatable && stage.routingType === 'repeat'
       ? ' Another round will be added after this one.'
       : '';
+    const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
+    const deviations = this.stageDeviations(st);
+    if (deviations.length) {
+      this.deviationRequest.set({ stage: st, stageLabel: st.label, items: deviations, routingNote });
+      return;
+    }
     this.confirm.confirm({
       header: 'Confirm sign-off',
       message: `By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.${routingNote}`,

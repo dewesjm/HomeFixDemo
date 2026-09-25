@@ -1,7 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
+import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
@@ -40,6 +40,11 @@ export interface SignoffContext {
   jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;
   repairRouteLabel: (stage: WorkflowStage) => string;
+  holdNote: () => string;
+  fieldWarning: (stage: WorkflowStage, fieldKey: string) => string;
+  reportedDeviations: (stage: WorkflowStage) => string[];
+  reportDeviation: (stage: WorkflowStage) => void;
+  removeReportedDeviation: (stage: WorkflowStage, index: number) => void;
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;
@@ -96,7 +101,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, PersonSearchInputComponent],
+  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

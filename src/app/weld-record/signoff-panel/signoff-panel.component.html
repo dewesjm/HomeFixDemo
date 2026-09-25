@@ -11,6 +11,13 @@
     </div>
   }
 
+  @if (ctx().holdNote(); as hold) {
+    <div class="alert alert-warning mb-sm">
+      <svg lucideTriangleAlert class="size-4"></svg>
+      <span>{{ hold }}</span>
+    </div>
+  }
+
   @if (stage(); as st) {
     <!-- Inspection Type / Routing Type dropdown -->
     @if (st.routingOptions && st.routingOptions.length > 0) {
@@ -613,11 +620,17 @@
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed — deprogress to reopen</span>
         } @else if (!st.signed) {
-          <!-- Always enabled: it's the only way to trigger validation and see what's missing.
-               signStage() itself won't actually sign if there are errors or other blockers. -->
-          <button type="button" class="btn btn-primary" (click)="ctx().signStage(st)">
+          <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
+               to trigger validation and see what's missing. signStage() won't sign with errors or blockers. -->
+          <button type="button" class="btn btn-primary" [disabled]="!!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
+          @if (ctx().editable(st)) {
+            <button type="button" class="btn btn-outline" (click)="ctx().reportDeviation(st)"
+                    title="Record something done differently from the procedure that the app can't detect">
+              <svg lucideTriangleAlert class="size-4"></svg> Report Deviation
+            </button>
+          }
         } @else {
           @if (hasDecision(st)) {
             <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
@@ -633,6 +646,22 @@
           }
         }
       </div>
+
+      @if (!st.signed && ctx().reportedDeviations(st).length) {
+        <div class="mt-sm">
+          <div class="font-semibold">Reported deviations (accepted when you sign)</div>
+          <ul class="mt-1">
+            @for (d of ctx().reportedDeviations(st); track $index) {
+              <li class="flex items-center gap-2">
+                <span>{{ d }}</span>
+                <button type="button" class="btn btn-ghost btn-xs" title="Remove" (click)="ctx().removeReportedDeviation(st, $index)">
+                  <svg lucideX class="size-4"></svg>
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+      }
 
       <!-- Repair / Excavation NDT only, demo aid: shows where this will actually route to on
            signoff, given the current Repair Code / Allowable thickness exceeded selections --
@@ -655,6 +684,9 @@
       @if (f.key === 'qualificationCheck') {
         @let qc = qualCheck();
         <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
+        @if (qc.status === 'failed' && fieldsEditable()) {
+          <div class="text-sm mt-0.5">Signing will record this as a deviation.</div>
+        }
       } @else if (isReadonlyLimit(f)) {
         <div class="stage-readonly-value">{{ stage().inputs[f.key] || '—' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
@@ -662,6 +694,7 @@
       } @else if (f.type === 'select') {
         <div class="relative">
           <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
+                  [class.select-warning]="!ctx().fieldError(stage().id, f.key) && !!ctx().fieldWarning(stage(), f.key)"
                   [class.select-overlay-label]="hasDetails(f)"
                   [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
             @for (o of f.options || []; track o.value) {
@@ -674,7 +707,9 @@
           }
         </div>
       } @else {
-        <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
+        <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)"
+               [class.input-warning]="!ctx().fieldError(stage().id, f.key) && !!ctx().fieldWarning(stage(), f.key)"
+               [type]="f.type === 'number' ? 'number' : 'text'"
                [disabled]="!fieldsEditable() || isLocked(f)"
                [ngModel]="stage().inputs[f.key]"
                (input)="isActual(f) ? digitsOnly($any($event.target)) : null"
@@ -686,6 +721,8 @@
     }
     @if (ctx().fieldError(stage().id, f.key); as err) {
       <div class="text-error text-xs mt-0.5">{{ err }}</div>
+    } @else if (ctx().fieldWarning(stage(), f.key)) {
+      <div class="text-warning text-sm mt-0.5">{{ ctx().fieldWarning(stage(), f.key) }}</div>
     }
   </div>
 </ng-template>

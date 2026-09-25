@@ -22,6 +22,7 @@
   @if (signoffCtx(); as ctx) {
     <app-signoff-panel [ctx]="ctx" [stage]="w.stages[selectedRouting()]" [stageIndex]="selectedRouting()" />
   }
+  <app-deviation-accept-dialog [request]="deviationRequest()" (accepted)="acceptDeviations($event)" (cancelled)="deviationRequest.set(null)" />
 
   <!-- 3.5 ───────── Attachments (NDT stages only) ───────── -->
   @if (isNdtStage()) {

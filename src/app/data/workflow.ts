@@ -100,7 +100,7 @@ export interface HistoryEntry {
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit';
+  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit' | 'Deviation';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -110,6 +110,26 @@ export interface HistoryEntry {
   stageId?: string;      /* sign-off entries only: which live stage this recorded, so Correct can find it again */
   changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' entries only: just the fields that actually changed */
   reason?: string;       /* 'corrected' entries only */
+}
+
+/* one out-of-spec value accepted at sign-off (see data/deviations.ts) */
+export interface DeviationItem {
+  kind: 'out-of-range' | 'qual' | 'off-list' | 'reported';
+  label: string;
+  entered: string;
+  required: string;
+}
+
+/* the deviations accepted at one sign-off; an open one holds the joint (DeviationService) */
+export interface Deviation {
+  id: string;
+  stageId: string;
+  stageLabel: string;
+  items: DeviationItem[];
+  reason: string;
+  who: string;
+  when: string;
+  status: 'open';
 }
 
 export interface JobWorkflow {
@@ -123,6 +143,7 @@ export interface JobWorkflow {
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
   repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
+  deviations?: Deviation[];  /* accepted at sign-off; absent on older saved workflows */
 }
 
 interface StageOption {
