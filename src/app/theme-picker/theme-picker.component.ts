@@ -3,41 +3,41 @@ import { STORAGE } from '../data/storage-keys';
 import { Component, signal } from '@angular/core';
 import { LucidePalette } from '@lucide/angular';
 
-interface ThemeOption { name: string; label: string; }
+interface ThemeOption { name: string; label: string; dark?: boolean; }
 
 const THEMES: ThemeOption[] = [
   { name: 'light', label: 'Light' },
-  { name: 'dark', label: 'Dark' },
+  { name: 'dark', label: 'Dark', dark: true },
   { name: 'cupcake', label: 'Cupcake' },
   { name: 'bumblebee', label: 'Bumblebee' },
   { name: 'emerald', label: 'Emerald' },
   { name: 'corporate', label: 'Corporate' },
-  { name: 'synthwave', label: 'Synthwave' },
+  { name: 'synthwave', label: 'Synthwave', dark: true },
   { name: 'retro', label: 'Retro' },
   { name: 'cyberpunk', label: 'Cyberpunk' },
   { name: 'valentine', label: 'Valentine' },
-  { name: 'halloween', label: 'Halloween' },
+  { name: 'halloween', label: 'Halloween', dark: true },
   { name: 'garden', label: 'Garden' },
-  { name: 'forest', label: 'Forest' },
-  { name: 'aqua', label: 'Aqua' },
+  { name: 'forest', label: 'Forest', dark: true },
+  { name: 'aqua', label: 'Aqua', dark: true },
   { name: 'lofi', label: 'Lo-Fi' },
   { name: 'pastel', label: 'Pastel' },
   { name: 'fantasy', label: 'Fantasy' },
   { name: 'wireframe', label: 'Wireframe' },
-  { name: 'black', label: 'Black' },
-  { name: 'luxury', label: 'Luxury' },
-  { name: 'dracula', label: 'Dracula' },
+  { name: 'black', label: 'Black', dark: true },
+  { name: 'luxury', label: 'Luxury', dark: true },
+  { name: 'dracula', label: 'Dracula', dark: true },
   { name: 'cmyk', label: 'CMYK' },
   { name: 'autumn', label: 'Autumn' },
-  { name: 'business', label: 'Business' },
+  { name: 'business', label: 'Business', dark: true },
   { name: 'acid', label: 'Acid' },
   { name: 'lemonade', label: 'Lemonade' },
-  { name: 'night', label: 'Night' },
-  { name: 'coffee', label: 'Coffee' },
+  { name: 'night', label: 'Night', dark: true },
+  { name: 'coffee', label: 'Coffee', dark: true },
   { name: 'winter', label: 'Winter' },
-  { name: 'dim', label: 'Dim' },
+  { name: 'dim', label: 'Dim', dark: true },
   { name: 'nord', label: 'Nord' },
-  { name: 'sunset', label: 'Sunset' },
+  { name: 'sunset', label: 'Sunset', dark: true },
 ];
 
 const THEME_KEY = STORAGE.theme;
@@ -66,12 +66,19 @@ export class ThemePickerComponent {
   active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'forest');
 
   constructor() {
-    document.documentElement.setAttribute('data-theme', this.active());
+    this.apply(this.active());
   }
 
   pick(name: string) {
     this.active.set(name);
-    document.documentElement.setAttribute('data-theme', name);
+    this.apply(name);
     localStorage.setItem(THEME_KEY, name);
+  }
+
+  /* data-scheme lets global CSS style fields per light/dark (editable inputs go black in dark themes) */
+  private apply(name: string) {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', name);
+    root.setAttribute('data-scheme', THEMES.find(t => t.name === name)?.dark ? 'dark' : 'light');
   }
 }

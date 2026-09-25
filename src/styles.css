@@ -370,18 +370,22 @@ input[type="number"] { -moz-appearance: textfield; }
 .opacity-60 { opacity: 0.8; }
 .opacity-70 { opacity: 0.85; }
 
-/* locked controls: transparent fill + dashed border so they read as inactive in every theme.
-   A base-200 fill looked right in light themes but in dark ones is darker than the panel, which
-   made locked boxes look solid/editable and the real inputs look hollow. */
+/* locked controls: grey fill (content color mixed into the panel, so grey in light and dark themes)
+   with a not-allowed cursor. Editable fields stay the base fill, forced near-black in dark themes
+   so they stand apart from the grey locked ones (base-200 alone is darker than the panel there,
+   which made locked fields look like the editable ones). */
 .input:is(:disabled, [disabled]),
 .select:is(:disabled, [disabled]),
 .textarea:is(:disabled, [disabled]) {
   color: color-mix(in oklch, var(--color-base-content) 85%, transparent);
   -webkit-text-fill-color: currentColor;
-  background-color: transparent;
-  border: 1px dashed var(--app-border);
+  background-color: color-mix(in oklch, var(--color-base-content) 16%, var(--color-base-100));
+  border-color: var(--app-border);
   box-shadow: none;
   cursor: not-allowed;
+}
+[data-scheme='dark'] :is(.input, .select, .textarea):not(:disabled, [disabled]) {
+  background-color: color-mix(in oklch, var(--color-base-100) 35%, black);
 }
 /* read-only value in a stage field row: plain text at input height so it lines up with inputs */
 .stage-readonly-value { min-height: 2.5rem; display: flex; align-items: center; }
