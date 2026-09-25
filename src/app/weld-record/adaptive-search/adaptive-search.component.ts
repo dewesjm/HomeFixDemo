@@ -15,6 +15,7 @@ import { TablePagerComponent } from '../../shared/table-pager.component';
 import { MultiselectDropdownComponent } from '../../shared/multiselect-dropdown.component';
 import { DateRangeComponent } from '../../shared/date-range.component';
 import { TooltipDirective } from '../../shared/tooltip.directive';
+import { ColumnOrderListComponent } from '../../shared/column-order-list.component';
 import { downloadCsv } from '../../data/export-csv';
 
 import { JOBS, Job } from '../../data/jobs';
@@ -107,7 +108,7 @@ function saveColumnKeys(keys: string[]) {
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [
+  imports: [ColumnOrderListComponent, 
     CommonModule, FormsModule,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
@@ -295,10 +296,6 @@ export class AdaptiveSearchComponent {
   draftColKeys = signal<string[]>([]);
   colFilter = signal<string>('');
 
-  groupedColumns = computed(() => {
-    const q = this.colFilter().trim().toLowerCase();
-    return ALL_COLUMNS.filter(c => !q || c.label.toLowerCase().includes(q));
-  });
 
   openColPicker() {
     this.draftColKeys.set([...this.visibleColumnKeys()]);
@@ -306,14 +303,6 @@ export class AdaptiveSearchComponent {
     this.showColPicker.set(true);
   }
 
-  isDraftCol(key: string): boolean { return this.draftColKeys().includes(key); }
-  toggleDraftCol(key: string, checked: boolean) {
-    const next = [...this.draftColKeys()];
-    const i = next.indexOf(key);
-    if (checked && i < 0) next.push(key);
-    if (!checked && i >= 0) next.splice(i, 1);
-    this.draftColKeys.set(next);
-  }
   selectAllCols(selected: boolean) {
     this.draftColKeys.set(selected ? ALL_COLUMNS.map(c => c.key) : []);
   }

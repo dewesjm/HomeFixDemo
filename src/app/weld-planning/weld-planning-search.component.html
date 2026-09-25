@@ -211,7 +211,7 @@
   <dialog class="modal" [class.modal-open]="showColPicker()" (close)="showColPicker.set(false)">
     <div class="modal-box max-w-lg">
       <h3 class="text-lg font-semibold mb-2">Pick result columns</h3>
-      <p class="dialog-hint">Check the columns you want in the results grid.</p>
+      <p class="dialog-hint">Check the columns you want in the results grid, then drag them (or use the arrows) into the order you want.</p>
 
       <div class="row mb-sm">
         <input type="text" class="input input-sm input-bordered flex-1" placeholder="Filter columns…"
@@ -220,23 +220,7 @@
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(false)">Clear</button>
       </div>
 
-      <div class="field-grid">
-        @for (col of groupedColumns(); track col.key) {
-          <label class="field-check">
-            <input type="checkbox" class="checkbox checkbox-sm"
-                   [checked]="isDraftCol(col.key)"
-                   (change)="toggleDraftCol(col.key, $any($event.target).checked)" />
-            <span>{{ col.label }}</span>
-            <span class="flex gap-0.5 ml-auto">
-              <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(draftColKeys, col.key); $event.preventDefault()">▲</button>
-              <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(draftColKeys, col.key); $event.preventDefault()">▼</button>
-            </span>
-          </label>
-        }
-        @if (!groupedColumns().length) {
-          <div class="empty">No columns match "{{ colFilter() }}".</div>
-        }
-      </div>
+      <app-column-order-list [columns]="allColumns" [(keys)]="draftColKeys" [filter]="colFilter()" />
 
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" (click)="showColPicker.set(false)">Cancel</button>
