@@ -66,15 +66,16 @@
         @for (it of affectedItemSlots; track it.key) {
           @if (ctx().job[it.key]) {
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <label class="flex items-center gap-1.5 cursor-pointer">
+              <!-- item and MIC are fixed 25ch columns so rows line up -->
+              <label class="flex items-center gap-1.5 cursor-pointer w-[25ch] shrink-0">
                 <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem')"
                        [disabled]="!fieldsEditable()"
                        [checked]="isAffected(it.key)"
                        (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
-                <span>{{ ctx().job[it.key] }}</span>
+                <span class="truncate" [title]="ctx().job[it.key]">{{ ctx().job[it.key] }}</span>
               </label>
               @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
-                <span>{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
+                <span class="w-[25ch] shrink-0 truncate" [title]="it.micLabel + ': ' + (micValue(it.mic) || '—')">{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
                 <label class="flex items-center gap-1 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-xs" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem') && st.inputs[it.micVerified] !== 'yes'"
                          [disabled]="!fieldsEditable()"
