@@ -733,8 +733,8 @@ export class JointPageComponent implements OnDestroy {
     }
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {
-      /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. after a
-         re-open) is kept as an option so the droplist doesn't show blank */
+      /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. in
+         seeded data) is kept as an option so the droplist doesn't show blank */
       const qualified = gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '');
       const options = this.offListUnlocked(stage) ? allGwpOptions()
         : gwp && !qualified.some(o => o.value === gwp) ? [...qualified, { label: gwp, value: gwp, detail: gwpDescription(gwp) }]

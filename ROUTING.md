@@ -2,16 +2,17 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each step. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-09-24.
+Last updated 2026-09-25.
 
 ## How routing works
 
 - A joint's routing is an ordered list of steps. The **current routing** is the first required step that isn't signed off yet.
 - Steps are signed in order. A step can't be signed until every required step before it is signed.
 - Each step is signed by one role (Fitting, Welding, Foreman, Inspector and so on). Inspection steps go to the **NQC Inspector** instead of the Inspector when the joint's Nuclear Indicator is 1 or 2.
-- **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that step and the joint proceeds along the path as normal from there: every step from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. *Being built: Fit-Up Insp UNSAT, Repair (Grind Only / Allowable thickness exceeded), and Excavation NDT SAT and UNSAT still un-sign the target step and keep its old values; Cut already works this way.*
+- **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that step and the joint proceeds along the path as normal from there: every step from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Step> — Routed back to <step>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on steps the joint later went back past, or reversed by Deprogress. Nothing is deleted.
-- **Deprogress** (Work History) reverses the joint's most recent signoff. A comment is required.
+- **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed step and every step after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
+- **Admin > Set Routing** sets a joint's current routing back to an earlier step, the same way a route-back does. Nothing is marked signed.
 
 ## The path
 
@@ -20,7 +21,7 @@ Last updated 2026-09-24.
 | 1 | Pre-Fit | NQC Inspector | Nuclear Indicator is 1 or 2, or the joint design calls for a consumable insert or backing ring | Moves on to Fit |
 | 2 | Fit | Fitting | Always | Type is **Fit** or **Weld Build up**. If **Defer Tack** is checked, Tack is skipped and Deferred Tack is added after Fit-Up Release |
 | 3 | Tack | Welding | Unless Defer Tack was checked at Fit | Moves on to Fit-Up Insp |
-| 4 | Fit-Up Insp | Foreman or Inspector | Always | **SAT**: moves on. **UNSAT**: back to Fit (*being built; today it goes back to Tack*). If **Release to welding** is unchecked, Fit-Up Release becomes required |
+| 4 | Fit-Up Insp | Foreman or Inspector | Always | **SAT**: moves on. **UNSAT**: back to Fit (Fit, Tack and Fit-Up Insp come up blank, and so does the fit-up data). If **Release to welding** is unchecked, Fit-Up Release becomes required |
 | 5 | Fit-Up Release | Foreman | Only when Fit-Up Insp didn't release to welding | Moves on |
 | 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Same form as Tack |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
@@ -30,7 +31,7 @@ Last updated 2026-09-24.
 | 11 | Final Weld | Welding | Always | Moves on to Final NDT |
 | 12 | Final NDT | Inspector | Always (see the NDT chart) | See "When an NDT step fails" |
 | 13 | Records Review | O63 Records or O04 Records | Always. **O63** when the joint has SFFF, DSS-AAA or SS data; **O04** otherwise | **SAT**: moves on to Sold. **UNSAT**: recorded, but the joint stays in Records Review (what UNSAT should do is not decided yet) |
-| 14 | Sold | Same Records group as step 13 | Always | The joint is closed. Everything locks; only Deprogress can reopen it |
+| 14 | Sold | Same Records group as step 13 | Always | The joint is closed. Everything locks; only Deprogress can reverse it |
 
 A Repair step (and sometimes an Excavation NDT step) is added to the path whenever an NDT step fails. See below.
 
@@ -84,12 +85,12 @@ When the Repair step is signed, where the joint goes depends on what was chosen:
 
 - It requires **the same inspection that failed**. For example, if PT failed, Excavation NDT is PT, with its Type locked.
 - **Exception:** if PT failed and Material Type 1 or 2 is non-ferrous or austenitic (Admin > Material Classification), Excavation NDT is **5X instead of PT**.
-- **UNSAT:** back to its own Repair step. No new Repair is added.
+- **UNSAT:** back to its own Repair step, which comes up blank. No new Repair is added. The same Excavation NDT comes back when the Repair is signed as Weld Repair again.
 - **SAT:** back to the NDT step that originally failed. With the PT exception above, it goes to that phase's VT/5X step instead, with **5X allowed** and pre-selected (normally that step is locked to VT).
 
 ### Cut
 
-A Cut means the joint is redone from scratch. Nothing is reopened:
+A Cut means the joint is redone from scratch:
 
 - The current routing goes back to **Fit**, and every step from Fit onward starts fresh, as on a new joint.
 - All earlier signoffs stay in the records and History. Earlier Repair steps stay as signed records.
@@ -144,7 +145,7 @@ Three things can be signed anyway, as accepted deviations. Everything else above
 
 When a step has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation accepted" entry with the reason and each item) and signs the step.
 
-**Hold:** after that, the joint is on hold. No later step can be signed, and a banner on the weld record says why. The step the deviation was accepted on can still be re-opened and re-signed. Nothing releases a hold yet; dealing with deviations comes later.
+**Hold:** after that, the joint is on hold. No later step can be signed, and a banner on the weld record says why. The step the deviation was accepted on can still be deprogressed and re-signed; the deviation stays on record and the hold stays. Nothing releases a hold yet; dealing with deviations comes later.
 
 **MCL values:** MCL 1 and MCL 2 are **STD** or **MC-I**. MC-I requires traceability (the MIC fields above); STD doesn't.
 

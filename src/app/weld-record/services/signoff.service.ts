@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, applySignedFlags, routeBack, signoffUndo, ndtKindOptions, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, applySignedFlags, routeBack, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -148,7 +148,7 @@ export class SignoffService {
           });
           /* anything after the rejected NDT comes up blank so repair becomes the current routing;
              earlier repair rounds stay signed as a record */
-          const next = stages[currentIdx + 1];
+          const next = stages.slice(currentIdx + 1).find(s => !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id));
           if (next) stages = routeBack({ ...wf, stages }, job, next.id).wf.stages;
           stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
           repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');

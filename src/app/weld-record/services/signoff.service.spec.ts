@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
+import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 
 /* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
@@ -62,22 +63,27 @@ describe('SignoffService', () => {
     expect(store.workflowFor(job)().stages.find(s => s.id === 'fitup-release')?.required).toBeTrue();
   });
 
-  it('on reject (unsat + rejectToStage), re-opens stages back to the reject target', () => {
-    const job = weldingJob();
-    store.update(job, wf => ({
-      ...wf,
-      stages: wf.stages.map(s => {
-        if (s.id === 'tack') return { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat' };
-        if (s.id === 'fitup-insp') return { ...s, result: 'unsat' };   // fitup-insp's template rejectToStage is 'tack'
-        return s;
-      }),
-    }));
+  it('Fit-Up Insp UNSAT routes back to Fit: Fit onward comes up blank, records and Pre-Fit kept, fit-up data blanked', () => {
+    const job = weldingJob({ nInd: '1' });   // pulls in Pre-Fit
+    store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
+    for (const id of ['pre-fit', 'fit', 'tack']) service.signStage(job, id);
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'fitup-insp' ? { ...s, result: 'unsat' } : s) }));
 
     service.signStage(job, 'fitup-insp');
 
-    const tack = store.workflowFor(job)().stages.find(s => s.id === 'tack')!;
-    expect(tack.signed).toBeFalse();
-    expect(tack.signoffRecords.at(-1)?.action).toBe('reopened');
+    const wf = store.workflowFor(job)();
+    const stage = (id: string) => wf.stages.find(s => s.id === id)!;
+    expect(stage('pre-fit').signed).toBeTrue();
+    for (const id of ['fit', 'tack', 'fitup-insp']) {
+      expect(stage(id).signed).withContext(id).toBeFalse();
+      expect(stage(id).signoffRecords.at(-1)?.action).withContext(id).toBe('signed');
+    }
+    expect(stage('fitup-insp').result).toBeNull();
+    expect(stage('fitup-insp').inputs['releaseToWelding']).toBe('yes');
+    expect(wf.fabricationData['specificLocation']).toBe('');
+    const entry = wf.history.find(h => h.section === 'Routing')!;
+    expect(entry.action).toBe('Fit-Up Insp — Routed back to Fit');
+    expect(entry.fabInputs?.some(i => i.value === 'Bay 3')).toBeTrue();
   });
 
   it('on an NDT reject, inserts a Repair stage right after the rejected NDT stage', () => {
@@ -131,7 +137,15 @@ describe('SignoffService', () => {
 
       failNdt(job, 'excavation-ndt-2');
       expect(stage(job, 'repair-2').signed).toBeFalse();
+      expect(stage(job, 'repair-2').inputs['repairType']).toBeUndefined();
+      expect(stage(job, 'repair-2').inputs['originStageId']).toBe('root-ndt-utrt');
+      expect(stage(job, 'excavation-ndt-2').signed).toBeFalse();
       expect(ids(job).some(id => id === 'repair-3')).toBeFalse();
+
+      /* Weld Repair again: the same Excavation NDT is required again */
+      signRepair(job, 'repair-2', 'weld-repair');
+      expect(stage(job, 'excavation-ndt-2').required).toBeTrue();
+      expect(ids(job).filter(id => id.startsWith('excavation-ndt')).length).toBe(1);
     });
 
     it('Cut starts the joint over from Fit: nothing re-opened, records kept, Refit # up by one', () => {
@@ -145,9 +159,8 @@ describe('SignoffService', () => {
       for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
         expect(stage(job, id).signed).withContext(id).toBeFalse();
       }
-      /* root-ndt-utrt has Grind Only's reopen record from round 1; the Cut itself adds none */
-      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld']) {
-        expect(stage(job, id).signoffRecords.some(r => r.action === 'reopened')).withContext(id).toBeFalse();
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
+        expect(stage(job, id).signoffRecords.every(r => r.action === 'signed')).withContext(id).toBeTrue();
       }
       expect(stage(job, 'fit').signoffRecords.length).toBe(1);   /* the first fit's record is kept */
       expect(stage(job, 'pre-fit').signed).toBeTrue();
@@ -182,7 +195,7 @@ describe('SignoffService', () => {
       expect(store.workflowFor(job)().repairNumber).toBe('02');
     });
 
-    it('PT on austenitic material: Excavation NDT SAT reopens that phase VT/5X with 5X allowed', () => {
+    it('PT on austenitic material: Excavation NDT SAT goes back to that phase VT/5X with 5X allowed', () => {
       const job = weldingJob({ ndtRoot: 'PT', materialType1: '12-SS304' });
       patch(job, 'root-ndt-mtpt', { inspectionType: 'pt' });
       failNdt(job, 'root-ndt-mtpt');
@@ -200,8 +213,42 @@ describe('SignoffService', () => {
       const job = weldingJob({ ndtEach: 'MT' });
       failNdt(job, 'layer-ndt-mtpt');
       signRepair(job, 'repair', 'grind');
-      expect(stage(job, 'layer-ndt-mtpt').signed).toBeFalse();
-      expect(stage(job, 'layer-ndt-mtpt').signoffRecords.at(-1)?.action).toBe('reopened');
+      const ndt = stage(job, 'layer-ndt-mtpt');
+      expect(ndt.signed).toBeFalse();
+      expect(ndt.result).toBeNull();
+      expect(ndt.signoffRecords.at(-1)?.action).toBe('signed');
+      expect(stage(job, 'repair').signed).toBeTrue();
+      expect(store.workflowFor(job)().history.some(h => h.section === 'Routing' && h.to === ndt.label)).toBeTrue();
+    });
+
+    it('Deprogress undoes what the signoff triggered: an NDT UNSAT loses its Repair and Repair #', () => {
+      const job = weldingJob({ ndtRoot: 'UT' });
+      failNdt(job, 'root-ndt-utrt');
+      expect(ids(job)).toContain('repair');
+      TestBed.inject(RoutingService).deprogress(job, 'wrong result');
+      expect(ids(job)).not.toContain('repair');
+      expect(job.repairNumber || '').toBe('');
+      const ndt = stage(job, 'root-ndt-utrt');
+      expect(ndt.signed).toBeFalse();
+      expect(ndt.result).toBeNull();
+      expect(ndt.signoffRecords.map(r => r.action)).toEqual(['signed', 'deprogressed']);
+    });
+
+    it('Deprogress of a Cut brings back the earlier signoffs, fit-up data and Refit #; the Repair comes up blank', () => {
+      const job = weldingJob({ ndtRoot: 'UT' });
+      store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld']) service.signStage(job, id);
+      failNdt(job, 'root-ndt-utrt');
+      signRepair(job, 'repair', 'cut');
+      TestBed.inject(RoutingService).deprogress(job, 'not a cut');
+
+      for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
+        expect(stage(job, id).signed).withContext(id).toBeTrue();
+      }
+      expect(stage(job, 'repair').signed).toBeFalse();
+      expect(stage(job, 'repair').inputs['repairType']).toBeUndefined();
+      expect(store.workflowFor(job)().fabricationData['specificLocation']).toBe('Bay 3');
+      expect(job.refitNumber || '').toBe('');
     });
   });
 

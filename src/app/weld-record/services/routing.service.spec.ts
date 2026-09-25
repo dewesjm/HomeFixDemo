@@ -57,27 +57,25 @@ describe('RoutingService', () => {
     });
   });
 
-  describe('forceRouting', () => {
-    it('marks every stage before the target as signed/accepted and leaves the target open', () => {
-      service.forceRouting(job, 1);   // stages: [prep, handover]
+  describe('setRoutingBack', () => {
+    it('sets the routing back without marking anything signed; the target comes up blank', () => {
+      store.update(job, wf => ({
+        ...wf,
+        stages: wf.stages.map(s => s.id === 'prep'
+          ? { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat', inputs: { ppe: 'gloves' } }
+          : s),
+      }));
+      service.setRoutingBack(job, 'prep');
       const wf = store.workflowFor(job)();
-      expect(wf.stages[0].signed).toBeTrue();
-      expect(wf.stages[0].result).toBe('sat');
-      expect(wf.stages[1].signed).toBeFalse();
-    });
-
-    it('re-opens a previously signed stage when the target moves backward', () => {
-      service.forceRouting(job, 1);              // signs prep
-      service.forceRouting(job, 0);               // moves target back to prep
-      const wf = store.workflowFor(job)();
-      expect(wf.stages[0].signed).toBeFalse();
-      const reopened = wf.stages[0].signoffRecords.find(r => r.action === 'reopened');
-      expect(reopened).toBeTruthy();
+      expect(wf.stages.every(s => !s.signed)).toBeTrue();
+      expect(wf.stages[0].inputs).toEqual({});
+      expect(wf.stages[0].signoffRecords.some(r => r.action === 'deprogressed')).toBeFalse();
+      expect(wf.history.some(h => h.section === 'Routing' && h.action.startsWith('Routed back to'))).toBeTrue();
     });
   });
 
-  describe('goBackRouting', () => {
-    it('reopens the most recently signed stage, clearing its result and inputs', () => {
+  describe('deprogress', () => {
+    it('reverses the most recently signed stage, clearing its result and inputs', () => {
       store.update(job, wf => ({
         ...wf,
         stages: wf.stages.map(s => s.id === 'prep'
@@ -85,20 +83,21 @@ describe('RoutingService', () => {
           : s),
       }));
 
-      service.goBackRouting(job, 'reopen for review');
+      service.deprogress(job, 'wrong joint');
 
       const wf = store.workflowFor(job)();
       const prep = wf.stages.find(s => s.id === 'prep')!;
       expect(prep.signed).toBeFalse();
       expect(prep.result).toBeNull();
       expect(prep.inputs).toEqual({});
-      const entry = wf.history.find(h => h.action.includes('Re-opened'));
-      expect(entry?.action).toContain('reopen for review');
+      expect(prep.signoffRecords.at(-1)?.action).toBe('deprogressed');
+      const entry = wf.history.find(h => h.action.includes('Deprogressed'));
+      expect(entry?.action).toContain('wrong joint');
     });
 
     it('is a no-op when nothing has been signed yet', () => {
       const before = store.workflowFor(job)();
-      service.goBackRouting(job);
+      service.deprogress(job);
       const after = store.workflowFor(job)();
       expect(after.history.length).toBe(before.history.length);
     });

@@ -720,7 +720,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
       { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
       { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
     ],
-      signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'tack' },
+      signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
     { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
     /* same form as Tack; only its position differs (after Fit-Up Insp) */
     { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
