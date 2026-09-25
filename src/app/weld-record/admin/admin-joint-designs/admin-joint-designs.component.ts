@@ -20,7 +20,7 @@ import { JointDesignEntry, jointDesigns, setJointDesigns } from '../../../data/j
 export class AdminJointDesignsComponent {
   rows = signal<JointDesignEntry[]>(jointDesigns().map(j => ({ ...j })));
 
-  table = new TableState<JointDesignEntry>(['code', 'label']);
+  table = new TableState<JointDesignEntry>(['code', 'label', 'description']);
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
@@ -34,7 +34,7 @@ export class AdminJointDesignsComponent {
   }
 
   addRow() {
-    const row: JointDesignEntry = { code: `new-${++this.seq}`, label: '', requiresConsumableInsert: false, requiresBackingRing: false };
+    const row: JointDesignEntry = { code: `new-${++this.seq}`, label: '', description: '', requiresConsumableInsert: false, requiresBackingRing: false };
     this.rows.update(r => [row, ...r]);
     this.editingId.set(row.code);
   }
@@ -78,6 +78,7 @@ export class AdminJointDesignsComponent {
     downloadCsv('joint-designs', [
       { header: 'Code', value: (r: JointDesignEntry) => r.code },
       { header: 'Label', value: (r: JointDesignEntry) => r.label },
+      { header: 'Description', value: (r: JointDesignEntry) => r.description ?? '' },
       { header: 'Consumable Insert Required', value: (r: JointDesignEntry) => r.requiresConsumableInsert ? 'Yes' : 'No' },
       { header: 'Backing Ring Required', value: (r: JointDesignEntry) => r.requiresBackingRing ? 'Yes' : 'No' },
     ], this.visibleRows());

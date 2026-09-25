@@ -41,6 +41,16 @@
                  (ngModelChange)="table.setColumnFilter('label', $event)" />
         </div>
       </th>
+      <th class="min-w-48">
+        <div class="flex flex-col items-start gap-1 min-w-0">
+          <a class="cursor-pointer select-none" (click)="table.toggleSort('description')">
+            Description {{ table.sortField() === 'description' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
+          </a>
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+                 [ngModel]="table.columnFilters()['description'] ?? ''"
+                 (ngModelChange)="table.setColumnFilter('description', $event)" />
+        </div>
+      </th>
       <th class="min-w-14">
         <div class="flex flex-col items-start gap-1 min-w-0">
           <a class="cursor-pointer select-none" (click)="table.toggleSort('requiresConsumableInsert')">
@@ -75,6 +85,14 @@
                    [ngModel]="row.label" (ngModelChange)="updateField(row, 'label', $event)" />
           } @else {
             {{ row.label || '—' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.code) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Plain-text description"
+                   [ngModel]="row.description" (ngModelChange)="updateField(row, 'description', $event)" />
+          } @else {
+            {{ row.description || '—' }}
           }
         </td>
         <td>
@@ -116,7 +134,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="5" class="empty">No joint designs defined.</td></tr>
+      <tr><td colspan="6" class="empty">No joint designs defined.</td></tr>
     }
   </tbody>
 </table>

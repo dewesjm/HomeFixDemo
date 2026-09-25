@@ -574,7 +574,7 @@ export interface FabricationField {
   label: string;
   type: 'text' | 'number' | 'select' | 'checkbox';
   placeholder?: string;
-  options?: { label: string; value: string }[];
+  options?: { label: string; value: string; detail?: string }[];
   unit?: string;
   fullWidth?: boolean;
   row: 1 | 2 | 3 | 4 | 5;
