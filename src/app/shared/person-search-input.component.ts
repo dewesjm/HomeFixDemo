@@ -58,7 +58,7 @@ export class PersonSearchInputComponent {
 
   constructor() {
     /* keep the text-mode buffer in sync when the stored value changes from outside (stage
-       reopened, reloaded, etc.); doesn't fight with typing since setting `text` here doesn't
+       shown again, reloaded, etc.); doesn't fight with typing since setting `text` here doesn't
        itself re-run this effect -- only a change to `value()` does */
     effect(() => { if (this.mode() === 'text') this.text.set(this.value()); });
   }

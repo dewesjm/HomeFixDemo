@@ -1,8 +1,8 @@
 <!-- Admin → Set routing template (paired with admin-set-routing.component.ts). -->
 <h2 class="section-title">Set routing</h2>
 <p class="section-sub">
-  Force a job's workflow to a specific stage. Stages before it are marked signed;
-  the chosen stage and everything after it are re-opened. This is an admin override.
+  Set a job's current routing back to an earlier step. Nothing is marked signed:
+  that step and every step after it come up blank and are signed again. Earlier signoffs are kept.
 </p>
 
 <section class="panel">
@@ -27,7 +27,7 @@
       <div>
         <div class="meta">Target routing</div>
         <select class="select select-sm select-bordered w-full"
-                [ngModel]="targetIndex()" (ngModelChange)="targetIndex.set($event)">
+                [ngModel]="targetId()" (ngModelChange)="targetId.set($event)">
           <option [ngValue]="null">Select a routing</option>
           @for (o of routingOptions(); track o.value) {
             <option [ngValue]="o.value">{{ o.label }}</option>
@@ -37,7 +37,7 @@
     }
   </div>
 
-  <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetIndex() === null" (click)="apply()">
-    <svg lucideStepForward class="size-4"></svg> Force routing
+  <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetId() === null" (click)="apply()">
+    <svg lucideStepBack class="size-4"></svg> Set routing back
   </button>
 </section>

@@ -24,6 +24,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Qualification Check failure message no longer says "Input disabled", and the GWP, Filler Metal Type and Filler Metal Size warnings just say "Foreman override".',
+      'Shorter field warnings: an Actual PH/IP out of range just says "Out of Range", and a failed Qualification Check no longer adds "Signing will record this as a deviation." Signoff explains the details.',
       'Create Joint droplists offer the same options as the weld record (RT degrees, NDT methods, pipe size, wall thickness, materials).',
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',

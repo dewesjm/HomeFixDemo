@@ -51,9 +51,6 @@
         <div class="stage-field">
           <span class="stage-field-label">Qualification Check</span>
           <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
-          @if (qc.status === 'failed' && fieldsEditable()) {
-            <div class="text-sm mt-0.5">Signing will record this as a deviation.</div>
-          }
         </div>
       </div>
     }
@@ -208,15 +205,15 @@
                         @if (r.fields.length) {
                           <button type="button" class="flex items-center gap-1" (click)="toggleRecord(ri)">
                             @if (expandedRecords().has(ri)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-                            {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
+                            {{ r.stageLabel }} — {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                           </button>
                         } @else {
-                          {{ r.stageLabel }} — {{ r.action === 'reopened' ? 'Re-opened' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
+                          {{ r.stageLabel }} — {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                         }
                       </td>
                       <td>
-                        @if (r.action === 'reopened') {
-                          <span class="badge badge-sm badge-warning">RE-OPENED</span>
+                        @if (r.action === 'deprogressed') {
+                          <span class="badge badge-sm badge-warning">DEPROGRESSED</span>
                         } @else if (r.action === 'corrected') {
                           <span class="badge badge-sm badge-info">CORRECTED</span>
                         } @else if (r.result === 'sat') {
@@ -631,7 +628,7 @@
       <div class="signoff-actions">
         @if (st.id === 'sold') {
           <span class="badge badge-success">SOLD</span>
-          <span class="meta">Job closed — deprogress to reopen</span>
+          <span class="meta">Job closed — deprogress to reverse</span>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
                to trigger validation and see what's missing. signStage() won't sign with errors or blockers. -->
@@ -693,9 +690,6 @@
       @if (f.key === 'qualificationCheck') {
         @let qc = qualCheck();
         <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
-        @if (qc.status === 'failed' && fieldsEditable()) {
-          <div class="text-sm mt-0.5">Signing will record this as a deviation.</div>
-        }
       } @else if (isReadonlyLimit(f)) {
         <div class="stage-readonly-value">{{ stage().inputs[f.key] || '—' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {

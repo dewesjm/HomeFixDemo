@@ -380,7 +380,7 @@ export class JointPageComponent implements OnDestroy {
     const when = new Date(d.when).toLocaleDateString();
     return `On hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until it is dealt with, and that part isn't built yet.`;
   });
-  /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a re-open */
+  /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a deprogress */
   private heldAt(stage: WorkflowStage): boolean {
     const open = this.openDeviations();
     return open.length > 0 && !open.some(d => d.stageId === stage.id);
@@ -402,7 +402,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   fieldWarning(stage: WorkflowStage, key: string): string {
-    if (isActualOutOfRange(stage, key)) return 'Out of range, signing will record a deviation';
+    if (isActualOutOfRange(stage, key)) return 'Out of Range';
     if ((key === 'weldProcedure' || key === 'fillerMetalType' || key === 'fillerMetalSize')
         && stage.inputs[key] && this.isOffList(stage, key)) {
       return 'Foreman override';

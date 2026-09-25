@@ -1,9 +1,9 @@
-/* per-stage sign-off: locking a stage's decision, re-opening it, and the routing side effects
-   a sign-off can trigger (defer-tack, fit-up release, repeat stages, reject/repair on NDT unsat) */
+/* per-stage sign-off: locking a stage's decision and the routing side effects a sign-off can
+   trigger (defer-tack, fit-up release, repeat stages, reject/repair on NDT unsat, route-backs) */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, buildStages, ndtKindOptions, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, applySignedFlags, routeBack, signoffUndo, ndtKindOptions, FABRICATION_FIELDS, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -69,6 +69,7 @@ export class SignoffService {
     let refitNumber = '';
     let repairNumber = '';
     this.store.update(job, wf => {
+      const undo = signoffUndo(wf, job, stageId);
       /* stages with no SAT/UNSAT choice are accepted by signing */
       let stages: WorkflowStage[] = wf.stages.map(s =>
         s.id === stageId ? {
@@ -94,48 +95,21 @@ export class SignoffService {
       const decision = (st.result ?? '').toUpperCase();
       signedLabel = st.label;
 
-      /* reopen a stage that's already signed and log it, same pattern as the reject-to-stage reopen
-         below, but usable for a specific single stage id (Repair's own routing, and Excavation
-         NDT's routing back to the original inspection -- see both further down) */
-      const reopenById = (id: string) => {
-        const idx = stages.findIndex(s => s.id === id);
-        if (idx < 0) return;
-        const target = stages[idx];
-        const reopenRecord = {
-          stageLabel: target.label,
-          fields: Object.entries({ ...target.inputs, ...target.signoffInputs })
-            .filter(([, v]) => v)
-            .map(([key, value]) => ({ key, label: labelFor(target, key), value })),
-          result: target.result,
-          who: wf.technician,
-          when: new Date().toISOString(),
-          action: 'reopened' as const,
-        };
-        stages[idx] = { ...target, signed: false, signedAt: null, result: null, signoffRecords: [...target.signoffRecords, reopenRecord] };
+      /* go back (never un-sign): the current routing is set back to the target and every stage from
+         there on comes up blank (routeBack). One History entry names where it went. */
+      let fabricationData = wf.fabricationData;
+      let routedBack: { label: string; fabBefore?: SignoffInput[] } | null = null;
+      const routeBackTo = (id: string) => {
+        const target = stages.find(s => s.id === id);
+        if (!target) return;
+        const r = routeBack({ ...wf, stages, fabricationData }, job, id);
+        stages = r.wf.stages;
+        fabricationData = r.wf.fabricationData;
+        routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined };
       };
 
-      /* Defer Tack logic: when fit stage signs with deferTack='yes', activate deferred-tack and skip regular tack */
-      if (stageId === 'fit' && st.signoffInputs['deferTack'] === 'yes') {
-        stages = stages.map(s => {
-          if (s.id === 'tack') {
-            return { ...s, required: false };  // Skip regular tack
-          }
-          if (s.id === 'deferred-tack') {
-            return { ...s, required: true };   // Activate deferred tack
-          }
-          return s;
-        });
-      }
-
-      /* Fit-Up Release logic: when fitup-insp signs WITHOUT releaseToWelding (unchecked), activate fitup-release */
-      if (stageId === 'fitup-insp' && st.inputs['releaseToWelding'] !== 'yes') {
-        stages = stages.map(s => {
-          if (s.id === 'fitup-release') {
-            return { ...s, required: true };
-          }
-          return s;
-        });
-      }
+      /* Defer Tack at Fit, and Fit-Up Insp not releasing to welding, change which stages are required */
+      stages = applySignedFlags(stages);
 
       /* repeatable stage + routingType='repeat': insert a fresh copy after this stage */
       if (st.repeatable && st.routingType === 'repeat') {
@@ -172,36 +146,16 @@ export class SignoffService {
             originStageId: stageId,
             originInspectionType: st.inspectionType,
           });
-          /* reopen all stages after the rejected NDT so repair becomes the active stage; earlier
-             repair rounds stay signed as a record */
-          for (let i = currentIdx + 1; i < stages.length; i++) {
-            if (stages[i].signed && !isRepairStageId(stages[i].id) && !isExcavationNdtStageId(stages[i].id)) {
-              stages[i] = { ...stages[i], signed: false, signedAt: null, result: null };
-            }
-          }
+          /* anything after the rejected NDT comes up blank so repair becomes the current routing;
+             earlier repair rounds stay signed as a record */
+          const next = stages[currentIdx + 1];
+          if (next) stages = routeBack({ ...wf, stages }, job, next.id).wf.stages;
           stages = [...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)];
           repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');
         } else {
-          /* re-open stages from the reject target up to (not including) this stage */
+          /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair) */
           const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
-          if (targetIdx >= 0 && targetIdx < currentIdx) {
-            const now = new Date().toISOString();
-            for (let i = targetIdx; i < currentIdx; i++) {
-              if (stages[i].signed) {
-                const reopenRecord = {
-                  stageLabel: stages[i].label,
-                  fields: Object.entries({ ...stages[i].inputs, ...stages[i].signoffInputs })
-                    .filter(([, v]) => v)
-                    .map(([key, value]) => ({ key, label: labelFor(stages[i], key), value })),
-                  result: stages[i].result,
-                  who: wf.technician,
-                  when: now,
-                  action: 'reopened' as const,
-                };
-                stages[i] = { ...stages[i], signed: false, signedAt: null, result: null, signoffRecords: [...stages[i].signoffRecords, reopenRecord] };
-              }
-            }
-          }
+          if (targetIdx >= 0 && targetIdx < currentIdx) routeBackTo(st.rejectToStage);
         }
       }
 
@@ -212,35 +166,32 @@ export class SignoffService {
          Excavation NDT right after Repair, built to require the same inspection method that
          originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
          above -- its own SAT/UNSAT routing is handled further down). Cut means the joint is redone:
-         the current routing goes back to Fit and the path starts over (nothing is re-opened; past
-         records are kept), and Refit # goes up by one. No repair
+         the current routing goes back to Fit and the path starts over (past records are kept), and
+         Refit # goes up by one. No repair
          code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
       if (isRepairStageId(stageId)) {
         const phase = st.inputs['originPhase'] ?? '';
         const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
         const repairType = st.inputs['repairType'] ?? '';
         if (exceeded && phase) {
-          reopenById(`${phase}-ndt-utrt`);
+          routeBackTo(`${phase}-ndt-utrt`);
         } else if (repairType === 'grind' && phase) {
           /* each phase has only the one NDT stage its Joint Details value asks for, so it goes back to the one that failed */
-          reopenById(st.inputs['originStageId'] ?? '');
+          routeBackTo(st.inputs['originStageId'] ?? '');
         } else if (repairType === 'cut') {
-          /* not a reopen: the joint starts over from Fit. Every stage from Fit on is rebuilt as on a
-             new joint, keeping its past signoff records; earlier repair rounds stay as signed records */
-          const fitIdx = stages.findIndex(s => s.id === 'fit');
-          if (fitIdx >= 0) {
-            const fresh = new Map(buildStages(job).map(s => [s.id, s]));
-            stages = stages.map((s, i) => {
-              if (i < fitIdx || isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) return s;
-              const f = fresh.get(s.id);
-              return f ? { ...f, signoffRecords: s.signoffRecords } : s;
-            });
+          /* the joint starts over from Fit; the Refit History entry below says so (no Routing entry) */
+          if (stages.some(s => s.id === 'fit')) {
+            const r = routeBack({ ...wf, stages }, job, 'fit');
+            stages = r.wf.stages;
+            fabricationData = r.wf.fabricationData;
             refitNumber = String(Number(job.refitNumber || '0') + 1).padStart(2, '0');
           }
         } else if (repairType === 'weld-repair') {
           const repairIdx = stages.findIndex(s => s.id === stageId);
-          const excavationTemplate = excavationNdtStage('', stageId);
-          const hasExcavationAlready = stages.some(s => s.id === excavationTemplate.id);
+          const excavationId = excavationIdForRepair(stageId);
+          const hasExcavationAlready = stages.some(s => s.id === excavationId);
+          /* its Excavation NDT UNSAT sent the joint back to this Repair: that Excavation NDT is required again */
+          if (hasExcavationAlready) stages = stages.map(s => s.id === excavationId ? { ...s, required: true } : s);
           if (repairIdx >= 0 && !hasExcavationAlready) {
             const originInspectionType = st.inputs['originInspectionType'] ?? '';
             const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
@@ -258,10 +209,10 @@ export class SignoffService {
       }
 
       /* Excavation NDT SAT (2026-09-23): "all weld repairs require the original joint inspection
-         unless otherwise stated" -- reopens the exact NDT stage that originally rejected the joint
+         unless otherwise stated" -- goes back to the exact NDT stage that originally rejected the joint
          (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
          override applied when Excavation NDT was created (resolveExcavationInspectionType), in
-         which case it reopens that phase's VT/5X stage instead. Excavation NDT's own UNSAT is
+         which case it goes back to that phase's VT/5X stage instead. Excavation NDT's own UNSAT is
          handled generically above via its rejectToStage (its own round's Repair). */
       if (isExcavationNdtStageId(stageId) && st.result === 'sat') {
         const repair = stages.find(s => s.id === repairIdForExcavation(stageId));
@@ -272,31 +223,39 @@ export class SignoffService {
         if (resolvedType !== originInspectionType && phase) {
           /* the VT/5X stage is normally locked to VT; here it must allow the 5X that replaces PT */
           const vtId = `${phase}-ndt-vt5x`;
-          reopenById(vtId);
+          routeBackTo(vtId);
           stages = stages.map(s => s.id === vtId ? { ...s, routingOptions: ndtKindOptions('vt5x'), inspectionType: '5x' } : s);
         } else if (originStageId) {
-          reopenById(originStageId);
+          routeBackTo(originStageId);
         }
       }
 
-      const signed = this.store.withHistory(wf, { ...wf, stages, ...(repairNumber ? { repairNumber } : {}) }, {
+      const who = st.signoffInputs['inspectorName'] || wf.technician;
+      let signed: JobWorkflow = this.store.withHistory(wf, { ...wf, stages, fabricationData, ...(repairNumber ? { repairNumber } : {}) }, {
         section: 'Sign-off',
-        who: st.signoffInputs['inspectorName'] || wf.technician,
+        who,
         action: `${signedActionLabel(st)} — Signed off`,
         to: hasDecision(st) ? decision : '',
         inputs,
         stageId
       });
+      signed = { ...signed, undo: [...(wf.undo ?? []), { ...undo, historyWhen: signed.history.at(-1)!.when }] };
+      const back = routedBack as { label: string; fabBefore?: SignoffInput[] } | null;
+      if (back) {
+        /* when it went back to Fit or earlier, fit-up data was blanked; this entry keeps what it was */
+        signed = this.store.withHistory(signed, signed, {
+          section: 'Routing', who, action: `${signedLabel} — Routed back to ${back.label}`, to: back.label, fabInputs: back.fabBefore,
+        });
+      }
       if (!refitNumber) return signed;
       /* a Cut resets the fit-up (fabrication) data; this entry keeps what it was */
-      const fabricationData = Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, '']));
-      return this.store.withHistory(signed, { ...signed, refitNumber, fabricationData }, {
+      return this.store.withHistory(signed, { ...signed, refitNumber }, {
         section: 'Refit',
-        who: st.signoffInputs['inspectorName'] || wf.technician,
+        who,
         action: 'Cut — routed back to Fit',
         from: job.refitNumber || '00',
         to: `Refit ${refitNumber}`,
-        fabInputs: fabricationSnapshot(signed.fabricationData),
+        fabInputs: fabricationSnapshot(wf.fabricationData),
       });
     });
     if (refitNumber) job.refitNumber = refitNumber;
@@ -304,9 +263,8 @@ export class SignoffService {
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
   }
 
-  /* Correct a signed stage's already-recorded field values without reopening it (Work History —
-     distinct from Deprogress, which unwind the sign-off itself and force a re-sign of
-     everything after). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
+  /* Correct a signed stage's already-recorded field values without deprogressing it (Work History —
+     distinct from Deprogress, which undoes the sign-off itself and everything it triggered). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
      `routingType`/Decision -- those drive routing directly and are never offered here. Individual
      field keys that fed a routing decision at the original signoff (see ROUTING_LOCKED_FIELD_KEYS)
      are rejected even if the caller passes one -- the dialog already disables them, this is
@@ -371,13 +329,15 @@ export class SignoffService {
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
     this.store.update(job, wf => {
+      const undo = signoffUndo(wf, job, 'fitup-release');
       const stages = wf.stages.map(s =>
         s.id === 'fitup-release' ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
-      return this.store.withHistory(wf, { ...wf, stages }, {
+      const next = this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Release',
         who: wf.technician,
         action: 'Fit-Up Release — Released to Welding'
       });
+      return { ...next, undo: [...(wf.undo ?? []), { ...undo, historyWhen: next.history.at(-1)!.when }] };
     });
     this.messages.add({ severity: 'success', summary: 'Released to Welding', life: 3000 });
   }

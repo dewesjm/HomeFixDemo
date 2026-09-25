@@ -55,7 +55,7 @@ export interface SignoffRecord {
   result: StageResult | null;
   who: string;
   when: string;         /* ISO */
-  action: 'signed' | 'reopened' | 'corrected';
+  action: 'signed' | 'deprogressed' | 'corrected';
   reason?: string;                                              /* 'corrected' only */
   changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' only */
 }
@@ -100,7 +100,7 @@ export interface HistoryEntry {
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit' | 'Deviation' | 'Foreman Override';
+  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit' | 'Routing' | 'Deviation' | 'Foreman Override';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -144,6 +144,18 @@ export interface JobWorkflow {
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
   repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
   deviations?: Deviation[];  /* accepted at sign-off; absent on older saved workflows */
+  undo?: SignoffUndo[];      /* one per sign-off, newest last: what Deprogress restores */
+}
+
+/* the joint as it stood just before one sign-off, so Deprogress can undo everything that sign-off
+   triggered. Field definitions and signoff records aren't kept here (records are never undone). */
+export interface SignoffUndo {
+  stageId: string;
+  historyWhen: string;       /* the sign-off's History entry, so Work History knows which row it is */
+  stages: Omit<WorkflowStage, 'fields' | 'signoffFields' | 'signoffRecords'>[];
+  fabricationData: Record<string, string>;
+  refitNumber: string;
+  repairNumber: string;
 }
 
 interface StageOption {
@@ -819,7 +831,7 @@ export function nextRepairStage(stages: { id: string }[]): StageTemplate {
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
-   moment a stage is signed, to decide what to insert/reopen. Changing the stored value afterward
+   moment a stage is signed, to decide what to insert or route back to. Changing the stored value afterward
    doesn't re-run that decision, so the record and the actual stage list would silently diverge --
    see [[project-correction-feature-fields]]. Keyed by stage id since these are only special on the
    stage that actually branches on them; the same key elsewhere (there isn't one, today) would be
@@ -1328,6 +1340,113 @@ export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
     if (s.required && !s.signed) return true;
   }
   return false;
+}
+
+/* ── Going back (never un-sign, see ROUTING.md) ── */
+
+/* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
+const REPAIR_BOOKKEEPING_KEYS = ['allowableThickness', 'originPhase', 'originStageId', 'originInspectionType'];
+
+/* a stage with nothing entered and not signed; `fresh` is its buildStages() copy, when it has one */
+function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
+  const inputs = fresh ? { ...fresh.inputs }
+    : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => isRepairStageId(s.id) && s.inputs[k]).map(k => [k, s.inputs[k]]));
+  const locked = (s.routingOptions?.length ?? 0) === 1;
+  return {
+    ...s, inputs, signoffInputs: {}, result: null, signed: false, signedAt: null,
+    routingType: fresh?.routingType ?? s.routingType,
+    inspectionType: locked ? s.inspectionType : fresh?.inspectionType ?? '',
+  };
+}
+
+/* required flags set by signed decisions: Defer Tack at Fit, and Fit-Up Insp not releasing to welding */
+export function applySignedFlags(stages: WorkflowStage[]): WorkflowStage[] {
+  const fit = stages.find(s => s.id === 'fit');
+  const deferred = !!fit?.signed && fit.signoffInputs['deferTack'] === 'yes';
+  const insp = stages.find(s => s.id === 'fitup-insp');
+  const needsRelease = !!insp?.signed && insp.inputs['releaseToWelding'] !== 'yes';
+  return stages.map(s =>
+    deferred && s.id === 'tack' ? { ...s, required: false }
+    : deferred && s.id === 'deferred-tack' ? { ...s, required: true }
+    : needsRelease && s.id === 'fitup-release' ? { ...s, required: true }
+    : s);
+}
+
+/* fit-up (fabrication) data belongs to Fit: it's blanked whenever the joint goes back to Fit or earlier */
+function goesBackPastFit(stages: WorkflowStage[], idx: number): boolean {
+  const fitIdx = stages.findIndex(s => s.id === 'fit');
+  return fitIdx >= 0 && idx <= fitIdx;
+}
+
+/* Set the current routing back to `targetId`: every stage from there on comes up as on a new joint
+   (keeping its signoffRecords) and is signed again. Earlier signoffs are untouched. Other Repair /
+   Excavation NDT rounds stay as records (unsigned ones stop being required); the target's own round
+   comes up blank, its Excavation NDT waiting for the Repair to choose Weld Repair again. */
+export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: JobWorkflow; fabReset: boolean } {
+  const targetIdx = wf.stages.findIndex(s => s.id === targetId);
+  if (targetIdx < 0) return { wf, fabReset: false };
+  const fresh = new Map(buildStages(job).map(s => [s.id, s]));
+  const ownRound = isRepairStageId(targetId) ? [targetId, excavationIdForRepair(targetId)] : [];
+  const stages = wf.stages.map((s, i) => {
+    if (i < targetIdx) return s;
+    if ((isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) && !ownRound.includes(s.id)) {
+      return s.signed ? s : { ...s, required: false };
+    }
+    if (isExcavationNdtStageId(s.id)) return { ...blankStage(s), required: false };
+    const f = fresh.get(s.id);
+    return f ? { ...f, signoffRecords: s.signoffRecords } : blankStage(s);
+  });
+  const fabReset = goesBackPastFit(wf.stages, targetIdx);
+  const fabricationData = fabReset ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : wf.fabricationData;
+  return { wf: { ...wf, stages: applySignedFlags(stages), fabricationData }, fabReset };
+}
+
+/* the undo entry signStage() pushes before a sign-off */
+export function signoffUndo(wf: JobWorkflow, job: Job, stageId: string): SignoffUndo {
+  return {
+    stageId,
+    historyWhen: '',
+    stages: wf.stages.map(({ fields: _f, signoffFields: _sf, signoffRecords: _r, ...rest }) => rest),
+    fabricationData: { ...wf.fabricationData },
+    refitNumber: job.refitNumber ?? '',
+    repairNumber: job.repairNumber ?? '',
+  };
+}
+
+/* Deprogress: undo the joint's most recent sign-off and everything it triggered (an inserted Repair,
+   a route-back, a Cut, Defer Tack...). The deprogressed step and everything after it comes up blank.
+   Without an undo entry (seeded demo signoffs) it falls back to the last signed step in routing order. */
+export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow; stage: WorkflowStage } | null {
+  const top = wf.undo?.at(-1);
+  let stages: WorkflowStage[];
+  let stageId: string;
+  let rest: Partial<JobWorkflow> = {};
+  if (top) {
+    const current = new Map(wf.stages.map(s => [s.id, s]));
+    const fresh = new Map(buildStages(job).map(s => [s.id, s]));
+    stages = top.stages.map(snap => {
+      const cur = current.get(snap.id);
+      /* a signoff this one didn't touch stays as it is now (keeps any Correct made since) */
+      if (cur?.signed && snap.signed && cur.signedAt === snap.signedAt) return cur;
+      const defs = cur ?? fresh.get(snap.id);
+      return { ...snap, fields: defs?.fields ?? [], signoffFields: defs?.signoffFields ?? [], signoffRecords: cur?.signoffRecords ?? [] };
+    });
+    stageId = top.stageId;
+    rest = { undo: wf.undo!.slice(0, -1), fabricationData: top.fabricationData, refitNumber: top.refitNumber, repairNumber: top.repairNumber };
+  } else {
+    const last = wf.stages.filter(s => s.signed).pop();
+    if (!last) return null;
+    stages = wf.stages;
+    stageId = last.id;
+  }
+  const idx = stages.findIndex(s => s.id === stageId);
+  if (idx < 0) return null;
+  const stage = (top ? wf.stages.find(s => s.id === stageId) : undefined) ?? stages[idx];
+  const fresh = new Map(buildStages(job).map(s => [s.id, s]));
+  stages = stages.map((s, i) => (i === idx || (i > idx && !s.signed) ? blankStage(s, fresh.get(s.id)) : s));
+  const fabricationData = goesBackPastFit(stages, idx)
+    ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : rest.fabricationData ?? wf.fabricationData;
+  return { wf: { ...wf, ...rest, stages, fabricationData }, stage };
 }
 
 /* first unsigned required stage, the current routing */

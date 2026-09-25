@@ -197,23 +197,32 @@ export class WorkHistoryComponent {
     );
   });
 
-  /* Deprogress is only offered on a job's last sign-off that is still in effect. Computed from the job's
-     whole history (not the filtered or sorted rows): a re-open cancels the sign-off before it, and where the
-     job's live workflow is loaded the entry must also be its last signed stage, since that is what deprogress reverses. */
+  /* Deprogress is only offered on a job's last sign-off that is still in effect. A job with undo entries
+     (signed in this app) offers it on the sign-off its newest undo entry belongs to. Otherwise (seeded demo
+     signoffs) it's computed from the job's whole history (not the filtered or sorted rows): a deprogress
+     cancels the sign-off before it, and where the job's live workflow is loaded the entry must also be its
+     last signed stage, since that is what deprogress reverses then. */
   private deprogressable = computed<ReadonlySet<string>>(() => {
     const lastSigned = new Map<string, WorkflowStage | undefined>();
+    const undoTop = new Map<string, string>();
     for (const wf of this.store.allWorkflows()) {
       lastSigned.set(wf.jobId, wf.stages.filter(s => s.signed).pop());
-    }
-    const byJob = new Map<string, ActivityRow[]>();
-    for (const r of this.allActivity()) {
-      if (r.section === 'Sign-off') byJob.set(r.jobId, [...(byJob.get(r.jobId) ?? []), r]);
+      const top = wf.undo?.at(-1);
+      if (top) undoTop.set(wf.jobId, top.historyWhen);
     }
     const keys = new Set<string>();
+    const byJob = new Map<string, ActivityRow[]>();
+    for (const r of this.allActivity()) {
+      if (undoTop.has(r.jobId)) {
+        if (r.when === undoTop.get(r.jobId) && (r.section === 'Sign-off' || r.section === 'Release')) keys.add(r.key);
+        continue;
+      }
+      if (r.section === 'Sign-off') byJob.set(r.jobId, [...(byJob.get(r.jobId) ?? []), r]);
+    }
     for (const [jobId, rows] of byJob) {
       const inEffect: ActivityRow[] = [];
       for (const r of [...rows].sort((a, b) => a.when.localeCompare(b.when))) {
-        if (/re-opened/i.test(r.action)) inEffect.pop();
+        if (/deprogressed/i.test(r.action)) inEffect.pop();
         else inEffect.push(r);
       }
       const last = inEffect[inEffect.length - 1];
@@ -236,7 +245,7 @@ export class WorkHistoryComponent {
   }
 
   /* Correct is offered on a stage's current sign-off record: the latest Sign-off-section entry
-     for that (job, stage) pair, as long as it's not itself a re-open (a reopened stage has nothing
+     for that (job, stage) pair, as long as it's not itself a deprogress (a deprogressed stage has nothing
      signed to correct) and the live stage is still actually signed — mirrors deprogressable's
      "trust the live workflow over the log" caveat, but per-stage instead of per-job's last stage,
      since Correct can fix an earlier stage even after later ones have since been signed. */
@@ -253,7 +262,7 @@ export class WorkHistoryComponent {
       const stageId = k.slice(k.indexOf('|') + 1);
       const jobId = k.slice(0, k.indexOf('|'));
       const latest = [...rows].sort((a, b) => a.when.localeCompare(b.when)).pop();
-      if (!latest || /re-opened/i.test(latest.action)) continue;
+      if (!latest || /deprogressed/i.test(latest.action)) continue;
       const stage = this.store.allWorkflows().find(w => w.jobId === jobId)?.stages.find(s => s.id === stageId);
       if (!stage?.signed) continue;
       keys.add(latest.key);
@@ -276,11 +285,11 @@ export class WorkHistoryComponent {
     this.correctTarget.set(null);
   }
 
-  /* go back one routing for a job */
+  /* undo a job's most recent sign-off */
   goBack(jobId: string, comment: string) {
     const job = this.jobById.get(jobId);
     if (!job) return;
-    this.wfService.goBackRouting(job, comment);
+    this.wfService.deprogress(job, comment);
   }
 
   deprogress(jobId: string) {

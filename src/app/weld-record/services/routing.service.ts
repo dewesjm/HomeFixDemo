@@ -1,9 +1,9 @@
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
-   routing (admin force, reject-and-go-back). Sign-off decisions live in SignoffService. */
+   routing (Admin > Set Routing back, Deprogress). Sign-off decisions live in SignoffService. */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, labelFor, show } from '../../data/workflow';
+import { JobWorkflow, StageField, labelFor, show, routeBack, deprogressWorkflow, fabricationSnapshot } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
@@ -37,57 +37,33 @@ export class RoutingService {
     });
   }
 
-  /* admin override: force a job to a given stage index — everything before it is
-     marked signed/accepted, the chosen stage and everything after are re-opened,
-     so it becomes the current routing */
-  forceRouting(job: Job, targetIndex: number) {
+  /* Admin > Set Routing: sets the current routing back to an earlier step. Nothing is marked
+     signed; that step and every step after it come up blank (routeBack). Deprogress can't reach
+     past this, so the undo entries are dropped. */
+  setRoutingBack(job: Job, targetId: string) {
+    let label = '';
     this.store.update(job, wf => {
-      const when = new Date().toISOString();
-      const stages = wf.stages.map((s, i) => {
-        if (i < targetIndex) {
-          return s.signed ? s : {
-            ...s, signed: true, signedAt: when,
-            result: s.result ?? 'sat',
-            signoffInputs: {
-              ...s.signoffInputs,
-              inspectorName: s.signoffInputs['inspectorName'] || wf.technician
-            }
-          };
-        }
-        return s.signed ? {
-          ...s,
-          signed: false,
-          signedAt: null,
-          signoffRecords: [...s.signoffRecords, {
-            stageLabel: s.label,
-            fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
-              .filter(([, v]) => v)
-              .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
-            result: s.result,
-            who: 'Admin',
-            when,
-            action: 'reopened' as const,
-          }],
-        } : s;
-      });
-      const target = stages[targetIndex];
-      return this.store.withHistory(wf, { ...wf, stages }, {
-        section: 'Stages',
+      const target = wf.stages.find(s => s.id === targetId);
+      if (!target) return wf;
+      label = target.label;
+      const r = routeBack(wf, job, targetId);
+      return this.store.withHistory(wf, { ...r.wf, undo: [] }, {
+        section: 'Routing',
         who: 'Admin',
-        action: 'Routing forced (admin)',
-        to: target?.label ?? `#${targetIndex + 1}`
+        action: `Routed back to ${target.label} (admin)`,
+        to: target.label,
+        fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
       });
     });
-    this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set to routing ${targetIndex + 1}`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set back to ${label}`, life: 3000 });
   }
 
-  /* go back one routing — re-opens the most recently signed stage */
-  goBackRouting(job: Job, comment?: string) {
+  /* Deprogress: undo the most recent sign-off and everything it triggered (deprogressWorkflow) */
+  deprogress(job: Job, comment?: string) {
     this.store.update(job, wf => {
-      const lastSignedIdx = [...wf.stages].map((s, i) => ({ s, i })).filter(x => x.s.signed).pop()?.i ?? -1;
-      if (lastSignedIdx < 0) return wf; // nothing signed
-      const now = new Date().toISOString();
-      const s = wf.stages[lastSignedIdx];
+      const d = deprogressWorkflow(wf, job);
+      if (!d) return wf;
+      const s = d.stage;
       const record = {
         stageLabel: s.label,
         fields: [
@@ -98,24 +74,19 @@ export class RoutingService {
         ],
         result: s.result,
         who: 'Admin',
-        when: now,
-        action: 'reopened' as const,
+        when: new Date().toISOString(),
+        action: 'deprogressed' as const,
       };
-      const stages = wf.stages.map((st, i) => i === lastSignedIdx ? {
-        ...st,
-        signed: false,
-        signedAt: null,
-        result: null,
-        inputs: {},
-        signoffInputs: {},
-        signoffRecords: [...st.signoffRecords, record],
-      } : st);
-      return this.store.withHistory(wf, { ...wf, stages }, {
+      const stages = d.wf.stages.map(st => st.id === s.id ? { ...st, signoffRecords: [...st.signoffRecords, record] } : st);
+      if (d.wf.refitNumber !== undefined) job.refitNumber = d.wf.refitNumber;
+      if (d.wf.repairNumber !== undefined) job.repairNumber = d.wf.repairNumber;
+      return this.store.withHistory(wf, { ...d.wf, stages }, {
         section: 'Sign-off',
         who: 'Admin',
-        action: `${s.label} — Re-opened${comment ? ': ' + comment : ''}`,
+        action: `${s.label} — Deprogressed${comment ? ': ' + comment : ''}`,
         from: s.label,
-        to: ''
+        to: '',
+        stageId: s.id,
       });
     });
     this.messages.add({ severity: 'info', summary: 'Routing reversed', life: 3000 });
