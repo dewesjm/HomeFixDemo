@@ -653,12 +653,6 @@
             </span>
           }
           <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '—' }} on {{ st.signedAt | date:'medium' }}</span>
-          <span class="spacer"></span>
-          @if (ctx().canReopen(st, ctx().selectedRouting())) {
-            <button type="button" class="btn btn-ghost btn-sm" (click)="ctx().reopenStage(st)">
-              <svg lucideLockOpen class="size-4"></svg> Re-open
-            </button>
-          }
         }
       </div>
 

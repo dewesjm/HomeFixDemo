@@ -258,18 +258,6 @@ describe('SignoffService', () => {
     expect(store.workflowFor(job)().stages.find(s => s.id === 'final-ndt-vt5x')?.signed).toBeFalse();
   });
 
-  it('reopenStage un-signs a stage and logs a reopened signoff record', () => {
-    const job = weldingJob();
-    service.signStage(job, 'tack');
-
-    service.reopenStage(job, 'tack');
-
-    const tack = store.workflowFor(job)().stages.find(s => s.id === 'tack')!;
-    expect(tack.signed).toBeFalse();
-    expect(tack.signoffRecords.at(-1)?.action).toBe('reopened');
-    expect(store.workflowFor(job)().history.some(h => h.action.includes('re-opened'))).toBeTrue();
-  });
-
   it('releaseFitUp signs the Fit-Up Release stage and logs a Release entry', () => {
     const job = weldingJob();
     service.releaseFitUp(job);

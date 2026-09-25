@@ -304,45 +304,8 @@ export class SignoffService {
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
   }
 
-  /* re-open a signed stage for edits */
-  reopenStage(job: Job, stageId: string) {
-    this.store.update(job, wf => {
-      const now = new Date().toISOString();
-      const stages = wf.stages.map(s => {
-        if (s.id !== stageId) return s;
-        const who = s.signoffInputs['inspectorName'] || wf.technician;
-        return {
-          ...s,
-          signed: false,
-          signedAt: null,
-          signoffRecords: [
-            ...s.signoffRecords,
-            {
-              stageLabel: s.label,
-              fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
-                .filter(([, v]) => v)
-                .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
-              result: s.result,
-              who,
-              when: now,
-              action: 'reopened' as const,
-            },
-          ],
-        };
-      });
-      const st = stages.find(s => s.id === stageId)!;
-      return this.store.withHistory(wf, { ...wf, stages }, {
-        section: 'Sign-off',
-        who: st.signoffInputs['inspectorName'] || wf.technician,
-        action: `${st.label} — Sign-off re-opened`,
-        stageId
-      });
-    });
-    this.messages.add({ severity: 'info', summary: 'Sign-off re-opened', life: 3000 });
-  }
-
   /* Correct a signed stage's already-recorded field values without reopening it (Work History —
-     distinct from Deprogress/reopenStage, which unwind the sign-off itself and force a re-sign of
+     distinct from Deprogress, which unwind the sign-off itself and force a re-sign of
      everything after). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
      `routingType`/Decision -- those drive routing directly and are never offered here. Individual
      field keys that fed a routing decision at the original signoff (see ROUTING_LOCKED_FIELD_KEYS)

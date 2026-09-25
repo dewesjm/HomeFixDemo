@@ -1,7 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
+import { LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
@@ -26,7 +26,6 @@ export interface SignoffContext {
   editable: (stage: WorkflowStage) => boolean;
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
   canSignStage: (stage: WorkflowStage) => boolean;
-  canReopen: (stage: WorkflowStage, idx: number) => boolean;
   visibleFields: (stage: WorkflowStage) => StageField[];
   visibleSignoffFields: (stage: WorkflowStage) => SignoffField[];
   startsGroup: (stage: WorkflowStage, field: StageField) => boolean;
@@ -60,7 +59,6 @@ export interface SignoffContext {
   setInspectionType: (value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;
-  reopenStage: (stage: WorkflowStage) => void;
 }
 
 /* Layout of the weld-stage form (Tack / Root / Layer / Final / Fit weld build-up). */
@@ -102,7 +100,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
+  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

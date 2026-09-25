@@ -206,7 +206,6 @@ export class JointPageComponent implements OnDestroy {
       editable: (s) => self.editable(s),
       inputsEditable: (s, i) => self.inputsEditable(s, i),
       canSignStage: (s) => self.canSignStage(s),
-      canReopen: (s, i) => self.canReopen(s, i),
       visibleFields: (s) => self.visibleFields(s),
       visibleSignoffFields: (s) => self.visibleSignoffFields(s),
       startsGroup: (s, f) => self.startsGroup(s, f),
@@ -238,7 +237,6 @@ export class JointPageComponent implements OnDestroy {
       setInspectionType: (v) => self.setInspectionType(v),
       setStageResult: (s, r) => self.setStageResult(s, r),
       signStage: (s) => self.signStage(s),
-      reopenStage: (s) => self.reopenStage(s),
     };
   });
 
@@ -479,16 +477,6 @@ export class JointPageComponent implements OnDestroy {
     this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage));
     /* no 5X auto-sign: the joint is now on hold */
     this.router.navigate([this.backDestination()]);
-  }
-  /* only the last signed stage can reopen */
-  canReopen(stage: WorkflowStage, i: number): boolean {
-    if (!stage.signed || !this.wf) return false;
-    // Sold stage: allow deprogress on the last signed stage only
-    if (this.soldSigned()) {
-      const lastSigned = this.wf().stages.map((s, idx) => ({ s, idx })).filter(x => x.s.signed).pop();
-      return lastSigned?.idx === i;
-    }
-    return !this.wf().stages.slice(i + 1).some(s => s.required && s.signed);
   }
   /* Signoff fields currently required, accounting for Fit/Pre-Fit's joint-design + traceability
      conditions on Consumable Insert/Backing Ring -- shared by signBlockers() (reasons list) and
@@ -1262,12 +1250,6 @@ export class JointPageComponent implements OnDestroy {
         this.router.navigate([this.backDestination()]);
       }
     });
-  }
-  reopenStage(stage: WorkflowStage) {
-    if (!this.job) return;
-    this.signoffService.reopenStage(this.job, stage.id);
-    const idx = this.wf!().stages.findIndex(s => s.id === stage.id);
-    if (idx >= 0) this.selectedRouting.set(idx);
   }
 
   // ---- attachments ----
