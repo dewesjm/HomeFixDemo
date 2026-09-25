@@ -1,7 +1,7 @@
 /* adaptive filters screen, schema-driven */
 //heavily custom
 import { STORAGE } from '../../data/storage-keys';
-import { Component, ElementRef, computed, effect, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -15,7 +15,7 @@ import { TablePagerComponent } from '../../shared/table-pager.component';
 import { MultiselectDropdownComponent } from '../../shared/multiselect-dropdown.component';
 import { DateRangeComponent } from '../../shared/date-range.component';
 import { TooltipDirective } from '../../shared/tooltip.directive';
-import { ColumnOrderListComponent } from '../../shared/column-order-list.component';
+import { OrderedPickListComponent } from '../../shared/ordered-pick-list.component';
 import { downloadCsv } from '../../data/export-csv';
 
 import { JOBS, Job } from '../../data/jobs';
@@ -108,7 +108,7 @@ function saveColumnKeys(keys: string[]) {
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [ColumnOrderListComponent, 
+  imports: [OrderedPickListComponent, 
     CommonModule, FormsModule,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
@@ -132,7 +132,6 @@ export class AdaptiveSearchComponent {
   }
 
   schema = FILTER_SCHEMA;
-  groups = [...new Set(FILTER_SCHEMA.map(f => f.group))];
 
   table = new TableState<Job>(['hull', 'trade', 'technician']);
 
@@ -175,44 +174,12 @@ export class AdaptiveSearchComponent {
   draftKeys = signal<string[]>([]);
   adaptFilter = signal<string>('');
 
-  groupedSchema = computed(() => {
-    const q = this.adaptFilter().trim().toLowerCase();
-    const out: { group: string; items: FilterField[] }[] = [];
-    for (const g of this.groups) {
-      const items = this.schema.filter(f =>
-        f.group === g && (!q || f.label.toLowerCase().includes(q))
-      );
-      if (items.length) out.push({ group: g, items });
-    }
-    return out;
-  });
-
   openAdapt() {
     this.draftKeys.set([...this.visibleKeys()]);
     this.adaptFilter.set('');
     this.showAdapt.set(true);
   }
 
-  isDraftSelected(key: string): boolean {
-    return this.draftKeys().includes(key);
-  }
-  toggleDraft(key: string, checked: boolean) {
-    const next = [...this.draftKeys()];
-    const i = next.indexOf(key);
-    if (checked && i < 0) next.push(key);
-    if (!checked && i >= 0) next.splice(i, 1);
-    this.draftKeys.set(next);
-  }
-  selectGroup(group: string, selected: boolean) {
-    const next = [...this.draftKeys()];
-    for (const f of this.schema) {
-      if (f.group !== group) continue;
-      const i = next.indexOf(f.key);
-      if (selected && i < 0) next.push(f.key);
-      if (!selected && i >= 0 && !f.required) next.splice(i, 1);
-    }
-    this.draftKeys.set(next);
-  }
   selectAll(selected: boolean) {
     const next: string[] = [];
     for (const f of this.schema) {
@@ -311,18 +278,6 @@ export class AdaptiveSearchComponent {
     this.visibleColumnKeys.set(keys);
     saveColumnKeys(keys);
     this.showColPicker.set(false);
-  }
-
-  /* reorder helpers */
-  moveUp(arr: WritableSignal<string[]>, key: string) {
-    const a = [...arr()];
-    const i = a.indexOf(key);
-    if (i > 0) { [a[i - 1], a[i]] = [a[i], a[i - 1]]; arr.set(a); }
-  }
-  moveDown(arr: WritableSignal<string[]>, key: string) {
-    const a = [...arr()];
-    const i = a.indexOf(key);
-    if (i >= 0 && i < a.length - 1) { [a[i], a[i + 1]] = [a[i + 1], a[i]]; arr.set(a); }
   }
 
   // --- Field value helpers ---

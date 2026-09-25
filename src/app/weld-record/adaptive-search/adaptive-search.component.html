@@ -173,7 +173,7 @@
     <div class="modal-box max-w-3xl">
       <h3 class="text-lg font-semibold mb-2">Adapt filters</h3>
       <p class="dialog-hint">
-        Check the fields you want in the bar. Required fields stay on.
+        Check the fields you want in the bar, then drag them (or use the arrows) into the order you want. Required fields stay on.
       </p>
 
       <div class="row mb-sm">
@@ -184,37 +184,7 @@
       </div>
 
       <div class="field-scroll">
-        @for (g of groupedSchema(); track g.group) {
-          <div class="mb-md">
-            <div class="group-head">
-              <span class="fw-bold">{{ g.group }}</span>
-              <span class="spacer"></span>
-              <button type="button" class="btn btn-ghost btn-xs" (click)="selectGroup(g.group, true)">all</button>
-              <button type="button" class="btn btn-ghost btn-xs" (click)="selectGroup(g.group, false)">none</button>
-            </div>
-
-            <div class="field-grid">
-              @for (f of g.items; track f.key) {
-                <label class="field-check">
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!!f.required"
-                         [checked]="isDraftSelected(f.key)"
-                         (change)="toggleDraft(f.key, $any($event.target).checked)" />
-                  <span>{{ f.label }}</span>
-                  @if (f.required) { <span class="required-tag">required</span> }
-                  <span class="flex gap-0.5 ml-auto">
-                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(draftKeys, f.key); $event.preventDefault()">▲</button>
-                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(draftKeys, f.key); $event.preventDefault()">▼</button>
-                  </span>
-                </label>
-              }
-            </div>
-          </div>
-        }
-
-        @if (!groupedSchema().length) {
-          <div class="empty">No fields match "{{ adaptFilter() }}".</div>
-        }
+        <app-ordered-pick-list [items]="schema" [(keys)]="draftKeys" [filter]="adaptFilter()" />
       </div>
 
       <div class="modal-action">
@@ -244,7 +214,7 @@
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(false)">Clear</button>
       </div>
 
-      <app-column-order-list [columns]="allColumns" [(keys)]="draftColKeys" [filter]="colFilter()" />
+      <app-ordered-pick-list [items]="allColumns" [(keys)]="draftColKeys" [filter]="colFilter()" />
 
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" (click)="showColPicker.set(false)">Cancel</button>
