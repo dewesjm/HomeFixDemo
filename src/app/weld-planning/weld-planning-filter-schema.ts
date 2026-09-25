@@ -1,7 +1,7 @@
 /* schema-driven filter engine + saved variants for Weld Planning's Advanced Search,
    mirrors data/filter-schema.ts but scoped to WeldJoint instead of Job */
 import { STORAGE } from '../data/storage-keys';
-import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, NDT_MARKS, type WeldJoint, type JointPriority } from './weld-planning.data';
+import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, type WeldJoint, type JointPriority } from './weld-planning.data';
 
 export type FilterField =
   | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof WeldJoint }
@@ -18,8 +18,6 @@ const PRIORITY_OPTIONS: { label: string; value: JointPriority }[] = [
   { label: 'Low', value: 'low' }, { label: 'Medium', value: 'medium' },
   { label: 'High', value: 'high' }, { label: 'Critical', value: 'critical' },
 ];
-
-const NDT_MARK_OPTIONS = NDT_MARKS.map(m => ({ label: m || 'Blank', value: m }));
 
 export const FILTER_SCHEMA: FilterField[] = [
   { key: 'id',            label: 'XREFID',        type: 'text',        group: 'Joint',   field: 'id' },
@@ -38,7 +36,7 @@ export const FILTER_SCHEMA: FilterField[] = [
   { key: 'materialType1', label: 'Material 1',    type: 'multiselect', group: 'Welding', field: 'materialType1', options: uniqueOpts(j => j.materialType1) },
   { key: 'materialType2', label: 'Material 2',    type: 'multiselect', group: 'Welding', field: 'materialType2', options: uniqueOpts(j => j.materialType2) },
   ...NDT_FIELDS.map(f => ({
-    key: f.key, label: f.label, type: 'select' as const, group: 'NDT', field: f.key as keyof WeldJoint, options: NDT_MARK_OPTIONS,
+    key: f.key, label: f.label, type: 'select' as const, group: 'NDT', field: f.key as keyof WeldJoint, options: f.options.map(m => ({ label: m || 'Blank', value: m })),
   })),
   { key: 'notes',       label: 'Notes',       type: 'text',      group: 'Additional', field: 'notes' },
   { key: 'createdBy',   label: 'Created By',  type: 'text',      group: 'Additional', field: 'createdBy' },

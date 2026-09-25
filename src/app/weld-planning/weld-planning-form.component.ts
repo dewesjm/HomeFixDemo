@@ -5,20 +5,14 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
-import { WELD_TYPES } from '../data/jobs';
+import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2 } from '../data/jobs';
 import {
-  addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS, NDT_MARKS,
+  addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
   adminJointDesigns,
   type WeldJoint
 } from './weld-planning.data';
 
-const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
-const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
-/* same codes as jobs.ts (see its MATERIALS_1/2 comment): 02-CS Carbon Steel, 12-SS304/13-SS316
-   Stainless Steel, 04-AS Alloy Steel, 63-AL10 Aluminum */
-const MATERIALS_1 = ['02-CS', '12-SS304', '13-SS316', '04-AS', '63-AL10'];
-const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '15-SS308', '16-SS316'];
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 
 @Component({
@@ -59,7 +53,6 @@ export class WeldPlanningFormComponent implements OnInit {
   hulls = HULLS;
 
   ndtFields = NDT_FIELDS;
-  ndtMarks = NDT_MARKS;
   designOptions = adminJointDesigns;
 
   ngOnInit() {

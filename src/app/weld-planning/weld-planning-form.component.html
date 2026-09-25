@@ -119,8 +119,8 @@
         <div class="detail-col">
           <label class="field-label">{{ n.label }}</label>
           <select class="select select-sm" [(ngModel)]="form[n.key]">
-            @for (m of ndtMarks; track m) {
-              <option [value]="m">{{ m || 'None' }}</option>
+            @for (m of n.options; track m) {
+              <option [value]="m">{{ m || 'Select...' }}</option>
             }
           </select>
         </div>

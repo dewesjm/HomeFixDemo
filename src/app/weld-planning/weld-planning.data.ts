@@ -3,7 +3,11 @@
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
 import { STORAGE } from '../data/storage-keys';
-import { jointNumbers, WELD_TYPES } from '../data/jobs';
+import {
+  jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2,
+  NDT_REQUIREMENT_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS
+} from '../data/jobs';
+import { RT_DEGREE_OPTIONS } from '../data/workflow';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 import { JOINT_DESIGN_LABELS } from '../data/joint-designs';
@@ -26,13 +30,18 @@ export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
   { label: 'Structural', value: 'structural' },
 ];
 
-/* NDT requirements, the same seven fields as the weld record's joint details; each is blank, X, or 5X */
-export const NDT_FIELDS = [
-  { key: 'rtRoot', label: 'RT Root' }, { key: 'rtFinal', label: 'RT Final' },
-  { key: 'ndtRoot', label: 'NDT Root' }, { key: 'ndtEach', label: 'NDT Each' }, { key: 'ndtFinal', label: 'NDT Final' },
-  { key: 'ut', label: 'UT' }, { key: 'vt', label: 'VT' },
-] as const;
+/* NDT requirements, the same seven fields as the weld record's joint details, with the weld record's
+   own values: RT Root/Final = degree of RT, NDT Root/Each/Final = NDT method. UT and VT have no
+   stored requirement on the weld record, so they keep blank/X/5X for now. Blank = not set yet. */
+const RT_MARKS = ['', ...RT_DEGREE_OPTIONS.map(o => o.value)];
+const NDT_METHOD_MARKS = ['', ...NDT_REQUIREMENT_VALUES];
 export const NDT_MARKS = ['', 'X', '5X'];
+export const NDT_FIELDS = [
+  { key: 'rtRoot', label: 'RT Root', options: RT_MARKS }, { key: 'rtFinal', label: 'RT Final', options: RT_MARKS },
+  { key: 'ndtRoot', label: 'NDT Root', options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: 'NDT Each', options: NDT_METHOD_MARKS },
+  { key: 'ndtFinal', label: 'NDT Final', options: NDT_METHOD_MARKS },
+  { key: 'ut', label: 'UT', options: NDT_MARKS }, { key: 'vt', label: 'VT', options: NDT_MARKS },
+] as const;
 
 export interface WeldJoint {
   id: string;
@@ -65,12 +74,7 @@ export interface WeldJoint {
 
 /* ── Seed data pools ── */
 const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
-const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"'];
-const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"'];
-/* same codes as jobs.ts (see its MATERIALS_1/2 comment): 02-CS Carbon Steel, 12-SS304/13-SS316
-   Stainless Steel, 04-AS Alloy Steel, 63-AL10 Aluminum */
-const MATERIALS_1 = ['02-CS', '12-SS304', '13-SS316', '04-AS', '63-AL10'];
-const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '15-SS308', '16-SS316'];
+/* pipe size, wall thickness and material pools are the weld record's (data/jobs.ts) */
 const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 /* joint = system-joint, e.g. ST-10005; each number repeats only 1-3 times, same generator as Weld Record's jobs */
 const SEED_COUNT = 160;
@@ -95,6 +99,11 @@ function makeId(seed: number): string {
 function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
   const rand = seeded(12345);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+  const pickWeighted = (weights: [string, number][]): string => {
+    let r = rand() * weights.reduce((sum, [, w]) => sum + w, 0);
+    for (const [v, w] of weights) if ((r -= w) < 0) return v;
+    return weights[weights.length - 1][0];
+  };
   const out: WeldJoint[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -103,6 +112,9 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     const types: JointType[] = ['pipe', 'structural'];
     const jt = i % 3 === 0 ? 'structural' : pick(types);
     const createdAt = new Date(Date.now() - Math.floor(rand() * 60) * 24 * 60 * 60 * 1000);
+    /* same rule as the weld record's seed: no RT degree for a phase whose NDT is UT */
+    const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
+    const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
 
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
@@ -120,8 +132,10 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
       materialType1: pick(MATERIALS_1),
       materialType2: pick(MATERIALS_2),
-      rtRoot: pick(NDT_MARKS), rtFinal: pick(NDT_MARKS), ndtRoot: pick(NDT_MARKS), ndtEach: pick(NDT_MARKS),
-      ndtFinal: pick(NDT_MARKS), ut: pick(NDT_MARKS), vt: pick(NDT_MARKS),
+      ndtRoot, ndtEach: pick(NDT_REQUIREMENT_VALUES), ndtFinal,
+      rtRoot: ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS),
+      rtFinal: ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS),
+      ut: pick(NDT_MARKS), vt: pick(NDT_MARKS),
       notes: i % 4 === 0 ? 'Standard GWP per WPS' : '',
       createdBy: 'System',
       createdAt: createdAt.toISOString(),

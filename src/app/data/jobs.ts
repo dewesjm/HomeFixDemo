@@ -90,8 +90,9 @@ export function jointNumbers(count: number, seed: number): string[] {
 }
 const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
 export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', 'Transition', 'Overlay', 'Boss', 'Socket'];
-const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
-const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
+/* exported so Weld Planning's Create Joint offers the same options */
+export const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
+export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 /* Base metal (Material Type 1) and filler metal (Material Type 2) codes, redesigned 2026-09-23 as
    one coherent internal numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
    groups by family and the letters stay recognizable (real alloy chemistry/grade abbreviations,
@@ -129,8 +130,8 @@ export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
    Job from this file); the Degree of RT Performed signoff field must match this to sign off.
    Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */
-const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];
-const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['NA', 29], ['10', 3]];
+export const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];
+export const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['NA', 29], ['10', 3]];
 /* work package = Hull-Compartment-Detail, e.g. K7234-FWD-D03 */
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
