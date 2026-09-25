@@ -10,7 +10,7 @@ export interface Job {
                            imperfect-data pattern as My Assignments and Weld Planning. When blank,
                            serialNumber is blank too, since neither was captured for that record. */
   ship: string;         /* 3-digit ship number, e.g. '692'; stable per hull, same idea as hull below */
-  hull: string;        /* letter + 4 digits, e.g. K7234; not unique, many jobs share a hull */
+  hull: string;        /* S, T, D or N + 4 digits, e.g. S7234; not unique, many jobs share a hull */
   trade: string;  /* dynamic — admin can add new trades */
   technician: string;
   drawing: string;           /* drawing number */
@@ -66,8 +66,8 @@ export interface Job {
 
 
 /* welding-specific seed pools */
-/* letter + 7 digits, e.g. H7111234 */
-const DRAWINGS = ['H7111234', 'H7111235', 'S7204518', 'S7204519', 'H7315002', 'S7315003', 'H7422871', 'S7530116', 'H7530117'];
+/* letter + 3 digits, dash, 4 digits, e.g. H711-1234 */
+const DRAWINGS = ['H711-1234', 'H711-1235', 'S720-4518', 'S720-4519', 'H731-5002', 'S731-5003', 'H742-2871', 'S753-0116', 'H753-0117'];
 const DRAWING_REVS = ['A', 'B', 'C', 'D', 'E', 'A-2', 'B-1'];
 /* joint = system-joint, e.g. ST-10005. Not unique in real data, but for the demo each joint number
    only repeats a couple of times (1-3 records each) instead of 8 numbers shared by every record, so
@@ -138,7 +138,7 @@ export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */
 export const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];
 export const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['NA', 29], ['10', 3]];
-/* work package = Hull-Compartment-Detail, e.g. K7234-FWD-D03 */
+/* work package = Hull-Compartment-Detail, e.g. S7234-FWD-D03 */
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
   `${hull}-${COMPARTMENTS[(i * 7) % COMPARTMENTS.length]}-D${String(1 + (i * 13) % 12).padStart(2, '0')}`;
@@ -166,8 +166,8 @@ function makeJobId(seed: number): string {
   return code;
 }
 
-/* stable hull number: letter + 4 digits, e.g. K7234 */
-const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+/* stable hull number: S, T, D or N + 4 digits, e.g. S7234 */
+const LETTERS = 'STDN';
 function makeHull(seed: number): string {
   const rand = seeded(seed * 53 + 11);
   const letter = LETTERS[Math.floor(rand() * LETTERS.length)];

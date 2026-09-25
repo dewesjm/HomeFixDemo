@@ -76,7 +76,7 @@ export const JOINT_EXTRA_FIELDS: JointExtraField[] = [
   { key: 'mcl2', label: 'MCL 2', group: 'Joining', options: MCL_POOL.map(v => ({ label: v, value: v })) },
   { key: 'joinToItem', label: 'Join To Item', group: 'Joining', placeholder: 'S12341001-14' },
   { key: 'order', label: 'Order', group: 'Additional Data', placeholder: '200000000' },
-  { key: 'workPackage', label: 'Work Package', group: 'Additional Data', placeholder: 'K7234-FWD-D03' },
+  { key: 'workPackage', label: 'Work Package', group: 'Additional Data', placeholder: 'S7234-FWD-D03' },
   { key: 'workPermit', label: 'Work Permit', group: 'Additional Data', placeholder: 'WP-2000' },
   { key: 'waff', label: 'WAFF', group: 'Additional Data' },
   { key: 'serialNumber', label: 'Serial Number', group: 'Additional Data', placeholder: '112345678A' },
@@ -207,7 +207,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       status: pick(statuses),
       priority: pick(priorities),
       jointType: jt,
-      drawing: `${i % 3 === 0 ? 'S' : 'H'}7${String(111000 + i * 37).padStart(6, '0')}`,   /* letter + 7 digits */
+      drawing: `${i % 3 === 0 ? 'S' : 'H'}7${String(111000 + i * 37).padStart(6, '0').replace(/^(\d\d)/, '$1-')}`,   /* letter + 3 digits, dash, 4 digits */
       drawingRev: pick(['A', 'B', 'C', 'D']),
       jointDesign: pick(JOINT_DESIGNS),
       weldType: pick(WELD_TYPES),

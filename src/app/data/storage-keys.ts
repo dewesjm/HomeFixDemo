@@ -15,7 +15,7 @@ export const STORAGE = {
   searchState: 'welding:search-state:v1',
   resultColumns: 'welding:result-columns',
   filterVariants: 'welding:filter-variants',
-  weldJoints: 'welding:weld-joints:v8',
+  weldJoints: 'welding:weld-joints:v9',
   adminJointDesigns: 'welding:admin-joint-designs:v2',
   weldPlanningResultColumns: 'welding:weld-planning-result-columns',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants',
