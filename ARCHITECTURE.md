@@ -239,6 +239,7 @@ src/app/
 | `/adaptive` | Advanced Search |
 | `/jobs/:id` | Job detail (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
 | `/assignments` | My Assignments |
+| `/changelog` | Change Log (Quick Links menu): plain-language list of changes from 2026-09-21 on, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-options` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, weld-positions, banner, joint-designs, teams, welder-quals, material-traceability) |
 | `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |

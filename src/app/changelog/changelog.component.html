@@ -1,0 +1,24 @@
+<div class="table-page-wrap">
+  <h2 class="section-title m-0">Change Log</h2>
+  <p class="section-sub">What's new in the demo, newest first.</p>
+
+  <div class="flex flex-col gap-4 max-w-4xl">
+    @for (day of days; track day.date) {
+      <section class="panel">
+        <h3 class="panel-title">{{ dayLabel(day.date) }}</h3>
+        @for (s of sections; track s.key) {
+          @if (day[s.key]?.length) {
+            <div class="mt-2">
+              <span class="badge {{ s.badge }}">{{ s.label }}</span>
+              <ul class="list-disc pl-6 mt-1 flex flex-col gap-1">
+                @for (item of day[s.key]; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            </div>
+          }
+        }
+      </section>
+    }
+  </div>
+</div>
