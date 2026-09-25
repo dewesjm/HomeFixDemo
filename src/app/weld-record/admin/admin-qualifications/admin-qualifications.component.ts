@@ -10,12 +10,12 @@ import {
 } from '../../../data/welder-quals';
 
 @Component({
-  selector: 'app-admin-welder-quals',
+  selector: 'app-admin-qualifications',
   standalone: true,
   imports: [CommonModule, RouterLink],
-  templateUrl: './admin-welder-quals.component.html'
+  templateUrl: './admin-qualifications.component.html'
 })
-export class AdminWelderQualsComponent {
+export class AdminQualificationsComponent {
   private messages = inject(ToastService);
   userName = TEST_USER_NAME;
   held = signal<ReadonlySet<string>>(new Set(testUserQuals()));
