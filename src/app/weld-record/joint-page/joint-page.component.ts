@@ -406,7 +406,7 @@ export class JointPageComponent implements OnDestroy {
     if (isActualOutOfRange(stage, key)) return 'Out of range, signing will record a deviation';
     const outcome = this.offListUnlocked(stage) ? 'recorded with the Foreman Override' : 'signing will record a deviation';
     if (key === 'weldProcedure' && stage.inputs[key] && this.isOffList(stage, key)) {
-      return `Not qualified for these base metals, ${outcome}`;
+      return `Not qualified, ${outcome}`;
     }
     if ((key === 'fillerMetalType' || key === 'fillerMetalSize') && stage.inputs[key] && this.isOffList(stage, key)) {
       return `Not allowed by the WPS, ${outcome}`;

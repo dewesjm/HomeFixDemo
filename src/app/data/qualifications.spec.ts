@@ -27,6 +27,6 @@ describe('qualifications', () => {
     expect(qualCheck(['WELD412', 'WELD427'], ['WELD412', 'WELD427', 'WELD403']))
       .toEqual({ status: 'passed', message: 'Passed, user has WELD412, WELD427' });
     expect(qualCheck(['WELD412', 'WELD498', 'WELD426'], ['WELD412']))
-      .toEqual({ status: 'failed', message: 'Failed. Input disabled, qualifications WELD498, WELD426 missing' });
+      .toEqual({ status: 'failed', message: 'Failed, qualifications WELD498, WELD426 missing' });
   });
 });

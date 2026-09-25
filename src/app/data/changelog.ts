@@ -21,6 +21,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Change Log (this page), under Quick Links.',
     ],
     changed: [
+      'Qualification Check failure message no longer says "Input disabled", and the GWP warning just says "Not qualified".',
       'Create Joint droplists offer the same options as the weld record (RT degrees, NDT methods, pipe size, wall thickness, materials).',
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',

@@ -47,6 +47,6 @@ export function qualCheck(required: string[] | undefined, held: string[]): QualC
   if (!required) return { status: 'none', message: 'Select a GWP and WTN to check qualifications' };
   if (!required.length) return { status: 'passed', message: 'Passed, no qualifications required' };
   const missing = required.filter(q => !held.includes(q));
-  if (missing.length) return { status: 'failed', message: `Failed. Input disabled, qualifications ${missing.join(', ')} missing` };
+  if (missing.length) return { status: 'failed', message: `Failed, qualifications ${missing.join(', ')} missing` };
   return { status: 'passed', message: `Passed, user has ${required.join(', ')}` };
 }
