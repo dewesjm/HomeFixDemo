@@ -233,7 +233,7 @@ html, body {
 .stage-field { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 160px; }
 .stage-field-break { flex-basis: 100%; height: 0; }   /* forces a wrap so a trigger field starts a fresh row */
 .stage-field-label { color: var(--app-text-muted); }
-.stage-field input { width: 100%; }
+.stage-field input:not([type="checkbox"]):not([type="radio"]) { width: 100%; }
 
 /* Routing horizontal scroll */
 .routing-scroll { display: flex; gap: 0; overflow-x: auto; padding: 0.3rem 0 0.25rem 0; }
