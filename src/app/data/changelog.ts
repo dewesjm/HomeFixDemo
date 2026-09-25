@@ -1,6 +1,6 @@
 /* Change Log (Quick Links > Change Log). Plain-language summary for people using the demo, newest
    day first. Add to the top entry (or a new day) with every user-facing change; skip refactors,
-   docs and code cleanup. */
+   docs, code cleanup and data changes (sample values, formats, droplist option names). */
 export interface ChangeLogDay {
   date: string;        /* ISO date */
   added?: string[];
@@ -19,8 +19,6 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Change Log (this page), under Quick Links.',
     ],
     changed: [
-      'Hulls start with S, T, D or N.',
-      'Drawing numbers have a dash, e.g. S753-0116.',
       'Create Joint droplists offer the same options as the weld record (RT degrees, NDT methods, pipe size, wall thickness, materials).',
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',
@@ -42,16 +40,14 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'PH/IP actuals are four required fields (Actual PH Min/Max, Actual IP Min/Max). An NC requirement sets its actual to NC.',
       'Top-bar flatten button works for whichever system you\'re in.',
       'Advanced Search is more compact (both Weld Record and Weld Planning).',
-      'More demo people; person search accepts any mix of name, PERN or ID.',
+      'Person search accepts any mix of name, PERN or ID.',
     ],
     changed: [
       'Repair Code is required to sign off a Repair; Repair no longer asks for Affected Item.',
-      'MCL 1/MCL 2 values are STD and MC-I; MC-I requires traceability.',
+      'MCL 1/MCL 2 of MC-I requires traceability.',
       '"Only Consumable Insert used as filler" is on Root only.',
       'Weld Type uses one list of valid options everywhere.',
       'Actual Min can\'t be higher than Actual Max. Override Requirements are hidden.',
-      'Locations: Field — Onsite replaced by Machine Shop and Structural Shop.',
-      '"Weld Build up" is now "Weld Build-Up".',
     ],
     fixed: [
       'Locked fields look locked (grey) in dark themes; editable fields stay dark.',
@@ -78,7 +74,6 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Root, Layer and Final NDT run in the order VT/5X, MT/PT, UT/RT.',
       'Interim Layer signoff is recorded, but Layer stays the current routing.',
       'Steps with no SAT/UNSAT choice don\'t show SAT anywhere.',
-      'Material Type 1/2 codes use one consistent scheme (e.g. 02-CS, 12-SS304).',
       'Repair Code is a droplist.',
     ],
     fixed: [
