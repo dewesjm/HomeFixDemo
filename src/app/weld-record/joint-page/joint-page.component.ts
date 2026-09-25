@@ -411,12 +411,9 @@ export class JointPageComponent implements OnDestroy {
   }
 
   foremanOverride(stage: WorkflowStage) {
-    const opens = stage.fields.some(f => f.key === 'fillerMetalType')
-      ? 'GWP, WTN, Filler Metal Type and Filler Metal Size'
-      : 'GWP and WTN';
     this.confirm.confirm({
       header: `Foreman Override — ${stage.label}`,
-      message: `Describe what is being done outside the procedure. It's recorded in the joint History when you sign; it doesn't put the joint on hold. The override lets ${opens} be picked from the full lists.`,
+      message: 'Describe the deviation and why it is necessary',
       textInput: { label: 'What is being overridden', placeholder: 'e.g. preheat applied with a different method' },
       acceptLabel: 'Override',
       accept: (text) => {
