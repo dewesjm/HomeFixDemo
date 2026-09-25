@@ -54,7 +54,7 @@ export const routes: Routes = [
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR — Banner Message' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR — Joint Designs' },
   { path: 'admin/teams', component: AdminTeamsComponent, title: 'EWR — Teams & Permissions' },
-  { path: 'admin/welder-quals', component: AdminWelderQualsComponent, title: 'EWR — Qualifications' },
+  { path: 'admin/qualifications', component: AdminWelderQualsComponent, title: 'EWR — Qualifications' },
   { path: 'changelog', component: ChangelogComponent, title: 'Change Log' },
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR — Material Traceability' },
   { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR — Material Classification' },
