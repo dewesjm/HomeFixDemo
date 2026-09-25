@@ -626,6 +626,8 @@
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
           @if (ctx().editable(st)) {
+            <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
+            <span class="spacer"></span>
             <button type="button" class="btn btn-outline" (click)="ctx().reportDeviation(st)"
                     title="Record something done differently from the procedure that the app can't detect">
               <svg lucideTriangleAlert class="size-4"></svg> Report Deviation

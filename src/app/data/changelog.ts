@@ -25,6 +25,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',
       'Admin > Routing no longer has the New trade and Add test job buttons.',
+      'Report Deviation button moved to the right side, away from Signoff.',
     ],
     fixed: [
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',
