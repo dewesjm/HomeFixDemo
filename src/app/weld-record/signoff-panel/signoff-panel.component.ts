@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideLockOpen, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { getProcedureByGwpWtn } from '../../data/procedures';
 import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
+import { conditionQuals } from '../../data/qual-conditions';
 
 export interface SignoffContext {
   job: Job;
@@ -111,10 +112,15 @@ export class SignoffPanelComponent {
 
   weldGroups = WELD_GROUPS;
 
-  /* the selected GWP+WTN's required quals against the Test User's (Admin > Qualifications) */
+  /* the joint's condition quals plus the selected GWP+WTN's against the Test User's (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
     const p = getProcedureByGwpWtn(this.stage().inputs['weldProcedure'], this.stage().inputs['wtn']);
-    return qualCheck(p?.qualificationsRequired, testUserQuals());
+    return qualCheck(testUserQuals(), conditionQuals(this.ctx().job), p?.qualificationsRequired ?? null);
+  }
+
+  /* inspection steps have no Qualification Check field; they check only the joint's condition quals */
+  inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {
+    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionQuals(this.ctx().job)) : null;
   }
 
   /* Records Review's embedded Signoff History: collapsed by default, same expand-per-row and

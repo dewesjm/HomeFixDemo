@@ -65,4 +65,14 @@ describe('deviations', () => {
     stage.inputs['fillerMetalType'] = offListType;
     expect(detectDeviations(stage, new Set(), [])).toEqual([]);
   });
+
+  it('checks condition quals on a welding step with no WPS picked and on an inspection step', () => {
+    const job = addTestJob('Welding');
+    const tack = buildStages(job).find(s => s.id === 'tack')!;
+    expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, ['CNTRLMTL1']))
+      .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1', required: 'CNTRLMTL1' })]);
+    const insp = buildStages(job).find(s => s.id === 'fitup-insp')!;
+    expect(detectDeviations(insp, new Set(), [], undefined, ['CNTRLMTL1']).map(i => i.kind)).toEqual(['qual']);
+    expect(detectDeviations(insp, new Set(), ['CNTRLMTL1'], undefined, ['CNTRLMTL1'])).toEqual([]);
+  });
 });

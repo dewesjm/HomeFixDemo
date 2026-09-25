@@ -22,7 +22,8 @@ export const STORAGE = {
   quickLinks: 'welding:quick-links:v1',
   procedures: 'welding:procedures:v8',
   makeup: 'welding:makeup:v2',
-  qualifications: 'welding:qualifications:v1',
+  qualifications: 'welding:qualifications:v2',
+  qualConditions: 'welding:qual-conditions:v1',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).

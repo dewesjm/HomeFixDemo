@@ -45,6 +45,19 @@
         </div>
       }
 
+    <!-- Qualification Check on inspection steps (joint condition quals only; welding steps have it as a field) -->
+    @if (inspectionQualCheck(st); as qc) {
+      <div class="mb-sm">
+        <div class="stage-field">
+          <span class="stage-field-label">Qualification Check</span>
+          <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
+          @if (qc.status === 'failed' && fieldsEditable()) {
+            <div class="text-sm mt-0.5">Signing will record this as a deviation.</div>
+          }
+        </div>
+      </div>
+    }
+
     <!-- Type / Layer (Fit-Up Insp only) -- fixed, informational, not a real choice. Same droplist
          convention as the Type dropdown above (one per line), just with a single option. -->
     @if (st.id === 'fitup-insp') {

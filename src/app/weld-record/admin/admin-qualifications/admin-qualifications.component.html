@@ -21,6 +21,7 @@
         <tr>
           <th>Qualification</th>
           <th>Required by (WTNs)</th>
+          <th>Required by conditions</th>
           <th>{{ userName }} has</th>
         </tr>
       </thead>
@@ -29,6 +30,7 @@
           <tr>
             <td class="font-medium">{{ r.qual }}</td>
             <td>{{ r.wtnCount }}</td>
+            <td>{{ r.conditions }}</td>
             <td>
               <input type="checkbox" class="toggle toggle-sm toggle-success"
                      [checked]="held().has(r.qual)" (change)="toggle(r.qual)" />
@@ -38,8 +40,59 @@
       </tbody>
     </table>
 
-    <div class="flex justify-end mt-3">
-      <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>
+  </div>
+
+  <div class="panel mt-3">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="font-semibold">Conditions</span>
+      <span>· a joint that matches a condition also requires its qual, on every welding and inspection step</span>
     </div>
+    <p class="mb-2">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.</p>
+
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>When</th>
+          <th>Is</th>
+          <th>Require</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of conditions(); track $index; let i = $index) {
+          <tr>
+            <td>
+              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setConditionField(i, $event)">
+                @for (f of conditionFields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+              </select>
+            </td>
+            <td>
+              <select class="select select-bordered select-sm" [ngModel]="c.value" (ngModelChange)="setCondition(i, { value: $event })">
+                @for (v of valuesFor(c.field); track v) { <option [ngValue]="v">{{ v }}</option> }
+              </select>
+            </td>
+            <td>
+              <select class="select select-bordered select-sm" [ngModel]="c.qual" (ngModelChange)="setCondition(i, { qual: $event })">
+                @for (q of allQuals; track q) { <option [ngValue]="q">{{ q }}</option> }
+              </select>
+            </td>
+            <td class="text-right">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="removeCondition(i)" aria-label="Remove condition">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4">No conditions. Only the WTN's quals are checked.</td></tr>
+        }
+      </tbody>
+    </table>
+    <button type="button" class="btn btn-sm mt-2" (click)="addCondition()">
+      <svg lucidePlus class="size-4"></svg> Add condition
+    </button>
+  </div>
+
+  <div class="flex justify-end mt-3">
+    <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>
   </div>
 </div>

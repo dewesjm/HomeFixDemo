@@ -3,7 +3,7 @@
    Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. */
-import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor } from './workflow';
+import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor, isInspectionStage } from './workflow';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
   FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS, gwpOptionsForMaterials
@@ -39,8 +39,9 @@ function rangeText(stage: WorkflowStage, key: string): string {
 }
 
 /* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see.
-   baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. */
-export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals): DeviationItem[] {
+   baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. conditionQuals =
+   the quals the joint's conditions require (qual-conditions.ts), checked even with no WPS picked. */
+export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals, conditionQuals: string[] = []): DeviationItem[] {
   const items: DeviationItem[] = [];
   for (const key of Object.keys(ACTUAL_REQUIREMENT)) {
     if (visibleKeys.has(key) && isActualOutOfRange(stage, key)) {
@@ -59,13 +60,16 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     }
   }
   const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
-  if (!proc) return items;
-  if (visibleKeys.has('qualificationCheck')) {
-    const missing = proc.qualificationsRequired.filter(q => !heldQuals.includes(q));
+  /* welding steps check when the field is showing; inspection steps have no field, just the check */
+  const checksQuals = stage.fields.some(f => f.key === 'qualificationCheck') ? visibleKeys.has('qualificationCheck') : isInspectionStage(stage);
+  if (checksQuals) {
+    const required = [...new Set([...conditionQuals, ...(proc?.qualificationsRequired ?? [])])];
+    const missing = required.filter(q => !heldQuals.includes(q));
     if (missing.length) {
-      items.push({ kind: 'qual', label: 'Qualification Check', entered: `Missing ${missing.join(', ')}`, required: proc.qualificationsRequired.join(', ') });
+      items.push({ kind: 'qual', label: 'Qualification Check', entered: `Missing ${missing.join(', ')}`, required: required.join(', ') });
     }
   }
+  if (!proc) return items;
   for (const key of FILLER_KEYS) {
     const value = stage.inputs[key] ?? '';
     const f = stage.fields.find(ff => ff.key === key);

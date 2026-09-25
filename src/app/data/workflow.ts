@@ -473,6 +473,12 @@ export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signo
   if (stage.result && hasDecision(stage)) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
   return out;
 }
+/* inspection steps (Pre-Fit, Fit-Up Insp, every NDT incl. Excavation NDT) run the Qualification
+   Check on the joint's condition quals, like welding steps do with their Qualification Check field */
+export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
+  return stage.id === 'pre-fit' || stage.id === 'fitup-insp' || /-ndt(-|$)/.test(stage.id);
+}
+
 /* ── NDT inspection stages: one template per phase (root/layer/final) x method ── */
 type NdtPhase = 'root' | 'layer' | 'final';
 type NdtKind = 'utrt' | 'mtpt' | 'vt5x';

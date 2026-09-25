@@ -25,6 +25,7 @@ import { DeviationService } from '../services/deviation.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
+import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
@@ -398,7 +399,7 @@ export class JointPageComponent implements OnDestroy {
 
   private isOffList(stage: WorkflowStage, key: string): boolean {
     const f = stage.fields.find(ff => ff.key === key);
-    return !!f && detectDeviations(stage, new Set([key]), testUserQuals(), this.baseMetals())
+    return !!f && detectDeviations(stage, new Set([key]), testUserQuals(), this.baseMetals(), conditionQuals(this.job))
       .some(d => d.kind === 'off-list' && d.label === f.label);
   }
 
@@ -452,14 +453,14 @@ export class JointPageComponent implements OnDestroy {
      Override belong to the override instead (no hold), see stageOverrideOffList. */
   private stageDeviations(stage: WorkflowStage): DeviationItem[] {
     const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    const items = detectDeviations(stage, vis, testUserQuals(), this.baseMetals());
+    const items = detectDeviations(stage, vis, testUserQuals(), this.baseMetals(), conditionQuals(this.job));
     return this.offListUnlocked(stage) ? items.filter(d => d.kind !== 'off-list') : items;
   }
 
   private stageOverrideOffList(stage: WorkflowStage): DeviationItem[] {
     if (!this.offListUnlocked(stage)) return [];
     const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    return detectDeviations(stage, vis, testUserQuals(), this.baseMetals()).filter(d => d.kind === 'off-list');
+    return detectDeviations(stage, vis, testUserQuals(), this.baseMetals(), conditionQuals(this.job)).filter(d => d.kind === 'off-list');
   }
 
   /* writes the stage's Foreman Overrides to History; call right before signing */
