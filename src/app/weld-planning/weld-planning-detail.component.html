@@ -54,6 +54,17 @@
       </div>
     </div>
 
+    @for (g of extraGroups; track g) {
+      <div class="panel">
+        <div class="panel-title">{{ g }}</div>
+        <div class="detail-grid inline">
+          @for (f of extraFields(g); track f.key) {
+            <div><div class="meta">{{ f.label }}</div><span>{{ extraDisplay(f, j[f.key]) || '-' }}</span></div>
+          }
+        </div>
+      </div>
+    }
+
     @if (j.notes) {
       <div class="panel">
         <div class="panel-title">Notes</div>

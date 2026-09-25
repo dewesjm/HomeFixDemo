@@ -17,7 +17,7 @@ import { DateRangeComponent } from '../shared/date-range.component';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { downloadCsv } from '../data/export-csv';
 
-import { weldJoints, type WeldJoint } from './weld-planning.data';
+import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from './weld-planning.data';
 import {
   FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
   applyFilters, defaultValuesFor, getField, isEmpty,
@@ -57,6 +57,7 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'ndtFinal',      label: 'NDT Final',      field: 'ndtFinal',     sortField: 'ndtFinal',      width: 'min-w-8' },
   { key: 'ut',            label: 'UT',             field: 'ut',           sortField: 'ut',            width: 'min-w-8' },
   { key: 'vt',            label: 'VT',             field: 'vt',           sortField: 'vt',            width: 'min-w-8' },
+  ...JOINT_EXTRA_FIELDS.map(f => ({ key: f.key, label: f.label, field: f.key, sortField: f.key, width: 'min-w-10' })),
   { key: 'notes',         label: 'Notes',          field: 'notes',        sortField: 'notes',         width: 'min-w-14' },
   { key: 'createdBy',     label: 'Created By',     field: 'createdBy',    sortField: 'createdBy',     width: 'min-w-10' },
   { key: 'createdAt',     label: 'Created',        field: 'createdAt',    sortField: 'createdAt',     width: 'min-w-11' },

@@ -1,16 +1,9 @@
 import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
-import { Job } from '../../data/jobs';
+import { Job, N_IND_MEANINGS } from '../../data/jobs';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 import { characteristicLabel } from '../../data/characteristics';
-
-/* what each Nuclear Indicator code means, shown as a hover tooltip since the raw digit alone isn't self-explanatory */
-const N_IND_MEANINGS: Record<string, string> = {
-  '1': 'N 250-1500-1',
-  '2': 'N TP278',
-  '3': 'Non',
-};
 
 @Component({
   selector: 'app-joint-details',

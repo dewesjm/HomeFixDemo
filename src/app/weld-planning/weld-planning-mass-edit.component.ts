@@ -7,8 +7,8 @@ import { LucideSave, LucideArrowLeft, LucideCheckCircle, LucideAlertTriangle } f
 import { ToastService } from '../shared/toast.service';
 import {
   addWeldJoint, updateWeldJoint, weldJoints, parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
-  JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
-  type WeldJoint, type JointStatus, type JointType
+  JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, JOINT_EXTRA_FIELDS, blankJointExtras, shipForHull,
+  type WeldJoint, type JointExtraKey, type JointStatus, type JointType
 } from './weld-planning.data';
 
 type EditableRow = {
@@ -39,7 +39,20 @@ type EditableRow = {
   vt: string;
   notes: string;
   createdBy: string;
+  /* Joint Info / Joining / Additional Data / Attribute Codes: not table columns, carried through import and save */
+  extras: Record<JointExtraKey, string>;
 };
+
+function pickExtras(j: WeldJoint): Record<JointExtraKey, string> {
+  return Object.fromEntries(JOINT_EXTRA_FIELDS.map(f => [f.key, j[f.key] ?? ''])) as Record<JointExtraKey, string>;
+}
+
+/* import columns use the field key or its label (the CSV export's header); Ship is set from the Hull on save */
+function extrasFromRaw(raw: Record<string, string>): Record<JointExtraKey, string> {
+  const out = blankJointExtras();
+  for (const f of JOINT_EXTRA_FIELDS) out[f.key] = String(raw[f.key] ?? raw[f.label] ?? '');
+  return out;
+}
 
 const VALID_TYPES = new Set(['pipe', 'structural']);
 
@@ -251,6 +264,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
       ndtFinal: j.ndtFinal, ut: j.ut, vt: j.vt,
       notes: j.notes,
       createdBy: j.createdBy,
+      extras: pickExtras(j),
     }));
     editable.forEach(row => this.validateRow(row));
     this.rows.set(editable);
@@ -295,6 +309,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
           ndtFinal: raw['ndtFinal'] || '', ut: raw['ut'] || '', vt: raw['vt'] || '',
           notes: raw['notes'] || '',
           createdBy: 'Import',
+          extras: extrasFromRaw(raw),
         };
         return row;
       });
@@ -346,6 +361,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
             rtRoot: row.rtRoot, rtFinal: row.rtFinal, ndtRoot: row.ndtRoot, ndtEach: row.ndtEach,
             ndtFinal: row.ndtFinal, ut: row.ut, vt: row.vt,
             notes: row.notes,
+            ...row.extras, ship: shipForHull(row.hull),
           });
         } else {
           addWeldJoint({
@@ -366,6 +382,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
             rtRoot: row.rtRoot, rtFinal: row.rtFinal, ndtRoot: row.ndtRoot, ndtEach: row.ndtEach,
             ndtFinal: row.ndtFinal, ut: row.ut, vt: row.vt,
             notes: row.notes,
+            ...row.extras, ship: shipForHull(row.hull),
             createdBy: 'Import',
           });
         }
@@ -397,11 +414,11 @@ export class WeldPlanningMassEditComponent implements OnInit {
 
   loadSample() {
     const sample: EditableRow[] = [
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1001', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'C-18', weldType: 'Butt', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1001', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'P-9', weldType: 'Socket', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1002', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S7204518', drawingRev: 'A', jointDesign: 'V-22', weldType: 'Butt', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1002', joint: 'LO-10017', description: 'Nozzle to header', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S7204518', drawingRev: 'C', jointDesign: 'C-65', weldType: 'Boss', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '16-SS316', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample' },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'K1003', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H7315002', drawingRev: 'A', jointDesign: 'P-12', weldType: 'Attachment', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample' },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'E5145', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'C-18', weldType: 'Butt', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'E5145', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H7111234', drawingRev: 'B', jointDesign: 'P-9', weldType: 'Socket', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S7204518', drawingRev: 'A', jointDesign: 'V-22', weldType: 'Butt', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '03-ER70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'LO-10017', description: 'Nozzle to header', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S7204518', drawingRev: 'C', jointDesign: 'C-65', weldType: 'Boss', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '16-SS316', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'V8080', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H7315002', drawingRev: 'A', jointDesign: 'P-12', weldType: 'Attachment', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-E70', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
     ];
     sample.forEach(r => this.validateRow(r));
     this.rows.set(sample);
@@ -452,6 +469,7 @@ export class WeldPlanningMassEditComponent implements OnInit {
         ndtFinal: j.ndtFinal, ut: j.ut, vt: j.vt,
         notes: j.notes,
         createdBy: j.createdBy,
+        extras: pickExtras(j),
       }));
       editable.forEach(row => this.validateRow(row));
       this.rows.set(editable);

@@ -1,7 +1,7 @@
 /* schema-driven filter engine + saved variants for Weld Planning's Advanced Search,
    mirrors data/filter-schema.ts but scoped to WeldJoint instead of Job */
 import { STORAGE } from '../data/storage-keys';
-import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, type WeldJoint, type JointPriority } from './weld-planning.data';
+import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, JOINT_EXTRA_FIELDS, type WeldJoint, type JointPriority } from './weld-planning.data';
 
 export type FilterField =
   | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof WeldJoint }
@@ -38,6 +38,10 @@ export const FILTER_SCHEMA: FilterField[] = [
   ...NDT_FIELDS.map(f => ({
     key: f.key, label: f.label, type: 'select' as const, group: 'NDT', field: f.key as keyof WeldJoint, options: f.options.map(m => ({ label: m || 'Blank', value: m })),
   })),
+  /* droplist fields filter by their options, free-text ones by text match */
+  ...JOINT_EXTRA_FIELDS.map((f): FilterField => f.options
+    ? { key: f.key, label: f.label, type: 'multiselect', group: f.group, field: f.key, options: f.options }
+    : { key: f.key, label: f.label, type: 'text', group: f.group, field: f.key }),
   { key: 'notes',       label: 'Notes',       type: 'text',      group: 'Additional', field: 'notes' },
   { key: 'createdBy',   label: 'Created By',  type: 'text',      group: 'Additional', field: 'createdBy' },
   { key: 'createdAt',   label: 'Created',     type: 'daterange', group: 'Additional', field: 'createdAt' },

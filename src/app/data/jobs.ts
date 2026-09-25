@@ -107,11 +107,11 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
 export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205', '61-TI64', '63-AL10', '65-CUNI', '67-IN625'];
 export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
-const MCL_POOL = ['STD', 'MC-I'];
+export const MCL_POOL = ['STD', 'MC-I'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14 (user-specified format,
    2026-09-23, replacing the earlier invented piece-mark style like HPF-D120-1). Leading letter
    varies (still invented, no real area-code scheme specified). */
-const JOINING_ITEMS = [
+export const JOINING_ITEMS = [
   'S12341001-14', 'H98761234-02', 'M55512345-09', 'A20983456-03',
   'F77123890-11', 'D40456789-06', 'P66234567-08', 'S30987654-12',
   'H12398765-05', 'M84512345-01', 'A55678901-15', 'F19283746-07',
@@ -120,7 +120,13 @@ const JOINING_ITEMS = [
 const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required — 600°C/2hr', 'Required — 620°C/1hr', 'Pending review'];
-const N_IND_POOL = ['1', '2', '3'];
+export const N_IND_POOL = ['1', '2', '3'];
+/* what each Nuclear Indicator code means; the raw digit alone isn't self-explanatory */
+export const N_IND_MEANINGS: Record<string, string> = {
+  '1': 'N 250-1500-1',
+  '2': 'N TP278',
+  '3': 'Non',
+};
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
    workflow.ts). Blank and NA are no longer valid. */
@@ -179,12 +185,13 @@ function makeShip(seed: number): string {
    shown) or by the unique combination of hull + drawing + joint, which generateJobs guarantees
    are both unique; the user-facing xrefid is a display-only copy of id that can be blank. */
 const HULL_COUNT = 48;
+/* exported so Weld Planning's Create Joint offers the same hulls, with the same ship per hull */
+export const HULLS = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
+export const SHIP_BY_HULL = new Map(HULLS.map((h, k) => [h, makeShip(k + 1)]));
 
 export function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
-  const hulls = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
-  const shipByHull = new Map(hulls.map((h, k) => [h, makeShip(k + 1)]));
   const usedIdentity = new Set<string>();
   const joints = jointNumbers(count, 7);
   for (let i = 0; i < count; i++) {
@@ -207,7 +214,7 @@ export function generateJobs(count = 480): Job[] {
     const joint = joints[i];
     let hull: string, drawing: string;
     do {
-      hull = pick(hulls); drawing = pick(DRAWINGS);
+      hull = pick(HULLS); drawing = pick(DRAWINGS);
     } while (usedIdentity.has(`${hull}|${drawing}|${joint}`));
     usedIdentity.add(`${hull}|${drawing}|${joint}`);
 
@@ -226,7 +233,7 @@ export function generateJobs(count = 480): Job[] {
     out.push({
       id,
       xrefid: xrefidBlank ? '' : id,
-      ship: shipByHull.get(hull)!,
+      ship: SHIP_BY_HULL.get(hull)!,
       hull,
       trade,
       technician,

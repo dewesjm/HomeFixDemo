@@ -5,15 +5,15 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
-import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2 } from '../data/jobs';
+import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2, HULLS } from '../data/jobs';
 import {
   addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
-  adminJointDesigns,
+  adminJointDesigns, JOINT_EXTRA_FIELDS, blankJointExtras, shipForHull,
+  type JointExtraGroup,
   type WeldJoint
 } from './weld-planning.data';
 
-const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 
 @Component({
   selector: 'app-weld-planning-form',
@@ -38,6 +38,7 @@ export class WeldPlanningFormComponent implements OnInit {
     materialType1: '', materialType2: '',
     rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: '',
     notes: '',
+    ...blankJointExtras(),
     createdBy: 'User', createdAt: '', updatedAt: ''
   };
 
@@ -54,6 +55,15 @@ export class WeldPlanningFormComponent implements OnInit {
 
   ndtFields = NDT_FIELDS;
   designOptions = adminJointDesigns;
+
+  extraFields(group: JointExtraGroup) {
+    return JOINT_EXTRA_FIELDS.filter(f => f.group === group);
+  }
+
+  /* Ship follows the Hull, same as the weld record */
+  onHullChange(hull: string) {
+    this.form.ship = shipForHull(hull);
+  }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');

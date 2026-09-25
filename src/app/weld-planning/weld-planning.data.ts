@@ -5,8 +5,10 @@
 import { STORAGE } from '../data/storage-keys';
 import {
   jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2,
-  NDT_REQUIREMENT_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS
+  NDT_REQUIREMENT_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
+  HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from '../data/jobs';
+import { CHARACTERISTIC_CODES } from '../data/characteristics';
 import { RT_DEGREE_OPTIONS } from '../data/workflow';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
@@ -43,7 +45,70 @@ export const NDT_FIELDS = [
   { key: 'ut', label: 'UT', options: NDT_MARKS }, { key: 'vt', label: 'VT', options: NDT_MARKS },
 ] as const;
 
-export interface WeldJoint {
+/* the rest of the weld record's joint details (Joint Info, Joining, Additional Data, Attribute
+   Codes), same values as the weld record. Refit #/Repair # left out: the weld record's own steps set those.
+   Ship isn't typed in: it follows the hull, same as the weld record. */
+type Opt = { label: string; value: string };
+const ATTR_CODE_OPTIONS: Opt[] = CHARACTERISTIC_CODES.map(c => ({ label: `${c.code} ${c.description}`, value: c.code }));
+export type JointExtraKey =
+  'ship' | 'nInd' | 'sequenceNumber' | 'engineeringNotes' |
+  'mcl1' | 'mcl2' | 'joiningItem' | 'joinToItem' |
+  'order' | 'workPackage' | 'workPermit' | 'waff' | 'serialNumber' | 'ss' | 'sfff' | 'dssAaa' |
+  'er1' | 'er2' | 'er3' | 'er4' |
+  'attributeCode1' | 'attributeCode2' | 'attributeCode3' | 'attributeCode4';
+export type JointExtraGroup = 'Joint Info' | 'Joining' | 'Additional Data' | 'Attribute Codes';
+export interface JointExtraField {
+  key: JointExtraKey;
+  label: string;
+  group: JointExtraGroup;
+  options?: Opt[];        /* droplist; otherwise free text */
+  placeholder?: string;
+  readonly?: boolean;
+}
+export const JOINT_EXTRA_FIELDS: JointExtraField[] = [
+  { key: 'ship', label: 'Ship', group: 'Joint Info', readonly: true },
+  { key: 'nInd', label: 'Nuclear Indicator', group: 'Joint Info',
+    options: N_IND_POOL.map(v => ({ label: `${v} (${N_IND_MEANINGS[v]})`, value: v })) },
+  { key: 'sequenceNumber', label: 'Sequence #', group: 'Joint Info', placeholder: '1' },
+  { key: 'engineeringNotes', label: 'Engineering Notes', group: 'Joint Info', placeholder: 'SEE NOTE 1234' },
+  { key: 'mcl1', label: 'MCL 1', group: 'Joining', options: MCL_POOL.map(v => ({ label: v, value: v })) },
+  { key: 'joiningItem', label: 'Joining Item', group: 'Joining', placeholder: 'S12341001-14' },
+  { key: 'mcl2', label: 'MCL 2', group: 'Joining', options: MCL_POOL.map(v => ({ label: v, value: v })) },
+  { key: 'joinToItem', label: 'Join To Item', group: 'Joining', placeholder: 'S12341001-14' },
+  { key: 'order', label: 'Order', group: 'Additional Data', placeholder: '200000000' },
+  { key: 'workPackage', label: 'Work Package', group: 'Additional Data', placeholder: 'K7234-FWD-D03' },
+  { key: 'workPermit', label: 'Work Permit', group: 'Additional Data', placeholder: 'WP-2000' },
+  { key: 'waff', label: 'WAFF', group: 'Additional Data' },
+  { key: 'serialNumber', label: 'Serial Number', group: 'Additional Data', placeholder: '112345678A' },
+  { key: 'ss', label: 'SS', group: 'Additional Data', options: [{ label: 'Yes', value: 'Yes' }] },
+  { key: 'sfff', label: 'SFFF', group: 'Additional Data', options: [{ label: 'Yes', value: 'Yes' }] },
+  { key: 'dssAaa', label: 'DSS-AAA', group: 'Additional Data', options: [{ label: 'DSS-AAA', value: 'DSS-AAA' }] },
+  { key: 'er1', label: 'ER1', group: 'Additional Data', placeholder: 'ER-6000' },
+  { key: 'er2', label: 'ER2', group: 'Additional Data', placeholder: 'ER-7000' },
+  { key: 'er3', label: 'ER3', group: 'Additional Data', placeholder: 'ER-8000' },
+  { key: 'er4', label: 'ER4', group: 'Additional Data', placeholder: 'ER-9000' },
+  { key: 'attributeCode1', label: 'Attribute Code 1', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
+  { key: 'attributeCode2', label: 'Attribute Code 2', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
+  { key: 'attributeCode3', label: 'Attribute Code 3', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
+  { key: 'attributeCode4', label: 'Attribute Code 4', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
+];
+export const JOINT_EXTRA_GROUPS: JointExtraGroup[] = ['Joint Info', 'Joining', 'Additional Data', 'Attribute Codes'];
+
+/* shown value for an extra field: the option's label when it has one, else the raw value */
+export function jointExtraDisplay(f: JointExtraField, value: string): string {
+  if (!value) return '';
+  return f.options?.find(o => o.value === value)?.label ?? value;
+}
+
+export function blankJointExtras(): Record<JointExtraKey, string> {
+  return Object.fromEntries(JOINT_EXTRA_FIELDS.map(f => [f.key, ''])) as Record<JointExtraKey, string>;
+}
+
+export function shipForHull(hull: string): string {
+  return SHIP_BY_HULL.get(hull) ?? '';
+}
+
+export interface WeldJoint extends Record<JointExtraKey, string> {
   id: string;
   hull: string;
   joint: string;
@@ -75,7 +140,6 @@ export interface WeldJoint {
 /* ── Seed data pools ── */
 const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
 /* pipe size, wall thickness and material pools are the weld record's (data/jobs.ts) */
-const HULLS = ['K1001', 'K1002', 'K1003', 'K1004', 'K1005'];
 /* joint = system-joint, e.g. ST-10005; each number repeats only 1-3 times, same generator as Weld Record's jobs */
 const SEED_COUNT = 160;
 const JOINTS_POOL = jointNumbers(SEED_COUNT, 11);
@@ -116,9 +180,28 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
 
+    const hull = pick(HULLS);
+    const attr = () => pick(CHARACTERISTIC_CODES).code;
     out.push({
       id: i % 4 === 0 ? '' : makeId(i + 1),
-      hull: pick(HULLS),
+      hull,
+      /* extras seeded the same way as the weld record's jobs.ts */
+      ship: shipForHull(hull),
+      nInd: pick(N_IND_POOL),
+      sequenceNumber: '1',
+      engineeringNotes: i % 3 === 0 ? `SEE NOTE ${1000 + Math.floor(rand() * 9000)}` : '',
+      mcl1: pick(MCL_POOL), mcl2: pick(MCL_POOL),
+      joiningItem: pick(JOINING_ITEMS), joinToItem: pick(JOINING_ITEMS),
+      order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
+      workPackage: `${hull}-${['FWD', 'MID', 'AFT', 'ENG'][i % 4]}-D${String(1 + (i * 13) % 12).padStart(2, '0')}`,
+      workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
+      waff: '',
+      serialNumber: i % 4 === 0 ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,
+      ss: i % 8 === 0 ? 'Yes' : '', sfff: i % 9 === 0 ? 'Yes' : '', dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
+      er1: i % 3 === 0 ? `ER-${6000 + i}` : '', er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
+      er3: i % 5 === 0 ? `ER-${8000 + i}` : '', er4: i % 6 === 0 ? `ER-${9000 + i}` : '',
+      attributeCode1: attr(), attributeCode2: i % 2 === 0 ? attr() : '',
+      attributeCode3: i % 3 === 0 ? attr() : '', attributeCode4: i % 4 === 0 ? attr() : '',
       joint: JOINTS_POOL[i % JOINTS_POOL.length],
       description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
@@ -162,6 +245,7 @@ function loadWeldJoints(): WeldJoint[] {
         'on-hold': 'locked', 'cancelled': 'locked',
       };
       return parsed.map((j: any, i: number) => ({
+        ...blankJointExtras(),
         ...j,
         jointType: j.jointType || 'pipe',
         hull: j.hull || pickFrom(hullPool, i),
@@ -265,6 +349,7 @@ export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
   { header: 'Material 1', value: r => r.materialType1 },
   { header: 'Material 2', value: r => r.materialType2 },
   ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
+  ...JOINT_EXTRA_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
   { header: 'Notes', value: r => r.notes },
 ];
 
@@ -298,6 +383,7 @@ export async function downloadXlsxTemplate(): Promise<void> {
     'status', 'priority', 'jointType', 'drawing', 'drawingRev',
     'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
     'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),
+    ...JOINT_EXTRA_FIELDS.filter(f => !f.readonly).map(f => f.key),
     'notes'
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
