@@ -1,31 +1,46 @@
 <!-- Adaptive filters screen template (paired with adaptive-search.component.ts). -->
-<div class="page-header">
+<!-- Title, saved variants and filter actions on one line -->
+<div class="page-header search-head">
   <h2 class="section-title">Advanced Search</h2>
-</div>
-
-<!-- Variant toolbar -->
-<div class="facet-row">
-  <span class="fw-bold">Variant</span>
-  @for (v of variants(); track v.name) {
-    <div class="join">
-      <button type="button" class="btn btn-sm btn-outline join-item" (click)="applyVariant(v)">{{ v.name }}</button>
-      <button type="button" class="btn btn-sm btn-outline join-item text-error" appTooltip="Delete variant"
-              (click)="deleteVariant(v.name)">
-        <svg lucideX class="size-4"></svg>
-      </button>
-    </div>
+  <span class="fw-bold ml-4">Variant</span>
+  <select class="select select-sm select-bordered w-auto"
+          [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
+    <option value="">{{ variants().length ? 'Choose…' : 'None saved' }}</option>
+    @for (v of variants(); track v.name) {
+      <option [value]="v.name">{{ v.name }}</option>
+    }
+  </select>
+  @if (selectedVariant()) {
+    <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this variant"
+            (click)="deleteVariant(selectedVariant())">
+      <svg lucideTrash2 class="size-4"></svg>
+    </button>
+  }
+  @if (savingVariant()) {
+    <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="Variant name"
+           [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
+           (keydown.enter)="saveCurrentVariant()" (keydown.escape)="savingVariant.set(false)" />
+    <button type="button" class="btn btn-sm btn-primary" [disabled]="!variantName().trim()"
+            (click)="saveCurrentVariant()">
+      <svg lucideSave class="size-4"></svg> Save
+    </button>
+    <button type="button" class="btn btn-sm btn-ghost" (click)="savingVariant.set(false)">Cancel</button>
+  } @else {
+    <button type="button" class="btn btn-sm btn-outline" (click)="startSaveVariant()">
+      <svg lucideSave class="size-4"></svg> Save variant…
+    </button>
   }
   <span class="spacer"></span>
-  <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="Variant name"
-         [ngModel]="variantName()" (ngModelChange)="variantName.set($event)" />
-  <button type="button" class="btn btn-sm btn-primary" [disabled]="!variantName().trim()"
-          (click)="saveCurrentVariant()">
-    <svg lucideSave class="size-4"></svg> Save variant
+  <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
+    <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
+  </button>
+  <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
+    <svg lucideListFilter class="size-4"></svg> Reset
   </button>
 </div>
 
 <!-- Dynamic filter bar -->
-<div class="facet-row">
+<div class="facet-row facet-row-compact">
   @for (f of visibleFields(); track f.key) {
     <div class="field-col">
       <label class="field-label">
@@ -35,12 +50,19 @@
       @switch (f.type) {
         @case ('text') {
           <div class="join">
-            <select class="select select-sm select-bordered join-item shrink-0" style="width: 9.5rem"
-                    [ngModel]="textValue(f.key).negate" (ngModelChange)="setTextValue(f.key, textValue(f.key).text, $event)">
-              <option [ngValue]="false">Contains</option>
-              <option [ngValue]="true">Does not contain</option>
-            </select>
-            <input type="text" class="input input-sm input-bordered join-item flex-1" placeholder="Value…"
+            <!-- funnel toggles Contains / Does not contain; red funnel-X = Does not contain -->
+            <button type="button" class="btn btn-sm join-item px-2" [class.text-error]="textValue(f.key).negate"
+                    [appTooltip]="textValue(f.key).negate ? 'Does not contain, click for Contains' : 'Contains, click for Does not contain'"
+                    [attr.aria-label]="textValue(f.key).negate ? 'Does not contain' : 'Contains'"
+                    (click)="setTextValue(f.key, textValue(f.key).text, !textValue(f.key).negate)">
+              @if (textValue(f.key).negate) {
+                <svg lucideFunnelX class="size-4"></svg>
+              } @else {
+                <svg lucideFunnel class="size-4"></svg>
+              }
+            </button>
+            <input type="text" class="input input-sm input-bordered join-item flex-1"
+                   [placeholder]="textValue(f.key).negate ? 'Does not contain…' : 'Contains…'"
                    [ngModel]="textValue(f.key).text" (ngModelChange)="setTextValue(f.key, $event, textValue(f.key).negate)" />
           </div>
         }
@@ -77,33 +99,19 @@
       }
     </div>
   }
-
-  <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
-    <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
-  </button>
-  <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
-    <svg lucideListFilter class="size-4"></svg> Reset
-  </button>
 </div>
 
-<!-- Active facet chips -->
-@if (activeChips().length) {
-  <div class="chip-row">
-    @for (c of activeChips(); track c.label) {
-      <span class="badge badge-outline gap-1">
-        {{ c.label }}
-        <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="c.clear()">
-          <svg lucideX class="size-3"></svg>
-        </button>
-      </span>
-    }
-  </div>
-}
-
-<!-- Results -->
+<!-- Results: count, active filter chips, column/export actions -->
 <div class="row mb-sm">
-        <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} hulls match</span>
+  <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} hulls match</span>
+  @for (c of activeChips(); track c.label) {
+    <span class="badge badge-outline gap-1">
+      {{ c.label }}
+      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="c.clear()">
+        <svg lucideX class="size-3"></svg>
+      </button>
+    </span>
+  }
   <span class="spacer"></span>
   <button type="button" class="btn btn-sm btn-outline" (click)="openColPicker()">
     <svg lucideColumns3 class="size-4"></svg> Columns

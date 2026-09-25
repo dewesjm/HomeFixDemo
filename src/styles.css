@@ -286,6 +286,10 @@ html, body {
 /* Page header: hamburger + title + sync on one line */
 .page-header { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.75rem; }
 .page-header .section-title { margin: 0; }
+/* Advanced Search: title + variant droplist + filter actions share the header line */
+.page-header.search-head { align-items: center; flex-wrap: wrap; }
+/* tighter filter bar where it sits right under a toolbar header */
+.facet-row.facet-row-compact { padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; gap: 0.5rem 0.75rem; }
 .back-link { cursor: pointer; font-size: 1rem; line-height: 1.5; color: var(--app-text); text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem; }
 
 /* Signoff fields: one per row, normal width */

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
+  LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter,
   LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
 } from '@lucide/angular';
 
@@ -82,7 +82,7 @@ function saveColumnKeys(keys: string[]) {
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
-    LucideSave, LucideX, LucideSlidersHorizontal, LucideListFilter,
+    LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
   ],
   templateUrl: './weld-planning-search.component.html'
@@ -203,6 +203,21 @@ export class WeldPlanningSearchComponent {
   // --- Variants (presets) ---
   variants = signal<FilterVariant[]>(loadVariants());
   variantName = signal<string>('');
+  /* name of the variant chosen in the droplist ('' = none); the name box only shows while saving */
+  selectedVariant = signal<string>('');
+  savingVariant = signal(false);
+
+  pickVariant(name: string) {
+    this.selectedVariant.set(name);
+    const v = this.variants().find(x => x.name === name);
+    if (v) this.applyVariant(v);
+  }
+
+  /* prefill with the chosen variant's name, so saving again updates it */
+  startSaveVariant() {
+    this.variantName.set(this.selectedVariant());
+    this.savingVariant.set(true);
+  }
 
   applyVariant(v: FilterVariant) {
     const next = defaultValuesFor(v.visibleKeys);
@@ -224,12 +239,15 @@ export class WeldPlanningSearchComponent {
     this.variants.set(merged);
     saveVariants(merged);
     this.variantName.set('');
+    this.selectedVariant.set(name);
+    this.savingVariant.set(false);
   }
 
   deleteVariant(name: string) {
     const merged = this.variants().filter(v => v.name !== name);
     this.variants.set(merged);
     saveVariants(merged);
+    if (this.selectedVariant() === name) this.selectedVariant.set('');
   }
 
   // --- Column picker (results grid) ---
@@ -305,6 +323,7 @@ export class WeldPlanningSearchComponent {
 
   resetAll() {
     this.values.set(defaultValuesFor(this.visibleKeys()));
+    this.selectedVariant.set('');
   }
 
   chipLabelFor(f: FilterField, v: any): string {
