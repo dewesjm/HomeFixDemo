@@ -364,6 +364,8 @@ input[type="number"] { -moz-appearance: textfield; }
 /* Dropdowns always get a visible border: DaisyUI's default select border color can end up
    nearly the same as the field background in dark mode ("black on black"). */
 .select { border: 1px solid var(--app-border); }
+/* the rule above is unlayered, so it beat DaisyUI's select-error border; restore the red outline */
+.select.select-error { border-color: var(--color-error); }
 
 /* dimmed text utilities: still a visible hierarchy, but readable */
 .opacity-50 { opacity: 0.7; }
