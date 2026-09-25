@@ -82,7 +82,7 @@ describe('SignoffService', () => {
     expect(stage('fitup-insp').inputs['releaseToWelding']).toBe('yes');
     expect(wf.fabricationData['specificLocation']).toBe('');
     const entry = wf.history.find(h => h.section === 'Routing')!;
-    expect(entry.action).toBe('Fit-Up Insp — Routed back to Fit');
+    expect(entry.action).toBe('Fit-Up Insp - Routed back to Fit');
     expect(entry.fabInputs?.some(i => i.value === 'Bay 3')).toBeTrue();
   });
 

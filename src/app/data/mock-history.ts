@@ -27,7 +27,7 @@ const FILES = [
 
 const FREEFORM_NOTES = [
   'Weld completed per WPS requirements.',
-  'NDT report attached — no indications found.',
+  'NDT report attached - no indications found.',
   'Fit-up verified against drawing revision.',
   'Preheat temperature recorded before welding.',
   'Post-weld visual inspection passed.'
@@ -103,7 +103,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
       inspectionType: stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '',
     };
     /* routing = the stage this action was for, not what it moved to afterward */
-    push('Sign-off', `${stage.label} — Signed off`, stage.label, undefined, decision ? decision.toUpperCase() : '',
+    push('Sign-off', `${stage.label} - Signed off`, stage.label, undefined, decision ? decision.toUpperCase() : '',
       snapshotInputs(view, fieldsShown(view), stage.signoffFields));
 
     if (decision === 'unsat') {

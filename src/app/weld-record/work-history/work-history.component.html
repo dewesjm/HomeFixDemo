@@ -82,7 +82,7 @@
         <td>{{ r.action }}</td>
         <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
-        <td class="hist-new">{{ r.to || '—' }}</td>
+        <td class="hist-new">{{ r.to || '-' }}</td>
         <td>{{ r.jobId }}</td>
         <td>{{ r.hull }}</td>
         <td>{{ r.drawing }}</td>

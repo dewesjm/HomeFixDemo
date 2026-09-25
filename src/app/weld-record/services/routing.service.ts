@@ -31,7 +31,7 @@ export class RoutingService {
     return this.store.withHistory(wf, { ...wf, stages }, {
       section: 'Stages',
       who: wf.technician,
-      action: `${stage.label} — ${field.label}`,
+      action: `${stage.label} - ${field.label}`,
       from: show(prev),
       to: show(value ? value + unit : value)
     });
@@ -91,7 +91,7 @@ export class RoutingService {
       return this.store.withHistory(wf, { ...d.wf, stages }, {
         section: 'Sign-off',
         who: 'Admin',
-        action: `${s.label} — Deprogressed${comment ? ': ' + comment : ''}`,
+        action: `${s.label} - Deprogressed${comment ? ': ' + comment : ''}`,
         from: s.label,
         to: '',
         stageId: s.id,

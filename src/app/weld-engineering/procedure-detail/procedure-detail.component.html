@@ -4,7 +4,7 @@
       <svg lucideArrowLeft class="size-4"></svg> Procedure Lookup
     </a>
     @if (procedure(); as p) {
-      <h2 class="section-title m-0">{{ p.id }} — WTN {{ p.wtn }}</h2>
+      <h2 class="section-title m-0">{{ p.id }} - WTN {{ p.wtn }}</h2>
       <span class="spacer"></span>
       <button type="button" class="btn btn-sm btn-primary" (click)="download()">
         <svg lucideDownload class="size-4"></svg> Download

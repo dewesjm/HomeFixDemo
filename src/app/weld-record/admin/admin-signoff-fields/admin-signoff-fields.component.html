@@ -85,7 +85,7 @@
             <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Field label"
                    [ngModel]="row.label" (ngModelChange)="updateField(row, 'label', $event)" />
           } @else {
-            {{ row.label || '—' }}
+            {{ row.label || '-' }}
           }
         </td>
         <!-- Type -->
@@ -122,9 +122,9 @@
             }
           } @else {
             @if (row.type === 'select') {
-              <span class="text-xs">{{ row.optionsText || '—' }}</span>
+              <span class="text-xs">{{ row.optionsText || '-' }}</span>
             } @else {
-              {{ row.placeholder || '—' }}
+              {{ row.placeholder || '-' }}
             }
           }
         </td>

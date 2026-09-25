@@ -252,7 +252,7 @@ const HANDOVER_STAGE: StageTemplate = {
 
 /* ── Shop locations (admin-configurable via localStorage) ── */
 const SHOPS_LS_KEY = STORAGE.shops;
-const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop — Building 4', 'Machine Shop — Building 2', 'Structural Shop — Building 7', 'Ship'];
+const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop - Building 4', 'Machine Shop - Building 2', 'Structural Shop - Building 7', 'Ship'];
 
 export function getShops(): string[] {
   try {
@@ -445,7 +445,7 @@ export function displayValue(f: { type: string; options?: { label: string; value
 }
 
 /* value as shown in the history Old/New columns; em dash when empty */
-export const show = (v: string | null | undefined) => (v && v.length ? v : '—');
+export const show = (v: string | null | undefined) => (v && v.length ? v : '-');
 
 /* display label for a raw stage input key, falling back to the key itself if undefined */
 export function labelFor(stage: WorkflowStage, key: string): string {

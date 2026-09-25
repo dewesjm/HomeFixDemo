@@ -265,7 +265,7 @@ export class AdminRoutingComponent {
   }
 
   getRejectLabel(rejectToStage: string): string {
-    if (!rejectToStage) return '—';
+    if (!rejectToStage) return '-';
     const match = this.stageOptions().find(s => s.id === rejectToStage);
     return match?.label ?? rejectToStage;
   }

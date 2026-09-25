@@ -89,7 +89,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
     })(),
   },
   {
-    id: 'g4', name: 'Weld Technicians', description: 'Welders and fitters — can enter data but cannot sign off on inspection stages.',
+    id: 'g4', name: 'Weld Technicians', description: 'Welders and fitters - can enter data but cannot sign off on inspection stages.',
     type: 'Group', avatarColor: '#f57c00', memberCount: 6,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};

@@ -27,7 +27,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Weld Process</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldProcess">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (p of weldProcesses; track p) {
           <option [value]="p">{{ p }}</option>
         }
@@ -52,7 +52,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Process Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.processType">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (p of processTypes; track p) {
           <option [value]="p">{{ p }}</option>
         }
@@ -69,7 +69,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Base Metal 1 Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal1Type">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (m of baseMetal1Types; track m) {
           <option [value]="m">{{ m }}</option>
         }
@@ -78,7 +78,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Base Metal 2 Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal2Type">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (m of baseMetal2Types; track m) {
           <option [value]="m">{{ m }}</option>
         }
@@ -99,7 +99,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Joint Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.jointType">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (j of jointTypes; track j) {
           <option [value]="j">{{ j }}</option>
         }
@@ -116,7 +116,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Backing</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.backing">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (b of backingOptions; track b) {
           <option [value]="b">{{ b }}</option>
         }
@@ -129,7 +129,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Position</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldPosition">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (wp of weldPositions; track wp.code) {
           <option [value]="wp.code">{{ wp.code }} - {{ wp.description }}</option>
         }
@@ -138,7 +138,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Progression</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldProgression">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (wp of weldProgressions; track wp) {
           <option [value]="wp">{{ wp }}</option>
         }
@@ -164,7 +164,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Classification</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalClassification">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (m of fillerMetalClassificationOptions; track m) {
           <option [value]="m">{{ m }}</option>
         }
@@ -256,7 +256,7 @@
     <div class="stage-field">
       <label class="stage-field-label">Current Type</label>
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.currentType">
-        <option value="">—</option>
+        <option value="">-</option>
         @for (c of currentTypes; track c) {
           <option [value]="c">{{ c }}</option>
         }

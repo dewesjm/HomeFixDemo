@@ -14,7 +14,7 @@ export interface DeviationAcceptRequest { stageLabel: string; items: DeviationIt
     <dialog #dlg class="modal" (cancel)="cancelled.emit()">
       @if (request(); as req) {
         <div class="modal-box max-w-3xl">
-          <h3 class="text-lg font-semibold">Accept deviations — {{ req.stageLabel }}</h3>
+          <h3 class="text-lg font-semibold">Accept deviations - {{ req.stageLabel }}</h3>
           <p class="py-2">
             These values are outside what the procedure allows. Signing records them as deviations and puts the
             joint on hold: no later step can be signed until the deviation is dealt with.

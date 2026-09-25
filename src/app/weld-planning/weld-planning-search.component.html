@@ -122,9 +122,9 @@
         @for (col of visibleColumns(); track col.key) {
           <td>
             @switch (col.key) {
-              @case ('id') { <span class="mono">{{ joint.id || '—' }}</span> }
+              @case ('id') { <span class="mono">{{ joint.id || '-' }}</span> }
               @case ('createdAt') { {{ joint.createdAt | date:'shortDate' }} }
-              @default { {{ joint[col.field!] || '—' }} }
+              @default { {{ joint[col.field!] || '-' }} }
             }
           </td>
         }

@@ -5,7 +5,7 @@
     <div class="alert alert-success mb-sm">
       <svg lucideBadgeCheck class="size-4"></svg>
       <span>
-        All stages signed — hull complete
+        All stages signed - hull complete
         @if (ctx().rejectedCount(); as rc) { ({{ rc }} rejected) }.
       </span>
     </div>
@@ -92,7 +92,7 @@
                 <span class="truncate" [title]="ctx().job[it.key]">{{ ctx().job[it.key] }}</span>
               </label>
               @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
-                <span class="w-[25ch] shrink-0 truncate" [title]="it.micLabel + ': ' + (micValue(it.mic) || '—')">{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '—' }}</span></span>
+                <span class="w-[25ch] shrink-0 truncate" [title]="it.micLabel + ': ' + (micValue(it.mic) || '-')">{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '-' }}</span></span>
                 <label class="flex items-center gap-1 cursor-pointer">
                   <input type="checkbox" class="checkbox checkbox-xs" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem') && st.inputs[it.micVerified] !== 'yes'"
                          [disabled]="!fieldsEditable()"
@@ -130,7 +130,7 @@
               @for (f of ctx().visibleFields(stage()); track f.key) {
                 <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
                   <td class="py-1 pl-0 pr-10" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
-                  <td class="py-1 pr-14">{{ ctx().getFabValue(f.key) || '—' }}</td>
+                  <td class="py-1 pr-14">{{ ctx().getFabValue(f.key) || '-' }}</td>
                   <td class="py-1 px-5 text-center bg-base-200/40">
                     <input type="checkbox" class="checkbox checkbox-sm"
                            [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
@@ -161,7 +161,7 @@
                   @if (f.key !== 'comments') {
                   <tr>
                     <td class="py-1">{{ f.label }}</td>
-                    <td class="py-1">{{ ctx().getReviewValue(f.key) || '—' }}</td>
+                    <td class="py-1">{{ ctx().getReviewValue(f.key) || '-' }}</td>
                     <td class="py-1 text-center bg-base-200/40">
                       <input type="checkbox" class="checkbox checkbox-sm"
                              [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
@@ -192,7 +192,7 @@
                   <tr>
                     <th>When</th>
                     <th>Who</th>
-                    <th>Stage — Action</th>
+                    <th>Stage - Action</th>
                     <th>Result</th>
                   </tr>
                 </thead>
@@ -205,10 +205,10 @@
                         @if (r.fields.length) {
                           <button type="button" class="flex items-center gap-1" (click)="toggleRecord(ri)">
                             @if (expandedRecords().has(ri)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-                            {{ r.stageLabel }} — {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
+                            {{ r.stageLabel }} - {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                           </button>
                         } @else {
-                          {{ r.stageLabel }} — {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
+                          {{ r.stageLabel }} - {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
                         }
                       </td>
                       <td>
@@ -628,7 +628,7 @@
       <div class="signoff-actions">
         @if (st.id === 'sold') {
           <span class="badge badge-success">SOLD</span>
-          <span class="meta">Job closed — deprogress to reverse</span>
+          <span class="meta">Job closed - deprogress to reverse</span>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
                to trigger validation and see what's missing. signStage() won't sign with errors or blockers. -->
@@ -648,7 +648,7 @@
               {{ (st.result || '') | uppercase }}
             </span>
           }
-          <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '—' }} on {{ st.signedAt | date:'medium' }}</span>
+          <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '-' }} on {{ st.signedAt | date:'medium' }}</span>
         }
       </div>
 
@@ -672,10 +672,10 @@
            signoff, given the current Repair Code / Allowable thickness exceeded selections --
            placed under the Signoff button per the user's request. -->
       @if (ctx().repairRouteLabel(st); as routeHint) {
-        <div class="alert alert-info mt-sm py-2 text-sm"><span class="font-semibold">Demo only —</span> {{ routeHint }}</div>
+        <div class="alert alert-info mt-sm py-2 text-sm"><span class="font-semibold">Demo only -</span> {{ routeHint }}</div>
       }
     } @else {
-      <div class="meta">Optional stage — no signoff required.</div>
+      <div class="meta">Optional stage - no signoff required.</div>
     }
   }
 </section>
@@ -690,7 +690,7 @@
         @let qc = qualCheck();
         <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
       } @else if (isReadonlyLimit(f)) {
-        <div class="stage-readonly-value">{{ stage().inputs[f.key] || '—' }}</div>
+        <div class="stage-readonly-value">{{ stage().inputs[f.key] || '-' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
         <div class="stage-readonly-value">NC</div>
       } @else if (f.type === 'select') {

@@ -2,7 +2,7 @@
   @if (target(); as t) {
     @if (stage(); as st) {
       <div class="modal-box max-w-2xl">
-        <h3 class="text-lg font-semibold">Correct sign-off — {{ st.label }}</h3>
+        <h3 class="text-lg font-semibold">Correct sign-off - {{ st.label }}</h3>
         <p class="section-sub">
           Fixes the values already recorded for this sign-off. It does not deprogress the step or change routing.
         </p>
@@ -16,7 +16,7 @@
                   {{ value(f.key) || '(blank)' }}
                 </div>
                 <div class="meta text-error mt-1">
-                  Locked — this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                  Locked - this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
                 </div>
               } @else if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -60,7 +60,7 @@
                   {{ value(f.key, true) || '(blank)' }}
                 </div>
                 <div class="meta text-error mt-1">
-                  Locked — this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                  Locked - this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
                 </div>
               } @else if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">

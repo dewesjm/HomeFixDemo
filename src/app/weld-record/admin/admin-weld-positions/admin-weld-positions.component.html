@@ -27,7 +27,7 @@
                    [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
                    placeholder="e.g. O" maxlength="2" autofocus />
           } @else {
-            {{ row.code || '—' }}
+            {{ row.code || '-' }}
           }
         </td>
         <td>
@@ -36,7 +36,7 @@
                    [ngModel]="row.description" (ngModelChange)="updateDescription(row, $event)"
                    placeholder="e.g. Overhead" />
           } @else {
-            {{ row.description || '—' }}
+            {{ row.description || '-' }}
           }
         </td>
         <td>

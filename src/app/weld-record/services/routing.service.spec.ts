@@ -27,7 +27,7 @@ describe('RoutingService', () => {
       const wf = store.workflowFor(job)();
       expect(wf.stages.find(s => s.id === 'prep')?.inputs['ppe']).toBe('gloves, eyewear');
       const entry = wf.history.find(h => h.section === 'Stages' && h.action.includes('PPE / safety'));
-      expect(entry?.from).toBe('—');
+      expect(entry?.from).toBe('-');
       expect(entry?.to).toBe('gloves, eyewear');
     });
 

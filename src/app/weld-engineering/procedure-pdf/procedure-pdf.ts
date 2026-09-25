@@ -25,7 +25,7 @@ function limitsTable(rows: [string, string][]): Content {
       widths: rows.map(() => '*'),
       body: [
         rows.map(([label]) => ({ text: label, bold: true, fillColor: '#eeeeee' })),
-        rows.map(([, value]) => value || '—'),
+        rows.map(([, value]) => value || '-'),
       ],
     },
     layout: {
@@ -79,7 +79,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },
     { text: `Status: ${p.status}    Weld Process: ${p.weldProcess}`, style: 'meta', margin: [0, 0, 0, 4] },
-    { text: `WPS Rev: ${p.wpsRev || '—'}    Effective Date: ${p.effectiveDate || '—'}    GWP: ${p.gwp || '—'}    WTN: ${p.wtn || '—'}`, style: 'meta', margin: [0, 0, 0, 12] },
+    { text: `WPS Rev: ${p.wpsRev || '-'}    Effective Date: ${p.effectiveDate || '-'}    GWP: ${p.gwp || '-'}    WTN: ${p.wtn || '-'}`, style: 'meta', margin: [0, 0, 0, 12] },
 
     ...revisionRecord(p),
 
@@ -103,7 +103,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     ]),
 
     { text: '5. Welder Qualifications', style: 'sectionHeader' },
-    { ul: p.qualificationsRequired.length ? p.qualificationsRequired : ['—'], margin: [0, 4, 0, 12] },
+    { ul: p.qualificationsRequired.length ? p.qualificationsRequired : ['-'], margin: [0, 4, 0, 12] },
 
     ...numberedSection(6, 'Preheat & Interpass Temperatures', [
       ['PH Min', p.phMin], ['PH Max', p.phMax], ['IP Min', p.ipMin], ['IP Max', p.ipMax],
@@ -143,10 +143,10 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     ]),
 
     { text: 'Rules', style: 'sectionHeader' },
-    { ul: p.rules.length ? p.rules : ['—'], margin: [0, 4, 0, 12] },
+    { ul: p.rules.length ? p.rules : ['-'], margin: [0, 4, 0, 12] },
 
     { text: 'Specific Conditions', style: 'sectionHeader' },
-    { ul: p.conditions.length ? p.conditions : ['—'], margin: [0, 4, 0, 12] },
+    { ul: p.conditions.length ? p.conditions : ['-'], margin: [0, 4, 0, 12] },
   );
 
   return {
@@ -158,7 +158,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     }),
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
-        { text: `${p.gwp || '—'} - ${p.wtn || '—'}, Rev ${p.wpsRev || '—'}`, alignment: 'left' },
+        { text: `${p.gwp || '-'} - ${p.wtn || '-'}, Rev ${p.wpsRev || '-'}`, alignment: 'left' },
         { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right' },
       ],
       style: 'pageFooter',

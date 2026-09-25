@@ -413,7 +413,7 @@ export class JointPageComponent implements OnDestroy {
 
   foremanOverride(stage: WorkflowStage) {
     this.confirm.confirm({
-      header: `Foreman Override — ${stage.label}`,
+      header: `Foreman Override - ${stage.label}`,
       message: 'Describe the deviation and why it is necessary',
       textInput: { label: 'What is being overridden', placeholder: 'e.g. preheat applied with a different method' },
       acceptLabel: 'Override',
@@ -565,12 +565,12 @@ export class JointPageComponent implements OnDestroy {
         fields: newFields,
         signoffInputs: {},
         signoffFields: newSignoff,
-      }, { action: `${stage.label} — Type changed to ${value}` });
+      }, { action: `${stage.label} - Type changed to ${value}` });
       return;
     }
     this.signoffService.updateStageSignoff(this.job!, stage.id, {
       routingType: value,
-    }, { action: `${stage.label} — Type changed to ${value}` });
+    }, { action: `${stage.label} - Type changed to ${value}` });
   }
 
   swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
@@ -690,7 +690,7 @@ export class JointPageComponent implements OnDestroy {
     const needs5xInstead = originInspectionType === 'pt' && phase
       && (isNonFerrousOrAustenitic(this.job.materialType1) || isNonFerrousOrAustenitic(this.job.materialType2));
     if (needs5xInstead) {
-      return `${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT — material is non-ferrous or austenitic)`;
+      return `${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT - material is non-ferrous or austenitic)`;
     }
     return originStageId ? labelOf(originStageId) : 'the original joint inspection';
   }
@@ -1025,14 +1025,14 @@ export class JointPageComponent implements OnDestroy {
   }
 
   // ---- per-stage sign-off ----
-  private show(v: string | null | undefined): string { return v && v.length ? v : '—'; }
+  private show(v: string | null | undefined): string { return v && v.length ? v : '-'; }
 
   setStageResult(stage: WorkflowStage, result: StageResult) {
     if (!this.job || result === stage.result) return;
     this.clearFieldError(stage.id, '__decision');
     const old = stage.result;
     this.signoffService.updateStageSignoff(this.job, stage.id, { result },
-      { action: `${stage.label} — ${stage.decisionLabel || 'Decision'}`, from: old ? old.toUpperCase() : '—', to: result.toUpperCase() });
+      { action: `${stage.label} - ${stage.decisionLabel || 'Decision'}`, from: old ? old.toUpperCase() : '-', to: result.toUpperCase() });
   }
 
   /* generic signoff field blur handler */
@@ -1043,7 +1043,7 @@ export class JointPageComponent implements OnDestroy {
     if (value === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
-      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(value) });
+      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(value) });
   }
 
   /* generic signoff field select change handler */
@@ -1055,7 +1055,7 @@ export class JointPageComponent implements OnDestroy {
     if (v === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
-      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
+      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(v) });
   }
 
   /* generic signoff checkbox change handler */
@@ -1066,7 +1066,7 @@ export class JointPageComponent implements OnDestroy {
     if (v === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
-      { action: `${stage.label} — ${field.label}`, from: this.show(prev), to: this.show(v) });
+      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(v) });
   }
 
   /* visibility of a signoff field (showIf support) */

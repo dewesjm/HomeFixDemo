@@ -32,13 +32,13 @@ export class JointDetailsComponent {
     const ndt = (this.job().ndt || '').toUpperCase();
     const has = (m: string) => ndt.includes(m);
     if (method === 'rtRoot' || method === 'rtFinal' || method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
-      return this.job()[method] || '—';
+      return this.job()[method] || '-';
     }
-    if (method === 'ut') return has('UT') ? 'X' : '—';
+    if (method === 'ut') return has('UT') ? 'X' : '-';
     if (method === 'vt') {
       if (has('5X')) return '5X';
-      return has('VT') || has('VISUAL') ? 'X' : '—';
+      return has('VT') || has('VISUAL') ? 'X' : '-';
     }
-    return '—';
+    return '-';
   }
 }

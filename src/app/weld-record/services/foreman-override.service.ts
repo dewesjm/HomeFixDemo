@@ -18,7 +18,7 @@ export class ForemanOverrideService {
       return this.store.withHistory(wf, wf, {
         section: 'Foreman Override',
         who: wf.technician,
-        action: `${stage?.label ?? stageId} — Foreman Override`,
+        action: `${stage?.label ?? stageId} - Foreman Override`,
         to: notes.join('; '),
         inputs: [
           ...notes.map(n => ({ label: 'Override', value: n })),

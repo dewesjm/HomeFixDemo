@@ -225,7 +225,7 @@ export class SignoffService {
       let signed: JobWorkflow = this.store.withHistory(wf, { ...wf, stages, fabricationData, ...(repairNumber ? { repairNumber } : {}) }, {
         section: 'Sign-off',
         who,
-        action: `${signedActionLabel(st)} — Signed off`,
+        action: `${signedActionLabel(st)} - Signed off`,
         to: hasDecision(st) ? decision : '',
         inputs,
         stageId
@@ -235,7 +235,7 @@ export class SignoffService {
       if (back) {
         /* when it went back to Fit or earlier, fit-up data was blanked; this entry keeps what it was */
         signed = this.store.withHistory(signed, signed, {
-          section: 'Routing', who, action: `${signedLabel} — Routed back to ${back.label}`, to: back.label, fabInputs: back.fabBefore,
+          section: 'Routing', who, action: `${signedLabel} - Routed back to ${back.label}`, to: back.label, fabInputs: back.fabBefore,
         });
       }
       if (!refitNumber) return signed;
@@ -243,7 +243,7 @@ export class SignoffService {
       return this.store.withHistory(signed, { ...signed, refitNumber }, {
         section: 'Refit',
         who,
-        action: 'Cut — routed back to Fit',
+        action: 'Cut - routed back to Fit',
         from: job.refitNumber || '00',
         to: `Refit ${refitNumber}`,
         fabInputs: fabricationSnapshot(wf.fabricationData),
@@ -307,7 +307,7 @@ export class SignoffService {
       return this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Sign-off',
         who,
-        action: `${updated.label} — Corrected ${changes.map(c => c.label).join(', ')}`,
+        action: `${updated.label} - Corrected ${changes.map(c => c.label).join(', ')}`,
         stageId,
         inputs: inputsSnapshot,
         changes: historyChanges,
@@ -326,7 +326,7 @@ export class SignoffService {
       const next = this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Release',
         who: wf.technician,
-        action: 'Fit-Up Release — Released to Welding'
+        action: 'Fit-Up Release - Released to Welding'
       });
       return { ...next, undo: [...(wf.undo ?? []), { ...undo, historyWhen: next.history.at(-1)!.when }] };
     });

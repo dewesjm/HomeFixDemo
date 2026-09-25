@@ -71,7 +71,7 @@ describe('procedureDocDefinition', () => {
   it('renders a placeholder instead of an empty list when arrays are empty', () => {
     const empty: Procedure = { ...baseProcedure, rules: [], conditions: [], qualificationsRequired: [] };
     const doc = procedureDocDefinition(empty);
-    expect(ulFor(doc, 'Rules')).toEqual(['—']);
+    expect(ulFor(doc, 'Rules')).toEqual(['-']);
   });
 
   it('includes the procedure id and title as content', () => {

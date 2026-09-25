@@ -26,7 +26,7 @@
                    [ngModel]="row.name" (ngModelChange)="updateField(row, $event)"
                    placeholder="e.g. Bay 3" autofocus />
           } @else {
-            {{ row.name || '—' }}
+            {{ row.name || '-' }}
           }
         </td>
         <td>

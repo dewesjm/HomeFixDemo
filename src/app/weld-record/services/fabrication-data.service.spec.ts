@@ -32,7 +32,7 @@ describe('FabricationDataService', () => {
     const wf = store.workflowFor(job)();
     const entries = wf.history.filter(h => h.section === 'Fabrication' && h.action === 'weldMemo');
     expect(entries.length).toBe(2);
-    expect(entries[0].from).toBe('—');
+    expect(entries[0].from).toBe('-');
     expect(entries[0].to).toBe('M-1');
     expect(entries[1].from).toBe('M-1');
     expect(entries[1].to).toBe('M-2');

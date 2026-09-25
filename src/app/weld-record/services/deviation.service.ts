@@ -23,7 +23,7 @@ export class DeviationService {
       return this.store.withHistory(wf, { ...wf, deviations: [...(wf.deviations ?? []), dev] }, {
         section: 'Deviation',
         who: wf.technician,
-        action: `${dev.stageLabel} — Deviation accepted`,
+        action: `${dev.stageLabel} - Deviation created`,
         to: items.map(i => i.label).join(', '),
         inputs: [
           { label: 'Reason', value: reason },

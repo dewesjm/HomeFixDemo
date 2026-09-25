@@ -56,7 +56,7 @@ export class AdminNdtComponent {
     this.persist();
     delete this.cloned[row.uid];
     this.editingId.set(null);
-    this.messages.add({ severity: 'success', summary: 'Saved', detail: `${row.type} — ${row.manufacturer}`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Saved', detail: `${row.type} - ${row.manufacturer}`, life: 3000 });
   }
 
   cancelEdit(row: PenRow) {

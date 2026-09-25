@@ -27,7 +27,7 @@
                    [ngModel]="row.type" (ngModelChange)="updateField(row, 'type', $event)"
                    placeholder="e.g. Type I - Fluorescent" autofocus />
           } @else {
-            {{ row.type || '—' }}
+            {{ row.type || '-' }}
           }
         </td>
         <td>
@@ -36,7 +36,7 @@
                    [ngModel]="row.manufacturer" (ngModelChange)="updateField(row, 'manufacturer', $event)"
                    placeholder="e.g. Magnaflux" />
           } @else {
-            {{ row.manufacturer || '—' }}
+            {{ row.manufacturer || '-' }}
           }
         </td>
         <td>
