@@ -19,7 +19,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Revised Joint Design droplist shows a short description next to each design. Descriptions can be edited in Admin > Joint Designs.',
       'Create Joint (Weld Planning) has the same hulls, joint info, joining, additional data and attribute code fields as the weld record.',
       'Qualification conditions (Admin > Qualifications): "when the joint has X = Y, require qual Z". Starts with Controlled Material = Yes requires CNTRLMTL1 (controlled = MCL 1 or MCL 2 needs traceability in Admin > Material Traceability). The Test User can hold CNTRLMTL1 like any other qual.',
-      'Qualification Check runs as soon as a welding or inspection step is open (inspection steps now show it too), checking the joint's condition quals, then adds the WTN's quals once one is picked. A failure is recorded as a deviation at Signoff.',
+      'Qualification Check runs as soon as a welding or inspection step is open (inspection steps now show it too), checking the joint\'s condition quals, then adds the WTN\'s quals once one is picked. A failure is recorded as a deviation at Signoff.',
       'Change Log (this page), under Quick Links.',
     ],
     changed: [
