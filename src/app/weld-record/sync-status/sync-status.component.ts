@@ -1,14 +1,12 @@
 /* sidebar dot showing synced / pending / offline */
 import { Component, computed, inject } from '@angular/core';
-import { TooltipDirective } from '../../shared/tooltip.directive';
 import { SyncService } from '../services/sync.service';
 
 @Component({
   selector: 'app-sync-status',
   standalone: true,
-  imports: [TooltipDirective],
   template: `
-    <span class="sync-status" [class]="'sync-status--' + state()" [appTooltip]="tooltip()" tooltipPosition="bottom">
+    <span class="sync-status" [class]="'sync-status--' + state()">
       <span class="sync-dot"></span>
       <span class="sync-label">{{ label() }}</span>
     </span>
@@ -33,17 +31,8 @@ export class SyncStatusComponent {
   label = computed(() => {
     switch (this.state()) {
       case 'offline': return 'Offline';
-      case 'pending': return 'Pending sync';
+      case 'pending': return `${this.sync.pending()} pending`;
       default:        return 'Synced';
-    }
-  });
-
-  tooltip = computed(() => {
-    const p = this.sync.pending();
-    switch (this.state()) {
-      case 'offline': return 'No connection — changes are saved locally and will sync when you’re back online.';
-      case 'pending': return `${p} change${p === 1 ? '' : 's'} waiting to sync…`;
-      default:        return 'All changes synced.';
     }
   });
 }
