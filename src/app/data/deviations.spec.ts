@@ -50,6 +50,16 @@ describe('deviations', () => {
     expect(items.map(i => i.kind)).toEqual(['off-list']);
   });
 
+  it('flags a GWP not qualified for the base metals, and passes one that is', () => {
+    const { stage, quals } = tackOnWps();
+    const proc = procedures().find(p => p.gwp === stage.inputs['weldProcedure'])!;
+    const vis = new Set(['weldProcedure']);
+    expect(detectDeviations(stage, vis, quals, { type1: proc.baseMetal1Type, type2: proc.baseMetal2Type })).toEqual([]);
+    const items = detectDeviations(stage, vis, quals, { type1: 'none', type2: 'none' });
+    expect(items.map(i => i.kind)).toEqual(['off-list']);
+    expect(items[0].required).toBe('None qualified for these base metals');
+  });
+
   it('ignores fields the person cannot see', () => {
     const { stage, offListType } = tackOnWps({ actualPhMin: '1' });
     stage.inputs['fillerMetalType'] = offListType;

@@ -1,13 +1,15 @@
 /* Deviations: out-of-spec values a person can accept at sign-off instead of being blocked.
-   Only three kinds can be accepted (user's decision, 2026-09-25): Actual PH/IP out of range, a
-   failed Qualification Check, and a Filler Metal Type/Size the WPS doesn't allow (pickable only
-   after Report Deviation). Everything else stays a hard stop. Things the app can't detect are
-   typed in with Report Deviation ('reported' items). DeviationService records them. */
+   Accepted kinds (user's decisions, 2026-09-25): Actual PH/IP out of range, a failed Qualification
+   Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
+   metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
+   Foreman Override text is typed in ('reported' items). DeviationService records them. */
 import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor } from './workflow';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
-  FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
+  FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS, gwpOptionsForMaterials
 } from './procedures';
+
+export interface BaseMetals { type1: string; type2: string }
 
 const FILLER_KEYS = ['fillerMetalType', 'fillerMetalSize'] as const;
 
@@ -36,12 +38,24 @@ function rangeText(stage: WorkflowStage, key: string): string {
   return `at most ${hi}`;
 }
 
-/* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see */
-export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[]): DeviationItem[] {
+/* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see.
+   baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. */
+export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals): DeviationItem[] {
   const items: DeviationItem[] = [];
   for (const key of Object.keys(ACTUAL_REQUIREMENT)) {
     if (visibleKeys.has(key) && isActualOutOfRange(stage, key)) {
       items.push({ kind: 'out-of-range', label: labelFor(stage, key), entered: stage.inputs[key], required: rangeText(stage, key) });
+    }
+  }
+  const gwp = stage.inputs['weldProcedure'] ?? '';
+  const gwpField = stage.fields.find(ff => ff.key === 'weldProcedure');
+  if (gwp && gwpField && baseMetals && visibleKeys.has('weldProcedure')) {
+    const allowed = gwpOptionsForMaterials(baseMetals.type1, baseMetals.type2);
+    if (!allowed.some(o => o.value === gwp)) {
+      items.push({
+        kind: 'off-list', label: gwpField.label, entered: gwp,
+        required: allowed.map(o => o.value).join(', ') || 'None qualified for these base metals',
+      });
     }
   }
   const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');

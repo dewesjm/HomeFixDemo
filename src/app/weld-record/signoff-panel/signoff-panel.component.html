@@ -625,12 +625,12 @@
           <button type="button" class="btn btn-primary" [disabled]="!!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
-          @if (ctx().editable(st)) {
+          @if (ctx().editable(st) && st.role === 'Welding') {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
-            <button type="button" class="btn btn-outline" (click)="ctx().reportDeviation(st)"
-                    title="Record something done differently from the procedure that the app can't detect">
-              <svg lucideTriangleAlert class="size-4"></svg> Report Deviation
+            <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)"
+                    title="Foreman approves working outside the procedure; opens GWP/WTN and filler to the full lists">
+              <svg lucideTriangleAlert class="size-4"></svg> Foreman Override
             </button>
           }
         } @else {
@@ -651,12 +651,12 @@
 
       @if (!st.signed && ctx().reportedDeviations(st).length) {
         <div class="mt-sm">
-          <div class="font-semibold">Reported deviations (accepted when you sign)</div>
+          <div class="font-semibold">Foreman overrides (accepted when you sign)</div>
           <ul class="mt-1">
             @for (d of ctx().reportedDeviations(st); track $index) {
               <li class="flex items-center gap-2">
                 <span>{{ d }}</span>
-                <button type="button" class="btn btn-ghost btn-xs" title="Remove" (click)="ctx().removeReportedDeviation(st, $index)">
+                <button type="button" class="btn btn-ghost btn-xs" title="Remove" (click)="ctx().removeForemanOverride(st, $index)">
                   <svg lucideX class="size-4"></svg>
                 </button>
               </li>

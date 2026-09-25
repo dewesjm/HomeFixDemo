@@ -22,7 +22,7 @@ import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
-import { detectDeviations, isActualOutOfRange } from '../../data/deviations';
+import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
@@ -32,7 +32,7 @@ import {
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
-  gwpOptionsForMaterials, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
+  gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
 } from '../../data/procedures';
 
@@ -221,8 +221,8 @@ export class JointPageComponent implements OnDestroy {
       holdNote: () => self.holdNote(),
       fieldWarning: (s, k) => self.fieldWarning(s, k),
       reportedDeviations: (s) => self.reported()[s.id] ?? [],
-      reportDeviation: (s) => self.reportDeviation(s),
-      removeReportedDeviation: (s, i) => self.removeReportedDeviation(s, i),
+      foremanOverride: (s) => self.foremanOverride(s),
+      removeForemanOverride: (s, i) => self.removeForemanOverride(s, i),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
@@ -366,7 +366,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   // ---- deviations ----
-  /* Report Deviation entries typed on each unsigned stage, keyed by stage id. Like any other
+  /* Foreman Override entries typed on each unsigned stage, keyed by stage id. Like any other
      unsigned input they're dropped when leaving the joint; signing records them. */
   reported = signal<Record<string, string[]>>({});
   /* the acceptance screen Signoff opens when the stage has deviations */
@@ -385,30 +385,41 @@ export class JointPageComponent implements OnDestroy {
     return open.length > 0 && !open.some(d => d.stageId === stage.id);
   }
 
-  /* reporting a deviation lets Filler Metal Type/Size be picked from the full list */
+  /* a Foreman Override lets GWP (and so WTN) and Filler Metal Type/Size be picked from the full lists */
   private offListUnlocked(stage: WorkflowStage): boolean {
     return (this.reported()[stage.id] ?? []).length > 0;
   }
 
+  private baseMetals(): BaseMetals | undefined {
+    return this.job ? { type1: this.job.materialType1 ?? '', type2: this.job.materialType2 ?? '' } : undefined;
+  }
+
+  private isOffList(stage: WorkflowStage, key: string): boolean {
+    const f = stage.fields.find(ff => ff.key === key);
+    return !!f && detectDeviations(stage, new Set([key]), testUserQuals(), this.baseMetals())
+      .some(d => d.kind === 'off-list' && d.label === f.label);
+  }
+
   fieldWarning(stage: WorkflowStage, key: string): string {
     if (isActualOutOfRange(stage, key)) return 'Out of range, signing will record a deviation';
-    if ((key === 'fillerMetalType' || key === 'fillerMetalSize') && stage.inputs[key]) {
-      const f = stage.fields.find(ff => ff.key === key);
-      const offList = detectDeviations(stage, new Set([key]), testUserQuals()).some(d => d.kind === 'off-list' && d.label === f?.label);
-      if (offList) return 'Not allowed by the WPS, signing will record a deviation';
+    if (key === 'weldProcedure' && stage.inputs[key] && this.isOffList(stage, key)) {
+      return 'Not qualified for these base metals, signing will record a deviation';
+    }
+    if ((key === 'fillerMetalType' || key === 'fillerMetalSize') && stage.inputs[key] && this.isOffList(stage, key)) {
+      return 'Not allowed by the WPS, signing will record a deviation';
     }
     return '';
   }
 
-  reportDeviation(stage: WorkflowStage) {
-    const fillerNote = stage.fields.some(f => f.key === 'fillerMetalType')
-      ? ' Reporting also lets Filler Metal Type and Size be picked from the full list, not only what the WPS allows.'
-      : '';
+  foremanOverride(stage: WorkflowStage) {
+    const opens = stage.fields.some(f => f.key === 'fillerMetalType')
+      ? 'GWP, WTN, Filler Metal Type and Filler Metal Size'
+      : 'GWP and WTN';
     this.confirm.confirm({
-      header: `Report deviation — ${stage.label}`,
-      message: `Describe what was done differently from the procedure. It's listed for acceptance when you sign.${fillerNote}`,
-      textInput: { label: 'What was different', placeholder: 'e.g. preheat applied with a different method' },
-      acceptLabel: 'Report',
+      header: `Foreman Override — ${stage.label}`,
+      message: `Describe what is being done outside the procedure. It's listed for acceptance when you sign. The override lets ${opens} be picked from the full lists.`,
+      textInput: { label: 'What is being overridden', placeholder: 'e.g. preheat applied with a different method' },
+      acceptLabel: 'Override',
       accept: (text) => {
         const t = (text ?? '').trim();
         if (t) this.reported.update(r => ({ ...r, [stage.id]: [...(r[stage.id] ?? []), t] }));
@@ -416,25 +427,29 @@ export class JointPageComponent implements OnDestroy {
     });
   }
 
-  removeReportedDeviation(stage: WorkflowStage, index: number) {
+  removeForemanOverride(stage: WorkflowStage, index: number) {
     this.reported.update(r => ({ ...r, [stage.id]: (r[stage.id] ?? []).filter((_, i) => i !== index) }));
     if (this.offListUnlocked(stage) || !this.job) return;
-    /* last report removed: the filler droplists narrow back to the WPS, so drop values it doesn't allow */
+    /* last override removed: the droplists narrow back, so drop values they no longer allow */
     const st = this.wf?.().stages.find(s => s.id === stage.id);
     if (!st) return;
-    const vis = new Set(this.visibleFields(st).map(f => f.key));
-    const offList = detectDeviations(st, vis, testUserQuals()).filter(d => d.kind === 'off-list');
+    const gwpField = st.fields.find(f => f.key === 'weldProcedure');
+    if (gwpField && this.isOffList(st, 'weldProcedure')) {
+      /* clearing GWP also clears WTN and everything the WPS filled in, filler included */
+      this.stageSelectChange(st, gwpField, '');
+      return;
+    }
     const changes = st.fields
-      .filter(f => (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') && offList.some(d => d.label === f.label))
+      .filter(f => (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') && this.isOffList(st, f.key))
       .map(f => ({ field: f, value: '' }));
     if (changes.length) this.wfService.setStageInputs(this.job, st.id, changes);
   }
 
-  /* detected deviations plus the reported ones, for the acceptance screen */
+  /* detected deviations plus the Foreman Override ones, for the acceptance screen */
   private stageDeviations(stage: WorkflowStage): DeviationItem[] {
     const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    const reported = (this.reported()[stage.id] ?? []).map(text => ({ kind: 'reported' as const, label: 'Reported', entered: text, required: '—' }));
-    return [...detectDeviations(stage, vis, testUserQuals()), ...reported];
+    const reported = (this.reported()[stage.id] ?? []).map(text => ({ kind: 'reported' as const, label: 'Foreman Override', entered: text, required: '—' }));
+    return [...detectDeviations(stage, vis, testUserQuals(), this.baseMetals()), ...reported];
   }
 
   acceptDeviations(reason: string) {
@@ -715,9 +730,15 @@ export class JointPageComponent implements OnDestroy {
     }
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {
+      /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. after a
+         re-open) is kept as an option so the droplist doesn't show blank */
+      const qualified = gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '');
+      const options = this.offListUnlocked(stage) ? allGwpOptions()
+        : gwp && !qualified.some(o => o.value === gwp) ? [...qualified, { label: gwp, value: gwp, detail: gwpDescription(gwp) }]
+        : qualified;
       return {
         ...f,
-        options: gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? ''),
+        options,
         description: gwp ? gwpDescription(gwp) : '',
       };
     }

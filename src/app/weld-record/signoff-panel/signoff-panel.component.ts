@@ -43,8 +43,8 @@ export interface SignoffContext {
   holdNote: () => string;
   fieldWarning: (stage: WorkflowStage, fieldKey: string) => string;
   reportedDeviations: (stage: WorkflowStage) => string[];
-  reportDeviation: (stage: WorkflowStage) => void;
-  removeReportedDeviation: (stage: WorkflowStage, index: number) => void;
+  foremanOverride: (stage: WorkflowStage) => void;
+  removeForemanOverride: (stage: WorkflowStage, index: number) => void;
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;

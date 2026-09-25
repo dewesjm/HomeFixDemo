@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-09-25',
     added: [
       'Deviations: an Actual PH/IP out of range, a failed Qualification Check, or a filler the WPS doesn\'t allow no longer blocks Signoff. Signoff shows what\'s out of spec and asks for a reason, then the joint is put on hold (no way to release it yet).',
-      'Report Deviation button next to Signoff, for anything done differently that the app can\'t detect. It also lets Filler Metal Type and Size be picked from the full list.',
+      'Foreman Override button on welding steps (Tack, Root, Layer, Final Weld), on the right side away from Signoff. It lets GWP (and so WTN), Filler Metal Type and Filler Metal Size be picked from the full lists. A GWP not qualified for the base metals is listed at Signoff like the other out-of-spec values.',
       'Welder qualifications: every WTN now requires 1-3 quals (WELD4xx codes), and the Qualification Check really checks them. It says "Passed, user has ..." or lists the quals that are missing.',
       'Admin > Qualifications: choose which quals the Test User has, to try passing and failing the Qualification Check.',
       'Revised Joint Design droplist shows a short description next to each design. Descriptions can be edited in Admin > Joint Designs.',
@@ -25,7 +25,6 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',
       'Admin > Routing no longer has the New trade and Add test job buttons.',
-      'Report Deviation button moved to the right side, away from Signoff.',
     ],
     fixed: [
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',

@@ -420,6 +420,12 @@ export function gwpOptionsForMaterials(materialType1: string, materialType2: str
   return distinct.map(g => ({ label: g, value: g, detail: gwpDescription(g) }));
 }
 
+/* every GWP regardless of base metals -- for a Foreman Override */
+export function allGwpOptions(): { label: string; value: string; detail: string }[] {
+  const distinct = Array.from(new Set(procedures().map(p => p.gwp))).sort();
+  return distinct.map(g => ({ label: g, value: g, detail: gwpDescription(g) }));
+}
+
 export function wtnOptionsForGwp(gwp: string): { label: string; value: string; detail: string }[] {
   if (!gwp) return [];
   return procedures()
