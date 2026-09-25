@@ -31,6 +31,7 @@ export interface StageField {
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */
   disabled?: boolean;    /* read-only / information only */
+  hideLabel?: boolean;   /* no title above the control; label is still used in History */
   minField?: string;     /* cross-field: value must be >= this field's value */
   maxField?: string;     /* cross-field: value must be <= this field's value */
   description?: string;  /* runtime only: plain text shown under the control, e.g. the selected GWP/WTN's description */
@@ -809,7 +810,7 @@ export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
-    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true },
+    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true, hideLabel: true },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [], decisionLabel: 'Inspection Results',
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],

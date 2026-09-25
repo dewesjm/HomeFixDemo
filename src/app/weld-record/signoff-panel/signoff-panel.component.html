@@ -416,7 +416,7 @@
               </div>
             } @else {
               <label class="stage-field">
-                <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
+                @if (!f.hideLabel) { <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span> }
                 @if (f.type === 'select') {
                   <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
                           [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">

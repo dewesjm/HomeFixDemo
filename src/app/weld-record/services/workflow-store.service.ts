@@ -8,7 +8,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel
+  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId
 } from '../../data/workflow';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
@@ -159,6 +159,11 @@ export class WorkflowStore {
               }
               // backfill role
               if (!s.role) s.role = tpl.role ?? '';
+            }
+            /* Repair isn't in the trade templates (it's inserted on UNSAT), so refresh its field
+               definitions here; keys match, so inputs carry over as-is */
+            else if (isRepairStageId(s.id)) {
+              s.fields = REPAIR_STAGE.fields.map(f => ({ ...f }));
             }
           }
         });
