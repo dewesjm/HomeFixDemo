@@ -619,8 +619,9 @@ export class JointPageComponent implements OnDestroy {
     const result = rawFields
       .map(f => this.withStageRuntimeOptions(f, stage))
       .filter(f => {
-        /* "exceeded" sends the joint to that phase's UT/RT, so it only shows when the joint has one */
-        if (f.key === 'allowableThicknessExceeded'
+        /* "exceeded" sends the joint to that phase's UT/RT, so it (and the Allowable Thickness text
+           it goes with) only shows when the joint has one */
+        if ((f.key === 'allowableThicknessExceeded' || f.key === 'allowableThickness')
             && !this.wf?.().stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
         if (f.showIf) {
           const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
