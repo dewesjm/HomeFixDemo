@@ -811,7 +811,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
    "exceeded" checkbox's label (joint-page withStageRuntimeOptions). */
 export function allowableThicknessAmount(nInd: string): string {
   const inches = nInd === '1' ? '3/8' : '3/16';
-  return `${inches} inch or 20% of material thickness, whichever is less`;
+  return `${inches} inch or 20% of material thickness, which is less`;
 }
 
 export const REPAIR_STAGE: StageTemplate = {

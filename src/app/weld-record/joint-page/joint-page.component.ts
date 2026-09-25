@@ -730,7 +730,7 @@ export class JointPageComponent implements OnDestroy {
       return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
     }
     if (f.key === 'allowableThicknessExceeded' && this.job) {
-      return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(this.job.nInd)} exceeded - Volumetric inspection (UT/RT) is required` };
+      return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(this.job.nInd)} has been exceeded - Volumetric inspection (UT/RT) is required` };
     }
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {

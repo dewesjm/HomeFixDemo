@@ -37,7 +37,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     fixed: [
       'History: a deviation now reads "Deviation created" (was "Deviation accepted"). Long dashes shown in the app are now a plain "-" (e.g. "Tack - Deviation created", and "-" for a blank value).',
-      'Repair: the Allowable Thickness text and the "exceeded" checkbox are now one line, "Allowable thickness of 3/16 inch or 20% of material thickness, whichever is less exceeded - Volumetric inspection (UT/RT) is required" (3/8 inch for N 250-1500-1). It is hidden when the joint has no UT/RT (the text was left showing on its own).',
+      'Repair: the Allowable Thickness text and the "exceeded" checkbox are now one line, "Allowable thickness of 3/16 inch or 20% of material thickness, which is less has been exceeded - Volumetric inspection (UT/RT) is required" (3/8 inch for N 250-1500-1). It is hidden when the joint has no UT/RT (the text was left showing on its own).',
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',
       'Checkboxes on the procedure edit screen no longer stretch across the page.',
       'The Admin menu no longer runs off the bottom of the screen. It fits the window and scrolls if needed, so Material Classification and Quick Links can be reached.',
