@@ -20,6 +20,15 @@ import { getQuickLinks, QuickLink } from './data/quick-links';
 // check for version updates periodically, only full refresh will check
 const UPDATE_POLL_MS = 5 * 60 * 1000;
 
+/* which top-level system a page belongs to; anything not claimed by another system is Weld Record
+   (My Assignments, Pipe Welding, History, Advanced Search, Makeup, Admin) */
+function systemForUrl(url: string): string {
+  if (url.startsWith('/weld-planning')) return 'Weld Planning';
+  if (url.startsWith('/weld-assignment')) return 'Weld Dispatch';
+  if (url.startsWith('/weld-engineering')) return 'Weld Engineering';
+  return 'Weld Record';
+}
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -57,11 +66,11 @@ export class AppComponent {
 
   activeSystem = signal('Weld Record');
 
-  /* demo only: pulls Weld Record's own items up into the top-level horizontal bar (in place of the
-     4 system dropdowns), Admin still as its own dropdown -- for a Weld Record-focused demo where
-     clicking into the "Weld Record" dropdown every time is one click too many. */
-  flatWeldRecordNav = signal(false);
-  toggleFlatWeldRecordNav() { this.flatWeldRecordNav.update(v => !v); }
+  /* demo only: pulls the active system's own items up into the top-level horizontal bar (in place of
+     the 4 system dropdowns), its Admin still as its own dropdown -- one click fewer per page. One switch
+     for all systems: it always flattens whichever system the current page belongs to. */
+  flatNav = signal(false);
+  toggleFlatNav() { this.flatNav.update(v => !v); }
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
     this.suppressToggle = true;
@@ -95,20 +104,10 @@ export class AppComponent {
     /* derive active system from current route */
     this.router.events.pipe(
       filter((e): e is NavigationEnd => e instanceof NavigationEnd)
-    ).subscribe(e => {
-      const url = e.urlAfterRedirects || e.url;
-      if (url.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
-      else if (url.startsWith('/assignments') || url.startsWith('/history') || url.startsWith('/adaptive') || url.startsWith('/admin') || url.startsWith('/pipe-search')) this.activeSystem.set('Weld Record');
-      else if (url.startsWith('/weld-assignment')) this.activeSystem.set('Weld Dispatch');
-      else if (url.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
-    });
+    ).subscribe(e => this.activeSystem.set(systemForUrl(e.urlAfterRedirects || e.url)));
 
     /* also set on initial load */
-    const initUrl = this.router.url;
-    if (initUrl.startsWith('/weld-planning')) this.activeSystem.set('Weld Planning');
-    else if (initUrl.startsWith('/weld-assignment')) this.activeSystem.set('Weld Dispatch');
-    else if (initUrl.startsWith('/weld-engineering')) this.activeSystem.set('Weld Engineering');
-    else this.activeSystem.set('Weld Record');
+    this.activeSystem.set(systemForUrl(this.router.url));
 
     if (this.swUpdate.isEnabled) {
       // check for updates + button to update now, PWA/offline important
