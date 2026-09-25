@@ -24,7 +24,7 @@ export class PersonSearchInputComponent {
   size = input<'xs' | 'sm' | 'md'>('md');
   disabled = input<boolean>(false);
   hasError = input<boolean>(false);
-  placeholder = input<string>('Search: last or first name');
+  placeholder = input<string>('Search: name, PERN or ID');
   /* skip candidates with this title, e.g. 'Foreman' for Makeup -- a Foreman doesn't need to be
      granted makeup as one */
   excludeTitle = input<string | null>(null);

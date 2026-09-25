@@ -13,7 +13,7 @@
 <div class="facet-row">
   <!-- Person: type a first or last name (or id); pick from the matches. Never a full list. -->
   <div style="min-width: 16rem">
-    <app-person-search-input mode="picker" size="sm" placeholder="Person: last or first name"
+    <app-person-search-input mode="picker" size="sm" placeholder="Person: name, PERN or ID"
       [selected]="person()" (select)="choosePerson($event)" (clear)="clearPerson()" />
   </div>
 

@@ -31,7 +31,7 @@
 } @else {
   <div class="relative">
     <input type="text" class="input input-bordered w-full" [class]="inputSizeClass()" [class.input-error]="hasError()"
-           [disabled]="disabled()"
+           [disabled]="disabled()" [placeholder]="placeholder()"
            [ngModel]="text()" (ngModelChange)="onTextInput($event)"
            (focus)="suggestOpen.set(true)" (blur)="onTextBlur()" />
     @if (suggestOpen() && text().trim()) {
