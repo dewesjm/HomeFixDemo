@@ -638,8 +638,7 @@
           @if (ctx().editable(st) && (st.role === 'Welding' || isFitBuildup(st))) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
-            <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)"
-                    title="Foreman approves working outside the procedure; opens GWP/WTN and filler to the full lists">
+            <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)">
               <svg lucideTriangleAlert class="size-4"></svg> Foreman Override
             </button>
           }
