@@ -651,17 +651,13 @@
   <div class="flex-1 min-w-0" [style.max-width.px]="width">
     <label class="stage-field">
       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+      <!-- read-only values are plain text (like Joint Details); only editable fields get an input box -->
       @if (f.key === 'qualificationCheck') {
-        <input class="input input-bordered w-full bg-error/15 border-error text-error font-semibold" type="text"
-               [disabled]="true" value="Failed. Input disabled, qualifications XYZ, ABC missing" />
+        <div class="stage-readonly-value text-error font-semibold">Failed. Input disabled, qualifications XYZ, ABC missing</div>
       } @else if (isReadonlyLimit(f)) {
-        @if (stage().inputs[f.key] === 'NC') {
-          <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
-        } @else {
-          <input class="input input-bordered w-full" [type]="f.type === 'number' ? 'number' : 'text'" [disabled]="true" [value]="stage().inputs[f.key] || ''" />
-        }
+        <div class="stage-readonly-value">{{ stage().inputs[f.key] || '—' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
-        <div class="input input-bordered w-full bg-base-200 opacity-60 cursor-not-allowed flex items-center justify-center text-sm">NC</div>
+        <div class="stage-readonly-value">NC</div>
       } @else if (f.type === 'select') {
         <div class="relative">
           <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
