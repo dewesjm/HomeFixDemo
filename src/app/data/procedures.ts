@@ -11,6 +11,7 @@ import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './workflow';
 import { MATERIALS_1, MATERIALS_2 } from './jobs';
+import { WELDER_QUALS, QUAL_WEIGHTS } from './welder-quals';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -153,14 +154,6 @@ const CONDITION_POOL = [
   'Ambient temperature shall be above 32°F during welding.',
   'Requires wind shielding for outdoor applications.',
 ];
-const QUALIFICATION_POOL = [
-  'ASME Section IX welder qualification',
-  'AWS D1.1 structural welder certification',
-  'Position qualification: 6G',
-  'Position qualification: 2G/5G',
-  'Nuclear-grade welder certification',
-  'Stainless steel qualification endorsement',
-];
 const REVISION_NOTE_POOL = [
   'Updated preheat requirements per engineering review.',
   'Corrected filler metal size range.',
@@ -175,6 +168,21 @@ function seeded(n: number) {
     s = (s * 9301 + 49297) % 233280;
     return s / 233280;
   };
+}
+
+/* weighted pick without repeats, kept in WELDER_QUALS order -- some quals are needed far more
+   often than others (QUAL_WEIGHTS) */
+function pickQuals(rand: () => number, min: number, max: number): string[] {
+  const count = min + Math.floor(rand() * (max - min + 1));
+  const pool = WELDER_QUALS.map((q, i) => ({ q, w: QUAL_WEIGHTS[i] }));
+  const picked = new Set<string>();
+  while (picked.size < count) {
+    const left = pool.filter(x => !picked.has(x.q));
+    let r = rand() * left.reduce((sum, x) => sum + x.w, 0);
+    const hit = left.find(x => (r -= x.w) < 0) ?? left[left.length - 1];
+    picked.add(hit.q);
+  }
+  return WELDER_QUALS.filter(q => picked.has(q));
 }
 
 function pickSome<T>(pool: T[], rand: () => number, min: number, max: number): T[] {
@@ -212,6 +220,8 @@ function materialCombos(): [string, string][] {
 
 function generateProcedures(): Procedure[] {
   const rand = seeded(777);
+  /* own sequence, so adding quals didn't shift every other seeded value */
+  const qualRand = seeded(4242);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const out: Procedure[] = [];
   const combos = materialCombos();
@@ -299,7 +309,7 @@ function generateProcedures(): Procedure[] {
           pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
           rules: pickSome(RULE_POOL, rand, 2, 4),
           conditions: pickSome(CONDITION_POOL, rand, 1, 3),
-          qualificationsRequired: pickSome(QUALIFICATION_POOL, rand, 1, 2),
+          qualificationsRequired: pickQuals(qualRand, 1, 3),
           revisionHistory,
           createdBy: 'System',
           createdAt: createdAt.toISOString(),

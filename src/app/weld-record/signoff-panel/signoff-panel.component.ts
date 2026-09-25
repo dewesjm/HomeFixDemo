@@ -6,6 +6,8 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
+import { getProcedureByGwpWtn } from '../../data/procedures';
+import { qualCheck, testUserQuals, QualCheckResult } from '../../data/welder-quals';
 
 export interface SignoffContext {
   job: Job;
@@ -103,6 +105,12 @@ export class SignoffPanelComponent {
   stageIndex = input.required<number>();
 
   weldGroups = WELD_GROUPS;
+
+  /* the selected GWP+WTN's required quals against the Test User's (Admin > Welder Quals) */
+  qualCheck(): QualCheckResult {
+    const p = getProcedureByGwpWtn(this.stage().inputs['weldProcedure'], this.stage().inputs['wtn']);
+    return qualCheck(p?.qualificationsRequired, testUserQuals());
+  }
 
   /* Records Review's embedded Signoff History: collapsed by default, same expand-per-row and
      Expand/Collapse all pattern as the History screen, indexed by position in signoffRecords() */

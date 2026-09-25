@@ -20,8 +20,9 @@ export const STORAGE = {
   weldPlanningResultColumns: 'welding:weld-planning-result-columns',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants',
   quickLinks: 'welding:quick-links:v1',
-  procedures: 'welding:procedures:v7',
+  procedures: 'welding:procedures:v8',
   makeup: 'welding:makeup:v2',
+  welderQuals: 'welding:welder-quals:v1',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).

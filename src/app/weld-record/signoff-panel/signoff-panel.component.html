@@ -653,7 +653,8 @@
       <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
       <!-- read-only values are plain text (like Joint Details); only editable fields get an input box -->
       @if (f.key === 'qualificationCheck') {
-        <div class="stage-readonly-value text-error font-semibold">Failed. Input disabled, qualifications XYZ, ABC missing</div>
+        @let qc = qualCheck();
+        <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
       } @else if (isReadonlyLimit(f)) {
         <div class="stage-readonly-value">{{ stage().inputs[f.key] || '—' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {

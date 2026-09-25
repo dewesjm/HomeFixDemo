@@ -1,0 +1,49 @@
+<div class="table-page-wrap">
+  <div class="flex items-center gap-2 mb-1">
+    <button type="button" class="btn btn-ghost btn-sm" routerLink="/pipe-search">
+      Back
+    </button>
+    <h2 class="section-title m-0">Welder Quals</h2>
+  </div>
+  <p class="section-sub">
+    Demo and testing aid. Set which qualifications {{ userName }} holds. The weld steps' Qualification Check
+    compares these against the quals the selected GWP and WTN require.
+  </p>
+
+  <div class="panel">
+    <div class="flex flex-wrap items-center gap-2 mb-2">
+      <span class="font-semibold">{{ userName }}: {{ held().size }} of {{ rows().length }} held</span>
+      <span>· fails {{ failingCount() }} of {{ totalCount() }} WTNs</span>
+      <span class="grow"></span>
+      <button type="button" class="btn btn-sm" (click)="setAll(true)">Select all</button>
+      <button type="button" class="btn btn-sm" (click)="setAll(false)">Clear all</button>
+      <button type="button" class="btn btn-sm" (click)="resetDefault()">Reset to default</button>
+    </div>
+
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Qualification</th>
+          <th>Required by (WTNs)</th>
+          <th>{{ userName }} has</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of rows(); track r.qual) {
+          <tr>
+            <td class="font-medium">{{ r.qual }}</td>
+            <td>{{ r.wtnCount }}</td>
+            <td>
+              <input type="checkbox" class="toggle toggle-sm toggle-success"
+                     [checked]="held().has(r.qual)" (change)="toggle(r.qual)" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="flex justify-end mt-3">
+      <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>
+    </div>
+  </div>
+</div>

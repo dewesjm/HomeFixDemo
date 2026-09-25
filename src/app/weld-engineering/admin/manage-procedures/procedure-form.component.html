@@ -196,8 +196,12 @@
     }
   </div>
   <div class="flex gap-2">
-    <input type="text" class="input input-sm input-bordered grow" placeholder="Add a qualification…"
-           [(ngModel)]="newQualification" (keydown.enter)="addListItem('qualificationsRequired', newQualification)" />
+    <select class="select select-sm select-bordered grow" [(ngModel)]="newQualification">
+      <option value="">Add a qualification…</option>
+      @for (q of availableQuals(); track q) {
+        <option [value]="q">{{ q }}</option>
+      }
+    </select>
     <button type="button" class="btn btn-sm" (click)="addListItem('qualificationsRequired', newQualification)">
       <svg lucidePlus class="size-4"></svg> Add
     </button>
