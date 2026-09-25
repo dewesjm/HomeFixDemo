@@ -22,6 +22,7 @@ import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
+import { ForemanOverrideService } from '../services/foreman-override.service';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -60,6 +61,7 @@ export class JointPageComponent implements OnDestroy {
   private attachmentService = inject(AttachmentService);
   private fabricationService = inject(FabricationDataService);
   private deviationService = inject(DeviationService);
+  private overrideService = inject(ForemanOverrideService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
@@ -402,11 +404,12 @@ export class JointPageComponent implements OnDestroy {
 
   fieldWarning(stage: WorkflowStage, key: string): string {
     if (isActualOutOfRange(stage, key)) return 'Out of range, signing will record a deviation';
+    const outcome = this.offListUnlocked(stage) ? 'recorded with the Foreman Override' : 'signing will record a deviation';
     if (key === 'weldProcedure' && stage.inputs[key] && this.isOffList(stage, key)) {
-      return 'Not qualified for these base metals, signing will record a deviation';
+      return `Not qualified for these base metals, ${outcome}`;
     }
     if ((key === 'fillerMetalType' || key === 'fillerMetalSize') && stage.inputs[key] && this.isOffList(stage, key)) {
-      return 'Not allowed by the WPS, signing will record a deviation';
+      return `Not allowed by the WPS, ${outcome}`;
     }
     return '';
   }
@@ -417,7 +420,7 @@ export class JointPageComponent implements OnDestroy {
       : 'GWP and WTN';
     this.confirm.confirm({
       header: `Foreman Override — ${stage.label}`,
-      message: `Describe what is being done outside the procedure. It's listed for acceptance when you sign. The override lets ${opens} be picked from the full lists.`,
+      message: `Describe what is being done outside the procedure. It's recorded in the joint History when you sign; it doesn't put the joint on hold. The override lets ${opens} be picked from the full lists.`,
       textInput: { label: 'What is being overridden', placeholder: 'e.g. preheat applied with a different method' },
       acceptLabel: 'Override',
       accept: (text) => {
@@ -445,11 +448,25 @@ export class JointPageComponent implements OnDestroy {
     if (changes.length) this.wfService.setStageInputs(this.job, st.id, changes);
   }
 
-  /* detected deviations plus the Foreman Override ones, for the acceptance screen */
+  /* detected deviations, for the acceptance screen. Off-list GWP/filler picked under a Foreman
+     Override belong to the override instead (no hold), see stageOverrideOffList. */
   private stageDeviations(stage: WorkflowStage): DeviationItem[] {
     const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    const reported = (this.reported()[stage.id] ?? []).map(text => ({ kind: 'reported' as const, label: 'Foreman Override', entered: text, required: '—' }));
-    return [...detectDeviations(stage, vis, testUserQuals(), this.baseMetals()), ...reported];
+    const items = detectDeviations(stage, vis, testUserQuals(), this.baseMetals());
+    return this.offListUnlocked(stage) ? items.filter(d => d.kind !== 'off-list') : items;
+  }
+
+  private stageOverrideOffList(stage: WorkflowStage): DeviationItem[] {
+    if (!this.offListUnlocked(stage)) return [];
+    const vis = new Set(this.visibleFields(stage).map(f => f.key));
+    return detectDeviations(stage, vis, testUserQuals(), this.baseMetals()).filter(d => d.kind === 'off-list');
+  }
+
+  /* writes the stage's Foreman Overrides to History; call right before signing */
+  private recordOverrides(stage: WorkflowStage) {
+    if (!this.job) return;
+    this.overrideService.record(this.job, stage.id, this.reported()[stage.id] ?? [], this.stageOverrideOffList(stage));
+    this.reported.update(r => ({ ...r, [stage.id]: [] }));
   }
 
   acceptDeviations(reason: string) {
@@ -457,7 +474,7 @@ export class JointPageComponent implements OnDestroy {
     this.deviationRequest.set(null);
     if (!req || !this.job) return;
     this.deviationService.record(this.job, req.stage.id, req.items, reason);
-    this.reported.update(r => ({ ...r, [req.stage.id]: [] }));
+    this.recordOverrides(req.stage);
     this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage));
     /* no 5X auto-sign: the joint is now on hold */
     this.router.navigate([this.backDestination()]);
@@ -1238,6 +1255,7 @@ export class JointPageComponent implements OnDestroy {
       rejectLabel: 'Cancel',
       password: true,
       accept: () => {
+        this.recordOverrides(st);
         this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
         this.signRelated5xIfNeeded(stage);
         this.router.navigate([this.backDestination()]);
