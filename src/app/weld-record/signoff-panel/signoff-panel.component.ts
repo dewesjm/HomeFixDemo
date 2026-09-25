@@ -7,7 +7,7 @@ import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTI
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { getProcedureByGwpWtn } from '../../data/procedures';
-import { qualCheck, testUserQuals, QualCheckResult } from '../../data/welder-quals';
+import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
 
 export interface SignoffContext {
   job: Job;

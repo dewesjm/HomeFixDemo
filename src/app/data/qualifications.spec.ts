@@ -1,19 +1,19 @@
-import { WELDER_QUALS, DEFAULT_TEST_USER_QUALS, qualCheck } from './welder-quals';
+import { QUALIFICATIONS, DEFAULT_TEST_USER_QUALS, qualCheck } from './qualifications';
 import { procedures } from './procedures';
 
-describe('welder quals', () => {
+describe('qualifications', () => {
   it('has 20 distinct WELD4 + two digit codes', () => {
-    expect(new Set(WELDER_QUALS).size).toBe(20);
-    WELDER_QUALS.forEach(q => expect(q).toMatch(/^WELD4\d\d$/));
+    expect(new Set(QUALIFICATIONS).size).toBe(20);
+    QUALIFICATIONS.forEach(q => expect(q).toMatch(/^WELD4\d\d$/));
   });
 
   it('Test User starts with some but not all quals', () => {
     expect(DEFAULT_TEST_USER_QUALS.length).toBeGreaterThan(0);
-    expect(DEFAULT_TEST_USER_QUALS.length).toBeLessThan(WELDER_QUALS.length);
+    expect(DEFAULT_TEST_USER_QUALS.length).toBeLessThan(QUALIFICATIONS.length);
   });
 
   it('every seeded WPS requires only known quals', () => {
-    procedures().forEach(p => p.qualificationsRequired.forEach(q => expect(WELDER_QUALS).toContain(q)));
+    procedures().forEach(p => p.qualificationsRequired.forEach(q => expect(QUALIFICATIONS).toContain(q)));
   });
 
   it('seed data has WPS rows the default Test User passes and fails', () => {

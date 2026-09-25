@@ -1,13 +1,13 @@
 /* Admin > Qualifications: demo/testing aid to set which quals the Test User holds, which drives
-   Weld Record's Qualification Check (data/welder-quals.ts). */
+   Weld Record's Qualification Check (data/qualifications.ts). */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ToastService } from '../../../shared/toast.service';
 import { procedures } from '../../../data/procedures';
 import {
-  WELDER_QUALS, DEFAULT_TEST_USER_QUALS, TEST_USER_NAME, testUserQuals, setTestUserQuals
-} from '../../../data/welder-quals';
+  QUALIFICATIONS, DEFAULT_TEST_USER_QUALS, TEST_USER_NAME, testUserQuals, setTestUserQuals
+} from '../../../data/qualifications';
 
 @Component({
   selector: 'app-admin-qualifications',
@@ -21,7 +21,7 @@ export class AdminQualificationsComponent {
   held = signal<ReadonlySet<string>>(new Set(testUserQuals()));
 
   /* each qual with how many WPS rows (one per GWP+WTN) require it */
-  rows = computed(() => WELDER_QUALS.map(q => ({
+  rows = computed(() => QUALIFICATIONS.map(q => ({
     qual: q,
     wtnCount: procedures().filter(p => p.qualificationsRequired.includes(q)).length,
   })));
@@ -39,7 +39,7 @@ export class AdminQualificationsComponent {
   }
 
   setAll(on: boolean) {
-    this.held.set(new Set(on ? WELDER_QUALS : []));
+    this.held.set(new Set(on ? QUALIFICATIONS : []));
   }
 
   resetDefault() {
@@ -48,6 +48,6 @@ export class AdminQualificationsComponent {
 
   save() {
     setTestUserQuals([...this.held()]);
-    this.messages.add({ severity: 'success', summary: 'Qualifications saved', detail: `${this.held().size} of ${WELDER_QUALS.length} held`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Qualifications saved', detail: `${this.held().size} of ${QUALIFICATIONS.length} held`, life: 3000 });
   }
 }

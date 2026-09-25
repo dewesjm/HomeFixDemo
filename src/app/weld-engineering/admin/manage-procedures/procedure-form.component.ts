@@ -13,7 +13,7 @@ import {
   FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
-import { WELDER_QUALS } from '../../../data/welder-quals';
+import { QUALIFICATIONS } from '../../../data/qualifications';
 
 const EMPTY_FORM: Procedure = {
   id: '', title: '', status: 'draft',
@@ -99,9 +99,9 @@ export class ProcedureFormComponent implements OnInit {
     if (field === 'qualificationsRequired') this.newQualification = '';
   }
 
-  /* the WELD4xx quals not already on this WPS (data/welder-quals.ts) */
+  /* the WELD4xx quals not already on this WPS (data/qualifications.ts) */
   availableQuals(): string[] {
-    return WELDER_QUALS.filter(q => !this.form.qualificationsRequired.includes(q));
+    return QUALIFICATIONS.filter(q => !this.form.qualificationsRequired.includes(q));
   }
 
   removeListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', index: number) {

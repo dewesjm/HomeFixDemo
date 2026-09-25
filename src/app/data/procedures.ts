@@ -11,7 +11,7 @@ import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './workflow';
 import { MATERIALS_1, MATERIALS_2 } from './jobs';
-import { WELDER_QUALS, QUAL_WEIGHTS } from './welder-quals';
+import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -170,11 +170,11 @@ function seeded(n: number) {
   };
 }
 
-/* weighted pick without repeats, kept in WELDER_QUALS order -- some quals are needed far more
+/* weighted pick without repeats, kept in QUALIFICATIONS order -- some quals are needed far more
    often than others (QUAL_WEIGHTS) */
 function pickQuals(rand: () => number, min: number, max: number): string[] {
   const count = min + Math.floor(rand() * (max - min + 1));
-  const pool = WELDER_QUALS.map((q, i) => ({ q, w: QUAL_WEIGHTS[i] }));
+  const pool = QUALIFICATIONS.map((q, i) => ({ q, w: QUAL_WEIGHTS[i] }));
   const picked = new Set<string>();
   while (picked.size < count) {
     const left = pool.filter(x => !picked.has(x.q));
@@ -182,7 +182,7 @@ function pickQuals(rand: () => number, min: number, max: number): string[] {
     const hit = left.find(x => (r -= x.w) < 0) ?? left[left.length - 1];
     picked.add(hit.q);
   }
-  return WELDER_QUALS.filter(q => picked.has(q));
+  return QUALIFICATIONS.filter(q => picked.has(q));
 }
 
 function pickSome<T>(pool: T[], rand: () => number, min: number, max: number): T[] {
