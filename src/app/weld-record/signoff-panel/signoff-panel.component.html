@@ -665,7 +665,7 @@
       } @else if (f.type === 'select') {
         <div class="relative">
           <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
-                  [class.text-transparent]="hasDetails(f)"
+                  [class.select-overlay-label]="hasDetails(f)"
                   [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
             @for (o of f.options || []; track o.value) {
               <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option>

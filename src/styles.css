@@ -383,3 +383,9 @@ input[type="number"] { -moz-appearance: textfield; }
   cursor: not-allowed;
 }
 .checkbox:disabled, .radio:disabled { opacity: 0.55; }
+/* select whose closed text is hidden under an overlay label (GWP/WTN with descriptions): DaisyUI
+   draws the arrow in currentColor, so text-transparent would hide it too; redraw it in content color */
+.select.select-overlay-label {
+  color: transparent;
+  background-image: linear-gradient(45deg, #0000 50%, var(--color-base-content) 50%), linear-gradient(135deg, var(--color-base-content) 50%, #0000 50%);
+}
