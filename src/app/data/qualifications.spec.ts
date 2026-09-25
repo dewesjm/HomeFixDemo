@@ -25,7 +25,7 @@ describe('qualifications', () => {
   it('reports pass with nothing required, pass, and missing quals', () => {
     expect(qualCheck([], [])).toEqual({ status: 'passed', message: 'Passed' });
     expect(qualCheck(['WELD412', 'WELD427', 'WELD403'], [], ['WELD412', 'WELD427']))
-      .toEqual({ status: 'passed', message: 'Passed, user has WELD412, WELD427' });
+      .toEqual({ status: 'passed', message: 'Passed, qualifications WELD412, WELD427, active' });
     expect(qualCheck(['WELD412'], [], ['WELD412', 'WELD498', 'WELD426']))
       .toEqual({ status: 'failed', message: 'Failed, qualifications WELD498, WELD426 missing' });
   });
@@ -34,7 +34,7 @@ describe('qualifications', () => {
     expect(qualCheck([], ['CNTRLMTL1']))
       .toEqual({ status: 'failed', message: 'Failed, qualifications CNTRLMTL1 missing' });
     expect(qualCheck(['CNTRLMTL1'], ['CNTRLMTL1']))
-      .toEqual({ status: 'passed', message: 'Passed, user has CNTRLMTL1' });
+      .toEqual({ status: 'passed', message: 'Passed, qualifications CNTRLMTL1, active' });
     expect(qualCheck(['WELD412'], ['CNTRLMTL1'], ['WELD412']))
       .toEqual({ status: 'failed', message: 'Failed, qualifications CNTRLMTL1 missing' });
   });

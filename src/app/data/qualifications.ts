@@ -55,5 +55,5 @@ export function qualCheck(held: string[], conditionRequired: string[], wpsRequir
   const missing = required.filter(q => !held.includes(q));
   if (missing.length) return { status: 'failed', message: `Failed, qualifications ${missing.join(', ')} missing` };
   if (!required.length) return { status: 'passed', message: 'Passed' };
-  return { status: 'passed', message: `Passed, user has ${required.join(', ')}` };
+  return { status: 'passed', message: `Passed, qualifications ${required.join(', ')}, active` };
 }
