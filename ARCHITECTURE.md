@@ -4,7 +4,7 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 
 For the routing rules in plain language (every step, NDT, repairs, Cut, and what's required to sign each step), see **[ROUTING.md](ROUTING.md)**. Keep it in step with any routing change.
 
-**Routing rule for all code: never un-sign a stage.** Anything that sends a joint back sets the current routing to the target via `routeBack()` (`data/workflow.ts`): every stage from there on gets a fresh copy from `buildStages(job)` (blank inputs, not signed, default `required` flags, then `applySignedFlags()` re-applies Defer Tack / Fit-Up Release from signed stages before the target) while keeping its `signoffRecords`; the joint then proceeds normally. Other Repair/Excavation NDT rounds stay as records (unsigned ones stop being required); a Repair target's own round comes up blank (bookkeeping inputs kept, its Excavation NDT not required until Weld Repair is chosen again). Going back to Fit or earlier blanks fabrication data. Each route-back writes one History entry, section `Routing`, "<Step> — Routed back to <X>" (with `fabInputs` when fit-up data was blanked); Cut writes its Refit entry instead. **Deprogress** (`RoutingService.deprogress()` / `deprogressWorkflow()`): `signStage()` and `releaseFitUp()` push a `SignoffUndo` onto `JobWorkflow.undo` (stages minus field defs/records, fabrication data, Refit #/Repair # as they were just before); Deprogress pops it, so everything that signoff triggered is undone; signed stages whose `signedAt` still matches keep their current values (Corrections survive); the deprogressed step and every unsigned step after it come up blank; its SignoffRecord action is `'deprogressed'`. With no undo entry (seeded signoffs) it falls back to the last signed stage in routing order. Admin > Set Routing (`setRoutingBack`) only moves back, marks nothing signed, and clears the undo stack. Nothing says "reopen" any more (user, 2026-09-25: reopen doesn't exist, it's Deprogress).
+**Routing rule for all code: never un-sign a stage.** Anything that sends a joint back sets the current routing to the target via `routeBack()` (`data/workflow.ts`): every stage from there on gets a fresh copy from `buildStages(job)` (blank inputs, not signed, default `required` flags, then `applySignedFlags()` re-applies Defer Tack / Fit-Up Release from signed stages before the target) while keeping its `signoffRecords`; the joint then proceeds normally. Other Repair/Excavation NDT rounds stay as records (unsigned ones stop being required); a Repair target's own round comes up blank (bookkeeping inputs kept, its Excavation NDT not required until Weld Repair is chosen again). Going back to Fit or earlier blanks fabrication data. Each route-back writes one History entry, section `Routing`, "<Step> — Routed back to <X>" (with `fabInputs` when fit-up data was blanked); Cut writes its Refit entry instead. **Deprogress** (`RoutingService.deprogress()` / `deprogressWorkflow()`): `signStage()` and `releaseFitUp()` push a `SignoffUndo` onto `JobWorkflow.undo` (stages minus field defs/records, fabrication data, Refit #/Repair # as they were just before); Deprogress pops it, so everything that signoff triggered is undone; signed stages whose `signedAt` still matches keep their current values (Corrections survive); the deprogressed step and every unsigned step after it come up blank; its SignoffRecord action is `'deprogressed'`. With no undo entry (seeded signoffs) it falls back to the last signed stage in routing order. **Current routing** = first required unsigned stage counted from the stage flagged `routingFrom` (`activeStage()`; no flag = from the start). `routeBack()` puts the flag on its target and NDT UNSAT puts it on the new Repair, so unsigned stages passed over by an admin forward move never become current again; `isStageLocked()` locks everything before the flag. Admin > Set Routing (`RoutingService.setRouting`) marks nothing signed: backward = `routeBack()`, forward = just moves the flag (`setRoutingFrom()`), and both clear the undo stack. Nothing says "reopen" any more (user, 2026-09-25: reopen doesn't exist, it's Deprogress).
 
 ## Demo toggles (flipped often)
 
@@ -70,7 +70,7 @@ into:
 | Service | Owns |
 |---|---|
 | `WorkflowStore` | Per-job state (signals), localStorage persistence/migration, history-entry stamping (`withHistory`). No domain logic — every service below builds on it. |
-| `RoutingService` | Filling in a stage's own fields (`setStageInput(s)`); Admin > Set Routing back (`setRoutingBack`); Deprogress (`deprogress`). |
+| `RoutingService` | Filling in a stage's own fields (`setStageInput(s)`); Admin > Set Routing (`setRouting`); Deprogress (`deprogress`). |
 | `SignoffService` | Locking a stage's sign-off (`signStage`, `updateStageSignoff`, `correctStage`), Fit-Up release, and the side effects a sign-off can trigger: defer-tack, fit-up-release activation, Interim Layer and Records Review UNSAT staying put, NDT reject adding a Repair round (Repair #), Repair's own routing (Grind Only, Weld Repair → Excavation NDT, Cut → start over from Fit with Refit #), and Excavation NDT's routing. See ROUTING.md for the rules. |
 | `AttachmentService` | `addAttachment`/`removeAttachment`. |
 | `FabricationDataService` | `setFabricationData` — cross-stage Welding fields, unrelated to any one stage. |
@@ -130,7 +130,7 @@ src/app/
                                  history-entry stamping (`withHistory`). The shared primitive every other
                                  service here builds on — owns no domain logic itself.
       routing.service.ts   Stage-progression routing: filling in a stage's own fields (setStageInput(s)),
-                           Admin > Set Routing back (setRoutingBack), Deprogress (deprogress).
+                           Admin > Set Routing (setRouting), Deprogress (deprogress).
       signoff.service.ts   Per-stage sign-off: signStage, correctStage, releaseFitUp, updateStageSignoff —
                            including the defer-tack, fit-up-release, and NDT-reject-to-repair side effects.
       attachment.service.ts      addAttachment, removeAttachment.
@@ -139,7 +139,7 @@ src/app/
       sync.service.ts      Online/offline + pending-sync count (stubbed)
     admin/
       admin-routing/         Admin → Routing (stage templates per trade)
-      admin-set-routing/     Admin → Set routing (set a job's routing back)
+      admin-set-routing/     Admin → Set routing (change a job's current routing)
       admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
       admin-signoff-fields/  Admin → Signoff fields
       admin-characteristics/ Admin → Attribute codes

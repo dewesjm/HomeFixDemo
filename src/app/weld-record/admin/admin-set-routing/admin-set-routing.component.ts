@@ -1,9 +1,9 @@
-// Admin → Set routing: set a job's current routing back to an earlier step.
-// Nothing is marked signed; that step and every step after it come up blank.
+// Admin → Set routing: change a job's current routing to any step. Nothing is marked signed;
+// going back blanks that step and every step after it, going forward leaves the steps passed as they are.
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideStepBack } from '@lucide/angular';
+import { LucideRoute } from '@lucide/angular';
 
 import { ConfirmService } from '../../../shared/confirm.service';
 
@@ -15,7 +15,7 @@ import { currentRoutingLabel, activeStageId } from '../../../data/workflow';
 @Component({
   selector: 'app-admin-set-routing',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideStepBack],
+  imports: [CommonModule, FormsModule, LucideRoute],
   templateUrl: './admin-set-routing.component.html'
 })
 export class AdminSetRoutingComponent {
@@ -35,15 +35,14 @@ export class AdminSetRoutingComponent {
     return job ? this.store.workflowFor(job)() : null;
   });
 
-  /* the required steps before the current routing (every step when the joint is complete) */
+  /* every required step except the current routing */
   routingOptions = computed(() => {
     const wf = this.workflow();
     if (!wf) return [];
-    const activeIdx = wf.stages.findIndex(s => s.id === activeStageId(wf.stages));
-    const end = activeIdx < 0 ? wf.stages.length : activeIdx;
+    const active = activeStageId(wf.stages);
     return wf.stages
       .map((s, i) => ({ s, i }))
-      .filter(({ s, i }) => i < end && s.required)
+      .filter(({ s }) => s.required && s.id !== active)
       .map(({ s, i }) => ({ label: `${i + 1}. ${s.label}`, value: s.id }));
   });
 
@@ -62,13 +61,18 @@ export class AdminSetRoutingComponent {
     const id = this.targetId();
     if (!job || id === null) return;
     const label = this.routingOptions().find(o => o.value === id)?.label ?? id;
+    const stages = this.workflow()?.stages ?? [];
+    const activeIdx = stages.findIndex(s => s.id === activeStageId(stages));
+    const back = activeIdx < 0 || stages.findIndex(s => s.id === id) < activeIdx;
     this.confirm.confirm({
-      header: 'Set routing back?',
-      message: `This sets the current routing of ${job.hull} back to "${label}". That step and every step after it come up blank and are signed again. Earlier signoffs are kept. Continue?`,
-      acceptLabel: 'Set routing back',
+      header: 'Set routing?',
+      message: back
+        ? `This sets the current routing of ${job.hull} back to "${label}". That step and every step after it come up blank and are signed again. Earlier signoffs are kept. Continue?`
+        : `This sets the current routing of ${job.hull} to "${label}". Nothing is signed; the steps before it stay as they are. Continue?`,
+      acceptLabel: 'Set routing',
       rejectLabel: 'Cancel',
       accept: () => {
-        this.wfService.setRoutingBack(job, id);
+        this.wfService.setRouting(job, id);
         this.targetId.set(null);   // current routing now reflects the change
       }
     });

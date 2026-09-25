@@ -18,7 +18,7 @@ import {
 } from '../../data/jobs';
 import { SignoffService } from '../services/signoff.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { currentRoutingLabel, ROLES, DEFAULT_ROLE, type Role } from '../../data/workflow';
+import { currentRoutingLabel, activeStage, ROLES, DEFAULT_ROLE, type Role } from '../../data/workflow';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
@@ -141,7 +141,7 @@ export class PipeSearchComponent {
       // Filter jobs where the current unsignoff'd routing has matching role
       rows = JOBS.filter(j => {
         const wf = this.store.workflowFor(j)();
-        const current = wf.stages.find(s => s.required && !s.signed);   /* same "current routing" as the routing label */
+        const current = activeStage(wf.stages);   /* same "current routing" as the routing label */
         const stageRoles = (current?.role ?? '').split('|');
         return stageRoles.includes(role);
       });

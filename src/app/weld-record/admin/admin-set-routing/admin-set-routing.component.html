@@ -1,8 +1,8 @@
 <!-- Admin → Set routing template (paired with admin-set-routing.component.ts). -->
 <h2 class="section-title">Set routing</h2>
 <p class="section-sub">
-  Set a job's current routing back to an earlier step. Nothing is marked signed:
-  that step and every step after it come up blank and are signed again. Earlier signoffs are kept.
+  Change a job's current routing. Nothing is marked signed. Going back: that step and every step
+  after it come up blank and are signed again. Going forward: the steps before it stay as they are.
 </p>
 
 <section class="panel">
@@ -38,6 +38,6 @@
   </div>
 
   <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetId() === null" (click)="apply()">
-    <svg lucideStepBack class="size-4"></svg> Set routing back
+    <svg lucideRoute class="size-4"></svg> Set routing
   </button>
 </section>

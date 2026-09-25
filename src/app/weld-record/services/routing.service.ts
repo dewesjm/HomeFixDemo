@@ -1,9 +1,9 @@
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
-   routing (Admin > Set Routing back, Deprogress). Sign-off decisions live in SignoffService. */
+   routing (Admin > Set Routing, Deprogress). Sign-off decisions live in SignoffService. */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, labelFor, show, routeBack, deprogressWorkflow, fabricationSnapshot } from '../../data/workflow';
+import { JobWorkflow, StageField, labelFor, show, routeBack, deprogressWorkflow, fabricationSnapshot, activeStageId, setRoutingFrom } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
@@ -37,15 +37,23 @@ export class RoutingService {
     });
   }
 
-  /* Admin > Set Routing: sets the current routing back to an earlier step. Nothing is marked
-     signed; that step and every step after it come up blank (routeBack). Deprogress can't reach
-     past this, so the undo entries are dropped. */
-  setRoutingBack(job: Job, targetId: string) {
+  /* Admin > Set Routing: changes the joint's current routing to any step. Nothing is marked
+     signed. Going back works like any route-back (that step and every step after it come up
+     blank); going forward only moves the current routing, and the steps passed stay as they are.
+     Deprogress can't reach past this, so the undo entries are dropped. */
+  setRouting(job: Job, targetId: string) {
     let label = '';
     this.store.update(job, wf => {
-      const target = wf.stages.find(s => s.id === targetId);
-      if (!target) return wf;
+      const targetIdx = wf.stages.findIndex(s => s.id === targetId);
+      if (targetIdx < 0) return wf;
+      const target = wf.stages[targetIdx];
       label = target.label;
+      const activeIdx = wf.stages.findIndex(s => s.id === activeStageId(wf.stages));
+      if (activeIdx >= 0 && targetIdx > activeIdx) {
+        return this.store.withHistory(wf, { ...wf, stages: setRoutingFrom(wf.stages, targetId), undo: [] }, {
+          section: 'Routing', who: 'Admin', action: `Routing set to ${target.label} (admin)`, to: target.label,
+        });
+      }
       const r = routeBack(wf, job, targetId);
       return this.store.withHistory(wf, { ...r.wf, undo: [] }, {
         section: 'Routing',
@@ -55,7 +63,7 @@ export class RoutingService {
         fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
       });
     });
-    this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set back to ${label}`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set to ${label}`, life: 3000 });
   }
 
   /* Deprogress: undo the most recent sign-off and everything it triggered (deprogressWorkflow) */

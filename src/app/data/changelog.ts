@@ -26,7 +26,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Nothing is ever re-opened. When a joint goes back (Fit-Up Insp UNSAT, Grind Only, Allowable thickness exceeded, Excavation NDT, Cut), the current routing is set back and every step from there comes up blank to be signed again; earlier signoffs stay. Fit-Up Insp UNSAT now goes back to Fit (was Tack), and going back to Fit blanks the fit-up data. History shows a "Routed back to" row.',
       'Deprogress undoes everything the signoff did (an added Repair, a route-back, a Cut and so on), and the step comes up blank. "Re-opened" now reads "Deprogressed".',
       'Foreman Override button no longer shows a tooltip, and its pop-up just says "Describe the deviation and why it is necessary".',
-      'Admin > Set Routing only sets a joint back to an earlier step and no longer marks steps as signed.',
+      'Admin > Set Routing just changes the joint\'s current routing, back or forward, and no longer marks steps as signed. Going back blanks that step and everything after it; going forward leaves the steps passed as they are.',
       'Qualification Check failure message no longer says "Input disabled", and the GWP, Filler Metal Type and Filler Metal Size warnings just say "Foreman override".',
       'Shorter field warnings: an Actual PH/IP out of range just says "Out of Range", and a failed Qualification Check no longer adds "Signing will record this as a deviation." Signoff explains the details.',
       'Create Joint droplists offer the same options as the weld record (RT degrees, NDT methods, pipe size, wall thickness, materials).',

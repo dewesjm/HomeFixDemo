@@ -344,7 +344,8 @@ export class JointPageComponent implements OnDestroy {
   private indexOfActive(): number {
     if (!this.wf) return 0;
     const stages = this.wf().stages;
-    const idx = stages.findIndex(s => s.required && !s.signed);
+    const id = activeStageId(stages);
+    const idx = stages.findIndex(s => s.id === id);
     return idx === -1 ? Math.max(0, stages.length - 1) : idx;
   }
   private initialRouting(): number { return this.indexOfActive(); }

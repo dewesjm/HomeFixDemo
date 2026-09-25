@@ -83,6 +83,9 @@ export interface WorkflowStage {
   signedAt: string | null;        /* ISO string, set when signed */
   signoffRecords: SignoffRecord[];
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
+  /* the current routing was set to this stage (a route-back, or Admin > Set Routing): the joint
+     proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
+  routingFrom?: boolean;
 }
 
 export interface Attachment {
@@ -1333,9 +1336,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
   return wf;
 }
 
-/* locked until prior required stages signed */
+/* locked until prior required stages signed; stages before where the current routing was set are locked */
 export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
-  for (let i = 0; i < index; i++) {
+  const start = routingStart(stages);
+  if (index < start) return true;
+  for (let i = start; i < index; i++) {
     const s = stages[i];
     if (s.required && !s.signed) return true;
   }
@@ -1398,7 +1403,22 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   });
   const fabReset = goesBackPastFit(wf.stages, targetIdx);
   const fabricationData = fabReset ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : wf.fabricationData;
-  return { wf: { ...wf, stages: applySignedFlags(stages), fabricationData }, fabReset };
+  return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId)), fabricationData }, fabReset };
+}
+
+/* the current routing starts at `stageId` (see WorkflowStage.routingFrom) */
+export function setRoutingFrom(stages: WorkflowStage[], stageId: string): WorkflowStage[] {
+  return stages.map(s => {
+    const on = s.id === stageId;
+    if (on === !!s.routingFrom) return s;
+    const { routingFrom: _r, ...rest } = s;
+    return on ? { ...rest, routingFrom: true } : rest;
+  });
+}
+
+/* index the current routing is counted from: the routingFrom stage, else the first stage */
+function routingStart(stages: WorkflowStage[]): number {
+  return Math.max(0, stages.findIndex(s => s.routingFrom));
 }
 
 /* the undo entry signStage() pushes before a sign-off */
@@ -1431,13 +1451,15 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
       const defs = cur ?? fresh.get(snap.id);
       return { ...snap, fields: defs?.fields ?? [], signoffFields: defs?.signoffFields ?? [], signoffRecords: cur?.signoffRecords ?? [] };
     });
+    const from = top.stages.find(s => s.routingFrom);
+    stages = from ? setRoutingFrom(stages, from.id) : stages.map(({ routingFrom: _r, ...s }) => s as WorkflowStage);
     stageId = top.stageId;
     rest = { undo: wf.undo!.slice(0, -1), fabricationData: top.fabricationData, refitNumber: top.refitNumber, repairNumber: top.repairNumber };
   } else {
     const last = wf.stages.filter(s => s.signed).pop();
     if (!last) return null;
-    stages = wf.stages;
     stageId = last.id;
+    stages = wf.stages.some(s => s.routingFrom) ? setRoutingFrom(wf.stages, stageId) : wf.stages;
   }
   const idx = stages.findIndex(s => s.id === stageId);
   if (idx < 0) return null;
@@ -1449,17 +1471,20 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
   return { wf: { ...wf, ...rest, stages, fabricationData }, stage };
 }
 
-/* first unsigned required stage, the current routing */
+/* the current routing: the first unsigned required stage, counted from where the routing was last set */
+export function activeStage(stages: WorkflowStage[]): WorkflowStage | undefined {
+  return stages.slice(routingStart(stages)).find(s => s.required && !s.signed);
+}
+
 export function currentRoutingLabel(stages: WorkflowStage[]): string {
-  const next = stages.find(s => s.required && !s.signed);
-  return next ? next.label : stages[stages.length - 1]?.label ?? 'Complete';
+  return activeStage(stages)?.label ?? stages[stages.length - 1]?.label ?? 'Complete';
 }
 
 /* id of stage awaiting sign-off, null when done */
 export function activeStageId(stages: WorkflowStage[]): string | null {
-  return stages.find(s => s.required && !s.signed)?.id ?? null;
+  return activeStage(stages)?.id ?? null;
 }
 
 export function allRequiredSigned(stages: WorkflowStage[]): boolean {
-  return stages.every(s => !s.required || s.signed);
+  return activeStage(stages) === undefined;
 }

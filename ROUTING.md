@@ -12,7 +12,7 @@ Last updated 2026-09-25.
 - **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that step and the joint proceeds along the path as normal from there: every step from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Step> — Routed back to <step>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on steps the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed step and every step after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
-- **Admin > Set Routing** sets a joint's current routing back to an earlier step, the same way a route-back does. Nothing is marked signed.
+- **Admin > Set Routing** changes a joint's current routing to any step. Nothing is marked signed. Going back works like any route-back (that step and every step after it come up blank). Going forward only moves the current routing: the steps before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new step.
 
 ## The path
 

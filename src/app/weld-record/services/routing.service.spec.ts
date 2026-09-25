@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
-import { StageField } from '../../data/workflow';
+import { StageField, activeStageId } from '../../data/workflow';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -65,12 +65,24 @@ describe('RoutingService', () => {
           ? { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat', inputs: { ppe: 'gloves' } }
           : s),
       }));
-      service.setRoutingBack(job, 'prep');
+      service.setRouting(job, 'prep');
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs).toEqual({});
       expect(wf.stages[0].signoffRecords.some(r => r.action === 'deprogressed')).toBeFalse();
       expect(wf.history.some(h => h.section === 'Routing' && h.action.startsWith('Routed back to'))).toBeTrue();
+    });
+  });
+
+  describe('setRouting forward', () => {
+    it('moves the current routing without signing anything; the passed stage stays as it was', () => {
+      service.setStageInput(job, 'prep', { key: 'ppe', label: 'PPE / safety', type: 'text' }, 'gloves');
+      service.setRouting(job, 'handover');
+      const wf = store.workflowFor(job)();
+      expect(wf.stages.every(s => !s.signed)).toBeTrue();
+      expect(wf.stages[0].inputs['ppe']).toBe('gloves');
+      expect(activeStageId(wf.stages)).toBe('handover');
+      expect(wf.history.some(h => h.section === 'Routing' && h.action === 'Routing set to Handover (admin)')).toBeTrue();
     });
   });
 
