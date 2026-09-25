@@ -1,4 +1,4 @@
-/* Admin > Welder Quals: demo/testing aid to set which quals the Test User holds, which drives
+/* Admin > Qualifications: demo/testing aid to set which quals the Test User holds, which drives
    Weld Record's Qualification Check (data/welder-quals.ts). */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -48,6 +48,6 @@ export class AdminWelderQualsComponent {
 
   save() {
     setTestUserQuals([...this.held()]);
-    this.messages.add({ severity: 'success', summary: 'Welder quals saved', detail: `${this.held().size} of ${WELDER_QUALS.length} held`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Qualifications saved', detail: `${this.held().size} of ${WELDER_QUALS.length} held`, life: 3000 });
   }
 }

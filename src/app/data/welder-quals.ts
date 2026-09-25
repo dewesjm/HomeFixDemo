@@ -1,7 +1,7 @@
 /* Welder qualifications (WELD4xx codes). Each WPS lists the quals it requires
    (Procedure.qualificationsRequired, procedures.ts); Weld Record's Qualification Check compares
    them against the Test User's quals. There is no login, so the demo has one Test User whose
-   quals are set under Admin > Welder Quals. In the real system these come from the welder's
+   quals are set under Admin > Qualifications. In the real system these come from the welder's
    certification record, not a list in the app. */
 import { signal } from '@angular/core';
 import { STORAGE } from './storage-keys';

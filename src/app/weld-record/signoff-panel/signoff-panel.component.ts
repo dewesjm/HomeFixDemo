@@ -106,7 +106,7 @@ export class SignoffPanelComponent {
 
   weldGroups = WELD_GROUPS;
 
-  /* the selected GWP+WTN's required quals against the Test User's (Admin > Welder Quals) */
+  /* the selected GWP+WTN's required quals against the Test User's (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
     const p = getProcedureByGwpWtn(this.stage().inputs['weldProcedure'], this.stage().inputs['wtn']);
     return qualCheck(p?.qualificationsRequired, testUserQuals());

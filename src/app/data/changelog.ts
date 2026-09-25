@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-09-25',
     added: [
       'Welder qualifications: every WTN now requires 1-3 quals (WELD4xx codes), and the Qualification Check really checks them. It says "Passed, user has ..." or lists the quals that are missing.',
-      'Admin > Welder Quals: choose which quals the Test User has, to try passing and failing the Qualification Check.',
+      'Admin > Qualifications: choose which quals the Test User has, to try passing and failing the Qualification Check.',
       'Revised Joint Design droplist shows a short description next to each design. Descriptions can be edited in Admin > Joint Designs.',
       'Create Joint (Weld Planning) has the same hulls, joint info, joining, additional data and attribute code fields as the weld record.',
       'Change Log (this page), under Quick Links.',
