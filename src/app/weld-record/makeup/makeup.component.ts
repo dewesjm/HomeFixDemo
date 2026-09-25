@@ -25,6 +25,8 @@ import {
 export class MakeupComponent {
   private messages = inject(ToastService);
   readonly annualDays = ANNUAL_MAKEUP_DAYS;
+  /* joke placeholder: page shows only "NO MIKE"; set false to restore the real page */
+  readonly noMike = true;
 
   grants = makeupGrants;
   fullName = fullName;
