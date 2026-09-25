@@ -24,6 +24,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Create Joint droplists offer the same options as the weld record (RT degrees, NDT methods, pipe size, wall thickness, materials).',
       'Advanced Search column picker and Adapt Filters list the shown items in order; drag them or use the arrows to reorder.',
       'Makeup page is back.',
+      'Admin > Routing no longer has the New trade and Add test job buttons.',
     ],
     fixed: [
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',

@@ -988,17 +988,6 @@ export function deleteStageTemplate(trade: Job['trade'], stageId: string) {
   persistTemplates(templates);
 }
 
-/* add a new trade with default prep + handover stages */
-export function addTrade(trade: string) {
-  const templates = getTemplates();
-  if (templates[trade as Job['trade']]) return; // already exists
-  templates[trade as Job['trade']] = [
-    { ...serializeStage(PREP_STAGE), signoffFields: PREP_STAGE.signoffFields, rejectToStage: '' } as StageTemplate,
-    { ...serializeStage(HANDOVER_STAGE), signoffFields: HANDOVER_STAGE.signoffFields, rejectToStage: '' } as StageTemplate,
-  ];
-  persistTemplates(templates);
-}
-
 function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
   const serialized: Record<string, SerializedStage[]> = {};
   for (const [trade, list] of Object.entries(templates)) {

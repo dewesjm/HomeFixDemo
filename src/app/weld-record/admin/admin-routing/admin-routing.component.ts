@@ -14,11 +14,10 @@ import { TooltipDirective } from '../../../shared/tooltip.directive';
 import { TableState, inArray } from '../../../shared/table-state';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
-import { Job, addTestJob } from '../../../data/jobs';
-import { Router } from '@angular/router';
+import { Job } from '../../../data/jobs';
 import {
   StageField, SignoffField, defaultSignoffFields,
-  addStageTemplate, updateStageTemplate, deleteStageTemplate, addTrade,
+  addStageTemplate, updateStageTemplate, deleteStageTemplate,
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../../../data/workflow';
 
@@ -127,15 +126,6 @@ export class AdminRoutingComponent {
   newReadingLabel = signal('');
   newSignoffKey = signal('');
   newSignoffLabel = signal('');
-
-  // ── New trade dialog ──
-  showNewTradeDlg = signal(false);
-  newTradeName = signal('');
-
-  // ── Add test job dialog ──
-  showTestJobDlg = signal(false);
-  testJobTrade = signal('');
-  private router = inject(Router);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));
@@ -356,49 +346,6 @@ export class AdminRoutingComponent {
     });
     this.showFieldDlg.set(false);
     this.messages.add({ severity: 'success', summary: 'Fields saved', life: 3000 });
-  }
-
-  /* ── New trade ── */
-
-  openNewTrade() {
-    this.newTradeName.set('');
-    this.showNewTradeDlg.set(true);
-  }
-
-  saveNewTrade() {
-    const name = this.newTradeName().trim();
-    if (!name) return;
-    // capitalize first letter
-    const trade = name.charAt(0).toUpperCase() + name.slice(1) as Job['trade'];
-    addTrade(trade);
-    // add rows for the new trade's default stages
-    const templates = getTemplates()[trade] ?? [];
-    const newRows: RoutingRow[] = templates.map((t, i) => ({
-      id: `${trade}:${t.id}`,
-      routing: t.label,
-      trade,
-      sequence: i + 1,
-      rejectToStage: t.rejectToStage ?? '',
-      role: (t.role as Role) ?? 'View',
-    }));
-    this.rows.update(r => [...r, ...newRows]);
-    this.refreshStageOptions();
-    this.showNewTradeDlg.set(false);
-    this.messages.add({ severity: 'success', summary: 'Trade added', detail: trade, life: 3000 });
-  }
-
-  // ── Add test job dialog ──
-  openTestJobDlg() {
-    this.testJobTrade.set(this.tradeOptions()[0]?.value ?? '');
-    this.showTestJobDlg.set(true);
-  }
-  createTestJob() {
-    const trade = this.testJobTrade();
-    if (!trade) return;
-    const job = addTestJob(trade);
-    this.showTestJobDlg.set(false);
-      this.messages.add({ severity: 'success', summary: 'Test hull created', detail: `Hull ${job.hull} (#${job.id})`, life: 3000 });
-    this.router.navigate(['/jobs', job.id]);
   }
 
   /* ── CSV export ── */
