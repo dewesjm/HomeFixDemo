@@ -29,7 +29,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -619,9 +619,8 @@ export class JointPageComponent implements OnDestroy {
     const result = rawFields
       .map(f => this.withStageRuntimeOptions(f, stage))
       .filter(f => {
-        /* "exceeded" sends the joint to that phase's UT/RT, so it (and the Allowable Thickness text
-           it goes with) only shows when the joint has one */
-        if ((f.key === 'allowableThicknessExceeded' || f.key === 'allowableThickness')
+        /* "exceeded" sends the joint to that phase's UT/RT, so it only shows when the joint has one */
+        if (f.key === 'allowableThicknessExceeded'
             && !this.wf?.().stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
         if (f.showIf) {
           const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
@@ -729,6 +728,9 @@ export class JointPageComponent implements OnDestroy {
     if (f.key === 'degreeRt') {
       const required = this.rtDegreeRequired(stage);
       return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
+    }
+    if (f.key === 'allowableThicknessExceeded' && this.job) {
+      return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(this.job.nInd)} exceeded - Volumetric inspection (UT/RT) is required` };
     }
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {

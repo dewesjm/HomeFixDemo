@@ -31,7 +31,6 @@ export interface StageField {
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */
   disabled?: boolean;    /* read-only / information only */
-  hideLabel?: boolean;   /* no title above the control; label is still used in History */
   minField?: string;     /* cross-field: value must be >= this field's value */
   maxField?: string;     /* cross-field: value must be <= this field's value */
   description?: string;  /* runtime only: plain text shown under the control, e.g. the selected GWP/WTN's description */
@@ -806,11 +805,19 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
    droplist (routingOptions),
    same convention every other stage with a Type dropdown follows -- Foreman isn't an Inspector
    role so inspectionTypeRequired() leaves it pre-filled rather than a required blank choice. */
+/* Repair's allowable thickness depends on the job's Nuclear Indicator (see the nInd tooltip,
+   joint-details.component.ts's N_IND_MEANINGS: '1' = N 250-1500-1, '2' = N TP278, '3' = Non).
+   '3' (Non) has no stated rule -- falls back to the TP278 value, unreviewed. Shown in the
+   "exceeded" checkbox's label (joint-page withStageRuntimeOptions). */
+export function allowableThicknessAmount(nInd: string): string {
+  const inches = nInd === '1' ? '3/8' : '3/16';
+  return `${inches} inch or 20% of material thickness, whichever is less`;
+}
+
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
-    { key: 'allowableThickness', label: 'Allowable Thickness', type: 'text', disabled: true, hideLabel: true },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [], decisionLabel: 'Inspection Results',
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
@@ -1351,7 +1358,7 @@ export function isStageLocked(stages: WorkflowStage[], index: number): boolean {
 /* ── Going back (never un-sign, see ROUTING.md) ── */
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
-const REPAIR_BOOKKEEPING_KEYS = ['allowableThickness', 'originPhase', 'originStageId', 'originInspectionType'];
+const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];
 
 /* a stage with nothing entered and not signed; `fresh` is its buildStages() copy, when it has one */
 function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {

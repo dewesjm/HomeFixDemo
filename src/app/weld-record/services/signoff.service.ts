@@ -7,14 +7,6 @@ import { SignoffInput, WorkflowStage, JobWorkflow, applySignedFlags, routeBack, 
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
-/* Repair's Allowable Thickness text depends on the job's Nuclear Indicator (see the nInd tooltip,
-   joint-details.component.ts's N_IND_MEANINGS: '1' = N 250-1500-1, '2' = N TP278, '3' = Non).
-   '3' (Non) has no stated rule -- falls back to the TP278 value, unreviewed. */
-function allowableThicknessText(nInd: string): string {
-  const inches = nInd === '1' ? '3/8' : '3/16';
-  return `Allowable thickness: ${inches} inch or 20% of material thickness, whichever is less`;
-}
-
 /* Excavation NDT "requires the same inspection that was noted as reject" -- same method as
    whatever originally rejected the joint, UNLESS that was PT on non-ferrous/austenitic material
    (Material Type 1 or 2, Admin > Material Classification), which requires 5X instead of PT. Single
@@ -141,7 +133,6 @@ export class SignoffService {
              stage.inputs. */
           const originPhase = stageId.split('-ndt-')[0];
           const repairStage = stageFromTemplate(nextRepairStage(stages), {
-            allowableThickness: allowableThicknessText(job.nInd),
             originPhase,
             originStageId: stageId,
             originInspectionType: st.inspectionType,

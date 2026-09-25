@@ -36,7 +36,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Routing no longer has the New trade and Add test job buttons.',
     ],
     fixed: [
-      'Repair: when the joint has no UT/RT, the Allowable Thickness text is hidden along with the "exceeded" checkbox (it was left showing on its own). The text no longer has an "Allowable Thickness" title above it.',
+      'Repair: the Allowable Thickness text and the "exceeded" checkbox are now one line, "Allowable thickness of 3/16 inch or 20% of material thickness, whichever is less exceeded - Volumetric inspection (UT/RT) is required" (3/8 inch for N 250-1500-1). It is hidden when the joint has no UT/RT (the text was left showing on its own).',
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',
       'Checkboxes on the procedure edit screen no longer stretch across the page.',
       'The Admin menu no longer runs off the bottom of the screen. It fits the window and scrolls if needed, so Material Classification and Quick Links can be reached.',
