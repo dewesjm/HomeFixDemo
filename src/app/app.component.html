@@ -99,7 +99,7 @@
               <li><a routerLink="/weld-engineering" routerLinkActive="menu-active"><svg lucideSearch class="size-4"></svg> Procedure Lookup</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
-                <details>
+                <details (toggle)="fitSubmenu($event)">
                   <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
                   <ul class="submenu">
                     <li><a routerLink="/weld-engineering/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Manage Procedures</a></li>
@@ -121,7 +121,7 @@
               <li><a routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
-                <details>
+                <details (toggle)="fitSubmenu($event)">
                   <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
                   <ul class="submenu">
                     <li><a routerLink="/weld-planning/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Joint Designs &amp; NDT</a></li>
@@ -145,7 +145,7 @@
               <li><a class="menu-disabled"><svg lucideHistory class="size-4"></svg> History Lookup</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
-                <details>
+                <details (toggle)="fitSubmenu($event)">
                   <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
                   <ul class="submenu">
                     <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
@@ -170,7 +170,7 @@
               <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg> Makeup</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
-                <details>
+                <details (toggle)="fitSubmenu($event)">
                   <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
                   <ul class="submenu">
                     <li><a routerLink="/admin/routing" routerLinkActive="menu-active"><svg lucideWorkflow class="size-4"></svg> Routing</a></li>

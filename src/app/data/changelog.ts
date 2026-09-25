@@ -29,6 +29,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     fixed: [
       'Dropdowns with a missing required value now get the red outline, like text fields (e.g. Filler Metal Size).',
       'Checkboxes on the procedure edit screen no longer stretch across the page.',
+      'The Admin menu no longer runs off the bottom of the screen. It fits the window and scrolls if needed, so Material Classification and Quick Links can be reached.',
     ],
   },
   {

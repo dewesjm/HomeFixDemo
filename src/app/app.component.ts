@@ -91,6 +91,16 @@ export class AppComponent {
   onQlToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.qlDetails)); }
   onFlatAdminToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.flatAdminDetails)); }
 
+  /* Cap a flyout submenu to the space below where it opens, so it scrolls instead of running off-screen. */
+  fitSubmenu(e: Event) {
+    const details = e.target as HTMLDetailsElement;
+    if (!details.open) return;
+    const menu = details.querySelector<HTMLElement>(':scope > .submenu');
+    if (!menu) return;
+    const bottomGap = 8;
+    menu.style.maxHeight = `${window.innerHeight - menu.getBoundingClientRect().top - bottomGap}px`;
+  }
+
   constructor() {
     document.addEventListener('click', (e: MouseEvent) => {
       const target = e.target as HTMLElement;
