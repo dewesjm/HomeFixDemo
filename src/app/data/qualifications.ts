@@ -44,22 +44,16 @@ export function setTestUserQuals(quals: string[]) {
 }
 
 export interface QualCheckResult {
-  status: 'none' | 'passed' | 'failed';   /* none = still waiting on a GWP/WTN */
+  status: 'passed' | 'failed';
   message: string;
 }
 
 /* conditionRequired = quals the joint's conditions require (qual-conditions.ts), checked as soon as
-   the step is open. wpsRequired = the resolved WPS's quals; null when the step has GWP/WTN but they
-   don't resolve to a WPS yet, undefined when the step has no WPS at all (inspection steps). */
-export function qualCheck(held: string[], conditionRequired: string[], wpsRequired?: string[] | null): QualCheckResult {
-  const required = [...new Set([...conditionRequired, ...(wpsRequired ?? [])])];
+   the step is open; wpsRequired = the selected GWP+WTN's quals, added once they resolve to a WPS */
+export function qualCheck(held: string[], conditionRequired: string[], wpsRequired: string[] = []): QualCheckResult {
+  const required = [...new Set([...conditionRequired, ...wpsRequired])];
   const missing = required.filter(q => !held.includes(q));
   if (missing.length) return { status: 'failed', message: `Failed, qualifications ${missing.join(', ')} missing` };
-  if (wpsRequired === null) {
-    return conditionRequired.length
-      ? { status: 'none', message: `User has ${conditionRequired.join(', ')}. Select a GWP and WTN to check the rest` }
-      : { status: 'none', message: 'Select a GWP and WTN to check qualifications' };
-  }
-  if (!required.length) return { status: 'passed', message: 'Passed, no qualifications required' };
+  if (!required.length) return { status: 'passed', message: 'Passed' };
   return { status: 'passed', message: `Passed, user has ${required.join(', ')}` };
 }

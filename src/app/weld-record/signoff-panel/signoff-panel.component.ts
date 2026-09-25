@@ -115,7 +115,7 @@ export class SignoffPanelComponent {
   /* the joint's condition quals plus the selected GWP+WTN's against the Test User's (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
     const p = getProcedureByGwpWtn(this.stage().inputs['weldProcedure'], this.stage().inputs['wtn']);
-    return qualCheck(testUserQuals(), conditionQuals(this.ctx().job), p?.qualificationsRequired ?? null);
+    return qualCheck(testUserQuals(), conditionQuals(this.ctx().job), p?.qualificationsRequired);
   }
 
   /* inspection steps have no Qualification Check field; they check only the joint's condition quals */

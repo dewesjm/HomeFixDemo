@@ -22,8 +22,8 @@ describe('qualifications', () => {
     expect(fails.length).toBeLessThan(procedures().length);
   });
 
-  it('reports no WPS, pass, and missing quals', () => {
-    expect(qualCheck([], [], null).status).toBe('none');
+  it('reports pass with nothing required, pass, and missing quals', () => {
+    expect(qualCheck([], [])).toEqual({ status: 'passed', message: 'Passed' });
     expect(qualCheck(['WELD412', 'WELD427', 'WELD403'], [], ['WELD412', 'WELD427']))
       .toEqual({ status: 'passed', message: 'Passed, user has WELD412, WELD427' });
     expect(qualCheck(['WELD412'], [], ['WELD412', 'WELD498', 'WELD426']))
@@ -31,12 +31,10 @@ describe('qualifications', () => {
   });
 
   it('checks condition quals before a WPS is picked and on steps with no WPS', () => {
-    expect(qualCheck([], ['CNTRLMTL1'], null))
+    expect(qualCheck([], ['CNTRLMTL1']))
       .toEqual({ status: 'failed', message: 'Failed, qualifications CNTRLMTL1 missing' });
-    expect(qualCheck(['CNTRLMTL1'], ['CNTRLMTL1'], null).status).toBe('none');
     expect(qualCheck(['CNTRLMTL1'], ['CNTRLMTL1']))
       .toEqual({ status: 'passed', message: 'Passed, user has CNTRLMTL1' });
-    expect(qualCheck([], [])).toEqual({ status: 'passed', message: 'Passed, no qualifications required' });
     expect(qualCheck(['WELD412'], ['CNTRLMTL1'], ['WELD412']))
       .toEqual({ status: 'failed', message: 'Failed, qualifications CNTRLMTL1 missing' });
   });
