@@ -664,7 +664,7 @@
 
       @if (!st.signed && ctx().reportedDeviations(st).length) {
         <div class="mt-sm">
-          <div class="font-semibold">Foreman overrides (recorded in History when you sign)</div>
+          <div class="font-semibold">Foreman overrides</div>
           <ul class="mt-1">
             @for (d of ctx().reportedDeviations(st); track $index) {
               <li class="flex items-center gap-2">
