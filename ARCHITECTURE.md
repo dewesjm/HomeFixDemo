@@ -4,6 +4,8 @@ Welding is a **welding work-order & inspection manager** (prototype). Single-pag
 
 For the routing rules in plain language (every step, NDT, repairs, Cut, and what's required to sign each step), see **[ROUTING.md](ROUTING.md)**. Keep it in step with any routing change.
 
+**Routing rule for all code: never un-sign a stage.** Anything that sends a joint back sets the current routing to the target and gives every stage from there on a fresh copy (blank inputs, not signed, default `required` flags) while keeping its `signoffRecords`; the joint then proceeds normally. Repair/Excavation NDT rounds stay as signed records. Cut in `SignoffService.signStage()` is the reference implementation; the other go-back paths (`reopenById`, the generic `rejectToStage` loop) still un-sign and are being converted (2026-09-25). New routing code must follow this unless ROUTING.md says otherwise.
+
 ## Demo toggles (flipped often)
 
 | Toggle | Where | On | Off |
@@ -69,7 +71,7 @@ into:
 |---|---|
 | `WorkflowStore` | Per-job state (signals), localStorage persistence/migration, history-entry stamping (`withHistory`). No domain logic — every service below builds on it. |
 | `RoutingService` | Filling in a stage's own fields (`setStageInput(s)`); admin routing override (`forceRouting`); reject-and-go-back (`goBackRouting`). |
-| `SignoffService` | Locking/reopening a stage's sign-off (`signStage`, `reopenStage`, `updateStageSignoff`, `correctStage`), Fit-Up release, and the side effects a sign-off can trigger: defer-tack, fit-up-release activation, Interim Layer and Records Review UNSAT staying put, NDT reject adding a Repair round (Repair #), Repair's own routing (Grind Only, Weld Repair → Excavation NDT, Cut → start over from Fit with Refit #), and Excavation NDT's routing. See ROUTING.md for the rules. |
+| `SignoffService` | Locking a stage's sign-off (`signStage`, `updateStageSignoff`, `correctStage`), Fit-Up release, and the side effects a sign-off can trigger: defer-tack, fit-up-release activation, Interim Layer and Records Review UNSAT staying put, NDT reject adding a Repair round (Repair #), Repair's own routing (Grind Only, Weld Repair → Excavation NDT, Cut → start over from Fit with Refit #), and Excavation NDT's routing. See ROUTING.md for the rules. |
 | `AttachmentService` | `addAttachment`/`removeAttachment`. |
 | `FabricationDataService` | `setFabricationData` — cross-stage Welding fields, unrelated to any one stage. |
 | `DeviationService` | `record` (accepted deviations, saved on `JobWorkflow.deviations` with a 'Deviation' History entry), `openDeviations`, `isOnHold`. What counts as a deviation is `detectDeviations()` in `data/deviations.ts`. See "Deviations" below. |

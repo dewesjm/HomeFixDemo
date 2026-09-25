@@ -9,7 +9,8 @@ Last updated 2026-09-24.
 - A joint's routing is an ordered list of steps. The **current routing** is the first required step that isn't signed off yet.
 - Steps are signed in order. A step can't be signed until every required step before it is signed.
 - Each step is signed by one role (Fitting, Welding, Foreman, Inspector and so on). Inspection steps go to the **NQC Inspector** instead of the Inspector when the joint's Nuclear Indicator is 1 or 2.
-- Every signoff is kept as a record, including ones that are later reopened, reset by a Cut, or reversed by Deprogress. Nothing is deleted.
+- **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that step and the joint proceeds along the path as normal from there: every step from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. *Being built: Fit-Up Insp UNSAT, Repair (Grind Only / Allowable thickness exceeded), and Excavation NDT SAT and UNSAT still un-sign the target step and keep its old values; Cut already works this way.*
+- Every signoff is kept as a record, including ones on steps the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff. A comment is required.
 
 ## The path
@@ -19,7 +20,7 @@ Last updated 2026-09-24.
 | 1 | Pre-Fit | NQC Inspector | Nuclear Indicator is 1 or 2, or the joint design calls for a consumable insert or backing ring | Moves on to Fit |
 | 2 | Fit | Fitting | Always | Type is **Fit** or **Weld Build up**. If **Defer Tack** is checked, Tack is skipped and Deferred Tack is added after Fit-Up Release |
 | 3 | Tack | Welding | Unless Defer Tack was checked at Fit | Moves on to Fit-Up Insp |
-| 4 | Fit-Up Insp | Foreman or Inspector | Always | **SAT**: moves on. **UNSAT**: back to Tack. If **Release to welding** is unchecked, Fit-Up Release becomes required |
+| 4 | Fit-Up Insp | Foreman or Inspector | Always | **SAT**: moves on. **UNSAT**: back to Fit (*being built; today it goes back to Tack*). If **Release to welding** is unchecked, Fit-Up Release becomes required |
 | 5 | Fit-Up Release | Foreman | Only when Fit-Up Insp didn't release to welding | Moves on |
 | 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Same form as Tack |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
