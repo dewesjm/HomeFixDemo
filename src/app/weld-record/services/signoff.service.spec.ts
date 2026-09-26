@@ -1,8 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job } from '../../data/jobs';
+import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
+import { activeStageId, discardUnsignedEdits, seededWorkflow } from '../../data/workflow';
 
 /* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -39,6 +40,7 @@ describe('SignoffService', () => {
 
   it('defers tack: signing Fit with deferTack=yes skips regular Tack and activates Deferred Tack', () => {
     const job = weldingJob();
+    service.signStage(job, 'pre-fit');
     store.update(job, wf => ({
       ...wf,
       stages: wf.stages.map(s => s.id === 'fit' ? { ...s, signoffInputs: { ...s.signoffInputs, deferTack: 'yes' } } : s),
@@ -49,6 +51,54 @@ describe('SignoffService', () => {
     const wf = store.workflowFor(job)();
     expect(wf.stages.find(s => s.id === 'tack')?.required).toBeFalse();
     expect(wf.stages.find(s => s.id === 'deferred-tack')?.required).toBeTrue();
+    expect(activeStageId(wf.stages)).toBe('fitup-insp');
+  });
+
+  it('defers tack through the joint page: checkbox, sign, then leaving the page keeps it deferred', () => {
+    const job = weldingJob();
+    service.signStage(job, 'pre-fit');
+    /* the joint page snapshots the workflow when it opens and discards unsigned edits when it's left */
+    const opened = store.workflowFor(job)();
+    const snapshot = { fabricationData: { ...opened.fabricationData }, stages: Object.fromEntries(opened.stages.map(s => [s.id, s])) };
+    const fit = opened.stages.find(s => s.id === 'fit')!;
+    service.updateStageSignoff(job, 'fit', { signoffInputs: { ...fit.signoffInputs, deferTack: 'yes' } }, { action: 'Fit - Defer Tack' });
+    service.signStage(job, 'fit');
+    store.update(job, wf => discardUnsignedEdits(wf, snapshot));
+
+    const wf = store.workflowFor(job)();
+    expect(wf.stages.find(s => s.id === 'tack')?.required).toBeFalse();
+    expect(wf.stages.find(s => s.id === 'deferred-tack')?.required).toBeTrue();
+    expect(activeStageId(wf.stages)).toBe('fitup-insp');
+  });
+
+  it('leaving the page after a route-back keeps the route-back (does not restore signed stages)', () => {
+    const job = weldingJob();
+    ['pre-fit', 'fit', 'tack'].forEach(id => service.signStage(job, id));
+    const opened = store.workflowFor(job)();
+    const snapshot = { fabricationData: { ...opened.fabricationData }, stages: Object.fromEntries(opened.stages.map(s => [s.id, s])) };
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'fitup-insp' ? { ...s, result: 'unsat' } : s) }));
+    service.signStage(job, 'fitup-insp');
+    store.update(job, wf => discardUnsignedEdits(wf, snapshot));
+
+    expect(activeStageId(store.workflowFor(job)().stages)).toBe('fit');
+  });
+
+  it('seeded joints never sign a skipped step (Deferred Tack, Fit-Up Release) or defer their Tack', () => {
+    for (const job of JOBS.filter(j => j.trade === 'Welding')) {
+      const stages = seededWorkflow(job).stages;
+      expect(stages.filter(s => s.signed && !s.required).map(s => s.id)).withContext(job.id).toEqual([]);
+      expect(stages.find(s => s.id === 'fit')?.signoffInputs['deferTack'] ?? '').withContext(job.id).not.toBe('yes');
+    }
+  });
+
+  it('leaving the page discards what was typed on an unsigned stage', () => {
+    const job = weldingJob();
+    const opened = store.workflowFor(job)();
+    const snapshot = { fabricationData: { ...opened.fabricationData }, stages: Object.fromEntries(opened.stages.map(s => [s.id, s])) };
+    service.updateStageSignoff(job, 'pre-fit', { signoffInputs: { comments: 'typed, never signed' } }, { action: 'x' });
+    store.update(job, wf => discardUnsignedEdits(wf, snapshot));
+
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'pre-fit')?.signoffInputs['comments']).toBeUndefined();
   });
 
   it('activates Fit-Up Release when Fit-Up Insp signs without releasing to Welding', () => {

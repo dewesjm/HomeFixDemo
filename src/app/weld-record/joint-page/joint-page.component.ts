@@ -29,7 +29,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -112,17 +112,7 @@ export class JointPageComponent implements OnDestroy {
   ngOnDestroy() {
     if (!this.job || !this.wf || !this.loadSnapshot) return;
     const snapshot = this.loadSnapshot;
-    this.wf.update(wf => {
-      const fitSigned = wf.stages.find(s => s.id === 'fit')?.signed ?? false;
-      const fabricationData = fitSigned ? wf.fabricationData : { ...snapshot.fabricationData };
-      const stages = wf.stages.map(s => {
-        if (s.signed) return s;
-        const snap = snapshot.stages[s.id];
-        if (!snap) return s;
-        return { ...snap, inputs: { ...snap.inputs }, signoffInputs: { ...snap.signoffInputs }, fields: [...snap.fields], signoffFields: [...snap.signoffFields] };
-      });
-      return { ...wf, fabricationData, stages };
-    });
+    this.wf.update(wf => discardUnsignedEdits(wf, snapshot));
   }
 
 
@@ -130,7 +120,8 @@ export class JointPageComponent implements OnDestroy {
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
     if (!this.wf) return [];
     const stages = this.wf().stages;
-    const activeIdx = stages.findIndex(s => !s.signed);
+    /* the current routing, not the first unsigned step (a deferred Tack is unsigned but skipped) */
+    const activeIdx = stages.findIndex(s => s.id === activeStageId(stages));
     return stages
       .map((s, i) => ({ label: s.displayName || s.label, disabled: this.locked(i), signed: s.signed, required: s.required, stageIndex: i }))
       .filter(s => s.signed || s.required || s.stageIndex === activeIdx)

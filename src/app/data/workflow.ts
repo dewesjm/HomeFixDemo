@@ -1295,6 +1295,8 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const names = SEEDED_INSPECTOR_NAMES;
   wf.stages = wf.stages.map((s, i) => {
     if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
+    /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
+    if (!s.required) return s;
     t += (20 + Math.floor(rand() * 180)) * MIN;
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
@@ -1305,6 +1307,8 @@ export function seededWorkflow(job: Job): JobWorkflow {
       else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
       else signoffInputs[f.key] = seededFieldValue(f, rand);
     }
+    /* seeded joints didn't defer their Tack */
+    if (s.id === 'fit') signoffInputs['deferTack'] = '';
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
     const opts = s.routingOptions ?? [];
     const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
@@ -1477,6 +1481,28 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
   const fabricationData = goesBackPastFit(stages, idx)
     ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : rest.fabricationData ?? wf.fabricationData;
   return { wf: { ...wf, ...rest, stages, fabricationData }, stage };
+}
+
+/* Leaving the joint page without signing discards what was typed this visit: each stage that was
+   unsigned when the page opened, and still is, gets back the values it had then. Only the values
+   the user edits are put back -- required/signed and the rest belong to the routing, which a
+   sign-off this visit may have changed (Defer Tack, Fit-Up Release, a route-back), and are kept. */
+export function discardUnsignedEdits(
+  wf: JobWorkflow, snapshot: { fabricationData: Record<string, string>; stages: Record<string, WorkflowStage> }
+): JobWorkflow {
+  const fitSigned = wf.stages.find(s => s.id === 'fit')?.signed ?? false;
+  const fabricationData = fitSigned ? wf.fabricationData : { ...snapshot.fabricationData };
+  const stages = wf.stages.map(s => {
+    const snap = snapshot.stages[s.id];
+    if (s.signed || !snap || snap.signed) return s;
+    return {
+      ...s,
+      inputs: { ...snap.inputs }, signoffInputs: { ...snap.signoffInputs },
+      fields: [...snap.fields], signoffFields: [...snap.signoffFields],
+      routingType: snap.routingType, result: snap.result, inspectionType: snap.inspectionType, swapStageId: snap.swapStageId,
+    };
+  });
+  return { ...wf, fabricationData, stages };
 }
 
 /* the current routing: the first unsigned required stage, counted from where the routing was last set */
