@@ -32,6 +32,7 @@ import {
   shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
+import { loadFeatureToggles } from '../../data/feature-toggles';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
@@ -219,7 +220,7 @@ export class JointPageComponent implements OnDestroy {
       jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
       jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
-      repairRouteLabel: (s) => self.repairRouteLabel(s),
+      routePreviewLabel: (s) => self.routePreviewLabel(s),
       holdNote: () => self.holdNote(),
       fieldWarning: (s, k) => self.fieldWarning(s, k),
       reportedDeviations: (s) => self.reported()[s.id] ?? [],
@@ -695,7 +696,31 @@ export class JointPageComponent implements OnDestroy {
     return originStageId ? labelOf(originStageId) : 'the original joint inspection';
   }
 
-  repairRouteLabel(stage: WorkflowStage): string {
+  /* Demo routing preview under the Signoff button (Admin > Feature Toggles). Repair/Excavation NDT
+     keep their own wording below; every other step runs the real sign-off as a dry run
+     (SignoffService.previewSignoff) and names where the joint ends up. A SAT/UNSAT step with no
+     decision picked yet shows both outcomes. */
+  private routingPreviewOn = loadFeatureToggles().routingPreview;
+  routePreviewLabel(stage: WorkflowStage): string {
+    if (!this.routingPreviewOn || !this.job || !this.wf) return '';
+    if (isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)) return this.repairRouteLabel(stage);
+    if (stage.signed || stage.id === 'sold' || stage.id !== this.activeStage()) return '';
+    const wf = this.wf();
+    const job = this.job;
+    const from = wf.stages.findIndex(s => s.id === stage.id);
+    const phrase = (when: string, result?: WorkflowStage['result']) => {
+      const target = this.signoffService.previewSignoff(wf, job, stage.id, result);
+      if (!target) return `${when}, the joint is complete.`;
+      if (target.id === stage.id) return `${when}, the joint stays at ${stage.label}.`;
+      if (target.label === stage.label) return `${when}, this routes to another ${stage.label}.`;
+      const back = wf.stages.findIndex(s => s.id === target.id);
+      return `${when}, this routes ${back >= 0 && back < from ? 'back ' : ''}to ${target.label}.`;
+    };
+    if (hasDecision(stage) && !stage.result) return `${phrase('On SAT', 'sat')} ${phrase('On UNSAT', 'unsat')}`;
+    return phrase('On signoff');
+  }
+
+  private repairRouteLabel(stage: WorkflowStage): string {
     if (!this.job) return '';
     const templates = getTemplates()[this.job.trade] ?? [];
     const labelOf = (id: string) => templates.find(t => t.id === id)?.label ?? id;

@@ -10,6 +10,13 @@ export interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-09-26',
+    added: [
+      'Routing preview on every step: under the Signoff button, a "Demo only" note says where the joint will go on signoff (both outcomes on a SAT/UNSAT step until one is picked). Repair and Excavation NDT keep their existing notes.',
+      'Admin > Feature Toggles, with a switch to turn the routing preview on or off.',
+    ],
+  },
+  {
     date: '2026-09-25',
     added: [
       'Deviations: an Actual PH/IP out of range, a failed Qualification Check, or a filler the WPS doesn\'t allow no longer blocks Signoff. Signoff shows what\'s out of spec and asks for a reason, then the joint is put on hold (no way to release it yet).',

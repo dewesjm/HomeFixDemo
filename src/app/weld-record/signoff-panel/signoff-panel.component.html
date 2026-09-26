@@ -668,10 +668,9 @@
         </div>
       }
 
-      <!-- Repair / Excavation NDT only, demo aid: shows where this will actually route to on
-           signoff, given the current Repair Code / Allowable thickness exceeded selections --
-           placed under the Signoff button per the user's request. -->
-      @if (ctx().repairRouteLabel(st); as routeHint) {
+      <!-- Demo routing preview (Admin > Feature Toggles): where this step will actually route to
+           on signoff, given the current inputs -- placed under the Signoff button per the user's request. -->
+      @if (ctx().routePreviewLabel(st); as routeHint) {
         <div class="alert alert-info mt-sm py-2 text-sm"><span class="font-semibold">Demo only -</span> {{ routeHint }}</div>
       }
     } @else {

@@ -19,6 +19,7 @@ import { AdminTeamsComponent } from './weld-record/admin/admin-teams/admin-teams
 import { AdminMaterialTraceabilityComponent } from './weld-record/admin/admin-material-traceability/admin-material-traceability.component';
 import { AdminMaterialClassificationComponent } from './weld-record/admin/admin-material-classification/admin-material-classification.component';
 import { AdminQuickLinksComponent } from './weld-record/admin/admin-quick-links/admin-quick-links.component';
+import { AdminFeatureTogglesComponent } from './weld-record/admin/admin-feature-toggles/admin-feature-toggles.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 import { AdminQualificationsComponent } from './weld-record/admin/admin-qualifications/admin-qualifications.component';
 import { MakeupComponent } from './weld-record/makeup/makeup.component';
@@ -59,6 +60,7 @@ export const routes: Routes = [
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR - Material Traceability' },
   { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR - Material Classification' },
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR - Quick Links' },
+  { path: 'admin/feature-toggles', component: AdminFeatureTogglesComponent, title: 'EWR - Feature Toggles' },
 
   { path: 'jobs/:id', component: JointPageComponent, title: 'EWR - Hull Details', canDeactivate: [canDeactivateGuard] },
 

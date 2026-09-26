@@ -13,7 +13,7 @@ import {
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
   LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
     LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog, LucideUserCheck,
-    LucideList, LucideListTree
+    LucideList, LucideListTree, LucideToggleRight
 } from '@lucide/angular';
 import { getQuickLinks, QuickLink } from './data/quick-links';
 
@@ -39,7 +39,7 @@ function systemForUrl(url: string): string {
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
   LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog, LucideUserCheck,
-  LucideList, LucideListTree
+  LucideList, LucideListTree, LucideToggleRight
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

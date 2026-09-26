@@ -24,6 +24,7 @@ export const STORAGE = {
   makeup: 'welding:makeup:v2',
   qualifications: 'welding:qualifications:v2',
   qualConditions: 'welding:qual-conditions:v1',
+  featureToggles: 'welding:feature-toggles:v1',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).
