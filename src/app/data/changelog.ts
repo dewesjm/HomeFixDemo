@@ -10,6 +10,12 @@ export interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-09-27',
+    changed: [
+      'My Assignments works like the other lists: click a column heading to sort, filter boxes under each heading, and an Export button (downloads a CSV of what you see, including the Assigned By, Assigned Date, Job Description and Charge details). Rows still expand to show their details. The Demo role select no longer has a red border.',
+    ],
+  },
+  {
     date: '2026-09-26',
     added: [
       'Routing preview on every step: under the Signoff button, a "Demo only" note says where the joint will go on signoff (both outcomes on a SAT/UNSAT step until one is picked). Repair and Excavation NDT keep their existing notes.',

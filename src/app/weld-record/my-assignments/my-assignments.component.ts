@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,29 +9,20 @@ import { JOBS, Job } from '../../data/jobs';
 import { currentRoutingLabel } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
-import { ColumnFilterComponent } from '../../shared/column-filter.component';
+import { TableState } from '../../shared/table-state';
+import { TableToolbarComponent } from '../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../shared/sort-header.component';
+import { downloadCsv } from '../../data/export-csv';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 
-/* per-column filter keys -> how to read the matching text off an Assignment (WICC Date matches
-   against the same formatted display text the column shows, not the raw ISO date) */
-const COLUMN_FIELDS: Record<string, (a: Assignment, routing: string) => string> = {
-  jobId: a => a.jobId,
-  hull: a => a.hull,
-  drawing: a => a.drawing,
-  joint: a => a.joint,
-  routing: (_, routing) => routing,
-  location: a => a.location,
-  specificLocation: a => a.specificLocation,
-  assignmentNumber: a => a.assignmentNumber,
-  expirationDate: a => formatDate(a.expirationDate),
-  source: a => a.source,
-};
+/* Assignment plus its live routing, so the table can sort/filter/search on it like any other column */
+type AssignmentRow = Assignment & { routing: string };
 
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [BannerPillComponent, AppDatePipe, CommonModule, FormsModule, ColumnFilterComponent, LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDown],
+  imports: [BannerPillComponent, AppDatePipe, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDown],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {
@@ -49,7 +40,6 @@ export class MyAssignmentsComponent {
     return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
   }
 
-  keyword = signal('');
   banner = signal(bannerFor('all'));
 
   /* demo only: lets you show that different roles' assignments come from different source systems;
@@ -57,35 +47,38 @@ export class MyAssignmentsComponent {
   roleFilter = signal('Welding');
   roles = [...new Set(ASSIGNMENTS.flatMap(a => a.assignedRoles))].sort();
 
-  /* unobtrusive per-column filters (app-column-filter): a small icon until clicked, not an
-     always-open box -- keyed by the same keys as COLUMN_FIELDS */
-  columnFilters = signal<Record<string, string>>({});
-  columnFilter(key: string): string {
-    return this.columnFilters()[key] ?? '';
-  }
-  setColumnFilter(key: string, value: string) {
-    this.columnFilters.update(f => ({ ...f, [key]: value }));
+  /* search box covers the same fields it always did; WICC Date filters on the formatted text the column shows */
+  table = new TableState<AssignmentRow>(
+    ['hull', 'drawing', 'routing', 'joint', 'location'],
+    { expirationDate: (v, f) => formatDate(v).toLowerCase().includes(String(f).toLowerCase().trim()) }
+  );
+
+  constructor() {
+    effect(() => {
+      const role = this.roleFilter();
+      const list = role ? ASSIGNMENTS.filter(a => a.assignedRoles.includes(role)) : ASSIGNMENTS;
+      this.table.setRows(list.map(a => ({ ...a, routing: this.routingFor(a) })));
+    });
   }
 
-  assignments = computed(() => {
-    let list = ASSIGNMENTS;
-    const role = this.roleFilter();
-    if (role) list = list.filter(a => a.assignedRoles.includes(role));
-    const q = this.keyword().toLowerCase().trim();
-    if (q) {
-      list = list.filter(a =>
-        a.hull.toLowerCase().includes(q) ||
-        a.drawing.toLowerCase().includes(q) ||
-        this.routingFor(a).toLowerCase().includes(q) ||
-        a.joint.toLowerCase().includes(q) ||
-        a.location.toLowerCase().includes(q)
-      );
-    }
-    const filters = Object.entries(this.columnFilters()).filter(([, v]) => v.trim());
-    if (!filters.length) return list;
-    return list.filter(a =>
-      filters.every(([key, v]) => COLUMN_FIELDS[key](a, this.routingFor(a)).toLowerCase().includes(v.toLowerCase().trim())));
-  });
+  exportCsv() {
+    downloadCsv('my-assignments', [
+      { header: 'XREFID', value: (r: AssignmentRow) => r.jobId },
+      { header: 'Hull', value: r => r.hull },
+      { header: 'Drawing', value: r => r.drawing },
+      { header: 'Joint', value: r => r.joint },
+      { header: 'Routing', value: r => r.routing },
+      { header: 'Location', value: r => r.location },
+      { header: 'Specific Location', value: r => r.specificLocation },
+      { header: 'Assignment #', value: r => r.assignmentNumber },
+      { header: 'WICC Date', value: r => formatDate(r.expirationDate) },
+      { header: 'Source', value: r => r.source },
+      { header: 'Assigned By', value: r => r.assignedBy },
+      { header: 'Assigned Date', value: r => formatDate(r.assignedDate) },
+      { header: 'Job Description', value: r => r.jobDescription },
+      { header: 'Charge', value: r => r.charge },
+    ], this.table.sorted());
+  }
 
   openDetails(a: Assignment) {
     const job = this.jobFor(a);

@@ -1,10 +1,12 @@
 <div class="page-header flex-wrap items-center gap-3">
   <h2 class="section-title">My Assignments</h2>
   <app-banner-pill [banner]="banner()" />
-  <span class="flex-1"></span>
+</div>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search assignments…" (exportCsv)="exportCsv()">
   <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">
     <span class="text-sm whitespace-nowrap">Demo role:</span>
-    <select class="select select-sm select-bordered select-error w-40"
+    <select class="select select-sm select-bordered w-40"
             [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
       <option value="">All roles</option>
       @for (r of roles; track r) {
@@ -12,90 +14,89 @@
       }
     </select>
   </div>
-  <input class="input input-sm input-bordered w-48"
-         placeholder="Search assignments…"
-         [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
-</div>
+</app-table-toolbar>
 
-<!-- Assignment list -->
 <div class="overflow-x-auto">
-<div class="flex flex-col" style="min-width: 63rem">
-  <!-- Header -->
-  <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8.5rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-sm font-semibold border-b border-base-300">
-    <div></div>
-    <div class="flex items-center gap-1">XREFID <app-column-filter label="XREFID" [value]="columnFilter('jobId')" (valueChange)="setColumnFilter('jobId', $event)" /></div>
-    <div class="flex items-center gap-1">Hull <app-column-filter label="Hull" [value]="columnFilter('hull')" (valueChange)="setColumnFilter('hull', $event)" /></div>
-    <div class="flex items-center gap-1">Drawing <app-column-filter label="Drawing" [value]="columnFilter('drawing')" (valueChange)="setColumnFilter('drawing', $event)" /></div>
-    <div class="flex items-center gap-1">Joint <app-column-filter label="Joint" [value]="columnFilter('joint')" (valueChange)="setColumnFilter('joint', $event)" /></div>
-    <div class="flex items-center gap-1">Routing <app-column-filter label="Routing" [value]="columnFilter('routing')" (valueChange)="setColumnFilter('routing', $event)" /></div>
-    <div class="flex items-center gap-1">Location <app-column-filter label="Location" [value]="columnFilter('location')" (valueChange)="setColumnFilter('location', $event)" /></div>
-    <div class="flex items-center gap-1">Specific Location <app-column-filter label="Specific Location" [value]="columnFilter('specificLocation')" (valueChange)="setColumnFilter('specificLocation', $event)" /></div>
-    <div class="flex items-center gap-1">Assignment # <app-column-filter label="Assignment #" [value]="columnFilter('assignmentNumber')" (valueChange)="setColumnFilter('assignmentNumber', $event)" /></div>
-    <div class="flex items-center gap-1">WICC Date <app-column-filter label="WICC Date" [value]="columnFilter('expirationDate')" (valueChange)="setColumnFilter('expirationDate', $event)" /></div>
-    <div class="flex items-center gap-1">Source <app-column-filter label="Source" [value]="columnFilter('source')" (valueChange)="setColumnFilter('source', $event)" /></div>
-    <div></div>
-  </div>
-
-  <!-- Rows -->
-  @for (a of assignments(); track a.id) {
-    <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8.5rem_7rem_6rem_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
-         [class.border-b-0]="expanded().has(a.id)"
-         (click)="toggle(a.id)">
-      @if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-      <div class="truncate">{{ a.jobId }}</div>
-      <div class="font-semibold truncate">{{ a.hull }}</div>
-      <div class="truncate">{{ a.drawing }}</div>
-      <div class="truncate">{{ a.joint }}</div>
-      <div class="truncate">{{ routingFor(a) }}</div>
-      <div class="truncate">{{ a.location }}</div>
-      <div class="truncate">{{ a.specificLocation }}</div>
-      <div class="truncate">{{ a.assignmentNumber }}</div>
-      <div class="truncate">{{ a.expirationDate | appDate }}</div>
-      <div class="truncate">{{ a.source }}</div>
-      <div class="flex items-center gap-1 justify-end" (click)="$event.stopPropagation()">
-        <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
-           target="_blank" rel="noopener" title="View assignment">
-          <svg lucideFileText class="size-3.5"></svg>
-        </a>
-        <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(a)">
-          <svg lucideArrowUpRight class="size-3"></svg>
-        </button>
-      </div>
-    </div>
-    @if (expanded().has(a.id)) {
-      <div class="grid grid-cols-[1.5rem_1fr] gap-2 px-3 py-3 border-b border-base-300 last:border-b-0 bg-base-200/50 text-sm">
-        <div></div>
-        <div class="flex flex-wrap gap-x-8 gap-y-2">
-          <div><span class="font-semibold">Assigned By</span><div>{{ a.assignedBy }}</div></div>
-          <div><span class="font-semibold">Assigned Date</span><div>{{ a.assignedDate | appDate }}</div></div>
-          <div><span class="font-semibold">Job Description</span><div>{{ a.jobDescription }}</div></div>
-          @for (d of a.details; track d.label) {
-            <div><span class="font-semibold">{{ d.label }}</span><div>{{ d.value }}</div></div>
-          }
-          <div>
-            <span class="font-semibold">Charge</span>
-            <div class="flex flex-col items-center">
-              <div class="flex items-stretch h-8 bg-base-100 px-4" title="{{ a.charge }}">
-                @for (el of barcodeElements(a.charge); track $index) {
-                  <div class="h-full" [class.bg-base-content]="el.bar" [style.width.px]="el.width"></div>
-                }
-              </div>
-              <div class="font-mono mt-1 text-center">{{ a.charge }}</div>
-            </div>
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th class="w-6"></th>
+      <th appSortHeader [table]="table" field="jobId" label="XREFID" filter="text" style="min-width: 6ch"></th>
+      <th appSortHeader [table]="table" field="hull" label="Hull" filter="text" style="min-width: 6ch"></th>
+      <th appSortHeader [table]="table" field="drawing" label="Drawing" filter="text" style="min-width: 9ch"></th>
+      <th appSortHeader [table]="table" field="joint" label="Joint" filter="text" style="min-width: 9ch"></th>
+      <th appSortHeader [table]="table" field="routing" label="Routing" filter="text" class="min-w-12"></th>
+      <th appSortHeader [table]="table" field="location" label="Location" filter="text" class="min-w-12"></th>
+      <th appSortHeader [table]="table" field="specificLocation" label="Specific Location" filter="text" class="min-w-14"></th>
+      <th appSortHeader [table]="table" field="assignmentNumber" label="Assignment #" filter="text" class="min-w-12"></th>
+      <th appSortHeader [table]="table" field="expirationDate" label="WICC Date" filter="text" class="min-w-12"></th>
+      <th appSortHeader [table]="table" field="source" label="Source" filter="text" class="min-w-12"></th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (a of table.sorted(); track a.id) {
+      <tr class="hover:bg-base-200 cursor-pointer" (click)="toggle(a.id)">
+        <td>@if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }</td>
+        <td>{{ a.jobId }}</td>
+        <td class="font-semibold">{{ a.hull }}</td>
+        <td>{{ a.drawing }}</td>
+        <td>{{ a.joint }}</td>
+        <td>{{ a.routing }}</td>
+        <td>{{ a.location }}</td>
+        <td>{{ a.specificLocation }}</td>
+        <td>{{ a.assignmentNumber }}</td>
+        <td>{{ a.expirationDate | appDate }}</td>
+        <td>{{ a.source }}</td>
+        <td (click)="$event.stopPropagation()">
+          <div class="flex items-center gap-1 justify-end">
+            <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
+               target="_blank" rel="noopener" title="View assignment">
+              <svg lucideFileText class="size-3.5"></svg>
+            </a>
+            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(a)">
+              <svg lucideArrowUpRight class="size-3"></svg>
+            </button>
           </div>
-          @if (!a.jobId) {
-            <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
-              <div><span class="font-semibold">Deck</span><div>{{ a.deck }}</div></div>
-              <div><span class="font-semibold">Frame</span><div>{{ a.frame }}</div></div>
-              <div><span class="font-semibold">P/S/CL</span><div>{{ a.pscl }}</div></div>
-              <div><span class="font-semibold">Usage</span><div>{{ a.usage }}</div></div>
+        </td>
+      </tr>
+      @if (expanded().has(a.id)) {
+        <tr class="bg-base-200/50">
+          <td></td>
+          <td colspan="11">
+<div class="flex flex-wrap gap-x-8 gap-y-2">
+              <div><span class="font-semibold">Assigned By</span><div>{{ a.assignedBy }}</div></div>
+              <div><span class="font-semibold">Assigned Date</span><div>{{ a.assignedDate | appDate }}</div></div>
+              <div><span class="font-semibold">Job Description</span><div>{{ a.jobDescription }}</div></div>
+              @for (d of a.details; track d.label) {
+                <div><span class="font-semibold">{{ d.label }}</span><div>{{ d.value }}</div></div>
+              }
+              <div>
+                <span class="font-semibold">Charge</span>
+                <div class="flex flex-col items-center">
+                  <div class="flex items-stretch h-8 bg-base-100 px-4" title="{{ a.charge }}">
+                    @for (el of barcodeElements(a.charge); track $index) {
+                      <div class="h-full" [class.bg-base-content]="el.bar" [style.width.px]="el.width"></div>
+                    }
+                  </div>
+                  <div class="font-mono mt-1 text-center">{{ a.charge }}</div>
+                </div>
+              </div>
+              @if (!a.jobId) {
+                <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
+                  <div><span class="font-semibold">Deck</span><div>{{ a.deck }}</div></div>
+                  <div><span class="font-semibold">Frame</span><div>{{ a.frame }}</div></div>
+                  <div><span class="font-semibold">P/S/CL</span><div>{{ a.pscl }}</div></div>
+                  <div><span class="font-semibold">Usage</span><div>{{ a.usage }}</div></div>
+                </div>
+              }
             </div>
-          }
-        </div>
-      </div>
+          </td>
+        </tr>
+      }
+    } @empty {
+      <tr><td colspan="12" class="empty">No assignments match your filters.</td></tr>
     }
-  } @empty {
-    <div class="empty">No assignments match your filters.</div>
-  }
-</div>
+  </tbody>
+</table>
 </div>
