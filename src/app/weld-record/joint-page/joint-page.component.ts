@@ -23,6 +23,8 @@ import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
+import { WeldAssignmentService } from '../services/weld-assignment.service';
+import { ASSIGNED_KEYS } from '../../data/weld-assignment';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
 import { conditionQuals } from '../../data/qual-conditions';
@@ -64,6 +66,7 @@ export class JointPageComponent implements OnDestroy {
   private fabricationService = inject(FabricationDataService);
   private deviationService = inject(DeviationService);
   private overrideService = inject(ForemanOverrideService);
+  private weldAssignment = inject(WeldAssignmentService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
@@ -71,7 +74,13 @@ export class JointPageComponent implements OnDestroy {
 
   /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
      fields, routing type choice) can be discarded when the user leaves without signing */
-  private readonly loadSnapshot = this.wf ? this.captureSnapshot() : null;
+  private readonly loadSnapshot = this.wf ? this.assignAndSnapshot() : null;
+
+  /* the external system's GWP/WTN/filler go on before the snapshot, so they aren't an unsaved edit */
+  private assignAndSnapshot() {
+    if (this.job) this.weldAssignment.applyAll(this.job);
+    return this.captureSnapshot();
+  }
 
   private captureSnapshot(): { fabricationData: Record<string, string>; stages: Record<string, WorkflowStage> } {
     const w = this.wf!();
@@ -217,6 +226,7 @@ export class JointPageComponent implements OnDestroy {
       reportedDeviations: (s) => self.reported()[s.id] ?? [],
       foremanOverride: (s) => self.foremanOverride(s),
       removeForemanOverride: (s, i) => self.removeForemanOverride(s, i),
+      assignedLocked: (s, k) => self.assignedLocked(s, k),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
       stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
       blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
@@ -394,6 +404,11 @@ export class JointPageComponent implements OnDestroy {
       .some(d => d.kind === 'off-list' && d.label === f.label);
   }
 
+  /* GWP, WTN and Filler Metal Type/Size come from the external system; only a Foreman Override opens them */
+  assignedLocked(stage: WorkflowStage, key: string): boolean {
+    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage);
+  }
+
   fieldWarning(stage: WorkflowStage, key: string): string {
     if (isActualOutOfRange(stage, key)) return 'Out of Range';
     if ((key === 'weldProcedure' || key === 'fillerMetalType' || key === 'fillerMetalSize')
@@ -419,19 +434,8 @@ export class JointPageComponent implements OnDestroy {
   removeForemanOverride(stage: WorkflowStage, index: number) {
     this.reported.update(r => ({ ...r, [stage.id]: (r[stage.id] ?? []).filter((_, i) => i !== index) }));
     if (this.offListUnlocked(stage) || !this.job) return;
-    /* last override removed: the droplists narrow back, so drop values they no longer allow */
-    const st = this.wf?.().stages.find(s => s.id === stage.id);
-    if (!st) return;
-    const gwpField = st.fields.find(f => f.key === 'weldProcedure');
-    if (gwpField && this.isOffList(st, 'weldProcedure')) {
-      /* clearing GWP also clears WTN and everything the WPS filled in, filler included */
-      this.stageSelectChange(st, gwpField, '');
-      return;
-    }
-    const changes = st.fields
-      .filter(f => (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') && this.isOffList(st, f.key))
-      .map(f => ({ field: f, value: '' }));
-    if (changes.length) this.wfService.setStageInputs(this.job, st.id, changes);
+    /* last override removed: back to the external system's values */
+    this.weldAssignment.apply(this.job, stage.id);
   }
 
   /* detected deviations, for the acceptance screen. Off-list GWP/filler picked under a Foreman
@@ -558,6 +562,7 @@ export class JointPageComponent implements OnDestroy {
         signoffInputs: {},
         signoffFields: newSignoff,
       }, { action: `${stage.label} - Type changed to ${value}` });
+      if (value === 'weld-buildup') this.weldAssignment.apply(this.job, stage.id);
       return;
     }
     this.signoffService.updateStageSignoff(this.job!, stage.id, {
@@ -896,8 +901,11 @@ export class JointPageComponent implements OnDestroy {
     const fillerSize = stage.fields.find(f => f.key === 'fillerMetalSize');
     const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
     if (value !== 'yes') {
-      /* unchecked: unlock and clear the filler fields so they must be re-entered */
-      for (const f of [fillerType, fillerSize, fillerMic]) {
+      /* unchecked: MIC must be re-entered; Type/Size go back to the external system's values,
+         or blank under a Foreman Override */
+      if (fillerMic) this.wfService.setStageInput(this.job, stage.id, fillerMic, '');
+      if (!this.offListUnlocked(stage)) { this.weldAssignment.apply(this.job, stage.id); return; }
+      for (const f of [fillerType, fillerSize]) {
         if (f) this.wfService.setStageInput(this.job, stage.id, f, '');
       }
       return;
@@ -1207,6 +1215,9 @@ export class JointPageComponent implements OnDestroy {
   }
 
   fieldError(stageId: string, fieldKey: string): string | undefined {
+    /* an actual set to NC by its requirement has nothing to check; drops an error left from an
+       earlier Signoff attempt, before the WTN made it NC */
+    if (fieldKey in ACTUAL_REQUIREMENT && this.wf?.().stages.find(s => s.id === stageId)?.inputs[fieldKey] === 'NC') return undefined;
     return this.fieldErrors()[`${stageId}:${fieldKey}`];
   }
 

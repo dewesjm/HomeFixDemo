@@ -671,7 +671,7 @@
       <!-- Demo routing preview (Admin > Feature Toggles): where this step will actually route to
            on signoff, given the current inputs -- placed under the Signoff button per the user's request. -->
       @if (ctx().routePreviewLabel(st); as routeHint) {
-        <div class="alert alert-info mt-sm py-2 text-sm"><span class="font-semibold">Demo only -</span> {{ routeHint }}</div>
+        <div class="mt-sm px-3 py-2 text-sm rounded-box bg-base-200 border border-base-300"><span class="font-semibold">Routing Preview (Demo Only) -</span> {{ routeHint }}</div>
       }
     } @else {
       <div class="meta">Optional stage - no signoff required.</div>
@@ -690,6 +690,8 @@
         <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
       } @else if (isReadonlyLimit(f)) {
         <div class="stage-readonly-value">{{ stage().inputs[f.key] || '-' }}</div>
+      } @else if (isAssigned(f)) {
+        <div class="stage-readonly-value">{{ selectedLabel(f) || stage().inputs[f.key] || '-' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
         <div class="stage-readonly-value">NC</div>
       } @else if (f.type === 'select') {

@@ -440,8 +440,8 @@ export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | unde
 
 /* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
    Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
-   Unlike weldProcess/PH/IP, filler metal stays user-selected among these options rather than
-   auto-populated -- a WPS commonly allows more than one valid filler type/size. */
+   On the weld record the external-system stand-in (weld-assignment.ts) picks one of these; a
+   Foreman Override opens the full lists. */
 export function fillerMetalTypeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
   if (!p) return [];
   return FILLER_METAL_TYPE_OPTIONS.filter(o => p.fillerMetalTypes.includes(o.value));

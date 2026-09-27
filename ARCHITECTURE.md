@@ -75,6 +75,7 @@ into:
 | `AttachmentService` | `addAttachment`/`removeAttachment`. |
 | `FabricationDataService` | `setFabricationData` — cross-stage Welding fields, unrelated to any one stage. |
 | `DeviationService` | `record` (accepted deviations, saved on `JobWorkflow.deviations` with a 'Deviation' History entry), `openDeviations`, `isOnHold`. What counts as a deviation is `detectDeviations()` in `data/deviations.ts`. See "Deviations" below. |
+| `WeldAssignmentService` | `applyAll`/`apply` — writes the external-system stand-in's GWP/WTN/filler onto unsigned welding steps (no History entry). See "External assignment" below. |
 
 **Rule for adding new workflow behavior**: don't default to adding a method to whichever service is already
 injected in the component you're editing — that's exactly how `routing.service.ts` grew into a god-service
@@ -168,9 +169,10 @@ src/app/
                           not FILLER_METAL_TYPES' label casing), and Weld Record's Filler Metal Type/Size
                           fields filter to whichever the resolved GWP+WTN Procedure allows
                           (`fillerMetalTypeOptionsForProcedure()`/`fillerMetalSizeOptionsForProcedure()`) —
-                          but stay user-selected rather than auto-filled like Weld Process/PH/IP, since a WPS
-                          commonly allows more than one valid type/size. Changing GWP or WTN clears a selection
-                          that's no longer valid under the new WPS. `fillerMetalClassification` (a single
+                          and GWP, WTN and Filler Metal Type/Size are set by a stand-in for an external
+                          system (see "External assignment" below), read-only unless a Foreman Override is
+                          added. Under an override, changing GWP or WTN clears a selection that's no longer
+                          valid under the new WPS. `fillerMetalClassification` (a single
                           label-cased MIL- string, e.g. `'MIL-80S-50'`) is unrelated — free text for the PDF,
                           not part of the cascade. Storage bumped to `welding:procedures:v4` for the shape
                           change (`fillerMetalType`/`fillerMetalSizeRange` strings → arrays).
@@ -459,10 +461,18 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 
 Added 2026-09-25 (rules in plain language: ROUTING.md "Deviations").
 - **What's acceptable** (`detectDeviations()`, `data/deviations.ts`): Actual PH/IP outside its requirement pair (`isActualOutOfRange()`, NC = no limit), a failed Qualification Check (Test User's quals vs the WPS), and a Filler Metal Type/Size not on the WPS (skipped while "Only Consumable Insert used as filler" locks them). Actual out of range is no longer a field error: `validateStageFields()`/`onFieldBlur()` dropped their range checks, and the field shows a live warning instead (`fieldWarning()`, amber). Actual Min > Max stays a hard stop.
-- **Report Deviation** (joint page `reported` signal, keyed by stage id): typed text, not persisted until signing, dropped on leaving like any unsigned input (`hasUnsavedChanges()` counts it). While a stage has one, `withStageRuntimeOptions()` gives Filler Metal Type/Size the full list and WTN changes stop clearing them; removing the last report clears off-list filler values.
+- **Report Deviation** (joint page `reported` signal, keyed by stage id): typed text, not persisted until signing, dropped on leaving like any unsigned input (`hasUnsavedChanges()` counts it). While a stage has one, `withStageRuntimeOptions()` gives Filler Metal Type/Size the full list and WTN changes stop clearing them; removing the last report puts back the external system's GWP/WTN/filler (see "External assignment").
 - **Sign flow**: `signStage()` runs the hard validation first; if `stageDeviations()` finds anything, it opens `DeviationAcceptDialogComponent` (items, required reason, password) instead of the confirm. Accepting calls `DeviationService.record()` then `SignoffService.signStage()`; the Root 5X auto-sign is skipped since the joint is now held.
 - **Hold**: `heldAt(stage)` makes every stage except the deviated one(s) non-editable (`editable()`, `inputsEditable()`, `signBlockers()`); the signoff panel shows `holdNote()`. No release exists (user's decision); disposition comes later.
 - Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.
+
+## External assignment
+
+Added 2026-09-26. Emulates an external system that sets a welding step's **GWP, WTN, Filler Metal Type and Filler Metal Size** after doing its own validity checks.
+- **Picks** (`data/weld-assignment.ts`, `assignedInputs()`): one GWP per joint from those qualified for its base metals; WTN per step, preferring one whose quals the Test User holds; filler type/size per step from the WPS's allowed lists. Chosen by a hash of job id + stage id, so they're stable across visits. Also sets what the WPS drives (Weld Process, PH/IP, NC actuals), same as picking by hand. Filler is skipped while "Only Consumable Insert used as filler" owns it.
+- **When**: `JointPageComponent.assignAndSnapshot()` runs `WeldAssignmentService.applyAll()` on every unsigned step with a GWP field before the load snapshot (so it isn't an unsaved edit), overwriting whatever was there. Also re-applied when Fit switches to Weld Build-Up, when the Consumable Insert checkbox is unchecked (no override), and when a step's last Foreman Override is removed. Steps blanked by a route-back fill again on the next visit.
+- **Locked**: `assignedLocked()` (joint page) → signoff panel `isAssigned()` shows the four as plain text (GWP/WTN descriptions still show under them). A Foreman Override on the step turns them back into full-list droplists.
+- Not covered: Work History's Correct can still change them after signing.
 
 ## Gotchas
 

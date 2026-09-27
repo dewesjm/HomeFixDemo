@@ -15,9 +15,14 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Routing preview on every step: under the Signoff button, a "Demo only" note says where the joint will go on signoff (both outcomes on a SAT/UNSAT step until one is picked). Repair and Excavation NDT keep their existing notes.',
       'Admin > Feature Toggles, with a switch to turn the routing preview on or off.',
     ],
+    changed: [
+      'Welding steps now fill in GWP, WTN, Filler Metal Type and Filler Metal Size for you, as if an outside system had already checked them. They show as plain text and can only be changed after a Foreman Override; removing the override puts them back.',
+      'The routing preview now reads "Routing Preview (Demo Only)" and uses a quieter grey box instead of blue.',
+    ],
     fixed: [
       'Defer Tack at Fit now works: after signing, the joint skips Tack and Deferred Tack is added. Leaving the joint page after a signoff was quietly undoing it (and could also undo a Fit-Up Release being added, or a joint being sent back).',
       'The routing bar no longer shows a skipped Tack next to Deferred Tack.',
+      'An Actual PH/IP field set to NC no longer shows a leftover "is required" error from an earlier Signoff attempt.',
       'Sample joints no longer show skipped steps (Deferred Tack, Fit-Up Release) as signed.',
     ],
   },

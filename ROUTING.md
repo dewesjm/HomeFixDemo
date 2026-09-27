@@ -111,9 +111,9 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - **MIC verified** for each affected item whose MCL is MC-I.
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
-- GWP and WTN. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
+- GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed unless a **Foreman Override** is added to the step. Removing the last override puts them back. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
 - Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max. A value outside its requirement limits is a **deviation** (see below), not a hard stop. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max (hard stop).
-- Filler Metal Type, Size and MIC. On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
+- Filler Metal Type, Size and MIC (MIC is typed in). On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.
 - Layer also needs Interim Layer or Final Layer chosen.
 

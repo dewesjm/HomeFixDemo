@@ -45,6 +45,7 @@ export interface SignoffContext {
   reportedDeviations: (stage: WorkflowStage) => string[];
   foremanOverride: (stage: WorkflowStage) => void;
   removeForemanOverride: (stage: WorkflowStage, index: number) => void;
+  assignedLocked: (stage: WorkflowStage, fieldKey: string) => boolean;
 
   // Actions
   stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;
@@ -212,6 +213,11 @@ export class SignoffPanelComponent {
 
   isLocked(f: StageField): boolean {
     return isFieldLocked(this.stage(), f);
+  }
+
+  /* set by the external system (GWP/WTN/filler) and not under a Foreman Override: plain text */
+  isAssigned(f: StageField): boolean {
+    return this.ctx().assignedLocked(this.stage(), f.key) && !this.isLocked(f);
   }
 
   isActual(f: StageField): boolean {
