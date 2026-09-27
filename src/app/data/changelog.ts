@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Feature Toggles, with a switch to turn the routing preview on or off.',
     ],
     changed: [
+      'Import Joints and Load Procedures work and look the same, with normal-size text (the row counts and the "Paste Joints" help text were small). The section headings on the procedure form ("1. Base Metal" and so on) are now real headings instead of faded captions.',
       'Every Admin table now has the same toolbar: a search box, an Export button (downloads a CSV of what you see), and an Add button where rows can be added. Click a column heading to sort by it. This adds search, sorting and Export to Penetrant, Locations, Weld Positions, Routing Options, Quick Links, Teams, Qualifications, Material Traceability, Material Classification and Joint Designs & NDT, and Export to Signoff Fields.',
       'Search boxes are all worded the same way ("Search joints…", "Search procedures…" and so on), and empty lists all use the same wording and look ("No locations yet.", or "No joints match your filters." when filters hide everything).',
       "Page titles match their menu names (Teams, Banner, Attribute Codes, Set Routing, History, Joint Search, Joint Designs & NDT), and each page has a one-line description under its title.",

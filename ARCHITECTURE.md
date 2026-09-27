@@ -199,7 +199,7 @@ src/app/
                               Filler Metal Type/Size are checkbox lists against FILLER_METAL_TYPE_OPTIONS/
                               FILLER_METAL_SIZE_OPTIONS (which values are valid for this WPS), not a single
                               select/free-text range like the rest of the form.
-      load-procedures/       Bulk import via .xlsx/.csv or "Use Sample", same pattern as Weld Planning's mass-edit
+      load-procedures/       Bulk import via .xlsx/.csv or "Use Sample"; shares BulkImport + app-import-grid with Weld Planning's mass-edit
 
   theme-picker/           DaisyUI theme switcher (32 themes, default: forest)
 
@@ -230,6 +230,10 @@ src/app/
     table-pager.component, multiselect-dropdown.component, date-range.component
     table-toolbar.component  Toolbar over every admin table: search box, Export, Add (addLabel; blank = no Add);
                          [toolbarEnd] slot for pages that add rows inline. Pair with th[appSortHeader] columns.
+    bulk-import.ts / import-grid.component  Shared spreadsheet-import flow (file/sample load, validate, Save All)
+                         and frame (counts, actions, status column, empty state) for Import Joints / Mass Edit
+                         and Load Procedures. A page extends BulkImport and passes its columns as
+                         #headerCells / #rowCells templates.
     banner-pill.component  The admin banner as a pill beside a page title (the only banner style)
     date-format.ts       The one date format: formatDate / formatDateTime and the appDate / appDateTime pipes
                          (09/26/2026, 09/26/2026 3:04 PM). Use these for every displayed or exported date.
