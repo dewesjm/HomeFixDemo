@@ -471,7 +471,7 @@ Added 2026-09-25 (rules in plain language: ROUTING.md "Deviations").
 Added 2026-09-26. Emulates an external system that sets a welding step's **GWP, WTN, Filler Metal Type and Filler Metal Size** after doing its own validity checks.
 - **Picks** (`data/weld-assignment.ts`, `assignedInputs()`): one GWP per joint from those qualified for its base metals; WTN per step, preferring one whose quals the Test User holds; filler type/size per step from the WPS's allowed lists. Chosen by a hash of job id + stage id, so they're stable across visits. Also sets what the WPS drives (Weld Process, PH/IP, NC actuals), same as picking by hand. Filler is skipped while "Only Consumable Insert used as filler" owns it.
 - **When**: `JointPageComponent.assignAndSnapshot()` runs `WeldAssignmentService.applyAll()` on every unsigned step with a GWP field before the load snapshot (so it isn't an unsaved edit), overwriting whatever was there. Also re-applied when Fit switches to Weld Build-Up, when the Consumable Insert checkbox is unchecked (no override), and when a step's last Foreman Override is removed. Steps blanked by a route-back fill again on the next visit.
-- **Locked**: `assignedLocked()` (joint page) → signoff panel `isAssigned()` shows the four as plain text (GWP/WTN descriptions still show under them). A Foreman Override on the step turns them back into full-list droplists.
+- **Locked**: `assignedLocked()` (joint page) → signoff panel `isLocked()` shows the four as disabled droplists, like Weld Process (GWP/WTN descriptions still show under them). A Foreman Override on the step enables them with the full lists.
 - Not covered: Work History's Correct can still change them after signing.
 
 ## Gotchas

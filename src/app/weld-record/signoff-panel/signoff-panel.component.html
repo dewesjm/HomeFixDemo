@@ -690,8 +690,6 @@
         <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
       } @else if (isReadonlyLimit(f)) {
         <div class="stage-readonly-value">{{ stage().inputs[f.key] || '-' }}</div>
-      } @else if (isAssigned(f)) {
-        <div class="stage-readonly-value">{{ selectedLabel(f) || stage().inputs[f.key] || '-' }}</div>
       } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
         <div class="stage-readonly-value">NC</div>
       } @else if (f.type === 'select') {

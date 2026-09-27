@@ -211,13 +211,9 @@ export class SignoffPanelComponent {
     return READONLY_LIMIT_KEYS.has(f.key);
   }
 
+  /* also GWP/WTN/filler set by the external system, until a Foreman Override opens them */
   isLocked(f: StageField): boolean {
-    return isFieldLocked(this.stage(), f);
-  }
-
-  /* set by the external system (GWP/WTN/filler) and not under a Foreman Override: plain text */
-  isAssigned(f: StageField): boolean {
-    return this.ctx().assignedLocked(this.stage(), f.key) && !this.isLocked(f);
+    return isFieldLocked(this.stage(), f) || this.ctx().assignedLocked(this.stage(), f.key);
   }
 
   isActual(f: StageField): boolean {
