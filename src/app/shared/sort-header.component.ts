@@ -20,7 +20,8 @@ import { TableState } from './table-state';
         @if (filter() === 'text') {
           <label class="input input-xs input-bordered flex items-center gap-1 w-full min-w-0 col-filter-mobile" [title]="'Filter ' + label()">
             <svg lucideListFilter class="size-3 opacity-60 shrink-0"></svg>
-            <input type="text" class="grow min-w-0"
+            <!-- size="1": without it the box's default ~20-character width sets the column's minimum width -->
+            <input type="text" class="grow min-w-0" size="1"
                    [ngModel]="table().columnFilters()[field()] ?? ''"
                    (ngModelChange)="table().setColumnFilter(field(), $event)" />
             @if (table().columnFilters()[field()]) {
