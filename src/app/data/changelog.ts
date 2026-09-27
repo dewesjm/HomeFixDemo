@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     fixed: [
       'Tables with filter boxes under their headings (My Assignments, History and others) were wider than needed because each filter box forced its column wide, so you had to scroll sideways. Columns now fit their contents, and Drawing and Joint on My Assignments and History are as wide as on Pipe Welding so their filter boxes are big enough to type in.',
+      'My Assignments columns are only as wide as their contents (Source and others were stretched to fill the page); the row buttons sit at the right edge.',
     ],
   },
   {
