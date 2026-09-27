@@ -34,7 +34,7 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"   placeholder="XREFID, hull, drawing, joint, order…"
+    <input type="text" class="grow"   placeholder="Search XREFID, hull, drawing, joint or order…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
     @if (table.globalFilter()) {
       <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">

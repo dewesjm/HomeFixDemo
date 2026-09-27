@@ -17,13 +17,13 @@
 
   <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 12rem">
     <svg lucideBriefcase class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"            placeholder="XREFID, drawing, joint or order"
+    <input type="text" class="grow"            placeholder="Search XREFID, drawing, joint or order…"
            [ngModel]="jobQuery()" (ngModelChange)="jobQuery.set($event)" />
   </label>
 
   <label class="input input-sm input-bordered flex items-center gap-2 grow">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow"            placeholder="Search all"
+    <input type="text" class="grow"            placeholder="Search history…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
   <button type="button" class="btn btn-sm btn-outline" [disabled]="!expandableKeys().length" (click)="toggleAll()">
@@ -197,7 +197,7 @@
     } @empty {
       <tr>
         <td colspan="14" class="empty">
-          No matching activity. Each sign-off records every editable field and its value at that moment.
+          No activity matches your filters. Each sign-off records every editable field and its value at that moment.
         </td>
       </tr>
     }

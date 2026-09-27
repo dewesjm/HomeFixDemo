@@ -13,7 +13,7 @@
     </select>
   </div>
   <input class="input input-sm input-bordered w-48"
-         placeholder="Filter…"
+         placeholder="Search assignments…"
          [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
 </div>
 <p class="section-sub">Jobs assigned to you, from every source system.</p>
@@ -96,7 +96,7 @@
       </div>
     }
   } @empty {
-    <div class="empty text-sm">No assignments for this role.</div>
+    <div class="empty">No assignments match your filters.</div>
   }
 </div>
 </div>

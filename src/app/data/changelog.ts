@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Feature Toggles, with a switch to turn the routing preview on or off.',
     ],
     changed: [
+      'Search boxes are all worded the same way ("Search joints…", "Search procedures…" and so on), and empty lists all use the same wording and look ("No locations yet.", or "No joints match your filters." when filters hide everything).',
       "Page titles match their menu names (Teams, Banner, Attribute Codes, Set Routing, History, Joint Search, Joint Designs & NDT), and each page has a one-line description under its title.",
       "The banner message is always a small pill beside the page title (Joint Search showed a full-width bar).",
       "Qualifications, Material Traceability and Material Classification no longer have a Back button, like the other Admin pages.",

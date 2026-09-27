@@ -136,7 +136,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td [attr.colspan]="visibleColumns().length + 1" class="empty">No joints match. Try clearing some filters.</td></tr>
+      <tr><td [attr.colspan]="visibleColumns().length + 1" class="empty">No joints match your filters.</td></tr>
     }
   </tbody>
 </table>
@@ -154,7 +154,7 @@
       </p>
 
       <div class="row mb-sm">
-        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Filter fields…"
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search fields…"
                [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)" />
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(true)">Select all</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(false)">Clear</button>
@@ -185,7 +185,7 @@
       <p class="dialog-hint">Check the columns you want in the results grid, then drag them (or use the arrows) into the order you want.</p>
 
       <div class="row mb-sm">
-        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Filter columns…"
+        <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search columns…"
                [ngModel]="colFilter()" (ngModelChange)="colFilter.set($event)" />
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(true)">Select all</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(false)">Clear</button>

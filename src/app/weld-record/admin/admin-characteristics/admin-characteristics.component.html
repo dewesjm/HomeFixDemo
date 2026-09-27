@@ -7,7 +7,7 @@
   <span class="spacer"></span>
   <label class="input input-sm input-bordered flex items-center gap-2">
     <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search codes…"
+    <input type="text" class="grow" placeholder="Search attribute codes…"
            [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
   </label>
   <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
@@ -27,7 +27,7 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('code')">
             Code {{ table.sortField() === 'code' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Search…"
                  [ngModel]="table.columnFilters()['code'] ?? ''"
                  (ngModelChange)="table.setColumnFilter('code', $event)" />
         </div>
@@ -37,7 +37,7 @@
           <a class="cursor-pointer select-none" (click)="table.toggleSort('description')">
             Description {{ table.sortField() === 'description' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
           </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Filter…"
+          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Search…"
                  [ngModel]="table.columnFilters()['description'] ?? ''"
                  (ngModelChange)="table.setColumnFilter('description', $event)" />
         </div>
@@ -85,7 +85,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="3" class="empty">No codes defined.</td></tr>
+      <tr><td colspan="3" class="empty">No attribute codes yet.</td></tr>
     }
   </tbody>
 </table>

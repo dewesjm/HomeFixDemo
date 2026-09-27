@@ -134,7 +134,7 @@ type Row = WeldJoint;
                 </tr>
               } @empty {
                 <tr>
-                  <td colspan="8" class="empty">No joints found.</td>
+                  <td colspan="8" class="empty">No joints match your filters.</td>
                 </tr>
               }
             </tbody>
