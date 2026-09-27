@@ -694,8 +694,8 @@ export class JointPageComponent implements OnDestroy {
 
   /* Demo routing preview under the Signoff button (Admin > Feature Toggles). Repair/Excavation NDT
      keep their own wording below; every other step runs the real sign-off as a dry run
-     (SignoffService.previewSignoff) and names where the joint ends up. A SAT/UNSAT step with no
-     decision picked yet shows both outcomes. */
+     (SignoffService.previewSignoff) and names where the joint ends up, plus "Why" (the special
+     routing rules it hit). A SAT/UNSAT step with no decision picked yet shows both outcomes. */
   private routingPreviewOn = loadFeatureToggles().routingPreview;
   routePreviewLabel(stage: WorkflowStage): string {
     if (!this.routingPreviewOn || !this.job || !this.wf) return '';
@@ -705,12 +705,13 @@ export class JointPageComponent implements OnDestroy {
     const job = this.job;
     const from = wf.stages.findIndex(s => s.id === stage.id);
     const phrase = (when: string, result?: WorkflowStage['result']) => {
-      const target = this.signoffService.previewSignoff(wf, job, stage.id, result);
-      if (!target) return `${when}, the joint is complete.`;
-      if (target.id === stage.id) return `${when}, the joint stays at ${stage.label}.`;
-      if (target.label === stage.label) return `${when}, this routes to another ${stage.label}.`;
+      const { target, reasons } = this.signoffService.previewSignoff(wf, job, stage.id, result);
+      const why = `Why: ${reasons.length ? reasons.join('; ') : 'no special conditions'}.`;
+      if (!target) return `${when}, the joint is complete. ${why}`;
+      if (target.id === stage.id) return `${when}, the joint stays at ${stage.label}. ${why}`;
+      if (target.label === stage.label) return `${when}, this routes to another ${stage.label}. ${why}`;
       const back = wf.stages.findIndex(s => s.id === target.id);
-      return `${when}, this routes ${back >= 0 && back < from ? 'back ' : ''}to ${target.label}.`;
+      return `${when}, this routes ${back >= 0 && back < from ? 'back ' : ''}to ${target.label}. ${why}`;
     };
     if (hasDecision(stage) && !stage.result) return `${phrase('On SAT', 'sat')} ${phrase('On UNSAT', 'unsat')}`;
     return phrase('On signoff');
@@ -723,24 +724,24 @@ export class JointPageComponent implements OnDestroy {
     if (isRepairStageId(stage.id)) {
       const phase = stage.inputs['originPhase'] ?? '';
       if (stage.inputs['allowableThicknessExceeded'] === 'yes') {
-        return phase ? `On signoff, this routes back to ${labelOf(`${phase}-ndt-utrt`)}.` : '';
+        return phase ? `On signoff, this routes back to ${labelOf(`${phase}-ndt-utrt`)}. Why: Allowable thickness exceeded is checked (this comes before the Repair Code).` : '';
       }
       const repairType = stage.inputs['repairType'] ?? '';
       if (repairType === 'grind') {
         const target = stage.inputs['originStageId'] ?? '';
-        return target ? `On signoff, this routes to ${labelOf(target)}.` : '';
+        return target ? `On signoff, this routes to ${labelOf(target)}. Why: Repair Code is Grind Only.` : '';
       }
       if (repairType === 'weld-repair') {
-        return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}.`;
+        return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}. Why: Repair Code is Weld Repair.`;
       }
       if (repairType === 'cut') {
-        return `On signoff, the joint starts over from ${labelOf('fit')} and continues along the path from there. Past records are kept, and Refit # goes up to ${String(Number(this.job.refitNumber || '0') + 1).padStart(2, '0')}.`;
+        return `On signoff, the joint starts over from ${labelOf('fit')} and continues along the path from there. Past records are kept, and Refit # goes up to ${String(Number(this.job.refitNumber || '0') + 1).padStart(2, '0')}. Why: Repair Code is Cut.`;
       }
       return '';
     }
     if (isExcavationNdtStageId(stage.id) && this.wf) {
       const repair = this.wf().stages.find(s => s.id === repairIdForExcavation(stage.id));
-      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to ${repair?.label ?? 'Repair'}.`;
+      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to ${repair?.label ?? 'Repair'}. Why: weld repairs require the original joint inspection; UNSAT means the repair was rejected.`;
     }
     return '';
   }

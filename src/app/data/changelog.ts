@@ -18,6 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'Welding steps now fill in GWP, WTN, Filler Metal Type and Filler Metal Size for you, as if an outside system had already checked them. The droplists are disabled until a Foreman Override is added; removing the override puts them back.',
       'The routing preview now reads "Routing Preview (Demo Only)" and uses a quieter grey box instead of blue.',
+      'The routing preview now says why the joint goes where it does (for example Defer Tack, a rejected inspection, or the Repair Code), or "no special conditions" when it just moves on to the next step.',
     ],
     fixed: [
       'Defer Tack at Fit now works: after signing, the joint skips Tack and Deferred Tack is added. Leaving the joint page after a signoff was quietly undoing it (and could also undo a Fit-Up Release being added, or a joint being sent back).',

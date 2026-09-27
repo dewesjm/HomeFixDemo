@@ -66,11 +66,12 @@ export class SignoffService {
   }
 
   /* Demo routing preview: runs the real sign-off on a copy (nothing is saved) and returns the
-     stage the joint would be at afterward, or undefined when it'd be complete. `result` tries a
-     SAT/UNSAT the user hasn't picked yet. */
-  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result']): WorkflowStage | undefined {
+     stage the joint would be at afterward (undefined when it'd be complete) and which special
+     routing rules applied. `result` tries a SAT/UNSAT the user hasn't picked yet. */
+  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result']): { target: WorkflowStage | undefined; reasons: string[] } {
     const tried = result === undefined ? wf : { ...wf, stages: wf.stages.map(s => s.id === stageId ? { ...s, result } : s) };
-    return activeStage(this.applySignoff(tried, job, stageId).wf.stages);
+    const r = this.applySignoff(tried, job, stageId);
+    return { target: activeStage(r.wf.stages), reasons: r.reasons };
   }
 
   /* the sign-off itself, without saving: the new workflow plus what signStage() reports/stamps on the job */
@@ -78,6 +79,8 @@ export class SignoffService {
     let signedLabel = '';
     let refitNumber = '';
     let repairNumber = '';
+    /* the special routing rules this sign-off hit, for the routing preview's "Why" */
+    const reasons: string[] = [];
     const undo = signoffUndo(wf, job, stageId);
     /* stages with no SAT/UNSAT choice are accepted by signing */
     let stages: WorkflowStage[] = wf.stages.map(s =>
@@ -103,6 +106,8 @@ export class SignoffService {
     const st = stages.find(s => s.id === stageId)!;
     const decision = (st.result ?? '').toUpperCase();
     signedLabel = st.label;
+    if (isInterimLayer(st)) reasons.push('Interim Layer is an end-of-shift signoff, so Layer stays open until it is signed as Final Layer');
+    if (isRecordsReviewUnsat(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
 
     /* go back (never un-sign): the current routing is set back to the target and every stage from
        there on comes up blank (routeBack). One History entry names where it went. */
@@ -119,9 +124,13 @@ export class SignoffService {
 
     /* Defer Tack at Fit, and Fit-Up Insp not releasing to welding, change which stages are required */
     stages = applySignedFlags(stages);
+    if (stageId === 'fit' && st.signoffInputs['deferTack'] === 'yes') reasons.push('Defer Tack is checked, so Tack is skipped and done later as Deferred Tack');
+    if (stageId === 'fitup-insp' && st.result !== 'unsat' && st.inputs['releaseToWelding'] !== 'yes' && stages.some(s => s.id === 'fitup-release'))
+      reasons.push('Release to welding upon inspection is not checked, so Fit-Up Release is required first');
 
     /* repeatable stage + routingType='repeat': insert a fresh copy after this stage */
     if (st.repeatable && st.routingType === 'repeat') {
+      reasons.push(`Repeat was chosen, so another ${st.label} is added`);
       const idx = stages.findIndex(s => s.id === stageId);
       const clone: typeof st = {
         ...st,
@@ -143,6 +152,7 @@ export class SignoffService {
          has had. Excavation NDT is left out: its UNSAT goes back to its own round's Repair. */
       const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
       if (isNdtStage) {
+        reasons.push('the NDT was UNSAT, so a Repair is added');
         /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
            method it was checked under (ut/rt/mt/pt/vt/5x) -- Repair's own routing on signoff, and
            Excavation NDT's routing back to "the original joint inspection" after a Weld Repair,
@@ -163,7 +173,10 @@ export class SignoffService {
       } else {
         /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair) */
         const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
-        if (targetIdx >= 0 && targetIdx < currentIdx) routeBackTo(st.rejectToStage);
+        if (targetIdx >= 0 && targetIdx < currentIdx) {
+          routeBackTo(st.rejectToStage);
+          reasons.push('rejected (UNSAT)');
+        }
       }
     }
 
@@ -266,7 +279,7 @@ export class SignoffService {
         fabInputs: fabricationSnapshot(wf.fabricationData),
       });
     }
-    return { wf: signed, signedLabel, refitNumber, repairNumber };
+    return { wf: signed, signedLabel, refitNumber, repairNumber, reasons };
   }
 
   /* Correct a signed stage's already-recorded field values without deprogressing it (Work History —
