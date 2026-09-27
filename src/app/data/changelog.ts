@@ -15,7 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'My Assignments works like the other lists: click a column heading to sort, filter boxes under each heading, and an Export button (downloads a CSV of what you see, including the Assigned By, Assigned Date, Job Description and Charge details). Rows still expand to show their details. The Demo role select no longer has a red border.',
     ],
     fixed: [
-      'Tables with filter boxes under their headings (My Assignments, History and others) were wider than needed because each filter box forced its column wide, so you had to scroll sideways. Columns now fit their contents.',
+      'Tables with filter boxes under their headings (My Assignments, History and others) were wider than needed because each filter box forced its column wide, so you had to scroll sideways. Columns now fit their contents, and Drawing and Joint on My Assignments and History are as wide as on Pipe Welding so their filter boxes are big enough to type in.',
     ],
   },
   {

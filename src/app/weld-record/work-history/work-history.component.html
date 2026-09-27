@@ -57,8 +57,8 @@
       <th appSortHeader class="min-w-12" [table]="table" field="to" label="Value" filter="text"></th>
       <th appSortHeader style="min-width: 6ch" [table]="table" field="jobId" label="XREFID" filter="text"></th>
       <th appSortHeader style="min-width: 6ch" [table]="table" field="hull" label="Hull" filter="text"></th>
-      <th appSortHeader style="min-width: 9ch" [table]="table" field="drawing" label="Drawing" filter="text"></th>
-      <th appSortHeader style="min-width: 9ch" [table]="table" field="joint" label="Joint" filter="text"></th>
+      <th appSortHeader class="min-w-24" [table]="table" field="drawing" label="Drawing" filter="text"></th>
+      <th appSortHeader class="min-w-20" [table]="table" field="joint" label="Joint" filter="text"></th>
       <th appSortHeader style="min-width: 10ch" [table]="table" field="order" label="Order" filter="text"></th>
       <th class="min-w-11">Deprogress</th>
       <th class="min-w-11">Correct</th>
@@ -82,8 +82,8 @@
         <td class="hist-new">{{ r.to || '-' }}</td>
         <td>{{ r.jobId }}</td>
         <td>{{ r.hull }}</td>
-        <td>{{ r.drawing }}</td>
-        <td>{{ r.joint }}</td>
+        <td class="whitespace-nowrap">{{ r.drawing }}</td>
+        <td class="whitespace-nowrap">{{ r.joint }}</td>
         <td>{{ r.order }}</td>
         <td>
           @if (isLatestEntry(r)) {

@@ -23,8 +23,8 @@
       <th class="w-6"></th>
       <th appSortHeader [table]="table" field="jobId" label="XREFID" filter="text" style="min-width: 6ch"></th>
       <th appSortHeader [table]="table" field="hull" label="Hull" filter="text" style="min-width: 6ch"></th>
-      <th appSortHeader [table]="table" field="drawing" label="Drawing" filter="text" style="min-width: 9ch"></th>
-      <th appSortHeader [table]="table" field="joint" label="Joint" filter="text" style="min-width: 9ch"></th>
+      <th appSortHeader [table]="table" field="drawing" label="Drawing" filter="text" class="min-w-24"></th>
+      <th appSortHeader [table]="table" field="joint" label="Joint" filter="text" class="min-w-20"></th>
       <th appSortHeader [table]="table" field="routing" label="Routing" filter="text" class="min-w-12"></th>
       <th appSortHeader [table]="table" field="location" label="Location" filter="text" class="min-w-12"></th>
       <th appSortHeader [table]="table" field="specificLocation" label="Specific Location" filter="text" class="min-w-14"></th>
@@ -40,8 +40,8 @@
         <td>@if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }</td>
         <td>{{ a.jobId }}</td>
         <td class="font-semibold">{{ a.hull }}</td>
-        <td>{{ a.drawing }}</td>
-        <td>{{ a.joint }}</td>
+        <td class="whitespace-nowrap">{{ a.drawing }}</td>
+        <td class="whitespace-nowrap">{{ a.joint }}</td>
         <td>{{ a.routing }}</td>
         <td>{{ a.location }}</td>
         <td>{{ a.specificLocation }}</td>
