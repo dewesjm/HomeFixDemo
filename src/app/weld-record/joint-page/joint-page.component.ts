@@ -535,7 +535,7 @@ export class JointPageComponent implements OnDestroy {
   /* after a failed sign attempt: bring the first validation error into view and focus its field */
   private focusFirstError() {
     setTimeout(() => {
-      const err = document.querySelector('.signoff-panel div.text-error.text-xs');
+      const err = document.querySelector('.signoff-panel .field-error');
       if (!err) return;
       err.scrollIntoView({ behavior: 'smooth', block: 'center' });
       (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });

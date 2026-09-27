@@ -14,7 +14,7 @@
   }
   <span class="flex-1"></span>
   <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">
-    <span class="text-xs opacity-60 whitespace-nowrap">Demo role:</span>
+    <span class="text-sm whitespace-nowrap">Demo role:</span>
     <select class="select select-sm select-bordered select-error w-40"
             [ngModel]="roleFilter()" (ngModelChange)="roleFilter.set($event)">
       <option value="">All roles</option>
@@ -30,9 +30,9 @@
 
 <!-- Assignment list -->
 <div class="overflow-x-auto">
-<div class="flex flex-col" style="min-width: 62rem">
+<div class="flex flex-col" style="min-width: 63rem">
   <!-- Header -->
-  <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
+  <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8.5rem_7rem_6rem_2.5rem] gap-2 px-3 py-2 text-sm font-semibold border-b border-base-300">
     <div></div>
     <div class="flex items-center gap-1">XREFID <app-column-filter label="XREFID" [value]="columnFilter('jobId')" (valueChange)="setColumnFilter('jobId', $event)" /></div>
     <div class="flex items-center gap-1">Hull <app-column-filter label="Hull" [value]="columnFilter('hull')" (valueChange)="setColumnFilter('hull', $event)" /></div>
@@ -49,20 +49,20 @@
 
   <!-- Rows -->
   @for (a of assignments(); track a.id) {
-    <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8rem_7rem_6rem_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
+    <div class="grid grid-cols-[1.5rem_4.5rem_4.5rem_6.5rem_5rem_8rem_11rem_1fr_8.5rem_7rem_6rem_2.5rem] gap-2 px-3 py-2.5 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors text-sm"
          [class.border-b-0]="expanded().has(a.id)"
          (click)="toggle(a.id)">
-      @if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4 opacity-60"></svg> } @else { <svg lucideChevronRight class="size-4 opacity-60"></svg> }
-      <div class="font-mono text-xs opacity-60 truncate">{{ a.jobId }}</div>
+      @if (expanded().has(a.id)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+      <div class="truncate">{{ a.jobId }}</div>
       <div class="font-semibold truncate">{{ a.hull }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.drawing }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.joint }}</div>
+      <div class="truncate">{{ a.drawing }}</div>
+      <div class="truncate">{{ a.joint }}</div>
       <div class="truncate">{{ routingFor(a) }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.location }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.specificLocation }}</div>
-      <div class="font-mono text-xs truncate">{{ a.assignmentNumber }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.expirationDate | date:'MMM d, y' }}</div>
-      <div class="text-xs opacity-60 truncate">{{ a.source }}</div>
+      <div class="truncate">{{ a.location }}</div>
+      <div class="truncate">{{ a.specificLocation }}</div>
+      <div class="truncate">{{ a.assignmentNumber }}</div>
+      <div class="truncate">{{ a.expirationDate | date:'MMM d, y' }}</div>
+      <div class="truncate">{{ a.source }}</div>
       <div class="flex items-center gap-1 justify-end" (click)="$event.stopPropagation()">
         <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
            target="_blank" rel="noopener" title="View assignment">
@@ -77,36 +77,36 @@
       <div class="grid grid-cols-[1.5rem_1fr] gap-2 px-3 py-3 border-b border-base-300 last:border-b-0 bg-base-200/50 text-sm">
         <div></div>
         <div class="flex flex-wrap gap-x-8 gap-y-2">
-          <div><span class="text-xs opacity-60">Assigned By</span><div>{{ a.assignedBy }}</div></div>
-          <div><span class="text-xs opacity-60">Assigned Date</span><div>{{ a.assignedDate | date:'MMM d, y' }}</div></div>
-          <div><span class="text-xs opacity-60">Job Description</span><div>{{ a.jobDescription }}</div></div>
+          <div><span class="font-semibold">Assigned By</span><div>{{ a.assignedBy }}</div></div>
+          <div><span class="font-semibold">Assigned Date</span><div>{{ a.assignedDate | date:'MMM d, y' }}</div></div>
+          <div><span class="font-semibold">Job Description</span><div>{{ a.jobDescription }}</div></div>
           @for (d of a.details; track d.label) {
-            <div><span class="text-xs opacity-60">{{ d.label }}</span><div>{{ d.value }}</div></div>
+            <div><span class="font-semibold">{{ d.label }}</span><div>{{ d.value }}</div></div>
           }
           <div>
-            <span class="text-xs opacity-60">Charge</span>
+            <span class="font-semibold">Charge</span>
             <div class="flex flex-col items-center">
               <div class="flex items-stretch h-8 bg-base-100 px-4" title="{{ a.charge }}">
                 @for (el of barcodeElements(a.charge); track $index) {
                   <div class="h-full" [class.bg-base-content]="el.bar" [style.width.px]="el.width"></div>
                 }
               </div>
-              <div class="font-mono text-xs mt-1 text-center">{{ a.charge }}</div>
+              <div class="font-mono mt-1 text-center">{{ a.charge }}</div>
             </div>
           </div>
           @if (!a.jobId) {
             <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
-              <div><span class="text-xs opacity-60">Deck</span><div>{{ a.deck }}</div></div>
-              <div><span class="text-xs opacity-60">Frame</span><div>{{ a.frame }}</div></div>
-              <div><span class="text-xs opacity-60">P/S/CL</span><div>{{ a.pscl }}</div></div>
-              <div><span class="text-xs opacity-60">Usage</span><div>{{ a.usage }}</div></div>
+              <div><span class="font-semibold">Deck</span><div>{{ a.deck }}</div></div>
+              <div><span class="font-semibold">Frame</span><div>{{ a.frame }}</div></div>
+              <div><span class="font-semibold">P/S/CL</span><div>{{ a.pscl }}</div></div>
+              <div><span class="font-semibold">Usage</span><div>{{ a.usage }}</div></div>
             </div>
           }
         </div>
       </div>
     }
   } @empty {
-    <div class="text-center py-8 opacity-50 text-sm">No assignments for this role.</div>
+    <div class="empty text-sm">No assignments for this role.</div>
   }
 </div>
 </div>

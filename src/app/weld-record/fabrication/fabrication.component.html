@@ -22,7 +22,7 @@
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               }
               @if (fabErrors()[f.key]) {
-                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+                <div class="field-error">{{ fabErrors()[f.key] }}</div>
               }
             </div>
             }
@@ -40,7 +40,7 @@
                      [ngModel]="fabricationData()[f.key]"
                      (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               @if (fabErrors()[f.key]) {
-                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+                <div class="field-error">{{ fabErrors()[f.key] }}</div>
               }
             </div>
           }
@@ -58,7 +58,7 @@
                      [ngModel]="fabricationData()[f.key]"
                      (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               @if (fabErrors()[f.key]) {
-                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+                <div class="field-error">{{ fabErrors()[f.key] }}</div>
               }
             </div>
           }
@@ -83,7 +83,7 @@
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               }
               @if (fabErrors()[f.key]) {
-                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+                <div class="field-error">{{ fabErrors()[f.key] }}</div>
               }
             </div>
           }
@@ -106,7 +106,7 @@
                   </select>
                   @if (hasDetails(f)) {
                     <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
-                          [class.opacity-40]="fabLocked() || jobComplete()">{{ selectedLabel(f) }}</span>
+                          [class.select-overlay-locked]="fabLocked() || jobComplete()">{{ selectedLabel(f) }}</span>
                   }
                 </div>
               } @else {
@@ -116,7 +116,7 @@
                        (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
               }
               @if (fabErrors()[f.key]) {
-                <div class="text-error text-xs mt-0.5">{{ fabErrors()[f.key] }}</div>
+                <div class="field-error">{{ fabErrors()[f.key] }}</div>
               }
             </div>
           }

@@ -249,6 +249,8 @@ html, body {
 .result-radios { display: flex; gap: 1.5rem; align-items: center; padding-top: 0.3rem; }
 .result-radios label { display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer; font-size: 1rem; }
 .req { color: var(--color-error); }
+/* validation message under a field: same size as the field text, not smaller */
+.field-error { color: var(--color-error); font-size: 1rem; margin-top: 0.125rem; }
 
 /* Work-history old/new value columns */
 .hist-old { color: var(--app-text-muted); }
@@ -310,7 +312,7 @@ html, body {
 .signoff-panel .meta,
 .signoff-panel .stage-field-label,
 .signoff-panel .result-radios label,
-.signoff-panel .text-xs:not(.text-error),
+.signoff-panel .text-xs,
 .signoff-panel .text-sm:not(.font-semibold) { font-size: var(--signoff-text); }
 
 /* Signoff: grouped cards for the weld form */
@@ -399,3 +401,5 @@ input[type="number"] { -moz-appearance: textfield; }
   color: transparent;
   background-image: linear-gradient(45deg, #0000 50%, var(--color-base-content) 50%), linear-gradient(135deg, var(--color-base-content) 50%, #0000 50%);
 }
+/* the overlay label on a locked select: same text color as other locked fields */
+.select-overlay-locked { color: color-mix(in oklch, var(--color-base-content) 85%, transparent); }

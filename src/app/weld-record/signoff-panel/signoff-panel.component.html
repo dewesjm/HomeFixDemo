@@ -40,7 +40,7 @@
             <div class="text-sm mt-0.5">{{ note }}</div>
           }
           @if (ctx().fieldError(st.id, '__inspectionType'); as err) {
-            <div class="text-error text-xs mt-0.5">{{ err }}</div>
+            <div class="field-error">{{ err }}</div>
           }
         </div>
       }
@@ -105,7 +105,7 @@
           }
         }
         @if (ctx().fieldError(st.id, 'affectedItem'); as err) {
-          <div class="text-error text-xs">{{ err }}</div>
+          <div class="field-error">{{ err }}</div>
         }
       </div>
     }
@@ -432,7 +432,7 @@
               </label>
             }
             @if (ctx().fieldError(st.id, f.key); as err) {
-              <div class="text-error text-xs mt-0.5">{{ err }}</div>
+              <div class="field-error">{{ err }}</div>
             }
             </div>
             }
@@ -466,7 +466,7 @@
                              (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
                     }
                     @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                      <div class="field-error">{{ err }}</div>
                     }
                   </div>
                 }
@@ -492,7 +492,7 @@
                              (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
                     }
                     @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                      <div class="field-error">{{ err }}</div>
                     }
                   </div>
                 }
@@ -518,7 +518,7 @@
                          (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
                 }
                 @if (ctx().fieldError(st.id, f.key); as err) {
-                  <div class="text-error text-xs mt-0.5">{{ err }}</div>
+                  <div class="field-error">{{ err }}</div>
                 }
               </div>
             }
@@ -542,7 +542,7 @@
               </label>
             </div>
             @if (ctx().fieldError(st.id, '__routingType'); as err) {
-              <div class="text-error text-xs mt-0.5">{{ err }}</div>
+              <div class="field-error">{{ err }}</div>
             }
           </div>
         }
@@ -574,7 +574,7 @@
             }
           </div>
           @if (ctx().fieldError(st.id, '__decision'); as err) {
-            <div class="text-error text-xs mt-0.5">{{ err }}</div>
+            <div class="field-error">{{ err }}</div>
           }
         </div>
       }
@@ -721,7 +721,7 @@
       <div class="text-sm mt-0.5">{{ f.description }}</div>
     }
     @if (ctx().fieldError(stage().id, f.key); as err) {
-      <div class="text-error text-xs mt-0.5">{{ err }}</div>
+      <div class="field-error">{{ err }}</div>
     } @else if (ctx().fieldWarning(stage(), f.key)) {
       <div class="text-warning text-sm mt-0.5">{{ ctx().fieldWarning(stage(), f.key) }}</div>
     }

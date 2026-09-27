@@ -21,6 +21,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The routing preview now says why the joint goes where it does (for example Defer Tack, a rejected inspection, or the Repair Code), or "no special conditions" when it just moves on to the next step.',
     ],
     fixed: [
+      'Easier to read: My Assignments uses one text size with no faded columns, error messages under fields are the same size as the fields, a locked Revised Joint Design looks like the other locked fields, and the menu arrows and the empty Quick Links message are no longer faded.',
       'My Assignments: the Assignment # column header fits on one line.',
       'Defer Tack at Fit now works: after signing, the joint skips Tack and Deferred Tack is added. Leaving the joint page after a signoff was quietly undoing it (and could also undo a Fit-Up Release being added, or a joint being sent back).',
       'The routing bar no longer shows a skipped Tack next to Deferred Tack.',

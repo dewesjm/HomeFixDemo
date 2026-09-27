@@ -97,6 +97,9 @@
   }
   li a:hover { background: var(--app-muted); }
 
+  /* plain readable text row (e.g. an empty list message), not a link */
+  .dropdown-note { padding: 0.4rem 0.65rem; font-size: 0.95rem; color: var(--app-text); }
+
   /* Divider line between sections within a dropdown */
   .dropdown-divider {
     height: 1px;
@@ -130,7 +133,7 @@
       content: '\203A';
       margin-left: auto;
       font-size: 1rem;
-      opacity: 0.5;
+      color: var(--app-text);
       transition: transform 0.15s;
     }
     > details[open] > summary::after {

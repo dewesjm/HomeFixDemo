@@ -208,7 +208,7 @@
             @for (link of quickLinks(); track link.id) {
               <li><a [href]="link.url" target="_blank" rel="noopener"><svg lucideExternalLink class="size-4"></svg> {{ link.label }}</a></li>
             } @empty {
-              <li class="menu-disabled"><svg lucideExternalLink class="size-4"></svg> No quick links configured</li>
+              <li class="dropdown-note">No quick links yet.</li>
             }
             <li class="dropdown-divider"></li>
             <li><a routerLink="/changelog" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> Change Log</a></li>
