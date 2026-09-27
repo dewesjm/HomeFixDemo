@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
+import { LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDown } from '@lucide/angular';
 
 import { ASSIGNMENTS, Assignment } from '../../data/assignments';
 import { JOBS, Job } from '../../data/jobs';
@@ -11,6 +11,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
 import { ColumnFilterComponent } from '../../shared/column-filter.component';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
+import { BannerPillComponent } from '../../shared/banner-pill.component';
 
 /* per-column filter keys -> how to read the matching text off an Assignment (WICC Date matches
    against the same formatted display text the column shows, not the raw ISO date) */
@@ -30,7 +31,7 @@ const COLUMN_FIELDS: Record<string, (a: Assignment, routing: string) => string> 
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [AppDatePipe, CommonModule, FormsModule, ColumnFilterComponent, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
+  imports: [BannerPillComponent, AppDatePipe, CommonModule, FormsModule, ColumnFilterComponent, LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDown],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {

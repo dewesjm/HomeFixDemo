@@ -5,7 +5,7 @@ import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX } from '@lucide/angular';
+import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideX } from '@lucide/angular';
 
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { TablePagerComponent } from '../../shared/table-pager.component';
@@ -19,6 +19,7 @@ import {
 import { SignoffService } from '../services/signoff.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { currentRoutingLabel, activeStage, ROLES, DEFAULT_ROLE, type Role } from '../../data/workflow';
+import { BannerPillComponent } from '../../shared/banner-pill.component';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
@@ -27,10 +28,10 @@ type Row = Job & { currentRouting: string };
 @Component({
   selector: 'app-pipe-search',
   standalone: true,
-  imports: [
+  imports: [BannerPillComponent, 
     CommonModule, FormsModule,
     SortHeaderComponent, TablePagerComponent, SyncStatusComponent,
-    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideMegaphone, LucideX
+    LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideX
   ],
   templateUrl: './pipe-search.component.html'
 })

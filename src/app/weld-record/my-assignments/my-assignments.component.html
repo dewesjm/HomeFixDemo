@@ -1,17 +1,6 @@
-<div class="flex items-center gap-3 mb-4">
-  <h2 class="section-title mb-0 flex items-center gap-1.5"><svg lucideClipboardList class="size-5"></svg> My Assignments</h2>
-  @if (banner(); as b) {
-    <span class="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full"
-          [ngClass]="{
-            'bg-info/20 text-info': b.type === 'info',
-            'bg-warning/20 text-warning': b.type === 'warning',
-            'bg-error/20 text-error': b.type === 'error',
-            'bg-success/20 text-success': b.type === 'success'
-          }">
-      <svg lucideMegaphone class="size-4"></svg>
-      <span>{{ b.message }}</span>
-    </span>
-  }
+<div class="page-header flex-wrap items-center gap-3">
+  <h2 class="section-title">My Assignments</h2>
+  <app-banner-pill [banner]="banner()" />
   <span class="flex-1"></span>
   <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">
     <span class="text-sm whitespace-nowrap">Demo role:</span>
@@ -27,6 +16,7 @@
          placeholder="Filter…"
          [ngModel]="keyword()" (ngModelChange)="keyword.set($event)" />
 </div>
+<p class="section-sub">Jobs assigned to you, from every source system.</p>
 
 <!-- Assignment list -->
 <div class="overflow-x-auto">

@@ -16,6 +16,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Feature Toggles, with a switch to turn the routing preview on or off.',
     ],
     changed: [
+      "Page titles match their menu names (Teams, Banner, Attribute Codes, Set Routing, History, Joint Search, Joint Designs & NDT), and each page has a one-line description under its title.",
+      "The banner message is always a small pill beside the page title (Joint Search showed a full-width bar).",
+      "Qualifications, Material Traceability and Material Classification no longer have a Back button, like the other Admin pages.",
       'Dates look the same everywhere: 09/26/2026 3:04 PM, or just 09/26/2026 where the time does not matter (tables, History, exports, filter chips, the printed procedure and this Change Log).',
       'Welding steps now fill in GWP, WTN, Filler Metal Type and Filler Metal Size for you, as if an outside system had already checked them. The droplists are disabled until a Foreman Override is added; removing the override puts them back.',
       'The routing preview now reads "Routing Preview (Demo Only)" and uses a quieter grey box instead of blue.',

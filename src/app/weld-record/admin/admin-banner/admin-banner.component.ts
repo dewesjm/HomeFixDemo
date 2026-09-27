@@ -2,13 +2,14 @@ import { BannerData, BannerPage, loadBanner, saveBanner, clearBanner } from '../
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideMegaphone, LucideCheck, LucideX } from '@lucide/angular';
+import { LucideCheck, LucideX } from '@lucide/angular';
 import { ToastService } from '../../../shared/toast.service';
+import { BannerPillComponent } from '../../../shared/banner-pill.component';
 
 @Component({
   selector: 'app-admin-banner',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideMegaphone, LucideCheck, LucideX],
+  imports: [BannerPillComponent, CommonModule, FormsModule, LucideCheck, LucideX],
   templateUrl: './admin-banner.component.html'
 })
 export class AdminBannerComponent {

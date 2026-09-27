@@ -3,7 +3,7 @@ import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone, LucideListFilter, LucideX } from '@lucide/angular';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideListFilter, LucideX } from '@lucide/angular';
 
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { TableState, inArray } from '../shared/table-state';
@@ -15,36 +15,27 @@ import {
   JOINT_STATUS_OPTIONS,
   WELD_JOINT_CSV_COLUMNS, type WeldJoint
 } from './weld-planning.data';
+import { BannerPillComponent } from '../shared/banner-pill.component';
 
 type Row = WeldJoint;
 
 @Component({
   selector: 'app-weld-planning-list',
   standalone: true,
-  imports: [
+  imports: [BannerPillComponent, 
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideMegaphone, LucideListFilter, LucideX
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideListFilter, LucideX
   ],
   template: `
     <div style="max-width: 100%">
-        <div class="page-header" style="padding: 0.75rem 1rem">
-          <h2 class="section-title">Weld Planning</h2>
-          <span class="spacer"></span>
+        <div class="page-header flex-wrap items-center gap-3">
+          <h2 class="section-title">Joint Search</h2>
+          <app-banner-pill [banner]="banner()" />
         </div>
+        <p class="section-sub">Find, create and edit planned joints.</p>
 
-        @if (banner(); as b) {
-          <div class="alert text-sm mx-1 mb-2"
-               [class.alert-info]="b.type === 'info'"
-               [class.alert-warning]="b.type === 'warning'"
-               [class.alert-error]="b.type === 'error'"
-               [class.alert-success]="b.type === 'success'">
-            <svg lucideMegaphone class="size-4"></svg>
-            <span>{{ b.message }}</span>
-          </div>
-        }
-
-        <div class="facet-row" style="margin: 0 1rem 0.75rem">
+        <div class="facet-row">
           <button class="btn btn-sm btn-outline" (click)="clearFilters()">
             <svg lucideListFilter class="size-4"></svg> Clear filters
           </button>
@@ -83,7 +74,7 @@ type Row = WeldJoint;
           </label>
         </div>
 
-        <div style="overflow-x: auto; padding: 0 1rem">
+        <div style="overflow-x: auto">
           <table class="table table-sm">
             <thead>
               <tr>

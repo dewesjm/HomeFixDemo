@@ -69,6 +69,7 @@ const VALID_TYPES = new Set(['pipe', 'structural']);
         <span style="color: var(--app-text-muted)">/</span>
         <h2 class="section-title">{{ isEditMode() ? 'Mass Edit' : 'Import Joints' }}</h2>
       </div>
+      <p class="section-sub">{{ isEditMode() ? 'Load existing joints, edit them together, then save.' : 'Load joints from a spreadsheet (.xlsx or .csv).' }}</p>
 
       <!-- File picker (hidden) -->
       <input #fileInput type="file" accept=".xlsx,.csv" style="display: none" (change)="onFileSelected($event)" />

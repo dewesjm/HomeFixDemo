@@ -228,6 +228,7 @@ src/app/
     table-state.ts       Sorting, filtering, paging (one instance per table screen)
     sort-header.component  th[appSortHeader]: sort link + optional text/multiselect column filter
     table-pager.component, multiselect-dropdown.component, date-range.component
+    banner-pill.component  The admin banner as a pill beside a page title (the only banner style)
     date-format.ts       The one date format: formatDate / formatDateTime and the appDate / appDateTime pipes
                          (09/26/2026, 09/26/2026 3:04 PM). Use these for every displayed or exported date.
     toast.service / toast-host.component   Themed toast notifications
@@ -265,7 +266,7 @@ src/app/
 2. **Stage templates** — `workflow.ts`. Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
 3. **Per-job workflow** — `WorkflowStore`, keyed by job id, exposed as signals; `RoutingService`/`SignoffService`/`AttachmentService`/`FabricationDataService` mutate it (see "Weld Record services" below). Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
 4. **Assignments** — 36 seeded, assigned to "John Johnson".
-5. **Work history** — aggregates `WorkflowStore.allWorkflows()` into a filterable timeline.
+5. **History** — aggregates `WorkflowStore.allWorkflows()` into a filterable timeline.
 
 ### Welding stages (in order)
 
