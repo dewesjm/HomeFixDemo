@@ -136,16 +136,20 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 ## Deviations
 
-Three things can be signed anyway, as accepted deviations. Everything else above stays a hard stop.
+Two things can be signed anyway, as accepted deviations. Everything else above stays a hard stop.
 - An Actual PH/IP value outside its requirement limits.
-- A failed Qualification Check.
-- A Filler Metal Type or Size the WPS doesn't allow. These can only be picked after **Report Deviation**, which opens the full filler list for that step.
+- A failed Qualification Check (welding steps, and the inspection steps that check quals).
 
-**Report Deviation** (next to Signoff) records something the app can't detect, in the person's own words. Reports are listed under the button and can be removed until the step is signed; leaving the joint without signing drops them.
-
-When a step has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation accepted" entry with the reason and each item) and signs the step.
+When a step has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation created" entry with the reason and each item) and signs the step.
 
 **Hold:** after that, the joint is on hold. No later step can be signed, and a banner on the weld record says why. The step the deviation was accepted on can still be deprogressed and re-signed; the deviation stays on record and the hold stays. Nothing releases a hold yet; dealing with deviations comes later.
+
+## Foreman Override
+
+**Foreman Override** (on welding steps and Fit as a Weld Build-Up, on the right, away from Signoff) records work done outside the procedure, in the person's own words. The pop-up asks them to "Describe the deviation and why it is necessary".
+- While a step has an override, GWP (and so WTN), Filler Metal Type and Filler Metal Size can be picked from the full lists instead of being filled in for you. A GWP, type or size the WPS doesn't allow shows the warning "Foreman override".
+- Overrides are listed under the button and can be removed until the step is signed. Removing the last one puts the filled-in values back. Leaving the joint without signing drops them.
+- Signing records the override in History ("Foreman Override" entry), along with any value it allowed that the WPS doesn't. It is **not** a deviation and doesn't put the joint on hold.
 
 **MCL values:** MCL 1 and MCL 2 are **STD** or **MC-I**. MC-I requires traceability (the MIC fields above); STD doesn't.
 
