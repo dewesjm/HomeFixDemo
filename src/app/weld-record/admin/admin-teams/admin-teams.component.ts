@@ -1,7 +1,11 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucidePlus, LucideChevronLeft } from '@lucide/angular';
+import { LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 
 interface Permission {
   key: string;
@@ -119,11 +123,23 @@ const DEFAULT_GROUPS: TeamGroup[] = [
 @Component({
   selector: 'app-admin-teams',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucidePlus, LucideChevronLeft],
+  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucideChevronLeft, LucideChevronRight],
   templateUrl: './admin-teams.component.html',
 })
 export class AdminTeamsComponent {
   groups = signal<TeamGroup[]>(DEFAULT_GROUPS.map(g => ({ ...g, permissions: { ...g.permissions } })));
+  table = new TableState<TeamGroup>(['name', 'description']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.groups()));
+  }
+
+  exportCsv() {
+    downloadCsv('teams', [
+      { header: 'AD Group', value: (g: TeamGroup) => g.name },
+      { header: 'Description', value: (g: TeamGroup) => g.description },
+    ], this.table.sorted());
+  }
   permissions = PERMISSIONS;
   selectedGroupId = signal<string | null>(null);
   showAddForm = signal(false);

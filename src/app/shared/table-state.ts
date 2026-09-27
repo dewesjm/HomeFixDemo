@@ -71,6 +71,8 @@ export class TableState<T> {
   };
 
   filtered = computed(() => this.allRows().filter(r => this.matchesGlobal(r) && this.matchesColumnFilters(r)));
+  /* any rows at all, before filtering: lets an empty table say "none yet" vs "none match" */
+  hasRows = computed(() => this.allRows().length > 0);
 
   sorted = computed(() => {
     const field = this.sortField();

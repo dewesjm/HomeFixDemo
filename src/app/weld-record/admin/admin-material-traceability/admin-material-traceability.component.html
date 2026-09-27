@@ -5,17 +5,28 @@
     When traceability is required, MIC fields become visible on the Fabrication section.
   </p>
 
-  <div class="panel">
+  <app-table-toolbar [table]="table" searchPlaceholder="Search MCL values…" (exportCsv)="exportCsv()">
+    <div toolbarEnd class="flex gap-2">
+      <input class="input input-bordered input-sm" placeholder="New MCL value…"
+             [ngModel]="newMclValue()" (ngModelChange)="newMclValue.set($event)"
+             (keyup.enter)="addEntry()" />
+      <button type="button" class="btn btn-sm btn-primary" (click)="addEntry()">
+        <svg lucidePlus class="size-4"></svg> Add
+      </button>
+    </div>
+  </app-table-toolbar>
+
+  <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead>
         <tr>
-          <th>MCL Value</th>
-          <th>Requires Traceability</th>
+          <th appSortHeader [table]="table" field="mclValue" label="MCL Value"></th>
+          <th appSortHeader [table]="table" field="requiresTraceability" label="Requires Traceability"></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (entry of entries(); track entry.mclValue) {
+        @for (entry of table.sorted(); track entry.mclValue) {
           <tr>
             <td class="font-medium">{{ entry.mclValue }}</td>
             <td>
@@ -29,18 +40,11 @@
               </button>
             </td>
           </tr>
+        } @empty {
+          <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No MCL values match your search.' : 'No MCL values yet.' }}</td></tr>
         }
       </tbody>
     </table>
-
-    <div class="flex gap-2 mt-2">
-      <input class="input input-bordered input-sm" placeholder="New MCL value..."
-             [ngModel]="newMclValue()" (ngModelChange)="newMclValue.set($event)"
-             (keyup.enter)="addEntry()" />
-      <button type="button" class="btn btn-sm btn-primary" (click)="addEntry()">
-        <svg lucidePlus class="size-3"></svg> Add
-      </button>
-    </div>
 
     <div class="flex justify-end mt-3">
       <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>

@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -6,6 +6,10 @@ import { LucideSave, LucidePlus, LucideTrash2, LucideArrowLeft } from '@lucide/a
 
 import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
+import { TableState } from '../shared/table-state';
+import { TableToolbarComponent } from '../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../shared/sort-header.component';
+import { downloadCsv } from '../data/export-csv';
 import {
   adminJointDesigns, persistAdminJointDesigns,
   type AdminJointDesign
@@ -14,7 +18,7 @@ import {
 @Component({
   selector: 'app-weld-planning-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucidePlus, LucideTrash2, LucideArrowLeft],
+  imports: [CommonModule, FormsModule, RouterLink, TableToolbarComponent, SortHeaderComponent, LucideSave, LucidePlus, LucideTrash2, LucideArrowLeft],
   templateUrl: './weld-planning-admin.component.html'
 })
 export class WeldPlanningAdminComponent {
@@ -25,6 +29,19 @@ export class WeldPlanningAdminComponent {
   designs = signal<AdminJointDesign[]>([...adminJointDesigns()]);
   newDesignCode = '';
   newDesignLabel = '';
+  table = new TableState<AdminJointDesign>(['code', 'label']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.designs()));
+  }
+
+  exportCsv() {
+    downloadCsv('joint-designs', [
+      { header: 'Code', value: (d: AdminJointDesign) => d.code },
+      { header: 'Label', value: (d: AdminJointDesign) => d.label },
+      { header: 'Active', value: (d: AdminJointDesign) => (d.active ? 'Yes' : 'No') },
+    ], this.table.sorted());
+  }
 
   /* ── Joint Designs ── */
   addDesign() {
@@ -34,6 +51,7 @@ export class WeldPlanningAdminComponent {
       label: this.newDesignLabel.trim(),
       active: true
     }];
+    this.table.clearFilters();
     this.designs.set(designs);
     this.newDesignCode = '';
     this.newDesignLabel = '';

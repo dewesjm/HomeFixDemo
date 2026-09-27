@@ -1,25 +1,20 @@
 <h2 class="section-title">Weld Positions</h2>
 <p class="section-sub">Manage weld position codes used in the weld stages (Tack, Root, Layer, Final Weld).</p>
 
-<div class="facet-row mb-sm">
-  <span class="fw-bold">Weld Positions</span>
-  <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add position
-  </button>
-</div>
+<app-table-toolbar [table]="table" searchPlaceholder="Search weld positions…" addLabel="Add position"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-20">Code</th>
-      <th class="min-w-44">Description</th>
+      <th appSortHeader [table]="table" field="code" label="Code" class="min-w-20"></th>
+      <th appSortHeader [table]="table" field="description" label="Description" class="min-w-44"></th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
   <tbody>
-    @for (row of rows(); track row.uid) {
+    @for (row of table.sorted(); track row.uid) {
       <tr>
         <td>
           @if (editingId() === row.uid) {
@@ -60,7 +55,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="3" class="empty">No weld positions yet.</td></tr>
+      <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No weld positions match your search.' : 'No weld positions yet.' }}</td></tr>
     }
   </tbody>
 </table>

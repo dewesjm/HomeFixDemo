@@ -3,33 +3,25 @@
   Manage AD group access to hull routing and features.
 </p>
 
-<div class="mb-sm p-3 rounded-lg bg-base-200 border border-base-300 text-xs opacity-70">
+<div class="mb-sm p-3 rounded-lg bg-base-200 border border-base-300">
   <strong>Demo concept only</strong> - this screen shows the proposed permissions model. Changes are not persisted or enforced.
 </div>
 
 @if (!selectedGroupId()) {
   <!-- ======== GROUP LIST VIEW ======== -->
-  <section class="panel">
-    <div class="flex items-center justify-between mb-3">
-      <div class="flex items-center gap-2">
-        <span class="text-xs opacity-60">Total</span>
-        <span class="badge badge-sm">{{ groups().length }}</span>
-      </div>
-      <button type="button" class="btn btn-sm btn-primary" (click)="showAddForm.set(true)">
-        <svg lucidePlus class="size-4"></svg> New Group
-      </button>
-    </div>
+  <app-table-toolbar [table]="table" searchPlaceholder="Search groups…" addLabel="Add group"
+                     (exportCsv)="exportCsv()" (add)="showAddForm.set(true)" />
 
     @if (showAddForm()) {
       <div class="mb-4 p-4 rounded-lg border border-base-300 bg-base-200">
         <div class="flex flex-col sm:flex-row gap-3 items-end">
           <div class="flex-1 w-full">
-            <label class="text-xs font-semibold mb-1 block">Group Name</label>
+            <label class="font-semibold mb-1 block">Group Name</label>
             <input class="input input-sm input-bordered w-full" placeholder="e.g. NDT-Inspectors"
                    [ngModel]="newGroupName()" (ngModelChange)="newGroupName.set($event)" />
           </div>
           <div class="flex-1 w-full">
-            <label class="text-xs font-semibold mb-1 block">Description</label>
+            <label class="font-semibold mb-1 block">Description</label>
             <input class="input input-sm input-bordered w-full" placeholder="e.g. Level II NDT technicians"
                    [ngModel]="newGroupDesc()" (ngModelChange)="newGroupDesc.set($event)" />
           </div>
@@ -41,32 +33,36 @@
       </div>
     }
 
-    <!-- Table header -->
-    <div class="grid grid-cols-[1fr_2fr_2.5rem] gap-2 px-3 py-2 text-xs font-semibold opacity-60 border-b border-base-300">
-      <div>AD Group</div>
-      <div>Description</div>
-      <div></div>
-    </div>
-
-    <!-- Group rows -->
-    @for (group of groups(); track group.id) {
-      <div class="grid grid-cols-[1fr_2fr_2.5rem] gap-2 px-3 py-3 items-center border-b border-base-300 last:border-b-0 hover:bg-base-200 cursor-pointer transition-colors"
-           (click)="selectGroup(group.id)">
-        <!-- Name + avatar -->
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-               [style.background]="group.avatarColor">
-            {{ initials(group.name) }}
-          </div>
-          <span class="font-semibold text-sm truncate">{{ group.name }}</span>
-        </div>
-        <!-- Description -->
-        <div class="text-xs opacity-70 truncate">{{ group.description }}</div>
-        <!-- Chevron indicator -->
-        <div class="text-right text-xs opacity-40">›</div>
-      </div>
-    }
-  </section>
+  <div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th appSortHeader [table]="table" field="name" label="AD Group" class="min-w-44"></th>
+        <th appSortHeader [table]="table" field="description" label="Description"></th>
+        <th class="w-8"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (group of table.sorted(); track group.id) {
+        <tr class="hover:bg-base-200 cursor-pointer" (click)="selectGroup(group.id)">
+          <td>
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                   [style.background]="group.avatarColor">
+                {{ initials(group.name) }}
+              </div>
+              <span class="font-semibold truncate">{{ group.name }}</span>
+            </div>
+          </td>
+          <td>{{ group.description }}</td>
+          <td class="text-right"><svg lucideChevronRight class="size-4"></svg></td>
+        </tr>
+      } @empty {
+        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No groups match your search.' : 'No groups yet.' }}</td></tr>
+      }
+    </tbody>
+  </table>
+  </div>
 
 } @else {
   <!-- ======== GROUP DETAIL VIEW ======== -->
@@ -96,10 +92,10 @@
     <section class="panel mt-3">
         @for (cat of categories; track cat) {
           <div class="mb-4 last:mb-0">
-            <h4 class="text-xs font-bold uppercase tracking-wider opacity-50 mb-2">{{ cat }}</h4>
+            <h4 class="font-bold mb-2">{{ cat }}</h4>
             @for (p of permsForCategory(cat); track p.key) {
               <div class="flex items-center justify-between py-2 border-b border-base-300 last:border-b-0">
-                <span class="text-sm">{{ p.label }}</span>
+                <span>{{ p.label }}</span>
                 <select class="select select-sm select-bordered w-40"
                         [ngModel]="group.permissions[p.key] || 'not-set'"
                         (ngModelChange)="updatePerm(group.id, p.key, $event)">

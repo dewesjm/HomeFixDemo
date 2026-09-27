@@ -1,10 +1,14 @@
 /* Admin → Routing Options: manage per-stage dropdown options (e.g. Fit/Weld Build-Up, MT/PT) */
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 import { getTemplates, setStageRoutingOptions, type StageOption } from '../../../data/workflow';
 
 interface StageRow {
@@ -19,7 +23,7 @@ interface StageRow {
   selector: 'app-admin-routing-options',
   standalone: true,
   imports: [
-    CommonModule, FormsModule,
+    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './admin-routing-options.component.html'
@@ -30,6 +34,19 @@ export class AdminRoutingOptionsComponent {
   rows = signal<StageRow[]>(this.loadRows());
   editingUid = signal<string | null>(null);
   private cloned: Record<string, StageOption[]> = {};
+  table = new TableState<StageRow>(['trade', 'stageLabel']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
+
+  exportCsv() {
+    downloadCsv('routing-options', [
+      { header: 'Trade', value: (r: StageRow) => r.trade },
+      { header: 'Stage', value: (r: StageRow) => r.stageLabel },
+      { header: 'Options', value: (r: StageRow) => r.options.map(o => o.label + (o.default ? ' (default)' : '')).join('; ') },
+    ], this.table.sorted());
+  }
 
   private loadRows(): StageRow[] {
     const templates = getTemplates();

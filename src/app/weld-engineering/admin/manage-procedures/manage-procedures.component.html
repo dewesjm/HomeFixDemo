@@ -4,28 +4,12 @@
 </div>
 <p class="section-sub">Add and edit welding procedures.</p>
 
-<div class="facet-row">
-  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
-    <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search procedures…"
-           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
-    @if (table.globalFilter()) {
-      <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
-        <svg lucideX class="size-3.5 opacity-60"></svg>
-      </button>
-    }
-  </label>
-  <span class="spacer"></span>
+<app-table-toolbar [table]="table" searchPlaceholder="Search procedures…" addLabel="Add procedure"
+                   (exportCsv)="exportCsv()" (add)="addNew()">
   <a routerLink="/weld-engineering/admin/import" class="btn btn-sm">
     <svg lucideUpload class="size-4"></svg> Load Procedures
   </a>
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export
-  </button>
-  <button type="button" class="btn btn-sm btn-primary" (click)="addNew()">
-    <svg lucidePlus class="size-4"></svg> New Procedure
-  </button>
-</div>
+</app-table-toolbar>
 
 <div style="overflow-x: auto">
   <table class="table table-sm">

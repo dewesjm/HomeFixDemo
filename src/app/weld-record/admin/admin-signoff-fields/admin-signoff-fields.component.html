@@ -2,50 +2,18 @@
 <h2 class="section-title">Signoff Fields</h2>
 <p class="section-sub">Configure which fields appear on each stage's signoff panel, and toggle validation requirements.</p>
 
-<div class="facet-row">
-  <span class="fw-bold">Fields</span>
-  <span class="spacer"></span>
-  <label class="input input-sm input-bordered flex items-center gap-2">
-    <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search fields…"
-           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
-  </label>
-  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add field
-  </button>
-</div>
+<app-table-toolbar [table]="table" searchPlaceholder="Search fields…" addLabel="Add field"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-12">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('trade')">
-            Trade {{ table.sortField() === 'trade' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="tradeOptions"
-            [selected]="table.columnFilters()['trade'] ?? []"
-            (selectedChange)="table.setColumnFilter('trade', $event)" />
-        </div>
-      </th>
-      <th class="min-w-14">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('stageLabel')">
-            Stage {{ table.sortField() === 'stageLabel' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="stageOptions()"
-            [selected]="table.columnFilters()['stageLabel'] ?? []"
-            (selectedChange)="table.setColumnFilter('stageLabel', $event)" />
-        </div>
-      </th>
-      <th class="min-w-14">
-        <a class="cursor-pointer select-none" (click)="table.toggleSort('label')">
-          Field {{ table.sortField() === 'label' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-        </a>
-      </th>
-      <th class="min-w-10">Type</th>
-      <th class="min-w-10 text-center">Required</th>
+      <th appSortHeader [table]="table" field="trade" label="Trade" filter="select" [options]="tradeOptions" class="min-w-12"></th>
+      <th appSortHeader [table]="table" field="stageLabel" label="Stage" filter="select" [options]="stageOptions()" class="min-w-14"></th>
+      <th appSortHeader [table]="table" field="label" label="Field" class="min-w-14"></th>
+      <th appSortHeader [table]="table" field="type" label="Type" class="min-w-10"></th>
+      <th appSortHeader [table]="table" field="required" label="Required" class="min-w-10 text-center"></th>
       <th class="min-w-16">Placeholder / Options</th>
       <th class="min-w-11"></th>
     </tr>
@@ -150,7 +118,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="7" class="empty">No signoff fields yet.</td></tr>
+      <tr><td colspan="7" class="empty">{{ table.hasRows() ? 'No signoff fields match your search.' : 'No signoff fields yet.' }}</td></tr>
     }
   </tbody>
 </table>

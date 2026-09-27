@@ -1,70 +1,18 @@
 <h2 class="section-title">Joint Designs</h2>
 <p class="section-sub">Define joint design codes and whether each requires a consumable insert or backing ring.</p>
 
-<div class="facet-row">
-  <span class="fw-bold">Joint designs</span>
-  <span class="spacer"></span>
-  <label class="input input-sm input-bordered flex items-center gap-2">
-    <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search joint designs…"
-           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
-  </label>
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export
-  </button>
-  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add joint design
-  </button>
-</div>
+<app-table-toolbar [table]="table" searchPlaceholder="Search joint designs…" addLabel="Add joint design"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-11">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('code')">
-            Code {{ table.sortField() === 'code' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Search…"
-                 [ngModel]="table.columnFilters()['code'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('code', $event)" />
-        </div>
-      </th>
-      <th class="min-w-14">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('label')">
-            Label {{ table.sortField() === 'label' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Search…"
-                 [ngModel]="table.columnFilters()['label'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('label', $event)" />
-        </div>
-      </th>
-      <th class="min-w-48">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('description')">
-            Description {{ table.sortField() === 'description' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-          <input type="text" class="input input-xs input-bordered w-full min-w-0" placeholder="Search…"
-                 [ngModel]="table.columnFilters()['description'] ?? ''"
-                 (ngModelChange)="table.setColumnFilter('description', $event)" />
-        </div>
-      </th>
-      <th class="min-w-14">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('requiresConsumableInsert')">
-            Consumable Insert {{ table.sortField() === 'requiresConsumableInsert' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-        </div>
-      </th>
-      <th class="min-w-14">
-        <div class="flex flex-col items-start gap-1 min-w-0">
-          <a class="cursor-pointer select-none" (click)="table.toggleSort('requiresBackingRing')">
-            Backing Ring {{ table.sortField() === 'requiresBackingRing' ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-          </a>
-        </div>
-      </th>
+      <th appSortHeader [table]="table" field="code" label="Code" filter="text" class="min-w-11"></th>
+      <th appSortHeader [table]="table" field="label" label="Label" filter="text" class="min-w-14"></th>
+      <th appSortHeader [table]="table" field="description" label="Description" filter="text" class="min-w-48"></th>
+      <th appSortHeader [table]="table" field="requiresConsumableInsert" label="Consumable Insert" class="min-w-14"></th>
+      <th appSortHeader [table]="table" field="requiresBackingRing" label="Backing Ring" class="min-w-14"></th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
@@ -134,7 +82,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="6" class="empty">No joint designs yet.</td></tr>
+      <tr><td colspan="6" class="empty">{{ table.hasRows() ? 'No joint designs match your search.' : 'No joint designs yet.' }}</td></tr>
     }
   </tbody>
 </table>

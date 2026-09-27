@@ -6,33 +6,43 @@
     <span style="color: var(--app-text-muted)">/</span>
     <h2 class="section-title">Joint Designs &amp; NDT</h2>
   </div>
-  <p class="section-sub">Manage the joint design and NDT options used when creating joints.</p>
+  <p class="section-sub">Manage the joint design codes used when creating joints. Inactive designs are hidden from form dropdowns.</p>
 
-    <div class="panel">
-      <div class="panel-title">Joint Design Options</div>
-      <p class="section-sub">Manage available joint design codes. Inactive designs are hidden from form dropdowns.</p>
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem">
-        <input class="input input-sm" [(ngModel)]="newDesignCode" placeholder="Code" style="width: 8rem" />
-        <input class="input input-sm" [(ngModel)]="newDesignLabel" placeholder="Label" style="width: 10rem" />
-        <button class="btn btn-sm btn-primary" (click)="addDesign()">
-          <svg lucidePlus class="size-4"></svg> Add
-        </button>
-      </div>
-      <table class="table table-sm">
-        <thead><tr><th>Code</th><th>Label</th><th>Active</th><th></th></tr></thead>
-        <tbody>
-          @for (d of designs(); track d.code) {
-            <tr>
-              <td class="mono">{{ d.code }}</td>
-              <td>{{ d.label }}</td>
-              <td><input type="checkbox" class="checkbox checkbox-sm" [checked]="d.active" (change)="toggleDesignActive(d.code)" /></td>
-              <td><button class="btn btn-xs btn-ghost text-error" (click)="removeDesign(d.code)"><svg lucideTrash2 class="size-3"></svg></button></td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      <div style="display: flex; justify-content: flex-end; margin-top: 1rem">
-        <button class="btn btn-sm btn-primary" (click)="saveDesigns()"><svg lucideSave class="size-4"></svg> Save</button>
-      </div>
+  <app-table-toolbar [table]="table" searchPlaceholder="Search joint designs…" (exportCsv)="exportCsv()">
+    <div toolbarEnd class="flex gap-2">
+      <input class="input input-sm input-bordered w-32" [(ngModel)]="newDesignCode" placeholder="Code" />
+      <input class="input input-sm input-bordered w-40" [(ngModel)]="newDesignLabel" placeholder="Label" />
+      <button type="button" class="btn btn-sm btn-primary" (click)="addDesign()">
+        <svg lucidePlus class="size-4"></svg> Add
+      </button>
     </div>
+  </app-table-toolbar>
+
+  <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th appSortHeader [table]="table" field="code" label="Code"></th>
+          <th appSortHeader [table]="table" field="label" label="Label"></th>
+          <th appSortHeader [table]="table" field="active" label="Active"></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of table.sorted(); track d.code) {
+          <tr>
+            <td>{{ d.code }}</td>
+            <td>{{ d.label }}</td>
+            <td><input type="checkbox" class="checkbox checkbox-sm" [checked]="d.active" (change)="toggleDesignActive(d.code)" /></td>
+            <td><button type="button" class="btn btn-xs btn-ghost text-error" (click)="removeDesign(d.code)"><svg lucideTrash2 class="size-3"></svg></button></td>
+          </tr>
+        } @empty {
+          <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No joint designs match your search.' : 'No joint designs yet.' }}</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+  <div class="flex justify-end mt-3">
+    <button type="button" class="btn btn-sm btn-primary" (click)="saveDesigns()"><svg lucideSave class="size-4"></svg> Save</button>
+  </div>
 </div>

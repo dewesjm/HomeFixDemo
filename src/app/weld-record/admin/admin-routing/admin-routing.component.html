@@ -2,32 +2,19 @@
 <h2 class="section-title">Routing</h2>
 <p class="section-sub">Maintain the workflow routing for each trade. Order determines the stage sequence during signoff.</p>
 
-<div class="facet-row">
-  <span class="fw-bold">Routing</span>
-  <span class="spacer"></span>
-  <label class="input input-sm input-bordered flex items-center gap-2">
-    <svg lucideSearch class="size-4 opacity-60"></svg>
-    <input type="text" class="grow" placeholder="Search routing…"
-           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
-  </label>
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export
-  </button>
-  <button type="button" class="btn btn-sm btn-primary" (click)="addRow()">
-    <svg lucidePlus class="size-4"></svg> Add routing
-  </button>
-</div>
+<app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add routing"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
     <tr>
-      <th class="min-w-8 text-center">#</th>
+      <th appSortHeader [table]="table" field="sequence" label="#" class="min-w-8 text-center"></th>
       <th appSortHeader class="min-w-14" [table]="table" field="routing" label="Routing"></th>
       <th appSortHeader class="min-w-12" [table]="table" field="trade" label="Trade" filter="select" [options]="tradeOptions()"></th>
       <th class="min-w-14">Order</th>
       <th class="min-w-14">Reject routes to</th>
-      <th class="min-w-14">Role</th>
+      <th appSortHeader [table]="table" field="role" label="Role" class="min-w-14"></th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
@@ -120,7 +107,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="6" class="empty">No routing yet.</td></tr>
+      <tr><td colspan="7" class="empty">{{ table.hasRows() ? 'No routing match your search.' : 'No routing yet.' }}</td></tr>
     }
   </tbody>
 </table>

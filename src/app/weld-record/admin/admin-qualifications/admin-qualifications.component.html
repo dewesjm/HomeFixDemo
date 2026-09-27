@@ -2,45 +2,47 @@
   <h2 class="section-title">Qualifications</h2>
   <p class="section-sub">Choose which qualifications the Test User holds, and which joint conditions require an extra qualification.</p>
 
-  <div class="panel">
-    <div class="flex flex-wrap items-center gap-2 mb-2">
-      <span class="font-semibold">{{ userName }}: {{ held().size }} of {{ rows().length }} held</span>
-      <span>· fails {{ failingCount() }} of {{ totalCount() }} WTNs</span>
-      <span class="grow"></span>
+  <app-table-toolbar [table]="table" searchPlaceholder="Search qualifications…" (exportCsv)="exportCsv()">
+    <span class="font-semibold">{{ userName }}: {{ held().size }} of {{ rows().length }} held</span>
+    <span>· fails {{ failingCount() }} of {{ totalCount() }} WTNs</span>
+    <div toolbarEnd class="flex gap-2">
       <button type="button" class="btn btn-sm" (click)="setAll(true)">Select all</button>
       <button type="button" class="btn btn-sm" (click)="setAll(false)">Clear all</button>
       <button type="button" class="btn btn-sm" (click)="resetDefault()">Reset to default</button>
     </div>
+  </app-table-toolbar>
 
+  <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead>
         <tr>
-          <th>Qualification</th>
-          <th>Required by (WTNs)</th>
-          <th>Required by conditions</th>
-          <th>{{ userName }} has</th>
+          <th appSortHeader [table]="table" field="qual" label="Qualification"></th>
+          <th appSortHeader [table]="table" field="wtnCount" label="Required by (WTNs)"></th>
+          <th appSortHeader [table]="table" field="conditions" label="Required by conditions"></th>
+          <th appSortHeader [table]="table" field="has" [label]="userName + ' has'"></th>
         </tr>
       </thead>
       <tbody>
-        @for (r of rows(); track r.qual) {
+        @for (r of table.sorted(); track r.qual) {
           <tr>
             <td class="font-medium">{{ r.qual }}</td>
             <td>{{ r.wtnCount }}</td>
             <td>{{ r.conditions }}</td>
             <td>
               <input type="checkbox" class="toggle toggle-sm toggle-success"
-                     [checked]="held().has(r.qual)" (change)="toggle(r.qual)" />
+                     [checked]="r.has" (change)="toggle(r.qual)" />
             </td>
           </tr>
+        } @empty {
+          <tr><td colspan="4" class="empty">No qualifications match your search.</td></tr>
         }
       </tbody>
     </table>
-
   </div>
 
-  <div class="panel mt-3">
+  <div class="mt-6">
     <div class="flex flex-wrap items-center gap-2 mb-2">
-      <span class="font-semibold">Conditions</span>
+      <h3 class="panel-title mb-0">Conditions</h3>
       <span>· a joint that matches a condition also requires its qual, on every welding and inspection step</span>
     </div>
     <p class="mb-2">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.</p>

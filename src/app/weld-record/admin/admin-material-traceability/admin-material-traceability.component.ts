@@ -1,9 +1,12 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { LucidePlus, LucideTrash2 } from '@lucide/angular';
 import { ToastService } from '../../../shared/toast.service';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 import {
   mclTraceability, setMclTraceability, addMclValue, removeMclValue, MclTraceabilityEntry
 } from '../../../data/mcl-traceability';
@@ -11,13 +14,25 @@ import {
 @Component({
   selector: 'app-admin-material-traceability',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2],
+  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePlus, LucideTrash2],
   templateUrl: './admin-material-traceability.component.html'
 })
 export class AdminMaterialTraceabilityComponent {
   private messages = inject(ToastService);
   entries = signal<MclTraceabilityEntry[]>(mclTraceability().map(e => ({ ...e })));
   newMclValue = signal('');
+  table = new TableState<MclTraceabilityEntry>(['mclValue']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.entries()));
+  }
+
+  exportCsv() {
+    downloadCsv('material-traceability', [
+      { header: 'MCL Value', value: (r: MclTraceabilityEntry) => r.mclValue },
+      { header: 'Requires Traceability', value: (r: MclTraceabilityEntry) => (r.requiresTraceability ? 'Yes' : 'No') },
+    ], this.table.sorted());
+  }
 
   toggleTraceability(entry: MclTraceabilityEntry) {
     entry.requiresTraceability = !entry.requiresTraceability;

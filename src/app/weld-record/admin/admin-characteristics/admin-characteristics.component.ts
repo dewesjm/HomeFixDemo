@@ -4,12 +4,14 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { TableState } from '../../../shared/table-state';
 import { downloadCsv } from '../../../data/export-csv';
 import { CHARACTERISTIC_CODES } from '../../../data/characteristics';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
 
 interface CodeRow {
   id: string;
@@ -20,9 +22,9 @@ interface CodeRow {
 @Component({
   selector: 'app-admin-characteristics',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
+    LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-characteristics.component.html'
 })
@@ -44,6 +46,7 @@ export class AdminCharacteristicsComponent {
 
   addRow() {
     const row: CodeRow = { id: `new-${++this.seq}`, code: '', description: '' };
+    this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(row.id);
   }

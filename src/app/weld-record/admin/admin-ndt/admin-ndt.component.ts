@@ -1,11 +1,15 @@
 /* Admin → Penetrant: manage penetrant type + manufacturer pairs */
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { PenetrantEntry, getPenetrants, setPenetrants } from '../../../data/workflow';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 
 interface PenRow {
   uid: string;
@@ -20,9 +24,9 @@ function toRow(e: PenetrantEntry, i: number): PenRow {
 @Component({
   selector: 'app-admin-ndt',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
-    LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
+    LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-ndt.component.html'
 })
@@ -33,10 +37,16 @@ export class AdminNdtComponent {
   rows = signal<PenRow[]>(getPenetrants().map((e, i) => toRow(e, i)));
   editingId = signal<string | null>(null);
   private cloned: Record<string, PenRow> = {};
+  table = new TableState<PenRow>(['type', 'manufacturer']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
 
   addRow() {
     const uid = `new-${++this.seq}`;
     const row: PenRow = { uid, type: '', manufacturer: '' };
+    this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(uid);
   }
@@ -70,6 +80,13 @@ export class AdminNdtComponent {
 
   updateField(row: PenRow, field: 'type' | 'manufacturer', value: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, [field]: value } : x));
+  }
+
+  exportCsv() {
+    downloadCsv('penetrants', [
+      { header: 'Type', value: (r: PenRow) => r.type },
+      { header: 'Manufacturer', value: (r: PenRow) => r.manufacturer },
+    ], this.table.sorted());
   }
 
   private persist() {

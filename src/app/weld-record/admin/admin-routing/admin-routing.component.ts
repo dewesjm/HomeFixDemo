@@ -5,7 +5,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX,
+  LucidePencil, LucideCheck, LucideX,
   LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
 } from '@lucide/angular';
 
@@ -20,6 +20,7 @@ import {
   addStageTemplate, updateStageTemplate, deleteStageTemplate,
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../../../data/workflow';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 
 interface RoutingRow {
   id: string;
@@ -82,9 +83,9 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, 
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
-    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideCheck, LucideX,
+    LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
   ],
   templateUrl: './admin-routing.component.html'
@@ -156,6 +157,7 @@ export class AdminRoutingComponent {
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
     const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View' };
+    this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
     this.newRowId.set(fullId);

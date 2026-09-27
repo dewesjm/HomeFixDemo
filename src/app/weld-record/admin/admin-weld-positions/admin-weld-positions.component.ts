@@ -1,11 +1,15 @@
 /* Admin → Weld Positions: manage weld position codes used in every weld stage */
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { getWeldPositions, setWeldPositions } from '../../../data/workflow';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 
 interface WeldPositionRow {
   uid: string;
@@ -16,9 +20,9 @@ interface WeldPositionRow {
 @Component({
   selector: 'app-admin-weld-positions',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
-    LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
+    LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-weld-positions.component.html'
 })
@@ -33,10 +37,16 @@ export class AdminWeldPositionsComponent {
   })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, WeldPositionRow> = {};
+  table = new TableState<WeldPositionRow>(['code', 'description']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
 
   addRow() {
     const uid = `new-${++this.seq}`;
     const row: WeldPositionRow = { uid, code: '', description: '' };
+    this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(uid);
   }
@@ -74,6 +84,13 @@ export class AdminWeldPositionsComponent {
 
   updateDescription(row: WeldPositionRow, value: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, description: value } : x));
+  }
+
+  exportCsv() {
+    downloadCsv('weld-positions', [
+      { header: 'Code', value: (r: WeldPositionRow) => r.code },
+      { header: 'Description', value: (r: WeldPositionRow) => r.description },
+    ], this.table.sorted());
   }
 
   private persist() {

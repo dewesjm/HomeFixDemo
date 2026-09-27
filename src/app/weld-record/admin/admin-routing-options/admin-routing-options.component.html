@@ -1,18 +1,20 @@
 <h2 class="section-title">Routing Options</h2>
 <p class="section-sub">Manage per-stage dropdown options (e.g. Fit / Weld Build-Up, MT / PT).</p>
 
+<app-table-toolbar [table]="table" searchPlaceholder="Search routing options…" (exportCsv)="exportCsv()" />
+
 <div class="overflow-x-auto">
   <table class="table table-sm">
     <thead>
       <tr>
-        <th>Trade</th>
-        <th>Stage</th>
+        <th appSortHeader [table]="table" field="trade" label="Trade"></th>
+        <th appSortHeader [table]="table" field="stageLabel" label="Stage"></th>
         <th>Options</th>
         <th></th>
       </tr>
     </thead>
     <tbody>
-      @for (row of rows(); track row.uid) {
+      @for (row of table.sorted(); track row.uid) {
         <tr>
           <td>{{ row.trade }}</td>
           <td>{{ row.stageLabel }}</td>
@@ -70,6 +72,8 @@
             }
           </td>
         </tr>
+      } @empty {
+        <tr><td colspan="4" class="empty">No routing options match your search.</td></tr>
       }
     </tbody>
   </table>

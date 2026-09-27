@@ -1,18 +1,22 @@
 /* Admin → Quick Links: manage the shortcut links shown in the top nav */
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { getQuickLinks, setQuickLinks, QuickLink } from '../../../data/quick-links';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 
 @Component({
   selector: 'app-admin-quick-links',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
-    LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2
+    LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
   templateUrl: './admin-quick-links.component.html'
 })
@@ -23,10 +27,16 @@ export class AdminQuickLinksComponent {
   rows = signal<QuickLink[]>(getQuickLinks());
   editingId = signal<string | null>(null);
   private cloned: Record<string, QuickLink> = {};
+  table = new TableState<QuickLink>(['label', 'url']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
 
   addRow() {
     const id = `new-${++this.seq}`;
     const row: QuickLink = { id, label: '', url: '' };
+    this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(id);
   }
@@ -63,6 +73,13 @@ export class AdminQuickLinksComponent {
 
   updateField(row: QuickLink, field: 'label' | 'url', value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
+  }
+
+  exportCsv() {
+    downloadCsv('quick-links', [
+      { header: 'Label', value: (r: QuickLink) => r.label },
+      { header: 'URL', value: (r: QuickLink) => r.url },
+    ], this.table.sorted());
   }
 
   private persist() {

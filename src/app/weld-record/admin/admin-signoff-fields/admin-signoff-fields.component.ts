@@ -3,13 +3,15 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideSearch, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { TableState, inArray } from '../../../shared/table-state';
-import { MultiselectDropdownComponent } from '../../../shared/multiselect-dropdown.component';
 import { Job } from '../../../data/jobs';
 import { STAGE_TEMPLATES, SignoffField, defaultSignoffFields, getTradeOptions } from '../../../data/workflow';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 
 interface SignoffFieldRow {
   id: string;
@@ -57,8 +59,8 @@ function flattenTemplates(): SignoffFieldRow[] {
 @Component({
   selector: 'app-admin-signoff-fields',
   standalone: true,
-  imports: [CommonModule, FormsModule, MultiselectDropdownComponent,
-    LucideSearch, LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2],
+  imports: [TableToolbarComponent, SortHeaderComponent, CommonModule, FormsModule,
+    LucidePencil, LucideCheck, LucideX, LucideTrash2],
   templateUrl: './admin-signoff-fields.component.html'
 })
 export class AdminSignoffFieldsComponent {
@@ -102,6 +104,7 @@ export class AdminSignoffFieldsComponent {
       placeholder: '',
       optionsText: '',
     };
+    this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(row.id);
   }
@@ -151,5 +154,16 @@ export class AdminSignoffFieldsComponent {
     // This is a no-op for now — in a real app this would persist to a backend.
     // The rows are the source of truth for the admin view.
     this.messages.add({ severity: 'success', summary: 'Sign-off fields updated', life: 3000 });
+  }
+
+  exportCsv() {
+    downloadCsv('signoff-fields', [
+      { header: 'Trade', value: (r: SignoffFieldRow) => r.trade },
+      { header: 'Stage', value: (r: SignoffFieldRow) => r.stageLabel },
+      { header: 'Field', value: (r: SignoffFieldRow) => r.label },
+      { header: 'Type', value: (r: SignoffFieldRow) => r.type },
+      { header: 'Required', value: (r: SignoffFieldRow) => (r.required ? 'Yes' : 'No') },
+      { header: 'Placeholder / Options', value: (r: SignoffFieldRow) => r.optionsText || r.placeholder },
+    ], this.visibleRows());
   }
 }

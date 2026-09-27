@@ -228,6 +228,8 @@ src/app/
     table-state.ts       Sorting, filtering, paging (one instance per table screen)
     sort-header.component  th[appSortHeader]: sort link + optional text/multiselect column filter
     table-pager.component, multiselect-dropdown.component, date-range.component
+    table-toolbar.component  Toolbar over every admin table: search box, Export, Add (addLabel; blank = no Add);
+                         [toolbarEnd] slot for pages that add rows inline. Pair with th[appSortHeader] columns.
     banner-pill.component  The admin banner as a pill beside a page title (the only banner style)
     date-format.ts       The one date format: formatDate / formatDateTime and the appDate / appDateTime pipes
                          (09/26/2026, 09/26/2026 3:04 PM). Use these for every displayed or exported date.

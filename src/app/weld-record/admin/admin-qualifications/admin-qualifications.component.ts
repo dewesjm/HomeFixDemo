@@ -1,22 +1,27 @@
 /* Admin > Qualifications: which quals the Test User holds (demo/testing aid), and the conditions
    that make a joint require a qual (data/qual-conditions.ts). Both drive Weld Record's
    Qualification Check (data/qualifications.ts). */
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideTrash2 } from '@lucide/angular';
-import { RouterLink } from '@angular/router';
 import { ToastService } from '../../../shared/toast.service';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 import { procedures } from '../../../data/procedures';
 import {
   ALL_QUALS, DEFAULT_TEST_USER_QUALS, TEST_USER_NAME, testUserQuals, setTestUserQuals
 } from '../../../data/qualifications';
 import { CONDITION_FIELDS, QualCondition, qualConditions, setQualConditions } from '../../../data/qual-conditions';
 
+interface QualRow { qual: string; wtnCount: number; conditions: string; has: boolean; }
+
 @Component({
   selector: 'app-admin-qualifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucidePlus, LucideTrash2],
+  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePlus, LucideTrash2],
   templateUrl: './admin-qualifications.component.html'
 })
 export class AdminQualificationsComponent {
@@ -32,7 +37,22 @@ export class AdminQualificationsComponent {
     qual: q,
     wtnCount: procedures().filter(p => p.qualificationsRequired.includes(q)).length,
     conditions: this.conditions().filter(c => c.qual === q).map(c => `${this.fieldLabel(c.field)} = ${c.value}`).join(', '),
+    has: this.held().has(q),
   })));
+  table = new TableState<QualRow>(['qual', 'conditions']);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
+
+  exportCsv() {
+    downloadCsv('qualifications', [
+      { header: 'Qualification', value: (r: QualRow) => r.qual },
+      { header: 'Required by (WTNs)', value: (r: QualRow) => r.wtnCount },
+      { header: 'Required by conditions', value: (r: QualRow) => r.conditions },
+      { header: `${this.userName} has`, value: (r: QualRow) => (r.has ? 'Yes' : 'No') },
+    ], this.table.sorted());
+  }
 
   /* WPS rows the Test User would fail with the current (unsaved) selection */
   failingCount = computed(() => procedures().filter(p => p.qualificationsRequired.some(q => !this.held().has(q))).length);

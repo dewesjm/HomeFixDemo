@@ -3,7 +3,7 @@ import { Component, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideUpload, LucideX } from '@lucide/angular';
+import { LucidePencil, LucideTrash2, LucideUpload } from '@lucide/angular';
 
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { TableState, inArray } from '../../../shared/table-state';
@@ -13,13 +13,14 @@ import { downloadCsv } from '../../../data/export-csv';
 import {
   procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, PROCEDURE_CSV_COLUMNS, type Procedure
 } from '../../../data/procedures';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 
 @Component({
   selector: 'app-manage-procedures',
   standalone: true,
-  imports: [
+  imports: [TableToolbarComponent, 
     CommonModule, FormsModule, RouterLink,
-    SortHeaderComponent, LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideUpload, LucideX
+    SortHeaderComponent, LucidePencil, LucideTrash2, LucideUpload
   ],
   templateUrl: './manage-procedures.component.html'
 })
