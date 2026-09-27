@@ -50,9 +50,11 @@ html, body {
 }
 
 .section-title {
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.75rem;
   font-size: 1.25rem;
 }
+/* a title sharing a row with buttons: the row sets the spacing */
+.section-title.m-0 { margin: 0; }
 /* heading for a section inside a long form (e.g. "1. Base Metal" on the procedure form) */
 .form-section-title {
   margin: 1.25rem 0 0.5rem;

@@ -96,7 +96,6 @@ function toEditable(j: WeldJoint): EditableRow {
         <span class="c-muted">/</span>
         <h2 class="section-title">{{ isEditMode() ? 'Mass Edit' : 'Import Joints' }}</h2>
       </div>
-      <p class="section-sub">{{ isEditMode() ? 'Load existing joints, edit them together, then save.' : 'Load joints from a spreadsheet (.xlsx or .csv).' }}</p>
 
       <app-import-grid #grid [importer]="this" noun="joints" doneLink="/weld-planning" [fileActions]="!isEditMode()">
         <ng-template #headerCells>
