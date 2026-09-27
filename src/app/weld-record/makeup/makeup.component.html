@@ -52,7 +52,7 @@
                 <input type="date" class="input input-bordered input-xs" [attr.min]="today"
                        [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
               } @else {
-                {{ g.startDate }}
+                {{ g.startDate | appDate }}
               }
             </td>
             <td>
@@ -60,7 +60,7 @@
                 <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
                        [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
               } @else {
-                {{ g.endDate }}
+                {{ g.endDate | appDate }}
               }
             </td>
             <td>{{ usedFor(g) }}</td>

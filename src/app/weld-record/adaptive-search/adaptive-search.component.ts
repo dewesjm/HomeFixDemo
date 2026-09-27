@@ -26,6 +26,7 @@ import {
 } from '../../data/filter-schema';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { currentRoutingLabel } from '../../data/workflow';
+import { AppDatePipe, formatDate } from '../../shared/date-format';
 
 const DEFAULT_KEYS = ['hull', 'id', 'drawing', 'joint', 'ndt'];
 
@@ -108,7 +109,7 @@ function saveColumnKeys(keys: string[]) {
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [OrderedPickListComponent, 
+  imports: [AppDatePipe, OrderedPickListComponent, 
     CommonModule, FormsModule,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
@@ -333,7 +334,7 @@ export class AdaptiveSearchComponent {
       case 'select':      return `${f.label}: ${v}`;
       case 'range':       return `${f.label}: ${v[0]}–${v[1]}`;
       case 'daterange': {
-        const fmt = (d: Date) => d ? d.toLocaleDateString() : '…';
+        const fmt = (d: Date) => d ? formatDate(d) : '…';
         return `${f.label}: ${fmt(v[0])} – ${fmt(v[1])}`;
       }
     }

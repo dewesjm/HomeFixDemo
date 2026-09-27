@@ -147,7 +147,7 @@
             @switch (col.key) {
               @case ('id') { <span class="mono">{{ job.xrefid }}</span> }
               @case ('currentRouting') { {{ currentRouting(job) }} }
-              @case ('scheduledFor') { {{ job.scheduledFor | date:'shortDate' }} }
+              @case ('scheduledFor') { {{ job.scheduledFor | appDate }} }
               @default { {{ job[col.field!] || '-' }} }
             }
           </td>

@@ -338,7 +338,7 @@
         <thead><tr><th>Rev</th><th>Date</th><th>By</th><th>Note</th></tr></thead>
         <tbody>
           @for (rv of form.revisionHistory; track $index) {
-            <tr><td>{{ rv.wpsRev }}</td><td>{{ rv.date }}</td><td>{{ rv.by }}</td><td>{{ rv.note }}</td></tr>
+            <tr><td>{{ rv.wpsRev }}</td><td>{{ rv.date | appDate }}</td><td>{{ rv.by }}</td><td>{{ rv.note }}</td></tr>
           }
         </tbody>
       </table>

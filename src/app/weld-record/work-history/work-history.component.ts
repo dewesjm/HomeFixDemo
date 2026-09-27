@@ -20,6 +20,7 @@ import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { LucidePencil } from '@lucide/angular';
+import { AppDateTimePipe, formatDateTime } from '../../shared/date-format';
 
 /* one history entry; sign-offs carry inputs (every editable field and its value at that moment) */
 interface ActivityRow extends HistoryEntry {
@@ -36,7 +37,7 @@ interface ActivityRow extends HistoryEntry {
 @Component({
   selector: 'app-work-history',
   standalone: true,
-  imports: [
+  imports: [AppDateTimePipe, 
     CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent, CorrectStageDialogComponent, PersonSearchInputComponent,
     LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight,
@@ -68,8 +69,7 @@ export class WorkHistoryComponent {
     {
       /* match the formatted date shown in the column, not the raw ISO timestamp */
       when: (rowValue: string, val: string) =>
-        new Date(rowValue).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })
-          .toLowerCase().includes(String(val).toLowerCase()),
+        formatDateTime(rowValue).toLowerCase().includes(String(val).toLowerCase()),
       routing: inArray,
     }
   );
@@ -319,7 +319,7 @@ export class WorkHistoryComponent {
         ? r.inputs.map(i => ({ row: r, field: i.label, value: i.value }))
         : [{ row: r, field: '', value: r.to ?? '' }]);
     downloadCsv(name, [
-      { header: 'When',       value: (l: Line) => new Date(l.row.when).toLocaleString() },
+      { header: 'When',       value: (l: Line) => formatDateTime(l.row.when) },
       { header: 'Who',        value: (l: Line) => l.row.who },
       { header: 'Identifier', value: (l: Line) => l.row.whoId ?? '' },
       { header: 'Title',      value: (l: Line) => l.row.whoTitle ?? '' },

@@ -9,6 +9,7 @@ import { PersonSearchInputComponent } from '../../shared/person-search-input.com
 import { getProcedureByGwpWtn } from '../../data/procedures';
 import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
 import { conditionQuals } from '../../data/qual-conditions';
+import { AppDateTimePipe } from '../../shared/date-format';
 
 export interface SignoffContext {
   job: Job;
@@ -101,7 +102,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
+  imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

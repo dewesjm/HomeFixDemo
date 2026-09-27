@@ -2,6 +2,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CHANGE_LOG } from '../data/changelog';
+import { formatDate } from '../shared/date-format';
 
 @Component({
   selector: 'app-changelog',
@@ -17,9 +18,7 @@ export class ChangelogComponent {
     { key: 'fixed' as const, label: 'Fixed', badge: 'badge-warning' },
   ];
 
-  /* 'Friday, September 25'; parsed as a local date so it doesn't shift a day */
   dayLabel(iso: string) {
-    const [y, m, d] = iso.split('-').map(Number);
-    return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    return formatDate(iso);
   }
 }

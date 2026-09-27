@@ -9,11 +9,12 @@ import { LucideSearch, LucideFileText, LucideX } from '@lucide/angular';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { TableState, inArray } from '../../shared/table-state';
 import { procedures, Procedure, PROCEDURE_STATUS_OPTIONS } from '../../data/procedures';
+import { AppDatePipe } from '../../shared/date-format';
 
 @Component({
   selector: 'app-procedure-lookup',
   standalone: true,
-  imports: [CommonModule, FormsModule, SortHeaderComponent, LucideSearch, LucideFileText, LucideX],
+  imports: [AppDatePipe, CommonModule, FormsModule, SortHeaderComponent, LucideSearch, LucideFileText, LucideX],
   templateUrl: './procedure-lookup.component.html'
 })
 export class ProcedureLookupComponent {

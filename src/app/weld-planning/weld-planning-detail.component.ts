@@ -7,6 +7,7 @@ import {
   getWeldJoint, NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_EXTRA_GROUPS, jointExtraDisplay,
   type WeldJoint, type JointExtraField, type JointExtraGroup
 } from './weld-planning.data';
+import { formatDateTime } from '../shared/date-format';
 
 @Component({
   selector: 'app-weld-planning-detail',
@@ -55,7 +56,6 @@ export class WeldPlanningDetailComponent implements OnInit {
   }
 
   formatDate(iso: string): string {
-    if (!iso) return '-';
-    return new Date(iso).toLocaleDateString();
+    return formatDateTime(iso) || '-';
   }
 }

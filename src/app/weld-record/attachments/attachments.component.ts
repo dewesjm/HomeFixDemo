@@ -1,6 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucidePaperclip, LucideFile, LucideTrash2 } from '@lucide/angular';
+import { AppDateTimePipe } from '../../shared/date-format';
 
 export interface Attachment {
   id: string;
@@ -12,7 +13,7 @@ export interface Attachment {
 @Component({
   selector: 'app-attachments',
   standalone: true,
-  imports: [CommonModule, LucidePaperclip, LucideFile, LucideTrash2],
+  imports: [AppDateTimePipe, CommonModule, LucidePaperclip, LucideFile, LucideTrash2],
   templateUrl: './attachments.component.html'
 })
 export class AttachmentsComponent {

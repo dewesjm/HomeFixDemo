@@ -14,6 +14,7 @@ import {
   type Procedure
 } from '../../../data/procedures';
 import { QUALIFICATIONS } from '../../../data/qualifications';
+import { AppDatePipe } from '../../../shared/date-format';
 
 const EMPTY_FORM: Procedure = {
   id: '', title: '', status: 'draft',
@@ -39,7 +40,7 @@ const EMPTY_FORM: Procedure = {
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX],
+  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX],
   templateUrl: './procedure-form.component.html'
 })
 export class ProcedureFormComponent implements OnInit {

@@ -8,6 +8,7 @@
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { formatDate } from '../../shared/date-format';
 
 function fillerMetalTypeLabels(values: string[]): string {
   if (!values.length) return '';
@@ -60,7 +61,7 @@ function revisionRecord(p: Procedure): Content[] {
         body: [
           [{ text: 'Rev', bold: true, fillColor: '#eeeeee' }, { text: 'Date', bold: true, fillColor: '#eeeeee' },
            { text: 'By', bold: true, fillColor: '#eeeeee' }, { text: 'Note', bold: true, fillColor: '#eeeeee' }],
-          ...p.revisionHistory.map(rv => [rv.wpsRev, rv.date, rv.by, rv.note]),
+          ...p.revisionHistory.map(rv => [rv.wpsRev, formatDate(rv.date), rv.by, rv.note]),
         ],
       },
       layout: {
@@ -152,7 +153,7 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
   return {
     content,
     header: () => ({
-      text: `This document was printed from Weld Engineering. Verify revision prior to use. Printed on ${new Date().toLocaleDateString()}`,
+      text: `This document was printed from Weld Engineering. Verify revision prior to use. Printed on ${formatDate(new Date())}`,
       style: 'pageHeader',
       margin: [40, 16, 40, 0] as [number, number, number, number],
     }),

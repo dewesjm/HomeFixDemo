@@ -199,7 +199,7 @@
                 <tbody>
                   @for (r of ctx().wf().signoffRecords; track $index; let ri = $index) {
                     <tr>
-                      <td class="text-xs hist-old">{{ r.when | date:'short' }}</td>
+                      <td class="text-xs hist-old">{{ r.when | appDateTime }}</td>
                       <td class="text-xs hist-old">{{ r.who }}</td>
                       <td>
                         @if (r.fields.length) {
@@ -648,7 +648,7 @@
               {{ (st.result || '') | uppercase }}
             </span>
           }
-          <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '-' }} on {{ st.signedAt | date:'medium' }}</span>
+          <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '-' }} on {{ st.signedAt | appDateTime }}</span>
         }
       </div>
 

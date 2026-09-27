@@ -61,7 +61,7 @@
       <div class="truncate">{{ a.location }}</div>
       <div class="truncate">{{ a.specificLocation }}</div>
       <div class="truncate">{{ a.assignmentNumber }}</div>
-      <div class="truncate">{{ a.expirationDate | date:'MMM d, y' }}</div>
+      <div class="truncate">{{ a.expirationDate | appDate }}</div>
       <div class="truncate">{{ a.source }}</div>
       <div class="flex items-center gap-1 justify-end" (click)="$event.stopPropagation()">
         <a class="btn btn-ghost btn-xs" href="https://example.com/documents/{{ a.jobId }}.pdf"
@@ -78,7 +78,7 @@
         <div></div>
         <div class="flex flex-wrap gap-x-8 gap-y-2">
           <div><span class="font-semibold">Assigned By</span><div>{{ a.assignedBy }}</div></div>
-          <div><span class="font-semibold">Assigned Date</span><div>{{ a.assignedDate | date:'MMM d, y' }}</div></div>
+          <div><span class="font-semibold">Assigned Date</span><div>{{ a.assignedDate | appDate }}</div></div>
           <div><span class="font-semibold">Job Description</span><div>{{ a.jobDescription }}</div></div>
           @for (d of a.details; track d.label) {
             <div><span class="font-semibold">{{ d.label }}</span><div>{{ d.value }}</div></div>

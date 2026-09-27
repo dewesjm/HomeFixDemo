@@ -24,6 +24,7 @@ import {
   applyFilters, defaultValuesFor, getField, isEmpty,
   loadVariants, saveVariants
 } from './weld-planning-filter-schema';
+import { AppDatePipe, formatDate } from '../shared/date-format';
 
 const DEFAULT_KEYS = ['hull', 'joint', 'status'];
 
@@ -80,7 +81,7 @@ function saveColumnKeys(keys: string[]) {
 @Component({
   selector: 'app-weld-planning-search',
   standalone: true,
-  imports: [OrderedPickListComponent, 
+  imports: [AppDatePipe, OrderedPickListComponent, 
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
@@ -277,7 +278,7 @@ export class WeldPlanningSearchComponent {
       case 'multiselect': return `${f.label}: ${(v as any[]).join(', ')}`;
       case 'select':      return `${f.label}: ${v || 'Blank'}`;
       case 'daterange': {
-        const fmt = (d: Date) => d ? d.toLocaleDateString() : '…';
+        const fmt = (d: Date) => d ? formatDate(d) : '…';
         return `${f.label}: ${fmt(v[0])} – ${fmt(v[1])}`;
       }
     }

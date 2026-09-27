@@ -80,7 +80,7 @@
         </td>
         <td>{{ r.routing }}</td>
         <td>{{ r.action }}</td>
-        <td>{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+        <td>{{ r.when | appDateTime }}</td>
         <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
         <td class="hist-new">{{ r.to || '-' }}</td>
         <td>{{ r.jobId }}</td>
@@ -115,7 +115,7 @@
               <td></td>
               <td class="hist-old">{{ r.routing }}</td>
               <td class="pl-8">Reason</td>
-              <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+              <td class="hist-old">{{ r.when | appDateTime }}</td>
               <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
               <td class="hist-new">{{ r.reason }}</td>
               <td class="hist-old">{{ r.jobId }}</td>
@@ -131,7 +131,7 @@
               <td></td>
               <td class="hist-old">{{ r.routing }}</td>
               <td class="pl-8 font-semibold">{{ c.label }}</td>
-              <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+              <td class="hist-old">{{ r.when | appDateTime }}</td>
               <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
               <td><span class="hist-old">{{ c.from || '(left blank)' }}</span> → <span class="hist-new">{{ c.to || '(left blank)' }}</span></td>
               <td class="hist-old">{{ r.jobId }}</td>
@@ -148,7 +148,7 @@
             <td></td>
             <td class="hist-old">{{ r.routing }}</td>
             <td class="pl-8">{{ i.label }}</td>
-            <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+            <td class="hist-old">{{ r.when | appDateTime }}</td>
             <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
             <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
             <td class="hist-old">{{ r.jobId }}</td>
@@ -180,7 +180,7 @@
                 <td></td>
                 <td class="hist-old">{{ r.routing }}</td>
                 <td class="pl-12">{{ i.label }}</td>
-                <td class="hist-old">{{ r.when | date:'MMM d, y, h:mm a' }}</td>
+                <td class="hist-old">{{ r.when | appDateTime }}</td>
                 <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
                 <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
                 <td class="hist-old">{{ r.jobId }}</td>

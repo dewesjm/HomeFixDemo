@@ -10,6 +10,7 @@ import { currentRoutingLabel } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
 import { ColumnFilterComponent } from '../../shared/column-filter.component';
+import { AppDatePipe, formatDate } from '../../shared/date-format';
 
 /* per-column filter keys -> how to read the matching text off an Assignment (WICC Date matches
    against the same formatted display text the column shows, not the raw ISO date) */
@@ -22,14 +23,14 @@ const COLUMN_FIELDS: Record<string, (a: Assignment, routing: string) => string> 
   location: a => a.location,
   specificLocation: a => a.specificLocation,
   assignmentNumber: a => a.assignmentNumber,
-  expirationDate: a => new Date(a.expirationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+  expirationDate: a => formatDate(a.expirationDate),
   source: a => a.source,
 };
 
 @Component({
   selector: 'app-my-assignments',
   standalone: true,
-  imports: [CommonModule, FormsModule, ColumnFilterComponent, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
+  imports: [AppDatePipe, CommonModule, FormsModule, ColumnFilterComponent, LucideClipboardList, LucideArrowUpRight, LucideFileText, LucideMegaphone, LucideChevronRight, LucideChevronDown],
   templateUrl: './my-assignments.component.html',
 })
 export class MyAssignmentsComponent {

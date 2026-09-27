@@ -123,7 +123,7 @@
           <td>
             @switch (col.key) {
               @case ('id') { <span class="mono">{{ joint.id || '-' }}</span> }
-              @case ('createdAt') { {{ joint.createdAt | date:'shortDate' }} }
+              @case ('createdAt') { {{ joint.createdAt | appDate }} }
               @default { {{ joint[col.field!] || '-' }} }
             }
           </td>

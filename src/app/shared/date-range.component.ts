@@ -1,5 +1,6 @@
 /* Two DaisyUI date inputs behind a dropdown, replaces p-datepicker selectionMode="range". */
 import { Component, computed, input, output } from '@angular/core';
+import { formatDate } from './date-format';
 
 @Component({
   selector: 'app-date-range',
@@ -37,7 +38,7 @@ export class DateRangeComponent {
   summary = computed(() => {
     const f = this.from(), t = this.to();
     if (!f && !t) return 'Any';
-    const fmt = (d: Date | null) => (d ? d.toLocaleDateString() : '…');
+    const fmt = (d: Date | null) => (d ? formatDate(d) : '…');
     return `${fmt(f)} – ${fmt(t)}`;
   });
 

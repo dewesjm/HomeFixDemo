@@ -228,6 +228,8 @@ src/app/
     table-state.ts       Sorting, filtering, paging (one instance per table screen)
     sort-header.component  th[appSortHeader]: sort link + optional text/multiselect column filter
     table-pager.component, multiselect-dropdown.component, date-range.component
+    date-format.ts       The one date format: formatDate / formatDateTime and the appDate / appDateTime pipes
+                         (09/26/2026, 09/26/2026 3:04 PM). Use these for every displayed or exported date.
     toast.service / toast-host.component   Themed toast notifications
     confirm.service / confirm-dialog.component   Confirm dialogs; optional password field OR a generic
                        textInput field (label + placeholder), both captured via one `inputValue` signal —

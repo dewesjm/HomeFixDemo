@@ -40,6 +40,7 @@ import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
 } from '../../data/procedures';
+import { formatDate } from '../../shared/date-format';
 
 /* fabrication values that must be present before Fit can be signed -- id1/id2 (MIC 1/MIC 2) are
    only checked when that joint member's MCL requires traceability, same as their visibility */
@@ -380,7 +381,7 @@ export class JointPageComponent implements OnDestroy {
   holdNote = computed(() => {
     const d = this.openDeviations()[0];
     if (!d) return '';
-    const when = new Date(d.when).toLocaleDateString();
+    const when = formatDate(d.when);
     return `On hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until it is dealt with, and that part isn't built yet.`;
   });
   /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a deprogress */

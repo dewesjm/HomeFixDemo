@@ -15,11 +15,12 @@ import {
   makeupGrants, addMakeupGrant, removeMakeupGrant, updateMakeupGrant, isGrantActive,
   daySpan, daysRemaining, ANNUAL_MAKEUP_DAYS, MakeupGrant
 } from '../../data/makeup';
+import { AppDatePipe } from '../../shared/date-format';
 
 @Component({
   selector: 'app-makeup',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, PersonSearchInputComponent, LucidePlus, LucideTrash2, LucideUserCog, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft],
+  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, PersonSearchInputComponent, LucidePlus, LucideTrash2, LucideUserCog, LucideSearch, LucidePencil, LucideCheck, LucideArrowLeft],
   templateUrl: './makeup.component.html'
 })
 export class MakeupComponent {
