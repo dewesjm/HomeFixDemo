@@ -1,4 +1,4 @@
-import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps } from './workflow';
+import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps, reorderStageTemplates, getTemplates } from './workflow';
 import { JOBS, Job } from './jobs';
 import { getJointDesign } from './joint-designs';
 import { DEFAULT_STEP_CONDITIONS, describeConditions } from './step-conditions';
@@ -57,5 +57,22 @@ describe('step conditions', () => {
     expect(describeConditions([])).toBe('Always');
     expect(describeConditions(DEFAULT_STEP_CONDITIONS['root-ndt-utrt']))
       .toBe('NDT Root is UT; or RT Root is 10 or 100 or 360 or 60 or 75');
+  });
+});
+
+describe('step order (Admin > Routing)', () => {
+  it('a saved order is what new joints get, and it survives a reload', () => {
+    const original = getTemplates()['Welding'].map(t => t.id);
+    const moved = original.filter(id => id !== 'fit');
+    moved.splice(moved.indexOf('tack') + 1, 0, 'fit');
+    reorderStageTemplates('Welding', moved);
+    try {
+      const ids = buildStages(JOBS.find(j => j.trade === 'Welding')!).map(s => s.id);
+      expect(ids.indexOf('fit')).toBe(ids.indexOf('tack') + 1);
+      /* written to storage: a second read (cache cleared by the save) still has it */
+      expect(getTemplates()['Welding'].map(t => t.id)).toEqual(moved);
+    } finally {
+      reorderStageTemplates('Welding', original);
+    }
   });
 });

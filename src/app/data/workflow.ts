@@ -991,11 +991,15 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
     const overridden = saved[trade];
     if (overridden) {
-      const savedMap = new Map(overridden.map(s => [s.id, s]));
-      const merged = statics.map(s => savedMap.has(s.id) ? deserializeStage(savedMap.get(s.id)!, s) : s);
-      for (const s of overridden) {
-        if (!statics.some(st => st.id === s.id)) merged.push(deserializeStage(s));
-      }
+      /* saved order wins (Admin > Routing reorders); a built-in step the save doesn't have goes in
+         after the built-in step before it */
+      const staticMap = new Map(statics.map(s => [s.id, s]));
+      const merged = overridden.map(s => deserializeStage(s, staticMap.get(s.id)));
+      statics.forEach((st, i) => {
+        if (merged.some(m => m.id === st.id)) return;
+        const prev = i > 0 ? merged.findIndex(m => m.id === statics[i - 1].id) : -1;
+        merged.splice(prev + 1, 0, st);
+      });
       _merged[trade] = merged;
     } else {
       _merged[trade] = statics;
@@ -1041,6 +1045,15 @@ export function updateStageTemplate(trade: Job['trade'], stageId: string, patch:
   const list = templates[trade];
   if (!list) return;
   templates[trade] = list.map(s => s.id === stageId ? { ...s, ...patch } : s);
+  persistTemplates(templates);
+}
+
+/* Admin > Routing Order: `ids` is the trade's steps in their new order */
+export function reorderStageTemplates(trade: Job['trade'], ids: string[]) {
+  const templates = getTemplates();
+  const list = templates[trade] ?? [];
+  const pos = (id: string) => { const i = ids.indexOf(id); return i < 0 ? ids.length + list.findIndex(s => s.id === id) : i; };
+  templates[trade] = [...list].sort((a, b) => pos(a.id) - pos(b.id));
   persistTemplates(templates);
 }
 

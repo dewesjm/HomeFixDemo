@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucidePencil, LucideCheck, LucideX,
-  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch
+  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
@@ -17,7 +17,7 @@ import { downloadCsv } from '../../../data/export-csv';
 import { Job } from '../../../data/jobs';
 import {
   StageField, SignoffField, defaultSignoffFields,
-  addStageTemplate, updateStageTemplate, deleteStageTemplate,
+  addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -92,9 +92,14 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
   imports: [TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
-    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch
+    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
   ],
-  templateUrl: './admin-routing.component.html'
+  templateUrl: './admin-routing.component.html',
+  styles: [`
+    tr[draggable="true"] { cursor: grab; }
+    tr.drop-above td { box-shadow: inset 0 2px 0 currentColor; }
+    tr.drop-below td { box-shadow: inset 0 -2px 0 currentColor; }
+  `]
 })
 export class AdminRoutingComponent {
   tradeOptions = computed(() => getTradeOptions());
@@ -143,6 +148,8 @@ export class AdminRoutingComponent {
   condRules = signal<ConditionRule[]>([]);
 
   constructor() {
+    /* shown in Order unless another heading is clicked, so a drag or arrow move shows right away */
+    this.table.sortField.set('sequence');
     effect(() => this.table.setRows(this.rows()));
   }
 
@@ -156,7 +163,7 @@ export class AdminRoutingComponent {
           trade: trade as Job['trade'],
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
-          role: (t.role as Role) ?? 'View',
+          role: (t.role as Role) || 'View',
           includedWhen: describeConditions(t.includeWhen),
           rejectRules: [],
         });
@@ -207,7 +214,8 @@ export class AdminRoutingComponent {
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
       });
       const newFullId = `${row.trade}:${newId}`;
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId, sequence: 0 } : x));
+      /* saved at the end, same as addStageTemplate() */
+      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId, sequence: Number.MAX_SAFE_INTEGER } : x));
       this.resequence(row.trade);
     } else {
       updateStageTemplate(row.trade, stageId, {
@@ -252,6 +260,7 @@ export class AdminRoutingComponent {
       if (r.id === above.id) return { ...r, sequence: row.sequence };
       return r;
     }));
+    this.saveOrder(row.trade);
   }
 
   moveDown(row: RoutingRow) {
@@ -264,6 +273,58 @@ export class AdminRoutingComponent {
       if (r.id === below.id) return { ...r, sequence: row.sequence };
       return r;
     }));
+    this.saveOrder(row.trade);
+  }
+
+  /* the trade's steps as shown in Order are the order joints get them in (unsaved new rows left out) */
+  private saveOrder(trade: Job['trade']) {
+    const ids = this.rows().filter(r => r.trade === trade && !r.id.includes(':new-'))
+      .sort((a, b) => a.sequence - b.sequence).map(r => r.id.split(':')[1]);
+    reorderStageTemplates(trade, ids);
+    this.refreshStageOptions();
+  }
+
+  /* ── Drag to reorder (native HTML drag and drop; the arrows cover touch and keyboard) ── */
+  dragId = signal('');
+  overId = signal('');
+
+  dropSide(row: RoutingRow): '' | 'above' | 'below' {
+    const from = this.rows().find(r => r.id === this.dragId());
+    if (!from || from.id === row.id || this.overId() !== row.id || from.trade !== row.trade) return '';
+    return from.sequence < row.sequence ? 'below' : 'above';
+  }
+
+  onDragStart(e: DragEvent, row: RoutingRow) {
+    this.dragId.set(row.id);
+    e.dataTransfer?.setData('text/plain', row.id);   /* Firefox won't start a drag without data */
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  }
+
+  onDragOver(e: DragEvent, row: RoutingRow) {
+    const from = this.rows().find(r => r.id === this.dragId());
+    if (!from || from.trade !== row.trade) return;
+    e.preventDefault();
+    this.overId.set(row.id);
+  }
+
+  /* dragging up lands above the drop row, dragging down lands below it (so the last spot is reachable) */
+  onDrop(e: DragEvent, target: RoutingRow) {
+    e.preventDefault();
+    const from = this.rows().find(r => r.id === this.dragId());
+    if (from && from.id !== target.id && from.trade === target.trade) {
+      const order = this.rows().filter(r => r.trade === target.trade).sort((a, b) => a.sequence - b.sequence).map(r => r.id);
+      const movingDown = order.indexOf(from.id) < order.indexOf(target.id);
+      const rest = order.filter(id => id !== from.id);
+      rest.splice(rest.indexOf(target.id) + (movingDown ? 1 : 0), 0, from.id);
+      this.rows.update(rows => rows.map(r => r.trade === target.trade ? { ...r, sequence: rest.indexOf(r.id) + 1 } : r));
+      this.saveOrder(target.trade);
+    }
+    this.clearDrag();
+  }
+
+  clearDrag() {
+    this.dragId.set('');
+    this.overId.set('');
   }
 
   isFirstInTrade(row: RoutingRow): boolean {

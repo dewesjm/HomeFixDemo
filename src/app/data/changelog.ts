@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-09-30',
     added: [
       'Admin > Routing has an "Included when" column showing which joints get each step (for example, Pre-Fit when N Ind. is 1 or 2 or the Joint Design needs a consumable insert or backing ring). Use the filter button next to it to change the rules; joints built after that follow the new rules. "Restore built-in rules" puts a step back to how it was.',
+      'Admin > Routing Order is saved now: drag a row (or use its arrows) to change the order new joints get their steps in. Before, the arrows only moved the row on screen and a refresh put it back.',
       'Admin > Routing reject rules: on a step with a SAT/UNSAT choice, the button in "Reject routes to" lets you send an UNSAT somewhere else when the step\'s own answers (for example Weld Color) or Joint Details match. The first matching rule wins; otherwise the normal target is used.',
     ],
     changed: [

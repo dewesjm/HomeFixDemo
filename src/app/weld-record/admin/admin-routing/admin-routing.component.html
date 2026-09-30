@@ -18,9 +18,14 @@
   </thead>
   <tbody>
     @for (row of visibleRows(); track row.id) {
-      <tr [class.row-highlight]="newRowId() === row.id">
+      <tr [class.row-highlight]="newRowId() === row.id" [attr.draggable]="editingId() !== row.id"
+          [class.opacity-50]="dragId() === row.id"
+          [class.drop-above]="dropSide(row) === 'above'" [class.drop-below]="dropSide(row) === 'below'"
+          (dragstart)="onDragStart($event, row)" (dragover)="onDragOver($event, row)"
+          (drop)="onDrop($event, row)" (dragend)="clearDrag()">
         <td>
           <div class="flex items-center gap-1">
+            <svg lucideGripVertical class="size-4 cursor-grab" aria-hidden="true"></svg>
             <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
             <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirstInTrade(row)"
                     (click)="moveUp(row)">
