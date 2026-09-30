@@ -146,7 +146,7 @@ When a step has any deviation, Signoff opens an acceptance screen instead of the
 
 **Engineering Hold:** signing with a deviation adds an **Engineering Hold** step right after the step it was accepted on, and that becomes the current routing (role: Engineering). No later step can be signed, and a banner on the weld record says why. The hold step has no Signoff button; it has Engineering's release form instead (below).
 
-**Releasing it:** Pipe Welding's role droplist has **Engineering**, which lists every joint on Engineering Hold. On the joint, the Engineering Hold step shows the deviation details (entered vs required, reason, who accepted it and when), then **Comments** (required) and **Set routing to** (any step on the joint; it starts on the first step not yet signed). **Signoff** (the normal Signoff button; it takes you back to the list, like any signoff) then:
+**Releasing it:** Pipe Welding's role droplist has **Engineering**, which lists every joint on Engineering Hold. On the joint, the Engineering Hold step shows the deviation details (entered vs required, reason, who accepted it and when), then **Comments** (required) and **Set routing to** (any step on the joint; it starts on the first step not yet signed). **Signoff** (the normal Signoff button and password confirm; it takes you back to the list, like any signoff) then:
 - signs the Engineering Hold step (by Engineering, with the comments and the routing chosen) and marks the deviation dispositioned;
 - sets the current routing to the chosen step, the same way Admin > Set Routing does: going back works like any route-back (that step and every step after it come up blank), going forward skips the steps in between;
 - the joint carries on normally from there.
