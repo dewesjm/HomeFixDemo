@@ -4,7 +4,7 @@ import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
-import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers, registerStepTemplates } from './step-conditions';
+import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, conditionsMatch, usesStepAnswers, registerStepTemplates, describeConditions, stageConditionFields } from './step-conditions';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;
@@ -196,6 +196,8 @@ interface StageTemplate {
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */
   rejectRules?: RejectRule[];
+  /* set once Admin > Routing saves this step's reject rules; until then the built-in ones apply */
+  rejectRulesEdited?: boolean;
   /* Admin > Routing "Fabrication editable": the Fabrication fields can be changed while this is the current step */
   fabricationEditable?: boolean;
 }
@@ -860,12 +862,18 @@ export function nextEngineeringHoldId(stages: { id: string }[]): string {
   return n === 1 ? 'engineering-hold' : `engineering-hold-${n}`;
 }
 
-/* a new Engineering Hold right after `afterId`, and the current routing starts there */
-export function insertEngineeringHold(stages: WorkflowStage[], afterId: string): WorkflowStage[] {
+/* why a reject rule sent `stage`'s UNSAT to Engineering Hold (also the hold's holdReason) */
+export function rejectHoldReason(stage: WorkflowStage, rule: RejectRule): string {
+  return `${stage.label} UNSAT, reject rule: ${describeConditions([rule.when], stageConditionFields(stage))}`;
+}
+
+/* a new Engineering Hold right after `afterId`, and the current routing starts there. `reason` is
+   kept on it (inputs.holdReason) when no deviation explains the hold, e.g. a reject rule's */
+export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, reason = ''): WorkflowStage[] {
   const idx = stages.findIndex(s => s.id === afterId);
   if (idx < 0) return stages;
   const id = nextEngineeringHoldId(stages);
-  const hold = stageFromTemplate({ ...ENGINEERING_HOLD_STAGE, id, label: roundLabel(ENGINEERING_HOLD_STAGE.label, id) });
+  const hold = stageFromTemplate({ ...ENGINEERING_HOLD_STAGE, id, label: roundLabel(ENGINEERING_HOLD_STAGE.label, id) }, reason ? { holdReason: reason } : {});
   return setRoutingFrom([...stages.slice(0, idx + 1), hold, ...stages.slice(idx + 1)], id);
 }
 
@@ -958,7 +966,8 @@ function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
 /* prep stage, trade stages, then handover */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
   (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, withFabricationEditable([PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]
-    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s))])
+    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
+    .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s))])
 ) as Record<Job['trade'], StageTemplate[]>;
 
 /* ── localStorage persistence for stage templates ── */
@@ -978,6 +987,7 @@ interface SerializedStage {
   routingOptions?: StageOption[];
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
+  rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
 }
 
@@ -995,6 +1005,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
     routingOptions: t.routingOptions,
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
+    rejectRulesEdited: t.rejectRulesEdited,
     fabricationEditable: t.fabricationEditable ?? false,
   };
 }
@@ -1002,7 +1013,9 @@ function serializeStage(t: StageTemplate): SerializedStage {
 /* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions,
-    includeWhen: s.includeWhen ?? builtIn?.includeWhen, fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
+    includeWhen: s.includeWhen ?? builtIn?.includeWhen,
+    rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
+    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -1356,8 +1369,15 @@ export function seededWorkflow(job: Job): JobWorkflow {
      an Actual PH Max over the procedure's range (seededDeviation) */
   let lastSigned = -1;
   wf.stages.forEach((s, i) => { if (i < k && s.required) lastSigned = i; });
+  const idHash = [...job.id].reduce((a, c) => a + c.charCodeAt(0) * 17, 0);
   const holdAt = !awaitingRelease && SEEDED_HOLD_STEPS.includes(wf.stages[lastSigned]?.id)
-    && [...job.id].reduce((a, c) => a + c.charCodeAt(0) * 17, 0) % SEEDED_HOLD_EVERY === 5 ? lastSigned : -1;
+    && idHash % SEEDED_HOLD_EVERY === 5 ? lastSigned : -1;
+  /* and a few after a PT failure on a GMAW weld (the built-in reject rule): that phase's weld step
+     is GMAW, its NDT MT/PT was signed PT and UNSAT */
+  const ptPhase = /^(root|layer|final)-ndt-mtpt$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
+  const ptAllowed = !!wf.stages[lastSigned]?.routingOptions?.some(o => o.value === 'pt');
+  const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
+  const ptWeldId = ptPhase ? PHASE_WELD_STEP[ptPhase] : '';
   wf.stages = wf.stages.map((s, i) => {
     if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
     /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
@@ -1366,6 +1386,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
     if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
+    if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gmaw';
     if (i === holdAt) {
       const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
       Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
@@ -1380,8 +1401,9 @@ export function seededWorkflow(job: Job): JobWorkflow {
     if (s.id === 'fit') signoffInputs['deferTack'] = '';
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
     const opts = s.routingOptions ?? [];
-    const inspectionType = s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
-    const signedView = { ...s, inspectionType, inputs, signoffInputs, result: 'sat' as StageResult };
+    const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
+    const result: StageResult = i === ptHoldAt ? 'unsat' : 'sat';
+    const signedView = { ...s, inspectionType, inputs, signoffInputs, result };
     wf.history.push({
       when: new Date(t).toISOString(),
       who,
@@ -1389,7 +1411,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       section: 'Sign-off',
       action: s.label,
       from: '',
-      to: hasDecision(s) ? 'SAT' : '',
+      to: hasDecision(s) ? result.toUpperCase() : '',
       routing: s.label,
       inputs: snapshotInputs(signedView, fieldsShown(signedView), s.signoffFields),
       stageId: s.id,
@@ -1399,7 +1421,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       inspectionType,
       inputs,
       signoffInputs,
-      result: 'sat' as StageResult,
+      result,
       signed: true,
       signedAt: new Date(t).toISOString(),
       signoffRecords: [{
@@ -1407,7 +1429,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
         fields: Object.entries({ ...inputs, ...signoffInputs })
           .filter(([, v]) => v)
           .map(([key, value]) => ({ key, label: key, value })),
-        result: 'sat' as StageResult,
+        result,
         who,
         when: new Date(t).toISOString(),
         action: 'signed' as const,
@@ -1415,8 +1437,17 @@ export function seededWorkflow(job: Job): JobWorkflow {
     };
   });
   if (holdAt >= 0) seededDeviation(wf, holdAt, t + (5 + Math.floor(rand() * 30)) * MIN);
+  if (ptHoldAt >= 0) {
+    const st = wf.stages[ptHoldAt];
+    const rule = DEFAULT_REJECT_RULES[st.id][0];
+    wf.stages = insertEngineeringHold(wf.stages, st.id, rejectHoldReason(st, rule));
+  }
   return wf;
 }
+
+const SEEDED_PT_HOLD_EVERY = 8;
+const SEEDED_PT_HOLD_AT = 6;
+const PHASE_WELD_STEP: Record<string, string> = { root: 'root-weld', layer: 'root-layer', final: 'final-weld' };
 
 const SEEDED_HOLD_STEPS = ['tack', 'root-weld', 'root-layer', 'final-weld'];
 const SEEDED_HOLD_EVERY = 23;

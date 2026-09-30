@@ -381,6 +381,10 @@ export class JointPageComponent implements OnDestroy {
   private openDeviations = computed(() => (this.wf ? this.deviationService.openDeviations(this.wf()) : []));
   holdNote = computed(() => {
     const d = this.openDeviations()[0];
+    const hold = this.wf?.().stages.find(s => s.id === this.activeStage() && isEngineeringHoldId(s.id));
+    if (!d && hold?.inputs['holdReason']) {
+      return `On Engineering Hold: ${hold.inputs['holdReason']}. No later step can be signed until Engineering sets the routing on the Engineering Hold step.`;
+    }
     if (!d) return '';
     const when = formatDate(d.when);
     return `On Engineering Hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until Engineering sets the routing on the Engineering Hold step.`;

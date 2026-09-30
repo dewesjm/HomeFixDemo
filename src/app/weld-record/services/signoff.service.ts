@@ -3,8 +3,8 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold } from '../../data/workflow';
-import { describeConditions, matchingRejectRule, stageConditionFields } from '../../data/step-conditions';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason } from '../../data/workflow';
+import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -159,14 +159,18 @@ export class SignoffService {
          the target, if that step is earlier on this joint (or Repair on an NDT step); else the normal target */
       const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
       const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
-      const ruleUsable = !!rule && ((isNdtStage && rule.to === 'repair')
+      const ruleUsable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (isNdtStage && rule.to === 'repair')
         || (() => { const i = stages.findIndex(s => s.id === rule.to); return i >= 0 && i < currentIdx; })());
       const rejectTo = ruleUsable ? rule!.to : st.rejectToStage;
       if (ruleUsable) reasons.push(`a reject rule matched (${describeConditions([rule!.when], stageConditionFields(st))})`);
       /* NDT UNSAT adds a new Repair right after this stage, however many repairs the joint has had,
          unless a reject rule sends it elsewhere. Excavation NDT is left out: its UNSAT goes back to
          its own round's Repair. */
-      if (isNdtStage && rejectTo === 'repair') {
+      if (rejectTo === ENGINEERING_HOLD_TARGET) {
+        /* instead of a Repair or a route-back: the joint waits on Engineering Hold, which keeps why */
+        reasons.push('so the joint goes to Engineering Hold instead');
+        stages = insertEngineeringHold(stages, stageId, rejectHoldReason(st, rule!));
+      } else if (isNdtStage && rejectTo === 'repair') {
         reasons.push('the NDT was UNSAT, so a Repair is added');
         /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
            method it was checked under (ut/rt/mt/pt/vt/5x) -- Repair's own routing on signoff, and

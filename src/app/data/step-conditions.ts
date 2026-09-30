@@ -201,6 +201,24 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ]],
 };
 
+/* reject target that puts the joint on Engineering Hold instead (workflow.ts insertEngineeringHold) */
+export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
+
+/* built-in reject rules (Admin > Routing can change them): a PT failure on a GMAW weld goes to
+   Engineering Hold instead of Repair; the weld that counts is that phase's own weld step */
+const gmawPtHold = (weldStepId: string): RejectRule[] => [{
+  when: [
+    { field: 'self.inspectionType', op: 'is', values: ['pt'] },
+    { field: `step.${weldStepId}.weldProcess`, op: 'is', values: ['gmaw'] },
+  ],
+  to: ENGINEERING_HOLD_TARGET,
+}];
+export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
+  'root-ndt-mtpt': gmawPtHold('root-weld'),
+  'layer-ndt-mtpt': gmawPtHold('root-layer'),
+  'final-ndt-mtpt': gmawPtHold('final-weld'),
+};
+
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */
 function selfValue(self: StageAnswers | undefined, key: string): string {
   if (!self) return '';
@@ -252,7 +270,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
     out.push({ key: `self.${key}`, label: `This step: ${label}`, values: opts.map(o => o.value),
       valueLabel: v => labels.get(v) ?? v, get: () => '' });
   };
-  if ((stage.routingOptions?.length ?? 0) > 1) add('inspectionType', 'Type', stage.routingOptions!);
+  if (stage.routingOptions?.length) add('inspectionType', 'Type', stage.routingOptions);
   for (const f of [...stage.fields, ...(stage.signoffFields ?? [])]) {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */

@@ -23,7 +23,7 @@ import {
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
-  describeConditions, stageConditionFields, stepAnswerFieldsBefore
+  describeConditions, stageConditionFields, stepAnswerFieldsBefore, ENGINEERING_HOLD_TARGET
 } from '../../../data/step-conditions';
 
 interface RoutingRow {
@@ -347,6 +347,7 @@ export class AdminRoutingComponent {
   getRejectLabel(rejectToStage: string): string {
     if (!rejectToStage) return '-';
     if (rejectToStage === 'repair') return 'Repair';
+    if (rejectToStage === ENGINEERING_HOLD_TARGET) return 'Engineering Hold';
     const match = this.stageOptions().find(s => s.id === rejectToStage);
     return match?.label ?? rejectToStage;
   }
@@ -539,10 +540,11 @@ export class AdminRoutingComponent {
       .map(r => `${describeConditions([r.when], fields)} → ${this.getRejectLabel(r.to)}`);
   }
 
-  /* steps a rule can send an UNSAT to: this trade's steps, plus Repair on NDT steps */
+  /* where a rule can send an UNSAT: Engineering Hold, Repair on NDT steps, or this trade's steps */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
     const own = (getTemplates()[row.trade] ?? []).filter(t => t.id !== row.id.split(':')[1]).map(t => ({ id: t.id, label: t.label }));
-    return row.id.includes('-ndt-') ? [{ id: 'repair', label: 'Repair (adds a Repair step)' }, ...own] : own;
+    const hold = { id: ENGINEERING_HOLD_TARGET, label: 'Engineering Hold (adds an Engineering Hold step)' };
+    return row.id.includes('-ndt-') ? [hold, { id: 'repair', label: 'Repair (adds a Repair step)' }, ...own] : [hold, ...own];
   }
 
   openRejectRules(row: RoutingRow) {
@@ -594,7 +596,7 @@ export class AdminRoutingComponent {
   saveRejectRules() {
     const row = this.rejRow();
     if (!row) return;
-    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules() });
+    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules(), rejectRulesEdited: true });
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });

@@ -135,3 +135,64 @@ describe('Engineering Hold (deviations)', () => {
     for (const wf of held) expect(activeStageId(wf.stages)).withContext(wf.jobId).toBe('engineering-hold');
   });
 });
+
+describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () => {
+  let signoff: SignoffService;
+  let deviations: DeviationService;
+  let store: WorkflowStore;
+
+  beforeEach(() => {
+    localStorage.clear();
+    TestBed.configureTestingModule({});
+    signoff = TestBed.inject(SignoffService);
+    deviations = TestBed.inject(DeviationService);
+    store = TestBed.inject(WorkflowStore);
+  });
+  afterEach(() => localStorage.clear());
+
+  /* Root welded with `process`, then Root NDT MT/PT signed PT and UNSAT */
+  function ptFailure(process: string) {
+    const job = addTestJob('Welding');
+    Object.assign(job, { ndt: '', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s =>
+      s.id === 'root-weld' ? { ...s, inputs: { ...s.inputs, weldProcess: process } }
+      : s.id === 'root-ndt-mtpt' ? { ...s, inspectionType: 'pt', result: 'unsat' } : s) }));
+    signoff.signStage(job, 'root-weld');
+    signoff.signStage(job, 'root-ndt-mtpt');
+    return job;
+  }
+
+  it('goes to Engineering Hold instead of Repair, with the reason kept on the hold', () => {
+    const job = ptFailure('gmaw');
+    const stages = store.workflowFor(job)().stages;
+    expect(activeStageId(stages)).toBe('engineering-hold');
+    expect(stages.some(s => s.id === 'repair')).toBeFalse();
+    expect(stages.find(s => s.id === 'engineering-hold')!.inputs['holdReason'])
+      .toBe('Root NDT MT/PT UNSAT, reject rule: This step: Type is PT and Root: Weld Process is GMAW');
+  });
+
+  it('any other weld process still adds a Repair', () => {
+    const job = ptFailure('smaw');
+    expect(activeStageId(store.workflowFor(job)().stages)).toBe('repair');
+  });
+
+  it('Engineering releases it without a deviation; the joint carries on from the chosen step', () => {
+    const job = ptFailure('gmaw');
+    deviations.disposition(job, 'Re-weld the root', 'root-weld');
+    const wf = store.workflowFor(job)();
+    expect(wf.stages.find(s => s.id === 'engineering-hold')!.signed).toBeTrue();
+    expect(activeStageId(wf.stages)).toBe('root-weld');
+    expect(wf.history.at(-2)?.action).toBe('Engineering Hold - Signed off');
+    expect(wf.history.at(-1)?.action).toBe('Routed back to Root (Engineering)');
+  });
+
+  it('at least one seeded joint waits on a PT-failure hold', () => {
+    const held = JOBS.map(j => seededWorkflow(j)).filter(wf => wf.stages.some(s => s.id === 'engineering-hold' && s.inputs['holdReason']));
+    expect(held.length).toBeGreaterThanOrEqual(1);
+    expect(held.length).toBeLessThanOrEqual(6);
+    for (const wf of held) {
+      expect(activeStageId(wf.stages)).withContext(wf.jobId).toBe('engineering-hold');
+      expect(wf.stages.find(s => s.id === 'engineering-hold')!.inputs['holdReason']).withContext(wf.jobId).toContain('Type is PT');
+    }
+  });
+});

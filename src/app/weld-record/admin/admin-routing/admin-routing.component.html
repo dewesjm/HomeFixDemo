@@ -321,7 +321,7 @@
     <div class="modal-box max-w-3xl max-h-[85vh]">
       <h3 class="text-lg font-semibold mb-1">Reject rules: {{ row.routing }}</h3>
       <p class="mb-1">When this step is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
-      <p class="mb-4">A rule's step must be earlier on the joint (or Repair, on an NDT step). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      <p class="mb-4">A rule's step must be earlier on the joint (or Engineering Hold, or Repair on an NDT step). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
 
       @for (rule of rejRules(); track $index; let ri = $index) {
         <div class="border border-base-300 rounded-box p-3 mb-3">
