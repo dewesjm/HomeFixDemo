@@ -8,13 +8,13 @@
 <table class="table table-sm">
   <thead>
     <tr>
-      <th appSortHeader [table]="table" field="sequence" label="#" class="min-w-8 text-center"></th>
-      <th appSortHeader class="min-w-14" [table]="table" field="routing" label="Routing"></th>
-      <th class="min-w-14">Order</th>
-      <th class="min-w-80">Included when</th>
-      <th class="min-w-64">Reject routes to</th>
-      <th appSortHeader [table]="table" field="role" label="Role" class="min-w-14"></th>
-      <th class="min-w-11"></th>
+      <th appSortHeader [table]="table" field="sequence" label="#" class="w-px text-center"></th>
+      <th appSortHeader class="whitespace-nowrap" [table]="table" field="routing" label="Routing"></th>
+      <th class="w-px">Order</th>
+      <th class="min-w-64">Included when</th>
+      <th class="min-w-48">Reject routes to</th>
+      <th appSortHeader [table]="table" field="role" label="Role" class="whitespace-nowrap"></th>
+      <th class="w-px"></th>
     </tr>
   </thead>
   <tbody>
@@ -100,10 +100,12 @@
         <td>
           <div class="row-tight">
             @if (editingId() !== row.id) {
-              <button type="button" class="btn btn-ghost btn-xs" appTooltip="Configure fields"
-                      (click)="openFieldConfig(row)">
-                <svg lucideSettings class="size-4"></svg>
-              </button>
+              @if (showFieldConfig) {
+                <button type="button" class="btn btn-ghost btn-xs" appTooltip="Configure fields"
+                        (click)="openFieldConfig(row)">
+                  <svg lucideSettings class="size-4"></svg>
+                </button>
+              }
               <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
               </button>

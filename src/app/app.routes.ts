@@ -8,7 +8,6 @@ import { JointPageComponent } from './weld-record/joint-page/joint-page.componen
 import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-routing.component';
 import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
 import { AdminSetRoutingComponent } from './weld-record/admin/admin-set-routing/admin-set-routing.component';
-import { AdminSignoffFieldsComponent } from './weld-record/admin/admin-signoff-fields/admin-signoff-fields.component';
 import { AdminNdtComponent } from './weld-record/admin/admin-ndt/admin-ndt.component';
 import { AdminLocationsComponent } from './weld-record/admin/admin-locations/admin-locations.component';
 import { AdminRoutingOptionsComponent } from './weld-record/admin/admin-routing-options/admin-routing-options.component';
@@ -47,7 +46,6 @@ export const routes: Routes = [
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing' },
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Set Routing' },
-  { path: 'admin/signoff-fields', component: AdminSignoffFieldsComponent, title: 'EWR - Signoff Fields' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'EWR - Penetrant' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
   { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'EWR - Routing Options' },

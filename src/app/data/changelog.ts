@@ -17,6 +17,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Admin > Routing no longer has a Trade column.',
+      'Admin > Signoff Fields is removed (its changes were never saved). The "Configure fields" button on Admin > Routing is turned off for now.',
       'An NDT step\'s "Reject routes to" is now followed when an admin changes it from Repair to an earlier step (before, NDT UNSAT always added a Repair).',
       'The routing preview\'s "Why" for Defer Tack and Release to welding now names the step turned on or off and the rule that did it.',
     ],

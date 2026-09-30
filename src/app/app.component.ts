@@ -11,7 +11,7 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
-  LucideBadgeCheck, LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
+  LucideMapPin, LucideTarget, LucideMegaphone, LucideClipboardList, LucideLayers,
     LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog, LucideUserCheck,
     LucideList, LucideListTree, LucideToggleRight
 } from '@lucide/angular';
@@ -35,7 +35,7 @@ function systemForUrl(url: string): string {
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
     ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
-    LucideCircleArrowUp, LucideRefreshCw, LucideBadgeCheck, LucideMapPin, LucideTarget,
+    LucideCircleArrowUp, LucideRefreshCw, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
   LucideShield, LucideLink, LucideUpload, LucideSearch, LucideExternalLink, LucideUserCog, LucideUserCheck,
