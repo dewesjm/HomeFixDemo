@@ -191,6 +191,8 @@ interface StageTemplate {
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */
   rejectRules?: RejectRule[];
+  /* Admin > Routing "Fabrication editable": the Fabrication fields can be changed while this is the current step */
+  fabricationEditable?: boolean;
 }
 
 /* ── Default sign-off fields (pre-populated for admin) ── */
@@ -919,10 +921,16 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
   };
 }
 
+/* built-in: Fabrication is editable up to and including Fit-Up Insp, locked after it signs */
+function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
+  const fitupAt = list.findIndex(s => s.id === 'fitup-insp');
+  return list.map((s, i) => ({ ...s, fabricationEditable: fitupAt < 0 || i <= fitupAt }));
+}
+
 /* prep stage, trade stages, then handover */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
-  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]
-    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)])
+  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, withFabricationEditable([PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]
+    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s))])
 ) as Record<Job['trade'], StageTemplate[]>;
 
 /* ── localStorage persistence for stage templates ── */
@@ -942,6 +950,7 @@ interface SerializedStage {
   routingOptions?: StageOption[];
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
+  fabricationEditable?: boolean;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -958,13 +967,14 @@ function serializeStage(t: StageTemplate): SerializedStage {
     routingOptions: t.routingOptions,
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
+    fabricationEditable: t.fabricationEditable ?? false,
   };
 }
 
-/* saves from before step conditions existed have no includeWhen: keep the built-in rules for those */
+/* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions,
-    includeWhen: s.includeWhen ?? builtIn?.includeWhen };
+    includeWhen: s.includeWhen ?? builtIn?.includeWhen, fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -1535,6 +1545,14 @@ export function currentRoutingLabel(stages: WorkflowStage[]): string {
 /* id of stage awaiting sign-off, null when done */
 export function activeStageId(stages: WorkflowStage[]): string | null {
   return activeStage(stages)?.id ?? null;
+}
+
+/* Fabrication fields can be changed while the current step has Fabrication editable (Admin > Routing,
+   read live so a change applies to joints in progress; a Repeat copy uses its step's). Repair,
+   Excavation NDT and a finished joint lock them. */
+export function fabricationEditable(trade: Job['trade'], stages: WorkflowStage[]): boolean {
+  const id = activeStageId(stages)?.replace(/-r\d+$/, '');
+  return !!id && !!getTemplates()[trade]?.find(t => t.id === id)?.fabricationEditable;
 }
 
 export function allRequiredSigned(stages: WorkflowStage[]): boolean {

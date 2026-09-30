@@ -31,7 +31,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -156,10 +156,10 @@ export class JointPageComponent implements OnDestroy {
     if (!this.wf) return false;
     return this.wf().stages.some(s => s.id === 'sold' && s.signed);
   });
-  /* fabrication fields locked after fit-up inspection signed */
+  /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing) */
   fabLocked = computed(() => {
-    if (!this.wf) return false;
-    return this.wf().stages.some(s => s.id === 'fitup-insp' && s.signed);
+    if (!this.wf || !this.job) return false;
+    return !fabricationEditable(this.job.trade, this.wf().stages);
   });
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));

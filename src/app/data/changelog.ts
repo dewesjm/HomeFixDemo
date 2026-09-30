@@ -14,9 +14,12 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     added: [
       'Admin > Routing has an "Included when" column showing which joints get each step (for example, Pre-Fit when N Ind. is 1 or 2 or the Joint Design needs a consumable insert or backing ring). Use the filter button next to it to change the rules; joints built after that follow the new rules. "Restore built-in rules" puts a step back to how it was.',
       'Admin > Routing Order is saved now: drag a row (or use its arrows) to change the order new joints get their steps in. Before, the arrows only moved the row on screen and a refresh put it back.',
+      'Admin > Routing has a "Fabrication editable" column: the Fabrication fields can be changed while the current step has it set to Yes. It starts as Yes from Prep through Fit-Up Insp, so the fields still lock once Fit-Up Insp is signed. Changes apply to joints already in progress too.',
+      'Admin > Routing conditions can use "contains" with typed text (any case), besides "is" and "is not".',
       'Admin > Routing reject rules: on a step with a SAT/UNSAT choice, the button in "Reject routes to" lets you send an UNSAT somewhere else when the step\'s own answers (for example Weld Color) or Joint Details match. The first matching rule wins; otherwise the normal target is used.',
     ],
     changed: [
+      'Admin > Routing\'s "Included when" and "Reject routes to" buttons now say Edit, so they\'re easier to spot.',
       'Admin > Routing no longer has a Trade column, and the duplicate # column is merged into Order (click the Order heading to sort).',
       'Admin > Signoff Fields is removed (its changes were never saved). The "Configure fields" button on Admin > Routing is turned off for now.',
       'An NDT step\'s "Reject routes to" is now followed when an admin changes it from Repair to an earlier step (before, NDT UNSAT always added a Repair).',

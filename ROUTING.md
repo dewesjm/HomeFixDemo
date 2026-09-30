@@ -2,7 +2,7 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each step. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-09-25.
+Last updated 2026-09-30.
 
 ## How routing works
 
@@ -13,6 +13,8 @@ Last updated 2026-09-25.
 - Every signoff is kept as a record, including ones on steps the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed step and every step after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
 - **Admin > Set Routing** changes a joint's current routing to any step. Nothing is marked signed. Going back works like any route-back (that step and every step after it come up blank). Going forward only moves the current routing: the steps before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new step.
+- **Admin > Routing** sets, per step: its order, when a joint gets it ("Included when"), where an UNSAT goes ("Reject routes to", plus reject rules), who signs it, and **Fabrication editable**. A condition compares a field with "is", "is not" or "contains" (typed text, any case).
+- **Fabrication editable**: the Fabrication fields can be changed while the current step has it checked. Built in, that's Prep through Fit-Up Insp, so the fields lock once Fit-Up Insp is signed. A change applies straight away, including to joints already in progress. Repair and Excavation NDT steps, and a finished joint, always lock them. Correct does not change Fabrication fields.
 
 ## The path
 

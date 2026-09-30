@@ -35,6 +35,7 @@ interface RoutingRow {
   role: Role;
   includedWhen: string;   /* describeConditions() of the step's rules */
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
+  fabricationEditable: boolean;
 }
 
 /* lightweight row model for field config */
@@ -166,6 +167,7 @@ export class AdminRoutingComponent {
           role: (t.role as Role) || 'View',
           includedWhen: describeConditions(t.includeWhen),
           rejectRules: [],
+          fabricationEditable: !!t.fabricationEditable,
         });
       });
     }
@@ -179,7 +181,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [] };
+    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -212,6 +214,7 @@ export class AdminRoutingComponent {
       addStageTemplate(row.trade, {
         id: newId, label: row.routing, required: true, role: row.role,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
+        fabricationEditable: row.fabricationEditable,
       });
       const newFullId = `${row.trade}:${newId}`;
       /* saved at the end, same as addStageTemplate() */
@@ -222,6 +225,7 @@ export class AdminRoutingComponent {
         label: row.routing,
         rejectToStage: row.rejectToStage,
         role: row.role,
+        fabricationEditable: row.fabricationEditable,
       });
     }
 
@@ -242,6 +246,10 @@ export class AdminRoutingComponent {
 
   updateField(row: RoutingRow, field: 'routing' | 'role', value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
+  }
+
+  updateFabricationEditable(row: RoutingRow, value: boolean) {
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, fabricationEditable: value } : x));
   }
 
   updateRejectTo(row: RoutingRow, value: string) {
@@ -460,8 +468,8 @@ export class AdminRoutingComponent {
   setClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.condRules.update(r => r.map((rule, i) => i !== ri ? rule : rule.map((c, j) => {
       if (j !== ci) return c;
-      /* a new field starts with none of its values picked */
-      return patch.field && patch.field !== c.field ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      /* a new field, or switching to or from contains, starts with no values */
+      return this.clearsValues(c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
     })));
   }
   toggleValue(ri: number, ci: number, value: string) {
@@ -469,8 +477,17 @@ export class AdminRoutingComponent {
     this.setClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
   }
 
-  /* every condition needs at least one value picked */
-  conditionsValid = computed(() => this.condRules().every(rule => rule.every(c => c.values.length > 0)));
+  private clearsValues(c: ConditionClause, patch: Partial<ConditionClause>): boolean {
+    if (patch.field && patch.field !== c.field) return true;
+    return !!patch.op && (patch.op === 'contains') !== (c.op === 'contains');
+  }
+
+  /* a picked value, or typed text for contains */
+  clauseValid(c: ConditionClause): boolean {
+    return c.op === 'contains' ? !!c.values[0]?.trim() : c.values.length > 0;
+  }
+
+  conditionsValid = computed(() => this.condRules().every(rule => rule.every(c => this.clauseValid(c))));
 
   saveConditions() {
     const row = this.condRow();
@@ -550,7 +567,7 @@ export class AdminRoutingComponent {
   setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.rejRules.update(r => r.map((x, i) => i !== ri ? x : { ...x, when: x.when.map((c, j) => {
       if (j !== ci) return c;
-      return patch.field && patch.field !== c.field ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      return this.clearsValues(c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
     }) }));
   }
   toggleRejectValue(ri: number, ci: number, value: string) {
@@ -558,7 +575,7 @@ export class AdminRoutingComponent {
     this.setRejectClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
   }
 
-  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => c.values.length > 0)));
+  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(c))));
 
   saveRejectRules() {
     const row = this.rejRow();
@@ -581,7 +598,8 @@ export class AdminRoutingComponent {
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
-      { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') }
+      { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
+      { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' }
     ], this.visibleRows());
   }
 }

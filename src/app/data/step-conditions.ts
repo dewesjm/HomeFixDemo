@@ -11,8 +11,8 @@ import { requiresTraceability } from './mcl-traceability';
 
 export interface ConditionClause {
   field: string;          /* STEP_CONDITION_FIELDS key */
-  op: 'is' | 'isNot';
-  values: string[];       /* matches any of these */
+  op: 'is' | 'isNot' | 'contains';
+  values: string[];       /* matches any of these; 'contains' has one typed text, any case */
 }
 export type ConditionRule = ConditionClause[];
 
@@ -130,6 +130,10 @@ function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], sel
     if (!f) return false;
     value = f.get(job, stages);
   }
+  if (c.op === 'contains') {
+    const text = (c.values[0] ?? '').trim().toLowerCase();
+    return !!text && value.toLowerCase().includes(text);
+  }
   const hit = c.values.includes(value);
   return c.op === 'isNot' ? !hit : hit;
 }
@@ -176,6 +180,7 @@ export function usesStepAnswers(rules: ConditionRule[] | undefined): boolean {
 function describeClause(c: ConditionClause, extra: StepConditionField[]): string {
   const f = extra.find(x => x.key === c.field) ?? conditionField(c.field);
   const label = f?.label.replace(/ \(once .*\)$/, '') ?? c.field;
+  if (c.op === 'contains') return `${label} contains "${(c.values[0] ?? '').trim()}"`;
   const vals = c.values.length ? c.values.map(v => f?.valueLabel?.(v) ?? v).join(' or ') : '(nothing)';
   return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${vals}`;
 }

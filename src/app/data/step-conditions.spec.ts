@@ -1,7 +1,7 @@
-import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps, reorderStageTemplates, getTemplates } from './workflow';
+import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps, reorderStageTemplates, getTemplates, fabricationEditable, activeStageId } from './workflow';
 import { JOBS, Job } from './jobs';
 import { getJointDesign } from './joint-designs';
-import { DEFAULT_STEP_CONDITIONS, describeConditions } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch } from './step-conditions';
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing */
 function oldStepIds(job: Job, ids: string[]): string[] {
@@ -74,5 +74,38 @@ describe('step order (Admin > Routing)', () => {
     } finally {
       reorderStageTemplates('Welding', original);
     }
+  });
+});
+
+describe('contains conditions', () => {
+  const job = { ...JOBS.find(j => j.trade === 'Welding')!, weldType: 'Fillet' };
+  it('matches typed text anywhere in the value, any case', () => {
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['ILL'] }]], job)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['groove'] }]], job)).toBeFalse();
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['  '] }]], job)).toBeFalse();
+    expect(describeConditions([[{ field: 'weldType', op: 'contains', values: ['ill'] }]])).toBe('Weld Type contains "ill"');
+  });
+});
+
+describe('Fabrication editable (Admin > Routing)', () => {
+  const job = JOBS.find(j => j.trade === 'Welding')!;
+  const signThrough = (id: string) => {
+    const stages = buildStages(job);
+    const upTo = stages.findIndex(s => s.id === id);
+    return stages.map((s, i) => i <= upTo ? { ...s, signed: true } : s);
+  };
+  afterEach(() => updateStageTemplate('Welding', 'root-weld', { fabricationEditable: false }));
+
+  it('built in: editable through Fit-Up Insp, locked once it is signed', () => {
+    expect(fabricationEditable('Welding', buildStages(job))).toBeTrue();
+    expect(fabricationEditable('Welding', signThrough('fit'))).toBeTrue();
+    expect(fabricationEditable('Welding', signThrough('fitup-insp'))).toBeFalse();
+  });
+
+  it('uses an admin change on a joint already in progress', () => {
+    const stages = signThrough('fitup-insp');
+    updateStageTemplate('Welding', 'root-weld', { fabricationEditable: true });
+    expect(activeStageId(stages)).toBe('root-weld');
+    expect(fabricationEditable('Welding', stages)).toBeTrue();
   });
 });

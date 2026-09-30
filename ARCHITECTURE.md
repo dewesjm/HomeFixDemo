@@ -139,7 +139,9 @@ src/app/
       deviation.service.ts  Accepted deviations + the hold they put on the joint.
       sync.service.ts      Online/offline + pending-sync count (stubbed)
     admin/
-      admin-routing/         Admin → Routing (stage templates per trade)
+      admin-routing/         Admin → Routing (stage templates per trade): Order (drag), Included when
+                             and reject rules (data/step-conditions.ts; clause ops is / is not / contains,
+                             contains = one typed text, any case), Fabrication editable, Role
       admin-set-routing/     Admin → Set routing (change a job's current routing)
       admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
       admin-signoff-fields/  Admin → Signoff fields
@@ -407,7 +409,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
 ```ts
 { jobId: string; technician: string; stages: WorkflowStage[]; attachments: Attachment[];
   conditionCode: string; conditionCount: number; history: HistoryEntry[];
-  fabricationData: Record<string, string>;   // cross-stage fit-up fields
+  fabricationData: Record<string, string>;   // cross-stage fit-up fields; editable only while the current step's template has fabricationEditable (fabricationEditable() in workflow.ts, read live from Admin > Routing; built-in = Prep through Fit-Up Insp)
   refitNumber?: string;    // set by each Cut
   repairNumber?: string;   // set by each new Repair round
   deviations?: Deviation[]; // accepted at sign-off: { id, stageId, stageLabel, items: {kind, label, entered, required}[], reason, who, when, status: 'open' }
