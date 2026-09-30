@@ -16,7 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Routing reject rules: on a step with a SAT/UNSAT choice, the button in "Reject routes to" lets you send an UNSAT somewhere else when the step\'s own answers (for example Weld Color) or Joint Details match. The first matching rule wins; otherwise the normal target is used.',
     ],
     changed: [
-      'Admin > Routing no longer has a Trade column.',
+      'Admin > Routing no longer has a Trade column, and the duplicate # column is merged into Order (click the Order heading to sort).',
       'Admin > Signoff Fields is removed (its changes were never saved). The "Configure fields" button on Admin > Routing is turned off for now.',
       'An NDT step\'s "Reject routes to" is now followed when an admin changes it from Repair to an earlier step (before, NDT UNSAT always added a Repair).',
       'The routing preview\'s "Why" for Defer Tack and Release to welding now names the step turned on or off and the rule that did it.',
