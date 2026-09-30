@@ -1,8 +1,8 @@
 /* Shown on a joint's Engineering Hold step (signoff panel) in place of Signoff: the open deviations,
-   then Engineering's comments and the step the routing is set to. Set routing releases the hold
+   then Engineering's comments and the step the routing is set to. Signoff releases the hold
    (DeviationService.disposition) and the joint carries on from that step. Joints on hold are listed
    under Pipe Welding's Engineering role. */
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideCheck } from '@lucide/angular';
 
@@ -21,6 +21,8 @@ import { AppDateTimePipe } from '../../shared/date-format';
 })
 export class EngineeringReleaseComponent {
   job = input.required<Job>();
+  /* the hold was signed: the page goes back to its list, as after any signoff */
+  signedOff = output<void>();
 
   private store = inject(WorkflowStore);
   private deviationService = inject(DeviationService);
@@ -42,14 +44,12 @@ export class EngineeringReleaseComponent {
 
   pick(id: string) { this.picked.set(id); }
 
-  setRouting() {
+  signoff() {
     this.tried.set(true);
     if (!this.comments().trim() || !this.routeTo()) return;
     const label = this.steps().find(s => s.id === this.routeTo())?.label ?? '';
     this.deviationService.disposition(this.job(), this.comments().trim(), this.routeTo());
-    this.messages.add({ severity: 'success', summary: 'Routing set', detail: label, life: 3000 });
-    this.comments.set('');
-    this.picked.set('');
-    this.tried.set(false);
+    this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: `Engineering Hold, routing set to ${label}`, life: 3000 });
+    this.signedOff.emit();
   }
 }

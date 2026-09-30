@@ -43,6 +43,8 @@ export interface SignoffContext {
   hasOverrideFields: (stage: WorkflowStage) => boolean;
   routePreviewLabel: (stage: WorkflowStage) => string;
   holdNote: () => string;
+  /* back to the list the joint was opened from, as after any signoff */
+  leaveAfterSignoff: () => void;
   fieldWarning: (stage: WorkflowStage, fieldKey: string) => string;
   reportedDeviations: (stage: WorkflowStage) => string[];
   foremanOverride: (stage: WorkflowStage) => void;

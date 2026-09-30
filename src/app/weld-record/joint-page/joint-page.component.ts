@@ -223,6 +223,7 @@ export class JointPageComponent implements OnDestroy {
       hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
       routePreviewLabel: (s) => self.routePreviewLabel(s),
       holdNote: () => self.holdNote(),
+      leaveAfterSignoff: () => self.router.navigate([self.backDestination()]),
       fieldWarning: (s, k) => self.fieldWarning(s, k),
       reportedDeviations: (s) => self.reported()[s.id] ?? [],
       foremanOverride: (s) => self.foremanOverride(s),
