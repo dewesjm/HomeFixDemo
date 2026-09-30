@@ -4,7 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates } from '../../data/workflow';
-import { describeConditions } from '../../data/step-conditions';
+import { describeConditions, matchingRejectRule, stageConditionFields } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -154,10 +154,18 @@ export class SignoffService {
 
     if (st.result === 'unsat' && st.rejectToStage && !isRecordsReviewUnsat(st)) {
       const currentIdx = stages.findIndex(s => s.id === stageId);
-      /* NDT UNSAT always adds a new Repair right after this stage, however many repairs the joint
-         has had. Excavation NDT is left out: its UNSAT goes back to its own round's Repair. */
+      /* Admin > Routing reject rules: the first one matching this step's answers / Joint Details picks
+         the target, if that step is earlier on this joint (or Repair on an NDT step); else the normal target */
       const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
-      if (isNdtStage) {
+      const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
+      const ruleUsable = !!rule && ((isNdtStage && rule.to === 'repair')
+        || (() => { const i = stages.findIndex(s => s.id === rule.to); return i >= 0 && i < currentIdx; })());
+      const rejectTo = ruleUsable ? rule!.to : st.rejectToStage;
+      if (ruleUsable) reasons.push(`a reject rule matched (${describeConditions([rule!.when], stageConditionFields(st))})`);
+      /* NDT UNSAT adds a new Repair right after this stage, however many repairs the joint has had,
+         unless a reject rule sends it elsewhere. Excavation NDT is left out: its UNSAT goes back to
+         its own round's Repair. */
+      if (isNdtStage && rejectTo === 'repair') {
         reasons.push('the NDT was UNSAT, so a Repair is added');
         /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
            method it was checked under (ut/rt/mt/pt/vt/5x) -- Repair's own routing on signoff, and
@@ -177,10 +185,10 @@ export class SignoffService {
         stages = setRoutingFrom([...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)], repairStage.id);
         repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');
       } else {
-        /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair) */
-        const targetIdx = stages.findIndex(s => s.id === st.rejectToStage);
+        /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair, or a reject rule's) */
+        const targetIdx = stages.findIndex(s => s.id === rejectTo);
         if (targetIdx >= 0 && targetIdx < currentIdx) {
-          routeBackTo(st.rejectToStage);
+          routeBackTo(rejectTo);
           reasons.push('rejected (UNSAT)');
         }
       }

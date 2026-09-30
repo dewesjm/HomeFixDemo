@@ -1,12 +1,12 @@
 // Admin → Routing: manage per-trade workflow routing with sequence ordering,
-// field configuration (readings + sign-off), reject routing, and step conditions (Included when).
+// field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via workflow.ts CRUD functions.
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucidePencil, LucideCheck, LucideX,
-  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus
+  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
@@ -22,7 +22,8 @@ import {
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
-  ConditionClause, ConditionRule, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS, conditionField, describeConditions
+  ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
+  conditionField, describeConditions, stageConditionFields
 } from '../../../data/step-conditions';
 
 interface RoutingRow {
@@ -33,6 +34,7 @@ interface RoutingRow {
   rejectToStage: string;
   role: Role;
   includedWhen: string;   /* describeConditions() of the step's rules */
+  rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
 }
 
 /* lightweight row model for field config */
@@ -90,7 +92,7 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
   imports: [TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
-    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus
+    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch
   ],
   templateUrl: './admin-routing.component.html'
 })
@@ -153,10 +155,11 @@ export class AdminRoutingComponent {
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) ?? 'View',
           includedWhen: describeConditions(t.includeWhen),
+          rejectRules: [],
         });
       });
     }
-    return rows;
+    return rows.map(r => ({ ...r, rejectRules: this.rejectRuleLines(r) }));
   }
 
   /* ── Row CRUD ── */
@@ -166,7 +169,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]) };
+    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [] };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -271,6 +274,7 @@ export class AdminRoutingComponent {
 
   getRejectLabel(rejectToStage: string): string {
     if (!rejectToStage) return '-';
+    if (rejectToStage === 'repair') return 'Repair';
     const match = this.stageOptions().find(s => s.id === rejectToStage);
     return match?.label ?? rejectToStage;
   }
@@ -414,6 +418,93 @@ export class AdminRoutingComponent {
     this.messages.add({ severity: 'success', summary: 'Conditions saved', detail: row.routing, life: 3000 });
   }
 
+  /* ── Reject rules dialog ── */
+  rejRow = signal<RoutingRow | null>(null);
+  rejRules = signal<RejectRule[]>([]);
+  rejFields = signal<StepConditionField[]>([]);
+
+  private templateFor(row: RoutingRow) {
+    return getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
+  }
+
+  /* this step's own answers first, then Joint Details */
+  private rejectFieldsFor(row: RoutingRow): StepConditionField[] {
+    const t = this.templateFor(row);
+    return [...(t ? stageConditionFields(t) : []), ...STEP_CONDITION_FIELDS];
+  }
+
+  private rejectRuleLines(row: RoutingRow): string[] {
+    const fields = this.rejectFieldsFor(row);
+    return (this.templateFor(row)?.rejectRules ?? [])
+      .map(r => `${describeConditions([r.when], fields)} → ${this.getRejectLabel(r.to)}`);
+  }
+
+  /* steps a rule can send an UNSAT to: this trade's steps, plus Repair on NDT steps */
+  rejectTargets(row: RoutingRow): { id: string; label: string }[] {
+    const own = (getTemplates()[row.trade] ?? []).filter(t => t.id !== row.id.split(':')[1]).map(t => ({ id: t.id, label: t.label }));
+    return row.id.includes('-ndt-') ? [{ id: 'repair', label: 'Repair (adds a Repair step)' }, ...own] : own;
+  }
+
+  openRejectRules(row: RoutingRow) {
+    this.rejFields.set(this.rejectFieldsFor(row));
+    this.rejRules.set((this.templateFor(row)?.rejectRules ?? []).map(r => ({ to: r.to, when: r.when.map(c => ({ ...c, values: [...c.values] })) })));
+    this.rejRow.set(row);
+  }
+
+  rejOptions(field: string): { value: string; label: string }[] {
+    const f = this.rejFields().find(x => x.key === field);
+    return (f?.values ?? []).map(v => ({ value: v, label: f?.valueLabel?.(v) ?? v }));
+  }
+
+  addRejectRule() {
+    const row = this.rejRow();
+    const to = row?.rejectToStage || this.rejectTargets(row!)[0]?.id || '';
+    this.rejRules.update(r => [...r, { when: [{ field: this.rejFields()[0]?.key ?? '', op: 'is', values: [] }], to }]);
+  }
+  removeRejectRule(ri: number) {
+    this.rejRules.update(r => r.filter((_, i) => i !== ri));
+  }
+  moveRejectRule(ri: number, delta: number) {
+    this.rejRules.update(r => {
+      const out = [...r];
+      const j = ri + delta;
+      if (j < 0 || j >= out.length) return r;
+      [out[ri], out[j]] = [out[j], out[ri]];
+      return out;
+    });
+  }
+  setRejectTo(ri: number, to: string) {
+    this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, to } : x));
+  }
+  addRejectClause(ri: number) {
+    this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: [...x.when, { field: this.rejFields()[0]?.key ?? '', op: 'is' as const, values: [] }] } : x));
+  }
+  removeRejectClause(ri: number, ci: number) {
+    /* a rule left with no conditions would never match, so it goes too */
+    this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: x.when.filter((_, j) => j !== ci) } : x).filter(x => x.when.length));
+  }
+  setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
+    this.rejRules.update(r => r.map((x, i) => i !== ri ? x : { ...x, when: x.when.map((c, j) => {
+      if (j !== ci) return c;
+      return patch.field && patch.field !== c.field ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+    }) }));
+  }
+  toggleRejectValue(ri: number, ci: number, value: string) {
+    const c = this.rejRules()[ri].when[ci];
+    this.setRejectClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
+  }
+
+  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => c.values.length > 0)));
+
+  saveRejectRules() {
+    const row = this.rejRow();
+    if (!row) return;
+    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules() });
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectRules: this.rejectRuleLines(row) } : x));
+    this.rejRow.set(null);
+    this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });
+  }
+
   private newClause(): ConditionClause {
     return { field: STEP_CONDITION_FIELDS[0].key, op: 'is', values: [] };
   }
@@ -425,7 +516,8 @@ export class AdminRoutingComponent {
       { header: 'Order', value: (r: RoutingRow) => r.sequence },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
-      { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' }
+      { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
+      { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') }
     ], this.visibleRows());
   }
 }

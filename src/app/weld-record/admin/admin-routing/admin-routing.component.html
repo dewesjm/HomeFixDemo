@@ -12,7 +12,7 @@
       <th appSortHeader class="min-w-14" [table]="table" field="routing" label="Routing"></th>
       <th class="min-w-14">Order</th>
       <th class="min-w-80">Included when</th>
-      <th class="min-w-14">Reject routes to</th>
+      <th class="min-w-64">Reject routes to</th>
       <th appSortHeader [table]="table" field="role" label="Role" class="min-w-14"></th>
       <th class="min-w-11"></th>
     </tr>
@@ -66,8 +66,23 @@
                 <option [value]="s.id">{{ s.label }}</option>
               }
             </select>
-          } @else {
+          } @else if (!row.rejectToStage || row.id.includes(':new-')) {
             {{ getRejectLabel(row.rejectToStage) }}
+          } @else {
+            <div class="flex items-start gap-1">
+              <div class="flex-1">
+                @if (row.rejectRules.length) {
+                  @for (line of row.rejectRules; track $index) { <div>{{ line }}</div> }
+                  <div>Otherwise: {{ getRejectLabel(row.rejectToStage) }}</div>
+                } @else {
+                  {{ getRejectLabel(row.rejectToStage) }}
+                }
+              </div>
+              <button type="button" class="btn btn-ghost btn-xs" appTooltip="Edit reject rules (route an UNSAT elsewhere based on its answers)"
+                      (click)="openRejectRules(row)">
+                <svg lucideGitBranch class="size-4"></svg>
+              </button>
+            </div>
           }
         </td>
         <td>
@@ -273,6 +288,85 @@
     </div>
     <form method="dialog" class="modal-backdrop">
       <button type="button" (click)="condRow.set(null)">close</button>
+    </form>
+  </dialog>
+}
+
+<!-- Reject rules dialog -->
+@if (rejRow(); as row) {
+  <dialog class="modal modal-open" (close)="rejRow.set(null)">
+    <div class="modal-box max-w-3xl max-h-[85vh]">
+      <h3 class="text-lg font-semibold mb-1">Reject rules: {{ row.routing }}</h3>
+      <p class="mb-1">When this step is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      <p class="mb-4">A rule's step must be earlier on the joint (or Repair, on an NDT step). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+
+      @for (rule of rejRules(); track $index; let ri = $index) {
+        <div class="border border-base-300 rounded-box p-3 mb-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold">Rule {{ ri + 1 }}</span>
+            <div class="row-tight">
+              <button type="button" class="btn btn-ghost btn-xs" [disabled]="ri === 0" (click)="moveRejectRule(ri, -1)" aria-label="Check this rule earlier">
+                <svg lucideArrowUp class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" [disabled]="ri === rejRules().length - 1" (click)="moveRejectRule(ri, 1)" aria-label="Check this rule later">
+                <svg lucideArrowDown class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeRejectRule(ri)" aria-label="Remove rule">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            </div>
+          </div>
+          @for (c of rule.when; track $index; let ci = $index) {
+            @if (ci > 0) { <div class="font-semibold my-1">and</div> }
+            <div class="flex flex-wrap items-center gap-2">
+              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setRejectClause(ri, ci, { field: $event })">
+                @for (f of rejFields(); track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+              </select>
+              <select class="select select-bordered select-sm w-24" [ngModel]="c.op" (ngModelChange)="setRejectClause(ri, ci, { op: $event })">
+                <option ngValue="is">is</option>
+                <option ngValue="isNot">is not</option>
+              </select>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeRejectClause(ri, ci)" aria-label="Remove condition">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 ml-1">
+              @for (o of rejOptions(c.field); track o.value) {
+                <label class="flex items-center gap-1">
+                  <input type="checkbox" class="checkbox checkbox-sm" [checked]="c.values.includes(o.value)" (change)="toggleRejectValue(ri, ci, o.value)" />
+                  {{ o.label }}
+                </label>
+              }
+            </div>
+            @if (!c.values.length) { <div class="text-error mt-1">Pick at least one value.</div> }
+          }
+          <button type="button" class="btn btn-xs btn-outline mt-2" (click)="addRejectClause(ri)">
+            <svg lucidePlus class="size-3"></svg> And condition
+          </button>
+          <div class="flex flex-wrap items-center gap-2 mt-3">
+            <span class="font-semibold">Routes to</span>
+            <select class="select select-bordered select-sm" [ngModel]="rule.to" (ngModelChange)="setRejectTo(ri, $event)">
+              @for (t of rejectTargets(row); track t.id) { <option [ngValue]="t.id">{{ t.label }}</option> }
+            </select>
+          </div>
+        </div>
+      } @empty {
+        <p class="font-semibold">No reject rules: an UNSAT always goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      }
+
+      <button type="button" class="btn btn-sm btn-outline mt-1" (click)="addRejectRule()">
+        <svg lucidePlus class="size-4"></svg> Add rule
+      </button>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="rejRow.set(null)">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!rejectRulesValid()" (click)="saveRejectRules()">
+          <svg lucideCheck class="size-4"></svg> Save reject rules
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="rejRow.set(null)">close</button>
     </form>
   </dialog>
 }

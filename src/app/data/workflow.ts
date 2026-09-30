@@ -4,7 +4,7 @@ import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
-import { ConditionRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers } from './step-conditions';
+import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers } from './step-conditions';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
@@ -189,6 +189,8 @@ interface StageTemplate {
   routingOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */
   includeWhen?: ConditionRule[];
+  /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */
+  rejectRules?: RejectRule[];
 }
 
 /* ── Default sign-off fields (pre-populated for admin) ── */
@@ -939,6 +941,7 @@ interface SerializedStage {
   role?: string;
   routingOptions?: StageOption[];
   includeWhen?: ConditionRule[];
+  rejectRules?: RejectRule[];
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -954,6 +957,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
     role: t.role ?? '',
     routingOptions: t.routingOptions,
     includeWhen: t.includeWhen ?? [],
+    rejectRules: t.rejectRules ?? [],
   };
 }
 

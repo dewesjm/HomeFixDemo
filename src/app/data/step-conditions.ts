@@ -16,12 +16,21 @@ export interface ConditionClause {
 }
 export type ConditionRule = ConditionClause[];
 
+/* Reject rules (Admin > Routing, "Reject routes to"): when a step is signed UNSAT, the first rule
+   whose conditions all match picks where it goes; none matching = the step's normal target. Besides
+   Joint Details, a clause can test the rejected step's own answers ('self.<key>', raw option values). */
+export interface RejectRule {
+  when: ConditionRule;
+  to: string;             /* stage id; 'repair' on an NDT step adds a Repair */
+}
+
 /* the part of a workflow stage a step-answer clause reads (kept structural to avoid importing workflow.ts) */
 interface StageAnswers {
   id: string;
   signed: boolean;
   inputs: Record<string, string>;
   signoffInputs: Record<string, string>;
+  inspectionType?: string;
 }
 
 export interface StepConditionField {
@@ -31,6 +40,8 @@ export interface StepConditionField {
   /* step answers only have a value once that step is signed */
   stepAnswer?: boolean;
   get: (job: Job, stages: StageAnswers[]) => string;
+  /* shown instead of the stored value (a step's own option values, e.g. straw -> Straw) */
+  valueLabel?: (v: string) => string;
 }
 
 const yesNo = (b: boolean) => b ? 'Yes' : 'No';
@@ -104,10 +115,22 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ]],
 };
 
-function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[]): boolean {
-  const f = conditionField(c.field);
-  if (!f) return false;
-  const hit = c.values.includes(f.get(job, stages));
+/* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */
+function selfValue(self: StageAnswers | undefined, key: string): string {
+  if (!self) return '';
+  if (key === 'inspectionType') return self.inspectionType ?? '';
+  return self.inputs[key] ?? self.signoffInputs[key] ?? '';
+}
+
+function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], self?: StageAnswers): boolean {
+  let value: string;
+  if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5));
+  else {
+    const f = conditionField(c.field);
+    if (!f) return false;
+    value = f.get(job, stages);
+  }
+  const hit = c.values.includes(value);
   return c.op === 'isNot' ? !hit : hit;
 }
 
@@ -117,18 +140,49 @@ export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, st
   return rules.some(rule => rule.every(c => clauseMatches(c, job, stages)));
 }
 
+/* the first reject rule matching the rejected step `self`, if any */
+export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers): RejectRule | undefined {
+  return rules?.find(r => r.when.length > 0 && r.when.every(c => clauseMatches(c, job, stages, self)));
+}
+
+/* the shape of a stage template stageConditionFields() reads */
+interface StageShape {
+  fields: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
+  signoffFields?: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
+  routingOptions?: { label: string; value: string }[];
+}
+
+/* a step's own answers a reject rule can test: its Type, and every droplist/checkbox/radio field */
+export function stageConditionFields(stage: StageShape): StepConditionField[] {
+  const out: StepConditionField[] = [];
+  const add = (key: string, label: string, opts: { label: string; value: string }[]) => {
+    if (out.some(f => f.key === `self.${key}`)) return;
+    const labels = new Map(opts.map(o => [o.value, o.label]));
+    out.push({ key: `self.${key}`, label: `This step: ${label}`, values: opts.map(o => o.value),
+      valueLabel: v => labels.get(v) ?? v, get: () => '' });
+  };
+  if ((stage.routingOptions?.length ?? 0) > 1) add('inspectionType', 'Type', stage.routingOptions!);
+  for (const f of [...stage.fields, ...(stage.signoffFields ?? [])]) {
+    if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
+    else if ((f.type === 'select' || f.type === 'radio') && f.options?.length) add(f.key, f.label, f.options);
+  }
+  return out;
+}
+
 export function usesStepAnswers(rules: ConditionRule[] | undefined): boolean {
   return !!rules?.some(rule => rule.some(c => conditionField(c.field)?.stepAnswer));
 }
 
-function describeClause(c: ConditionClause): string {
-  const label = conditionField(c.field)?.label.replace(/ \(once .*\)$/, '') ?? c.field;
-  const vals = c.values.length ? c.values.join(' or ') : '(nothing)';
+function describeClause(c: ConditionClause, extra: StepConditionField[]): string {
+  const f = extra.find(x => x.key === c.field) ?? conditionField(c.field);
+  const label = f?.label.replace(/ \(once .*\)$/, '') ?? c.field;
+  const vals = c.values.length ? c.values.map(v => f?.valueLabel?.(v) ?? v).join(' or ') : '(nothing)';
   return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${vals}`;
 }
 
-/* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes" */
-export function describeConditions(rules: ConditionRule[] | undefined): string {
+/* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes";
+   `extra` is the step's own fields (stageConditionFields) for reject rules */
+export function describeConditions(rules: ConditionRule[] | undefined, extra: StepConditionField[] = []): string {
   if (!rules?.length) return 'Always';
-  return rules.map(rule => rule.map(describeClause).join(' and ')).join('; or ');
+  return rules.map(rule => rule.map(c => describeClause(c, extra)).join(' and ')).join('; or ');
 }

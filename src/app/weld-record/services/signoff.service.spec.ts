@@ -3,7 +3,7 @@ import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { activeStageId, discardUnsignedEdits, seededWorkflow } from '../../data/workflow';
+import { activeStageId, discardUnsignedEdits, seededWorkflow, updateStageTemplate } from '../../data/workflow';
 
 /* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -148,6 +148,30 @@ describe('SignoffService', () => {
     const stages = store.workflowFor(job)().stages;
     const ndtIdx = stages.findIndex(s => s.id === 'root-ndt-utrt');
     expect(stages[ndtIdx + 1]?.id).toBe('repair');
+  });
+
+  describe('reject rules (Admin > Routing)', () => {
+    const straw = [{ when: [{ field: 'self.weldColor', op: 'is' as const, values: ['straw'] }], to: 'root-weld' }];
+    afterEach(() => updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: [] }));
+    const failVt = (job: Job, weldColor: string) => {
+      store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-ndt-vt5x'
+        ? { ...s, result: 'unsat', inspectionType: 'vt', inputs: { ...s.inputs, weldColor } } : s) }));
+      service.signStage(job, 'root-ndt-vt5x');
+      return store.workflowFor(job)().stages;
+    };
+
+    it('a matching rule sends the UNSAT to its step instead of adding a Repair', () => {
+      updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: straw });
+      const stages = failVt(weldingJob(), 'straw');
+      expect(stages.some(s => s.id === 'repair')).toBeFalse();
+      expect(activeStageId(stages)).toBe('root-weld');
+    });
+
+    it('no matching rule keeps the normal reject (Repair)', () => {
+      updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: straw });
+      const stages = failVt(weldingJob(), 'shiny-silver');
+      expect(activeStageId(stages)).toBe('repair');
+    });
   });
 
   describe('repeated repairs', () => {
