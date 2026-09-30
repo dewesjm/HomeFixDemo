@@ -144,14 +144,14 @@ Two things can be signed anyway, as accepted deviations. Everything else above s
 
 When a step has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation created" entry with the reason and each item) and signs the step.
 
-**Engineering Hold:** signing with a deviation adds an **Engineering Hold** step right after the step it was accepted on, and that becomes the current routing (role: Engineering). No later step can be signed, and a banner on the weld record says why. The hold step can't be signed on the weld record; it says "Waiting on Engineering".
+**Engineering Hold:** signing with a deviation adds an **Engineering Hold** step right after the step it was accepted on, and that becomes the current routing (role: Engineering). No later step can be signed, and a banner on the weld record says why. The hold step has no Signoff button; it has Engineering's release form instead (below).
 
-**Releasing it (Weld Engineering > Engineering Queue):** the queue lists every joint on Engineering Hold (step, what deviated, reason, who accepted it, since when). **Review** opens the joint's screen: the deviation details, then **Comments** (required) and **Set routing to** (any step on the joint; it starts on the first step not yet signed). **Set routing** then:
+**Releasing it:** Pipe Welding's role droplist has **Engineering**, which lists every joint on Engineering Hold. On the joint, the Engineering Hold step shows the deviation details (entered vs required, reason, who accepted it and when), then **Comments** (required) and **Set routing to** (any step on the joint; it starts on the first step not yet signed). **Set routing** then:
 - signs the Engineering Hold step (by Engineering, with the comments and the routing chosen) and marks the deviation dispositioned;
 - sets the current routing to the chosen step, the same way Admin > Set Routing does: going back works like any route-back (that step and every step after it come up blank), going forward skips the steps in between;
 - the joint carries on normally from there.
 
-**Nothing is deleted:** the deviation, the signed hold step and every signoff stay on record. History gets "<Step> - Deviation dispositioned" (with the comments and routing) and "Routing set to X (Engineering)" or "Routed back to X (Engineering)", both recorded at Engineering Hold. The Review screen lists earlier deviations and what was decided.
+**Nothing is deleted:** the deviation, the signed hold step and every signoff stay on record. History gets "<Step> - Deviation dispositioned" (with the comments and routing) and "Routing set to X (Engineering)" or "Routed back to X (Engineering)", both recorded at Engineering Hold.
 
 **Deprogress:** before Engineering releases it, deprogressing the sign-off that accepted the deviation removes its Engineering Hold; the deviation stays on record as withdrawn. After release, Deprogress can't reach back past it (same as Admin > Set Routing).
 

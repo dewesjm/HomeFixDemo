@@ -10,6 +10,7 @@ import { getProcedureByGwpWtn } from '../../data/procedures';
 import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
 import { conditionQuals } from '../../data/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
+import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
 
 export interface SignoffContext {
   job: Job;
@@ -102,7 +103,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
-  imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent],
+  imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX, PersonSearchInputComponent, EngineeringReleaseComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {
@@ -179,7 +180,7 @@ export class SignoffPanelComponent {
     return '';
   }
 
-  /* Engineering Hold is released from the Engineering Queue, never signed here */
+  /* Engineering Hold has Engineering's release form (comments + set routing) instead of Signoff */
   isEngineeringHold(st: WorkflowStage): boolean {
     return isEngineeringHoldId(st.id);
   }

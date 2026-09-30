@@ -19,7 +19,6 @@
           @switch (activeSystem()) {
           @case ('Weld Engineering') {
             <li><a routerLink="/weld-engineering" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideSearch class="size-4"></svg><span class="nav-label"> Procedure Lookup</span></a></li>
-            <li><a routerLink="/weld-engineering/queue" routerLinkActive="menu-active"><svg lucideInbox class="size-4"></svg><span class="nav-label"> Engineering Queue</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -98,7 +97,6 @@
             <summary title="Weld Engineering"><svg lucideWorkflow class="size-4"></svg><span class="nav-label"> Weld Engineering</span></summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/weld-engineering" routerLinkActive="menu-active"><svg lucideSearch class="size-4"></svg> Procedure Lookup</a></li>
-              <li><a routerLink="/weld-engineering/queue" routerLinkActive="menu-active"><svg lucideInbox class="size-4"></svg> Engineering Queue</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
                 <details (toggle)="fitSubmenu($event)">

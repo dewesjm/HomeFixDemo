@@ -1,0 +1,38 @@
+<!-- Engineering Hold step: deviation details + release form -->
+@for (d of open(); track d.id) {
+  <div class="mb-sm">
+    <div class="font-semibold">Deviation at {{ d.stageLabel }}</div>
+    <div>Accepted by {{ d.who }} on {{ d.when | appDateTime }}. Reason: {{ d.reason }}</div>
+    <div class="overflow-x-auto">
+      <table class="table table-sm">
+        <thead><tr><th>Item</th><th>Entered</th><th>Required</th></tr></thead>
+        <tbody>
+          @for (i of d.items; track $index) {
+            <tr><td class="font-semibold">{{ i.label }}</td><td class="text-error">{{ i.entered }}</td><td>{{ i.required }}</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+}
+
+<label class="block">
+  <span class="font-semibold mb-1 block">Comments <span class="text-error">*</span></span>
+  <textarea class="textarea textarea-bordered w-full" rows="3" [class.textarea-error]="tried() && !comments().trim()"
+            [ngModel]="comments()" (ngModelChange)="comments.set($event)"></textarea>
+  @if (tried() && !comments().trim()) { <span class="text-error">Comments are required.</span> }
+</label>
+<label class="block mt-3">
+  <span class="font-semibold mb-1 block">Set routing to <span class="text-error">*</span></span>
+  <select class="select select-bordered w-full max-w-md" [ngModel]="routeTo()" (ngModelChange)="pick($event)">
+    @for (s of steps(); track s.id) {
+      <option [value]="s.id">{{ s.label }}{{ s.signed ? ' (signed)' : '' }}</option>
+    }
+  </select>
+</label>
+<p class="mt-3">Going back to a step works like any route-back: that step and every step after it come up blank. Going forward skips the steps in between. Every signoff and History entry is kept.</p>
+<div class="mt-3">
+  <button type="button" class="btn btn-primary" (click)="setRouting()">
+    <svg lucideCheck class="size-4"></svg> Set routing
+  </button>
+</div>

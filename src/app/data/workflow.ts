@@ -7,7 +7,7 @@ import { jointDesignOptions } from './joint-designs';
 import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers, registerStepTemplates } from './step-conditions';
 
 /* ── Role-based queue routing ── */
-export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
+export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;
 export type Role = typeof ROLES[number];
 export const DEFAULT_ROLE: Role = 'View';
 
@@ -847,8 +847,9 @@ export const repairIdForExcavation = (excavationId: string) => `repair${roundSuf
 export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;
 
 /* Engineering Hold: signing a step with accepted deviations adds this right after it, and the joint
-   waits there until Engineering (Weld Engineering > Engineering Queue) enters comments and sets the
-   routing (DeviationService.disposition). It is never signed on the weld record. Each hold is its
+   waits there until Engineering enters comments and sets the routing on that step
+   (EngineeringReleaseComponent, DeviationService.disposition); Pipe Welding's Engineering role lists
+   the joints waiting. Its Signoff button never shows. Each hold is its
    own step, 'engineering-hold' then 'engineering-hold-2' and so on. */
 export const ENGINEERING_HOLD_STAGE: StageTemplate = {
   id: 'engineering-hold', label: 'Engineering Hold', required: true, role: 'Engineering', fields: [], signoffFields: [],
