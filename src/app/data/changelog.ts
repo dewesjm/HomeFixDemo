@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Routing Order is saved now: drag a row (or use its arrows) to change the order new joints get their steps in. Before, the arrows only moved the row on screen and a refresh put it back.',
       'Admin > Routing has a "Fabrication editable" column: the Fabrication fields can be changed while the current step has it set to Yes. It starts as Yes from Prep through Fit-Up Insp, so the fields still lock once Fit-Up Insp is signed. Changes apply to joints already in progress too.',
       'Admin > Routing conditions can use "contains" with typed text (any case), besides "is" and "is not".',
+      'Admin > Routing conditions can use any Joint Details field and any earlier step\'s answers (for example Root NDT VT/5X Weld Color is Straw). A step that depends on another step\'s answer turns on or off once that step is signed.',
       'Admin > Routing reject rules: on a step with a SAT/UNSAT choice, the button in "Reject routes to" lets you send an UNSAT somewhere else when the step\'s own answers (for example Weld Color) or Joint Details match. The first matching rule wins; otherwise the normal target is used.',
     ],
     changed: [

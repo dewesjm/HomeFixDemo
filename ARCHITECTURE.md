@@ -141,7 +141,10 @@ src/app/
     admin/
       admin-routing/         Admin → Routing (stage templates per trade): Order (drag), Included when
                              and reject rules (data/step-conditions.ts; clause ops is / is not / contains,
-                             contains = one typed text, any case), Fabrication editable, Role
+                             compared trimmed, any case; fields = Joint Details + 'step.<stageId>.<key>'
+                             step answers of earlier steps, built from the templates workflow.ts
+                             registers via registerStepTemplates(); 'self.<key>' in reject rules),
+                             Fabrication editable, Role
       admin-set-routing/     Admin → Set routing (change a job's current routing)
       admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
       admin-signoff-fields/  Admin → Signoff fields

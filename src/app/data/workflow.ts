@@ -4,7 +4,7 @@ import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
-import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers } from './step-conditions';
+import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers, registerStepTemplates } from './step-conditions';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
@@ -1032,6 +1032,9 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   }
   return _merged;
 }
+
+/* step-answer conditions (any step's own fields) read the live templates */
+registerStepTemplates(() => getTemplates());
 
 /* invalidate the merged cache so next read re-loads from localStorage */
 function invalidateTemplateCache() { _merged = null; }

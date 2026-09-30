@@ -1,7 +1,7 @@
 import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps, reorderStageTemplates, getTemplates, fabricationEditable, activeStageId } from './workflow';
 import { JOBS, Job } from './jobs';
 import { getJointDesign } from './joint-designs';
-import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswerFieldsBefore } from './step-conditions';
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing */
 function oldStepIds(job: Job, ids: string[]): string[] {
@@ -107,5 +107,36 @@ describe('Fabrication editable (Admin > Routing)', () => {
     updateStageTemplate('Welding', 'root-weld', { fabricationEditable: true });
     expect(activeStageId(stages)).toBe('root-weld');
     expect(fabricationEditable('Welding', stages)).toBeTrue();
+  });
+});
+
+describe('every field as a condition (Admin > Routing)', () => {
+  const job = JOBS.find(j => j.trade === 'Welding' && buildStages(j).some(s => s.id === 'root-ndt-vt5x'))!;
+  afterEach(() => updateStageTemplate('Welding', 'root-layer', { includeWhen: [] }));
+
+  it('offers Joint Details text fields, matched as typed (any case)', () => {
+    const j = { ...job, engineeringNotes: 'Check Alignment' };
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'is', values: ['check alignment '] }]], j)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'contains', values: ['ALIGN'] }]], j)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'isNot', values: ['Check Alignment'] }]], j)).toBeFalse();
+  });
+
+  it('only offers the answers of steps before this one', () => {
+    const keys = stepAnswerFieldsBefore('Welding', 'root-layer').map(f => f.key);
+    expect(keys).toContain('step.root-ndt-vt5x.weldColor');
+    expect(keys).toContain('step.root-weld.weldPosition');
+    expect(keys.some(k => k.startsWith('step.root-layer.'))).toBeFalse();
+    expect(keys).not.toContain('step.fit.deferTack');   /* already offered as Fit: Defer Tack */
+  });
+
+  it('a step answer (Root NDT Weld Color is Straw) turns a later step on once signed', () => {
+    updateStageTemplate('Welding', 'root-layer', { includeWhen: [[{ field: 'step.root-ndt-vt5x.weldColor', op: 'is', values: ['straw'] }]] });
+    let stages = buildStages(job);
+    const req = () => stages.find(s => s.id === 'root-layer')!.required;
+    expect(req()).toBeFalse();
+    stages = applySignedFlags(stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, signed: true, inputs: { ...s.inputs, weldColor: 'straw' } } : s), job);
+    expect(req()).toBeTrue();
+    expect(describeConditions(getTemplates()['Welding'].find(t => t.id === 'root-layer')!.includeWhen))
+      .toBe('Root NDT VT/5X: Weld Color is Straw');
   });
 });

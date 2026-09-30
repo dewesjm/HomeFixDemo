@@ -23,7 +23,7 @@ import {
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
-  conditionField, describeConditions, stageConditionFields
+  describeConditions, stageConditionFields, stepAnswerFieldsBefore
 } from '../../../data/step-conditions';
 
 interface RoutingRow {
@@ -144,7 +144,7 @@ export class AdminRoutingComponent {
   newSignoffLabel = signal('');
 
   // ── Included when dialog ──
-  readonly conditionFields = STEP_CONDITION_FIELDS;
+  condFields = signal<StepConditionField[]>([]);
   condRow = signal<RoutingRow | null>(null);
   condRules = signal<ConditionRule[]>([]);
 
@@ -433,12 +433,42 @@ export class AdminRoutingComponent {
 
   openConditions(row: RoutingRow) {
     const stage = getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
+    this.condFields.set([...STEP_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])]);
     this.condRules.set((stage?.includeWhen ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
     this.condRow.set(row);
   }
 
-  valuesFor(field: string): string[] {
-    return conditionField(field)?.values ?? [];
+  /* ── shared by both rule dialogs ── */
+
+  /* droplist sections: this step's answers (reject rules), Joint Details, earlier steps' answers */
+  groupsOf(fields: StepConditionField[]): { label: string; fields: StepConditionField[] }[] {
+    const groups = [
+      { label: 'This step', fields: fields.filter(f => f.key.startsWith('self.')) },
+      { label: 'Joint Details', fields: fields.filter(f => !f.key.startsWith('self.') && !f.stepAnswer) },
+      { label: 'Earlier steps (once signed)', fields: fields.filter(f => f.stepAnswer) },
+    ];
+    return groups.filter(g => g.fields.length);
+  }
+
+  optionsOf(fields: StepConditionField[], key: string): { value: string; label: string }[] {
+    const f = fields.find(x => x.key === key);
+    return (f?.values ?? []).map(v => ({ value: v, label: f?.valueLabel?.(v) ?? v }));
+  }
+
+  /* contains, or a field with no value list, takes typed text */
+  typed(fields: StepConditionField[], c: ConditionClause): boolean {
+    return c.op === 'contains' || !this.optionsOf(fields, c.field).length;
+  }
+
+  /* a picked value, or typed text */
+  clauseValid(fields: StepConditionField[], c: ConditionClause): boolean {
+    return this.typed(fields, c) ? !!c.values[0]?.trim() : c.values.length > 0;
+  }
+
+  /* a new field, or switching between picked values and typed text, starts with no values */
+  private clearsValues(fields: StepConditionField[], c: ConditionClause, patch: Partial<ConditionClause>): boolean {
+    if (patch.field && patch.field !== c.field) return true;
+    return !!patch.op && this.typed(fields, { ...c, ...patch }) !== this.typed(fields, c);
   }
 
   /* the built-in rule for this step, if it has one */
@@ -468,8 +498,7 @@ export class AdminRoutingComponent {
   setClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.condRules.update(r => r.map((rule, i) => i !== ri ? rule : rule.map((c, j) => {
       if (j !== ci) return c;
-      /* a new field, or switching to or from contains, starts with no values */
-      return this.clearsValues(c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      return this.clearsValues(this.condFields(), c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
     })));
   }
   toggleValue(ri: number, ci: number, value: string) {
@@ -477,17 +506,7 @@ export class AdminRoutingComponent {
     this.setClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
   }
 
-  private clearsValues(c: ConditionClause, patch: Partial<ConditionClause>): boolean {
-    if (patch.field && patch.field !== c.field) return true;
-    return !!patch.op && (patch.op === 'contains') !== (c.op === 'contains');
-  }
-
-  /* a picked value, or typed text for contains */
-  clauseValid(c: ConditionClause): boolean {
-    return c.op === 'contains' ? !!c.values[0]?.trim() : c.values.length > 0;
-  }
-
-  conditionsValid = computed(() => this.condRules().every(rule => rule.every(c => this.clauseValid(c))));
+  conditionsValid = computed(() => this.condRules().every(rule => rule.every(c => this.clauseValid(this.condFields(), c))));
 
   saveConditions() {
     const row = this.condRow();
@@ -508,10 +527,10 @@ export class AdminRoutingComponent {
     return getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
   }
 
-  /* this step's own answers first, then Joint Details */
+  /* this step's own answers, Joint Details, then earlier steps' answers */
   private rejectFieldsFor(row: RoutingRow): StepConditionField[] {
     const t = this.templateFor(row);
-    return [...(t ? stageConditionFields(t) : []), ...STEP_CONDITION_FIELDS];
+    return [...(t ? stageConditionFields(t) : []), ...STEP_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])];
   }
 
   private rejectRuleLines(row: RoutingRow): string[] {
@@ -530,11 +549,6 @@ export class AdminRoutingComponent {
     this.rejFields.set(this.rejectFieldsFor(row));
     this.rejRules.set((this.templateFor(row)?.rejectRules ?? []).map(r => ({ to: r.to, when: r.when.map(c => ({ ...c, values: [...c.values] })) })));
     this.rejRow.set(row);
-  }
-
-  rejOptions(field: string): { value: string; label: string }[] {
-    const f = this.rejFields().find(x => x.key === field);
-    return (f?.values ?? []).map(v => ({ value: v, label: f?.valueLabel?.(v) ?? v }));
   }
 
   addRejectRule() {
@@ -567,7 +581,7 @@ export class AdminRoutingComponent {
   setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.rejRules.update(r => r.map((x, i) => i !== ri ? x : { ...x, when: x.when.map((c, j) => {
       if (j !== ci) return c;
-      return this.clearsValues(c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      return this.clearsValues(this.rejFields(), c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
     }) }));
   }
   toggleRejectValue(ri: number, ci: number, value: string) {
@@ -575,7 +589,7 @@ export class AdminRoutingComponent {
     this.setRejectClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
   }
 
-  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(c))));
+  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(this.rejFields(), c))));
 
   saveRejectRules() {
     const row = this.rejRow();
