@@ -8,7 +8,7 @@ import { ConfirmService } from './confirm.service';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <dialog #dlg class="modal">
+    <dialog #dlg class="modal" (close)="onClose()">
       @if (confirm.request(); as req) {
         <div class="modal-box">
           @if (req.header) {
@@ -72,7 +72,15 @@ export class ConfirmDialogComponent {
     });
   }
 
+  /* Enter in the text/password box follows the same rule as the disabled accept button */
   respond(accepted: boolean) {
+    const req = this.confirm.request();
+    if (accepted && (req?.password || req?.textInput) && !this.confirm.inputValue().trim()) return;
     this.confirm.resolve(accepted);
+  }
+
+  /* Esc closes the native dialog by itself: count it as Cancel so the request doesn't linger */
+  onClose() {
+    if (this.confirm.request()) this.confirm.resolve(false);
   }
 }

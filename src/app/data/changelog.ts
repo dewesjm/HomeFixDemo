@@ -11,6 +11,10 @@ export interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-09-30',
+    fixed: [
+      'Pressing Esc on a pop-up (Foreman Override, sign-off, leaving with unsaved changes) now counts as Cancel. Before, the pop-up closed but was left half-open behind the scenes.',
+      'Pressing Enter in a pop-up\'s reason or password box no longer goes ahead when the box is empty (the button was already disabled, but Enter skipped that).',
+    ],
     added: [
       'Admin > Routing has an "Included when" column showing which joints get each step (for example, Pre-Fit when N Ind. is 1 or 2 or the Joint Design needs a consumable insert or backing ring). Use the filter button next to it to change the rules; joints built after that follow the new rules. "Restore built-in rules" puts a step back to how it was.',
       'Admin > Routing Order is saved now: drag a row (or use its arrows) to change the order new joints get their steps in. Before, the arrows only moved the row on screen and a refresh put it back.',
