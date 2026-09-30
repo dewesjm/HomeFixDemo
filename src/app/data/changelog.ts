@@ -10,6 +10,16 @@ export interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-09-30',
+    added: [
+      'Admin > Routing has an "Included when" column showing which joints get each step (for example, Pre-Fit when N Ind. is 1 or 2 or the Joint Design needs a consumable insert or backing ring). Use the filter button next to it to change the rules; joints built after that follow the new rules. "Restore built-in rules" puts a step back to how it was.',
+    ],
+    changed: [
+      'Admin > Routing no longer has a Trade column.',
+      'The routing preview\'s "Why" for Defer Tack and Release to welding now names the step turned on or off and the rule that did it.',
+    ],
+  },
+  {
     date: '2026-09-27',
     changed: [
       'My Assignments works like the other lists: click a column heading to sort, filter boxes under each heading, and an Export button (downloads a CSV of what you see, including the Assigned By, Assigned Date, Job Description and Charge details). Rows still expand to show their details. The Demo role select no longer has a red border.',

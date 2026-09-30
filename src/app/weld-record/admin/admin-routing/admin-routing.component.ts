@@ -1,17 +1,17 @@
 // Admin → Routing: manage per-trade workflow routing with sequence ordering,
-// field configuration (readings + sign-off), and reject routing.
+// field configuration (readings + sign-off), reject routing, and step conditions (Included when).
 // Persists to localStorage via workflow.ts CRUD functions.
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucidePencil, LucideCheck, LucideX,
-  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
+  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { TooltipDirective } from '../../../shared/tooltip.directive';
-import { TableState, inArray } from '../../../shared/table-state';
+import { TableState } from '../../../shared/table-state';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import { Job } from '../../../data/jobs';
@@ -21,6 +21,9 @@ import {
   allStageIds, getTemplates, getTradeOptions, ROLES, type Role
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import {
+  ConditionClause, ConditionRule, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS, conditionField, describeConditions
+} from '../../../data/step-conditions';
 
 interface RoutingRow {
   id: string;
@@ -29,6 +32,7 @@ interface RoutingRow {
   sequence: number;
   rejectToStage: string;
   role: Role;
+  includedWhen: string;   /* describeConditions() of the step's rules */
 }
 
 /* lightweight row model for field config */
@@ -83,10 +87,10 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [TableToolbarComponent, 
+  imports: [TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
-    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings
+    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus
   ],
   templateUrl: './admin-routing.component.html'
 })
@@ -106,7 +110,7 @@ export class AdminRoutingComponent {
   stageOptions = signal(allStageIds());
 
   rows = signal<RoutingRow[]>(this.buildInitialRows());
-  table = new TableState<RoutingRow>(['trade', 'sequence', 'routing'], { trade: inArray });
+  table = new TableState<RoutingRow>(['sequence', 'routing', 'includedWhen']);
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
@@ -128,6 +132,11 @@ export class AdminRoutingComponent {
   newSignoffKey = signal('');
   newSignoffLabel = signal('');
 
+  // ── Included when dialog ──
+  readonly conditionFields = STEP_CONDITION_FIELDS;
+  condRow = signal<RoutingRow | null>(null);
+  condRules = signal<ConditionRule[]>([]);
+
   constructor() {
     effect(() => this.table.setRows(this.rows()));
   }
@@ -143,6 +152,7 @@ export class AdminRoutingComponent {
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) ?? 'View',
+          includedWhen: describeConditions(t.includeWhen),
         });
       });
     }
@@ -156,7 +166,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View' };
+    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]) };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -216,15 +226,8 @@ export class AdminRoutingComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: RoutingRow, field: 'routing' | 'trade' | 'role', value: string) {
-    if (field === 'trade') {
-      const oldTrade = row.trade;
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value as Job['trade'] } : x));
-      this.resequence(oldTrade);
-      this.resequence(value as Job['trade']);
-    } else {
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
-    }
+  updateField(row: RoutingRow, field: 'routing' | 'role', value: string) {
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
   }
 
   updateRejectTo(row: RoutingRow, value: string) {
@@ -350,13 +353,78 @@ export class AdminRoutingComponent {
     this.messages.add({ severity: 'success', summary: 'Fields saved', life: 3000 });
   }
 
+  /* ── Included when (step conditions) dialog ── */
+
+  openConditions(row: RoutingRow) {
+    const stage = getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
+    this.condRules.set((stage?.includeWhen ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
+    this.condRow.set(row);
+  }
+
+  valuesFor(field: string): string[] {
+    return conditionField(field)?.values ?? [];
+  }
+
+  /* the built-in rule for this step, if it has one */
+  hasDefaultConditions(row: RoutingRow): boolean {
+    return !!DEFAULT_STEP_CONDITIONS[row.id.split(':')[1]];
+  }
+
+  restoreDefaultConditions() {
+    const row = this.condRow();
+    if (!row) return;
+    this.condRules.set((DEFAULT_STEP_CONDITIONS[row.id.split(':')[1]] ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
+  }
+
+  addRule() {
+    this.condRules.update(r => [...r, [this.newClause()]]);
+  }
+  removeRule(ri: number) {
+    this.condRules.update(r => r.filter((_, i) => i !== ri));
+  }
+  addClause(ri: number) {
+    this.condRules.update(r => r.map((rule, i) => i === ri ? [...rule, this.newClause()] : rule));
+  }
+  removeClause(ri: number, ci: number) {
+    /* a rule left with no conditions would always match, so it goes too */
+    this.condRules.update(r => r.map((rule, i) => i === ri ? rule.filter((_, j) => j !== ci) : rule).filter(rule => rule.length));
+  }
+  setClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
+    this.condRules.update(r => r.map((rule, i) => i !== ri ? rule : rule.map((c, j) => {
+      if (j !== ci) return c;
+      /* a new field starts with none of its values picked */
+      return patch.field && patch.field !== c.field ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+    })));
+  }
+  toggleValue(ri: number, ci: number, value: string) {
+    const c = this.condRules()[ri][ci];
+    this.setClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
+  }
+
+  /* every condition needs at least one value picked */
+  conditionsValid = computed(() => this.condRules().every(rule => rule.every(c => c.values.length > 0)));
+
+  saveConditions() {
+    const row = this.condRow();
+    if (!row) return;
+    const rules = this.condRules();
+    updateStageTemplate(row.trade, row.id.split(':')[1], { includeWhen: rules });
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, includedWhen: describeConditions(rules) } : x));
+    this.condRow.set(null);
+    this.messages.add({ severity: 'success', summary: 'Conditions saved', detail: row.routing, life: 3000 });
+  }
+
+  private newClause(): ConditionClause {
+    return { field: STEP_CONDITION_FIELDS[0].key, op: 'is', values: [] };
+  }
+
   /* ── CSV export ── */
 
   exportCsv() {
     downloadCsv('routing', [
       { header: 'Order', value: (r: RoutingRow) => r.sequence },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
-      { header: 'Trade', value: (r: RoutingRow) => r.trade },
+      { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' }
     ], this.visibleRows());
   }

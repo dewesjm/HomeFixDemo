@@ -3,7 +3,8 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates } from '../../data/workflow';
+import { describeConditions } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -122,11 +123,16 @@ export class SignoffService {
       routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined };
     };
 
-    /* Defer Tack at Fit, and Fit-Up Insp not releasing to welding, change which stages are required */
-    stages = applySignedFlags(stages);
-    if (stageId === 'fit' && st.signoffInputs['deferTack'] === 'yes') reasons.push('Defer Tack is checked, so Tack is skipped and done later as Deferred Tack');
-    if (stageId === 'fitup-insp' && st.result !== 'unsat' && st.inputs['releaseToWelding'] !== 'yes' && stages.some(s => s.id === 'fitup-release'))
-      reasons.push('Release to welding upon inspection is not checked, so Fit-Up Release is required first');
+    /* steps whose Admin > Routing conditions use a signed answer (Defer Tack, Release to welding) turn on or off */
+    const before = stages;
+    stages = applySignedFlags(stages, job);
+    if (st.result !== 'unsat') {
+      stages.forEach((s, i) => {
+        if (s.required === before[i].required) return;
+        const rule = describeConditions(getTemplates()[job.trade]?.find(t => t.id === s.id)?.includeWhen);
+        reasons.push(s.required ? `${s.label} is now required (included when ${rule})` : `${s.label} is skipped (included only when ${rule})`);
+      });
+    }
 
     /* repeatable stage + routingType='repeat': insert a fresh copy after this stage */
     if (st.repeatable && st.routingType === 'repeat') {

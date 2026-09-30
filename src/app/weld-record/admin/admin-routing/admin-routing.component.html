@@ -10,8 +10,8 @@
     <tr>
       <th appSortHeader [table]="table" field="sequence" label="#" class="min-w-8 text-center"></th>
       <th appSortHeader class="min-w-14" [table]="table" field="routing" label="Routing"></th>
-      <th appSortHeader class="min-w-12" [table]="table" field="trade" label="Trade" filter="select" [options]="tradeOptions()"></th>
       <th class="min-w-14">Order</th>
+      <th class="min-w-80">Included when</th>
       <th class="min-w-14">Reject routes to</th>
       <th appSortHeader [table]="table" field="role" label="Role" class="min-w-14"></th>
       <th class="min-w-11"></th>
@@ -32,18 +32,6 @@
           }
         </td>
         <td>
-          @if (editingId() === row.id) {
-            <select class="select select-sm select-bordered w-full min-w-0"
-                    [ngModel]="row.trade" (ngModelChange)="updateField(row, 'trade', $event)">
-              @for (o of tradeOptions(); track o.value) {
-                <option [ngValue]="o.value">{{ o.label }}</option>
-              }
-            </select>
-          } @else {
-            {{ row.trade }}
-          }
-        </td>
-        <td>
           <div class="flex items-center gap-1">
             <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
             <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirstInTrade(row)"
@@ -55,6 +43,19 @@
               <svg lucideArrowDown class="size-3"></svg>
             </button>
           </div>
+        </td>
+        <td>
+          @if (row.id.includes(':new-')) {
+            Always (save the step to change this)
+          } @else {
+            <div class="flex items-start gap-1">
+              <span class="flex-1">{{ row.includedWhen }}</span>
+              <button type="button" class="btn btn-ghost btn-xs" appTooltip="Edit when this step is included"
+                      (click)="openConditions(row)">
+                <svg lucideFilter class="size-4"></svg>
+              </button>
+            </div>
+          }
         </td>
         <td>
           @if (editingId() === row.id) {
@@ -201,6 +202,77 @@
     </div>
     <form method="dialog" class="modal-backdrop">
       <button type="button" (click)="showFieldDlg.set(false)">close</button>
+    </form>
+  </dialog>
+}
+
+<!-- Included when (step conditions) dialog -->
+@if (condRow(); as row) {
+  <dialog class="modal modal-open" (close)="condRow.set(null)">
+    <div class="modal-box max-w-3xl max-h-[85vh]">
+      <h3 class="text-lg font-semibold mb-1">Included when: {{ row.routing }}</h3>
+      <p class="mb-1">A joint gets this step when any rule below matches. A rule matches when all of its conditions do. With no rules, the step is always included.</p>
+      <p class="mb-4">Joint Details conditions are checked when a joint's routing is built. Fit and Fit-Up Insp answers are blank until that step is signed, and the step turns on or off as they are signed.</p>
+
+      @for (rule of condRules(); track $index; let ri = $index) {
+        @if (ri > 0) { <div class="font-semibold my-2">or</div> }
+        <div class="border border-base-300 rounded-box p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold">Rule {{ ri + 1 }}</span>
+            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeRule(ri)" aria-label="Remove rule">
+              <svg lucideTrash2 class="size-4"></svg>
+            </button>
+          </div>
+          @for (c of rule; track $index; let ci = $index) {
+            @if (ci > 0) { <div class="font-semibold my-1">and</div> }
+            <div class="flex flex-wrap items-center gap-2">
+              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setClause(ri, ci, { field: $event })">
+                @for (f of conditionFields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+              </select>
+              <select class="select select-bordered select-sm w-24" [ngModel]="c.op" (ngModelChange)="setClause(ri, ci, { op: $event })">
+                <option ngValue="is">is</option>
+                <option ngValue="isNot">is not</option>
+              </select>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeClause(ri, ci)" aria-label="Remove condition">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            </div>
+            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 ml-1">
+              @for (v of valuesFor(c.field); track v) {
+                <label class="flex items-center gap-1">
+                  <input type="checkbox" class="checkbox checkbox-sm" [checked]="c.values.includes(v)" (change)="toggleValue(ri, ci, v)" />
+                  {{ v }}
+                </label>
+              }
+            </div>
+            @if (!c.values.length) { <div class="text-error mt-1">Pick at least one value.</div> }
+          }
+          <button type="button" class="btn btn-xs btn-outline mt-2" (click)="addClause(ri)">
+            <svg lucidePlus class="size-3"></svg> And condition
+          </button>
+        </div>
+      } @empty {
+        <p class="font-semibold">No rules: this step is always included.</p>
+      }
+
+      <div class="flex flex-wrap gap-2 mt-3">
+        <button type="button" class="btn btn-sm btn-outline" (click)="addRule()">
+          <svg lucidePlus class="size-4"></svg> Or rule
+        </button>
+        @if (hasDefaultConditions(row)) {
+          <button type="button" class="btn btn-sm btn-ghost" (click)="restoreDefaultConditions()">Restore built-in rules</button>
+        }
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-ghost" (click)="condRow.set(null)">Cancel</button>
+        <button type="button" class="btn btn-primary" [disabled]="!conditionsValid()" (click)="saveConditions()">
+          <svg lucideCheck class="size-4"></svg> Save conditions
+        </button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button type="button" (click)="condRow.set(null)">close</button>
     </form>
   </dialog>
 }

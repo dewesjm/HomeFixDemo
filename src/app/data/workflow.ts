@@ -3,7 +3,8 @@ import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
-import { getJointDesign, jointDesignOptions } from './joint-designs';
+import { jointDesignOptions } from './joint-designs';
+import { ConditionRule, DEFAULT_STEP_CONDITIONS, conditionsMatch, usesStepAnswers } from './step-conditions';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'View'] as const;
@@ -186,6 +187,8 @@ interface StageTemplate {
   role?: string;
   /* admin-managed routing options (e.g. Fit/Weld Build-Up, MT/PT) */
   routingOptions?: StageOption[];
+  /* when a joint gets this step (step-conditions.ts); none = always */
+  includeWhen?: ConditionRule[];
 }
 
 /* ── Default sign-off fields (pre-populated for admin) ── */
@@ -916,7 +919,8 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
 
 /* prep stage, trade stages, then handover */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
-  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]])
+  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, [PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]
+    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)])
 ) as Record<Job['trade'], StageTemplate[]>;
 
 /* ── localStorage persistence for stage templates ── */
@@ -934,6 +938,7 @@ interface SerializedStage {
   repeatable?: boolean;
   role?: string;
   routingOptions?: StageOption[];
+  includeWhen?: ConditionRule[];
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -948,11 +953,14 @@ function serializeStage(t: StageTemplate): SerializedStage {
     repeatable: t.repeatable ?? false,
     role: t.role ?? '',
     routingOptions: t.routingOptions,
+    includeWhen: t.includeWhen ?? [],
   };
 }
 
-function deserializeStage(s: SerializedStage): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions };
+/* saves from before step conditions existed have no includeWhen: keep the built-in rules for those */
+function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions,
+    includeWhen: s.includeWhen ?? builtIn?.includeWhen };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -980,7 +988,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     const overridden = saved[trade];
     if (overridden) {
       const savedMap = new Map(overridden.map(s => [s.id, s]));
-      const merged = statics.map(s => savedMap.has(s.id) ? deserializeStage(savedMap.get(s.id)!) : s);
+      const merged = statics.map(s => savedMap.has(s.id) ? deserializeStage(savedMap.get(s.id)!, s) : s);
       for (const s of overridden) {
         if (!statics.some(st => st.id === s.id)) merged.push(deserializeStage(s));
       }
@@ -997,7 +1005,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   // Include trades that exist only in localStorage (added via admin)
   for (const [trade, stages] of Object.entries(saved)) {
     if (!_merged[trade as Job['trade']]) {
-      _merged[trade as Job['trade']] = stages.map(deserializeStage);
+      _merged[trade as Job['trade']] = stages.map(s => deserializeStage(s));
     }
   }
   // Remove fabrication — it's a cross-stage data section, not a routing stage
@@ -1096,11 +1104,15 @@ export function buildStages(job: Job): WorkflowStage[] {
   const templates = getTemplates();
   const tradeStages = templates[job.trade] ?? [];
   const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
-  /* which Records track the job is on — same test buildStages() uses below to pick review-o63 vs review-o04 */
-  const hasO63Data = Boolean(job.sfff || job.dssAaa || job.ss);
+  /* Admin > Routing step conditions: Joint Details rules decide here whether the joint gets the step;
+     a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
+  const included = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
+  /* Sold follows whichever Records Review the joint got */
+  const hasO63Data = tradeStages.some(t => t.id === 'review-o63' && included(t));
 
   const toStage = (t: StageTemplate): WorkflowStage => {
-    const required = typeof t.required === 'function' ? t.required(job) : t.required;
+    const required = usesStepAnswers(t.includeWhen) ? conditionsMatch(t.includeWhen, job)
+      : typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
     const isWeldStage = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'].includes(t.id);
@@ -1150,20 +1162,9 @@ export function buildStages(job: Job): WorkflowStage[] {
       const phase = phaseOf(id);
       return phase ? ndtFor[phase].find(st => id === `${phase}-ndt-${st.kind}`) : undefined;
     };
-    return middle.filter(t => {
-      if (phaseOf(t.id)) return !!stepFor(t.id);
-      if (t.id === 'pre-fit') {
-        const needsInsertOrRing = job.nInd === '1' || job.nInd === '2';
-        const jd = getJointDesign(job.jointDesign);
-        const jdRequires = jd?.requiresConsumableInsert || jd?.requiresBackingRing || false;
-        return needsInsertOrRing || jdRequires;
-      }
-      /* Records Review splits in two: O63 when any of SFFF/DSS-AAA/SS is set on the job, O04 otherwise */
-      if (t.id === 'review-o63') return hasO63Data;
-      if (t.id === 'review-o04') return !hasO63Data;
-      return true;
-    }).map(toStage).map(s => {
+    return middle.filter(included).map(toStage).map(s => {
       const step = stepFor(s.id);
+      /* a step an admin rule adds without the NDT values calling for it offers every method */
       if (!step) return s;
       /* only the method(s) the Joint Details values allow; a single one is locked in (pre-filled) */
       const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
@@ -1174,7 +1175,7 @@ export function buildStages(job: Job): WorkflowStage[] {
   // Other trades: prep + stages + handover
   const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
   const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-  return [prep, ...middle, handover].map(toStage);
+  return [prep, ...middle, handover].filter(included).map(toStage);
 }
 
 const SEED_SPECIFIC_LOCATIONS = ['Bay 3, Rack 12', 'Bay 1, Rack 4', 'Bay 5, Rack 9', 'Cell 2, Line B', 'Pad C, Yard 1'];
@@ -1376,17 +1377,17 @@ function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   };
 }
 
-/* required flags set by signed decisions: Defer Tack at Fit, and Fit-Up Insp not releasing to welding */
-export function applySignedFlags(stages: WorkflowStage[]): WorkflowStage[] {
-  const fit = stages.find(s => s.id === 'fit');
-  const deferred = !!fit?.signed && fit.signoffInputs['deferTack'] === 'yes';
-  const insp = stages.find(s => s.id === 'fitup-insp');
-  const needsRelease = !!insp?.signed && insp.inputs['releaseToWelding'] !== 'yes';
-  return stages.map(s =>
-    deferred && s.id === 'tack' ? { ...s, required: false }
-    : deferred && s.id === 'deferred-tack' ? { ...s, required: true }
-    : needsRelease && s.id === 'fitup-release' ? { ...s, required: true }
-    : s);
+/* required flags set by signed answers: every unsigned step whose Admin > Routing conditions use a
+   step answer (by default Tack, Deferred Tack and Fit-Up Release) is re-checked against them */
+export function applySignedFlags(stages: WorkflowStage[], job: Job): WorkflowStage[] {
+  const templates = getTemplates()[job.trade] ?? [];
+  return stages.map(s => {
+    if (s.signed) return s;
+    const rules = templates.find(t => t.id === s.id)?.includeWhen;
+    if (!usesStepAnswers(rules)) return s;
+    const required = conditionsMatch(rules, job, stages);
+    return required === s.required ? s : { ...s, required };
+  });
 }
 
 /* fit-up (fabrication) data belongs to Fit: it's blanked whenever the joint goes back to Fit or earlier */
@@ -1415,7 +1416,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   });
   const fabReset = goesBackPastFit(wf.stages, targetIdx);
   const fabricationData = fabReset ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : wf.fabricationData;
-  return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId)), fabricationData }, fabReset };
+  return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId), job), fabricationData }, fabReset };
 }
 
 /* the current routing starts at `stageId` (see WorkflowStage.routingFrom) */

@@ -8,7 +8,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId
+  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId
 } from '../../data/workflow';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
@@ -170,8 +170,11 @@ export class WorkflowStore {
         /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
         if (job) {
           const hasFillers = wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label));
-          const currentIds = new Set(buildStages(job).map(s => s.id));
-          const missingStages = !wf.stages.every(s => currentIds.has(s.id));
+          /* a stage id the trade's templates no longer have; Repair, Excavation NDT and Repeat copies
+             are added at runtime, and a step an Admin > Routing condition now leaves out stays put */
+          const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
+          const missingStages = wf.stages.some(s => !templateIds.has(s.id)
+            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !/-r\d+$/.test(s.id));
           if (hasFillers || missingStages) {
             const oldStages = wf.stages;
             const newStages = buildStages(job);
