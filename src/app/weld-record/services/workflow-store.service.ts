@@ -8,7 +8,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId
+  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId
 } from '../../data/workflow';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
@@ -70,14 +70,15 @@ export class WorkflowStore {
   }
 
   /* build the next workflow state with a history entry appended; callers pass the result to update()'s mutator */
-  withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'routing'>): JobWorkflow {
+  /* `routing` overrides the routing recorded, for a second entry of the same action */
+  withHistory(prev: JobWorkflow, next: JobWorkflow, e: Omit<HistoryEntry, 'when' | 'routing'>, routing = currentRoutingLabel(prev.stages)): JobWorkflow {
     const entry: HistoryEntry = {
       ...e,
       ...stampWho(e.who),
       when: new Date().toISOString(),
       /* the routing active when this action happened, not what it moved to afterward
          (e.g. a stage's own "Signed off" entry records that stage, not the next one) */
-      routing: currentRoutingLabel(prev.stages),
+      routing,
       /* sign-offs also capture fabrication data as it stood at that moment, not just the stage's own fields */
       fabInputs: e.section === 'Sign-off' ? fabricationSnapshot(next.fabricationData) : e.fabInputs
     };
@@ -174,7 +175,7 @@ export class WorkflowStore {
              are added at runtime, and a step an Admin > Routing condition now leaves out stays put */
           const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
-            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !/-r\d+$/.test(s.id));
+            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !/-r\d+$/.test(s.id));
           if (hasFillers || missingStages) {
             const oldStages = wf.stages;
             const newStages = buildStages(job);

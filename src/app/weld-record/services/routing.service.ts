@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, labelFor, show, routeBack, deprogressWorkflow, fabricationSnapshot, activeStageId, setRoutingFrom } from '../../data/workflow';
+import { JobWorkflow, StageField, labelFor, show, deprogressWorkflow, fabricationSnapshot, moveRouting } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
@@ -44,26 +44,26 @@ export class RoutingService {
   setRouting(job: Job, targetId: string) {
     let label = '';
     this.store.update(job, wf => {
-      const targetIdx = wf.stages.findIndex(s => s.id === targetId);
-      if (targetIdx < 0) return wf;
-      const target = wf.stages[targetIdx];
+      const target = wf.stages.find(s => s.id === targetId);
+      if (!target) return wf;
       label = target.label;
-      const activeIdx = wf.stages.findIndex(s => s.id === activeStageId(wf.stages));
-      if (activeIdx >= 0 && targetIdx > activeIdx) {
-        return this.store.withHistory(wf, { ...wf, stages: setRoutingFrom(wf.stages, targetId), undo: [] }, {
-          section: 'Routing', who: 'Admin', action: `Routing set to ${target.label} (admin)`, to: target.label,
-        });
-      }
-      const r = routeBack(wf, job, targetId);
-      return this.store.withHistory(wf, { ...r.wf, undo: [] }, {
-        section: 'Routing',
-        who: 'Admin',
-        action: `Routed back to ${target.label} (admin)`,
-        to: target.label,
-        fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
-      });
+      return this.moveWithHistory(wf, job, targetId, 'Admin', 'admin');
     });
     this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set to ${label}`, life: 3000 });
+  }
+
+  /* moveRouting() plus its History entry ("Routing set to X (<by>)" / "Routed back to X (<by>)");
+     Deprogress can't reach past a routing set by hand, so the undo entries are dropped */
+  moveWithHistory(wf: JobWorkflow, job: Job, targetId: string, who: string, by: string, routingAt?: string): JobWorkflow {
+    const target = wf.stages.find(s => s.id === targetId);
+    if (!target) return wf;
+    const r = moveRouting(wf, job, targetId);
+    return this.store.withHistory(wf, { ...r.wf, undo: [] }, {
+      section: 'Routing', who,
+      action: `${r.back ? 'Routed back to' : 'Routing set to'} ${target.label} (${by})`,
+      to: target.label,
+      fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
+    }, routingAt);
   }
 
   /* Deprogress: undo the most recent sign-off and everything it triggered (deprogressWorkflow) */

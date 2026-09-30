@@ -270,6 +270,7 @@ src/app/
 | `/weld-engineering`, `/weld-engineering/procedures/:id` | Procedure Lookup list + PDF detail |
 | `/weld-engineering/admin`, `/weld-engineering/admin/new`, `/weld-engineering/admin/:id/edit` | Manage Procedures list/create/edit |
 | `/weld-engineering/admin/import` | Load Procedures bulk import |
+| `/weld-engineering/queue`, `/weld-engineering/queue/:id` | Engineering Queue (joints on Engineering Hold) + Review (comments, set routing) |
 
 ## Data flow
 
@@ -415,7 +416,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
   fabricationData: Record<string, string>;   // cross-stage fit-up fields; editable only while the current step's template has fabricationEditable (fabricationEditable() in workflow.ts, read live from Admin > Routing; built-in = Prep through Fit-Up Insp)
   refitNumber?: string;    // set by each Cut
   repairNumber?: string;   // set by each new Repair round
-  deviations?: Deviation[]; // accepted at sign-off: { id, stageId, stageLabel, items: {kind, label, entered, required}[], reason, who, when, status: 'open' }
+  deviations?: Deviation[]; // accepted at sign-off: { id, stageId, stageLabel, items: {kind, label, entered, required}[], reason, who, when, status: 'open' | 'dispositioned' | 'withdrawn', holdStageId?, disposition?: { comments, routeTo, routeToLabel, who, when } }
 }
 ```
 Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`repairNumber` onto the job (`job.refitNumber`/`job.repairNumber`) — that's what Joint Details, search and filters read.
@@ -477,7 +478,10 @@ Added 2026-09-25 (rules in plain language: ROUTING.md "Deviations").
 - **What's acceptable** (`detectDeviations()`, `data/deviations.ts`): Actual PH/IP outside its requirement pair (`isActualOutOfRange()`, NC = no limit), a failed Qualification Check (Test User's quals vs the WPS), and a Filler Metal Type/Size not on the WPS (skipped while "Only Consumable Insert used as filler" locks them). Actual out of range is no longer a field error: `validateStageFields()`/`onFieldBlur()` dropped their range checks, and the field shows a live warning instead (`fieldWarning()`, amber). Actual Min > Max stays a hard stop.
 - **Report Deviation** (joint page `reported` signal, keyed by stage id): typed text, not persisted until signing, dropped on leaving like any unsigned input (`hasUnsavedChanges()` counts it). While a stage has one, `withStageRuntimeOptions()` gives Filler Metal Type/Size the full list and WTN changes stop clearing them; removing the last report puts back the external system's GWP/WTN/filler (see "External assignment").
 - **Sign flow**: `signStage()` runs the hard validation first; if `stageDeviations()` finds anything, it opens `DeviationAcceptDialogComponent` (items, required reason, password) instead of the confirm. Accepting calls `DeviationService.record()` then `SignoffService.signStage()`; the Root 5X auto-sign is skipped since the joint is now held.
-- **Hold**: `heldAt(stage)` makes every stage except the deviated one(s) non-editable (`editable()`, `inputsEditable()`, `signBlockers()`); the signoff panel shows `holdNote()`. No release exists (user's decision); disposition comes later.
+- **Hold**: `heldAt(stage)` makes every stage except the deviated one(s) non-editable (`editable()`, `inputsEditable()`, `signBlockers()`); the signoff panel shows `holdNote()`.
+- **Engineering Hold** (2026-09-30): `signStage(..., engineeringHold = true)` (from `acceptDeviations()`) calls `insertEngineeringHold()` (`workflow.ts`): a runtime stage `engineering-hold[-n]` (`ENGINEERING_HOLD_STAGE`, role Engineering, no fields) right after the signed stage, with `routingFrom` on it. `Deviation.holdStageId` names it (`nextEngineeringHoldId()` in `record()`). `routeBack()` treats hold stages like Repair rounds (signed = kept as a record); the WorkflowStore rebuild check ignores them. The signoff panel shows "Waiting on Engineering" instead of Signoff; no routing preview on it. `deprogressWorkflow()` marks an open deviation `withdrawn` when its hold stage is gone.
+- **Release** (`DeviationService.disposition(job, comments, targetId)`, from `weld-engineering/engineering-queue/engineering-review.component.ts`): signs every unsigned hold (who Engineering, inputs `comments`/`routeTo`, a SignoffRecord), sets open deviations `dispositioned` with `disposition`, writes a 'Deviation' History entry, then `RoutingService.moveWithHistory()` (shared with Admin > Set Routing; `moveRouting()` in workflow.ts: back = `routeBack()`, forward = `setRoutingFrom()`, clears undo). Both entries record routing "Engineering Hold" (`withHistory()`'s optional `routing`).
+- **Seeds**: `seededWorkflow()` puts ~5 joints (`SEEDED_HOLD_EVERY`, last signed step a welding step) on hold via `seededDeviation()`: Actual PH Max = PH Max + 15.
 - Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.
 
 ## External assignment

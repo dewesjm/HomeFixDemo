@@ -629,6 +629,8 @@
         @if (st.id === 'sold') {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
+        } @else if (!st.signed && isEngineeringHold(st)) {
+          <span class="font-semibold">Waiting on Engineering</span>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
                to trigger validation and see what's missing. signStage() won't sign with errors or blockers. -->

@@ -31,7 +31,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -382,7 +382,7 @@ export class JointPageComponent implements OnDestroy {
     const d = this.openDeviations()[0];
     if (!d) return '';
     const when = formatDate(d.when);
-    return `On hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until it is dealt with, and that part isn't built yet.`;
+    return `On Engineering Hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until Engineering sets the routing (Weld Engineering > Engineering Queue).`;
   });
   /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a deprogress */
   private heldAt(stage: WorkflowStage): boolean {
@@ -466,8 +466,8 @@ export class JointPageComponent implements OnDestroy {
     if (!req || !this.job) return;
     this.deviationService.record(this.job, req.stage.id, req.items, reason);
     this.recordOverrides(req.stage);
-    this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage));
-    /* no 5X auto-sign: the joint is now on hold */
+    this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage), true);
+    /* no 5X auto-sign: the joint is now on Engineering Hold */
     this.router.navigate([this.backDestination()]);
   }
   /* Signoff fields currently required, accounting for Fit/Pre-Fit's joint-design + traceability
@@ -701,12 +701,12 @@ export class JointPageComponent implements OnDestroy {
   routePreviewLabel(stage: WorkflowStage): string {
     if (!this.routingPreviewOn || !this.job || !this.wf) return '';
     if (isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)) return this.repairRouteLabel(stage);
-    if (stage.signed || stage.id === 'sold' || stage.id !== this.activeStage()) return '';
+    if (stage.signed || stage.id === 'sold' || stage.id !== this.activeStage() || isEngineeringHoldId(stage.id)) return '';
     const wf = this.wf();
     const job = this.job;
     const from = wf.stages.findIndex(s => s.id === stage.id);
     const phrase = (when: string, result?: WorkflowStage['result']) => {
-      const { target, reasons } = this.signoffService.previewSignoff(wf, job, stage.id, result);
+      const { target, reasons } = this.signoffService.previewSignoff(wf, job, stage.id, result, this.stageDeviations(stage).length > 0);
       const why = `Why: ${reasons.length ? reasons.join('; ') : 'no special conditions'}.`;
       if (!target) return `${when}, the joint is complete. ${why}`;
       if (target.id === stage.id) return `${when}, the joint stays at ${stage.label}. ${why}`;

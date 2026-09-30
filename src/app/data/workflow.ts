@@ -133,7 +133,12 @@ export interface Deviation {
   reason: string;
   who: string;
   when: string;
-  status: 'open';
+  /* open = the joint is on Engineering Hold; dispositioned = Engineering set the routing;
+     withdrawn = the sign-off that accepted it was deprogressed */
+  status: 'open' | 'dispositioned' | 'withdrawn';
+  /* the Engineering Hold step this deviation's sign-off added (absent on older saves) */
+  holdStageId?: string;
+  disposition?: { comments: string; routeTo: string; routeToLabel: string; who: string; when: string };
 }
 
 export interface JobWorkflow {
@@ -841,6 +846,28 @@ export const repairIdForExcavation = (excavationId: string) => `repair${roundSuf
 /* round number after the first, e.g. "Repair 2" */
 export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;
 
+/* Engineering Hold: signing a step with accepted deviations adds this right after it, and the joint
+   waits there until Engineering (Weld Engineering > Engineering Queue) enters comments and sets the
+   routing (DeviationService.disposition). It is never signed on the weld record. Each hold is its
+   own step, 'engineering-hold' then 'engineering-hold-2' and so on. */
+export const ENGINEERING_HOLD_STAGE: StageTemplate = {
+  id: 'engineering-hold', label: 'Engineering Hold', required: true, role: 'Engineering', fields: [], signoffFields: [],
+};
+export const isEngineeringHoldId = (id: string) => /^engineering-hold(-\d+)?$/.test(id);
+export function nextEngineeringHoldId(stages: { id: string }[]): string {
+  const n = stages.filter(s => isEngineeringHoldId(s.id)).length + 1;
+  return n === 1 ? 'engineering-hold' : `engineering-hold-${n}`;
+}
+
+/* a new Engineering Hold right after `afterId`, and the current routing starts there */
+export function insertEngineeringHold(stages: WorkflowStage[], afterId: string): WorkflowStage[] {
+  const idx = stages.findIndex(s => s.id === afterId);
+  if (idx < 0) return stages;
+  const id = nextEngineeringHoldId(stages);
+  const hold = stageFromTemplate({ ...ENGINEERING_HOLD_STAGE, id, label: roundLabel(ENGINEERING_HOLD_STAGE.label, id) });
+  return setRoutingFrom([...stages.slice(0, idx + 1), hold, ...stages.slice(idx + 1)], id);
+}
+
 export function nextRepairStage(stages: { id: string }[]): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
@@ -1324,6 +1351,12 @@ export function seededWorkflow(job: Job): JobWorkflow {
   let t = Date.now() - (2 + Math.floor(rand() * 40)) * DAY;
 
   const names = SEEDED_INSPECTOR_NAMES;
+  /* a few joints wait on Engineering Hold: their last signed step was a welding step signed with
+     an Actual PH Max over the procedure's range (seededDeviation) */
+  let lastSigned = -1;
+  wf.stages.forEach((s, i) => { if (i < k && s.required) lastSigned = i; });
+  const holdAt = !awaitingRelease && SEEDED_HOLD_STEPS.includes(wf.stages[lastSigned]?.id)
+    && [...job.id].reduce((a, c) => a + c.charCodeAt(0) * 17, 0) % SEEDED_HOLD_EVERY === 5 ? lastSigned : -1;
   wf.stages = wf.stages.map((s, i) => {
     if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
     /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
@@ -1332,6 +1365,10 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
     if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
+    if (i === holdAt) {
+      const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
+      Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
+    }
     const signoffInputs: Record<string, string> = {};
     for (const f of s.signoffFields) {
       if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;
@@ -1376,7 +1413,30 @@ export function seededWorkflow(job: Job): JobWorkflow {
       }],
     };
   });
+  if (holdAt >= 0) seededDeviation(wf, holdAt, t + (5 + Math.floor(rand() * 30)) * MIN);
   return wf;
+}
+
+const SEEDED_HOLD_STEPS = ['tack', 'root-weld', 'root-layer', 'final-weld'];
+const SEEDED_HOLD_EVERY = 23;
+
+/* a seeded joint's accepted deviation on stage `idx` and the Engineering Hold it put the joint on */
+function seededDeviation(wf: JobWorkflow, idx: number, t: number) {
+  const s = wf.stages[idx];
+  const item: DeviationItem = {
+    kind: 'out-of-range', label: labelFor(s, 'actualPhMax'), entered: s.inputs['actualPhMax'],
+    required: `${s.inputs['phMin']} to ${s.inputs['phMax']}`,
+  };
+  const reason = 'Reading taken after a delay; value recorded as measured.';
+  const when = new Date(t).toISOString();
+  wf.stages = insertEngineeringHold(wf.stages, s.id);
+  const holdStageId = wf.stages[idx + 1].id;
+  wf.deviations = [{ id: `seed-${wf.jobId}`, stageId: s.id, stageLabel: s.label, items: [item], reason, who: wf.technician, when, status: 'open', holdStageId }];
+  wf.history.push({
+    when, who: wf.technician, ...stampWho(wf.technician), section: 'Deviation',
+    action: `${s.label} - Deviation created`, from: '', to: item.label, routing: s.label,
+    inputs: [{ label: 'Reason', value: reason }, { label: item.label, value: `${item.entered} (required: ${item.required})` }],
+  });
 }
 
 /* locked until prior required stages signed; stages before where the current routing was set are locked */
@@ -1437,7 +1497,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   const ownRound = isRepairStageId(targetId) ? [targetId, excavationIdForRepair(targetId)] : [];
   const stages = wf.stages.map((s, i) => {
     if (i < targetIdx) return s;
-    if ((isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) && !ownRound.includes(s.id)) {
+    if ((isRepairStageId(s.id) || isExcavationNdtStageId(s.id) || isEngineeringHoldId(s.id)) && !ownRound.includes(s.id)) {
       return s.signed ? s : { ...s, required: false };
     }
     if (isExcavationNdtStageId(s.id)) return { ...blankStage(s), required: false };
@@ -1457,6 +1517,20 @@ export function setRoutingFrom(stages: WorkflowStage[], stageId: string): Workfl
     const { routingFrom: _r, ...rest } = s;
     return on ? { ...rest, routingFrom: true } : rest;
   });
+}
+
+/* set the current routing to any step (Admin > Set Routing, Engineering's disposition): going back
+   works like any route-back (that step and every step after it come up blank); going forward only
+   moves the current routing, and the steps passed stay as they are */
+export function moveRouting(wf: JobWorkflow, job: Job, targetId: string): { wf: JobWorkflow; back: boolean; fabReset: boolean } {
+  const targetIdx = wf.stages.findIndex(s => s.id === targetId);
+  const activeIdx = wf.stages.findIndex(s => s.id === activeStageId(wf.stages));
+  if (targetIdx < 0) return { wf, back: false, fabReset: false };
+  if (activeIdx < 0 || targetIdx >= activeIdx) {
+    return { wf: { ...wf, stages: setRoutingFrom(wf.stages, targetId) }, back: false, fabReset: false };
+  }
+  const r = routeBack(wf, job, targetId);
+  return { wf: r.wf, back: true, fabReset: r.fabReset };
 }
 
 /* index the current routing is counted from: the routingFrom stage, else the first stage */
@@ -1511,7 +1585,11 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
   stages = stages.map((s, i) => (i === idx || (i > idx && !s.signed) ? blankStage(s, fresh.get(s.id)) : s));
   const fabricationData = goesBackPastFit(stages, idx)
     ? Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, ''])) : rest.fabricationData ?? wf.fabricationData;
-  return { wf: { ...wf, ...rest, stages, fabricationData }, stage };
+  /* deprogressing the sign-off that accepted a deviation takes its Engineering Hold away: the
+     deviation stays on record as withdrawn */
+  const deviations = wf.deviations?.map(d => d.status === 'open' && d.holdStageId && !stages.some(s => s.id === d.holdStageId)
+    ? { ...d, status: 'withdrawn' as const } : d);
+  return { wf: { ...wf, ...rest, stages, fabricationData, ...(deviations ? { deviations } : {}) }, stage };
 }
 
 /* Leaving the joint page without signing discards what was typed this visit: each stage that was

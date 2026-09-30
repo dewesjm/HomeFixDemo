@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -57,9 +57,10 @@ export class SignoffService {
   }
 
   /* lock a stage's sign-off and advance (or route back on reject) */
-  signStage(job: Job, stageId: string, inputs?: SignoffInput[]) {
+  /* engineeringHold: the sign-off accepted deviations, so the joint goes to Engineering Hold */
+  signStage(job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
     let r: ReturnType<SignoffService['applySignoff']> | null = null;
-    this.store.update(job, wf => (r = this.applySignoff(wf, job, stageId, inputs)).wf);
+    this.store.update(job, wf => (r = this.applySignoff(wf, job, stageId, inputs, engineeringHold)).wf);
     const { signedLabel, refitNumber, repairNumber } = r!;
     if (refitNumber) job.refitNumber = refitNumber;
     if (repairNumber) job.repairNumber = repairNumber;
@@ -69,14 +70,14 @@ export class SignoffService {
   /* Demo routing preview: runs the real sign-off on a copy (nothing is saved) and returns the
      stage the joint would be at afterward (undefined when it'd be complete) and which special
      routing rules applied. `result` tries a SAT/UNSAT the user hasn't picked yet. */
-  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result']): { target: WorkflowStage | undefined; reasons: string[] } {
+  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result'], engineeringHold = false): { target: WorkflowStage | undefined; reasons: string[] } {
     const tried = result === undefined ? wf : { ...wf, stages: wf.stages.map(s => s.id === stageId ? { ...s, result } : s) };
-    const r = this.applySignoff(tried, job, stageId);
+    const r = this.applySignoff(tried, job, stageId, undefined, engineeringHold);
     return { target: activeStage(r.wf.stages), reasons: r.reasons };
   }
 
   /* the sign-off itself, without saving: the new workflow plus what signStage() reports/stamps on the job */
-  private applySignoff(wf: JobWorkflow, job: Job, stageId: string, inputs?: SignoffInput[]) {
+  private applySignoff(wf: JobWorkflow, job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
     let signedLabel = '';
     let refitNumber = '';
     let repairNumber = '';
@@ -263,6 +264,12 @@ export class SignoffService {
       } else if (originStageId) {
         routeBackTo(originStageId);
       }
+    }
+
+    /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */
+    if (engineeringHold) {
+      stages = insertEngineeringHold(stages, stageId);
+      reasons.push('a deviation was accepted, so the joint goes to Engineering Hold');
     }
 
     const who = st.signoffInputs['inspectorName'] || wf.technician;

@@ -1,0 +1,45 @@
+<!-- Weld Engineering > Engineering Queue: joints on Engineering Hold -->
+<h2 class="section-title">Engineering Queue</h2>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search the queue…" (exportCsv)="exportCsv()" />
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th appSortHeader [table]="table" field="xrefid" label="XREFID" filter="text" class="w-px whitespace-nowrap min-w-20"></th>
+      <th appSortHeader [table]="table" field="hull" label="Hull" filter="text" class="w-px whitespace-nowrap min-w-16"></th>
+      <th appSortHeader [table]="table" field="drawing" label="Drawing" filter="text" class="w-px whitespace-nowrap min-w-24"></th>
+      <th appSortHeader [table]="table" field="joint" label="Joint" filter="text" class="w-px whitespace-nowrap min-w-20"></th>
+      <th appSortHeader [table]="table" field="heldAt" label="Held at" filter="text" class="w-px whitespace-nowrap min-w-20"></th>
+      <th appSortHeader [table]="table" field="items" label="Deviation" filter="text" class="min-w-32"></th>
+      <th appSortHeader [table]="table" field="reason" label="Reason" filter="text" class="min-w-48"></th>
+      <th appSortHeader [table]="table" field="acceptedBy" label="Accepted by" filter="text" class="w-px whitespace-nowrap"></th>
+      <th appSortHeader [table]="table" field="since" label="On hold since" class="w-px whitespace-nowrap"></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of visibleRows(); track r.jobId) {
+      <tr class="hover:bg-base-200">
+        <td class="whitespace-nowrap">{{ r.xrefid || '-' }}</td>
+        <td class="whitespace-nowrap font-semibold">{{ r.hull }}</td>
+        <td class="whitespace-nowrap">{{ r.drawing }}</td>
+        <td class="whitespace-nowrap">{{ r.joint }}</td>
+        <td class="whitespace-nowrap">{{ r.heldAt }}</td>
+        <td>{{ r.items }}</td>
+        <td>{{ r.reason }}</td>
+        <td class="whitespace-nowrap">{{ r.acceptedBy }}</td>
+        <td class="whitespace-nowrap">{{ r.since | appDateTime }}</td>
+        <td class="text-right">
+          <button type="button" class="btn btn-primary btn-xs" (click)="review(r)">
+            <svg lucideArrowUpRight class="size-3"></svg> Review
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="10" class="empty">{{ table.hasRows() ? 'No joints match your search.' : 'No joints on Engineering Hold.' }}</td></tr>
+    }
+  </tbody>
+</table>
+</div>

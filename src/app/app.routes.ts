@@ -34,6 +34,8 @@ import { ProcedureDetailComponent } from './weld-engineering/procedure-detail/pr
 import { ManageProceduresComponent } from './weld-engineering/admin/manage-procedures/manage-procedures.component';
 import { ProcedureFormComponent } from './weld-engineering/admin/manage-procedures/procedure-form.component';
 import { LoadProceduresComponent } from './weld-engineering/admin/load-procedures/load-procedures.component';
+import { EngineeringQueueComponent } from './weld-engineering/engineering-queue/engineering-queue.component';
+import { EngineeringReviewComponent } from './weld-engineering/engineering-queue/engineering-review.component';
 
 
 export const routes: Routes = [
@@ -74,6 +76,8 @@ export const routes: Routes = [
   /* ── Weld Engineering routes (separate system) ── */
   { path: 'weld-engineering', component: ProcedureLookupComponent, title: 'EWE - Procedure Lookup' },
   { path: 'weld-engineering/procedures/:id', component: ProcedureDetailComponent, title: 'EWE - Procedure' },
+  { path: 'weld-engineering/queue', component: EngineeringQueueComponent, title: 'EWE - Engineering Queue' },
+  { path: 'weld-engineering/queue/:id', component: EngineeringReviewComponent, title: 'EWE - Engineering Review' },
   { path: 'weld-engineering/admin', component: ManageProceduresComponent, title: 'EWE - Manage Procedures' },
   { path: 'weld-engineering/admin/new', component: ProcedureFormComponent, title: 'EWE - New Procedure' },
   { path: 'weld-engineering/admin/import', component: LoadProceduresComponent, title: 'EWE - Load Procedures' },

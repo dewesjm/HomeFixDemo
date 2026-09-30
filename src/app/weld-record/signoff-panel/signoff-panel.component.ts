@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage, isEngineeringHoldId } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { getProcedureByGwpWtn } from '../../data/procedures';
@@ -177,6 +177,11 @@ export class SignoffPanelComponent {
     if (st.id.startsWith('layer-ndt-')) return `Set by NDT Each (${this.ctx().job.ndtEach})`;
     if (isExcavationNdtStageId(st.id)) return 'Same inspection that rejected the joint';
     return '';
+  }
+
+  /* Engineering Hold is released from the Engineering Queue, never signed here */
+  isEngineeringHold(st: WorkflowStage): boolean {
+    return isEngineeringHoldId(st.id);
   }
 
   isFitBuildup(st: WorkflowStage): boolean {
