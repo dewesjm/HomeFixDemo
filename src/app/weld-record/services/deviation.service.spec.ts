@@ -136,7 +136,7 @@ describe('Engineering Hold (deviations)', () => {
   });
 });
 
-describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () => {
+describe('Engineering Hold from a reject rule (PT failure on a GTAW weld)', () => {
   let signoff: SignoffService;
   let deviations: DeviationService;
   let store: WorkflowStore;
@@ -163,12 +163,12 @@ describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () =
   }
 
   it('goes to Engineering Hold instead of Repair, with the reason kept on the hold', () => {
-    const job = ptFailure('gmaw');
+    const job = ptFailure('gtaw');
     const stages = store.workflowFor(job)().stages;
     expect(activeStageId(stages)).toBe('engineering-hold');
     expect(stages.some(s => s.id === 'repair')).toBeFalse();
     expect(stages.find(s => s.id === 'engineering-hold')!.inputs['holdReason'])
-      .toBe('Root NDT MT/PT was UNSAT (Type is PT, and Root: Weld Process is GMAW)');
+      .toBe('Root NDT MT/PT was UNSAT (Type is PT, and Root: Weld Process is GTAW)');
   });
 
   it('any other weld process still adds a Repair', () => {
@@ -177,7 +177,7 @@ describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () =
   });
 
   it('Engineering releases it without a deviation; the joint carries on from the chosen step', () => {
-    const job = ptFailure('gmaw');
+    const job = ptFailure('gtaw');
     deviations.disposition(job, 'Re-weld the root', 'root-weld');
     const wf = store.workflowFor(job)();
     expect(wf.stages.find(s => s.id === 'engineering-hold')!.signed).toBeTrue();

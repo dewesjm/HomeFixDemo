@@ -216,19 +216,19 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
 /* reject target that puts the joint on Engineering Hold instead (workflow.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 
-/* built-in reject rules (Admin > Routing can change them): a PT failure on a GMAW weld goes to
+/* built-in reject rules (Admin > Routing can change them): a PT failure on a GTAW weld goes to
    Engineering Hold instead of Repair; the weld that counts is that phase's own weld step */
-const gmawPtHold = (weldStepId: string): RejectRule[] => [{
+const gtawPtHold = (weldStepId: string): RejectRule[] => [{
   when: [
     { field: 'self.inspectionType', op: 'is', values: ['pt'] },
-    { field: `step.${weldStepId}.weldProcess`, op: 'is', values: ['gmaw'] },
+    { field: `step.${weldStepId}.weldProcess`, op: 'is', values: ['gtaw'] },
   ],
   to: ENGINEERING_HOLD_TARGET,
 }];
 export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
-  'root-ndt-mtpt': gmawPtHold('root-weld'),
-  'layer-ndt-mtpt': gmawPtHold('root-layer'),
-  'final-ndt-mtpt': gmawPtHold('final-weld'),
+  'root-ndt-mtpt': gtawPtHold('root-weld'),
+  'layer-ndt-mtpt': gtawPtHold('root-layer'),
+  'final-ndt-mtpt': gtawPtHold('final-weld'),
 };
 
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */

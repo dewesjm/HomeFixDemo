@@ -828,7 +828,7 @@ export function nextEngineeringHoldId(stages: { id: string }[]): string {
 }
 
 /* why a reject rule sent `stage`'s UNSAT to Engineering Hold (the hold's holdReason), e.g.
-   "Final NDT MT/PT was UNSAT (Type is PT, and Final Weld: Weld Process is GMAW)" */
+   "Final NDT MT/PT was UNSAT (Type is PT, and Final Weld: Weld Process is GTAW)" */
 export function rejectHoldReason(stage: WorkflowStage, rule: RejectRule): string {
   return `${stage.label} was UNSAT (${describeClauses(rule.when, stageConditionFields(stage)).join(', and ')})`;
 }
@@ -1313,8 +1313,8 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const idHash = [...job.id].reduce((a, c) => a + c.charCodeAt(0) * 17, 0);
   const holdAt = !awaitingRelease && SEEDED_HOLD_STEPS.includes(wf.stages[lastSigned]?.id)
     && idHash % SEEDED_HOLD_EVERY === 5 ? lastSigned : -1;
-  /* and a few after a PT failure on a GMAW weld (the built-in reject rule): that phase's weld step
-     is GMAW, its NDT MT/PT was signed PT and UNSAT */
+  /* and a few after a PT failure on a GTAW weld (the built-in reject rule): that phase's weld step
+     is GTAW, its NDT MT/PT was signed PT and UNSAT */
   const ptPhase = /^(root|layer|final)-ndt-mtpt$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
   const ptAllowed = !!wf.stages[lastSigned]?.routingOptions?.some(o => o.value === 'pt');
   const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
@@ -1327,7 +1327,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
     if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
-    if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gmaw';
+    if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
     if (i === holdAt) {
       const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
       Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
