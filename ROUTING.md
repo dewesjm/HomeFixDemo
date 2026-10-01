@@ -126,7 +126,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - SAT or UNSAT.
 
 **NDT steps (including Excavation NDT)**
-- Type (unless locked), Procedure Used for Inspection, and SAT or UNSAT.
+- Type (unless locked), Procedure Used for Inspection (only the procedures listed for that Type on Admin > Inspection Procedures), and SAT or UNSAT.
 - Probationary Inspector and Oversight Inspector, when "Has Probationary Inspector" is checked.
 - Portion of Weld Inspected, when "Partial" is checked.
 - RT: Degree of RT Performed must match the RT Root or RT Final requirement. Defect Code is needed when RT is UNSAT.
