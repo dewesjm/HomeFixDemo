@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Work History > Correct: the message under a locked field no longer ends with a leftover note asking if the value needs to change, and says routing instead of stage.',
       'The UT/RT steps (Root, Layer and Final NDT) are now called RT/UT, and their Type lists RT first.',
       'Every demo joint now has sign-offs in its history; none start with nothing signed. Work History shows each joint\'s actual sign-offs (the same ones as on the joint), so Correct and Deprogress show up wherever they apply. Before, joints not yet opened showed made-up rows with no Correct button.',
+      'A handful of demo joints now start on Repair after a failed VT/5X or RT/UT, and a few start on Excavation NDT after a Weld Repair. Their Repair # is 01.',
     ],
   },
   {

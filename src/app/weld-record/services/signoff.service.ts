@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStage, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -235,14 +235,7 @@ export class SignoffService {
         if (repairIdx >= 0 && !hasExcavationAlready) {
           const originInspectionType = st.inputs['originInspectionType'] ?? '';
           const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
-          /* Inspector role gets the same NQC Inspector remap every other NDT stage gets in
-             buildStages() -- this stage bypasses that (built at runtime, not from TRADE_STAGES),
-             so it's applied by hand here. */
-          const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
-          const excavationStage = {
-            ...stageFromTemplate(excavationNdtStage(resolvedType, stageId), {}, resolvedType),
-            role,
-          };
+          const excavationStage = excavationNdtStageFor(job, resolvedType, stageId);
           stages = [...stages.slice(0, repairIdx + 1), excavationStage, ...stages.slice(repairIdx + 1)];
         }
       }

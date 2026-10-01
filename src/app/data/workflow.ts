@@ -893,6 +893,13 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
   };
 }
 
+/* Excavation NDT for `repairId`, already resolved to one method; the Inspector role gets the same
+   NQC Inspector remap buildStages() gives every other NDT step, since this one is built at runtime */
+export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
+  const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
+  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId), {}, inspectionType), role };
+}
+
 /* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
    NDT) -- same shape toStage() builds from TRADE_STAGES, minus the parts only a job's real
    routing needs (role remap, override fields, etc.), since these are always the same regardless
@@ -1291,8 +1298,8 @@ function seededFieldValue(f: StageField, rand: () => number): string {
   return pick(['Completed', 'Verified', 'Accepted', 'Passed']);
 }
 
-/* a fresh workflow with a deterministic run of leading stages pre-signed (all accepted),
-   so the current stage differs job-to-job. Persisted (real) workflows always override this. */
+/* a fresh workflow with a deterministic run of leading stages pre-signed (accepted, apart from the
+   few seeded Engineering Hold and Repair joints), so the current stage differs job-to-job. Persisted (real) workflows always override this. */
 export function seededWorkflow(job: Job): JobWorkflow {
   const wf = newWorkflow(job);
   const total = wf.stages.length;
@@ -1320,31 +1327,16 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const ptAllowed = !!wf.stages[lastSigned]?.routingOptions?.some(o => o.value === 'pt');
   const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
   const ptWeldId = ptPhase ? PHASE_WELD_STEP[ptPhase] : '';
-  wf.stages = wf.stages.map((s, i) => {
-    if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
-    /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
-    if (!s.required) return s;
-    t += (20 + Math.floor(rand() * 180)) * MIN;
-    const inputs = { ...s.inputs };
-    for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
-    if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
-    if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
-    if (i === holdAt) {
-      const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
-      Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
-    }
-    const signoffInputs: Record<string, string> = {};
-    for (const f of s.signoffFields) {
-      if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;
-      else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
-      else signoffInputs[f.key] = seededFieldValue(f, rand);
-    }
-    /* seeded joints didn't defer their Tack */
-    if (s.id === 'fit') signoffInputs['deferTack'] = '';
-    const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
-    const opts = s.routingOptions ?? [];
-    const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
-    const result: StageResult = i === ptHoldAt ? 'unsat' : 'sat';
+  /* and a handful whose last NDT (VT/5X or RT/UT) was UNSAT, so they wait on Repair; a couple of those
+     had a Weld Repair signed and wait on Excavation NDT. MT/PT is left out so the PT reject rule can't apply. */
+  const repairPhase = /^(root|layer|final)-ndt-(vt5x|utrt)$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
+  const repairAt = !awaitingRelease && holdAt < 0 && ptHoldAt < 0 && repairPhase
+    && idHash % SEEDED_REPAIR_EVERY === SEEDED_REPAIR_AT ? lastSigned : -1;
+  const repairSigned = repairAt >= 0 && job.id.charCodeAt(4) % 3 === 0;
+
+  /* one seeded sign-off: History entry plus the signed stage */
+  const sign = (s: WorkflowStage, inputs: Record<string, string>, signoffInputs: Record<string, string>,
+    inspectionType: string, result: StageResult, who: string): WorkflowStage => {
     const signedView = { ...s, inspectionType, inputs, signoffInputs, result };
     wf.history.push({
       when: new Date(t).toISOString(),
@@ -1377,6 +1369,34 @@ export function seededWorkflow(job: Job): JobWorkflow {
         action: 'signed' as const,
       }],
     };
+  };
+
+  wf.stages = wf.stages.map((s, i) => {
+    if (i >= k) return awaitingRelease && i === releaseIdx ? { ...s, required: true } : s;
+    /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
+    if (!s.required) return s;
+    t += (20 + Math.floor(rand() * 180)) * MIN;
+    const inputs = { ...s.inputs };
+    for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
+    if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
+    if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
+    if (i === holdAt) {
+      const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
+      Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
+    }
+    const signoffInputs: Record<string, string> = {};
+    for (const f of s.signoffFields) {
+      if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;
+      else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
+      else signoffInputs[f.key] = seededFieldValue(f, rand);
+    }
+    /* seeded joints didn't defer their Tack */
+    if (s.id === 'fit') signoffInputs['deferTack'] = '';
+    const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
+    const opts = s.routingOptions ?? [];
+    const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
+    const result: StageResult = i === ptHoldAt || i === repairAt ? 'unsat' : 'sat';
+    return sign(s, inputs, signoffInputs, inspectionType, result, who);
   });
   if (holdAt >= 0) seededDeviation(wf, holdAt, t + (5 + Math.floor(rand() * 30)) * MIN);
   if (ptHoldAt >= 0) {
@@ -1384,9 +1404,33 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const rule = DEFAULT_REJECT_RULES[st.id][0];
     wf.stages = insertEngineeringHold(wf.stages, st.id, rejectHoldReason(st, rule));
   }
+  if (repairAt >= 0) seededRepair(wf, job, repairAt, repairSigned, sign, () => {
+    t += (30 + Math.floor(rand() * 240)) * MIN;
+    return names[Math.floor(rand() * names.length)];
+  });
   return wf;
 }
 
+/* the Repair a seeded NDT UNSAT adds right after it (as SignoffService does); when `signed`, a Foreman
+   signed it as a Weld Repair, which adds Excavation NDT with the method that failed */
+function seededRepair(wf: JobWorkflow, job: Job, idx: number, signed: boolean,
+  sign: (s: WorkflowStage, inputs: Record<string, string>, signoffInputs: Record<string, string>, inspectionType: string, result: StageResult, who: string) => WorkflowStage,
+  nextSigner: () => string) {
+  const ndt = wf.stages[idx];
+  let repair = stageFromTemplate(nextRepairStage(wf.stages), {
+    originPhase: ndt.id.split('-ndt-')[0], originStageId: ndt.id, originInspectionType: ndt.inspectionType,
+  });
+  wf.repairNumber = '01';
+  if (signed) {
+    const who = nextSigner();
+    repair = sign(repair, { ...repair.inputs, repairType: 'weld-repair', allowableThicknessExceeded: '' }, {}, repair.inspectionType, 'sat', who);
+  }
+  const added = signed ? [repair, excavationNdtStageFor(job, ndt.inspectionType, repair.id)] : [repair];
+  wf.stages = setRoutingFrom([...wf.stages.slice(0, idx + 1), ...added, ...wf.stages.slice(idx + 1)], repair.id);
+}
+
+const SEEDED_REPAIR_EVERY = 23;
+const SEEDED_REPAIR_AT = 11;
 const SEEDED_PT_HOLD_EVERY = 8;
 const SEEDED_PT_HOLD_AT = 6;
 const PHASE_WELD_STEP: Record<string, string> = { root: 'root-weld', layer: 'root-layer', final: 'final-weld' };

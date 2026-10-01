@@ -17,7 +17,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.18';
+const CURRENT_VERSION = '2.10.19';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -49,6 +49,8 @@ export class WorkflowStore {
     let sig = this.store.get(job.id);
     if (!sig) {
       sig = signal(this.persisted[job.id] ?? (job._fresh ? newWorkflow(job) : seededWorkflow(job)));
+      /* a seeded Repair's Repair #, copied onto the job like a saved workflow's is on load */
+      if (!this.persisted[job.id] && sig().repairNumber) job.repairNumber = sig().repairNumber!;
       this.store.set(job.id, sig);
       this.baseline.set(job.id, sig());
     }
