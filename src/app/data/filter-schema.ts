@@ -326,9 +326,9 @@ export function saveVariants(variants: FilterVariant[]): void {
   try { localStorage.setItem(STORAGE.filterVariants, JSON.stringify(variants)); } catch { /* */ }
 }
 
-/* the page as it was left. Kept twice: per tab (sessionStorage: a refresh or coming back from a
-   joint keeps it) and per browser (localStorage: a new visit picks up there unless a default
-   variant is set, which a new visit opens on instead) */
+/* the page as it was left. Kept per tab (sessionStorage: a refresh or coming back from a joint
+   keeps it; a new visit opens on the default variant instead) and per browser (localStorage: only page
+   size is read back from there) */
 export interface SavedSearchState extends SearchLayout { variant: string; filtersHidden?: boolean; page: number; pageSize: number }
 
 function readState(store: Storage): SavedSearchState | null {

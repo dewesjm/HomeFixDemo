@@ -78,16 +78,16 @@ export class AdaptiveSearchComponent {
   filtersHidden = signal(false);
 
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
-    /* this tab's state (refresh, back from a joint), else the default variant on a new visit,
-       else where the last visit left off */
-    const def = this.defaultVariant();
-    const saved = loadTabSearchState() ?? (def ? null : loadSearchState());
-    if (!saved && def) this.pickVariant(def);
-    else this.applyLayout(saved ?? standardLayout());
-    this.filtersHidden.set(!!(saved ?? loadSearchState())?.filtersHidden);
+    /* this tab's state (refresh, back from a joint), else a new visit: the default variant */
+    const saved = loadTabSearchState();
+    if (saved) this.applyLayout(saved);
+    else this.pickVariant(this.defaultVariant() || STANDARD_VARIANT);
+    /* a new visit starts with the filter bar hidden; page size carries over */
+    const last = saved ?? loadSearchState();
+    this.filtersHidden.set(saved ? !!saved.filtersHidden : true);
+    if (last) this.table.pageSize.set(PAGE_SIZES.includes(last.pageSize) ? last.pageSize : 10);
     if (saved) {
       this.selectedVariant.set(saved.variant || STANDARD_VARIANT);
-      this.table.pageSize.set(PAGE_SIZES.includes(saved.pageSize) ? saved.pageSize : 10);
       this.table.page.set(saved.page ?? 0);
     }
 
@@ -269,6 +269,8 @@ export class AdaptiveSearchComponent {
     const keys = this.draftKeys();
     const prev = this.values();
     this.filterKeys.set(keys);
+    /* show the bar, or the fields just added would be out of sight */
+    if (keys.length) this.filtersHidden.set(false);
     /* a field taken out of the bar stops filtering */
     this.values.set(Object.fromEntries(Object.entries(prev).filter(([k]) => keys.includes(k))));
     this.showAdapt.set(false);

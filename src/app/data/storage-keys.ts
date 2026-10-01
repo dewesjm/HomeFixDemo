@@ -13,7 +13,7 @@ export const STORAGE = {
   banner: 'welding:banner',
   theme: 'welding:theme',
   searchState: 'welding:search-state:v1',
-  advancedSearchState: 'welding:advanced-search-state:v1',
+  advancedSearchState: 'welding:advanced-search-state:v2',
   advancedSearchDefault: 'welding:advanced-search-default:v1',
   filterVariants: 'welding:filter-variants',
   weldJoints: 'welding:weld-joints:v9',
