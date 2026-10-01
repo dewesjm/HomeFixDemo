@@ -2,7 +2,8 @@
    Accepted kinds (user's decisions, 2026-09-25): Actual PH/IP out of range, a failed Qualification
    Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
-   Foreman Override text is typed in ('reported' items). DeviationService records them. */
+   Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
+   on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
 import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor, isInspectionStage } from './workflow';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
@@ -50,7 +51,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
   }
   const gwp = stage.inputs['weldProcedure'] ?? '';
   const gwpField = stage.fields.find(ff => ff.key === 'weldProcedure');
-  if (gwp && gwpField && baseMetals && visibleKeys.has('weldProcedure')) {
+  if (gwp && gwpField && baseMetals && visibleKeys.has('weldProcedure') && !stage.engineeringEntry) {
     const allowed = gwpOptionsForMaterials(baseMetals.type1, baseMetals.type2);
     if (!allowed.some(o => o.value === gwp)) {
       items.push({
@@ -69,7 +70,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
       items.push({ kind: 'qual', label: 'Qualification Check', entered: `Missing ${missing.join(', ')}`, required: required.join(', ') });
     }
   }
-  if (!proc) return items;
+  if (!proc || stage.engineeringEntry) return items;
   for (const key of FILLER_KEYS) {
     const value = stage.inputs[key] ?? '';
     const f = stage.fields.find(ff => ff.key === key);

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, READONLY_LIMIT_KEYS, isFieldLocked, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage, isEngineeringHoldId } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, isReadonlyLimit as readonlyLimit, isFieldLocked, FOREMAN_OVERRIDE_ENABLED, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage, isEngineeringHoldId } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { getProcedureByGwpWtn } from '../../data/procedures';
@@ -114,6 +114,7 @@ export class SignoffPanelComponent {
   stageIndex = input.required<number>();
 
   weldGroups = WELD_GROUPS;
+  foremanOverrideEnabled = FOREMAN_OVERRIDE_ENABLED;
 
   /* the joint's condition quals plus the selected GWP+WTN's against the Test User's (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
@@ -217,7 +218,7 @@ export class SignoffPanelComponent {
   }
 
   isReadonlyLimit(f: StageField): boolean {
-    return READONLY_LIMIT_KEYS.has(f.key);
+    return readonlyLimit(this.stage(), f.key);
   }
 
   /* also GWP/WTN/filler set by the external system, until a Foreman Override opens them */

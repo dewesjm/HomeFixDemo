@@ -637,7 +637,7 @@
           <button type="button" class="btn btn-primary" [disabled]="!!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
-          @if (ctx().editable(st) && (st.role === 'Welding' || isFitBuildup(st))) {
+          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || isFitBuildup(st))) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
             <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)">

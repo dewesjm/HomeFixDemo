@@ -87,6 +87,9 @@ export interface WorkflowStage {
   /* the current routing was set to this stage (a route-back, or Admin > Set Routing): the joint
      proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
   routingFrom?: boolean;
+  /* the external system sent no GWP/WTN/filler/PH/IP for this welding step, so they're typed in
+     by hand (engineering override, ENGINEERING_ENTRY_KEYS). Set by WeldAssignmentService. */
+  engineeringEntry?: boolean;
 }
 
 export interface Attachment {
@@ -367,6 +370,9 @@ const WELD_STAGE_FIELDS: StageField[] = [
    Hidden and not filled in from the WTN while SHOW_WELD_OVERRIDES is false (2026-09-24): how an
    override applies is unsettled (likely it replaces the requirement shown), so kept intact but off. */
 export const SHOW_WELD_OVERRIDES = false;
+/* Foreman Override button on welding steps: turned off 2026-10-01 (blank values now come in as an
+   engineering override instead), code kept intact */
+export const FOREMAN_OVERRIDE_ENABLED = false;
 export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
   { key: 'overridePhMax', label: 'Override PH Max', type: 'number' },
@@ -384,6 +390,15 @@ export const READONLY_LIMIT_KEYS = new Set([
   'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
 ]);
 export const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
+/* typed by hand on an engineeringEntry step. Weld Process too, since there's no WTN on file for it to follow */
+export const ENGINEERING_ENTRY_KEYS = new Set([
+  'weldProcedure', 'wtn', 'weldProcess', 'phMin', 'phMax', 'ipMin', 'ipMax', 'fillerMetalType', 'fillerMetalSize',
+]);
+
+/* PH/IP limits and overrides shown as plain text; an engineeringEntry step's PH/IP are typed instead */
+export function isReadonlyLimit(stage: WorkflowStage, key: string): boolean {
+  return READONLY_LIMIT_KEYS.has(key) && !(stage.engineeringEntry && ENGINEERING_ENTRY_KEYS.has(key));
+}
 
 /* each actual and the requirement it follows: NC there sets the actual to NC and locks it */
 export const ACTUAL_REQUIREMENT: Record<string, string> = {
@@ -401,17 +416,17 @@ export function actualOrderError(inputs: Record<string, string>, pair: typeof AC
   return lo > hi ? `${pair.maxLabel} is below ${pair.minLabel}` : '';
 }
 
-/* Weld Process follows the WTN; filler fields follow the Consumable Insert checkbox; an actual
+/* Weld Process follows the WTN (unless typed, engineeringEntry); filler fields follow the Consumable Insert checkbox; an actual
    follows an NC requirement */
 export function isFieldLocked(stage: WorkflowStage, f: { key: string }): boolean {
-  return f.key === 'weldProcess'
+  return (f.key === 'weldProcess' && !stage.engineeringEntry)
     || (FILLER_KEYS.has(f.key) && stage.inputs['consumableInsertOnly'] === 'yes')
     || (f.key in ACTUAL_REQUIREMENT && stage.inputs[ACTUAL_REQUIREMENT[f.key]] === 'NC');
 }
 
 /* true when the user can actually type or choose a value for this field */
 export function isUserEditable(stage: WorkflowStage, f: { key: string; disabled?: boolean }): boolean {
-  return !f.disabled && f.key !== 'qualificationCheck' && !READONLY_LIMIT_KEYS.has(f.key) && !isFieldLocked(stage, f);
+  return !f.disabled && f.key !== 'qualificationCheck' && !isReadonlyLimit(stage, f.key) && !isFieldLocked(stage, f);
 }
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {

@@ -175,8 +175,8 @@ src/app/
                           fields filter to whichever the resolved GWP+WTN Procedure allows
                           (`fillerMetalTypeOptionsForProcedure()`/`fillerMetalSizeOptionsForProcedure()`) —
                           and GWP, WTN and Filler Metal Type/Size are set by a stand-in for an external
-                          system (see "External assignment" below), read-only unless a Foreman Override is
-                          added. Under an override, changing GWP or WTN clears a selection that's no longer
+                          system (see "External assignment" below), read-only unless the joint is an
+                          engineering override one (typed by hand). Under a Foreman Override (turned off), changing GWP or WTN clears a selection that's no longer
                           valid under the new WPS. `fillerMetalClassification` (a single
                           label-cased MIL- string, e.g. `'MIL-80S-50'`) is unrelated — free text for the PDF,
                           not part of the cascade. Storage bumped to `welding:procedures:v4` for the shape
@@ -494,6 +494,8 @@ Added 2026-09-26. Emulates an external system that sets a welding step's **GWP, 
 - **Picks** (`data/weld-assignment.ts`, `assignedInputs()`): one GWP per joint from those qualified for its base metals; WTN per step, preferring one whose quals the Test User holds; filler type/size per step from the WPS's allowed lists. Chosen by a hash of job id + stage id, so they're stable across visits. Also sets what the WPS drives (Weld Process, PH/IP, NC actuals), same as picking by hand. Filler is skipped while "Only Consumable Insert used as filler" owns it.
 - **When**: `JointPageComponent.assignAndSnapshot()` runs `WeldAssignmentService.applyAll()` on every unsigned step with a GWP field before the load snapshot (so it isn't an unsaved edit), overwriting whatever was there. Also re-applied when Fit switches to Weld Build-Up, when the Consumable Insert checkbox is unchecked (no override), and when a step's last Foreman Override is removed. Steps blanked by a route-back fill again on the next visit.
 - **Locked**: `assignedLocked()` (joint page) → signoff panel `isLocked()` shows the four as disabled droplists, like Weld Process (GWP/WTN descriptions still show under them). A Foreman Override on the step enables them with the full lists.
+- **Engineering override** (2026-10-01): `isEngineeringEntryJoint(job)` = the system sends nothing (hash of job id, 1 in 5, plus joints with no GWP qualified for their base metals; 126 of 509 seeded). `applyAll()` sets `WorkflowStage.engineeringEntry` on their unsigned welding steps, the first time blanking `ENGINEERING_ENTRY_KEYS` (GWP, WTN, Weld Process, PH/IP Min/Max, Filler Type/Size; filler kept while Consumable Insert owns it) and NC actuals. On such a step `withStageRuntimeOptions()` makes GWP/WTN/filler plain text inputs, `isFieldLocked()` lets Weld Process be picked, `isReadonlyLimit()` lets PH/IP be typed, `assignedLocked()` is false, and `detectDeviations()` skips off-list checks. History and Correct include those fields (`isUserEditable()`). Seeded steps signed before the flag keep their droplist display.
+- **Foreman Override turned off** (2026-10-01): `FOREMAN_OVERRIDE_ENABLED = false` hides the button; the service and joint-page code are untouched.
 - Not covered: Work History's Correct can still change them after signing.
 
 ## Gotchas

@@ -113,7 +113,8 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - **MIC verified** for each affected item whose MCL is MC-I.
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
-- GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed unless a **Foreman Override** is added to the step. Removing the last override puts them back. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
+- GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
+- **Engineering override:** on some joints (about 1 in 4 in the demo) the external system sends nothing. There, GWP, WTN, Weld Process, PH/IP Min/Max and Filler Metal Type/Size start blank and are typed in by hand (Weld Process is still a droplist). Nothing typed there counts as off the WPS. Who may do this isn't enforced (no roles).
 - Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max. A value outside its requirement limits is a **deviation** (see below), not a hard stop. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max (hard stop).
 - Filler Metal Type, Size and MIC (MIC is typed in). On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.
@@ -160,6 +161,8 @@ When a step has any deviation, Signoff opens an acceptance screen instead of the
 **Seeded:** five demo joints start on Engineering Hold for a deviation (an Actual PH Max over the range, accepted at Tack, Root, Layer or Final Weld), and two for a PT failure on a GMAW weld.
 
 ## Foreman Override
+
+**Turned off 2026-10-01** (button hidden, `FOREMAN_OVERRIDE_ENABLED` in workflow.ts); blank values are handled by the engineering override above instead. How it worked when on:
 
 **Foreman Override** (on welding steps and Fit as a Weld Build-Up, on the right, away from Signoff) records work done outside the procedure, in the person's own words. The pop-up asks them to "Describe the deviation and why it is necessary".
 - While a step has an override, GWP (and so WTN), Filler Metal Type and Filler Metal Size can be picked from the full lists instead of being filled in for you. A GWP, type or size the WPS doesn't allow shows the warning "Foreman override".

@@ -11,6 +11,10 @@ export interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-01',
+    changed: [
+      'Foreman Override is turned off on welding steps.',
+      'Some joints now come with no GWP, WTN, Weld Process, PH/IP or Filler Metal Type/Size (an engineering override). On those, the fields start blank and are typed in by hand. On every other joint they are still filled in and cannot be changed.',
+    ],
     fixed: [
       'Work History > Correct: the message under a locked field no longer ends with a leftover note asking if the value needs to change, and says routing instead of stage.',
       'The UT/RT steps (Root, Layer and Final NDT) are now called RT/UT, and their Type lists RT first.',

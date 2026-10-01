@@ -1,6 +1,7 @@
 /* Stand-in for the external system that sets a welding step's GWP, WTN and Filler Metal Type/Size
-   after doing its own validity checks. The person can't change them unless a Foreman Override is
-   added. Picks are fixed per joint and step, so they come back the same on every visit. */
+   after doing its own validity checks. The person can't change them. Some joints get nothing from
+   it: those need an engineering override, where the values are typed in by hand (see
+   isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
 import { Job } from './jobs';
 import { WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from './workflow';
 import {
@@ -23,6 +24,13 @@ function hash(s: string): number {
 
 function pick<T>(list: T[], key: string): T | undefined {
   return list.length ? list[hash(key) % list.length] : undefined;
+}
+
+/* joints the external system sends no values for, so engineering types them in: about 1 in 5
+   (stand-in pick), plus any joint with no GWP qualified for its base metals */
+export function isEngineeringEntryJoint(job: Job): boolean {
+  return hash(`${job.id}:engineering`) % 5 === 0
+    || !gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? '').length;
 }
 
 /* one GWP per joint (qualified for its base metals); WTN and filler per step, preferring a WTN

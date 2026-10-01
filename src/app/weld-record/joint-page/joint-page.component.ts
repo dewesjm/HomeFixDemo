@@ -410,9 +410,10 @@ export class JointPageComponent implements OnDestroy {
       .some(d => d.kind === 'off-list' && d.label === f.label);
   }
 
-  /* GWP, WTN and Filler Metal Type/Size come from the external system; only a Foreman Override opens them */
+  /* GWP, WTN and Filler Metal Type/Size come from the external system; only a Foreman Override,
+     or the system sending nothing (engineering override), opens them */
   assignedLocked(stage: WorkflowStage, key: string): boolean {
-    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage);
+    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage) && !stage.engineeringEntry;
   }
 
   fieldWarning(stage: WorkflowStage, key: string): string {
@@ -757,6 +758,10 @@ export class JointPageComponent implements OnDestroy {
     if (f.key === 'allowableThicknessExceeded' && this.job) {
       return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(this.job.nInd)} has been exceeded - Volumetric inspection (UT/RT) is required` };
     }
+    /* engineering override: typed by hand, no list (a filler copied from Consumable Insert keeps its droplist below) */
+    if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFieldLocked(stage, f)) {
+      return { ...f, type: 'text', options: undefined, description: '' };
+    }
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {
       /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. in
@@ -906,9 +911,9 @@ export class JointPageComponent implements OnDestroy {
     const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
     if (value !== 'yes') {
       /* unchecked: MIC must be re-entered; Type/Size go back to the external system's values,
-         or blank under a Foreman Override */
+         or blank under a Foreman Override or engineering override */
       if (fillerMic) this.wfService.setStageInput(this.job, stage.id, fillerMic, '');
-      if (!this.offListUnlocked(stage)) { this.weldAssignment.apply(this.job, stage.id); return; }
+      if (!this.offListUnlocked(stage) && !stage.engineeringEntry) { this.weldAssignment.apply(this.job, stage.id); return; }
       for (const f of [fillerType, fillerSize]) {
         if (f) this.wfService.setStageInput(this.job, stage.id, f, '');
       }
