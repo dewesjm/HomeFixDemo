@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
-  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar
+  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
 } from '@lucide/angular';
 
 import { TableState, inArray, FilterPredicate } from '../../shared/table-state';
@@ -46,7 +46,7 @@ const PAGE_SIZES = [10, 25, 50, 100];
     TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
     LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
-    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar
+    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
   ],
   templateUrl: './adaptive-search.component.html'
 })
@@ -74,6 +74,8 @@ export class AdaptiveSearchComponent {
   columnKeys = signal<string[]>([]);
   /* name of the variant chosen in the droplist; Standard = the built-in Pipe Welding look */
   selectedVariant = signal<string>(STANDARD_VARIANT);
+  /* filter bar folded away (chips still show what's active); remembered, not part of a variant */
+  filtersHidden = signal(false);
 
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
     /* this tab's state (refresh, back from a joint), else the default variant on a new visit,
@@ -82,6 +84,7 @@ export class AdaptiveSearchComponent {
     const saved = loadTabSearchState() ?? (def ? null : loadSearchState());
     if (!saved && def) this.pickVariant(def);
     else this.applyLayout(saved ?? standardLayout());
+    this.filtersHidden.set(!!(saved ?? loadSearchState())?.filtersHidden);
     if (saved) {
       this.selectedVariant.set(saved.variant || STANDARD_VARIANT);
       this.table.pageSize.set(PAGE_SIZES.includes(saved.pageSize) ? saved.pageSize : 10);
@@ -92,6 +95,7 @@ export class AdaptiveSearchComponent {
     effect(() => saveSearchState({
       ...this.currentLayout(),
       variant: this.selectedVariant(),
+      filtersHidden: this.filtersHidden(),
       page: this.table.page(),
       pageSize: this.table.pageSize(),
     }));
@@ -374,6 +378,8 @@ export class AdaptiveSearchComponent {
 
   opsFor(f: SearchField) { return OPS_BY_KIND[f.kind].map(op => ({ op, label: opLabel(op, f.kind) })); }
   needsNoValue = needsNoValue;
+  /* the operator box fits the chosen operator, so short ones (is) leave room for the value */
+  opWidth(op: Op, f: SearchField): number { return opLabel(op, f.kind).length + 5; }
 
   /* between on a date field: app-date-range works in Dates, the condition stores yyyy-mm-dd */
   asDate(s: string): Date | null { return s ? new Date(s + 'T00:00:00') : null; }

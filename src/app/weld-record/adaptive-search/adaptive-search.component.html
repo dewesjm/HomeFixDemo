@@ -38,6 +38,15 @@
     </button>
   }
   <span class="spacer"></span>
+  @if (filterFields().length) {
+    <button type="button" class="btn btn-sm btn-outline" (click)="filtersHidden.set(!filtersHidden())">
+      @if (filtersHidden()) {
+        <svg lucideChevronDown class="size-4"></svg> Show filters ({{ filterFields().length }})
+      } @else {
+        <svg lucideChevronUp class="size-4"></svg> Hide filters
+      }
+    </button>
+  }
   <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
     <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
   </button>
@@ -48,15 +57,16 @@
 </div>
 
 <!-- Filter bar: each field stacks its own conditions -->
-@if (filterFields().length) {
+@if (filterFields().length && !filtersHidden()) {
   <div class="facet-row facet-row-compact cond-bar">
     @for (f of filterFields(); track f.key) {
       <div class="field-col cond-col">
         <label class="field-label">{{ f.label }}</label>
-        @for (c of conditionsOf(f); track $index; let i = $index) {
+        @for (c of conditionsOf(f); track $index; let i = $index, last = $last) {
           <div class="cond-row">
             @if (i > 0) { <span class="cond-join">{{ joinWord(c) }}</span> }
             <select class="select select-sm select-bordered cond-op" [attr.aria-label]="f.label + ' operator'"
+                    [style.width.ch]="opWidth(c.op, f)"
                     [ngModel]="c.op" (ngModelChange)="setOp(f, i, $event)">
               @for (o of opsFor(f); track o.op) {
                 <option [ngValue]="o.op">{{ o.label }}</option>
@@ -69,12 +79,12 @@
                 <app-multiselect-dropdown [options]="optionsFor(f.key)" placeholder="Pick values"
                   [selected]="c.values" (selectedChange)="updateCondition(f, i, { values: $event })" />
               } @else if (f.kind === 'number') {
-                <div class="row-tight">
-                  <input type="number" class="input input-sm input-bordered w-24"
+                <div class="flex gap-1">
+                  <input type="number" class="input input-sm input-bordered flex-1 min-w-0"
                          [placeholder]="c.op === 'between' ? 'From' : 'Value'"
                          [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: numStr($event) })" />
                   @if (c.op === 'between') {
-                    <input type="number" class="input input-sm input-bordered w-24" placeholder="To"
+                    <input type="number" class="input input-sm input-bordered flex-1 min-w-0" placeholder="To"
                            [ngModel]="c.to" (ngModelChange)="updateCondition(f, i, { to: numStr($event) })" />
                   }
                 </div>
@@ -91,17 +101,20 @@
                        [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event })" />
               }
             </div>
-            @if (conditionsOf(f).length > 1) {
+            <!-- the last line ends in +, earlier ones in x -->
+            @if (last) {
+              <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Add condition"
+                      aria-label="Add condition" (click)="addCondition(f)">
+                <svg lucidePlus class="size-4"></svg>
+              </button>
+            } @else {
               <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this condition"
-                      (click)="removeCondition(f, i)">
+                      aria-label="Remove this condition" (click)="removeCondition(f, i)">
                 <svg lucideX class="size-3.5"></svg>
               </button>
             }
           </div>
         }
-        <button type="button" class="btn btn-ghost btn-xs self-start" (click)="addCondition(f)">
-          <svg lucidePlus class="size-3.5"></svg> Add condition
-        </button>
       </div>
     }
   </div>

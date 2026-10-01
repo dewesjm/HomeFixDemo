@@ -144,17 +144,29 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
   return out;
 }
 
+/* a trade's step templates, minus the old generic Prep/Handover that Welding joints never get
+   (workflow.ts leaves them out when it builds a Welding joint's routing) */
+function stepsOf(trade: string): StepTemplateShape[] {
+  const list = stepTemplates()[trade] ?? [];
+  return trade === 'Welding' ? list.filter(t => t.id !== 'prep' && t.id !== 'handover') : list;
+}
+
 /* the answers of a trade's steps before `stageId`, in routing order (what a rule on that step can use) */
 export function stepAnswerFieldsBefore(trade: string, stageId: string): StepConditionField[] {
-  const list = stepTemplates()[trade] ?? [];
+  const list = stepsOf(trade);
   const at = list.findIndex(t => t.id === stageId);
   return (at < 0 ? list : list.slice(0, at)).flatMap(answersOf);
 }
 
-/* every step's answers for a trade, in routing order, Fit's and Fit-Up Insp's fixed ones first (Advanced Search) */
+/* every step's answers for a trade, in routing order, with Fit's and Fit-Up Insp's fixed ones under
+   their own step (Advanced Search) */
 export function allStepAnswerFields(trade: string): StepConditionField[] {
-  return [...STEP_CONDITION_FIELDS.filter(f => f.stepAnswer), ...(stepTemplates()[trade] ?? []).flatMap(answersOf)];
+  const fixed = STEP_CONDITION_FIELDS.filter(f => f.stepAnswer);
+  const fixedOf = (stageId: string) => fixed.filter(f => FIXED_STEP_ANSWERS.has(`${stageId}.${FIXED_KEY[f.key]}`));
+  return stepsOf(trade).flatMap(t => [...fixedOf(t.id), ...answersOf(t)]);
 }
+/* fixed step-answer field -> the step field it reads */
+const FIXED_KEY: Record<string, string> = { fitDeferTack: 'deferTack', inspReleaseToWelding: 'releaseToWelding' };
 
 /* every trade's step answers, for looking a saved clause's field up by key */
 let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, StepConditionField> } | null = null;

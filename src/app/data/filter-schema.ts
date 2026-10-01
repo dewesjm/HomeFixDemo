@@ -330,7 +330,7 @@ export function saveVariants(variants: FilterVariant[]): void {
 /* the page as it was left. Kept twice: per tab (sessionStorage: a refresh or coming back from a
    joint keeps it) and per browser (localStorage: a new visit picks up there unless a default
    variant is set, which a new visit opens on instead) */
-export interface SavedSearchState extends SearchLayout { variant: string; page: number; pageSize: number }
+export interface SavedSearchState extends SearchLayout { variant: string; filtersHidden?: boolean; page: number; pageSize: number }
 
 function readState(store: Storage): SavedSearchState | null {
   try {
