@@ -56,9 +56,9 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 | MT | VT, then MT/PT locked to MT |
 | PT | VT, then MT/PT locked to PT |
 | MT/PT | VT, then MT/PT with the inspector choosing MT or PT |
-| UT | VT, then UT/RT locked to UT |
+| UT | VT, then RT/UT locked to UT |
 
-- **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a UT/RT step locked to RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
+- **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a RT/UT step locked to RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
 - **Locked:** a locked step's Type dropdown is pre-filled and can't be changed. A note under it says why, for example "Set by NDT Each (MT)".
 - **Valid values:** NDT Root, NDT Each and NDT Final take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid. RT Root and RT Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
@@ -76,7 +76,7 @@ When the Repair step is signed, where the joint goes depends on what was chosen:
 
 | Choice on the Repair step | Where the joint goes |
 |---|---|
-| **Allowable thickness exceeded** (checked) | Back to that phase's UT/RT step. This wins over the Repair Code. The checkbox only shows when that phase has a UT/RT step |
+| **Allowable thickness exceeded** (checked) | Back to that phase's RT/UT step. This wins over the Repair Code. The checkbox only shows when that phase has a RT/UT step |
 | **Grind Only** | Back to the NDT step that failed |
 | **Weld Repair** | An **Excavation NDT** step is added right after the Repair (see below) |
 | **Cut** | The joint starts over from Fit (see below) |

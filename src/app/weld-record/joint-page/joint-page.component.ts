@@ -299,9 +299,9 @@ export class JointPageComponent implements OnDestroy {
     }
     return errors;
   });
-  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- UT/RT, VT/5X, Repair and
+  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- RT/UT, VT/5X, Repair and
      Excavation NDT do (Excavation NDT inferred, not explicitly asked -- it's "just" another NDT
-     stage, so it's treated like UT/RT/VT/5X rather than MT/PT's carve-out) */
+     stage, so it's treated like RT/UT/VT/5X rather than MT/PT's carve-out) */
   isNdtStage = computed(() => {
     if (!this.wf) return false;
     const stage = this.wf().stages[this.selectedRouting()];
@@ -619,7 +619,7 @@ export class JointPageComponent implements OnDestroy {
     const result = rawFields
       .map(f => this.withStageRuntimeOptions(f, stage))
       .filter(f => {
-        /* "exceeded" sends the joint to that phase's UT/RT, so it only shows when the joint has one */
+        /* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
         if (f.key === 'allowableThicknessExceeded'
             && !this.wf?.().stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
         if (f.showIf) {
@@ -670,7 +670,7 @@ export class JointPageComponent implements OnDestroy {
 
   /* Demo aid: shows where Repair (or the Excavation NDT it can insert) will actually route to on
      signoff, given current inputs -- mirrors SignoffService.signStage()'s routing exactly:
-       Repair: Allowable thickness exceeded takes priority -> that phase's NDT UT/RT; else Grind
+       Repair: Allowable thickness exceeded takes priority -> that phase's NDT RT/UT; else Grind
          Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; else Cut ->
          starts over from Fit, Refit # up by one; no code chosen -> nothing shown.
        Excavation NDT (SAT only -- UNSAT already routes back to Repair via rejectToStage): "the

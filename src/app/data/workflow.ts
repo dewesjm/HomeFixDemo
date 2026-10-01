@@ -496,8 +496,8 @@ export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
 
 const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options: StageOption[] }> = {
   utrt: {
-    label: 'UT/RT',
-    options: [{ label: 'UT', value: 'ut' }, { label: 'RT', value: 'rt' }],
+    label: 'RT/UT',
+    options: [{ label: 'RT', value: 'rt' }, { label: 'UT', value: 'ut' }],
     fields: [
       /* must equal the job's required degree (rtRoot/rtFinal) before this stage can be signed off
          -- see JointPageComponent.signBlockers() -- so it's a droplist (blank or the value), not a
@@ -543,10 +543,10 @@ const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options:
 };
 
 /* Each phase's NDT steps come from its Joint Details values (NDT Root + RT Root, NDT Each for
-   Layer, NDT Final + RT Final), in VT/5X, MT/PT, UT/RT order:
+   Layer, NDT Final + RT Final), in VT/5X, MT/PT, RT/UT order:
      - VT always, or 5X instead when the NDT value is 5X
      - MT, PT or UT adds that step with its Type locked to it; MT/PT adds the MT/PT step with a choice
-     - an RT degree (anything but blank or NA) adds the UT/RT step locked to RT
+     - an RT degree (anything but blank or NA) adds the RT/UT step locked to RT
    UT and an RT degree never come together in real data; if they did, that step would offer both. */
 export interface NdtStep { kind: NdtKind; methods: string[] }
 
@@ -778,7 +778,7 @@ const TRADE_STAGES: Record<Job['trade'], StageTemplate[]> = {
 };
 
 /* Repair stage template — inserted dynamically when NDT is UNSAT. Its own routing on signoff
-   (SignoffService.signStage()): Allowable thickness exceeded -> back to that phase's NDT UT/RT;
+   (SignoffService.signStage()): Allowable thickness exceeded -> back to that phase's NDT RT/UT;
    else Grind Only -> that phase's NDT VT/5X; Weld Repair -> inserts Excavation NDT next (see
    excavationNdtStage() below); Cut -> back to Fit. Single-option Type
    droplist (routingOptions),
@@ -872,7 +872,7 @@ export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
 /* Excavation NDT -- inserted after Repair when Repair Code = Weld Repair. The excavation is the
    removal of the rejected material; this stage is effectively signing off that it was cleaned out
    correctly, so it "requires the same inspection that was noted as reject" -- same fields and the
-   same single-option Type as whatever method (UT/RT/MT/PT/VT/5X) originally rejected the joint,
+   same single-option Type as whatever method (RT/UT/MT/PT/VT/5X) originally rejected the joint,
    not a fresh generic NDT check. `inspectionType` is the resolved single value the caller
    (SignoffService) passes in -- normally the origin's own inspectionType, except PT on
    non-ferrous/austenitic material requires 5X instead (the caller decides that, since it needs the

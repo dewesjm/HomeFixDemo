@@ -354,11 +354,11 @@ describe('SignoffService', () => {
       expect(ndtStages(job, 'final')[1].inspectionType).toBe('');
     });
 
-    it('UT adds the UT/RT step locked to UT', () => {
+    it('UT adds the RT/UT step locked to UT', () => {
       expect(summary(weldingJob({ ndtRoot: 'UT' }), 'root')).toEqual(['root-ndt-vt5x:vt', 'root-ndt-utrt:ut']);
     });
 
-    it('an RT degree adds the UT/RT step locked to RT; NA does not', () => {
+    it('an RT degree adds the RT/UT step locked to RT; NA does not', () => {
       expect(summary(weldingJob({ ndtRoot: 'MT', rtRoot: '100' }), 'root'))
         .toEqual(['root-ndt-vt5x:vt', 'root-ndt-mtpt:mt', 'root-ndt-utrt:rt']);
       expect(summary(weldingJob({ ndtFinal: 'VT', rtFinal: 'NA' }), 'final')).toEqual(['final-ndt-vt5x:vt']);

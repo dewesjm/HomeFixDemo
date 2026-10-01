@@ -200,7 +200,7 @@ export class SignoffService {
     }
 
     /* Repair's own routing on signoff (2026-09-23): Allowable thickness exceeded takes priority
-       and sends the joint back to that phase's NDT UT/RT stage; otherwise Grind Only sends it to
+       and sends the joint back to that phase's NDT RT/UT stage; otherwise Grind Only sends it to
        that phase's NDT VT/5X stage ("the applicable VT signoff for which the inspection was
        rejected" -- always VT/5X, regardless of which method actually failed); Weld Repair inserts
        Excavation NDT right after Repair, built to require the same inspection method that
