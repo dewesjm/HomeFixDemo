@@ -11,6 +11,9 @@ export interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-01',
+    added: [
+      'Admin > Inspection Procedures: a table of inspection Types (RT, UT, MT, PT, VT, 5X) and the procedures for each. On an NDT step, Procedure Used for Inspection now lists only the procedures for the Type picked.',
+    ],
     changed: [
       'Foreman Override is turned off on welding steps.',
       'Some joints now come with no GWP, WTN, Weld Process, PH/IP or Filler Metal Type/Size (an engineering override). On those, the fields start blank and are typed in by hand. On every other joint they are still filled in and cannot be changed.',

@@ -9,6 +9,7 @@ import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-r
 import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
 import { AdminSetRoutingComponent } from './weld-record/admin/admin-set-routing/admin-set-routing.component';
 import { AdminNdtComponent } from './weld-record/admin/admin-ndt/admin-ndt.component';
+import { AdminInspectionProceduresComponent } from './weld-record/admin/admin-inspection-procedures/admin-inspection-procedures.component';
 import { AdminLocationsComponent } from './weld-record/admin/admin-locations/admin-locations.component';
 import { AdminRoutingOptionsComponent } from './weld-record/admin/admin-routing-options/admin-routing-options.component';
 import { AdminWeldPositionsComponent } from './weld-record/admin/admin-weld-positions/admin-weld-positions.component';
@@ -47,6 +48,7 @@ export const routes: Routes = [
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Set Routing' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'EWR - Penetrant' },
+  { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
   { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'EWR - Routing Options' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },

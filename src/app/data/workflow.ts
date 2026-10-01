@@ -1,6 +1,7 @@
 /* workflow model + stage helpers, no UI */
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { STORAGE } from './storage-keys';
+import { inspectionProcedureOptions } from './inspection-procedures';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
@@ -493,9 +494,9 @@ type NdtPhase = 'root' | 'layer' | 'final';
 type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
 
 const NDT_COMMON_FIELDS: StageField[] = [
+  /* options narrow to the step's Type from Admin > Inspection Procedures at render time (joint-page withStageRuntimeOptions) */
   { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select', required: true,
-    options: [{ label: 'SNT-TC-1A', value: 'snt-tc-1a' }, { label: 'ASTM E165', value: 'astm-e165' },
-      { label: 'AWS D1.1', value: 'aws-d1-1' }, { label: 'ASME Sec V', value: 'asme-sec-v' }] },
+    options: inspectionProcedureOptions() },
   { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
   { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', required: true, showIf: { key: 'hasProbationary', equals: 'yes' } },
   { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', required: true, showIf: { key: 'hasProbationary', equals: 'yes' } },
@@ -1410,6 +1411,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
     const opts = s.routingOptions ?? [];
     const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
+    /* a procedure designated for the step's Type (picked without rand, so other seeds don't shift) */
+    if ('procedureUsed' in inputs) {
+      const procs = inspectionProcedureOptions(inspectionType);
+      inputs['procedureUsed'] = procs.length ? procs[job.id.charCodeAt(3) % procs.length].value : '';
+    }
     const result: StageResult = i === ptHoldAt || i === repairAt ? 'unsat' : 'sat';
     return sign(s, inputs, signoffInputs, inspectionType, result, who);
   });

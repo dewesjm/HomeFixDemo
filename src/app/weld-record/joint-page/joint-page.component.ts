@@ -35,6 +35,7 @@ import {
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
+import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
@@ -751,6 +752,12 @@ export class JointPageComponent implements OnDestroy {
   }
 
   private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
+    if (f.key === 'procedureUsed') {
+      /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
+      const cur = stage.inputs['procedureUsed'] ?? '';
+      const options = inspectionProcedureOptions(stage.inspectionType);
+      return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
+    }
     if (f.key === 'degreeRt') {
       const required = this.rtDegreeRequired(stage);
       return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
@@ -1322,6 +1329,12 @@ export class JointPageComponent implements OnDestroy {
       ...wf,
       stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
     }));
+    /* a procedure not designated for the new Type is cleared */
+    const proc = stage.inputs['procedureUsed'] ?? '';
+    const f = stage.fields.find(ff => ff.key === 'procedureUsed');
+    if (f && proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) {
+      this.wfService.setStageInput(this.job, stage.id, f, '');
+    }
   }
 
   /* where "Back"/post-signoff navigation returns to, based on how this screen was opened */
