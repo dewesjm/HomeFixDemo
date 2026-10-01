@@ -4,7 +4,7 @@ import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
-import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, conditionsMatch, usesStepAnswers, registerStepTemplates, describeConditions, stageConditionFields } from './step-conditions';
+import { ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, conditionsMatch, usesStepAnswers, registerStepTemplates, describeClauses, stageConditionFields } from './step-conditions';
 
 /* ── Role-based queue routing ── */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;
@@ -862,9 +862,10 @@ export function nextEngineeringHoldId(stages: { id: string }[]): string {
   return n === 1 ? 'engineering-hold' : `engineering-hold-${n}`;
 }
 
-/* why a reject rule sent `stage`'s UNSAT to Engineering Hold (also the hold's holdReason) */
+/* why a reject rule sent `stage`'s UNSAT to Engineering Hold (the hold's holdReason), e.g.
+   "Final NDT MT/PT was UNSAT (Type is PT, and Final Weld: Weld Process is GMAW)" */
 export function rejectHoldReason(stage: WorkflowStage, rule: RejectRule): string {
-  return `${stage.label} UNSAT, reject rule: ${describeConditions([rule.when], stageConditionFields(stage))}`;
+  return `${stage.label} was UNSAT (${describeClauses(rule.when, stageConditionFields(stage)).join(', and ')})`;
 }
 
 /* a new Engineering Hold right after `afterId`, and the current routing starts there. `reason` is

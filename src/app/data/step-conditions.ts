@@ -290,6 +290,11 @@ function describeClause(c: ConditionClause, extra: StepConditionField[]): string
   return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${vals}`;
 }
 
+/* each clause in plain words, e.g. "Type is PT" (the rejected step's own fields lose their "This step: ") */
+export function describeClauses(rule: ConditionRule, extra: StepConditionField[] = []): string[] {
+  return rule.map(c => describeClause(c, extra).replace(/^This step: /, ''));
+}
+
 /* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes";
    `extra` is the step's own fields (stageConditionFields) for reject rules */
 export function describeConditions(rules: ConditionRule[] | undefined, extra: StepConditionField[] = []): string {

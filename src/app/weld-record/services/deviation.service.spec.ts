@@ -168,7 +168,7 @@ describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () =
     expect(activeStageId(stages)).toBe('engineering-hold');
     expect(stages.some(s => s.id === 'repair')).toBeFalse();
     expect(stages.find(s => s.id === 'engineering-hold')!.inputs['holdReason'])
-      .toBe('Root NDT MT/PT UNSAT, reject rule: This step: Type is PT and Root: Weld Process is GMAW');
+      .toBe('Root NDT MT/PT was UNSAT (Type is PT, and Root: Weld Process is GMAW)');
   });
 
   it('any other weld process still adds a Repair', () => {
