@@ -15,7 +15,6 @@ import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { HistoryEntry, WorkflowStage, getTemplates } from '../../data/workflow';
-import { MOCK_ACTIVITY } from '../../data/mock-history';
 import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
@@ -157,10 +156,9 @@ export class WorkHistoryComponent {
     return parts.length ? parts.join(' · ') : '(all people)';
   });
 
-  /* all history flattened newest-first, padded with mock activity */
+  /* every joint's history flattened newest-first */
   private allActivity = computed<ActivityRow[]>(() => {
     const rows: ActivityRow[] = [];
-    const realJobIds = new Set<string>();
     /* per-field edits are not shown: History records what was input at each sign-off */
     const add = (e: HistoryEntry, jobId: string) => {
       if (e.section === 'Stages' || e.section === 'Fabrication') return;
@@ -176,13 +174,8 @@ export class WorkHistoryComponent {
         inputsText: [...(e.inputs ?? []), ...(e.fabInputs ?? [])].map(i => `${i.label} ${i.value}`).join(' '),
       });
     };
-    for (const wf of this.store.allWorkflows()) {
-      if (wf.history.length) realJobIds.add(wf.jobId);
+    for (const wf of this.store.everyWorkflow()) {
       for (const e of wf.history) add(e, wf.jobId);
-    }
-    for (const m of MOCK_ACTIVITY) {
-      if (realJobIds.has(m.jobId)) continue;   // don't double up with real activity
-      add(m.entry, m.jobId);
     }
     return rows.sort((a, b) => b.when.localeCompare(a.when));
   });
@@ -200,12 +193,12 @@ export class WorkHistoryComponent {
   /* Deprogress is only offered on a job's last sign-off that is still in effect. A job with undo entries
      (signed in this app) offers it on the sign-off its newest undo entry belongs to. Otherwise (seeded demo
      signoffs) it's computed from the job's whole history (not the filtered or sorted rows): a deprogress
-     cancels the sign-off before it, and where the job's live workflow is loaded the entry must also be its
-     last signed stage, since that is what deprogress reverses then. */
+     cancels the sign-off before it, and the entry must also be the workflow's last signed stage, since
+     that is what deprogress reverses. */
   private deprogressable = computed<ReadonlySet<string>>(() => {
     const lastSigned = new Map<string, WorkflowStage | undefined>();
     const undoTop = new Map<string, string>();
-    for (const wf of this.store.allWorkflows()) {
+    for (const wf of this.store.everyWorkflow()) {
       lastSigned.set(wf.jobId, wf.stages.filter(s => s.signed).pop());
       const top = wf.undo?.at(-1);
       if (top) undoTop.set(wf.jobId, top.historyWhen);
@@ -227,10 +220,6 @@ export class WorkHistoryComponent {
       }
       const last = inEffect[inEffect.length - 1];
       if (!last) continue;
-      /* only distrust the activity log where the live workflow actually has a signed stage to
-         compare against — a job whose live workflow exists but has nothing signed yet (e.g. just
-         from being listed in a table) isn't the source of this row's mock history, so there's
-         nothing real to contradict it */
       /* by stage id where the row has one: the action text can name the routing option instead of
          the stage (Weld Build-Up, Interim/Final Layer). Older saved entries use an em-dash separator. */
       const expected = lastSigned.get(jobId);
@@ -258,12 +247,13 @@ export class WorkHistoryComponent {
       }
     }
     const keys = new Set<string>();
+    const wfById = new Map(this.store.everyWorkflow().map(w => [w.jobId, w]));
     for (const [k, rows] of byStage) {
       const stageId = k.slice(k.indexOf('|') + 1);
       const jobId = k.slice(0, k.indexOf('|'));
       const latest = [...rows].sort((a, b) => a.when.localeCompare(b.when)).pop();
       if (!latest || /deprogressed/i.test(latest.action)) continue;
-      const stage = this.store.allWorkflows().find(w => w.jobId === jobId)?.stages.find(s => s.id === stageId);
+      const stage = wfById.get(jobId)?.stages.find(s => s.id === stageId);
       if (!stage?.signed) continue;
       keys.add(latest.key);
     }

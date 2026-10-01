@@ -63,6 +63,12 @@ export class WorkflowStore {
     return [...merged.values()];
   }
 
+  /* every joint's workflow, seeded ones included, not just the ones opened or saved so far */
+  everyWorkflow(): JobWorkflow[] {
+    for (const job of JOBS) this.workflowFor(job);
+    return this.allWorkflows();
+  }
+
   /* apply a mutation to a job's workflow signal and schedule a save */
   update(job: Job, mutator: (wf: JobWorkflow) => JobWorkflow) {
     this.workflowFor(job).update(mutator);

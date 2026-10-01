@@ -433,7 +433,7 @@ export function labelFor(stage: WorkflowStage, key: string): string {
     ?? key;
 }
 
-/* Fields whose showIf is met; a simple stand-in for the job page's visibleFields, used only for seeded and mock data. */
+/* Fields whose showIf is met; a simple stand-in for the job page's visibleFields, used only for seeded data. */
 export function fieldsShown(stage: WorkflowStage): StageField[] {
   return stage.fields.filter(f => {
     if (!f.showIf) return true;
@@ -1240,7 +1240,7 @@ export function newWorkflow(job: Job): JobWorkflow {
   };
 }
 
-/* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts / mock-history.ts) */
+/* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts) */
 function seeded(n: number) {
   let s = n * 9301 + 49297;
   return () => {
@@ -1250,13 +1250,14 @@ function seeded(n: number) {
 }
 
 /* how many leading stages are already signed off — varies the "current routing" per job.
-   Deterministic per job: ensures coverage of every stage including all NDT types. */
+   Deterministic per job: ensures coverage of every stage including all NDT types. Never 0: every
+   seeded joint has some history, like real joints would; ones that landed on 0 are spread out instead. */
 function signedStageCount(job: Job, total: number): number {
-  if (total <= 0) return 0;
+  if (total <= 1) return total;
   // Cycle through all stages so every position gets represented
   const id = String(job.id);
   const idx = Math.abs(id.charCodeAt(0) * 7 + id.charCodeAt(1) * 3) % total;
-  return idx;
+  return idx || 1 + Math.abs(id.charCodeAt(2) * 11 + id.charCodeAt(3) * 5) % (total - 1);
 }
 
 /* MIC (material identification code): hyphen-delimited heat/lot style, e.g. 250C-1500-290-5 */
