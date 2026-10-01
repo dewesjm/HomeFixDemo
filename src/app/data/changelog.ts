@@ -10,6 +10,12 @@ export interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-01',
+    fixed: [
+      'Work History > Correct: the message under a locked field no longer ends with a leftover note asking if the value needs to change.',
+    ],
+  },
+  {
     date: '2026-09-30',
     fixed: [
       'Pressing Esc on a pop-up (Foreman Override, sign-off, leaving with unsaved changes) now counts as Cancel. Before, the pop-up closed but was left half-open behind the scenes.',

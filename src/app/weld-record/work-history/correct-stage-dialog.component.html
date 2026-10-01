@@ -16,7 +16,7 @@
                   {{ value(f.key) || '(blank)' }}
                 </div>
                 <div class="meta text-error mt-1">
-                  Locked - this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                  Locked - this value drove routing when the stage was signed.
                 </div>
               } @else if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
@@ -60,7 +60,7 @@
                   {{ value(f.key, true) || '(blank)' }}
                 </div>
                 <div class="meta text-error mt-1">
-                  Locked - this value drove routing when the stage was signed; correcting it here wouldn't redo that routing. Ask if this needs to change.
+                  Locked - this value drove routing when the stage was signed.
                 </div>
               } @else if (f.type === 'checkbox') {
                 <label class="flex items-center gap-2 cursor-pointer">
