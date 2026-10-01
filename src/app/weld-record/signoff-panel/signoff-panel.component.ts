@@ -48,6 +48,8 @@ export interface SignoffContext {
   fieldWarning: (stage: WorkflowStage, fieldKey: string) => string;
   reportedDeviations: (stage: WorkflowStage) => string[];
   foremanOverride: (stage: WorkflowStage) => void;
+  engineeringOverrideAvailable: (stage: WorkflowStage) => boolean;
+  engineeringOverride: (stage: WorkflowStage) => void;
   removeForemanOverride: (stage: WorkflowStage, index: number) => void;
   assignedLocked: (stage: WorkflowStage, fieldKey: string) => boolean;
 

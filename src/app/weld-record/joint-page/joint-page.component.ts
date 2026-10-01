@@ -24,6 +24,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
+import { EngineeringOverrideService } from '../services/engineering-override.service';
 import { ASSIGNED_KEYS } from '../../data/weld-assignment';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
@@ -31,7 +32,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -79,6 +80,7 @@ export class JointPageComponent implements OnDestroy {
   private deviationService = inject(DeviationService);
   private overrideService = inject(ForemanOverrideService);
   private weldAssignment = inject(WeldAssignmentService);
+  private engineeringOverride = inject(EngineeringOverrideService);
   private confirm = inject(ConfirmService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
@@ -121,7 +123,8 @@ export class JointPageComponent implements OnDestroy {
       if (s.signed) continue;
       const snap = this.loadSnapshot.stages[s.id];
       if (!snap) continue;
-      if (!this.recordEquals(s.inputs, snap.inputs)) return true;
+      /* engineering override values are kept on leaving, so they aren't unsaved */
+      if (!this.recordEquals(s.inputs, { ...snap.inputs, ...this.engineeringEdits(s) })) return true;
       if (!this.recordEquals(s.signoffInputs, snap.signoffInputs)) return true;
       if (s.routingType !== snap.routingType) return true;
     }
@@ -133,7 +136,11 @@ export class JointPageComponent implements OnDestroy {
   ngOnDestroy() {
     if (!this.job || !this.wf || !this.loadSnapshot) return;
     const snapshot = this.loadSnapshot;
+    const pending = this.wf().stages.filter(s => !s.signed && this.engineeringReason()[s.id])
+      .map(s => ({ stage: s, values: this.engineeringEdits(s) }));
     this.wf.update(wf => discardUnsignedEdits(wf, snapshot));
+    /* engineering doesn't sign: its override is kept, not discarded */
+    for (const p of pending) this.recordEngineering(p.stage, p.values);
   }
 
 
@@ -238,6 +245,8 @@ export class JointPageComponent implements OnDestroy {
       fieldWarning: (s, k) => self.fieldWarning(s, k),
       reportedDeviations: (s) => self.reported()[s.id] ?? [],
       foremanOverride: (s) => self.foremanOverride(s),
+      engineeringOverrideAvailable: (s) => self.engineeringOverrideAvailable(s),
+      engineeringOverride: (s) => self.engineeringOverrideClick(s),
       removeForemanOverride: (s, i) => self.removeForemanOverride(s, i),
       assignedLocked: (s, k) => self.assignedLocked(s, k),
       stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
@@ -424,7 +433,89 @@ export class JointPageComponent implements OnDestroy {
   /* GWP, WTN and Filler Metal Type/Size come from the external system; only a Foreman Override,
      or the system sending nothing (engineering override), opens them */
   assignedLocked(stage: WorkflowStage, key: string): boolean {
-    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage) && !stage.engineeringEntry;
+    if (stage.engineeringEntry) return this.engineeringLocked(stage, key);
+    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage);
+  }
+
+  // ---- engineering override ----
+  /* reason given on each unsigned engineeringEntry step this visit, keyed by stage id: asked on the
+     first value set (or by the Engineering Override button) and recorded against every value set */
+  engineeringReason = signal<Record<string, string>>({});
+
+  /* a value saved on an earlier visit is locked until a reason is given again */
+  private engineeringLocked(stage: WorkflowStage, key: string): boolean {
+    return ENGINEERING_ENTRY_KEYS.has(key) && !this.engineeringReason()[stage.id]
+      && !!this.loadSnapshot?.stages[stage.id]?.inputs[key];
+  }
+
+  /* the Engineering Override button: only while something saved is locked */
+  engineeringOverrideAvailable(stage: WorkflowStage): boolean {
+    return !!stage.engineeringEntry && !this.engineeringReason()[stage.id]
+      && stage.fields.some(f => this.engineeringLocked(stage, f.key));
+  }
+
+  private askEngineeringReason(stage: WorkflowStage, accepted: () => void, rejected?: () => void) {
+    this.confirm.confirm({
+      header: `Engineering Override - ${stage.label}`,
+      message: 'Give the reason for this engineering override. It is recorded against every value set on this step.',
+      textInput: { label: 'Reason' },
+      acceptLabel: 'Continue',
+      accept: (text) => {
+        const t = (text ?? '').trim();
+        if (!t) { rejected?.(); return; }
+        this.engineeringReason.update(r => ({ ...r, [stage.id]: t }));
+        accepted();
+      },
+      reject: rejected,
+    });
+  }
+
+  engineeringOverrideClick(stage: WorkflowStage) {
+    this.askEngineeringReason(stage, () => {});
+  }
+
+  /* an engineering value changed with no reason yet: the value goes in, then the reason is asked;
+     cancelling puts the old values back */
+  private engineeringEdit(stage: WorkflowStage, field: StageField, value: string, apply: () => void) {
+    const needsReason = !!stage.engineeringEntry && ENGINEERING_ENTRY_KEYS.has(field.key)
+      && !this.engineeringReason()[stage.id] && value !== (stage.inputs[field.key] ?? '');
+    if (!needsReason) { apply(); return; }
+    const before = { ...stage.inputs };
+    apply();
+    this.askEngineeringReason(stage, () => {}, () => {
+      const cur = this.wf?.().stages.find(s => s.id === stage.id);
+      if (!this.job || !cur) return;
+      const changes = cur.fields.filter(f => (cur.inputs[f.key] ?? '') !== (before[f.key] ?? ''))
+        .map(f => ({ field: f, value: before[f.key] ?? '' }));
+      this.wfService.setStageInputs(this.job, stage.id, changes);
+    });
+  }
+
+  /* the engineering values set this visit (plus an Actual made or unmade NC by a typed requirement) */
+  private engineeringEdits(stage: WorkflowStage): Record<string, string> {
+    const snap = this.loadSnapshot?.stages[stage.id];
+    if (!stage.engineeringEntry || !snap || !this.engineeringReason()[stage.id]) return {};
+    const out: Record<string, string> = {};
+    for (const f of stage.fields) {
+      const v = stage.inputs[f.key] ?? '', was = snap.inputs[f.key] ?? '';
+      if (v === was) continue;
+      if (ENGINEERING_ENTRY_KEYS.has(f.key)) out[f.key] = v;
+      else if (f.key in ACTUAL_REQUIREMENT && (v === 'NC' || was === 'NC')) out[f.key] = v;
+    }
+    return out;
+  }
+
+  /* writes the override to History (and keeps the values when leaving without signing) */
+  private recordEngineering(stage: WorkflowStage, values: Record<string, string>) {
+    const reason = this.engineeringReason()[stage.id];
+    if (!this.job || !reason) return;
+    const vis = this.visibleFields(stage);
+    const shown = stage.fields.filter(f => ENGINEERING_ENTRY_KEYS.has(f.key) && f.key in values).map(f => {
+      const live = vis.find(v => v.key === f.key) ?? f;
+      return { label: f.label, value: displayValue(live, values[f.key]) || '(left blank)' };
+    });
+    this.engineeringOverride.record(this.job, stage.id, reason, values, shown);
+    this.engineeringReason.update(r => ({ ...r, [stage.id]: '' }));
   }
 
   fieldWarning(stage: WorkflowStage, key: string): string {
@@ -473,6 +564,7 @@ export class JointPageComponent implements OnDestroy {
   /* writes the stage's Foreman Overrides to History; call right before signing */
   private recordOverrides(stage: WorkflowStage) {
     if (!this.job) return;
+    this.recordEngineering(stage, this.engineeringEdits(stage));
     this.overrideService.record(this.job, stage.id, this.reported()[stage.id] ?? [], this.stageOverrideOffList(stage));
     this.reported.update(r => ({ ...r, [stage.id]: [] }));
   }
@@ -975,8 +1067,11 @@ export class JointPageComponent implements OnDestroy {
       return;
     }
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
-      this.wfService.setStageInput(this.job, stage.id, field, value);
-      this.clearHidden(stage);
+      const job = this.job;
+      this.engineeringEdit(stage, field, value, () => {
+        this.wfService.setStageInput(job, stage.id, field, value);
+        this.clearHidden(stage);
+      });
     }
     this.onFieldBlur(stage, field);
     /* clear required error if now filled */
@@ -1004,7 +1099,8 @@ export class JointPageComponent implements OnDestroy {
         if (value === 'NC') changes.push({ field: af, value: 'NC' });
         else if (stage.inputs[a] === 'NC') changes.push({ field: af, value: '' });
       }
-      this.wfService.setStageInputs(this.job, stage.id, changes);
+      const job = this.job;
+      this.engineeringEdit(stage, field, value, () => this.wfService.setStageInputs(job, stage.id, changes));
     }
     this.onFieldBlur(stage, field);
   }
@@ -1075,7 +1171,8 @@ export class JointPageComponent implements OnDestroy {
           }
         }
       }
-      this.wfService.setStageInputs(this.job, stage.id, changes);
+      const job = this.job;
+      this.engineeringEdit(stage, field, v, () => this.wfService.setStageInputs(job, stage.id, changes));
       this.clearHidden(stage);
       if (field.key === 'wtn' && matchedProc) {
         /* clear weld process error */
