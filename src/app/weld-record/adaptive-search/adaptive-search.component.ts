@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
-  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory
+  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar
 } from '@lucide/angular';
 
 import { TableState, inArray, FilterPredicate } from '../../shared/table-state';
@@ -27,7 +27,8 @@ import {
   SearchField, SearchRow, Condition, FilterValues, FilterVariant, SearchLayout, Op,
   OPS_BY_KIND, STANDARD_VARIANT, opLabel, isExclude, needsNoValue, newCondition, activeConditions,
   searchFields, buildRow, isExtraKey, applyFilters, chipLabel, standardLayout,
-  loadVariants, saveVariants, loadSearchState, saveSearchState
+  loadVariants, saveVariants, loadSearchState, loadTabSearchState, saveSearchState,
+  loadDefaultVariant, saveDefaultVariant
 } from '../../data/filter-schema';
 import { allStepAnswerFields } from '../../data/step-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -45,7 +46,7 @@ const PAGE_SIZES = [10, 25, 50, 100];
     TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
     LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
-    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory
+    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar
   ],
   templateUrl: './adaptive-search.component.html'
 })
@@ -75,8 +76,12 @@ export class AdaptiveSearchComponent {
   selectedVariant = signal<string>(STANDARD_VARIANT);
 
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
-    const saved = loadSearchState();
-    this.applyLayout(saved ?? standardLayout());
+    /* this tab's state (refresh, back from a joint), else the default variant on a new visit,
+       else where the last visit left off */
+    const def = this.defaultVariant();
+    const saved = loadTabSearchState() ?? (def ? null : loadSearchState());
+    if (!saved && def) this.pickVariant(def);
+    else this.applyLayout(saved ?? standardLayout());
     if (saved) {
       this.selectedVariant.set(saved.variant || STANDARD_VARIANT);
       this.table.pageSize.set(PAGE_SIZES.includes(saved.pageSize) ? saved.pageSize : 10);
@@ -210,10 +215,38 @@ export class AdaptiveSearchComponent {
     this.savingVariant.set(false);
   }
 
+  /* this browser's default: what a new visit opens on. '' = none (Standard is the built-in default) */
+  defaultVariant = signal<string>((() => {
+    const name = loadDefaultVariant();
+    return name && loadVariants().some(v => v.name === name) ? name : '';
+  })());
+
+  isDefault = (name: string) => name === STANDARD_VARIANT ? !this.defaultVariant() : this.defaultVariant() === name;
+
+  /* the star: makes the chosen variant the default, or (already the default) goes back to Standard */
+  toggleDefault() {
+    const name = this.selectedVariant();
+    this.setDefault(this.isDefault(name) ? STANDARD_VARIANT : name);
+  }
+
+  defaultTip = computed(() => {
+    const name = this.selectedVariant();
+    if (!this.isDefault(name)) return 'Make this your default: the page opens on it (only for you)';
+    return name === STANDARD_VARIANT ? 'Your default: the page opens on this variant'
+      : 'Your default: the page opens on this variant. Click to go back to Standard.';
+  });
+
+  private setDefault(name: string) {
+    const next = name === STANDARD_VARIANT ? '' : name;
+    this.defaultVariant.set(next);
+    saveDefaultVariant(next);
+  }
+
   deleteVariant(name: string) {
     const merged = this.variants().filter(v => v.name !== name);
     this.variants.set(merged);
     saveVariants(merged);
+    if (this.defaultVariant() === name) this.setDefault(STANDARD_VARIANT);
     if (this.selectedVariant() === name) this.selectedVariant.set(STANDARD_VARIANT);
   }
 

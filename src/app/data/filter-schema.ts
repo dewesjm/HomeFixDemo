@@ -265,7 +265,7 @@ export interface FilterVariant extends SearchLayout { name: string }
 export const STANDARD_VARIANT = 'Standard';
 export function standardLayout(): SearchLayout {
   return {
-    filterKeys: ['xrefid', 'hull', 'drawing', 'joint', 'currentRouting'],
+    filterKeys: [],   /* the column headings already filter these */
     values: {},
     columnKeys: ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber', 'currentRouting'],
     columnFilters: {},
@@ -327,16 +327,33 @@ export function saveVariants(variants: FilterVariant[]): void {
   try { localStorage.setItem(STORAGE.filterVariants, JSON.stringify(variants)); } catch { /* */ }
 }
 
-/* the page as it was left, so a refresh or coming back keeps everything */
+/* the page as it was left. Kept twice: per tab (sessionStorage: a refresh or coming back from a
+   joint keeps it) and per browser (localStorage: a new visit picks up there unless a default
+   variant is set, which a new visit opens on instead) */
 export interface SavedSearchState extends SearchLayout { variant: string; page: number; pageSize: number }
 
-export function loadSearchState(): SavedSearchState | null {
+function readState(store: Storage): SavedSearchState | null {
   try {
-    const raw = localStorage.getItem(STORAGE.advancedSearchState);
+    const raw = store.getItem(STORAGE.advancedSearchState);
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
+export const loadTabSearchState = () => readState(sessionStorage);
+export const loadSearchState = () => readState(localStorage);
 
 export function saveSearchState(s: SavedSearchState) {
-  try { localStorage.setItem(STORAGE.advancedSearchState, JSON.stringify(s)); } catch { /* */ }
+  const json = JSON.stringify(s);
+  try { sessionStorage.setItem(STORAGE.advancedSearchState, json); } catch { /* */ }
+  try { localStorage.setItem(STORAGE.advancedSearchState, json); } catch { /* */ }
+}
+
+/* this browser's default variant ('' = none, a new visit picks up where the last one left off) */
+export function loadDefaultVariant(): string {
+  try { return localStorage.getItem(STORAGE.advancedSearchDefault) ?? ''; } catch { return ''; }
+}
+export function saveDefaultVariant(name: string) {
+  try {
+    if (name) localStorage.setItem(STORAGE.advancedSearchDefault, name);
+    else localStorage.removeItem(STORAGE.advancedSearchDefault);
+  } catch { /* */ }
 }

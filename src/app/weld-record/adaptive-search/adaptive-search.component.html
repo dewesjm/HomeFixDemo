@@ -7,11 +7,15 @@
   <span class="fw-bold ml-4">Variant</span>
   <select class="select select-sm select-bordered w-auto"
           [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
-    <option [value]="STANDARD">{{ STANDARD }}</option>
+    <option [value]="STANDARD">{{ STANDARD }}{{ isDefault(STANDARD) ? ' (default)' : '' }}</option>
     @for (v of variants(); track v.name) {
-      <option [value]="v.name">{{ v.name }}</option>
+      <option [value]="v.name">{{ v.name }}{{ isDefault(v.name) ? ' (default)' : '' }}</option>
     }
   </select>
+  <button type="button" class="btn btn-sm btn-ghost" [class.text-warning]="isDefault(selectedVariant())"
+          [appTooltip]="defaultTip()" [attr.aria-label]="defaultTip()" (click)="toggleDefault()">
+    <svg lucideStar class="size-4" [class.fill-current]="isDefault(selectedVariant())"></svg>
+  </button>
   @if (selectedVariant() !== STANDARD) {
     <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this variant"
             (click)="deleteVariant(selectedVariant())">

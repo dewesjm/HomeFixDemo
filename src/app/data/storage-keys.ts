@@ -14,6 +14,7 @@ export const STORAGE = {
   theme: 'welding:theme',
   searchState: 'welding:search-state:v1',
   advancedSearchState: 'welding:advanced-search-state:v1',
+  advancedSearchDefault: 'welding:advanced-search-default:v1',
   filterVariants: 'welding:filter-variants',
   weldJoints: 'welding:weld-joints:v9',
   adminJointDesigns: 'welding:admin-joint-designs:v2',
