@@ -54,8 +54,7 @@ function fieldValue(f: StageField, rand: () => number): string {
 
 /* short believable activity sequence for one job */
 function activityForJob(job: Job, rand: () => number, now: number): MockActivity[] {
-  /* the job's real routing (buildStages), not the raw trade template — that still carries the
-     old generic Prep/Handover stages (Customer walkthrough, etc.) that Welding never uses */
+  /* the job's real routing (buildStages), not the raw template: conditions decide which steps it has */
   const stages = buildStages(job);
   const who = job.technician;
   const out: MockActivity[] = [];
