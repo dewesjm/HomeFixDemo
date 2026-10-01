@@ -1,7 +1,7 @@
 /* Admin-managed site banner, stored in localStorage and shown on selected pages. */
 import { STORAGE } from './storage-keys';
 
-export type BannerPage = 'all' | 'pipe-welding' | 'weld-planning';
+export type BannerPage = 'all' | 'pipe-welding' | 'advanced-search' | 'weld-planning';
 
 export interface BannerData {
   message: string;

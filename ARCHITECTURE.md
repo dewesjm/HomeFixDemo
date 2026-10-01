@@ -111,7 +111,7 @@ src/app/
                           belong to Weld Record specifically, none to Weld Planning). Nesting is purely file
                           location — routes/URLs/component names are unchanged.
     pipe-search/           Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
-    adaptive-search/       Advanced Search — schema-driven filter bar + saved variants + column picker (for everyone else)
+    adaptive-search/       Advanced Search — Pipe Welding's table + stacked-condition filters, every field, variants with columns
     work-history/          History — audit-trail activity log with deprogress
     my-assignments/        My Assignments — assignment list with keyword search
     makeup/                Makeup — acting-foreman grants, flat grid (see Signoff panel section); `noMike` toggle, see Demo toggles
@@ -216,7 +216,7 @@ src/app/
     assignments.ts       Assignment model + seeded generator (36)
     mock-history.ts      Seeded activity entries; walks the job's real routing (`buildStages()`), not the raw trade
                          template — that still carries the old generic Prep/Handover stages, unused by Welding
-    filter-schema.ts     Schema-driven filter engine for Advanced Search
+    filter-schema.ts     Advanced Search fields, stacked conditions, variants/page state
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     storage-keys.ts      Every localStorage key + clearStaleCaches()
     banner.ts            Admin banner load/save/bannerFor(page)
@@ -264,7 +264,7 @@ src/app/
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-options` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, weld-positions, banner, joint-designs, teams, qualifications, material-traceability) |
 | `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |
-| `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — same pattern as `/adaptive`, scoped to `WeldJoint`) |
+| `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — the older `/adaptive` pattern, before stacked conditions; scoped to `WeldJoint`) |
 | `/weld-planning/import` | Weld Planning mass import/edit |
 | `/weld-planning/admin` | Weld Planning admin (Joint Designs & NDT) |
 | `/weld-engineering`, `/weld-engineering/procedures/:id` | Procedure Lookup list + PDF detail |
@@ -296,9 +296,12 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
 - Persists filter/sort/page/role to `STORAGE.searchState`.
 
 ### Advanced Search (`adaptive-search`)
-- For everyone who needs more than Pipe Welding: schema-driven filter bar, saved variants, column picker, CSV export. All NDT and additional-data fields.
-- Text filters carry a `{ text, negate }` value (`TextFilterValue` in `data/filter-schema.ts`) toggled by a **funnel icon button** joined to the left of the input (2026-09-24, replaced a 9.5rem Contains / Does not contain select that made the filter bar wrap): plain funnel = Contains, red funnel-X = Does not contain; tooltip and the empty-input placeholder ("Contains…" / "Does not contain…") say it in words, and the chip reads `Hull: not "K72"`. Old saved variants (plain-string text values) are migrated to the new shape on load in `loadVariants()`.
-- **Compact layout** (2026-09-24, both this screen and Weld Planning's Advanced Search, kept identical): three bands instead of five. (1) Header line: title, **Variant droplist** (choosing one applies it; trash button deletes the chosen one and only shows when one is chosen; "Save variant…" reveals the name box + Save/Cancel, prefilled with the chosen variant's name so re-saving overwrites it; Enter saves, Esc cancels), then Adapt filters / Reset on the right (Reset also clears the chosen variant). (2) Filter bar with tighter padding (`.facet-row-compact` in `styles.css`, only these two screens). (3) Results line: match count, **active filter chips inline** (was its own row that pushed the table down), Columns / Export.
+- **Pipe Welding plus the adaptive tools** (2026-09-30, user: combine the two but leave Pipe Welding alone; if it works out, Pipe Welding may follow later). Layout is Pipe Welding's `table-page-wrap`. Has everything Pipe Welding has: role droplist (same "current step's role" filter, `View All`), keyword search over XREFID/hull/drawing/joint/order/sequence, `appSortHeader` sort + filter in every column heading (multiselect for list fields, text box for text, sort only for numbers/dates), checkbox select + Release to Welding (Foreman, Fit-Up Release rows), History + Details buttons, banner pill (own banner target `advanced-search`), sync status.
+- **Fields** (`searchFields()` in `data/filter-schema.ts`): one list used for both filters and columns. Every `Job` field (incl. Ship), Current routing, every Fabrication field (`fab.<key>`, select values shown as labels), and every Welding step's own answers (`step.<stageId>.<key>`, from `allStepAnswerFields()` in `step-conditions.ts`, same fields Admin > Routing conditions use; blank until that step is signed; latest signed copy for repeats). Built when the screen opens since step templates are admin-editable. Rows are built by `buildRow()`; fabrication/step values are only worked out for keys a column, filter or sort uses (there are a lot of step fields).
+- **Stacked conditions**: filter values are `Record<fieldKey, Condition[]>`; each field in the bar shows its conditions (operator droplist + value) and "Add condition". Operators: text `contains / does not contain / is / is not / starts with / is blank / is not blank`; list fields `is / is not` (multiselect of the values present) plus contains/does not contain/blank; numbers and dates `between / greater than (after) / less than (before)`. Combining (user picked "same field OR, different fields AND"; how "not" operators fit is my reading, SAP-style): a field's include conditions are OR'd, its exclude conditions (does not contain, is not, is not blank) must all hold; different fields AND. The stacked rows are prefixed "or"/"and" to show this. Chips read e.g. `Hull: starts with "S" or starts with "T", and does not contain "7"`. Empty conditions don't filter. Taking a field out of the bar (Adapt filters) clears its conditions.
+- **Variants = layouts**: a variant saves filter bar fields + conditions, columns, column-heading filters, keyword, sort and role (`SearchLayout`). Built-in **Standard** variant (first in the droplist, can't be deleted or overwritten) = Pipe Welding's columns (XREFID, Hull, Drawing, Joint, Order, Sequence, Current routing), filter bar XREFID/Hull/Drawing/Joint/Current routing (bar fields my pick), role View All. Old variants (`welding:filter-variants`, one value per field, no columns) are migrated on load: their filters convert to conditions, `id` -> `xrefid`, columns = Standard's. The page's own state (layout + chosen variant + page/page size) persists to `STORAGE.advancedSearchState`; the old `welding:result-columns` key is no longer read.
+- Clear filters (like Pipe Welding's): clears conditions, column filters and keyword, role back to View All; keeps the bar fields, columns and chosen variant. Hiding a column drops its column filter and sort.
+- Weld Planning's Advanced Search was **not** changed and no longer matches this screen.
 
 ### Job detail (`joint-page`)
 - **Routing bar** — numbered pills, horizontal scroll, auto-centers the selected stage. Active = `--color-success`, done = `--color-info`.

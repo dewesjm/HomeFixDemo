@@ -1,186 +1,342 @@
-/* schema-driven filter engine + saved variants in localStorage */
+/* Advanced Search: every searchable field, stacked filter conditions, saved variants (localStorage).
+   A field's conditions combine like this: the "include" ones (contains, is, starts with, is blank,
+   between, greater/less than) are OR'd, the "exclude" ones (does not contain, is not, is not blank)
+   must all hold. Different fields are AND'd. */
 import { STORAGE } from './storage-keys';
-import {
-  Job,
-  TECHNICIAN_OPTIONS, JOBS, NDT_REQUIREMENT_VALUES
-} from './jobs';
+import { Job } from './jobs';
+import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel, shopOptions } from './workflow';
+import { jointDesignOptions } from './joint-designs';
+import { StepConditionField, allStepAnswerFields } from './step-conditions';
 
-export type FilterField =
-  | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof Job }
-  | { key: string; label: string; type: 'multiselect'; group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
-  | { key: string; label: string; type: 'select';      group: string; required?: boolean; field: keyof Job; options: { label: string; value: any }[] }
-  | { key: string; label: string; type: 'range';       group: string; required?: boolean; field: keyof Job; min: number; max: number }
-  | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof Job };
+export type FieldKind = 'text' | 'list' | 'number' | 'date';
 
-function uniqueOpts(getter: (j: Job) => string): { label: string; value: string }[] {
-  const vals = [...new Set(JOBS.map(getter))].filter(Boolean).sort();
-  return vals.map(v => ({ label: v, value: v }));
+export interface SearchField {
+  key: string;            /* row key: a Job field, 'currentRouting', 'fab.<key>' or a step answer key */
+  label: string;
+  group: string;
+  kind: FieldKind;
+  width?: string;         /* results column min width */
 }
 
-export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'hull',            label: 'Hull',          type: 'text',        group: 'Job',        field: 'hull' },
-{ key: 'id', label: 'XREFID', type: 'text', group: 'Job', field: 'xrefid' },
-  { key: 'trade',           label: 'Trade',            type: 'multiselect', group: 'Job',        field: 'trade',          options: uniqueOpts(j => j.trade) },
-  { key: 'technician',      label: 'Technician',       type: 'multiselect', group: 'Job',        field: 'technician',     options: TECHNICIAN_OPTIONS },
-  { key: 'drawing',         label: 'Drawing',          type: 'text',        group: 'Job',        field: 'drawing' },
-  { key: 'drawingRev',      label: 'Drawing Rev',      type: 'text',        group: 'Job',        field: 'drawingRev' },
-  { key: 'joint',           label: 'Joint',            type: 'text',        group: 'Job',        field: 'joint' },
-  { key: 'jointDesign',     label: 'Joint design',     type: 'multiselect', group: 'Welding',    field: 'jointDesign', options: uniqueOpts(j => j.jointDesign) },
-  { key: 'weldType',        label: 'Weld type',        type: 'multiselect', group: 'Welding',    field: 'weldType',    options: uniqueOpts(j => j.weldType) },
-  { key: 'materialType1',   label: 'Material 1',       type: 'multiselect', group: 'Welding',    field: 'materialType1', options: uniqueOpts(j => j.materialType1) },
-  { key: 'materialType2',   label: 'Material 2',       type: 'multiselect', group: 'Welding',    field: 'materialType2', options: uniqueOpts(j => j.materialType2) },
-  { key: 'pipeSize',        label: 'Pipe size',        type: 'text',        group: 'Welding',    field: 'pipeSize' },
-  { key: 'wallThickness',   label: 'Wall thickness',   type: 'text',        group: 'Welding',    field: 'wallThickness' },
-  { key: 'mcl1',            label: 'MCL 1',            type: 'multiselect', group: 'Welding',    field: 'mcl1',          options: uniqueOpts(j => j.mcl1) },
-  { key: 'mcl2',            label: 'MCL 2',            type: 'multiselect', group: 'Welding',    field: 'mcl2',          options: uniqueOpts(j => j.mcl2) },
-  { key: 'joiningItem',     label: 'Joining item',     type: 'text',        group: 'Welding',    field: 'joiningItem' },
-  { key: 'joinToItem',      label: 'Join to item',     type: 'text',        group: 'Welding',    field: 'joinToItem' },
-  { key: 'sequenceNumber',  label: 'Sequence #',       type: 'text',        group: 'Welding',    field: 'sequenceNumber' },
-  { key: 'nInd',            label: 'Nuclear Indicator', type: 'multiselect', group: 'Welding',    field: 'nInd',         options: [{ label: '1', value: '1' }, { label: '2', value: '2' }, { label: '3', value: '3' }] },
-  { key: 'wps',             label: 'WPS',              type: 'text',        group: 'Welding',    field: 'wps' },
-  { key: 'engineeringNotes', label: 'Eng. notes',      type: 'text',        group: 'Welding',    field: 'engineeringNotes' },
-  { key: 'ndt',             label: 'NDT',              type: 'text',        group: 'NDT',        field: 'ndt' },
-  { key: 'rtRoot',          label: 'RT Root',          type: 'text',        group: 'NDT',        field: 'rtRoot' },
-  { key: 'rtFinal',         label: 'RT Final',         type: 'text',        group: 'NDT',        field: 'rtFinal' },
-  { key: 'ndtRoot',         label: 'NDT Root',         type: 'multiselect', group: 'NDT',        field: 'ndtRoot',
-    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
-  { key: 'ndtEach',         label: 'NDT Each',         type: 'multiselect', group: 'NDT',        field: 'ndtEach',
-    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
-  { key: 'ndtFinal',        label: 'NDT Final',        type: 'multiselect', group: 'NDT',        field: 'ndtFinal',
-    options: NDT_REQUIREMENT_VALUES.map(v => ({ label: v || 'Blank', value: v })) },
-  { key: 'ut',              label: 'UT',               type: 'text',        group: 'NDT',        field: 'ut' },
-  { key: 'pwht',            label: 'PWHT',             type: 'text',        group: 'NDT',        field: 'pwht' },
-  { key: 'order',           label: 'Order',            type: 'text',        group: 'Additional', field: 'order' },
-  { key: 'workPackage',     label: 'Work package',     type: 'text',        group: 'Additional', field: 'workPackage' },
-  { key: 'workPermit',      label: 'Work permit',      type: 'text',        group: 'Additional', field: 'workPermit' },
-  { key: 'waff',            label: 'WAFF',             type: 'text',        group: 'Additional', field: 'waff' },
-  { key: 'serialNumber',    label: 'Serial number',    type: 'text',        group: 'Additional', field: 'serialNumber' },
-  { key: 'refitNumber',     label: 'Refit number',     type: 'text',        group: 'Additional', field: 'refitNumber' },
-  { key: 'repairNumber',    label: 'Repair number',    type: 'text',        group: 'Additional', field: 'repairNumber' },
-  { key: 'ss',              label: 'SS',               type: 'text',        group: 'Additional', field: 'ss' },
-  { key: 'sfff',            label: 'SFFF',             type: 'text',        group: 'Additional', field: 'sfff' },
-  { key: 'dssAaa',          label: 'DSS/AAA',          type: 'text',        group: 'Additional', field: 'dssAaa' },
-  { key: 'er1',             label: 'ER 1',             type: 'text',        group: 'Additional', field: 'er1' },
-  { key: 'er2',             label: 'ER 2',             type: 'text',        group: 'Additional', field: 'er2' },
-  { key: 'er3',             label: 'ER 3',             type: 'text',        group: 'Additional', field: 'er3' },
-  { key: 'er4',             label: 'ER 4',             type: 'text',        group: 'Additional', field: 'er4' },
-  { key: 'attributeCode1',  label: 'Attribute code 1', type: 'text',        group: 'Additional', field: 'attributeCode1' },
-  { key: 'attributeCode2',  label: 'Attribute code 2', type: 'text',        group: 'Additional', field: 'attributeCode2' },
-  { key: 'attributeCode3',  label: 'Attribute code 3', type: 'text',        group: 'Additional', field: 'attributeCode3' },
-  { key: 'attributeCode4',  label: 'Attribute code 4', type: 'text',        group: 'Additional', field: 'attributeCode4' },
-  { key: 'estimatedCost',   label: 'Estimated cost',   type: 'range',       group: 'Additional', field: 'estimatedCost', min: 0, max: 100000 },
-  { key: 'estimatedHours',  label: 'Estimated hours',  type: 'range',       group: 'Additional', field: 'estimatedHours', min: 0, max: 500 },
-  { key: 'scheduledFor',    label: 'Scheduled for',    type: 'daterange',   group: 'Additional', field: 'scheduledFor' },
-];
+export type Op = 'contains' | 'notContains' | 'is' | 'isNot' | 'startsWith' | 'blank' | 'notBlank' | 'between' | 'gt' | 'lt';
 
-export type FilterValues = Record<string, any>;
-export interface TextFilterValue { text: string; negate: boolean }
-
-export function getField(key: string): FilterField | undefined {
-  return FILTER_SCHEMA.find(f => f.key === key);
+export interface Condition {
+  op: Op;
+  value: string;          /* typed text / number / yyyy-mm-dd; 'between' start */
+  to: string;             /* 'between' end */
+  values: string[];       /* list fields: is / is not any of these */
 }
 
-export function isEmpty(field: FilterField, value: any): boolean {
-  if (value === null || value === undefined || value === '') return true;
-  switch (field.type) {
-    case 'text':
-      return !(value as TextFilterValue).text;
-    case 'multiselect':
-      return !Array.isArray(value) || value.length === 0;
-    case 'range':
-      return !Array.isArray(value) || (value[0] === field.min && value[1] === field.max);
-    case 'daterange':
-      return !Array.isArray(value) || !value[0];
-    default:
-      return false;
+export type FilterValues = Record<string, Condition[]>;
+
+export const OPS_BY_KIND: Record<FieldKind, Op[]> = {
+  text: ['contains', 'notContains', 'is', 'isNot', 'startsWith', 'blank', 'notBlank'],
+  list: ['is', 'isNot', 'contains', 'notContains', 'blank', 'notBlank'],
+  number: ['between', 'gt', 'lt'],
+  date: ['between', 'gt', 'lt'],
+};
+
+export function opLabel(op: Op, kind: FieldKind): string {
+  switch (op) {
+    case 'contains': return 'contains';
+    case 'notContains': return 'does not contain';
+    case 'is': return 'is';
+    case 'isNot': return 'is not';
+    case 'startsWith': return 'starts with';
+    case 'blank': return 'is blank';
+    case 'notBlank': return 'is not blank';
+    case 'between': return 'between';
+    case 'gt': return kind === 'date' ? 'after' : 'greater than';
+    case 'lt': return kind === 'date' ? 'before' : 'less than';
   }
 }
 
-export function applyFilters(rows: Job[], values: FilterValues): Job[] {
-  return rows.filter(row => {
-    for (const f of FILTER_SCHEMA) {
-      const v = values[f.key];
-      if (isEmpty(f, v)) continue;
+const EXCLUDES: Op[] = ['notContains', 'isNot', 'notBlank'];
+export const isExclude = (op: Op) => EXCLUDES.includes(op);
+export const needsNoValue = (op: Op) => op === 'blank' || op === 'notBlank';
 
-      const cell = row[f.field] as any;
+export function newCondition(kind: FieldKind): Condition {
+  return { op: OPS_BY_KIND[kind][0], value: '', to: '', values: [] };
+}
 
-      switch (f.type) {
-        case 'text': {
-          const { text, negate } = v as TextFilterValue;
-          const matches = String(cell).toLowerCase().includes(String(text).toLowerCase());
-          if (negate ? matches : !matches) return false;
-          break;
-        }
-        case 'multiselect':
-          if (!(v as any[]).includes(cell)) return false;
-          break;
-        case 'select':
-          if (cell !== v) return false;
-          break;
-        case 'range': {
-          const [lo, hi] = v as [number, number];
-          if ((cell as number) < lo || (cell as number) > hi) return false;
-          break;
-        }
-        case 'daterange': {
-          const [start, end] = v as Date[];
-          const t = +(cell as Date);
-          if (start && t < +start) return false;
-          if (end && t > +end + 24 * 3600 * 1000) return false;
-          break;
-        }
-      }
+/* a condition with nothing filled in yet doesn't filter */
+export function isActive(c: Condition, kind: FieldKind): boolean {
+  if (needsNoValue(c.op)) return true;
+  if (kind === 'list' && (c.op === 'is' || c.op === 'isNot')) return c.values.length > 0;
+  if (c.op === 'between') return !!c.value || !!c.to;
+  return !!c.value.trim();
+}
+
+export const activeConditions = (field: SearchField, conds: Condition[] | undefined) =>
+  (conds ?? []).filter(c => isActive(c, field.kind));
+
+/* ── Fields ── */
+
+const job = (key: keyof Job, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-24'): SearchField =>
+  ({ key, label, group, kind, width });
+
+const JOB_FIELDS: SearchField[] = [
+  job('xrefid', 'XREFID', 'Job', 'text', 'min-w-16'),
+  job('ship', 'Ship', 'Job', 'text', 'min-w-16'),
+  job('hull', 'Hull', 'Job', 'text', 'min-w-24'),
+  job('trade', 'Trade', 'Job', 'list'),
+  job('technician', 'Technician', 'Job', 'list'),
+  job('drawing', 'Drawing', 'Job'),
+  job('drawingRev', 'Drawing Rev', 'Job'),
+  job('joint', 'Joint', 'Job', 'text', 'min-w-20'),
+  { key: 'currentRouting', label: 'Current routing', group: 'Job', kind: 'list', width: 'min-w-36' },
+  job('jointDesign', 'Joint design', 'Welding', 'list'),
+  job('weldType', 'Weld type', 'Welding', 'list'),
+  job('materialType1', 'Material 1', 'Welding', 'list'),
+  job('materialType2', 'Material 2', 'Welding', 'list'),
+  job('pipeSize', 'Pipe size', 'Welding'),
+  job('wallThickness', 'Wall thickness', 'Welding'),
+  job('mcl1', 'MCL 1', 'Welding', 'list'),
+  job('mcl2', 'MCL 2', 'Welding', 'list'),
+  job('joiningItem', 'Joining item', 'Welding'),
+  job('joinToItem', 'Join to item', 'Welding'),
+  job('sequenceNumber', 'Sequence', 'Welding'),
+  job('nInd', 'Nuclear Indicator', 'Welding', 'list'),
+  job('wps', 'WPS', 'Welding'),
+  job('engineeringNotes', 'Eng. notes', 'Welding', 'text', 'min-w-32'),
+  job('ndt', 'NDT', 'NDT'),
+  job('rtRoot', 'RT Root', 'NDT', 'list'),
+  job('rtFinal', 'RT Final', 'NDT', 'list'),
+  job('ndtRoot', 'NDT Root', 'NDT', 'list'),
+  job('ndtEach', 'NDT Each', 'NDT', 'list'),
+  job('ndtFinal', 'NDT Final', 'NDT', 'list'),
+  job('ut', 'UT', 'NDT'),
+  job('pwht', 'PWHT', 'NDT'),
+  job('order', 'Order', 'Additional', 'text', 'min-w-28'),
+  job('workPackage', 'Work package', 'Additional'),
+  job('workPermit', 'Work permit', 'Additional'),
+  job('waff', 'WAFF', 'Additional'),
+  job('serialNumber', 'Serial number', 'Additional'),
+  job('refitNumber', 'Refit number', 'Additional'),
+  job('repairNumber', 'Repair number', 'Additional'),
+  job('ss', 'SS', 'Additional'),
+  job('sfff', 'SFFF', 'Additional'),
+  job('dssAaa', 'DSS/AAA', 'Additional'),
+  job('er1', 'ER 1', 'Additional'),
+  job('er2', 'ER 2', 'Additional'),
+  job('er3', 'ER 3', 'Additional'),
+  job('er4', 'ER 4', 'Additional'),
+  job('attributeCode1', 'Attribute code 1', 'Additional'),
+  job('attributeCode2', 'Attribute code 2', 'Additional'),
+  job('attributeCode3', 'Attribute code 3', 'Additional'),
+  job('attributeCode4', 'Attribute code 4', 'Additional'),
+  job('estimatedCost', 'Estimated cost', 'Additional', 'number'),
+  job('estimatedHours', 'Estimated hours', 'Additional', 'number'),
+  job('scheduledFor', 'Scheduled for', 'Additional', 'date'),
+];
+
+const FAB_KEY = 'fab.';
+const fabFields = (): SearchField[] => FABRICATION_FIELDS.map(f => ({
+  key: FAB_KEY + f.key, label: f.label, group: 'Fabrication',
+  kind: f.type === 'select' || f.type === 'checkbox' ? 'list' : 'text', width: 'min-w-24',
+}));
+
+/* "Root Weld: Weld Process" -> group "Step: Root Weld" */
+const stepGroup = (f: StepConditionField) => `Step: ${f.label.split(': ')[0]}`;
+
+/* every field Advanced Search offers, as filters and as columns. Built when the screen opens, since
+   step fields come from the (admin-editable) Welding step templates. */
+export function searchFields(): SearchField[] {
+  const steps = allStepAnswerFields('Welding').map<SearchField>(f => ({
+    key: f.key, label: f.label, group: stepGroup(f), kind: f.values.length ? 'list' : 'text', width: 'min-w-28',
+  }));
+  return [...JOB_FIELDS, ...fabFields(), ...steps];
+}
+
+/* ── Values ── */
+
+export type SearchRow = Job & { currentRouting: string } & Record<string, any>;
+
+function fabValue(fab: Record<string, string>, key: string): string {
+  const f = FABRICATION_FIELDS.find(x => x.key === key);
+  if (!f) return '';
+  if (f.showIf && fab[f.showIf.key] !== f.showIf.equals) return '';
+  const options = key === 'location' ? shopOptions() : key === 'revisedJointDesign' ? jointDesignOptions() : f.options;
+  const raw = fab[key] ?? '';
+  return options?.find(o => o.value === raw)?.label ?? raw;
+}
+
+/* one row per job: the Job's own fields and Current routing, plus any fabrication / step-answer
+   fields in `extraKeys` (only the ones in use are worked out; there are a lot of step fields) */
+export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepFields: Map<string, StepConditionField>): SearchRow {
+  const row: SearchRow = { ...j, currentRouting: currentRoutingLabel(wf.stages) };
+  for (const key of extraKeys) {
+    if (key.startsWith(FAB_KEY)) row[key] = fabValue(wf.fabricationData ?? {}, key.slice(FAB_KEY.length));
+    else {
+      const f = stepFields.get(key);
+      if (!f) continue;
+      const v = f.get(j, wf.stages);
+      row[key] = v && f.valueLabel ? f.valueLabel(v) : v;
     }
-    return true;
-  });
+  }
+  return row;
 }
 
-export interface FilterVariant {
-  name: string;
-  visibleKeys: string[];
+export const isExtraKey = (key: string) => !JOB_FIELDS.some(f => f.key === key);
+
+/* ── Matching ── */
+
+const day = (iso: string) => (iso ? new Date(iso + 'T00:00:00').getTime() : NaN);
+const DAY_MS = 24 * 3600 * 1000;
+
+function matches(c: Condition, kind: FieldKind, cell: any): boolean {
+  if (kind === 'number' || kind === 'date') {
+    const v = kind === 'date' ? (cell ? new Date(cell).getTime() : NaN) : Number(cell);
+    const n = (s: string) => (kind === 'date' ? day(s) : Number(s));
+    if (Number.isNaN(v)) return false;
+    switch (c.op) {
+      case 'between':
+        if (c.value && v < n(c.value)) return false;
+        if (c.to) return kind === 'date' ? v < n(c.to) + DAY_MS : v <= n(c.to);
+        return true;
+      case 'gt': return kind === 'date' ? v >= n(c.value) + DAY_MS : v > n(c.value);
+      case 'lt': return v < n(c.value);
+      default: return false;
+    }
+  }
+  const text = String(cell ?? '').trim().toLowerCase();
+  const typed = c.value.trim().toLowerCase();
+  switch (c.op) {
+    case 'contains': return text.includes(typed);
+    case 'notContains': return !text.includes(typed);
+    case 'startsWith': return text.startsWith(typed);
+    case 'blank': return !text;
+    case 'notBlank': return !!text;
+    case 'is':
+    case 'isNot': {
+      const hit = kind === 'list' ? c.values.some(v => v.trim().toLowerCase() === text) : text === typed;
+      return c.op === 'is' ? hit : !hit;
+    }
+    default: return false;
+  }
+}
+
+export function fieldMatches(field: SearchField, conds: Condition[] | undefined, cell: any): boolean {
+  const active = activeConditions(field, conds);
+  if (!active.length) return true;
+  const includes = active.filter(c => !isExclude(c.op));
+  const excludes = active.filter(c => isExclude(c.op));
+  return (!includes.length || includes.some(c => matches(c, field.kind, cell)))
+    && excludes.every(c => matches(c, field.kind, cell));
+}
+
+export function applyFilters(rows: SearchRow[], fields: SearchField[], values: FilterValues): SearchRow[] {
+  const used = fields.filter(f => activeConditions(f, values[f.key]).length);
+  if (!used.length) return rows;
+  return rows.filter(r => used.every(f => fieldMatches(f, values[f.key], r[f.key])));
+}
+
+/* chip text, e.g. Hull: contains "K7" or starts with "S", and not "S9" */
+export function chipLabel(field: SearchField, conds: Condition[]): string {
+  const one = (c: Condition) => {
+    const label = opLabel(c.op, field.kind);
+    if (needsNoValue(c.op)) return label;
+    if (field.kind === 'list' && (c.op === 'is' || c.op === 'isNot')) return `${label} ${c.values.join(', ')}`;
+    if (c.op === 'between') return `${label} ${c.value || '…'} and ${c.to || '…'}`;
+    return `${label} "${c.value.trim()}"`;
+  };
+  const active = activeConditions(field, conds);
+  const inc = active.filter(c => !isExclude(c.op)).map(one).join(' or ');
+  const exc = active.filter(c => isExclude(c.op)).map(one).join(', and ');
+  return `${field.label}: ${[inc, exc].filter(Boolean).join(', and ')}`;
+}
+
+/* ── Layouts (the page's own state and saved variants) ── */
+
+export interface SearchLayout {
+  filterKeys: string[];   /* fields in the filter bar, in order */
   values: FilterValues;
+  columnKeys: string[];   /* results columns, in order */
+  columnFilters: Record<string, any>;   /* the filter boxes in the column headers */
+  globalFilter: string;
+  sortField: string | null;
+  sortOrder: 1 | -1;
+  role: string;
 }
 
-const VARIANTS_LS_KEY = STORAGE.filterVariants;
+export interface FilterVariant extends SearchLayout { name: string }
+
+/* "Standard": looks like Pipe Welding */
+export const STANDARD_VARIANT = 'Standard';
+export function standardLayout(): SearchLayout {
+  return {
+    filterKeys: ['xrefid', 'hull', 'drawing', 'joint', 'currentRouting'],
+    values: {},
+    columnKeys: ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber', 'currentRouting'],
+    columnFilters: {},
+    globalFilter: '',
+    sortField: null,
+    sortOrder: 1,
+    role: 'View',
+  };
+}
+
+/* the old XREFID key */
+const renameKey = (k: string) => (k === 'id' ? 'xrefid' : k);
+const isoDay = (d: any) => {
+  if (!d) return '';
+  const x = new Date(d);
+  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
+};
+
+/* variants saved before stacked conditions held one value per field and no columns */
+function migrateOldValues(old: Record<string, any>): FilterValues {
+  const out: FilterValues = {};
+  const cond = (c: Partial<Condition>): Condition => ({ op: 'contains', value: '', to: '', values: [], ...c });
+  for (const [k, v] of Object.entries(old ?? {})) {
+    const key = renameKey(k);
+    if (v == null) continue;
+    if (typeof v === 'string') { if (v) out[key] = [cond({ value: v })]; }
+    else if (typeof v === 'object' && 'text' in v) {
+      if (v.text) out[key] = [cond({ op: v.negate ? 'notContains' : 'contains', value: v.text })];
+    }
+    else if (Array.isArray(v) && v.length) {
+      if (typeof v[0] === 'number') {
+        if (key === 'estimatedCost' && v[0] === 0 && v[1] === 100000) continue;
+        if (key === 'estimatedHours' && v[0] === 0 && v[1] === 500) continue;
+        out[key] = [cond({ op: 'between', value: String(v[0]), to: String(v[1]) })];
+      } else if (key === 'scheduledFor') {
+        if (v[0] || v[1]) out[key] = [cond({ op: 'between', value: isoDay(v[0]), to: isoDay(v[1]) })];
+      } else out[key] = [cond({ op: 'is', values: v.map(String) })];
+    }
+  }
+  return out;
+}
 
 export function loadVariants(): FilterVariant[] {
   try {
-    const raw = localStorage.getItem(VARIANTS_LS_KEY);
+    const raw = localStorage.getItem(STORAGE.filterVariants);
     if (!raw) return [];
-    const parsed = JSON.parse(raw) as FilterVariant[];
-    for (const v of parsed) {
-      for (const f of FILTER_SCHEMA) {
-        if (f.type === 'daterange' && Array.isArray(v.values[f.key])) {
-          v.values[f.key] = v.values[f.key].map((d: any) => (d ? new Date(d) : null));
-        }
-        /* variants saved before "does not contain" stored text values as plain strings */
-        if (f.type === 'text' && typeof v.values[f.key] === 'string') {
-          v.values[f.key] = { text: v.values[f.key], negate: false };
-        }
-      }
-    }
-    return parsed;
+    return (JSON.parse(raw) as any[]).map(v => v.columnKeys ? v as FilterVariant : {
+      ...standardLayout(),
+      name: v.name,
+      filterKeys: (v.visibleKeys ?? []).map(renameKey),
+      values: migrateOldValues(v.values),
+    });
   } catch {
     return [];
   }
 }
 
 export function saveVariants(variants: FilterVariant[]): void {
-  localStorage.setItem(VARIANTS_LS_KEY, JSON.stringify(variants));
+  try { localStorage.setItem(STORAGE.filterVariants, JSON.stringify(variants)); } catch { /* */ }
 }
 
-export function defaultValuesFor(keys: string[]): FilterValues {
-  const out: FilterValues = {};
-  for (const key of keys) {
-    const f = getField(key);
-    if (!f) continue;
-    switch (f.type) {
-      case 'range':       out[key] = [f.min, f.max]; break;
-      case 'multiselect': out[key] = []; break;
-      case 'daterange':   out[key] = null; break;
-      case 'text':        out[key] = { text: '', negate: false } satisfies TextFilterValue; break;
-      default:            out[key] = null;
-    }
-  }
-  return out;
+/* the page as it was left, so a refresh or coming back keeps everything */
+export interface SavedSearchState extends SearchLayout { variant: string; page: number; pageSize: number }
+
+export function loadSearchState(): SavedSearchState | null {
+  try {
+    const raw = localStorage.getItem(STORAGE.advancedSearchState);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+export function saveSearchState(s: SavedSearchState) {
+  try { localStorage.setItem(STORAGE.advancedSearchState, JSON.stringify(s)); } catch { /* */ }
 }

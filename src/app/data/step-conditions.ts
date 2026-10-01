@@ -151,6 +151,11 @@ export function stepAnswerFieldsBefore(trade: string, stageId: string): StepCond
   return (at < 0 ? list : list.slice(0, at)).flatMap(answersOf);
 }
 
+/* every step's answers for a trade, in routing order, Fit's and Fit-Up Insp's fixed ones first (Advanced Search) */
+export function allStepAnswerFields(trade: string): StepConditionField[] {
+  return [...STEP_CONDITION_FIELDS.filter(f => f.stepAnswer), ...(stepTemplates()[trade] ?? []).flatMap(answersOf)];
+}
+
 /* every trade's step answers, for looking a saved clause's field up by key */
 let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, StepConditionField> } | null = null;
 function stepAnswerField(key: string): StepConditionField | undefined {

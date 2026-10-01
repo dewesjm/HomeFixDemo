@@ -1,16 +1,18 @@
-<!-- Adaptive filters screen template (paired with adaptive-search.component.ts). -->
+<!-- Advanced Search template (paired with adaptive-search.component.ts). -->
+<div class="table-page-wrap">
 <!-- Title, saved variants and filter actions on one line -->
 <div class="page-header search-head">
   <h2 class="section-title">Advanced Search</h2>
+  <app-banner-pill [banner]="banner()" />
   <span class="fw-bold ml-4">Variant</span>
   <select class="select select-sm select-bordered w-auto"
           [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
-    <option value="">{{ variants().length ? 'Choose…' : 'None saved' }}</option>
+    <option [value]="STANDARD">{{ STANDARD }}</option>
     @for (v of variants(); track v.name) {
       <option [value]="v.name">{{ v.name }}</option>
     }
   </select>
-  @if (selectedVariant()) {
+  @if (selectedVariant() !== STANDARD) {
     <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this variant"
             (click)="deleteVariant(selectedVariant())">
       <svg lucideTrash2 class="size-4"></svg>
@@ -20,13 +22,14 @@
     <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="Variant name"
            [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
            (keydown.enter)="saveCurrentVariant()" (keydown.escape)="savingVariant.set(false)" />
-    <button type="button" class="btn btn-sm btn-primary" [disabled]="!variantName().trim()"
+    <button type="button" class="btn btn-sm btn-primary" [disabled]="!canSaveVariant()"
             (click)="saveCurrentVariant()">
       <svg lucideSave class="size-4"></svg> Save
     </button>
     <button type="button" class="btn btn-sm btn-ghost" (click)="savingVariant.set(false)">Cancel</button>
   } @else {
-    <button type="button" class="btn btn-sm btn-outline" (click)="startSaveVariant()">
+    <button type="button" class="btn btn-sm btn-outline" appTooltip="Saves the filters, columns, sort and role"
+            (click)="startSaveVariant()">
       <svg lucideSave class="size-4"></svg> Save variant…
     </button>
   }
@@ -34,138 +37,157 @@
   <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
     <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
   </button>
-  <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
-    <svg lucideListFilter class="size-4"></svg> Reset
+  <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
+    <svg lucideListFilter class="size-4"></svg> Clear filters
   </button>
+  <app-sync-status />
 </div>
 
-<!-- Dynamic filter bar -->
-<div class="facet-row facet-row-compact">
-  @for (f of visibleFields(); track f.key) {
-    <div class="field-col">
-      <label class="field-label">
-        {{ f.label }} @if (f.required) { <span class="required-mark">*</span> }
-      </label>
-
-      @switch (f.type) {
-        @case ('text') {
-          <div class="join">
-            <!-- funnel toggles Contains / Does not contain; red funnel-X = Does not contain -->
-            <button type="button" class="btn btn-sm join-item px-2" [class.text-error]="textValue(f.key).negate"
-                    [appTooltip]="textValue(f.key).negate ? 'Does not contain, click for Contains' : 'Contains, click for Does not contain'"
-                    [attr.aria-label]="textValue(f.key).negate ? 'Does not contain' : 'Contains'"
-                    (click)="setTextValue(f.key, textValue(f.key).text, !textValue(f.key).negate)">
-              @if (textValue(f.key).negate) {
-                <svg lucideFunnelX class="size-4"></svg>
-              } @else {
-                <svg lucideFunnel class="size-4"></svg>
+<!-- Filter bar: each field stacks its own conditions -->
+@if (filterFields().length) {
+  <div class="facet-row facet-row-compact cond-bar">
+    @for (f of filterFields(); track f.key) {
+      <div class="field-col cond-col">
+        <label class="field-label">{{ f.label }}</label>
+        @for (c of conditionsOf(f); track $index; let i = $index) {
+          <div class="cond-row">
+            @if (i > 0) { <span class="cond-join">{{ joinWord(c) }}</span> }
+            <select class="select select-sm select-bordered cond-op" [attr.aria-label]="f.label + ' operator'"
+                    [ngModel]="c.op" (ngModelChange)="setOp(f, i, $event)">
+              @for (o of opsFor(f); track o.op) {
+                <option [ngValue]="o.op">{{ o.label }}</option>
               }
-            </button>
-            <input type="text" class="input input-sm input-bordered join-item flex-1"
-                   [placeholder]="textValue(f.key).negate ? 'Does not contain…' : 'Contains…'"
-                   [ngModel]="textValue(f.key).text" (ngModelChange)="setTextValue(f.key, $event, textValue(f.key).negate)" />
-          </div>
-        }
-        @case ('multiselect') {
-          <app-multiselect-dropdown [options]="asMulti(f).options" placeholder="Any"
-            [selected]="valueOf(f.key) || []" (selectedChange)="setValue(f.key, $event)" />
-        }
-        @case ('select') {
-          <select class="select select-sm select-bordered"
-                  [ngModel]="valueOf(f.key)" (ngModelChange)="setValue(f.key, $event)">
-            <option [ngValue]="null">Any</option>
-            @for (o of asMulti(f).options; track o.value) {
-              <option [ngValue]="o.value">{{ o.label }}</option>
+            </select>
+            <div class="cond-value">
+              @if (needsNoValue(c.op)) {
+                <!-- is blank / is not blank take no value -->
+              } @else if (f.kind === 'list' && (c.op === 'is' || c.op === 'isNot')) {
+                <app-multiselect-dropdown [options]="optionsFor(f.key)" placeholder="Pick values"
+                  [selected]="c.values" (selectedChange)="updateCondition(f, i, { values: $event })" />
+              } @else if (f.kind === 'number') {
+                <div class="row-tight">
+                  <input type="number" class="input input-sm input-bordered w-24"
+                         [placeholder]="c.op === 'between' ? 'From' : 'Value'"
+                         [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: numStr($event) })" />
+                  @if (c.op === 'between') {
+                    <input type="number" class="input input-sm input-bordered w-24" placeholder="To"
+                           [ngModel]="c.to" (ngModelChange)="updateCondition(f, i, { to: numStr($event) })" />
+                  }
+                </div>
+              } @else if (f.kind === 'date') {
+                @if (c.op === 'between') {
+                  <app-date-range [from]="asDate(c.value)" [to]="asDate(c.to)"
+                    (rangeChange)="setDateBetween(f, i, $event)" />
+                } @else {
+                  <input type="date" class="input input-sm input-bordered w-full"
+                         [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event ?? '' })" />
+                }
+              } @else {
+                <input type="text" class="input input-sm input-bordered w-full" placeholder="Value"
+                       [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event })" />
+              }
+            </div>
+            @if (conditionsOf(f).length > 1) {
+              <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this condition"
+                      (click)="removeCondition(f, i)">
+                <svg lucideX class="size-3.5"></svg>
+              </button>
             }
-          </select>
-        }
-        @case ('range') {
-          <div class="range-value">
-            {{ rangeValue(f.key, asRange(f))[0] }} – {{ rangeValue(f.key, asRange(f))[1] }}
-          </div>
-          <div class="row-tight">
-            <input type="number" class="input input-xs input-bordered w-20" placeholder="Min"
-                   [ngModel]="rangeValue(f.key, asRange(f))[0]"
-                   (ngModelChange)="setRangeMin(f.key, asRange(f), $event)" />
-            <input type="number" class="input input-xs input-bordered w-20" placeholder="Max"
-                   [ngModel]="rangeValue(f.key, asRange(f))[1]"
-                   (ngModelChange)="setRangeMax(f.key, asRange(f), $event)" />
           </div>
         }
-        @case ('daterange') {
-          <app-date-range [from]="dateRangeValue(f.key)[0]" [to]="dateRangeValue(f.key)[1]"
-            (rangeChange)="setDateRange(f.key, $event)" />
-        }
-      }
-    </div>
-  }
-</div>
+        <button type="button" class="btn btn-ghost btn-xs self-start" (click)="addCondition(f)">
+          <svg lucidePlus class="size-3.5"></svg> Add condition
+        </button>
+      </div>
+    }
+  </div>
+}
 
-<!-- Results: count, active filter chips, column/export actions -->
-<div class="row mb-sm">
-  <span class="fw-bold">{{ filtered().length }} of {{ totalJobs }} hulls match</span>
-  @for (c of activeChips(); track c.label) {
-    <span class="badge badge-outline gap-1">
+<!-- Role, release, active filters, then keyword search / columns / export -->
+<div class="facet-row facet-row-compact">
+  <select class="select select-sm select-bordered" style="min-width: 12rem" aria-label="Role"
+          [ngModel]="selectedRole()" (ngModelChange)="onRoleChange($event)">
+    @for (o of roleOptions; track o.value) {
+      <option [ngValue]="o.value">{{ o.label }}</option>
+    }
+  </select>
+  @if (canReleaseSelected()) {
+    <button type="button" class="btn btn-sm btn-primary" (click)="releaseSelected()">
+      <svg lucideCheck class="size-4"></svg> Release to Welding ({{ selectedIds().size }})
+    </button>
+  }
+  <span class="fw-bold">{{ table.total() }} of {{ totalJobs }} match</span>
+  @for (c of activeChips(); track c.key) {
+    <span class="badge badge-outline gap-1 h-auto py-0.5">
       {{ c.label }}
-      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="c.clear()">
+      <button type="button" class="btn btn-ghost btn-xs btn-circle" (click)="clearField(c.key)">
         <svg lucideX class="size-3"></svg>
       </button>
     </span>
   }
   <span class="spacer"></span>
+  <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+    <svg lucideSearch class="size-4 opacity-60"></svg>
+    <input type="text" class="grow" placeholder="Search XREFID, hull, drawing, joint or order…"
+           [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+    @if (table.globalFilter()) {
+      <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+        <svg lucideX class="size-3.5 opacity-60"></svg>
+      </button>
+    }
+  </label>
   <button type="button" class="btn btn-sm btn-outline" (click)="openColPicker()">
     <svg lucideColumns3 class="size-4"></svg> Columns
   </button>
   <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
+    <svg lucideFileSpreadsheet class="size-4"></svg> Export
   </button>
 </div>
 
-<div class="overflow-x-auto">
+<div class="flex-1 min-h-0 min-w-0">
 <table class="table table-sm">
   <thead>
     <tr>
+      <th class="w-8">
+        <input type="checkbox" class="checkbox checkbox-xs" aria-label="Select all on this page"
+               [checked]="allSelected()" (change)="toggleSelectAll()" />
+      </th>
       @for (col of visibleColumns(); track col.key) {
-        <th [class]="col.width || ''">
-          @if (col.sortField) {
-            <a class="cursor-pointer select-none" (click)="table.toggleSort(col.sortField)">
-              {{ col.label }} {{ table.sortField() === col.sortField ? (table.sortOrder() === 1 ? '▲' : '▼') : '' }}
-            </a>
-          } @else {
-            {{ col.label }}
-          }
-        </th>
+        <th appSortHeader [class]="col.width || ''" [table]="table" [field]="col.key" [label]="col.label"
+            [filter]="headerFilter(col)" [options]="optionsFor(col.key)"></th>
       }
-      <th class="min-w-8 sticky right-0 bg-base-100">Actions</th>
+      <th class="col-freeze-actions">Actions</th>
     </tr>
   </thead>
   <tbody>
-    @for (job of table.paged(); track job.id) {
+    @for (row of table.paged(); track row.id) {
       <tr>
+        <td class="w-8">
+          <input type="checkbox" class="checkbox checkbox-xs" [checked]="selectedIds().has(row.id)" (change)="toggleSelect(row.id)" />
+        </td>
         @for (col of visibleColumns(); track col.key) {
-          <td>
-            @switch (col.key) {
-              @case ('id') { <span class="mono">{{ job.xrefid }}</span> }
-              @case ('currentRouting') { {{ currentRouting(job) }} }
-              @case ('scheduledFor') { {{ job.scheduledFor | appDate }} }
-              @default { {{ job[col.field!] || '-' }} }
-            }
-          </td>
+          <td>{{ cellText(row, col) }}</td>
         }
-        <td class="sticky right-0 bg-base-100">
-          <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(job)">
-            <svg lucideArrowUpRight class="size-4"></svg> Details
-          </button>
+        <td class="col-freeze-actions">
+          <div class="row-tight">
+            <button type="button" class="btn btn-ghost btn-xs" (click)="openHistory(row)">
+              <svg lucideHistory class="size-3"></svg> History
+            </button>
+            <button type="button" class="btn btn-primary btn-xs" (click)="openDetails(row)">
+              <svg lucideArrowUpRight class="size-3"></svg> Details
+            </button>
+          </div>
         </td>
       </tr>
     } @empty {
-      <tr><td [attr.colspan]="visibleColumns().length + 1" class="empty">No jobs match your filters.</td></tr>
+      <tr><td [attr.colspan]="visibleColumns().length + 2" class="empty">No jobs match your filters.</td></tr>
     }
   </tbody>
 </table>
 </div>
 
 <app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
+</div>
 
 <!-- Adapt Filters dialog -->
 <dialog #adaptDlg class="modal">
@@ -173,18 +195,18 @@
     <div class="modal-box max-w-3xl">
       <h3 class="text-lg font-semibold mb-2">Adapt filters</h3>
       <p class="dialog-hint">
-        Check the fields you want in the bar, then drag them (or use the arrows) into the order you want. Required fields stay on.
+        Check the fields you want in the filter bar, then drag them (or use the arrows) into the order you want.
+        Taking a field out of the bar clears its conditions.
       </p>
 
       <div class="row mb-sm">
         <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search fields…"
                [ngModel]="adaptFilter()" (ngModelChange)="adaptFilter.set($event)" />
-        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(true)">Select all</button>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAll(false)">Clear</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="draftKeys.set([])">Clear</button>
       </div>
 
       <div class="field-scroll">
-        <app-ordered-pick-list [items]="schema" [(keys)]="draftKeys" [filter]="adaptFilter()" />
+        <app-ordered-pick-list [items]="fields" [(keys)]="draftKeys" [filter]="adaptFilter()" />
       </div>
 
       <div class="modal-action">
@@ -210,11 +232,12 @@
       <div class="row mb-sm">
         <input type="text" class="input input-sm input-bordered flex-1" placeholder="Search columns…"
                [ngModel]="colFilter()" (ngModelChange)="colFilter.set($event)" />
-        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(true)">Select all</button>
-        <button type="button" class="btn btn-ghost btn-sm" (click)="selectAllCols(false)">Clear</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="draftColKeys.set([])">Clear</button>
       </div>
 
-      <app-ordered-pick-list [items]="allColumns" [(keys)]="draftColKeys" [filter]="colFilter()" />
+      <div class="field-scroll">
+        <app-ordered-pick-list [items]="fields" [(keys)]="draftColKeys" [filter]="colFilter()" />
+      </div>
 
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" (click)="showColPicker.set(false)">Cancel</button>
