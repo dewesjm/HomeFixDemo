@@ -114,7 +114,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
-- **Engineering override:** on some joints (about 1 in 4 in the demo) the external system sends nothing. There, GWP, WTN, Weld Process, PH/IP Min/Max and Filler Metal Type/Size start blank and are typed in by hand (Weld Process is still a droplist). Nothing typed there counts as off the WPS. Who may do this isn't enforced (no roles).
+- **Engineering override:** on some joints (about 1 in 4 in the demo) the external system sends nothing. There, GWP, WTN, Weld Process, PH/IP Min/Max and Filler Metal Type/Size start blank and are typed in by hand (Weld Process is still a droplist). A PH/IP requirement takes a number or NC; NC makes its Actual NC and locked, just like an NC from the WTN. Nothing typed there counts as off the WPS. Who may do this isn't enforced (no roles).
 - Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max. A value outside its requirement limits is a **deviation** (see below), not a hard stop. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max (hard stop).
 - Filler Metal Type, Size and MIC (MIC is typed in). On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.

@@ -49,6 +49,16 @@ const FIT_REQUIRED_FABRICATION: Record<string, string> = {
   location: 'Location', id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
 };
 
+/* PH/IP requirements: the keys the actuals follow */
+const REQUIREMENT_KEYS = new Set(Object.values(ACTUAL_REQUIREMENT));
+
+/* a PH/IP requirement typed on an engineering override step must be a number or NC */
+function typedRequirementError(stage: WorkflowStage, f: { key: string; label: string }): string {
+  const v = stage.inputs[f.key] ?? '';
+  if (!stage.engineeringEntry || !REQUIREMENT_KEYS.has(f.key) || !v || v === 'NC' || !isNaN(Number(v))) return '';
+  return `${f.label} must be a number or NC`;
+}
+
 @Component({
   selector: 'app-joint-page',
   standalone: true,
@@ -769,6 +779,8 @@ export class JointPageComponent implements OnDestroy {
     if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFieldLocked(stage, f)) {
       return { ...f, type: 'text', options: undefined, description: '' };
     }
+    /* typed PH/IP requirements take a number or NC, so they're text boxes */
+    if (stage.engineeringEntry && REQUIREMENT_KEYS.has(f.key)) return { ...f, type: 'text' };
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     if (f.key === 'weldProcedure') {
       /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. in
@@ -958,6 +970,10 @@ export class JointPageComponent implements OnDestroy {
   }
 
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
+    if (stage.engineeringEntry && REQUIREMENT_KEYS.has(field.key)) {
+      this.typedRequirementBlur(stage, field, value);
+      return;
+    }
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       this.wfService.setStageInput(this.job, stage.id, field, value);
       this.clearHidden(stage);
@@ -973,6 +989,24 @@ export class JointPageComponent implements OnDestroy {
         this.fieldErrors.set(next);
       }
     }
+  }
+
+  /* a typed PH/IP requirement (engineering override): NC makes its actuals NC and locked, same as
+     an NC from the WTN; anything else frees an actual left at NC */
+  private typedRequirementBlur(stage: WorkflowStage, field: StageField, raw: string) {
+    if (!this.job) return;
+    const value = raw.trim().toUpperCase() === 'NC' ? 'NC' : raw.trim();
+    if (value !== (stage.inputs[field.key] ?? '')) {
+      const changes: { field: StageField; value: string }[] = [{ field, value }];
+      for (const [a, req] of Object.entries(ACTUAL_REQUIREMENT)) {
+        const af = stage.fields.find(f => f.key === a);
+        if (req !== field.key || !af) continue;
+        if (value === 'NC') changes.push({ field: af, value: 'NC' });
+        else if (stage.inputs[a] === 'NC') changes.push({ field: af, value: '' });
+      }
+      this.wfService.setStageInputs(this.job, stage.id, changes);
+    }
+    this.onFieldBlur(stage, field);
   }
 
   toggleAffectedItem(stage: WorkflowStage, item: string, event: Event) {
@@ -1137,6 +1171,7 @@ export class JointPageComponent implements OnDestroy {
       if (f.required && empty) {
         errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
       }
+      if (typedRequirementError(stage, f)) errors[`${stage.id}:${f.key}`] = typedRequirementError(stage, f);
       /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
     }
     for (const pair of ACTUAL_MIN_MAX) {
@@ -1218,6 +1253,7 @@ export class JointPageComponent implements OnDestroy {
     if (field.required && empty) {
       prev[key] = `${field.label} is required`;
     }
+    if (curStage && typedRequirementError(curStage, field)) prev[key] = typedRequirementError(curStage, field);
     /* Actual Min above Max: flagged on the Max field, rechecked when either one changes */
     const pair = ACTUAL_MIN_MAX.find(p => p.min === field.key || p.max === field.key);
     if (pair) {

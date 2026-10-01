@@ -16,7 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Foreman Override is turned off on welding steps.',
-      'Some joints now come with no GWP, WTN, Weld Process, PH/IP or Filler Metal Type/Size (an engineering override). On those, the fields start blank and are typed in by hand. On every other joint they are still filled in and cannot be changed.',
+      'Some joints now come with no GWP, WTN, Weld Process, PH/IP or Filler Metal Type/Size (an engineering override). On those, the fields start blank and are typed in by hand; a PH/IP requirement can be a number or NC (NC makes its Actual NC). On every other joint they are still filled in and cannot be changed.',
     ],
     fixed: [
       'Work History > Correct: the message under a locked field no longer ends with a leftover note asking if the value needs to change, and says routing instead of stage.',
