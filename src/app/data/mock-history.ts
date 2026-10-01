@@ -65,7 +65,7 @@ function activityForJob(job: Job, rand: () => number, now: number): MockActivity
   const stageAfter = (k: number): WorkflowStage | undefined => stages[k + 1];
   /* fabrication data doesn't get its own history in the mock, so every sign-off for this job
      snapshots the same seeded values — matches the real app closely enough since fab fields change rarely */
-  const fabInputs = job.trade === 'Welding' ? fabricationSnapshot(seedFabricationData(job)) : undefined;
+  const fabInputs = fabricationSnapshot(seedFabricationData(job));
   const push = (section: HistoryEntry['section'], action: string, routing: string, from?: string, to?: string, inputs?: HistoryEntry['inputs']) => {
     t += (3 + Math.floor(rand() * 40)) * MIN;
     out.push({ jobId: job.id, entry: { when: new Date(t).toISOString(), who, ...stampWho(who), section, action, from, to, routing, inputs, fabInputs: section === 'Sign-off' ? fabInputs : undefined } });

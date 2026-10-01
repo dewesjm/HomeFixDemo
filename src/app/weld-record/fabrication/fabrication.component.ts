@@ -11,7 +11,6 @@ import { FabricationField } from '../../data/workflow';
   templateUrl: './fabrication.component.html'
 })
 export class FabricationComponent {
-  trade = input.required<string>();
   fabricationData = input.required<Record<string, string>>();
   fields = input.required<FabricationField[]>();
   fabLocked = input<boolean>(false);

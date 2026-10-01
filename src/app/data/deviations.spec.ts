@@ -6,7 +6,7 @@ import { detectDeviations, isActualOutOfRange } from './deviations';
 /* a Tack stage on the first seeded WPS that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
   const proc = procedures().find(p => p.fillerMetalTypes.length < FILLER_METAL_TYPE_OPTIONS.length)!;
-  const tack = buildStages(addTestJob('Welding')).find(s => s.id === 'tack')!;
+  const tack = buildStages(addTestJob()).find(s => s.id === 'tack')!;
   const stage: WorkflowStage = {
     ...tack,
     inputs: { weldProcedure: proc.gwp, wtn: proc.wtn, phMin: '50', phMax: '300', ipMin: '50', ipMax: '300', ...extra },
@@ -67,7 +67,7 @@ describe('deviations', () => {
   });
 
   it('checks condition quals on a welding step with no WPS picked and on an inspection step', () => {
-    const job = addTestJob('Welding');
+    const job = addTestJob();
     const tack = buildStages(job).find(s => s.id === 'tack')!;
     expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, ['CNTRLMTL1']))
       .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1', required: 'CNTRLMTL1' })]);

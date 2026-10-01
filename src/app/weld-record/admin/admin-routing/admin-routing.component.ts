@@ -18,7 +18,7 @@ import { Job } from '../../../data/jobs';
 import {
   StageField, SignoffField, defaultSignoffFields,
   addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
-  allStageIds, getTemplates, getTradeOptions, ROLES, type Role
+  allStageIds, getTemplates, ROLES, type Role
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
@@ -103,7 +103,6 @@ function parseOptions(text: string): { label: string; value: string }[] | undefi
   `]
 })
 export class AdminRoutingComponent {
-  tradeOptions = computed(() => getTradeOptions());
   roleOptions = computed(() => {
     const used = new Set<string>();
     for (const templates of Object.values(getTemplates())) {
@@ -177,7 +176,7 @@ export class AdminRoutingComponent {
   /* ── Row CRUD ── */
 
   addRow() {
-    const trade = this.tradeOptions()[0]?.value ?? 'Welding';
+    const trade = 'Welding';
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved

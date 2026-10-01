@@ -229,41 +229,6 @@ export function defaultSignoffFields(): SignoffField[] {
   return DEFAULT_SIGNOFF_FIELDS.map(f => ({ ...f }));
 }
 
-/* ordered stage pipelines per trade, some conditional */
-// Shared stages every trade gets: a safety/prep stage first and a handover stage last.
-const PREP_STAGE: StageTemplate = {
-  id: 'prep', label: 'Prep', required: true,
-  fields: [{ key: 'ppe', label: 'PPE / safety', type: 'text', placeholder: 'e.g. gloves, eyewear' }],
-  signoffFields: [
-    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-    { key: 'safetyCheck', label: 'Safety check', type: 'select', required: true,
-      options: [{ label: 'Passed', value: 'passed' }, { label: 'Passed w/ notes', value: 'passed-notes' }, { label: 'Failed', value: 'failed' }] },
-    { key: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Prep notes…' },
-  ]
-};
-const HANDOVER_STAGE: StageTemplate = {
-  id: 'handover', label: 'Handover', required: true,
-  fields: [
-    { key: 'walkthrough', label: 'Customer walkthrough', type: 'text', placeholder: 'e.g. confirmed operation' },
-    { key: 'issueReported', label: 'Customer reported an issue?', type: 'select',
-      options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-    // these three appear only when issueReported === 'yes'
-    { key: 'issueDescription', label: 'Issue description', type: 'text', placeholder: 'What did the customer report?',
-      showIf: { key: 'issueReported', equals: 'yes' } },
-    { key: 'issueSeverity', label: 'Severity', type: 'select',
-      options: [{ label: 'Minor', value: 'minor' }, { label: 'Major', value: 'major' }],
-      showIf: { key: 'issueReported', equals: 'yes' } },
-    { key: 'followUpDate', label: 'Follow-up date', type: 'text', placeholder: 'e.g. 2026-07-01',
-      showIf: { key: 'issueReported', equals: 'yes' } },
-  ],
-  signoffFields: [
-    { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-    { key: 'customerSignature', label: 'Customer signature', type: 'select', required: true,
-      options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }, { label: 'Pending', value: 'pending' }] },
-    { key: 'notes', label: 'Notes', type: 'text', required: false, placeholder: 'Handover notes…' },
-  ]
-};
-
 /* ── Shop locations (admin-configurable via localStorage) ── */
 const SHOPS_LS_KEY = STORAGE.shops;
 const DEFAULT_SHOPS = ['North Yard Fabrication', 'South Bay Welding', 'Pipe Shop - Building 4', 'Machine Shop - Building 2', 'Structural Shop - Building 7', 'Ship'];
@@ -964,9 +929,9 @@ function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
   return list.map((s, i) => ({ ...s, fabricationEditable: fitupAt < 0 || i <= fitupAt }));
 }
 
-/* prep stage, trade stages, then handover */
+/* the built-in Welding steps, with their built-in conditions and reject rules */
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = Object.fromEntries(
-  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, withFabricationEditable([PREP_STAGE, ...TRADE_STAGES[t], HANDOVER_STAGE]
+  (Object.keys(TRADE_STAGES) as Job['trade'][]).map(t => [t, withFabricationEditable(TRADE_STAGES[t]
     .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
     .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s))])
 ) as Record<Job['trade'], StageTemplate[]>;
@@ -1062,15 +1027,11 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
       if (routingOptsAll[key]) s.routingOptions = routingOptsAll[key];
     }
   }
-  // Include trades that exist only in localStorage (added via admin)
-  for (const [trade, stages] of Object.entries(saved)) {
-    if (!_merged[trade as Job['trade']]) {
-      _merged[trade as Job['trade']] = stages.map(s => deserializeStage(s));
-    }
-  }
-  // Remove fabrication — it's a cross-stage data section, not a routing stage
+  /* not routing steps: Fabrication is a cross-stage data section, and Prep/Handover are generic
+     steps from before this was a Welding-only app (older saves still have them; trades other than
+     Welding in older saves are ignored) */
   for (const trade of Object.keys(_merged) as Job['trade'][]) {
-    _merged[trade] = _merged[trade].filter(s => s.id !== 'fabrication');
+    _merged[trade] = _merged[trade].filter(s => !['fabrication', 'prep', 'handover'].includes(s.id));
   }
   return _merged;
 }
@@ -1161,21 +1122,9 @@ export function allStageIds(): { id: string; label: string }[] {
   return [...seen.entries()].map(([id, label]) => ({ id, label }));
 }
 
-/* dynamic trade options — includes admin-added trades from localStorage */
-export function getTradeOptions(): { label: string; value: string }[] {
-  const trades = Object.keys(getTemplates()).sort((a, b) => {
-    if (a === 'Welding') return -1;
-    if (b === 'Welding') return 1;
-    return a.localeCompare(b);
-  });
-  return trades.map(t => ({ label: t, value: t }));
-}
-
 export function buildStages(job: Job): WorkflowStage[] {
-  /* prep + trade stages (from merged templates) + handover — no cycling */
-  const templates = getTemplates();
-  const tradeStages = templates[job.trade] ?? [];
-  const handover = tradeStages.find(t => t.id === 'handover') ?? HANDOVER_STAGE;
+  /* the Welding steps from the merged templates, no cycling; Sold is the end */
+  const tradeStages = getTemplates()['Welding'] ?? [];
   /* Admin > Routing step conditions: Joint Details rules decide here whether the joint gets the step;
      a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
   const included = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
@@ -1225,29 +1174,20 @@ export function buildStages(job: Job): WorkflowStage[] {
     };
   };
 
-  // Welding: no prep, no handover — SOLD is the end
-  if (job.trade === 'Welding') {
-    const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-    const ndtFor = jobNdtSteps(job);
-    const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(id)?.[1] as NdtPhase | undefined;
-    const stepFor = (id: string) => {
-      const phase = phaseOf(id);
-      return phase ? ndtFor[phase].find(st => id === `${phase}-ndt-${st.kind}`) : undefined;
-    };
-    return middle.filter(included).map(toStage).map(s => {
-      const step = stepFor(s.id);
-      /* a step an admin rule adds without the NDT values calling for it offers every method */
-      if (!step) return s;
-      /* only the method(s) the Joint Details values allow; a single one is locked in (pre-filled) */
-      const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
-      return { ...s, routingOptions, inspectionType: step.methods.length === 1 ? step.methods[0] : '' };
-    });
-  }
-
-  // Other trades: prep + stages + handover
-  const prep = tradeStages.find(t => t.id === 'prep') ?? PREP_STAGE;
-  const middle = tradeStages.filter(t => t.id !== 'prep' && t.id !== 'handover');
-  return [prep, ...middle, handover].filter(included).map(toStage);
+  const ndtFor = jobNdtSteps(job);
+  const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(id)?.[1] as NdtPhase | undefined;
+  const stepFor = (id: string) => {
+    const phase = phaseOf(id);
+    return phase ? ndtFor[phase].find(st => id === `${phase}-ndt-${st.kind}`) : undefined;
+  };
+  return tradeStages.filter(included).map(toStage).map(s => {
+    const step = stepFor(s.id);
+    /* a step an admin rule adds without the NDT values calling for it offers every method */
+    if (!step) return s;
+    /* only the method(s) the Joint Details values allow; a single one is locked in (pre-filled) */
+    const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
+    return { ...s, routingOptions, inspectionType: step.methods.length === 1 ? step.methods[0] : '' };
+  });
 }
 
 const SEED_SPECIFIC_LOCATIONS = ['Bay 3, Rack 12', 'Bay 1, Rack 4', 'Bay 5, Rack 9', 'Cell 2, Line B', 'Pad C, Yard 1'];
@@ -1286,8 +1226,8 @@ export function seedFabricationData(job: Job): Record<string, string> {
 }
 
 export function newWorkflow(job: Job): JobWorkflow {
-  /* pre-populate fabrication data for welding demo */
-  const fabData: Record<string, string> = job.trade === 'Welding' ? seedFabricationData(job) : {};
+  /* pre-populate fabrication data for the demo */
+  const fabData = seedFabricationData(job);
   return {
     jobId: job.id,
     technician: job.technician,

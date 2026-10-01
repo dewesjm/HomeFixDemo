@@ -7,7 +7,7 @@ import { WorkflowStore } from './workflow-store.service';
 import { activeStageId, isStageLocked, seededWorkflow, DeviationItem } from '../../data/workflow';
 
 function weldingJob(): Job {
-  const job = addTestJob('Welding');
+  const job = addTestJob();
   Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
   return job;
 }
@@ -28,7 +28,7 @@ describe('DeviationService', () => {
   afterEach(() => localStorage.clear());
 
   it('records an open deviation, logs it to history and holds the joint', () => {
-    const job = addTestJob('Welding');
+    const job = addTestJob();
     expect(service.isOnHold(store.workflowFor(job)())).toBeFalse();
     service.record(job, 'tack', [{ kind: 'out-of-range', label: 'Actual PH Min', entered: '40', required: '50 to 300' }], 'Heater failed');
     const wf = store.workflowFor(job)();
@@ -41,7 +41,7 @@ describe('DeviationService', () => {
   });
 
   it('records nothing when there are no items', () => {
-    const job = addTestJob('Welding');
+    const job = addTestJob();
     service.record(job, 'tack', [], 'n/a');
     expect(service.isOnHold(store.workflowFor(job)())).toBeFalse();
   });
@@ -152,7 +152,7 @@ describe('Engineering Hold from a reject rule (PT failure on a GMAW weld)', () =
 
   /* Root welded with `process`, then Root NDT MT/PT signed PT and UNSAT */
   function ptFailure(process: string) {
-    const job = addTestJob('Welding');
+    const job = addTestJob();
     Object.assign(job, { ndt: '', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
     store.update(job, wf => ({ ...wf, stages: wf.stages.map(s =>
       s.id === 'root-weld' ? { ...s, inputs: { ...s.inputs, weldProcess: process } }

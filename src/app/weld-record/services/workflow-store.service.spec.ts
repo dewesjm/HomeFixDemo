@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
 import { addTestJob, Job } from '../../data/jobs';
+import { buildStages } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 describe('WorkflowStore', () => {
@@ -11,7 +12,7 @@ describe('WorkflowStore', () => {
     localStorage.clear();
     TestBed.configureTestingModule({});
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob('StoreTestTrade');
+    job = addTestJob();
   });
 
   afterEach(() => localStorage.clear());
@@ -20,10 +21,11 @@ describe('WorkflowStore', () => {
     expect(store.workflowFor(job)).toBe(store.workflowFor(job));
   });
 
-  it('seeds a fresh job with prep + handover and no history', () => {
+  it('seeds a fresh job with its Welding routing and no history', () => {
     const wf = store.workflowFor(job)();
     expect(wf.jobId).toBe(job.id);
-    expect(wf.stages.map(s => s.id)).toEqual(['prep', 'handover']);
+    expect(wf.stages.map(s => s.id)).toEqual(buildStages(job).map(s => s.id));
+    expect(wf.stages[0].id).toBe('pre-fit');
     expect(wf.history).toEqual([]);
   });
 
@@ -41,7 +43,7 @@ describe('WorkflowStore', () => {
     expect(next.history.length).toBe(prev.history.length + 1);
     const entry = next.history[next.history.length - 1];
     expect(entry.action).toBe('did a thing');
-    expect(entry.routing).toBe('Prep');       // first required, unsigned stage at the time
+    expect(entry.routing).toBe('Pre-Fit');       // first required, unsigned stage at the time
     expect(entry.when).toBeTruthy();
   });
 

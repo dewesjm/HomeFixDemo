@@ -13,7 +13,7 @@ describe('AttachmentService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(AttachmentService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob('AttachTestTrade');
+    job = addTestJob();
   });
 
   afterEach(() => localStorage.clear());

@@ -144,12 +144,7 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
   return out;
 }
 
-/* a trade's step templates, minus the old generic Prep/Handover that Welding joints never get
-   (workflow.ts leaves them out when it builds a Welding joint's routing) */
-function stepsOf(trade: string): StepTemplateShape[] {
-  const list = stepTemplates()[trade] ?? [];
-  return trade === 'Welding' ? list.filter(t => t.id !== 'prep' && t.id !== 'handover') : list;
-}
+const stepsOf = (trade: string): StepTemplateShape[] => stepTemplates()[trade] ?? [];
 
 /* the answers of a trade's steps before `stageId`, in routing order (what a rule on that step can use) */
 export function stepAnswerFieldsBefore(trade: string, stageId: string): StepConditionField[] {

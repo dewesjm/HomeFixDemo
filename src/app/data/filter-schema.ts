@@ -79,7 +79,6 @@ const JOB_FIELDS: SearchField[] = [
   job('xrefid', 'XREFID', 'Job', 'text', 'min-w-16'),
   job('ship', 'Ship', 'Job', 'text', 'min-w-16'),
   job('hull', 'Hull', 'Job', 'text', 'min-w-24'),
-  job('trade', 'Trade', 'Job', 'list'),
   job('technician', 'Technician', 'Job', 'list'),
   job('drawing', 'Drawing', 'Job'),
   job('drawingRev', 'Drawing Rev', 'Job'),

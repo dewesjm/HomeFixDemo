@@ -292,9 +292,9 @@ export const JOBS: Job[] = generateJobs();
 export const TECHNICIAN_OPTIONS = TECHNICIAN_NAMES.map(t => ({ label: t, value: t }));
 
 
-/* add a test job for a given trade (for testing admin-added trades) */
+/* a fresh blank Welding job for tests (N Ind. 1, so its routing starts at Pre-Fit) */
 let _nextCustomId = 10_000;
-export function addTestJob(trade: string): Job {
+export function addTestJob(): Job {
   const numId = _nextCustomId++;
   const id = makeJobId(numId);
   const job: Job = {
@@ -302,7 +302,7 @@ export function addTestJob(trade: string): Job {
     xrefid: id,
     ship: makeShip(numId),
     hull: makeHull(numId),
-    trade,
+    trade: 'Welding',
     technician: TECHNICIAN_NAMES[numId % TECHNICIAN_NAMES.length],
     drawing: '',
     drawingRev: '',

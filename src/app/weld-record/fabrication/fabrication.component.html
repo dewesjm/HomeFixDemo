@@ -1,129 +1,125 @@
 <section class="panel">
   <h3 class="panel-title"><svg lucideBox class="size-4"></svg> Fabrication</h3>
 
-  @if (trade() === 'Welding') {
-    <!-- Welding fabrication fields - 5 line layout -->
-    <div class="flex flex-col gap-2 mb-sm">
-      <!-- Line 1: Location and Specific Location -->
-      <div class="flex gap-4">
-        @for (f of fields(); track f.key) {
-          @if (f.row === 1) {
-            <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-              @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
-                        [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
-                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              } @else {
-                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" [type]="f.type === 'number' ? 'number' : 'text'"
-                       [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                       [ngModel]="fabricationData()[f.key]"
-                       (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-              }
-              @if (fabErrors()[f.key]) {
-                <div class="field-error">{{ fabErrors()[f.key] }}</div>
-              }
-            </div>
+  <!-- 5 line layout -->
+  <div class="flex flex-col gap-2 mb-sm">
+    <!-- Line 1: Location and Specific Location -->
+    <div class="flex gap-4">
+      @for (f of fields(); track f.key) {
+        @if (f.row === 1) {
+          <div class="flex-1 max-w-xs">
+            <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+            @if (f.type === 'select') {
+              <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
+                      [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
+                @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            } @else {
+              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" [type]="f.type === 'number' ? 'number' : 'text'"
+                     [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                     [ngModel]="fabricationData()[f.key]"
+                     (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
             }
-          }
-        </div>
-
-      <!-- Line 2: Deck Frame P/S/CL and Usage -->
-      <div class="flex gap-4">
-        @for (f of fields(); track f.key) {
-          @if (f.row === 2) {
-            <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
-              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                     [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                     [ngModel]="fabricationData()[f.key]"
-                     (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-              @if (fabErrors()[f.key]) {
-                <div class="field-error">{{ fabErrors()[f.key] }}</div>
-              }
-            </div>
+            @if (fabErrors()[f.key]) {
+              <div class="field-error">{{ fabErrors()[f.key] }}</div>
+            }
+          </div>
           }
         }
       </div>
 
-      <!-- Line 3: ID 1 and ID 2 -->
-      <div class="flex gap-4">
-        @for (f of fields(); track f.key) {
-          @if (f.row === 3) {
-            <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                     [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                     [ngModel]="fabricationData()[f.key]"
-                     (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-              @if (fabErrors()[f.key]) {
-                <div class="field-error">{{ fabErrors()[f.key] }}</div>
-              }
-            </div>
-          }
+    <!-- Line 2: Deck Frame P/S/CL and Usage -->
+    <div class="flex gap-4">
+      @for (f of fields(); track f.key) {
+        @if (f.row === 2) {
+          <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
+            <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+            <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
+                   [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                   [ngModel]="fabricationData()[f.key]"
+                   (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            @if (fabErrors()[f.key]) {
+              <div class="field-error">{{ fabErrors()[f.key] }}</div>
+            }
+          </div>
         }
-      </div>
-
-      <!-- Line 4: Drawing Rev (Execution) and Actual Thickness -->
-      <div class="flex gap-4">
-        @for (f of fields(); track f.key) {
-          @if (f.row === 4) {
-            <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
-              @if (f.type === 'select') {
-                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
-                        [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
-                  @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              } @else {
-                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                       [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                       [ngModel]="fabricationData()[f.key]"
-                       (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-              }
-              @if (fabErrors()[f.key]) {
-                <div class="field-error">{{ fabErrors()[f.key] }}</div>
-              }
-            </div>
-          }
-        }
-      </div>
-
-      <!-- Line 5: W.E. Memo, Revised Joint Design, and Change Number -->
-      <div class="flex gap-4">
-        @for (f of fields(); track f.key) {
-          @if (f.row === 5) {
-            <div class="flex-1 max-w-xs">
-              <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}@if (fabFieldRequired()(f)) { <span class="text-error">*</span> }</div>
-              @if (f.type === 'select') {
-                <!-- options with a description (Revised Joint Design) show it in the open list only; the closed box shows just the code, same as GWP -->
-                <div class="relative">
-                  <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
-                          [class.select-overlay-label]="hasDetails(f)"
-                          [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
-                    @for (o of f.options || []; track o.value) { <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option> }
-                  </select>
-                  @if (hasDetails(f)) {
-                    <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
-                          [class.select-overlay-locked]="fabLocked() || jobComplete()">{{ selectedLabel(f) }}</span>
-                  }
-                </div>
-              } @else {
-                <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                       [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                       [ngModel]="fabricationData()[f.key]"
-                       (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-              }
-              @if (fabErrors()[f.key]) {
-                <div class="field-error">{{ fabErrors()[f.key] }}</div>
-              }
-            </div>
-          }
-        }
-      </div>
+      }
     </div>
-  } @else {
-    <!-- No non-Welding trades in this prototype -->
-  }
+
+    <!-- Line 3: ID 1 and ID 2 -->
+    <div class="flex gap-4">
+      @for (f of fields(); track f.key) {
+        @if (f.row === 3) {
+          <div class="flex-1 max-w-xs">
+            <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
+            <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
+                   [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                   [ngModel]="fabricationData()[f.key]"
+                   (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            @if (fabErrors()[f.key]) {
+              <div class="field-error">{{ fabErrors()[f.key] }}</div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Line 4: Drawing Rev (Execution) and Actual Thickness -->
+    <div class="flex gap-4">
+      @for (f of fields(); track f.key) {
+        @if (f.row === 4) {
+          <div class="flex-1 max-w-xs">
+            <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
+            @if (f.type === 'select') {
+              <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
+                      [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
+                @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            } @else {
+              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
+                     [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                     [ngModel]="fabricationData()[f.key]"
+                     (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            }
+            @if (fabErrors()[f.key]) {
+              <div class="field-error">{{ fabErrors()[f.key] }}</div>
+            }
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Line 5: W.E. Memo, Revised Joint Design, and Change Number -->
+    <div class="flex gap-4">
+      @for (f of fields(); track f.key) {
+        @if (f.row === 5) {
+          <div class="flex-1 max-w-xs">
+            <div class="meta">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}@if (fabFieldRequired()(f)) { <span class="text-error">*</span> }</div>
+            @if (f.type === 'select') {
+              <!-- options with a description (Revised Joint Design) show it in the open list only; the closed box shows just the code, same as GWP -->
+              <div class="relative">
+                <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]" [disabled]="fabLocked() || jobComplete()"
+                        [class.select-overlay-label]="hasDetails(f)"
+                        [ngModel]="fabricationData()[f.key]" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
+                  @for (o of f.options || []; track o.value) { <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option> }
+                </select>
+                @if (hasDetails(f)) {
+                  <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
+                        [class.select-overlay-locked]="fabLocked() || jobComplete()">{{ selectedLabel(f) }}</span>
+                }
+              </div>
+            } @else {
+              <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
+                     [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                     [ngModel]="fabricationData()[f.key]"
+                     (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            }
+            @if (fabErrors()[f.key]) {
+              <div class="field-error">{{ fabErrors()[f.key] }}</div>
+            }
+          </div>
+        }
+      }
+    </div>
+  </div>
 </section>

@@ -5,11 +5,11 @@ import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 import { activeStageId, discardUnsignedEdits, seededWorkflow, updateStageTemplate } from '../../data/workflow';
 
-/* addTestJob('Welding') with these overrides yields a minimal, deterministic Welding pipeline:
+/* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
    root-weld, root-layer, final-weld, review-o04, sold — plus a VT step per phase (NDT Root/Each/Final blank counts as VT only) unless noted. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
-  const job = addTestJob('Welding');
+  const job = addTestJob();
   Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
   return job;
 }

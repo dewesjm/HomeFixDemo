@@ -6,7 +6,6 @@
   <table class="table table-sm">
     <thead>
       <tr>
-        <th appSortHeader [table]="table" field="trade" label="Trade"></th>
         <th appSortHeader [table]="table" field="stageLabel" label="Stage"></th>
         <th>Options</th>
         <th></th>
@@ -15,7 +14,6 @@
     <tbody>
       @for (row of table.sorted(); track row.uid) {
         <tr>
-          <td>{{ row.trade }}</td>
           <td>{{ row.stageLabel }}</td>
           <td>
             @if (editingUid() === row.uid) {

@@ -5,7 +5,7 @@
   <div class="page-header mt-sm">
     <span class="back-link" (click)="back()">&larr; Back</span>
     <span class="section-sub m-0">
-      Hull {{ j.hull }} · {{ j.drawing || '-' }} · {{ j.joint || '-' }} · {{ j.trade }} ·
+      Hull {{ j.hull }} · {{ j.drawing || '-' }} · {{ j.joint || '-' }} ·
       <strong>Routing:</strong> {{ currentRouting() }}
     </span>
     <span class="spacer"></span>
@@ -16,7 +16,7 @@
 
   <app-joint-details [job]="j" [currentRouting]="currentRouting()" />
 
-  <app-fabrication [trade]="j.trade" [fabricationData]="w.fabricationData" [fields]="fabFields()" [fabLocked]="fabLocked()" [jobComplete]="jobComplete()" [fabErrors]="fabErrors()" [fabFieldRequired]="fabFieldRequired" (inputBlur)="fabInputBlur($event.key, $event.value)" (selectChange)="fabSelectChange($event.key, $event.value)" />
+  <app-fabrication [fabricationData]="w.fabricationData" [fields]="fabFields()" [fabLocked]="fabLocked()" [jobComplete]="jobComplete()" [fabErrors]="fabErrors()" [fabFieldRequired]="fabFieldRequired" (inputBlur)="fabInputBlur($event.key, $event.value)" (selectChange)="fabSelectChange($event.key, $event.value)" />
 
   <!-- 5 ───────── Signoff (current stage) ───────── -->
   @if (signoffCtx(); as ctx) {

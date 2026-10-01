@@ -578,10 +578,7 @@ export class JointPageComponent implements OnDestroy {
 
   swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
     if (!this.job) return [];
-    const templates = getTemplates()[this.job.trade] ?? [];
-    return templates
-      .filter(t => t.id !== 'prep' && t.id !== 'handover')
-      .map(t => ({ label: t.label, value: t.id }));
+    return (getTemplates()[this.job.trade] ?? []).map(t => ({ label: t.label, value: t.id }));
   }
   updateSwapStage(stage: WorkflowStage, swapId: string) {
     if (!this.job || !this.wf) return;

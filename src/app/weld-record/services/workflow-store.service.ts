@@ -113,8 +113,8 @@ export class WorkflowStore {
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
 
-        /* backfill empty fabrication data for Welding jobs */
-        if (job?.trade === 'Welding' && Object.keys(wf.fabricationData).length === 0) {
+        /* backfill empty fabrication data */
+        if (job && Object.keys(wf.fabricationData).length === 0) {
           wf.fabricationData = seedFabricationData(job);
         }
 

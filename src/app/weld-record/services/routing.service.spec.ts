@@ -14,7 +14,7 @@ describe('RoutingService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(RoutingService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob('RoutingTestTrade');   // seeds a plain prep + handover pipeline
+    job = addTestJob();   // routing starts Pre-Fit, then Fit
   });
 
   afterEach(() => localStorage.clear());
@@ -23,36 +23,36 @@ describe('RoutingService', () => {
     const ppeField: StageField = { key: 'ppe', label: 'PPE / safety', type: 'text' };
 
     it('records a value on the named stage and logs the change', () => {
-      service.setStageInput(job, 'prep', ppeField, 'gloves, eyewear');
+      service.setStageInput(job, 'pre-fit', ppeField, 'gloves, eyewear');
       const wf = store.workflowFor(job)();
-      expect(wf.stages.find(s => s.id === 'prep')?.inputs['ppe']).toBe('gloves, eyewear');
+      expect(wf.stages.find(s => s.id === 'pre-fit')?.inputs['ppe']).toBe('gloves, eyewear');
       const entry = wf.history.find(h => h.section === 'Stages' && h.action.includes('PPE / safety'));
       expect(entry?.from).toBe('-');
       expect(entry?.to).toBe('gloves, eyewear');
     });
 
     it('does nothing when the value is unchanged (no duplicate history entry)', () => {
-      service.setStageInput(job, 'prep', ppeField, 'gloves');
+      service.setStageInput(job, 'pre-fit', ppeField, 'gloves');
       const before = store.workflowFor(job)().history.length;
-      service.setStageInput(job, 'prep', ppeField, 'gloves');
+      service.setStageInput(job, 'pre-fit', ppeField, 'gloves');
       expect(store.workflowFor(job)().history.length).toBe(before);
     });
 
     it('appends the field unit to the logged value when present', () => {
       const psi: StageField = { key: 'pressure', label: 'Pressure', type: 'number', unit: 'PSI' };
-      service.setStageInput(job, 'prep', psi, '150');
+      service.setStageInput(job, 'pre-fit', psi, '150');
       const entry = store.workflowFor(job)().history.find(h => h.action.includes('Pressure'));
       expect(entry?.to).toBe('150 PSI');
     });
 
     it('setStageInputs applies several field changes as a single history-logged update', () => {
       const before = store.workflowFor(job)().history.length;
-      service.setStageInputs(job, 'prep', [
+      service.setStageInputs(job, 'pre-fit', [
         { field: ppeField, value: 'gloves' },
         { field: { key: 'note', label: 'Note', type: 'text' }, value: 'ok' },
       ]);
       const wf = store.workflowFor(job)();
-      expect(wf.stages.find(s => s.id === 'prep')?.inputs).toEqual({ ppe: 'gloves', note: 'ok' });
+      expect(wf.stages.find(s => s.id === 'pre-fit')?.inputs).toEqual({ ppe: 'gloves', note: 'ok' });
       expect(wf.history.length).toBe(before + 2);
     });
   });
@@ -61,11 +61,11 @@ describe('RoutingService', () => {
     it('sets the routing back without marking anything signed; the target comes up blank', () => {
       store.update(job, wf => ({
         ...wf,
-        stages: wf.stages.map(s => s.id === 'prep'
+        stages: wf.stages.map(s => s.id === 'pre-fit'
           ? { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat', inputs: { ppe: 'gloves' } }
           : s),
       }));
-      service.setRouting(job, 'prep');
+      service.setRouting(job, 'pre-fit');
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs).toEqual({});
@@ -76,13 +76,13 @@ describe('RoutingService', () => {
 
   describe('setRouting forward', () => {
     it('moves the current routing without signing anything; the passed stage stays as it was', () => {
-      service.setStageInput(job, 'prep', { key: 'ppe', label: 'PPE / safety', type: 'text' }, 'gloves');
-      service.setRouting(job, 'handover');
+      service.setStageInput(job, 'pre-fit', { key: 'ppe', label: 'PPE / safety', type: 'text' }, 'gloves');
+      service.setRouting(job, 'fit');
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs['ppe']).toBe('gloves');
-      expect(activeStageId(wf.stages)).toBe('handover');
-      expect(wf.history.some(h => h.section === 'Routing' && h.action === 'Routing set to Handover (admin)')).toBeTrue();
+      expect(activeStageId(wf.stages)).toBe('fit');
+      expect(wf.history.some(h => h.section === 'Routing' && h.action === 'Routing set to Fit (admin)')).toBeTrue();
     });
   });
 
@@ -90,7 +90,7 @@ describe('RoutingService', () => {
     it('reverses the most recently signed stage, clearing its result and inputs', () => {
       store.update(job, wf => ({
         ...wf,
-        stages: wf.stages.map(s => s.id === 'prep'
+        stages: wf.stages.map(s => s.id === 'pre-fit'
           ? { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat', inputs: { ppe: 'gloves' } }
           : s),
       }));
@@ -98,11 +98,11 @@ describe('RoutingService', () => {
       service.deprogress(job, 'wrong joint');
 
       const wf = store.workflowFor(job)();
-      const prep = wf.stages.find(s => s.id === 'prep')!;
-      expect(prep.signed).toBeFalse();
-      expect(prep.result).toBeNull();
-      expect(prep.inputs).toEqual({});
-      expect(prep.signoffRecords.at(-1)?.action).toBe('deprogressed');
+      const preFit = wf.stages.find(s => s.id === 'pre-fit')!;
+      expect(preFit.signed).toBeFalse();
+      expect(preFit.result).toBeNull();
+      expect(preFit.inputs).toEqual({});
+      expect(preFit.signoffRecords.at(-1)?.action).toBe('deprogressed');
       const entry = wf.history.find(h => h.action.includes('Deprogressed'));
       expect(entry?.action).toContain('wrong joint');
     });

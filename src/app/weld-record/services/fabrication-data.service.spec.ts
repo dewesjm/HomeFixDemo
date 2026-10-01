@@ -13,7 +13,7 @@ describe('FabricationDataService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(FabricationDataService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob('FabTestTrade');
+    job = addTestJob();
   });
 
   afterEach(() => localStorage.clear());
@@ -27,12 +27,14 @@ describe('FabricationDataService', () => {
   });
 
   it('logs a Fabrication history entry with the field key as the action and old/new values', () => {
+    /* a Welding job starts with seeded fabrication data, so the first old value is whatever was seeded */
+    const seeded = store.workflowFor(job)().fabricationData['weldMemo'] || '-';
     service.setFabricationData(job, 'weldMemo', 'M-1');
     service.setFabricationData(job, 'weldMemo', 'M-2');
     const wf = store.workflowFor(job)();
     const entries = wf.history.filter(h => h.section === 'Fabrication' && h.action === 'weldMemo');
     expect(entries.length).toBe(2);
-    expect(entries[0].from).toBe('-');
+    expect(entries[0].from).toBe(seeded);
     expect(entries[0].to).toBe('M-1');
     expect(entries[1].from).toBe('M-1');
     expect(entries[1].to).toBe('M-2');

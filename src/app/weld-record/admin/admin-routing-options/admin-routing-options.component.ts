@@ -34,7 +34,7 @@ export class AdminRoutingOptionsComponent {
   rows = signal<StageRow[]>(this.loadRows());
   editingUid = signal<string | null>(null);
   private cloned: Record<string, StageOption[]> = {};
-  table = new TableState<StageRow>(['trade', 'stageLabel']);
+  table = new TableState<StageRow>(['stageLabel']);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));
@@ -42,7 +42,6 @@ export class AdminRoutingOptionsComponent {
 
   exportCsv() {
     downloadCsv('routing-options', [
-      { header: 'Trade', value: (r: StageRow) => r.trade },
       { header: 'Stage', value: (r: StageRow) => r.stageLabel },
       { header: 'Options', value: (r: StageRow) => r.options.map(o => o.label + (o.default ? ' (default)' : '')).join('; ') },
     ], this.table.sorted());
@@ -53,7 +52,6 @@ export class AdminRoutingOptionsComponent {
     const rows: StageRow[] = [];
     for (const [trade, stages] of Object.entries(templates)) {
       for (const s of stages) {
-        if (s.id === 'prep' || s.id === 'handover') continue;
         rows.push({
           uid: `${trade}:${s.id}`,
           trade,
