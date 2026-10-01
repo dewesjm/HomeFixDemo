@@ -157,8 +157,14 @@
                [checked]="allSelected()" (change)="toggleSelectAll()" />
       </th>
       @for (col of visibleColumns(); track col.key) {
-        <th appSortHeader [class]="col.width || ''" [table]="table" [field]="col.key" [label]="col.label"
-            [filter]="headerFilter(col)" [options]="optionsFor(col.key)"></th>
+        <!-- drag a heading (not its filter box) onto another to move the column -->
+        <th appSortHeader [class]="(col.width || '') + ' col-drag'" [table]="table" [field]="col.key" [label]="col.label"
+            [filter]="headerFilter(col)" [options]="optionsFor(col.key)"
+            [attr.draggable]="armedCol() === col.key" [class.dragging]="dragCol() === col.key"
+            [class.drop-before]="dropAt()?.key === col.key && dropAt()?.before" [class.drop-after]="dropAt()?.key === col.key && !dropAt()?.before"
+            (mousedown)="armColDrag($event, col.key)" (mouseup)="armedCol.set(null)"
+            (dragstart)="onColDragStart($event, col.key)" (dragover)="onColDragOver($event, col.key)"
+            (drop)="onColDrop($event)" (dragend)="endColDrag()"></th>
       }
       <th class="col-freeze-actions">Actions</th>
     </tr>

@@ -290,6 +290,49 @@ export class AdaptiveSearchComponent {
     this.showColPicker.set(false);
   }
 
+  // --- Dragging column headings to reorder ---
+  /* only armed when the press starts outside the heading's filter box, so typing/selecting there still works */
+  armedCol = signal<string | null>(null);
+  dragCol = signal<string | null>(null);
+  dropAt = signal<{ key: string; before: boolean } | null>(null);
+
+  armColDrag(e: MouseEvent, key: string) {
+    const t = e.target as HTMLElement;
+    this.armedCol.set(t.closest('input, select, button, label, app-multiselect-dropdown') ? null : key);
+  }
+
+  onColDragStart(e: DragEvent, key: string) {
+    this.dragCol.set(key);
+    e.dataTransfer?.setData('text/plain', key);
+    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+  }
+
+  onColDragOver(e: DragEvent, key: string) {
+    const from = this.dragCol();
+    if (!from) return;
+    e.preventDefault();
+    const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    this.dropAt.set(key === from ? null : { key, before: e.clientX < box.left + box.width / 2 });
+  }
+
+  onColDrop(e: DragEvent) {
+    e.preventDefault();
+    const from = this.dragCol(), at = this.dropAt();
+    if (from && at) {
+      const keys = this.columnKeys().filter(k => k !== from);
+      const i = keys.indexOf(at.key);
+      keys.splice(at.before ? i : i + 1, 0, from);
+      this.columnKeys.set(keys);
+    }
+    this.endColDrag();
+  }
+
+  endColDrag() {
+    this.dragCol.set(null);
+    this.dropAt.set(null);
+    this.armedCol.set(null);
+  }
+
   // --- Stacked conditions ---
 
   /* what the bar shows for a field: its conditions, or one empty one to type into */
