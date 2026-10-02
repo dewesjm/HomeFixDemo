@@ -91,7 +91,10 @@ export function jointNumbers(count: number, seed: number): string[] {
 const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
 export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', 'Transition', 'Overlay', 'Boss', 'Socket'];
 /* exported so Weld Planning's Create Joint offers the same options */
-export const PIPE_SIZES = ['1/2"', '3/4"', '1"', '1-1/4"', '1-1/2"', '2"', '2-1/2"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
+export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
+/* older saved joints hold fractional sizes; map them to the decimal form */
+const FRACTION_PIPE_SIZES: Record<string, string> = { '1/2"': '0.5"', '3/4"': '0.75"', '1-1/4"': '1.25"', '1-1/2"': '1.5"', '2-1/2"': '2.5"' };
+export function decimalPipeSize(size: string): string { return FRACTION_PIPE_SIZES[size] ?? size; }
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 /* Base metal (Material Type 1) and filler metal (Material Type 2) codes, redesigned 2026-09-23 as
    one coherent internal numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
