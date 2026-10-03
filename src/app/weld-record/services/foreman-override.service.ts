@@ -1,5 +1,5 @@
 /* Foreman Overrides on a welding step: work done outside the procedure, approved by a foreman.
-   Unlike a deviation it doesn't hold the joint (user's decision, 2026-09-25); it's only recorded
+   Unlike a deviation it doesn't hold the joint; it's only recorded
    in the joint's History, along with any off-list GWP/filler it let the person pick. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';

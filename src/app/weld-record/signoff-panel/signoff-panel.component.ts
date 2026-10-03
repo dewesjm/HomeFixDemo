@@ -171,9 +171,8 @@ export class SignoffPanelComponent {
 
   /* Single source of truth for "is this the Fit stage routed as Weld Build-up" -- Weld Build-up
      gets its fields/layout from WELD_GROUPS (like Tack) instead of Fit's own signoff-field
-     rendering below, so every fit-specific block in the template must agree on this same check.
-     Comments/Defer Tack duplicating from the generic signoff-fields renderer (2026-09-23) happened
-     because each block re-wrote the id/routingType check inline and one of them didn't match. */
+     rendering below, so every fit-specific block in the template must use this same check rather
+     than re-writing the id/routingType test inline (a mismatch duplicates Comments/Defer Tack). */
   readonly hasDecision = hasDecision;
 
   /* locked Type droplist; the reason shows in the Routing Preview, see typeLockReason() */

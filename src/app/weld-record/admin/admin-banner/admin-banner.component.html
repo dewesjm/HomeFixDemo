@@ -2,9 +2,9 @@
 <h2 class="section-title">Banner</h2>
 
 <div class="flex flex-col gap-4 max-w-xl">
-  <!-- Plain div, not .stage-field: its flex-basis (160px, meant for width in row layouts) becomes a
-       height basis in this flex-column wrapper and left dead space below the textarea. Same bug as
-       Records Review's Comments field (see signoff-panel.component.html and ARCHITECTURE.md). -->
+  <!-- Plain div, not .stage-field: its flex-basis (160px, meant for width in row layouts) would become
+       a height basis in this flex-column wrapper and leave dead space below the textarea. Records
+       Review's Comments field does the same (see signoff-panel.component.html). -->
   <div>
     <div class="stage-field-label">Banner Message</div>
     <textarea class="textarea textarea-bordered w-full" rows="3" placeholder="e.g. Scheduled maintenance tonight - all records will be locked after 6 PM"

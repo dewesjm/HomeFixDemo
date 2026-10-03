@@ -13,8 +13,8 @@ export interface MaterialClassificationEntry {
 
 const LS_KEY = STORAGE.materialClassification;
 
-/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIALS_1 codes (redesigned 2026-09-23
-   into a coherent NN-LETTERS numbering scheme, see jobs.ts). Duplex stainless (25-DS2205) is a
+/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIALS_1 codes (an invented NN-LETTERS
+   numbering scheme, see jobs.ts). Duplex stainless (25-DS2205) is a
    mixed austenitic/ferritic structure, defaulted to false here since it isn't purely austenitic;
    the admin table is exactly how this gets corrected without a code change. */
 const DEFAULT_ENTRIES: MaterialClassificationEntry[] = [

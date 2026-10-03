@@ -118,8 +118,8 @@ export class MakeupComponent {
   }
 
   /* date edits require an explicit confirm click (editStart()/editEnd() are just a local buffer
-     until then) -- binding straight to (ngModelChange) used to commit and re-validate on every
-     native date-input tick, including scrolling through months with the picker's own controls */
+     until then): binding straight to (ngModelChange) would commit and re-validate on every native
+     date-input tick, including scrolling through months with the picker's own controls */
   editingId = signal<string | null>(null);
   editStart = signal('');
   editEnd = signal('');

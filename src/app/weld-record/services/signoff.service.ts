@@ -31,8 +31,8 @@ function signedActionLabel(st: WorkflowStage): string {
    (not signed) until it's signed as Final Layer */
 const isInterimLayer = (s: WorkflowStage) => s.id === 'root-layer' && s.routingType === 'interim';
 
-/* Records Review UNSAT doesn't route anywhere yet (user: "it stays in records review until i figure
-   that out"): the signoff is recorded but the stage isn't signed, so the joint stays there */
+/* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
+   recorded but the stage isn't signed, so the joint stays there */
 const isRecordsReviewUnsat = (s: WorkflowStage) => (s.id === 'review-o63' || s.id === 'review-o04') && s.result === 'unsat';
 const staysPut = (s: WorkflowStage) => isInterimLayer(s) || isRecordsReviewUnsat(s);
 
@@ -199,16 +199,14 @@ export class SignoffService {
       }
     }
 
-    /* Repair's own routing on signoff (2026-09-23): Allowable thickness exceeded takes priority
-       and sends the joint back to that phase's NDT RT/UT stage; otherwise Grind Only sends it to
-       that phase's NDT VT/5X stage ("the applicable VT signoff for which the inspection was
-       rejected" -- always VT/5X, regardless of which method actually failed); Weld Repair inserts
+    /* Repair's own routing on signoff: Allowable thickness exceeded takes priority and sends the
+       joint back to that phase's NDT RT/UT stage; otherwise Grind Only sends it back to the NDT
+       stage that rejected it; Weld Repair inserts
        Excavation NDT right after Repair, built to require the same inspection method that
        originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
        above -- its own SAT/UNSAT routing is handled further down). Cut means the joint is redone:
        the current routing goes back to Fit and the path starts over (past records are kept), and
-       Refit # goes up by one. No repair
-       code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
+       Refit # goes up by one. No repair code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
     if (isRepairStageId(stageId)) {
       const phase = st.inputs['originPhase'] ?? '';
       const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
@@ -241,7 +239,7 @@ export class SignoffService {
       }
     }
 
-    /* Excavation NDT SAT (2026-09-23): "all weld repairs require the original joint inspection
+    /* Excavation NDT SAT: "all weld repairs require the original joint inspection
        unless otherwise stated" -- goes back to the exact NDT stage that originally rejected the joint
        (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
        override applied when Excavation NDT was created (resolveExcavationInspectionType), in

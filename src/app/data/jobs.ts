@@ -96,14 +96,12 @@ export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"',
 const FRACTION_PIPE_SIZES: Record<string, string> = { '1/2"': '0.5"', '3/4"': '0.75"', '1-1/4"': '1.25"', '1-1/2"': '1.5"', '2-1/2"': '2.5"' };
 export function decimalPipeSize(size: string): string { return FRACTION_PIPE_SIZES[size] ?? size; }
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
-/* Base metal (Material Type 1) and filler metal (Material Type 2) codes, redesigned 2026-09-23 as
-   one coherent internal numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
+/* Base metal (Material Type 1) and filler metal (Material Type 2) codes: one coherent internal
+   numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
    groups by family and the letters stay recognizable (real alloy chemistry/grade abbreviations,
    e.g. CUNI for copper-nickel, SS304 for stainless 304) rather than reusing raw industry codes
    verbatim. The two lists share the same family-block numbering (1x = stainless, 6x = nonferrous)
-   so a base metal and its typical filler read as part of one system. Replaces the earlier mixed
-   bag (some invented to match the user's own 02CS/30-CUNI/AL-1010, the rest ad hoc; Material Type 2
-   was real AWS electrode classifications, inconsistent with Material Type 1's own style). */
+   so a base metal and its typical filler read as part of one system. */
 /* exported so Weld Engineering's procedures data (baseMetal1Type/baseMetal2Type) can use the same
    vocabulary -- a GWP's base metal pair is matched against a job's Material Type 1/2 to filter the
    GWP droplist (see procedures.ts gwpOptionsForMaterials, data/joint-form/stage-form.ts). */
@@ -111,9 +109,8 @@ export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '
 export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
 export const MCL_POOL = ['STD', 'MC-I'];
-/* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14 (user-specified format,
-   2026-09-23, replacing the earlier invented piece-mark style like HPF-D120-1). Leading letter
-   varies (still invented, no real area-code scheme specified). */
+/* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14. The leading letter
+   varies (invented, no real area-code scheme specified). */
 export const JOINING_ITEMS = [
   'S12341001-14', 'H98761234-02', 'M55512345-09', 'A20983456-03',
   'F77123890-11', 'D40456789-06', 'P66234567-08', 'S30987654-12',
@@ -132,7 +129,7 @@ export const N_IND_MEANINGS: Record<string, string> = {
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
-   data/workflow/ndt.ts). Blank and NA are no longer valid. */
+   data/workflow/ndt.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    data/workflow/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
@@ -268,7 +265,7 @@ export function generateJobs(count = 480): Job[] {
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,
       workPackage: workPackageFor(hull, i),
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
-      waff: '',   /* blanked for now, 2026-09-23 -- was `i % 5 === 0 ? 'Required' : ''` */
+      waff: '',   /* blank on every seeded joint for now */
       serialNumber: xrefidBlank ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
       refitNumber: '00',
       repairNumber: '00',

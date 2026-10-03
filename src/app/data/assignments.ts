@@ -77,9 +77,8 @@ function generateAssignments(): Assignment[] {
   /* one or more real routing labels a role's assignments draw from, for variety within the role's
      own block -- role is assigned directly per entry below, not derived from the routing label, so
      every role (including the rarer ones like Inspector/Fitting/O63/O04 Records) gets an even,
-     guaranteed count instead of some being a random coin-flip off another role's block (Inspector
-     used to only exist as a 50/50 split of Fit-Up Insp with Foreman -- easy to end up with just
-     one, or none). 2026-09-23, per the user: every role should land in the 5-10 range. */
+     guaranteed count instead of some being a random coin-flip off another role's block. Every role
+     lands in the 5-10 range. */
   const ROLE_ROUTINGS: Record<string, string[]> = {
     'Welding': ['Tack', 'Root', 'Layer', 'Final Weld', 'Deferred Tack'],
     'NQC Inspector': ['Pre-Fit', 'Root NDT RT/UT', 'Layer NDT VT/5X', 'Final NDT MT/PT'],

@@ -1,5 +1,5 @@
 /* Deviations: out-of-spec values a person can accept at sign-off instead of being blocked.
-   Accepted kinds (user's decisions, 2026-09-25): Actual PH/IP out of range, a failed Qualification
+   Accepted kinds: Actual PH/IP out of range, a failed Qualification
    Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
