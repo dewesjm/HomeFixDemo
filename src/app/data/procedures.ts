@@ -4,12 +4,12 @@
 
    A GWP (Governing WPS) groups several specific WPS documents, one per WTN -- e.g. GWP W-101 covers
    WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. allGwpOptions() and wtnOptionsForGwp()
-   below are the source of truth Weld Record's GWP/WTN stage fields cascade from (workflow.ts,
+   below are the source of truth Weld Record's GWP/WTN stage fields cascade from (workflow/weld-fields.ts,
    joint-page.component.ts) -- see ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
-import { getWeldPositions } from './workflow';
+import { getWeldPositions } from './weld-positions';
 import { MATERIALS_1, MATERIALS_2 } from './jobs';
 import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
 
@@ -32,7 +32,7 @@ export const BASE_METAL_1_TYPES = MATERIALS_1;
 export const BASE_METAL_2_TYPES = MATERIALS_2;
 /* MIL-spec filler metal designations, e.g. MIL-80S-50 -- used for the free-text Classification field.
    Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
-   AWS-style {label, value} shape (workflow.ts METAL_TYPE_OPTIONS) -- a WPS's fillerMetalTypes/
+   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WPS's fillerMetalTypes/
    fillerMetalSizes list which of those option VALUES are valid for that WPS. */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 export const FILLER_METAL_TYPE_OPTIONS: { label: string; value: string }[] = [
@@ -66,7 +66,7 @@ export interface Procedure {
   status: ProcedureStatus;
   wtn: string;               /* the single WTN this specific WPS document covers, e.g. '05.5-1' */
   weldProcess: string;
-  gwp: string;               /* Governing WPS -- groups multiple Procedure rows, one per WTN (workflow.ts weldProcedure) */
+  gwp: string;               /* Governing WPS -- groups multiple Procedure rows, one per WTN (workflow/weld-fields.ts weldProcedure) */
   wpsRev: string;
   effectiveDate: string;     /* ISO date */
   processType: string;
@@ -90,7 +90,7 @@ export interface Procedure {
 
   /* 4. Filler Metal -- fillerMetalTypes/fillerMetalSizes are the valid FILLER_METAL_TYPE_OPTIONS/
      FILLER_METAL_SIZE_OPTIONS values for this WPS; Weld Record's Filler Metal Type/Size fields
-     (workflow.ts) filter to these once GWP+WTN resolve to this Procedure (see
+     (workflow/weld-fields.ts) filter to these once GWP+WTN resolve to this Procedure (see
      fillerMetalTypeOptionsForProcedure/fillerMetalSizeOptionsForProcedure below) */
   fillerMetalTypes: string[];
   fillerMetalClassification: string;
@@ -378,7 +378,7 @@ export function hasOverride(p: Procedure): boolean {
   return !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
 }
 
-/* ── GWP/WTN cascade -- source of truth for Weld Record's GWP/WTN stage fields (workflow.ts,
+/* ── GWP/WTN cascade -- source of truth for Weld Record's GWP/WTN stage fields (workflow/weld-fields.ts,
    joint-page.component.ts). A GWP groups several Procedure rows, one per WTN. ── */
 /* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */

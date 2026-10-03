@@ -132,10 +132,10 @@ export const N_IND_MEANINGS: Record<string, string> = {
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
-   workflow.ts). Blank and NA are no longer valid. */
+   data/workflow/ndt.ts). Blank and NA are no longer valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
-   data/workflow.ts's RT_DEGREE_OPTIONS to avoid a circular import (workflow.ts already imports
+   data/workflow/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
    Job from this file); the Degree of RT Performed signoff field must match this to sign off.
    Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */

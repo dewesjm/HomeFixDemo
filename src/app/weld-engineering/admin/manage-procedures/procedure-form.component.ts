@@ -6,7 +6,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
-import { getWeldPositions } from '../../../data/workflow';
+import { getWeldPositions } from '../../../data/weld-positions';
 import {
   addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
   PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS,

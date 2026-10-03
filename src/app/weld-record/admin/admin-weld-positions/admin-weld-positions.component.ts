@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
-import { getWeldPositions, setWeldPositions } from '../../../data/workflow';
+import { getWeldPositions, setWeldPositions } from '../../../data/weld-positions';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';

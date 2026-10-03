@@ -4,7 +4,8 @@
    must all hold. Different fields are AND'd. */
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
-import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel, shopOptions } from './workflow';
+import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel } from './workflow';
+import { shopOptions } from './shops';
 import { jointDesignOptions } from './joint-designs';
 import { StepConditionField, allStepAnswerFields } from './step-conditions';
 

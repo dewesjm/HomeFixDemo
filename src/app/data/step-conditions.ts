@@ -5,7 +5,7 @@
    leave it out isn't on the joint at all. Step-answer clauses (any step's own fields, e.g. Fit's
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
-   (workflow.ts applySignedFlags). */
+   (workflow/route-changes.ts applySignedFlags). */
 import { Job, MCL_POOL, N_IND_POOL, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THICKNESSES, WELD_TYPES } from './jobs';
 import { getJointDesign } from './joint-designs';
 import { requiresTraceability } from './mcl-traceability';
@@ -25,7 +25,7 @@ export interface RejectRule {
   to: string;             /* stage id; 'repair' on an NDT step adds a Repair */
 }
 
-/* the part of a workflow stage a step-answer clause reads (kept structural to avoid importing workflow.ts) */
+/* the part of a workflow stage a step-answer clause reads (kept structural to avoid importing the workflow fils) */
 interface StageAnswers {
   id: string;
   signed: boolean;
@@ -107,10 +107,10 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
 
 /* ── Step answers: every step's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
 
-/* the part of a stage template these read (structural, so workflow.ts isn't imported here) */
+/* the part of a stage template these read (structural, so the workflow files aren't imported here) */
 interface StepTemplateShape extends StageShape { id: string; label: string }
 
-/* workflow.ts registers its templates at load (it imports this file, so it can't be imported back) */
+/* workflow/stage-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
 let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
 export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
 
@@ -213,7 +213,7 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ]],
 };
 
-/* reject target that puts the joint on Engineering Hold instead (workflow.ts insertEngineeringHold) */
+/* reject target that puts the joint on Engineering Hold instead (workflow/added-steps.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 
 /* built-in reject rules (Admin > Routing can change them): a PT failure on a GTAW weld goes to

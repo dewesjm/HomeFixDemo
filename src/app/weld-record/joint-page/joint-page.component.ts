@@ -30,10 +30,8 @@ import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/dev
 import { testUserQuals } from '../../data/qualifications';
 import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
-import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences, typeLockReason
-} from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences, typeLockReason } from '../../data/workflow';
+import { shopOptions } from '../../data/shops';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -331,7 +329,7 @@ export class JointPageComponent implements OnDestroy {
     }
     return errors;
   });
-  /* which steps show References: see showsReferences() in workflow.ts */
+  /* which steps show References: see showsReferences() in data/workflow/stage-rules.ts */
   showReferences = computed(() => {
     if (!this.wf) return false;
     return showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? '');

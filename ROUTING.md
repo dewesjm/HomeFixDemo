@@ -165,7 +165,7 @@ When a step has any deviation, Signoff opens an acceptance screen instead of the
 
 ## Foreman Override
 
-**Turned off 2026-10-01** (button hidden, `FOREMAN_OVERRIDE_ENABLED` in workflow.ts); blank values are handled by the engineering override above instead. How it worked when on:
+**Turned off 2026-10-01** (button hidden, `FOREMAN_OVERRIDE_ENABLED` in data/workflow/weld-fields.ts); blank values are handled by the engineering override above instead. How it worked when on:
 
 **Foreman Override** (on welding steps and Fit as a Weld Build-Up, on the right, away from Signoff) records work done outside the procedure, in the person's own words. The pop-up asks them to "Describe the deviation and why it is necessary".
 - While a step has an override, GWP (and so WTN), Filler Metal Type and Filler Metal Size can be picked from the full lists instead of being filled in for you. A GWP, type or size the WPS doesn't allow shows the warning "Foreman override".

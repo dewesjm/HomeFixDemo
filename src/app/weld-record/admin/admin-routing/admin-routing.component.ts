@@ -1,6 +1,6 @@
 // Admin → Routing: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
-// Persists to localStorage via workflow.ts CRUD functions.
+// Persists to localStorage via the data/workflow/stage-templates.ts edit functions.
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

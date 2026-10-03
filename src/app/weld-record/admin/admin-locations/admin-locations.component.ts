@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
-import { getShops, setShops } from '../../../data/workflow';
+import { getShops, setShops } from '../../../data/shops';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';

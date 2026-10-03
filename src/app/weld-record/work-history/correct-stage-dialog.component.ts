@@ -12,7 +12,7 @@ import { AttachmentService } from '../services/attachment.service';
 import { AttachmentsComponent } from '../attachments/attachments.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
-/* fields the live signoff panel already gives a person-search assist to (see workflow.ts's
+/* fields the live signoff panel already gives a person-search assist to (see data/workflow/ndt.ts's
    NDT_COMMON_FIELDS) -- Correct should offer the same help, not just a plain text box */
 const PERSON_SEARCH_FIELDS = new Set(['probationaryInspector', 'oversightInspector']);
 
