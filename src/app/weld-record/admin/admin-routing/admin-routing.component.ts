@@ -10,6 +10,7 @@ import {
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { TooltipDirective } from '../../../shared/tooltip.directive';
 import { TableState } from '../../../shared/table-state';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
@@ -75,6 +76,7 @@ export class AdminRoutingComponent {
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private clonedRows: Record<string, RoutingRow> = {};
   private seq = 0;
 
@@ -135,13 +137,20 @@ export class AdminRoutingComponent {
   }
 
   deleteRow(row: RoutingRow) {
-    const trade = row.trade;
-    const stageId = row.id.split(':')[1];
-    deleteStageTemplate(trade, stageId);
-    this.rows.update(r => r.filter(x => x.id !== row.id));
-    this.resequence(trade);
-    this.refreshStageOptions();
-    this.messages.add({ severity: 'info', summary: 'Routing deleted', life: 3000 });
+    this.confirm.confirm({
+      header: 'Delete Routing',
+      message: `Delete ${row.routing}?`,
+      acceptLabel: 'Delete',
+      accept: () => {
+        const trade = row.trade;
+        const stageId = row.id.split(':')[1];
+        deleteStageTemplate(trade, stageId);
+        this.rows.update(r => r.filter(x => x.id !== row.id));
+        this.resequence(trade);
+        this.refreshStageOptions();
+        this.messages.add({ severity: 'info', summary: 'Routing deleted', life: 3000 });
+      }
+    });
   }
 
   startEdit(row: RoutingRow) {
