@@ -10,6 +10,12 @@ export interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-03',
+    changed: [
+      'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
+    ],
+  },
+  {
     date: '2026-10-01',
     added: [
       'Admin > Inspection Procedures: a table of inspection Types (RT, UT, MT, PT, VT, 5X) and the procedures for each. On an NDT step, Procedure Used for Inspection now lists only the procedures for the Type picked.',

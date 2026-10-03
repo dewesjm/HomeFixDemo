@@ -68,8 +68,9 @@ export class AppComponent {
 
   /* demo only: pulls the active system's own items up into the top-level horizontal bar (in place of
      the 4 system dropdowns), its Admin still as its own dropdown -- one click fewer per page. One switch
-     for all systems: it always flattens whichever system the current page belongs to. */
-  flatNav = signal(false);
+     for all systems: it always flattens whichever system the current page belongs to. On by default, so the
+     app opens on Weld Record's flat bar with Pipe Welding (the '' route) selected. */
+  flatNav = signal(true);
   toggleFlatNav() { this.flatNav.update(v => !v); }
 
   private closeAll(except?: ElementRef<HTMLDetailsElement>) {
