@@ -41,7 +41,7 @@ describe('FabricationDataService', () => {
     expect(entries[1].to).toBe('M-2');
   });
 
-  it('blanks a Frame/Usage the new Deck no longer offers, and keeps one it still does', () => {
+  it('blanks a Frame/P-S-CL/Usage the new Deck no longer offers, and keeps one it still does', () => {
     setShipLocations([
       { hull: job.hull, deck: 'D1', frame: 'F10', pscl: 'P', usage: 'Tank' },
       { hull: job.hull, deck: 'D2', frame: 'F10', pscl: 'P', usage: 'Tank' },
@@ -53,13 +53,29 @@ describe('FabricationDataService', () => {
     service.setFabricationData(job, 'deck', 'D2');
     let fab = store.workflowFor(job)().fabricationData;
     expect(fab['frame']).toBe('F10');
+    expect(fab['pscl']).toBe('P');
     expect(fab['usage']).toBe('Tank');
 
     service.setFabricationData(job, 'deck', 'D3');
     fab = store.workflowFor(job)().fabricationData;
     expect(fab['frame']).toBe('');
+    expect(fab['pscl']).toBe('');
     expect(fab['usage']).toBe('');
     const cleared = store.workflowFor(job)().history.filter(h => h.section === 'Fabrication' && h.to === '-');
-    expect(cleared.map(h => h.action)).toEqual(['frame', 'usage']);
+    expect(cleared.map(h => h.action)).toEqual(['frame', 'pscl', 'usage']);
+  });
+
+  it('blanks a P/S/CL the new Frame has nothing set up on', () => {
+    setShipLocations([
+      { hull: job.hull, deck: 'D1', frame: 'F10', pscl: 'CL', usage: 'Tank' },
+      { hull: job.hull, deck: 'D1', frame: 'F20', pscl: 'P', usage: 'Cargo' },
+    ]);
+    for (const [k, v] of [['location', 'ship'], ['deck', 'D1'], ['frame', 'F10'], ['pscl', 'CL'], ['usage', 'Tank']]) {
+      service.setFabricationData(job, k, v);
+    }
+    service.setFabricationData(job, 'frame', 'F20');
+    const fab = store.workflowFor(job)().fabricationData;
+    expect(fab['pscl']).toBe('');
+    expect(fab['usage']).toBe('');
   });
 });

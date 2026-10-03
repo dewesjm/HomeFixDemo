@@ -16,7 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Admin > Attribute Codes is no longer in the menu (attribute codes are managed in another system). Joint details still show each code\'s description.',
-      'Fabrication on the Ship: Deck, Frame and Usage are now droplists from Admin > Ship Locations for the joint\'s hull. Frame lists only the frames on the Deck picked, and Usage only the usages at that Deck, Frame and P/S/CL. Changing Deck, Frame or P/S/CL blanks a Frame or Usage that no longer fits.',
+      'Fabrication on the Ship: Deck, Frame and Usage are now droplists from Admin > Ship Locations for the joint\'s hull. Frame lists only the frames on the Deck picked, P/S/CL only the sides set up at that Deck and Frame, and Usage only the usages at that Deck, Frame and P/S/CL, so a Usage is always there to pick. Changing Deck, Frame or P/S/CL blanks a Frame, P/S/CL or Usage that no longer fits.',
       'My Assignments: a Ship assignment\'s Deck, Frame, P/S/CL and Usage now come from the joint, so changing them on the joint changes them here too.',
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
       'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',

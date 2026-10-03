@@ -21,7 +21,7 @@ export class FabricationDataService {
         from: show(prev),
         to: show(value)
       });
-      /* a Frame/Usage no longer offered for the new Deck/Frame/P-S-CL is blanked, each with its own entry */
+      /* a Frame/P-S-CL/Usage no longer offered for the new Deck/Frame/P-S-CL is blanked, each with its own entry */
       for (const dep of SHIP_LOCATION_DEPENDENTS[key] ?? []) {
         const old = fabricationData[dep] ?? '';
         if (!old || shipLocationOptions(dep, job.hull, fabricationData).some(o => o.value === old)) continue;

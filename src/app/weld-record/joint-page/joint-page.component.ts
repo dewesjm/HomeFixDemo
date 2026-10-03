@@ -292,8 +292,9 @@ export class JointPageComponent implements OnDestroy {
       /* a saved value that's no longer on the list still shows, rather than a blank box */
       const saved = fab[f.key] ?? '';
       const all = saved && !options.some(o => o.value === saved) ? [{ label: saved, value: saved }, ...options] : options;
-      /* an empty list either waits on the field before it (Frame/Usage) or has nothing set up for this hull */
-      const waiting = (f.key === 'frame' && !fab['deck']) || (f.key === 'usage' && !(fab['deck'] && fab['frame'] && fab['pscl']));
+      /* an empty list either waits on the field before it (Frame/P-S-CL/Usage) or has nothing set up for this hull */
+      const waiting = (f.key === 'frame' && !fab['deck']) || (f.key === 'pscl' && !(fab['deck'] && fab['frame']))
+        || (f.key === 'usage' && !(fab['deck'] && fab['frame'] && fab['pscl']));
       return { ...f, options: all, placeholder: waiting ? f.placeholder : 'None set up in Admin' };
     }
     if (f.key === 'revisedJointDesign') return { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] };
