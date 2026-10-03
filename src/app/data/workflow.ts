@@ -109,7 +109,7 @@ export interface HistoryEntry {
   who: string;           /* person's full name */
   whoId?: string;        /* their identifier */
   whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'Attachments' | 'Fabrication' | 'Release' | 'Refit' | 'Routing' | 'Deviation' | 'Foreman Override' | 'Engineering Override';
+  section: 'Stages' | 'Sign-off' | 'References' | 'Fabrication' | 'Release' | 'Refit' | 'Routing' | 'Deviation' | 'Foreman Override' | 'Engineering Override';
   action: string;        /* what was changed/done — field name or event */
   from?: string;         /* previous value, when the action changed one */
   to?: string;           /* new value, when the action changed one */
@@ -813,6 +813,13 @@ export const REPAIR_STAGE: StageTemplate = {
    number. */
 export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
 export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
+/* the one rule for which steps show the References panel (joint page and the Correct dialog):
+   Root/Final NDT RT/UT and VT/5X, Layer NDT RT/UT, Repair and Excavation NDT. Not MT/PT, not
+   Layer NDT VT/5X */
+export const showsReferences = (id: string) => {
+  if (id.endsWith('-mtpt') || id === 'layer-ndt-vt5x') return false;
+  return /^(root|layer|final)-ndt-/.test(id) || isRepairStageId(id) || isExcavationNdtStageId(id);
+};
 const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';
 export const excavationIdForRepair = (repairId: string) => `excavation-ndt${roundSuffix(repairId)}`;
 export const repairIdForExcavation = (excavationId: string) => `repair${roundSuffix(excavationId)}`;

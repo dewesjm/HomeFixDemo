@@ -1,4 +1,4 @@
-/* file attachments on a job's workflow (NDT stages) */
+/* file references (shown as References) on a job's workflow, see showsReferences() */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
@@ -15,25 +15,25 @@ export class AttachmentService {
     this.store.update(job, wf => {
       const att: Attachment = { id: `a${++this.seq}`, name, addedBy: wf.technician, addedAt: new Date().toISOString() };
       return this.store.withHistory(wf, { ...wf, attachments: [...wf.attachments, att] }, {
-        section: 'Attachments',
+        section: 'References',
         who: wf.technician,
-        action: 'Attachment added',
+        action: 'Reference added',
         to: name
       });
     });
-    this.messages.add({ severity: 'success', summary: 'Attachment added', detail: name, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Reference added', detail: name, life: 3000 });
   }
 
   removeAttachment(job: Job, id: string) {
     this.store.update(job, wf => {
       const att = wf.attachments.find(a => a.id === id);
       return this.store.withHistory(wf, { ...wf, attachments: wf.attachments.filter(a => a.id !== id) }, {
-        section: 'Attachments',
+        section: 'References',
         who: wf.technician,
-        action: 'Attachment removed',
+        action: 'Reference removed',
         to: att?.name ?? id
       });
     });
-    this.messages.add({ severity: 'info', summary: 'Attachment removed', life: 3000 });
+    this.messages.add({ severity: 'info', summary: 'Reference removed', life: 3000 });
   }
 }

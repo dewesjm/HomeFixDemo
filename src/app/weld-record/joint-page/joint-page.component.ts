@@ -32,7 +32,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -331,16 +331,10 @@ export class JointPageComponent implements OnDestroy {
     }
     return errors;
   });
-  /* MT and PT (the *-ndt-mtpt stages) don't get Attachments -- RT/UT, VT/5X, Repair and
-     Excavation NDT do (Excavation NDT inferred, not explicitly asked -- it's "just" another NDT
-     stage, so it's treated like RT/UT/VT/5X rather than MT/PT's carve-out) */
-  isNdtStage = computed(() => {
+  /* which steps show References: see showsReferences() in workflow.ts */
+  showReferences = computed(() => {
     if (!this.wf) return false;
-    const stage = this.wf().stages[this.selectedRouting()];
-    const id = stage?.id ?? '';
-    if (id.endsWith('-mtpt')) return false;
-    return id.startsWith('root-ndt') || id.startsWith('layer-ndt') || id.startsWith('final-ndt')
-      || isRepairStageId(id) || isExcavationNdtStageId(id);
+    return showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? '');
   });
 
 //extra fields when you press show more

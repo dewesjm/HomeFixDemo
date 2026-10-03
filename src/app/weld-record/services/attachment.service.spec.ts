@@ -28,7 +28,7 @@ describe('AttachmentService', () => {
     expect(att.addedBy).toBe(wf.technician);
     expect(att.addedAt).toBeTruthy();
 
-    const entry = wf.history.find(h => h.section === 'Attachments' && h.action === 'Attachment added');
+    const entry = wf.history.find(h => h.section === 'References' && h.action === 'Reference added');
     expect(entry?.to).toBe('photo.jpg');
   });
 
@@ -47,7 +47,7 @@ describe('AttachmentService', () => {
 
     const wf = store.workflowFor(job)();
     expect(wf.attachments.length).toBe(0);
-    const entry = wf.history.find(h => h.section === 'Attachments' && h.action === 'Attachment removed');
+    const entry = wf.history.find(h => h.section === 'References' && h.action === 'Reference removed');
     expect(entry?.to).toBe('photo.jpg');
   });
 });

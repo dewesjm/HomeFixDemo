@@ -24,8 +24,8 @@
   }
   <app-deviation-accept-dialog [request]="deviationRequest()" (accepted)="acceptDeviations($event)" (cancelled)="deviationRequest.set(null)" />
 
-  <!-- 3.5 ───────── Attachments (NDT stages only) ───────── -->
-  @if (isNdtStage()) {
+  <!-- 3.5 ───────── References (see showsReferences) ───────── -->
+  @if (showReferences()) {
     <app-attachments [attachments]="w.attachments" [disabled]="jobComplete()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
   }
 

@@ -1,5 +1,5 @@
 <section class="panel">
-  <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> Attachments</h3>
+  <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> References</h3>
   <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
 
   @if (attachments().length) {
@@ -24,7 +24,7 @@
     </table>
     </div>
   } @else {
-    <div class="empty">No attachments yet.</div>
+    <div class="empty">No references yet.</div>
   }
 
   <input type="file" multiple class="file-input" [disabled]="disabled()"
