@@ -1,0 +1,89 @@
+<dialog class="modal modal-open" (close)="closed.emit()">
+  <div class="modal-box max-w-2xl max-h-[80vh]">
+    <h3 class="text-lg font-semibold mb-1">Configure: {{ stageLabel() }}</h3>
+    <p class="text-sm opacity-60 mb-4">{{ trade() }} - readings fields + signoff fields</p>
+
+    <!-- Readings fields -->
+    <div class="mb-4">
+      <h4 class="font-semibold text-sm mb-2">Readings (recorded by technician)</h4>
+      @for (f of readingFields(); track f.uid) {
+        <div class="flex items-center gap-2 mb-1">
+          <input type="text" class="input input-xs input-bordered w-24" placeholder="Key"
+                 [ngModel]="f.key" (ngModelChange)="updateReadingField(f.uid, { key: $event })" />
+          <input type="text" class="input input-xs input-bordered w-32" placeholder="Label"
+                 [ngModel]="f.label" (ngModelChange)="updateReadingField(f.uid, { label: $event })" />
+          <select class="select select-xs select-bordered w-20"
+                  [ngModel]="f.type" (ngModelChange)="updateReadingField(f.uid, { type: $event })">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="select">Select</option>
+          </select>
+          <input type="text" class="input input-xs input-bordered w-16" placeholder="Unit"
+                 [ngModel]="f.unit" (ngModelChange)="updateReadingField(f.uid, { unit: $event })" />
+          <input type="text" class="input input-xs input-bordered flex-1" placeholder="Placeholder"
+                 [ngModel]="f.placeholder" (ngModelChange)="updateReadingField(f.uid, { placeholder: $event })" />
+          <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeReadingField(f.uid)">
+            <svg lucideX class="size-3"></svg>
+          </button>
+        </div>
+      }
+      <div class="flex items-center gap-2">
+        <input type="text" class="input input-xs input-bordered w-24" placeholder="Key"
+               [ngModel]="newReadingKey()" (ngModelChange)="newReadingKey.set($event)" />
+        <input type="text" class="input input-xs input-bordered w-32" placeholder="Label"
+               [ngModel]="newReadingLabel()" (ngModelChange)="newReadingLabel.set($event)" />
+        <button type="button" class="btn btn-xs btn-outline" [disabled]="!newReadingKey().trim()"
+                (click)="addReadingField()">+ Add</button>
+      </div>
+    </div>
+
+    <!-- Signoff fields -->
+    <div class="mb-4">
+      <h4 class="font-semibold text-sm mb-2">Signoff fields (inspector records)</h4>
+      @for (f of signoffFields(); track f.uid) {
+        <div class="flex items-center gap-2 mb-1">
+          <input type="text" class="input input-xs input-bordered w-24" placeholder="Key"
+                 [ngModel]="f.key" (ngModelChange)="updateSignoffField(f.uid, { key: $event })" />
+          <input type="text" class="input input-xs input-bordered w-32" placeholder="Label"
+                 [ngModel]="f.label" (ngModelChange)="updateSignoffField(f.uid, { label: $event })" />
+          <select class="select select-xs select-bordered w-20"
+                  [ngModel]="f.type" (ngModelChange)="updateSignoffField(f.uid, { type: $event })">
+            <option value="text">Text</option>
+            <option value="number">Number</option>
+            <option value="select">Select</option>
+          </select>
+          <label class="flex items-center gap-1 text-xs">
+            <input type="checkbox" class="checkbox checkbox-xs"
+                   [checked]="f.required"
+                   (change)="updateSignoffField(f.uid, { required: !f.required })" />
+            Req'd
+          </label>
+          <input type="text" class="input input-xs input-bordered flex-1" placeholder="Placeholder or options"
+                 [ngModel]="f.placeholder || f.optionsText"
+                 (ngModelChange)="f.type === 'select' ? updateSignoffField(f.uid, { optionsText: $event }) : updateSignoffField(f.uid, { placeholder: $event })" />
+          <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeSignoffField(f.uid)">
+            <svg lucideX class="size-3"></svg>
+          </button>
+        </div>
+      }
+      <div class="flex items-center gap-2">
+        <input type="text" class="input input-xs input-bordered w-24" placeholder="Key"
+               [ngModel]="newSignoffKey()" (ngModelChange)="newSignoffKey.set($event)" />
+        <input type="text" class="input input-xs input-bordered w-32" placeholder="Label"
+               [ngModel]="newSignoffLabel()" (ngModelChange)="newSignoffLabel.set($event)" />
+        <button type="button" class="btn btn-xs btn-outline" [disabled]="!newSignoffKey().trim()"
+                (click)="addSignoffField()">+ Add</button>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button type="button" class="btn btn-ghost" (click)="closed.emit()">Cancel</button>
+      <button type="button" class="btn btn-primary" (click)="saveFieldConfig()">
+        <svg lucideCheck class="size-4"></svg> Save fields
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="button" (click)="closed.emit()">close</button>
+  </form>
+</dialog>

@@ -16,8 +16,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import { Job } from '../../../data/jobs';
 import {
-  StageField, SignoffField, defaultSignoffFields,
-  addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
+  defaultSignoffFields, addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
   allStageIds, getTemplates, ROLES, type Role
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -25,6 +24,10 @@ import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
   describeConditions, stageConditionFields, stepAnswerFieldsBefore, ENGINEERING_HOLD_TARGET
 } from '../../../data/step-conditions';
+import {
+  conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
+} from '../../../data/condition-editing';
+import { RoutingFieldConfigDialogComponent } from './routing-field-config-dialog.component';
 
 interface RoutingRow {
   id: string;
@@ -38,59 +41,10 @@ interface RoutingRow {
   fabricationEditable: boolean;
 }
 
-/* lightweight row model for field config */
-interface FieldRow {
-  uid: string;
-  key: string;
-  label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
-  required: boolean;
-  placeholder: string;
-  unit: string;
-  optionsText: string;   // "Label:value, Label:value"
-}
-
-function toFieldRow(f: StageField | SignoffField, idx: number): FieldRow {
-  return {
-    uid: `${idx}`,
-    key: f.key,
-    label: f.label,
-    type: f.type,
-    required: 'required' in f ? (f.required ?? false) : false,
-    placeholder: f.placeholder ?? ('placeholder' in f ? f.placeholder ?? '' : ''),
-    unit: 'unit' in f ? (f as any).unit ?? '' : '',
-    optionsText: f.options?.map(o => `${o.label}:${o.value}`).join(', ') ?? '',
-  };
-}
-
-function fieldRowToStageField(r: FieldRow): StageField {
-  return {
-    key: r.key, label: r.label, type: r.type, placeholder: r.placeholder || undefined,
-    unit: r.unit || undefined,
-    options: r.type === 'select' ? parseOptions(r.optionsText) : undefined,
-  };
-}
-
-function fieldRowToSignoffField(r: FieldRow): SignoffField {
-  return {
-    key: r.key, label: r.label, type: r.type, required: r.required,
-    placeholder: r.placeholder || undefined,
-    options: r.type === 'select' ? parseOptions(r.optionsText) : undefined,
-  };
-}
-
-function parseOptions(text: string): { label: string; value: string }[] | undefined {
-  if (!text.trim()) return undefined;
-  return text.split(',').map(pair => {
-    const [label, value] = pair.trim().split(':');
-    return { label: (label ?? pair).trim(), value: (value ?? label ?? pair).trim() };
-  });
-}
-
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [TableToolbarComponent,
+  imports: [TableToolbarComponent, RoutingFieldConfigDialogComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -132,16 +86,7 @@ export class AdminRoutingComponent {
      don't reliably show up there. This could be turned back on one day, so the code is kept working
      rather than removed, to avoid a rewrite. */
   readonly showFieldConfig = false;
-  showFieldDlg = signal(false);
-  fieldDlgTrade = signal<Job['trade']>('Welding');
-  fieldDlgStageId = signal('');
-  fieldDlgStageLabel = signal('');
-  readingFields = signal<FieldRow[]>([]);
-  signoffFields = signal<FieldRow[]>([]);
-  newReadingKey = signal('');
-  newReadingLabel = signal('');
-  newSignoffKey = signal('');
-  newSignoffLabel = signal('');
+  fieldDlgRow = signal<RoutingRow | null>(null);
 
   // ── Included when dialog ──
   condFields = signal<StepConditionField[]>([]);
@@ -370,64 +315,7 @@ export class AdminRoutingComponent {
   /* ── Field config dialog ── */
 
   openFieldConfig(row: RoutingRow) {
-    const trade = row.trade;
-    const stageId = row.id.split(':')[1];
-    const templates = getTemplates();
-    const stage = templates[trade]?.find(t => t.id === stageId);
-
-    this.fieldDlgTrade.set(trade);
-    this.fieldDlgStageId.set(stageId);
-    this.fieldDlgStageLabel.set(row.routing);
-    this.readingFields.set((stage?.fields ?? []).map(toFieldRow));
-    this.signoffFields.set((stage?.signoffFields ?? defaultSignoffFields()).map(toFieldRow));
-    this.newReadingKey.set('');
-    this.newReadingLabel.set('');
-    this.newSignoffKey.set('');
-    this.newSignoffLabel.set('');
-    this.showFieldDlg.set(true);
-  }
-
-  /* reading fields */
-  addReadingField() {
-    const key = this.newReadingKey().trim();
-    const label = this.newReadingLabel().trim() || key;
-    if (!key) return;
-    this.readingFields.update(f => [...f, { uid: `${Date.now()}`, key, label, type: 'text', required: false, placeholder: '', unit: '', optionsText: '' }]);
-    this.newReadingKey.set('');
-    this.newReadingLabel.set('');
-  }
-  removeReadingField(uid: string) {
-    this.readingFields.update(f => f.filter(x => x.uid !== uid));
-  }
-  updateReadingField(uid: string, patch: Partial<FieldRow>) {
-    this.readingFields.update(f => f.map(x => x.uid === uid ? { ...x, ...patch } : x));
-  }
-
-  /* signoff fields */
-  addSignoffField() {
-    const key = this.newSignoffKey().trim();
-    const label = this.newSignoffLabel().trim() || key;
-    if (!key) return;
-    this.signoffFields.update(f => [...f, { uid: `${Date.now()}`, key, label, type: 'text', required: false, placeholder: '', unit: '', optionsText: '' }]);
-    this.newSignoffKey.set('');
-    this.newSignoffLabel.set('');
-  }
-  removeSignoffField(uid: string) {
-    this.signoffFields.update(f => f.filter(x => x.uid !== uid));
-  }
-  updateSignoffField(uid: string, patch: Partial<FieldRow>) {
-    this.signoffFields.update(f => f.map(x => x.uid === uid ? { ...x, ...patch } : x));
-  }
-
-  saveFieldConfig() {
-    const trade = this.fieldDlgTrade();
-    const stageId = this.fieldDlgStageId();
-    updateStageTemplate(trade, stageId, {
-      fields: this.readingFields().map(fieldRowToStageField),
-      signoffFields: this.signoffFields().map(fieldRowToSignoffField),
-    });
-    this.showFieldDlg.set(false);
-    this.messages.add({ severity: 'success', summary: 'Fields saved', life: 3000 });
+    this.fieldDlgRow.set(row);
   }
 
   /* ── Included when (step conditions) dialog ── */
@@ -441,36 +329,10 @@ export class AdminRoutingComponent {
 
   /* ── shared by both rule dialogs ── */
 
-  /* droplist sections: this step's answers (reject rules), Joint Details, earlier steps' answers */
-  groupsOf(fields: StepConditionField[]): { label: string; fields: StepConditionField[] }[] {
-    const groups = [
-      { label: 'This step', fields: fields.filter(f => f.key.startsWith('self.')) },
-      { label: 'Joint Details', fields: fields.filter(f => !f.key.startsWith('self.') && !f.stepAnswer) },
-      { label: 'Earlier steps (once signed)', fields: fields.filter(f => f.stepAnswer) },
-    ];
-    return groups.filter(g => g.fields.length);
-  }
-
-  optionsOf(fields: StepConditionField[], key: string): { value: string; label: string }[] {
-    const f = fields.find(x => x.key === key);
-    return (f?.values ?? []).map(v => ({ value: v, label: f?.valueLabel?.(v) ?? v }));
-  }
-
-  /* contains, or a field with no value list, takes typed text */
-  typed(fields: StepConditionField[], c: ConditionClause): boolean {
-    return c.op === 'contains' || !this.optionsOf(fields, c.field).length;
-  }
-
-  /* a picked value, or typed text */
-  clauseValid(fields: StepConditionField[], c: ConditionClause): boolean {
-    return this.typed(fields, c) ? !!c.values[0]?.trim() : c.values.length > 0;
-  }
-
-  /* a new field, or switching between picked values and typed text, starts with no values */
-  private clearsValues(fields: StepConditionField[], c: ConditionClause, patch: Partial<ConditionClause>): boolean {
-    if (patch.field && patch.field !== c.field) return true;
-    return !!patch.op && this.typed(fields, { ...c, ...patch }) !== this.typed(fields, c);
-  }
+  readonly groupsOf = conditionFieldGroups;
+  readonly optionsOf = conditionValueOptions;
+  readonly typed = clauseTyped;
+  readonly clauseValid = clauseValid;
 
   /* the built-in rule for this step, if it has one */
   hasDefaultConditions(row: RoutingRow): boolean {
@@ -484,13 +346,13 @@ export class AdminRoutingComponent {
   }
 
   addRule() {
-    this.condRules.update(r => [...r, [this.newClause()]]);
+    this.condRules.update(r => [...r, [newConditionClause()]]);
   }
   removeRule(ri: number) {
     this.condRules.update(r => r.filter((_, i) => i !== ri));
   }
   addClause(ri: number) {
-    this.condRules.update(r => r.map((rule, i) => i === ri ? [...rule, this.newClause()] : rule));
+    this.condRules.update(r => r.map((rule, i) => i === ri ? [...rule, newConditionClause()] : rule));
   }
   removeClause(ri: number, ci: number) {
     /* a rule left with no conditions would always match, so it goes too */
@@ -498,8 +360,7 @@ export class AdminRoutingComponent {
   }
   setClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.condRules.update(r => r.map((rule, i) => i !== ri ? rule : rule.map((c, j) => {
-      if (j !== ci) return c;
-      return this.clearsValues(this.condFields(), c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      return j === ci ? patchClause(this.condFields(), c, patch) : c;
     })));
   }
   toggleValue(ri: number, ci: number, value: string) {
@@ -582,8 +443,7 @@ export class AdminRoutingComponent {
   }
   setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.rejRules.update(r => r.map((x, i) => i !== ri ? x : { ...x, when: x.when.map((c, j) => {
-      if (j !== ci) return c;
-      return this.clearsValues(this.rejFields(), c, patch) ? { ...c, ...patch, values: [] } : { ...c, ...patch };
+      return j === ci ? patchClause(this.rejFields(), c, patch) : c;
     }) }));
   }
   toggleRejectValue(ri: number, ci: number, value: string) {
@@ -600,10 +460,6 @@ export class AdminRoutingComponent {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });
-  }
-
-  private newClause(): ConditionClause {
-    return { field: STEP_CONDITION_FIELDS[0].key, op: 'is', values: [] };
   }
 
   /* ── CSV export ── */
