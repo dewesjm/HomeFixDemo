@@ -63,7 +63,7 @@ const THEME_KEY = STORAGE.theme;
 })
 export class ThemePickerComponent {
   themes = THEMES;
-  active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'forest');
+  active = signal<string>(localStorage.getItem(THEME_KEY) ?? 'light');
 
   constructor() {
     this.apply(this.active());

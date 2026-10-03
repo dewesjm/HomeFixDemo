@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-10-03',
     changed: [
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
+      'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',
     ],
     fixed: [
       'Some demo joints start on Pre-Fit or Fit with nothing signed yet, as before. Every joint past its first step still has sign-offs in its history.',
