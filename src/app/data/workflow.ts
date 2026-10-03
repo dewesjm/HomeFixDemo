@@ -813,7 +813,7 @@ export const REPAIR_STAGE: StageTemplate = {
    number. */
 export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
 export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
-/* the one rule for which steps show the References panel (joint page and the Correct dialog):
+/* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
    RT/UT (Root, Layer and Final NDT) and Repair only */
 export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(id) || isRepairStageId(id);
 const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';

@@ -5,7 +5,7 @@
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
-import { StageField, SignoffField, fieldsShown, isUserEditable, isRoutingLockedField, showsReferences } from '../../data/workflow';
+import { StageField, SignoffField, fieldsShown, isUserEditable, isRoutingLockedField } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
@@ -40,7 +40,6 @@ export class CorrectStageDialogComponent {
   });
   stage = computed(() => this.wf()?.stages.find(s => s.id === this.target()?.stageId) ?? null);
   attachments = computed(() => this.wf()?.attachments ?? []);
-  showReferences = computed(() => showsReferences(this.target()?.stageId ?? ''));
 
   fields = computed<StageField[]>(() => {
     const st = this.stage();

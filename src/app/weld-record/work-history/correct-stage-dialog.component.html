@@ -87,9 +87,7 @@
           }
         </div>
 
-        @if (showReferences()) {
-          <app-attachments [attachments]="attachments()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
-        }
+        <app-attachments [attachments]="attachments()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
 
         <div class="mt-4">
           <label class="meta mb-1 block">Reason for correction<span class="text-error">*</span></label>
