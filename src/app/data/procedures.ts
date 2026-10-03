@@ -5,7 +5,7 @@
    A GWP (Governing WPS) groups several specific WPS documents, one per WTN -- e.g. GWP W-101 covers
    WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. allGwpOptions() and wtnOptionsForGwp()
    below are the source of truth Weld Record's GWP/WTN stage fields cascade from (workflow/weld-fields.ts,
-   joint-page.component.ts) -- see ARCHITECTURE.md. */
+   data/joint-form/stage-form.ts) -- see ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
@@ -373,13 +373,13 @@ export function getProcedure(id: string): Procedure | undefined {
 }
 
 /* true when a procedure has any preheat/interpass override values set -- shared by the PDF
-   (procedure-pdf.ts) and Weld Record's stage fields (joint-page.component.ts) */
+   (procedure-pdf.ts) and Weld Record's stage fields (data/joint-form/stage-form.ts) */
 export function hasOverride(p: Procedure): boolean {
   return !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
 }
 
 /* ── GWP/WTN cascade -- source of truth for Weld Record's GWP/WTN stage fields (workflow/weld-fields.ts,
-   joint-page.component.ts). A GWP groups several Procedure rows, one per WTN. ── */
+   data/joint-form/stage-form.ts). A GWP groups several Procedure rows, one per WTN. ── */
 /* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */
 export function procedureDescription(p: Procedure | undefined, includeFiller = true): string {

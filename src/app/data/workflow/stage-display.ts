@@ -22,16 +22,20 @@ export function labelFor(stage: WorkflowStage, key: string): string {
     ?? key;
 }
 
-/* Fields whose showIf is met; a simple stand-in for the job page's visibleFields, used only for seeded data. */
+/* true when a field's showIf trigger matches. inspectionType and result live on the stage itself,
+   every other trigger key in stage.inputs. */
+export function showIfMet(stage: WorkflowStage, f: StageField): boolean {
+  if (!f.showIf) return true;
+  const cur = f.showIf.key === 'inspectionType' ? stage.inspectionType
+    : f.showIf.key === 'result' ? stage.result
+    : stage.inputs[f.showIf.key];
+  if (f.showIf.anyOf ? !f.showIf.anyOf.includes(cur ?? '') : cur !== f.showIf.equals) return false;
+  return (f.showIf.and ?? []).every(c => (c.key === 'result' ? stage.result : stage.inputs[c.key]) === c.equals);
+}
+
+/* Fields whose showIf is met; a simple stand-in for the job page's visible fields, used only for seeded data. */
 export function fieldsShown(stage: WorkflowStage): StageField[] {
-  return stage.fields.filter(f => {
-    if (!f.showIf) return true;
-    const cur = f.showIf.key === 'inspectionType' ? stage.inspectionType
-      : f.showIf.key === 'result' ? stage.result
-      : stage.inputs[f.showIf.key];
-    if (f.showIf.anyOf ? !f.showIf.anyOf.includes(cur ?? '') : cur !== f.showIf.equals) return false;
-    return (f.showIf.and ?? []).every(c => (c.key === 'result' ? stage.result : stage.inputs[c.key]) === c.equals);
-  });
+  return stage.fields.filter(f => showIfMet(stage, f));
 }
 
 /* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:

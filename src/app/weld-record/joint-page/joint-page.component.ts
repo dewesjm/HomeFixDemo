@@ -1,5 +1,8 @@
-//This is the job details page, lot of stuff in here
+//This is the job details page
 
+/* The joint page: page state, wiring to the sign-off panel, and the actions that save through the
+   weld-record services. The form rules live in data/joint-form/, the override state in
+   JointOverridesService. */
 import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,52 +15,34 @@ import { AttachmentsComponent } from '../attachments/attachments.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
 import { SignoffPanelComponent, SignoffContext } from '../signoff-panel/signoff-panel.component';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
+import { JointOverridesService } from './joint-overrides.service';
 
 import { JOBS, Job } from '../../data/jobs';
-import { characteristicLabel } from '../../data/characteristics';
-
-import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
 import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
-import { ForemanOverrideService } from '../services/foreman-override.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
-import { EngineeringOverrideService } from '../services/engineering-override.service';
-import { ASSIGNED_KEYS } from '../../data/weld-assignment';
-import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
-import { testUserQuals } from '../../data/qualifications';
-import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences, typeLockReason } from '../../data/workflow';
-import { shopOptions } from '../../data/shops';
-import { requiresTraceability } from '../../data/mcl-traceability';
+import {
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel,
+  activeStageId, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
+  ACTUAL_REQUIREMENT, SignoffRecord, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
+} from '../../data/workflow';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
-import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../../data/ship-locations';
-import { isNonFerrousOrAustenitic } from '../../data/material-classification';
-import {
-  gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
-  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
-} from '../../data/procedures';
 import { formatDate } from '../../shared/date-format';
-
-/* fabrication values that must be present before Fit can be signed -- id1/id2 (MIC 1/MIC 2) are
-   only checked when that joint member's MCL requires traceability, same as their visibility */
-const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  location: 'Location', id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
-};
-
-/* PH/IP requirements: the keys the actuals follow */
-const REQUIREMENT_KEYS = new Set(Object.values(ACTUAL_REQUIREMENT));
-
-/* a PH/IP requirement typed on an engineering override step must be a number or NC */
-function typedRequirementError(stage: WorkflowStage, f: { key: string; label: string }): string {
-  const v = stage.inputs[f.key] ?? '';
-  if (!stage.engineeringEntry || !REQUIREMENT_KEYS.has(f.key) || !v || v === 'NC' || !isNaN(Number(v))) return '';
-  return `${f.label} must be a number or NC`;
-}
+import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
+import { jointDesignRequiresBackingRing, jointDesignRequiresInsert, visibleSignoffFields } from '../../data/joint-form/fit-signoff';
+import {
+  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, weldBuildupFields,
+} from '../../data/joint-form/stage-form';
+import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
+import { SignContext, errorsAfterBlur, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
+import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
+import { routePreviewLabel } from '../../data/joint-form/route-preview';
+import { LoadedJoint, captureLoaded, hasUnsavedEdits } from '../../data/joint-form/unsaved-edits';
 
 @Component({
   selector: 'app-joint-page',
@@ -66,6 +51,7 @@ function typedRequirementError(stage: WorkflowStage, f: { key: string; label: st
     CommonModule, FormsModule, SyncStatusComponent, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
+  providers: [JointOverridesService],
   templateUrl: './joint-page.component.html'
 })
 export class JointPageComponent implements OnDestroy {
@@ -77,10 +63,9 @@ export class JointPageComponent implements OnDestroy {
   private attachmentService = inject(AttachmentService);
   private fabricationService = inject(FabricationDataService);
   private deviationService = inject(DeviationService);
-  private overrideService = inject(ForemanOverrideService);
   private weldAssignment = inject(WeldAssignmentService);
-  private engineeringOverride = inject(EngineeringOverrideService);
   private confirm = inject(ConfirmService);
+  private overrides = inject(JointOverridesService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.store.workflowFor(this.job) : null;
@@ -89,45 +74,23 @@ export class JointPageComponent implements OnDestroy {
      fields, routing type choice) can be discarded when the user leaves without signing */
   private readonly loadSnapshot = this.wf ? this.assignAndSnapshot() : null;
 
+  constructor() {
+    if (this.job && this.wf && this.loadSnapshot) {
+      const wf = this.wf;
+      this.overrides.init({ job: this.job, wf: () => wf(), loaded: this.loadSnapshot, visibleFields: s => this.visibleFields(s) });
+    }
+  }
+
   /* the external system's GWP/WTN/filler go on before the snapshot, so they aren't an unsaved edit */
-  private assignAndSnapshot() {
+  private assignAndSnapshot(): LoadedJoint {
     if (this.job) this.weldAssignment.applyAll(this.job);
-    return this.captureSnapshot();
+    return captureLoaded(this.wf!());
   }
 
-  private captureSnapshot(): { fabricationData: Record<string, string>; stages: Record<string, WorkflowStage> } {
-    const w = this.wf!();
-    const stages: Record<string, WorkflowStage> = {};
-    for (const s of w.stages) {
-      stages[s.id] = { ...s, inputs: { ...s.inputs }, signoffInputs: { ...s.signoffInputs }, fields: [...s.fields], signoffFields: [...s.signoffFields] };
-    }
-    return { fabricationData: { ...w.fabricationData }, stages };
-  }
-
-  private recordEquals(a: Record<string, string>, b: Record<string, string>): boolean {
-    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-    for (const k of keys) if ((a[k] ?? '') !== (b[k] ?? '')) return false;
-    return true;
-  }
-
-  /* true when the technician has entered Fab or sign-off data on an unsigned stage that
-     hasn't been discarded/committed yet */
-  private hasUnsavedChanges(): boolean {
-    if (!this.wf || !this.loadSnapshot) return false;
-    if (Object.values(this.reported()).some(r => r.length)) return true;
-    const w = this.wf();
-    const fitSigned = w.stages.find(s => s.id === 'fit')?.signed ?? false;
-    if (!fitSigned && !this.recordEquals(w.fabricationData, this.loadSnapshot.fabricationData)) return true;
-    for (const s of w.stages) {
-      if (s.signed) continue;
-      const snap = this.loadSnapshot.stages[s.id];
-      if (!snap) continue;
-      /* engineering override values are kept on leaving, so they aren't unsaved */
-      if (!this.recordEquals(s.inputs, { ...snap.inputs, ...this.engineeringEdits(s) })) return true;
-      if (!this.recordEquals(s.signoffInputs, snap.signoffInputs)) return true;
-      if (s.routingType !== snap.routingType) return true;
-    }
-    return false;
+  /* the leave-page guard: false when something typed this visit would be lost */
+  canDeactivate(): boolean {
+    if (!this.wf || !this.loadSnapshot) return true;
+    return !this.overrides.hasReported() && !hasUnsavedEdits(this.wf(), this.loadSnapshot, s => this.overrides.engineeringEdits(s));
   }
 
   /* Discard any unsigned/unsaved Fab and sign-off edits made this visit, so re-entering the
@@ -135,13 +98,13 @@ export class JointPageComponent implements OnDestroy {
   ngOnDestroy() {
     if (!this.job || !this.wf || !this.loadSnapshot) return;
     const snapshot = this.loadSnapshot;
-    const pending = this.wf().stages.filter(s => !s.signed && this.engineeringReason()[s.id])
-      .map(s => ({ stage: s, values: this.engineeringEdits(s) }));
+    const pending = this.overrides.pendingEngineering(this.wf().stages);
     this.wf.update(wf => discardUnsignedEdits(wf, snapshot));
     /* engineering doesn't sign: its override is kept, not discarded */
-    for (const p of pending) this.recordEngineering(p.stage, p.values);
+    for (const p of pending) this.overrides.recordEngineering(p.stage, p.values);
   }
 
+  /* ── Page state ── */
 
   /* routing model: only show stages that are signed, required, or the current active stage */
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
@@ -155,36 +118,20 @@ export class JointPageComponent implements OnDestroy {
       .map(s => ({ label: s.label, disabled: s.disabled, stageIndex: s.stageIndex }));
   });
   /* which stage's sign-off shows; defaults to active */
-  selectedRouting = signal<number>(this.initialRouting());
+  selectedRouting = signal<number>(this.indexOfActive());
   /* inline field validation errors: key = `${stageId}:${fieldKey}` */
   fieldErrors = signal<Record<string, string>>({});
-
-  activeRoutingLabel = computed(() => {
-    const stages = this.routingModel();
-    const idx = this.selectedRouting();
-    const match = stages.find(s => s.stageIndex === idx);
-    return match?.label ?? '';
-  });
 
   currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
-  soldSigned = computed(() => {
-    if (!this.wf) return false;
-    return this.wf().stages.some(s => s.id === 'sold' && s.signed);
-  });
+  soldSigned = computed(() => !!this.wf?.().stages.some(s => s.id === 'sold' && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing) */
-  fabLocked = computed(() => {
-    if (!this.wf || !this.job) return false;
-    return !fabricationEditable(this.job.trade, this.wf().stages);
-  });
+  fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.job.trade, this.wf().stages));
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
-  /* index of stage awaiting sign-off */
-  activeIndex = computed(() => this.indexOfActive());
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
-  history = computed(() => (this.wf ? [...this.wf().history].reverse() : []));
 
   signoffRecords = computed(() => {
     if (!this.wf) return [];
@@ -196,189 +143,39 @@ export class JointPageComponent implements OnDestroy {
     return all.sort((a, b) => a.when.localeCompare(b.when));
   });
 
-  /* inspection/NDT stages must have the inspector explicitly choose what was performed */
-  inspectionTypeRequired(stage: WorkflowStage): boolean {
-    return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
-  }
-
-  defaultRoutingOption(stage: WorkflowStage): string {
-    if (!stage.routingOptions?.length) return '';
-    return stage.routingOptions.find(o => o.default)?.value ?? stage.routingOptions[0].value;
-  }
-
-  signoffCtx = computed<SignoffContext | null>(() => {
-    if (!this.job || !this.wf) return null;
-    const w = this.wf();
-    const job = this.job;
-    const self = this;
-    return {
-      job,
-      wf: () => ({ stages: w.stages, fabricationData: w.fabricationData, signoffRecords: self.signoffRecords() }),
-      selectedRouting: () => self.selectedRouting(),
-      jobComplete: () => self.jobComplete(),
-      soldSigned: () => self.soldSigned(),
-      fabLocked: () => self.fabLocked(),
-      rejectedCount: () => self.rejectedCount(),
-      resultOptions: STAGE_RESULT_OPTIONS,
-      fabErrors: () => self.fabErrors(),
-      fieldErrors: () => self.fieldErrors(),
-      editable: (s) => self.editable(s),
-      inputsEditable: (s, i) => self.inputsEditable(s, i),
-      canSignStage: (s) => self.canSignStage(s),
-      visibleFields: (s) => self.visibleFields(s),
-      visibleSignoffFields: (s) => self.visibleSignoffFields(s),
-      startsGroup: (s, f) => self.startsGroup(s, f),
-      fieldError: (sid, fk) => self.fieldError(sid, fk),
-      clearFieldError: (sid, fk) => self.clearFieldError(sid, fk),
-      getFabValue: (k) => self.getFabValue(k),
-      getReviewValue: (k) => self.getReviewValue(k),
-      fabFieldRequired: (f) => self.fabFieldRequired(f),
-      defaultRoutingOption: (s) => self.defaultRoutingOption(s),
-      inspectionTypeRequired: (s) => self.inspectionTypeRequired(s),
-      jointDesignRequiresInsert: () => self.jointDesignRequiresInsert(),
-      jointDesignRequiresBackingRing: () => self.jointDesignRequiresBackingRing(),
-      hasOverrideFields: (s) => self.visibleFields(s).some(f => f.key.startsWith('override')),
-      routePreviewLabel: (s) => self.routePreviewLabel(s),
-      holdNote: () => self.holdNote(),
-      leaveAfterSignoff: () => self.router.navigate([self.backDestination()]),
-      fieldWarning: (s, k) => self.fieldWarning(s, k),
-      reportedDeviations: (s) => self.reported()[s.id] ?? [],
-      foremanOverride: (s) => self.foremanOverride(s),
-      engineeringOverrideAvailable: (s) => self.engineeringOverrideAvailable(s),
-      engineeringOverride: (s) => self.engineeringOverrideClick(s),
-      removeForemanOverride: (s, i) => self.removeForemanOverride(s, i),
-      assignedLocked: (s, k) => self.assignedLocked(s, k),
-      stageInputBlur: (s, f, v) => self.stageInputBlur(s, f, v),
-      stageSelectChange: (s, f, v) => self.stageSelectChange(s, f, v),
-      blurSignoffField: (s, f, v) => self.blurSignoffField(s, f, v),
-      signoffSelectChange: (s, f, v) => self.signoffSelectChange(s, f, v),
-      signoffCheckboxChange: (s, f, c) => self.signoffCheckboxChange(s, f, c),
-      toggleAffectedItem: (s, item, e) => self.toggleAffectedItem(s, item, e),
-      onConsumableInsertChange: (s, v) => self.onConsumableInsertChange(s, v),
-      on5xChange: (s, v) => self.on5xChange(s, v),
-      updateRoutingType: (s, v) => self.updateRoutingType(s, v),
-      setInspectionType: (v) => self.setInspectionType(v),
-      setStageResult: (s, r) => self.setStageResult(s, r),
-      signStage: (s) => self.signStage(s),
-    };
-  });
-
-  /* fabrication cross-stage fields (Welding) — rebuilt each read so Location options stay fresh */
-  fabFields = computed(() => {
-    const fab = this.wf ? this.wf().fabricationData : {};
-    const job = this.job;
-    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
-    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-    return FABRICATION_FIELDS
-      .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
-      .filter(f => {
-        // MIC 1 only if joiningItem MCL requires traceability
-        if (f.key === 'id1') return mcl1Traceable;
-        // MIC 2 only if joinToItem MCL requires traceability
-        if (f.key === 'id2') return mcl2Traceable;
-        return true;
-      })
-      .map(f => this.withRuntimeOptions(f));
-  });
-  /* Location and Revised Joint Design get their options at runtime (admin lists); the static
-     field definition has none. Anything that shows a fabrication value's label must go through this. */
-  private withRuntimeOptions(f: FabricationField): FabricationField {
-    if (f.key === 'location') return { ...f, options: shopOptions() };
-    if (SHIP_LOCATION_KEYS.includes(f.key) && this.job && this.wf) {
-      const fab = this.wf().fabricationData;
-      const options = shipLocationOptions(f.key, this.job.hull, fab);
-      /* a saved value that's no longer on the list still shows, rather than a blank box */
-      const saved = fab[f.key] ?? '';
-      const all = saved && !options.some(o => o.value === saved) ? [{ label: saved, value: saved }, ...options] : options;
-      /* an empty list either waits on the field before it (Frame/P-S-CL/Usage) or has nothing set up for this hull */
-      const waiting = (f.key === 'frame' && !fab['deck']) || (f.key === 'pscl' && !(fab['deck'] && fab['frame']))
-        || (f.key === 'usage' && !(fab['deck'] && fab['frame'] && fab['pscl']));
-      return { ...f, options: all, placeholder: waiting ? f.placeholder : 'None set up in Admin' };
-    }
-    if (f.key === 'revisedJointDesign') return { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] };
-    return f;
-  }
-  fabErrors = computed(() => {
-    if (!this.wf) return {};
-    const fab = this.wf().fabricationData;
-    const job = this.job;
-    const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
-    const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-    const errors: Record<string, string> = {};
-    for (const f of FABRICATION_FIELDS) {
-      if (f.requiredWhen) {
-        const triggerVal = fab[f.requiredWhen.key] ?? '';
-        if (f.requiredWhen.notEmpty && triggerVal.trim() && !(fab[f.key] ?? '').trim()) {
-          errors[f.key] = `${f.label} is required when ${FABRICATION_FIELDS.find(ff => ff.key === f.requiredWhen!.key)?.label ?? f.requiredWhen.key} is set`;
-        }
-      }
-      if (f.showIf && f.required) {
-        if (fab[f.showIf.key] === f.showIf.equals && !(fab[f.key] ?? '').trim()) {
-          errors[f.key] = `${f.label} is required`;
-        }
-      }
-      // Plain required fields (no showIf): id1/id2 (MIC 1/2) only when that member's MCL requires
-      // traceability -- same condition FIT_REQUIRED_FABRICATION and fabFields() use
-      if (f.required && !f.showIf) {
-        if (f.key === 'id1' && !mcl1Traceable) continue;
-        if (f.key === 'id2' && !mcl2Traceable) continue;
-        if (!(fab[f.key] ?? '').trim()) {
-          errors[f.key] = `${f.label} is required`;
-        }
-      }
-    }
-    return errors;
-  });
   /* which steps show References: see showsReferences() in data/workflow/stage-rules.ts */
-  showReferences = computed(() => {
-    if (!this.wf) return false;
-    return showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? '');
-  });
-
-//extra fields when you press show more
-  /* deterministic placeholder values, varied per job so the demo doesn't look templated */
-  demo = computed(() => {
-    const j = this.job;
-    if (!j) return null;
-    const id = j.id;
-    const idNum = id.split('').reduce((a, c) => a * 31 + c.charCodeAt(0), 0);
-    const pick = (arr: string[], salt: number) => arr[(idNum * salt) % arr.length];
-    return {
-      // Job details
-      priority:        pick(['Normal', 'High', 'Low', 'Urgent'], 7),
-      workOrderType:   pick(['Corrective', 'Preventive', 'Inspection', 'Emergency'], 3),
-      customer:        pick(['Acme Property Mgmt', 'Riverside HOA', 'Lakeview Apartments', 'Summit Facilities', 'Oakwood Realty'], 5),
-      customerPhone:   `(555) 0${10 + (idNum % 89)}-${String(1000 + (idNum * 37) % 9000)}`,
-      serviceAddress:  `${100 + (idNum * 13) % 9899} ${pick(['Maple Ave', 'Oak St', 'Cedar Ln', 'Pine Rd', 'Elm Blvd'], 11)}, ${pick(['Springfield', 'Riverton', 'Fairview', 'Madison', 'Clinton'], 17)}`,
-      region:          `${pick(['Midwest', 'Northeast', 'South', 'West', 'Mountain'], 19)} · Branch ${1 + (idNum % 24)}`,
-      warranty:        pick(['In warranty', 'Out of warranty', 'Extended'], 23),
-      paymentTerms:    pick(['Net 30', 'Net 15', 'Net 60', 'Due on receipt'], 29),
-      // Work validation
-      laborHours:      (1 + (idNum * 7) % 80 / 10).toFixed(1),
-      warrantyPeriod:  pick(['30 days', '90 days', '1 year', '2 years'], 31),
-      disposalMethod:  pick(['Recycled', 'Landfill', 'Returned to vendor', 'Hazmat'], 37),
-      followUp:        pick(['No', 'Yes'], 41),
-      // Sign-off
-      permitVerified:  pick(['Yes', 'N/A', 'Pending'], 43),
-      testMethod:      pick(['Visual + functional', 'Pressure test', 'Meter reading', 'Load test'], 47),
-      crewSize:        String(1 + (idNum % 4)),
-      safetyCheck:     pick(['Passed', 'Passed w/ notes', 'N/A'], 53),
-      reworkNeeded:    pick(['No', 'Yes'], 59),
-      customerSignature: pick(['On file', 'Verbal', 'Pending'], 61),
-    };
-  });
+  showReferences = computed(() => !!this.wf && showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? ''));
 
   /* first unsigned required stage, or last when done */
   private indexOfActive(): number {
     if (!this.wf) return 0;
     const stages = this.wf().stages;
-    const id = activeStageId(stages);
-    const idx = stages.findIndex(s => s.id === id);
+    const idx = stages.findIndex(s => s.id === activeStageId(stages));
     return idx === -1 ? Math.max(0, stages.length - 1) : idx;
   }
-  private initialRouting(): number { return this.indexOfActive(); }
 
-  // ---- stage display helpers ----
+  private fab(): Record<string, string> {
+    return this.wf ? this.wf().fabricationData : {};
+  }
+
+  /* ── Fabrication panel ── */
+
+  /* rebuilt each read so Location options stay fresh */
+  fabFields = computed(() => fabricationFieldsShown(this.job, this.fab()));
+  fabErrors = computed(() => (this.wf ? fabricationErrors(this.job, this.fab()) : {}));
+  fabFieldRequired = (f: FabricationField): boolean => !!this.wf && fabricationFieldRequired(f, this.fab());
+
+  fabInputBlur(key: string, value: string) {
+    if (this.job && this.wf && value !== (this.fab()[key] ?? '')) {
+      this.fabricationService.setFabricationData(this.job, key, value);
+    }
+  }
+  fabSelectChange(key: string, value: string | null) {
+    this.fabInputBlur(key, value ?? '');
+  }
+
+  /* ── What can be edited ── */
+
   /* locked until prior required stages signed */
   locked(i: number): boolean {
     return this.wf ? isStageLocked(this.wf().stages, i) : true;
@@ -387,18 +184,13 @@ export class JointPageComponent implements OnDestroy {
   editable(stage: WorkflowStage): boolean {
     return stage.required && !stage.signed && stage.id === this.activeStage() && !this.soldSigned() && !this.heldAt(stage);
   }
-  canDeactivate(): boolean {
-    return !this.hasUnsavedChanges();
-  }
   /* inputs editable on active or unlocked optional stage */
   inputsEditable(stage: WorkflowStage, i: number): boolean {
     return !stage.signed && !this.locked(i) && !this.soldSigned() && !this.heldAt(stage);
   }
 
-  // ---- deviations ----
-  /* Foreman Override entries typed on each unsigned stage, keyed by stage id. Like any other
-     unsigned input they're dropped when leaving the joint; signing records them. */
-  reported = signal<Record<string, string[]>>({});
+  /* ── Engineering Hold ── */
+
   /* the acceptance screen Signoff opens when the stage has deviations */
   deviationRequest = signal<(DeviationAcceptRequest & { stage: WorkflowStage }) | null>(null);
 
@@ -419,657 +211,113 @@ export class JointPageComponent implements OnDestroy {
     return open.length > 0 && !open.some(d => d.stageId === stage.id);
   }
 
-  /* a Foreman Override lets GWP (and so WTN) and Filler Metal Type/Size be picked from the full lists */
-  private offListUnlocked(stage: WorkflowStage): boolean {
-    return (this.reported()[stage.id] ?? []).length > 0;
-  }
-
-  private baseMetals(): BaseMetals | undefined {
-    return this.job ? { type1: this.job.materialType1 ?? '', type2: this.job.materialType2 ?? '' } : undefined;
-  }
-
-  private isOffList(stage: WorkflowStage, key: string): boolean {
-    const f = stage.fields.find(ff => ff.key === key);
-    return !!f && detectDeviations(stage, new Set([key]), testUserQuals(), this.baseMetals(), conditionQuals(this.job))
-      .some(d => d.kind === 'off-list' && d.label === f.label);
-  }
-
-  /* GWP, WTN and Filler Metal Type/Size come from the external system; only a Foreman Override,
-     or the system sending nothing (engineering override), opens them */
-  assignedLocked(stage: WorkflowStage, key: string): boolean {
-    if (stage.engineeringEntry) return this.engineeringLocked(stage, key);
-    return ASSIGNED_KEYS.has(key) && !this.offListUnlocked(stage);
-  }
-
-  // ---- engineering override ----
-  /* reason given on each unsigned engineeringEntry step this visit, keyed by stage id: asked on the
-     first value set (or by the Engineering Override button) and recorded against every value set */
-  engineeringReason = signal<Record<string, string>>({});
-
-  /* a value saved on an earlier visit is locked until a reason is given again */
-  private engineeringLocked(stage: WorkflowStage, key: string): boolean {
-    return ENGINEERING_ENTRY_KEYS.has(key) && !this.engineeringReason()[stage.id]
-      && !!this.loadSnapshot?.stages[stage.id]?.inputs[key];
-  }
-
-  /* the Engineering Override button: only while something saved is locked */
-  engineeringOverrideAvailable(stage: WorkflowStage): boolean {
-    return !!stage.engineeringEntry && !this.engineeringReason()[stage.id]
-      && stage.fields.some(f => this.engineeringLocked(stage, f.key));
-  }
-
-  private askEngineeringReason(stage: WorkflowStage, accepted: () => void, rejected?: () => void) {
-    this.confirm.confirm({
-      header: `Engineering Override - ${stage.label}`,
-      message: 'Give the reason for this engineering override. It is recorded against every value set on this step.',
-      textInput: { label: 'Reason' },
-      acceptLabel: 'Continue',
-      accept: (text) => {
-        const t = (text ?? '').trim();
-        if (!t) { rejected?.(); return; }
-        this.engineeringReason.update(r => ({ ...r, [stage.id]: t }));
-        accepted();
-      },
-      reject: rejected,
-    });
-  }
-
-  engineeringOverrideClick(stage: WorkflowStage) {
-    this.askEngineeringReason(stage, () => {});
-  }
-
-  /* an engineering value changed with no reason yet: the value goes in, then the reason is asked;
-     cancelling puts the old values back */
-  private engineeringEdit(stage: WorkflowStage, field: StageField, value: string, apply: () => void) {
-    const needsReason = !!stage.engineeringEntry && ENGINEERING_ENTRY_KEYS.has(field.key)
-      && !this.engineeringReason()[stage.id] && value !== (stage.inputs[field.key] ?? '');
-    if (!needsReason) { apply(); return; }
-    const before = { ...stage.inputs };
-    apply();
-    this.askEngineeringReason(stage, () => {}, () => {
-      const cur = this.wf?.().stages.find(s => s.id === stage.id);
-      if (!this.job || !cur) return;
-      const changes = cur.fields.filter(f => (cur.inputs[f.key] ?? '') !== (before[f.key] ?? ''))
-        .map(f => ({ field: f, value: before[f.key] ?? '' }));
-      this.wfService.setStageInputs(this.job, stage.id, changes);
-    });
-  }
-
-  /* the engineering values set this visit (plus an Actual made or unmade NC by a typed requirement) */
-  private engineeringEdits(stage: WorkflowStage): Record<string, string> {
-    const snap = this.loadSnapshot?.stages[stage.id];
-    if (!stage.engineeringEntry || !snap || !this.engineeringReason()[stage.id]) return {};
-    const out: Record<string, string> = {};
-    for (const f of stage.fields) {
-      const v = stage.inputs[f.key] ?? '', was = snap.inputs[f.key] ?? '';
-      if (v === was) continue;
-      if (ENGINEERING_ENTRY_KEYS.has(f.key)) out[f.key] = v;
-      else if (f.key in ACTUAL_REQUIREMENT && (v === 'NC' || was === 'NC')) out[f.key] = v;
-    }
-    return out;
-  }
-
-  /* writes the override to History (and keeps the values when leaving without signing) */
-  private recordEngineering(stage: WorkflowStage, values: Record<string, string>) {
-    const reason = this.engineeringReason()[stage.id];
-    if (!this.job || !reason) return;
-    const vis = this.visibleFields(stage);
-    const shown = stage.fields.filter(f => ENGINEERING_ENTRY_KEYS.has(f.key) && f.key in values).map(f => {
-      const live = vis.find(v => v.key === f.key) ?? f;
-      return { label: f.label, value: displayValue(live, values[f.key]) || '(left blank)' };
-    });
-    this.engineeringOverride.record(this.job, stage.id, reason, values, shown);
-    this.engineeringReason.update(r => ({ ...r, [stage.id]: '' }));
-  }
-
-  fieldWarning(stage: WorkflowStage, key: string): string {
-    if (isActualOutOfRange(stage, key)) return 'Out of Range';
-    if ((key === 'weldProcedure' || key === 'fillerMetalType' || key === 'fillerMetalSize')
-        && stage.inputs[key] && this.isOffList(stage, key)) {
-      return 'Foreman override';
-    }
-    return '';
-  }
-
-  foremanOverride(stage: WorkflowStage) {
-    this.confirm.confirm({
-      header: `Foreman Override - ${stage.label}`,
-      message: 'Describe the deviation and why it is necessary',
-      textInput: { label: 'What is being overridden', placeholder: 'e.g. preheat applied with a different method' },
-      acceptLabel: 'Override',
-      accept: (text) => {
-        const t = (text ?? '').trim();
-        if (t) this.reported.update(r => ({ ...r, [stage.id]: [...(r[stage.id] ?? []), t] }));
-      },
-    });
-  }
-
-  removeForemanOverride(stage: WorkflowStage, index: number) {
-    this.reported.update(r => ({ ...r, [stage.id]: (r[stage.id] ?? []).filter((_, i) => i !== index) }));
-    if (this.offListUnlocked(stage) || !this.job) return;
-    /* last override removed: back to the external system's values */
-    this.weldAssignment.apply(this.job, stage.id);
-  }
-
-  /* detected deviations, for the acceptance screen. Off-list GWP/filler picked under a Foreman
-     Override belong to the override instead (no hold), see stageOverrideOffList. */
-  private stageDeviations(stage: WorkflowStage): DeviationItem[] {
-    const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    const items = detectDeviations(stage, vis, testUserQuals(), this.baseMetals(), conditionQuals(this.job));
-    return this.offListUnlocked(stage) ? items.filter(d => d.kind !== 'off-list') : items;
-  }
-
-  private stageOverrideOffList(stage: WorkflowStage): DeviationItem[] {
-    if (!this.offListUnlocked(stage)) return [];
-    const vis = new Set(this.visibleFields(stage).map(f => f.key));
-    return detectDeviations(stage, vis, testUserQuals(), this.baseMetals(), conditionQuals(this.job)).filter(d => d.kind === 'off-list');
-  }
-
-  /* writes the stage's Foreman Overrides to History; call right before signing */
-  private recordOverrides(stage: WorkflowStage) {
-    if (!this.job) return;
-    this.recordEngineering(stage, this.engineeringEdits(stage));
-    this.overrideService.record(this.job, stage.id, this.reported()[stage.id] ?? [], this.stageOverrideOffList(stage));
-    this.reported.update(r => ({ ...r, [stage.id]: [] }));
-  }
-
   acceptDeviations(reason: string) {
     const req = this.deviationRequest();
     this.deviationRequest.set(null);
     if (!req || !this.job) return;
     this.deviationService.record(this.job, req.stage.id, req.items, reason);
-    this.recordOverrides(req.stage);
+    this.overrides.recordOverrides(req.stage);
     this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage), true);
     /* no 5X auto-sign: the joint is now on Engineering Hold */
     this.router.navigate([this.backDestination()]);
   }
-  /* Signoff fields currently required, accounting for Fit/Pre-Fit's joint-design + traceability
-     conditions on Consumable Insert/Backing Ring -- shared by signBlockers() (reasons list) and
-     validateStageFields() (per-field highlighting) so they can't drift out of sync. */
-  private requiredSignoffFields(stage: WorkflowStage): SignoffField[] {
-    return stage.signoffFields.filter(f => {
-      if (stage.id === 'fit' || stage.id === 'pre-fit') {
-        const insertApplies = this.jointDesignRequiresInsert();
-        const backingApplies = this.jointDesignRequiresBackingRing();
-        const micApplies = this.job
-          ? requiresTraceability(this.job.mcl1) || requiresTraceability(this.job.mcl2) : false;
-        if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize') return insertApplies;
-        if (f.key === 'consumableInsertId') return insertApplies && micApplies;
-        if (f.key === 'backingRingType') return backingApplies;
-        if (f.key === 'backingRingId') return backingApplies && micApplies;
-        return !!f.required;
-      }
-      return !!f.required;
-    });
-  }
 
-  /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
-  signBlockers(stage: WorkflowStage): string[] {
-    if (this.heldAt(stage)) return ['On hold for an open deviation'];
-    if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
-    const reasons: string[] = [];
-    if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
-    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
-    if (stage.repeatable && !stage.routingType) reasons.push('Choose the routing type');
-    // Fit: fabrication data must have Location, MIC 1, MIC 2, Drawing Rev, Actual Thickness
-    if (stage.id === 'fit' && this.wf) {
-      const fab = this.wf().fabricationData;
-      const mcl1Traceable = this.job ? requiresTraceability(this.job.mcl1) : false;
-      const mcl2Traceable = this.job ? requiresTraceability(this.job.mcl2) : false;
-      const missing = Object.entries(FIT_REQUIRED_FABRICATION)
-        .filter(([k]) => k !== 'id1' || mcl1Traceable)
-        .filter(([k]) => k !== 'id2' || mcl2Traceable)
-        .filter(([k]) => !fab[k]?.trim())
-        .map(([, label]) => label);
-      if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
-    }
-    // Fit-Up Insp: all verification checkboxes must be checked
-    if (stage.id === 'fitup-insp') {
-      if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
-      if (Object.keys(this.fabErrors()).length > 0) reasons.push('Fix the fabrication errors');
-    }
-    // RT NDT: Degree of RT Performed must match the job's required degree (rtRoot/rtFinal)
-    if (stage.inspectionType === 'rt') {
-      const required = this.rtDegreeRequired(stage);
-      if (required && stage.inputs['degreeRt'] !== required) {
-        reasons.push(`Degree of RT Performed must be ${required}`);
-      }
-    }
-    const missingSignoff = this.requiredSignoffFields(stage)
-      .filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0)
-      .map(f => f.label);
-    if (missingSignoff.length) reasons.push(`Fill in ${missingSignoff.join(', ')}`);
-    return reasons;
-  }
+  /* ── The sign-off panel ── */
 
-  canSignStage(stage: WorkflowStage): boolean {
-    return this.signBlockers(stage).length === 0;
-  }
-
-  /* after a failed sign attempt: bring the first validation error into view and focus its field */
-  private focusFirstError() {
-    setTimeout(() => {
-      const err = document.querySelector('.signoff-panel .field-error');
-      if (!err) return;
-      err.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });
-    });
-  }
-
-  updateRoutingType(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    if (value) this.clearFieldError(stage.id, '__routingType');
-    const templates = getTemplates()[this.job.trade] ?? [];
-    /* Fit stage: swap fields when switching between Fit and Weld Build-Up */
-    if (stage.id === 'fit') {
-      const fitTpl = templates.find(t => t.id === 'fit');
-      const tackTpl = templates.find(t => t.id === 'tack');
-      const newFields = value === 'weld-buildup' && tackTpl
-        ? [...tackTpl.fields.map(f => ({ ...f })), ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
-        : (fitTpl?.fields ?? []).map(f => ({ ...f }));
-      const newSignoff = value === 'weld-buildup'
-        ? []
-        : (fitTpl?.signoffFields ?? []).map(f => ({ ...f }));
-      this.signoffService.updateStageSignoff(this.job!, stage.id, {
-        routingType: value,
-        fields: newFields,
-        signoffInputs: {},
-        signoffFields: newSignoff,
-      }, { action: `${stage.label} - Type changed to ${value}` });
-      if (value === 'weld-buildup') this.weldAssignment.apply(this.job, stage.id);
-      return;
-    }
-    this.signoffService.updateStageSignoff(this.job!, stage.id, {
-      routingType: value,
-    }, { action: `${stage.label} - Type changed to ${value}` });
-  }
-
-  swapStageOptions(stage: WorkflowStage): { label: string; value: string }[] {
-    if (!this.job) return [];
-    return (getTemplates()[this.job.trade] ?? []).map(t => ({ label: t.label, value: t.id }));
-  }
-  updateSwapStage(stage: WorkflowStage, swapId: string) {
-    if (!this.job || !this.wf) return;
-    const currentRouting = this.selectedRouting();
-    const templates = getTemplates()[this.job.trade] ?? [];
-    const swapTpl = templates.find(t => t.id === swapId);
-    if (!swapTpl) return;
-    const sf = swapTpl.signoffFields ?? [];
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map(s => s.id === stage.id ? {
-        ...s,
-        swapStageId: swapId,
-        fields: swapTpl.fields.map(f => ({ ...f })),
-        signoffFields: sf.map(f => ({ ...f })),
-      } : s)
-    }));
-    // Ensure the routing selection doesn't shift during re-render
-    this.selectedRouting.set(currentRouting);
-  }
-
-  // ---- stage inputs ----
-  /* fields with no showIf always show; conditional ones show when their trigger matches */
-  visibleFields(stage: WorkflowStage): StageField[] {
+  signoffCtx = computed<SignoffContext | null>(() => {
+    if (!this.job || !this.wf) return null;
+    const w = this.wf();
     const job = this.job;
-    const isFitWeldBuildup = stage.id === 'fit' && stage.routingType === 'weld-buildup';
-    /* Weld build-up on fit stage: compute fields from the tack template definition (plus override
-       fields, which Fit doesn't get at buildStages() time since it isn't itself a weld stage)
-       rather than relying on stage.fields, which may not have propagated yet when Angular
-       re-evaluates the @if gate in the same change-detection tick. */
-    const rawFields = isFitWeldBuildup
-      ? (() => {
-          const templates = job ? (getTemplates()[job.trade] ?? []) : [];
-          const tackTpl = templates.find(t => t.id === 'tack');
-          return [...(tackTpl?.fields ?? []), ...WELD_OVERRIDE_FIELDS];
-        })()
-      : stage.fields;
-    const result = rawFields
-      .map(f => this.withStageRuntimeOptions(f, stage))
-      .filter(f => {
-        /* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
-        if (f.key === 'allowableThicknessExceeded'
-            && !this.wf?.().stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
-        if (f.showIf) {
-          const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
-            : f.showIf.key === 'result' ? stage.result
-            : stage.inputs[f.showIf.key];
-          if (f.showIf.anyOf) { if (!f.showIf.anyOf.includes(checkVal ?? '')) return false; }
-          else if (checkVal !== f.showIf.equals) return false;
-          if (f.showIf.and) {
-            for (const cond of f.showIf.and) {
-              const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
-              if (v !== cond.equals) return false;
-            }
-          }
-        }
-        // MIC fields only visible when traceability is required
-        if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
-          const mcl1Traceable = job ? requiresTraceability(job.mcl1) : false;
-          const mcl2Traceable = job ? requiresTraceability(job.mcl2) : false;
-          return mcl1Traceable || mcl2Traceable;
-        }
-        // Weld Position's row is only rendered when N Ind. is '1' (see WELD_GROUPS in
-        // signoff-panel.component.ts) -- keep this in step so required-ness isn't enforced
-        // against a field the user can't see or fill in
-        if (f.key === 'weldPosition') return job?.nInd === '1';
-        // Override fields only visible when the selected GWP+WTN's WPS has override values set
-        if (f.key.startsWith('override')) {
-          if (!SHOW_WELD_OVERRIDES) return false;
-          const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
-          if (!proc || !procedureHasOverride(proc)) return false;
-        }
-        return true;
-      });
-    return result;
+    const ov = this.overrides;
+    return {
+      job,
+      wf: () => ({ stages: w.stages, fabricationData: w.fabricationData, signoffRecords: this.signoffRecords() }),
+      selectedRouting: () => this.selectedRouting(),
+      jobComplete: () => this.jobComplete(),
+      soldSigned: () => this.soldSigned(),
+      fabLocked: () => this.fabLocked(),
+      rejectedCount: () => this.rejectedCount(),
+      resultOptions: STAGE_RESULT_OPTIONS,
+      fabErrors: () => this.fabErrors(),
+      fieldErrors: () => this.fieldErrors(),
+      editable: (s) => this.editable(s),
+      inputsEditable: (s, i) => this.inputsEditable(s, i),
+      canSignStage: (s) => this.canSignStage(s),
+      visibleFields: (s) => this.visibleFields(s),
+      visibleSignoffFields: (s) => this.visibleSignoffFields(s),
+      startsGroup: (s, f) => startsGroup(s, f),
+      fieldError: (sid, fk) => this.fieldError(sid, fk),
+      clearFieldError: (sid, fk) => this.clearFieldError(sid, fk),
+      getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
+      getReviewValue: (k) => reviewVerifyValue(k, job),
+      fabFieldRequired: (f) => this.fabFieldRequired(f),
+      defaultRoutingOption: (s) => s.routingOptions?.find(o => o.default)?.value ?? s.routingOptions?.[0]?.value ?? '',
+      inspectionTypeRequired: (s) => inspectionTypeRequired(s),
+      jointDesignRequiresInsert: () => jointDesignRequiresInsert(job, this.fab()),
+      jointDesignRequiresBackingRing: () => jointDesignRequiresBackingRing(job, this.fab()),
+      hasOverrideFields: (s) => this.visibleFields(s).some(f => f.key.startsWith('override')),
+      routePreviewLabel: (s) => this.routePreviewLabel(s),
+      holdNote: () => this.holdNote(),
+      leaveAfterSignoff: () => this.router.navigate([this.backDestination()]),
+      fieldWarning: (s, k) => ov.fieldWarning(s, k),
+      reportedDeviations: (s) => ov.reported()[s.id] ?? [],
+      foremanOverride: (s) => ov.foremanOverride(s),
+      engineeringOverrideAvailable: (s) => ov.engineeringOverrideAvailable(s),
+      engineeringOverride: (s) => ov.engineeringOverrideClick(s),
+      removeForemanOverride: (s, i) => ov.removeForemanOverride(s, i),
+      assignedLocked: (s, k) => ov.assignedLocked(s, k),
+      stageInputBlur: (s, f, v) => this.stageInputBlur(s, f, v),
+      stageSelectChange: (s, f, v) => this.stageSelectChange(s, f, v),
+      blurSignoffField: (s, f, v) => this.setSignoffInput(s, f, v),
+      signoffSelectChange: (s, f, v) => this.setSignoffInput(s, f, v ?? ''),
+      signoffCheckboxChange: (s, f, c) => this.setSignoffInput(s, f, c ? 'yes' : '', false),
+      toggleAffectedItem: (s, item, e) => this.toggleAffectedItem(s, item, e),
+      onConsumableInsertChange: (s, v) => this.onConsumableInsertChange(s, v),
+      on5xChange: (s, v) => this.setInput(s, 'performed5x', v),
+      updateRoutingType: (s, v) => this.updateRoutingType(s, v),
+      setInspectionType: (v) => this.setInspectionType(v),
+      setStageResult: (s, r) => this.setStageResult(s, r),
+      signStage: (s) => this.signStage(s),
+    };
+  });
+
+  private formCtx(stage: WorkflowStage): StageFormContext {
+    return { job: this.job, stages: this.wf?.().stages ?? [], offListUnlocked: this.overrides.offListUnlocked(stage) };
   }
 
-  /* GWP and WTN cascade from Weld Engineering's procedures data: GWP is filtered to whichever GWPs
-     are qualified for this job's base metal pair (Material Type 1/2), WTN is then filtered to
-     whichever GWP is currently selected on this stage. Filler Metal Type/Size then cascade from the
-     Procedure that GWP+WTN resolves to -- same pattern, one step further down the chain. */
-  /* Root's RT requirement is job.rtRoot, Final Weld's is job.rtFinal; Layer's RT NDT has no
-     matching requirement field on Job, so nothing is enforced there. */
-  private rtDegreeRequired(stage: WorkflowStage): string {
-    if (stage.id === 'root-ndt-utrt') return this.job?.rtRoot ?? '';
-    if (stage.id === 'final-ndt-utrt') return this.job?.rtFinal ?? '';
-    return '';
+  visibleFields(stage: WorkflowStage): StageField[] {
+    return visibleStageFields(stage, this.formCtx(stage));
   }
 
-  /* Demo aid: shows where Repair (or the Excavation NDT it can insert) will actually route to on
-     signoff, given current inputs -- mirrors SignoffService.signStage()'s routing exactly:
-       Repair: Allowable thickness exceeded takes priority -> that phase's NDT RT/UT; else Grind
-         Only -> that phase's NDT VT/5X; else Weld Repair -> inserts Excavation NDT; else Cut ->
-         starts over from Fit, Refit # up by one; no code chosen -> nothing shown.
-       Excavation NDT (SAT only -- UNSAT already routes back to Repair via rejectToStage): "the
-         original joint inspection" (whatever NDT stage/method actually rejected the joint),
-         unless that was PT and the job's material (Material Type 1 or 2, Admin > Material
-         Classification) is non-ferrous or austenitic, in which case 5X instead of PT. */
-  /* Names the actual stage Excavation NDT's SAT routes back to (the exact NDT stage that
-     originally rejected the joint, or that phase's VT/5X if the PT/material override applies) --
-     shared by the Repair-stage hint (names it up front, before Excavation NDT even exists yet)
-     and the Excavation NDT-stage hint (names it there too). `repair` is the Repair stage carrying
-     the origin bookkeeping (`inputs['originPhase'/'originStageId'/'originInspectionType']`). */
-  private originInspectionLabel(repair: WorkflowStage | undefined, labelOf: (id: string) => string): string {
-    if (!this.job || !repair) return 'the original joint inspection';
-    const phase = repair.inputs['originPhase'] ?? '';
-    const originStageId = repair.inputs['originStageId'] ?? '';
-    const originInspectionType = repair.inputs['originInspectionType'] ?? '';
-    const needs5xInstead = originInspectionType === 'pt' && phase
-      && (isNonFerrousOrAustenitic(this.job.materialType1) || isNonFerrousOrAustenitic(this.job.materialType2));
-    if (needs5xInstead) {
-      return `${labelOf(`${phase}-ndt-vt5x`)} (5X instead of PT - material is non-ferrous or austenitic)`;
-    }
-    return originStageId ? labelOf(originStageId) : 'the original joint inspection';
+  visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
+    return visibleSignoffFields(stage, this.job, this.fab());
   }
 
-  /* Demo routing preview under the Signoff button (Admin > Feature Toggles). Repair/Excavation NDT
-     keep their own wording below; every other step runs the real sign-off as a dry run
-     (SignoffService.previewSignoff) and names where the joint ends up, plus "Why" (the special
-     routing rules it hit). A SAT/UNSAT step with no decision picked yet shows both outcomes. A
-     locked Type says why at the end (typeLockReason). */
+  /* ── Routing preview ── */
+
+  /* the demo routing preview under the Signoff button (route-preview.ts) */
   private routingPreviewOn = loadFeatureToggles().routingPreview;
   routePreviewLabel(stage: WorkflowStage): string {
-    if (!this.routingPreviewOn || !this.job) return '';
-    const route = this.routeLabel(stage);
-    return route ? [route, typeLockReason(stage, this.job)].filter(Boolean).join(' ') : '';
-  }
-
-  private routeLabel(stage: WorkflowStage): string {
-    if (!this.job || !this.wf) return '';
-    if (isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)) return this.repairRouteLabel(stage);
-    if (stage.signed || stage.id === 'sold' || stage.id !== this.activeStage() || isEngineeringHoldId(stage.id)) return '';
+    if (!this.routingPreviewOn || !this.job || !this.wf) return '';
     const wf = this.wf();
     const job = this.job;
-    const from = wf.stages.findIndex(s => s.id === stage.id);
-    const phrase = (when: string, result?: WorkflowStage['result']) => {
-      const { target, reasons } = this.signoffService.previewSignoff(wf, job, stage.id, result, this.stageDeviations(stage).length > 0);
-      const why = `Why: ${reasons.length ? reasons.join('; ') : 'no special conditions'}.`;
-      if (!target) return `${when}, the joint is complete. ${why}`;
-      if (target.id === stage.id) return `${when}, the joint stays at ${stage.label}. ${why}`;
-      if (target.label === stage.label) return `${when}, this routes to another ${stage.label}. ${why}`;
-      const back = wf.stages.findIndex(s => s.id === target.id);
-      return `${when}, this routes ${back >= 0 && back < from ? 'back ' : ''}to ${target.label}. ${why}`;
-    };
-    if (hasDecision(stage) && !stage.result) return `${phrase('On SAT', 'sat')} ${phrase('On UNSAT', 'unsat')}`;
-    return phrase('On signoff');
+    const hold = () => this.overrides.stageDeviations(stage).length > 0;
+    return routePreviewLabel(job, wf.stages, stage, this.activeStage(),
+      result => this.signoffService.previewSignoff(wf, job, stage.id, result, hold()));
   }
 
-  private repairRouteLabel(stage: WorkflowStage): string {
-    if (!this.job) return '';
-    const templates = getTemplates()[this.job.trade] ?? [];
-    const labelOf = (id: string) => templates.find(t => t.id === id)?.label ?? id;
-    if (isRepairStageId(stage.id)) {
-      const phase = stage.inputs['originPhase'] ?? '';
-      if (stage.inputs['allowableThicknessExceeded'] === 'yes') {
-        return phase ? `On signoff, this routes back to ${labelOf(`${phase}-ndt-utrt`)}. Why: Allowable thickness exceeded is checked (this comes before the Repair Code).` : '';
-      }
-      const repairType = stage.inputs['repairType'] ?? '';
-      if (repairType === 'grind') {
-        const target = stage.inputs['originStageId'] ?? '';
-        return target ? `On signoff, this routes to ${labelOf(target)}. Why: Repair Code is Grind Only.` : '';
-      }
-      if (repairType === 'weld-repair') {
-        return `On signoff, this routes to ${excavationNdtStage('', stage.id).label}; SAT there routes back to ${this.originInspectionLabel(stage, labelOf)}, UNSAT routes back to ${stage.label}. Why: Repair Code is Weld Repair.`;
-      }
-      if (repairType === 'cut') {
-        return `On signoff, the joint starts over from ${labelOf('fit')} and continues along the path from there. Past records are kept, and Refit # goes up to ${String(Number(this.job.refitNumber || '0') + 1).padStart(2, '0')}. Why: Repair Code is Cut.`;
-      }
-      return '';
-    }
-    if (isExcavationNdtStageId(stage.id) && this.wf) {
-      const repair = this.wf().stages.find(s => s.id === repairIdForExcavation(stage.id));
-      return `On SAT, this routes back to ${this.originInspectionLabel(repair, labelOf)}. UNSAT routes back to ${repair?.label ?? 'Repair'}. Why: weld repairs require the original joint inspection; UNSAT means the repair was rejected.`;
-    }
-    return '';
+  /* ── Step inputs ── */
+
+  private setInput(stage: WorkflowStage, key: string, value: string) {
+    const field = stage.fields.find(f => f.key === key);
+    if (this.job && field) this.wfService.setStageInput(this.job, stage.id, field, value);
   }
 
-  private withStageRuntimeOptions(f: StageField, stage: WorkflowStage): StageField {
-    if (f.key === 'procedureUsed') {
-      /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
-      const cur = stage.inputs['procedureUsed'] ?? '';
-      const options = inspectionProcedureOptions(stage.inspectionType);
-      return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
-    }
-    if (f.key === 'degreeRt') {
-      const required = this.rtDegreeRequired(stage);
-      return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
-    }
-    if (f.key === 'allowableThicknessExceeded' && this.job) {
-      return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(this.job.nInd)} has been exceeded - Volumetric inspection (UT/RT) is required` };
-    }
-    /* engineering override: typed by hand, no list (a filler copied from Consumable Insert keeps its droplist below) */
-    if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFieldLocked(stage, f)) {
-      return { ...f, type: 'text', options: undefined, description: '' };
-    }
-    /* typed PH/IP requirements take a number or NC, so they're text boxes */
-    if (stage.engineeringEntry && REQUIREMENT_KEYS.has(f.key)) return { ...f, type: 'text' };
-    const gwp = stage.inputs?.['weldProcedure'] ?? '';
-    if (f.key === 'weldProcedure') {
-      /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. in
-         seeded data) is kept as an option so the droplist doesn't show blank */
-      const qualified = gwpOptionsForMaterials(this.job?.materialType1 ?? '', this.job?.materialType2 ?? '');
-      const options = this.offListUnlocked(stage) ? allGwpOptions()
-        : gwp && !qualified.some(o => o.value === gwp) ? [...qualified, { label: gwp, value: gwp, detail: gwpDescription(gwp) }]
-        : qualified;
-      return {
-        ...f,
-        options,
-        description: gwp ? gwpDescription(gwp) : '',
-      };
-    }
-    if (f.key === 'wtn') {
-      const wtn = stage.inputs?.['wtn'] ?? '';
-      return { ...f, options: wtnOptionsForGwp(gwp), description: wtn ? wtnDescription(gwp, wtn) : '' };
-    }
-    if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
-      /* Locked (consumable insert copied the value): show the full option set, not the
-         current WPS's narrower list, so a value copied from Fit's Consumable Insert Type/Size
-         always has a matching <option> and renders instead of appearing blank -- the field
-         isn't user-selectable in this state anyway, so the WPS-specific filtering is moot. */
-      if (isFieldLocked(stage, f) || this.offListUnlocked(stage)) {
-        return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
-      }
-      const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
-      return {
-        ...f,
-        options: f.key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc)
-      };
-    }
-    return f;
-  }
-
-  /* check if the current joint design requires consumable insert or backing ring */
-  /* Revised Joint Design takes priority; falls back to joint details joint design */
-  private effectiveJointDesign(): string {
-    const fab = this.wf?.().fabricationData;
-    const revised = fab?.['revisedJointDesign'] ?? '';
-    return revised.trim() || (this.job?.jointDesign ?? '');
-  }
-
-  jointDesignRequiresInsert(): boolean {
-    const code = this.effectiveJointDesign();
-    if (!code) return false;
-    const jd = getJointDesign(code);
-    return jd?.requiresConsumableInsert || false;
-  }
-
-  jointDesignRequiresBackingRing(): boolean {
-    const code = this.effectiveJointDesign();
-    if (!code) return false;
-    const jd = getJointDesign(code);
-    return jd?.requiresBackingRing || false;
-  }
-
-  jointDesignRequiresEither(): boolean {
-    return this.jointDesignRequiresInsert() || this.jointDesignRequiresBackingRing();
-  }
-
-  fabFieldRequired = (f: FabricationField): boolean => {
-    if (!this.wf) return false;
-    if (f.showIf && f.required) {
-      const fab = this.wf().fabricationData;
-      return fab[f.showIf.key] === f.showIf.equals;
-    }
-    if (!f.requiredWhen) return false;
-    const val = (this.wf().fabricationData[f.requiredWhen.key] ?? '').trim();
-    return f.requiredWhen.notEmpty ? val.length > 0 : val.length === 0;
-  };
-
-  /* map fitup-insp verification field keys to fabrication data keys */
-  private readonly FAB_VERIFY_MAP: Record<string, string> = {
-    verifyMic1: 'id1', verifyMic2: 'id2', verifyDrawingRev: 'drawingRev',
-    verifyActualThickness: 'actualThickness', verifyRevisedJointDesign: 'revisedJointDesign',
-  };
-  getFabValue(fieldKey: string): string {
-    const fabKey = this.FAB_VERIFY_MAP[fieldKey];
-    if (!fabKey || !this.wf) return '';
-    const val = this.wf().fabricationData[fabKey] ?? '';
-    if (!val) return '';
-    // Resolve select field labels
-    const fabField = FABRICATION_FIELDS.find(f => f.key === fabKey);
-    const options = fabField ? this.withRuntimeOptions(fabField).options : undefined;
-    if (fabField?.type === 'select' && options) {
-      const match = options.find(o => o.value === val);
-      return match?.label ?? val;
-    }
-    return val;
-  }
-
-  /* map review verification field keys to job data values */
-  private readonly REVIEW_VERIFY_MAP: Record<string, string> = {
-    verifyDrawing: 'drawing', verifyDrawingRev: 'drawingRev',
-    verifyJoint: 'joint', verifyJointDesign: 'jointDesign',
-    verifyWeldType: 'weldType', verifyPipeSize: 'pipeSize',
-    verifyWallThickness: 'wallThickness', verifyMaterial1: 'materialType1',
-    verifyMaterial2: 'materialType2', verifyMcl1: 'mcl1', verifyMcl2: 'mcl2',
-    verifyNdt: 'ndt', verifyPwht: 'pwht', verifyNInd: 'nInd',
-    verifyWps: 'wps', verifyOrder: 'order', verifyWorkPackage: 'workPackage',
-  };
-  getReviewValue(fieldKey: string): string {
-    const jobKey = this.REVIEW_VERIFY_MAP[fieldKey];
-    if (!jobKey || !this.job) return '';
-    return (this.job as any)[jobKey] ?? '';
-  }
-  /* a trigger field that other fields declare a showIf against — always breaks
-     onto its own row (even before a selection) so its dependent fields can flow
-     to the right of it once they appear */
-  startsGroup(stage: WorkflowStage, field: StageField): boolean {
-    return stage.fields.some(f => f.showIf?.key === field.key);
-  }
-  /* blank any dependent field whose trigger no longer matches, so hidden fields don't keep stale
-     values -- showIf resolution must match visibleFields()'s exactly (inspectionType/result live
-     on the stage itself, not stage.inputs). Bug fixed 2026-09-23: this always read stage.inputs
-     for every key including 'inspectionType', which is never actually stored there (it's
-     stage.inspectionType) -- so it read undefined, treated any inspectionType-gated field
-     (degreeRt, rtFileNumber, defectCode, penetrantManufacturer/Type, weldColor, idAccessible) as
-     always hidden, and immediately blanked it back out the moment it was set. */
+  /* blank any dependent field whose trigger no longer matches */
   private clearHidden(stage: WorkflowStage) {
     if (!this.job) return;
-    for (const f of stage.fields) {
-      if (f.showIf) {
-        const checkVal = f.showIf.key === 'inspectionType' ? stage.inspectionType
-          : f.showIf.key === 'result' ? stage.result
-          : stage.inputs[f.showIf.key];
-        let visible = f.showIf.anyOf ? f.showIf.anyOf.includes(checkVal ?? '') : checkVal === f.showIf.equals;
-        if (visible && f.showIf.and) {
-          for (const cond of f.showIf.and) {
-            const v = cond.key === 'result' ? stage.result : stage.inputs[cond.key];
-            if (v !== cond.equals) { visible = false; break; }
-          }
-        }
-        if (!visible && stage.inputs[f.key]) this.wfService.setStageInput(this.job, stage.id, f, '');
-      }
-    }
-  }
-
-  /* Consumable Insert: when Yes, auto-populate filler fields from fit stage consumable insert data and lock them */
-  onConsumableInsertChange(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    const field = stage.fields.find(f => f.key === 'consumableInsertOnly');
-    if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
-    const fillerType = stage.fields.find(f => f.key === 'fillerMetalType');
-    const fillerSize = stage.fields.find(f => f.key === 'fillerMetalSize');
-    const fillerMic = stage.fields.find(f => f.key === 'fillerMetalMic');
-    if (value !== 'yes') {
-      /* unchecked: MIC must be re-entered; Type/Size go back to the external system's values,
-         or blank under a Foreman Override or engineering override */
-      if (fillerMic) this.wfService.setStageInput(this.job, stage.id, fillerMic, '');
-      if (!this.offListUnlocked(stage) && !stage.engineeringEntry) { this.weldAssignment.apply(this.job, stage.id); return; }
-      for (const f of [fillerType, fillerSize]) {
-        if (f) this.wfService.setStageInput(this.job, stage.id, f, '');
-      }
-      return;
-    }
-    /* find the fit stage's consumable insert signoff data */
-    const fitStage = this.wf().stages.find(s => s.id === 'fit');
-    if (!fitStage) return;
-    const consumableInsertType = fitStage.signoffInputs['consumableInsertType'] ?? '';
-    const consumableInsertSize = fitStage.signoffInputs['consumableInsertSize'] ?? '';
-    const consumableInsertId = fitStage.signoffInputs['consumableInsertId'] ?? '';
-    /* auto-populate filler fields */
-    if (fillerType && consumableInsertType) this.wfService.setStageInput(this.job, stage.id, fillerType, consumableInsertType);
-    if (fillerSize && consumableInsertSize) this.wfService.setStageInput(this.job, stage.id, fillerSize, consumableInsertSize);
-    if (fillerMic && consumableInsertId) this.wfService.setStageInput(this.job, stage.id, fillerMic, consumableInsertId);
-  }
-
-  /* 5X inspection dropdown: just records the answer. The corresponding 5X NDT stage is only
-     auto-signed once THIS stage is itself signed off (see signStage()) — answering the question
-     must never sign anything on its own. */
-  on5xChange(stage: WorkflowStage, value: string) {
-    if (!this.job) return;
-    const field = stage.fields.find(f => f.key === 'performed5x');
-    if (field) this.wfService.setStageInput(this.job, stage.id, field, value);
-  }
-
-  /* called right after `stage` itself is signed off: if it answered "yes" to the 5X question,
-     auto-sign the matching VT/5X NDT stage now that the real sign-off has actually happened */
-  private signRelated5xIfNeeded(stage: WorkflowStage) {
-    if (!this.job || !this.wf) return;
-    if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
-    const ndtStage = this.wf().stages.find(s => s.id === 'root-ndt-vt5x');
-    if (!ndtStage || ndtStage.signed) return;
-    this.signoffService.signStage(this.job, 'root-ndt-vt5x', this.signoffSnapshot(ndtStage));
+    const hidden = hiddenFieldsWithValues(stage);
+    if (hidden.length) this.wfService.setStageInputs(this.job, stage.id, hidden.map(field => ({ field, value: '' })));
   }
 
   stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
@@ -1079,41 +327,41 @@ export class JointPageComponent implements OnDestroy {
     }
     if (this.job && value !== (stage.inputs[field.key] ?? '')) {
       const job = this.job;
-      this.engineeringEdit(stage, field, value, () => {
+      this.overrides.engineeringEdit(stage, field, value, () => {
         this.wfService.setStageInput(job, stage.id, field, value);
         this.clearHidden(stage);
       });
     }
     this.onFieldBlur(stage, field);
     /* clear required error if now filled */
-    if (field.required && value) {
-      const key = `${stage.id}:${field.key}`;
-      const prev = this.fieldErrors();
-      if (prev[key]?.endsWith('is required')) {
-        const next = { ...prev };
-        delete next[key];
-        this.fieldErrors.set(next);
-      }
+    if (field.required && value && this.fieldErrors()[`${stage.id}:${field.key}`]?.endsWith('is required')) {
+      this.clearFieldError(stage.id, field.key);
     }
   }
 
-  /* a typed PH/IP requirement (engineering override): NC makes its actuals NC and locked, same as
-     an NC from the WTN; anything else frees an actual left at NC */
+  /* a typed PH/IP requirement (engineering override); see typedRequirementChanges */
   private typedRequirementBlur(stage: WorkflowStage, field: StageField, raw: string) {
     if (!this.job) return;
-    const value = raw.trim().toUpperCase() === 'NC' ? 'NC' : raw.trim();
-    if (value !== (stage.inputs[field.key] ?? '')) {
-      const changes: { field: StageField; value: string }[] = [{ field, value }];
-      for (const [a, req] of Object.entries(ACTUAL_REQUIREMENT)) {
-        const af = stage.fields.find(f => f.key === a);
-        if (req !== field.key || !af) continue;
-        if (value === 'NC') changes.push({ field: af, value: 'NC' });
-        else if (stage.inputs[a] === 'NC') changes.push({ field: af, value: '' });
-      }
+    const changes = typedRequirementChanges(stage, field, raw);
+    if (changes.length) {
       const job = this.job;
-      this.engineeringEdit(stage, field, value, () => this.wfService.setStageInputs(job, stage.id, changes));
+      this.overrides.engineeringEdit(stage, field, changes[0].value, () => this.wfService.setStageInputs(job, stage.id, changes));
     }
     this.onFieldBlur(stage, field);
+  }
+
+  /* select fields commit on change, clear maps to '' */
+  stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
+    const v = value ?? '';
+    if (this.job && v !== (stage.inputs[field.key] ?? '')) {
+      const { changes, matchedProc } = selectChangeCascade(stage, field, v, this.overrides.offListUnlocked(stage));
+      const job = this.job;
+      this.overrides.engineeringEdit(stage, field, v, () => this.wfService.setStageInputs(job, stage.id, changes));
+      this.clearHidden(stage);
+      /* the WTN filled in Weld Process */
+      if (field.key === 'wtn' && matchedProc) this.clearFieldError(stage.id, 'weldProcess');
+    }
+    this.clearFieldError(stage.id, field.key);
   }
 
   toggleAffectedItem(stage: WorkflowStage, item: string, event: Event) {
@@ -1124,90 +372,63 @@ export class JointPageComponent implements OnDestroy {
     if (next.length) this.clearFieldError(stage.id, 'affectedItem');
     this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
   }
-  /* select fields commit on change, clear maps to '' */
-  stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
-    const v = value ?? '';
-    if (this.job && v !== (stage.inputs[field.key] ?? '')) {
-      const changes: { field: StageField; value: string }[] = [{ field, value: v }];
-      const setIfPresent = (key: string, val: string) => {
-        const f = stage.fields.find(ff => ff.key === key);
-        if (f) changes.push({ field: f, value: val });
-      };
-      let matchedProc = false;
-      /* Filler Metal Type/Size are locked (not user-cleared) while "Only Consumable Insert used as
-         filler" is checked -- see onConsumableInsertChange, which owns them in that case */
-      const fillerFieldsLocked = stage.inputs['consumableInsertOnly'] === 'yes';
-      if (field.key === 'weldProcedure') {
-        /* GWP drives which WTNs are selectable; clear WTN and everything WTN used to drive */
-        setIfPresent('wtn', '');
-        setIfPresent('weldProcess', '');
-        setIfPresent('phMin', ''); setIfPresent('phMax', ''); setIfPresent('ipMin', ''); setIfPresent('ipMax', '');
-        setIfPresent('overridePhMin', ''); setIfPresent('overridePhMax', '');
-        setIfPresent('overrideIpMin', ''); setIfPresent('overrideIpMax', ''); setIfPresent('overrideNote', '');
-        /* an NC actual only existed because of the old requirement */
-        for (const a of Object.keys(ACTUAL_REQUIREMENT)) if (stage.inputs[a] === 'NC') setIfPresent(a, '');
-        if (!fillerFieldsLocked) { setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', ''); }
-      }
-      if (field.key === 'wtn') {
-        /* GWP+WTN identifies one Weld Engineering WPS document; it drives Weld Process,
-           the PH/IP requirements and the override values -- never typed directly. Filler Metal
-           Type/Size options narrow to this WPS too, but stay user-selected, so just clear any
-           choice that's no longer valid under the new WPS. */
-        const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', v);
-        matchedProc = !!proc;
-        setIfPresent('weldProcess', proc ? proc.weldProcess.toLowerCase() : '');
-        setIfPresent('phMin', proc?.phMin ?? '');
-        setIfPresent('phMax', proc?.phMax ?? '');
-        setIfPresent('ipMin', proc?.ipMin ?? '');
-        setIfPresent('ipMax', proc?.ipMax ?? '');
-        /* NC requirement: actual is NC and locked; otherwise an NC left from the previous WTN is cleared */
-        for (const [a, req] of Object.entries(ACTUAL_REQUIREMENT)) {
-          if (proc?.[req as 'phMin'] === 'NC') setIfPresent(a, 'NC');
-          else if (stage.inputs[a] === 'NC') setIfPresent(a, '');
-        }
-        const hasOv = SHOW_WELD_OVERRIDES && !!proc && procedureHasOverride(proc);
-        setIfPresent('overridePhMin', hasOv ? proc!.overridePhMin : '');
-        setIfPresent('overridePhMax', hasOv ? proc!.overridePhMax : '');
-        setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
-        setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
-        setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
-        if (!fillerFieldsLocked && !this.offListUnlocked(stage)) {
-          const currentType = stage.inputs['fillerMetalType'] ?? '';
-          const currentSize = stage.inputs['fillerMetalSize'] ?? '';
-          if (currentType && !fillerMetalTypeOptionsForProcedure(proc).some(o => o.value === currentType)) {
-            setIfPresent('fillerMetalType', '');
-          }
-          if (currentSize && !fillerMetalSizeOptionsForProcedure(proc).some(o => o.value === currentSize)) {
-            setIfPresent('fillerMetalSize', '');
-          }
-        }
-      }
-      const job = this.job;
-      this.engineeringEdit(stage, field, v, () => this.wfService.setStageInputs(job, stage.id, changes));
-      this.clearHidden(stage);
-      if (field.key === 'wtn' && matchedProc) {
-        /* clear weld process error */
-        const wpKey = `${stage.id}:weldProcess`;
-        const prev = this.fieldErrors();
-        if (prev[wpKey]) {
-          const next = { ...prev };
-          delete next[wpKey];
-          this.fieldErrors.set(next);
-        }
-      }
+
+  /* Consumable Insert: when Yes, fill the filler fields from Fit's Consumable Insert and lock them */
+  onConsumableInsertChange(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
+    this.setInput(stage, 'consumableInsertOnly', value);
+    if (value === 'yes') {
+      const fill = consumableInsertFill(stage, this.wf().stages.find(s => s.id === 'fit'));
+      if (fill.length) this.wfService.setStageInputs(this.job, stage.id, fill);
+      return;
     }
-    /* clear validation error for this field */
-    const key = `${stage.id}:${field.key}`;
-    const prev = this.fieldErrors();
-    if (prev[key]) {
-      const next = { ...prev };
-      delete next[key];
-      this.fieldErrors.set(next);
-    }
+    /* unchecked: MIC must be re-entered; Type/Size go back to the external system's values,
+       or blank under a Foreman Override or engineering override */
+    this.setInput(stage, 'fillerMetalMic', '');
+    if (!this.overrides.offListUnlocked(stage) && !stage.engineeringEntry) { this.weldAssignment.apply(this.job, stage.id); return; }
+    this.setInput(stage, 'fillerMetalType', '');
+    this.setInput(stage, 'fillerMetalSize', '');
   }
 
-  // ---- per-stage sign-off ----
-  private show(v: string | null | undefined): string { return v && v.length ? v : '-'; }
+  /* routing option / inspection type handlers */
+  setInspectionType(value: string) {
+    if (!this.job || !this.wf) return;
+    const idx = this.selectedRouting();
+    const stage = this.wf().stages[idx];
+    if (!stage) return;
+    if (value) this.clearFieldError(stage.id, '__inspectionType');
+    this.wf.update(wf => ({
+      ...wf,
+      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
+    }));
+    /* a procedure not designated for the new Type is cleared */
+    const proc = stage.inputs['procedureUsed'] ?? '';
+    if (proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) this.setInput(stage, 'procedureUsed', '');
+  }
+
+  updateRoutingType(stage: WorkflowStage, value: string) {
+    if (!this.job || !this.wf) return;
+    if (value) this.clearFieldError(stage.id, '__routingType');
+    const change = { action: `${stage.label} - Type changed to ${value}` };
+    if (stage.id !== 'fit') {
+      this.signoffService.updateStageSignoff(this.job, stage.id, { routingType: value }, change);
+      return;
+    }
+    /* Fit: Weld Build-Up swaps in Tack's fields and drops the sign-off fields; Fit puts its own back */
+    const fitTpl = (getTemplates()[this.job.trade] ?? []).find(t => t.id === 'fit');
+    const buildup = value === 'weld-buildup';
+    this.signoffService.updateStageSignoff(this.job, stage.id, {
+      routingType: value,
+      fields: buildup
+        ? [...weldBuildupFields(this.job.trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
+        : (fitTpl?.fields ?? []).map(f => ({ ...f })),
+      signoffInputs: {},
+      signoffFields: buildup ? [] : (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
+    }, change);
+    if (buildup) this.weldAssignment.apply(this.job, stage.id);
+  }
+
+  /* ── Sign-off fields ── */
 
   setStageResult(stage: WorkflowStage, result: StageResult) {
     if (!this.job || result === stage.result) return;
@@ -1217,161 +438,39 @@ export class JointPageComponent implements OnDestroy {
       { action: `${stage.label} - ${stage.decisionLabel || 'Decision'}`, from: old ? old.toUpperCase() : '-', to: result.toUpperCase() });
   }
 
-  /* generic signoff field blur handler */
-  blurSignoffField(stage: WorkflowStage, field: SignoffField, value: string) {
+  /* a sign-off field's new value (text blur, select or checkbox); a value clears that field's error */
+  private setSignoffInput(stage: WorkflowStage, field: SignoffField, value: string, clearsError = true) {
     if (!this.job) return;
-    if (value) this.clearFieldError(stage.id, field.key);
+    if (clearsError && value) this.clearFieldError(stage.id, field.key);
     const prev = stage.signoffInputs[field.key] ?? '';
     if (value === prev) return;
     this.signoffService.updateStageSignoff(this.job, stage.id,
       { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
-      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(value) });
+      { action: `${stage.label} - ${field.label}`, from: show(prev), to: show(value) });
   }
 
-  /* generic signoff field select change handler */
-  signoffSelectChange(stage: WorkflowStage, field: SignoffField, value: string | null) {
-    const v = value ?? '';
-    if (!this.job) return;
-    if (v) this.clearFieldError(stage.id, field.key);
-    const prev = stage.signoffInputs[field.key] ?? '';
-    if (v === prev) return;
-    this.signoffService.updateStageSignoff(this.job, stage.id,
-      { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
-      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(v) });
+  /* ── Validation ── */
+
+  private signCtx(stage: WorkflowStage): SignContext {
+    return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage) };
   }
 
-  /* generic signoff checkbox change handler */
-  signoffCheckboxChange(stage: WorkflowStage, field: SignoffField, checked: boolean) {
-    const v = checked ? 'yes' : '';
-    if (!this.job) return;
-    const prev = stage.signoffInputs[field.key] ?? '';
-    if (v === prev) return;
-    this.signoffService.updateStageSignoff(this.job, stage.id,
-      { signoffInputs: { ...stage.signoffInputs, [field.key]: v } },
-      { action: `${stage.label} - ${field.label}`, from: this.show(prev), to: this.show(v) });
+  /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
+  signBlockers(stage: WorkflowStage): string[] {
+    if (this.heldAt(stage)) return ['On hold for an open deviation'];
+    if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
+    return signProblems(stage, this.signCtx(stage));
   }
 
-  /* visibility of a signoff field (showIf support) */
-  visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
-    return stage.signoffFields.filter(f => {
-      if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return false;
-      // For fit/pre-fit, hide consumable insert and backing ring fields when not required
-      if (stage.id === 'fit' || stage.id === 'pre-fit') {
-        const isConsumableInsert = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'].includes(f.key);
-        const isBackingRing = ['backingRingType', 'backingRingId'].includes(f.key);
-        if (isConsumableInsert && !this.jointDesignRequiresInsert()) return false;
-        if (isBackingRing && !this.jointDesignRequiresBackingRing()) return false;
-      }
-      return true;
-    });
-  }
-  /* ── inline field validation ── */
-  private validateStageFields(stage: WorkflowStage): Record<string, string> {
-    const errors: Record<string, string> = {};
-    const fields = stage.fields ?? [];
-    const visible = this.visibleFields(stage);
-    const visibleKeys = new Set(visible.map(f => f.key));
-    for (const f of fields) {
-      if (f.key === 'comments') continue;
-      if (!visibleKeys.has(f.key)) continue;
-      const val = stage.inputs?.[f.key];
-      const empty = val === undefined || val === null || val === '';
-      if (f.required && empty) {
-        errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
-      }
-      if (typedRequirementError(stage, f)) errors[`${stage.id}:${f.key}`] = typedRequirementError(stage, f);
-      /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
-    }
-    for (const pair of ACTUAL_MIN_MAX) {
-      const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
-      if (err && !errors[`${stage.id}:${pair.max}`]) errors[`${stage.id}:${pair.max}`] = err;
-    }
-    /* Fit-Up Insp: every verification checkbox must be checked -- signBlockers() already blocks
-       signoff with one summary reason ("Verify every fitting value"); this adds a per-field error
-       so the specific unchecked row(s) can be highlighted, same as any other required field. */
-    if (stage.id === 'fitup-insp') {
-      for (const f of visible) {
-        if (stage.inputs?.[f.key] !== 'yes') {
-          errors[`${stage.id}:${f.key}`] = `${f.label} must be verified`;
-        }
-      }
-    }
-    /* Weld build-up: affectedItems + micVerified */
-    if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
-      const raw = stage.inputs?.['affectedItems'] ?? '';
-      const items = raw ? raw.split(',') : [];
-      if (!items.length) {
-        errors[`${stage.id}:affectedItem`] = 'Select at least one Affected Item';
-      }
-      /* MIC verified is only shown (and so only required) when that item's MCL requires
-         traceability -- same condition signoff-panel.component.ts uses to render the checkbox. */
-      if (items.includes('joiningItem') && requiresTraceability(this.job?.mcl1 ?? '') && stage.inputs?.['micVerified1'] !== 'yes') {
-        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joiningItem || 'item');
-      }
-      if (items.includes('joinToItem') && requiresTraceability(this.job?.mcl2 ?? '') && stage.inputs?.['micVerified2'] !== 'yes') {
-        errors[`${stage.id}:affectedItem`] = 'Please verify MIC for ' + (this.job?.joinToItem || 'item');
-      }
-    }
-    /* Decision, Type and Routing Type -- same conditions signBlockers() uses, kept in sync via
-       synthetic keys (no real StageField backs these) so they highlight red like any other
-       required field instead of only appearing in signBlockers()' un-displayed reason list. */
-    if (stage.rejectToStage && !stage.result) {
-      errors[`${stage.id}:__decision`] = 'Choose SAT or UNSAT';
-    }
-    if (this.inspectionTypeRequired(stage) && !stage.inspectionType) {
-      errors[`${stage.id}:__inspectionType`] = 'Select the inspection performed';
-    }
-    if (stage.repeatable && !stage.routingType) {
-      errors[`${stage.id}:__routingType`] = 'Choose the routing type';
-    }
-    /* Fit: fabrication data must have Location, MIC 1, MIC 2, Drawing Rev, Actual Thickness --
-       highlighting for these lives on the Fabrication panel itself (fabErrors(), always live, not
-       gated to a signoff attempt); this only needs to block signing via the errors-length check. */
-    if (stage.id === 'fit' && Object.keys(this.fabErrors()).length > 0) {
-      errors[`${stage.id}:__fabrication`] = 'Fix the fabrication errors';
-    }
-    /* Required signoff fields (e.g. Fit/Pre-Fit's Consumable Insert/Backing Ring, or any other
-       stage's required signoffFields) -- same rules signBlockers() uses (requiredSignoffFields()). */
-    for (const f of this.requiredSignoffFields(stage)) {
-      if ((stage.signoffInputs[f.key] ?? '').trim().length === 0) {
-        errors[`${stage.id}:${f.key}`] = `${f.label} is required`;
-      }
-    }
-    /* RT NDT: Degree of RT Performed must match the job's required degree -- same condition
-       signBlockers() uses. */
-    if (stage.inspectionType === 'rt') {
-      const required = this.rtDegreeRequired(stage);
-      if (required && stage.inputs['degreeRt'] !== required) {
-        errors[`${stage.id}:degreeRt`] = `Degree of RT Performed must be ${required}`;
-      }
-    }
-    return errors;
+  canSignStage(stage: WorkflowStage): boolean {
+    return this.signBlockers(stage).length === 0;
   }
 
-  /** Called on blur of a single field — validates required + Actual Min/Max order */
+  /* Called on blur of a single field: validates required + Actual Min/Max order. Reads the live
+     stage, since the stage param may be stale. */
   onFieldBlur(stage: WorkflowStage, field: StageField) {
-    const key = `${stage.id}:${field.key}`;
-    /* read current values from live signal (stage param may be stale) */
-    const curStage = this.wf ? this.wf().stages.find(s => s.id === stage.id) : undefined;
-    const val = curStage?.inputs?.[field.key];
-    const empty = val === undefined || val === null || val === '';
-    const prev = { ...this.fieldErrors() };
-    delete prev[key];
-    /* required check on blur */
-    if (field.required && empty) {
-      prev[key] = `${field.label} is required`;
-    }
-    if (curStage && typedRequirementError(curStage, field)) prev[key] = typedRequirementError(curStage, field);
-    /* Actual Min above Max: flagged on the Max field, rechecked when either one changes */
-    const pair = ACTUAL_MIN_MAX.find(p => p.min === field.key || p.max === field.key);
-    if (pair) {
-      const maxKey = `${stage.id}:${pair.max}`;
-      const err = actualOrderError(curStage?.inputs ?? {}, pair);
-      const orderMsg = `${pair.maxLabel} is below ${pair.minLabel}`;
-      if (err && !prev[maxKey]) prev[maxKey] = err;
-      if (!err && prev[maxKey] === orderMsg) delete prev[maxKey];
-    }
-    this.fieldErrors.set(prev);
+    const live = this.wf?.().stages.find(s => s.id === stage.id);
+    this.fieldErrors.set(errorsAfterBlur(this.fieldErrors(), live, stage.id, field));
   }
 
   fieldError(stageId: string, fieldKey: string): string | undefined {
@@ -1386,12 +485,23 @@ export class JointPageComponent implements OnDestroy {
   clearFieldError(stageId: string, fieldKey: string) {
     const key = `${stageId}:${fieldKey}`;
     const prev = this.fieldErrors();
-    if (prev[key]) {
-      const next = { ...prev };
-      delete next[key];
-      this.fieldErrors.set(next);
-    }
+    if (!prev[key]) return;
+    const next = { ...prev };
+    delete next[key];
+    this.fieldErrors.set(next);
   }
+
+  /* after a failed sign attempt: bring the first validation error into view and focus its field */
+  private focusFirstError() {
+    setTimeout(() => {
+      const err = document.querySelector('.signoff-panel .field-error');
+      if (!err) return;
+      err.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });
+    });
+  }
+
+  /* ── Signing ── */
 
   /* What History records for a sign-off: every editable field the user was shown, with its value right now
      (blanks included). Read from the live workflow, since the stage object a click handler holds can be stale. */
@@ -1408,7 +518,7 @@ export class JointPageComponent implements OnDestroy {
   signStage(stage: WorkflowStage) {
     if (!this.job || this.heldAt(stage)) return;
     /* validate required fields + range constraints */
-    const errors = this.validateStageFields(stage);
+    const errors = stageFieldErrors(stage, this.signCtx(stage));
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
     if (!this.canSignStage(stage)) return;
@@ -1417,7 +527,7 @@ export class JointPageComponent implements OnDestroy {
       ? ' Another round will be added after this one.'
       : '';
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
-    const deviations = this.stageDeviations(st);
+    const deviations = this.overrides.stageDeviations(st);
     if (deviations.length) {
       this.deviationRequest.set({ stage: st, stageLabel: st.label, items: deviations, routingNote });
       return;
@@ -1429,7 +539,7 @@ export class JointPageComponent implements OnDestroy {
       rejectLabel: 'Cancel',
       password: true,
       accept: () => {
-        this.recordOverrides(st);
+        this.overrides.recordOverrides(st);
         this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
         this.signRelated5xIfNeeded(stage);
         this.router.navigate([this.backDestination()]);
@@ -1437,48 +547,24 @@ export class JointPageComponent implements OnDestroy {
     });
   }
 
-  // ---- attachments ----
+  /* The 5X question on Root only records the answer; once Root itself is signed, a "yes" auto-signs
+     the Root VT/5X NDT stage. Answering must never sign anything on its own. */
+  private signRelated5xIfNeeded(stage: WorkflowStage) {
+    if (!this.job || !this.wf) return;
+    if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
+    const ndtStage = this.wf().stages.find(s => s.id === 'root-ndt-vt5x');
+    if (!ndtStage || ndtStage.signed) return;
+    this.signoffService.signStage(this.job, 'root-ndt-vt5x', this.signoffSnapshot(ndtStage));
+  }
+
+  /* ── References and navigation ── */
+
   addAttachments(files: FileList) {
     if (!this.job) return;
     for (const f of Array.from(files)) this.attachmentService.addAttachment(this.job, f.name);
   }
   removeAttachment(id: string) {
     if (this.job) this.attachmentService.removeAttachment(this.job, id);
-  }
-
-  /* code description, shown on hover */
-  codeLabel(code: string): string { return characteristicLabel(code); }
-
-  /* fabrication data input handlers */
-  fabInputBlur(key: string, value: string) {
-    if (this.job && this.wf && value !== (this.wf().fabricationData[key] ?? '')) {
-      this.fabricationService.setFabricationData(this.job, key, value);
-    }
-  }
-  fabSelectChange(key: string, value: string | null) {
-    const v = value ?? '';
-    if (this.job && this.wf && v !== (this.wf().fabricationData[key] ?? '')) {
-      this.fabricationService.setFabricationData(this.job, key, v);
-    }
-  }
-
-  /* routing option / inspection type handlers */
-  setInspectionType(value: string) {
-    if (!this.job || !this.wf) return;
-    const idx = this.selectedRouting();
-    const stage = this.wf().stages[idx];
-    if (!stage) return;
-    if (value) this.clearFieldError(stage.id, '__inspectionType');
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
-    }));
-    /* a procedure not designated for the new Type is cleared */
-    const proc = stage.inputs['procedureUsed'] ?? '';
-    const f = stage.fields.find(ff => ff.key === 'procedureUsed');
-    if (f && proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) {
-      this.wfService.setStageInput(this.job, stage.id, f, '');
-    }
   }
 
   /* where "Back"/post-signoff navigation returns to, based on how this screen was opened */
@@ -1492,5 +578,4 @@ export class JointPageComponent implements OnDestroy {
   back() {
     this.router.navigate([this.backDestination()]);
   }
-
 }

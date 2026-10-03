@@ -27,8 +27,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick a Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
   { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick Deck, Frame and P/S/CL first' },
-  // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see joint-page.component.ts
-  // fabFields()) when that joint member's MCL requires traceability, so required is unconditional here
+  // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see data/joint-form/fabrication-form.ts
+  // fabricationFieldsShown()) when that joint member's MCL requires traceability, so required is unconditional here
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },
   { key: 'id2', label: 'MIC 2', type: 'text', row: 3, required: true },
   // Line 4: Drawing Rev (Execution) and Actual Thickness

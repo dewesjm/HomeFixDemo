@@ -12,7 +12,7 @@ const BACKING_RING_OPTIONS = [
 
 /* Consumable Insert / Backing Ring sign-off fields shared by Pre-Fit and Fit. Insert and filler metal
    share the same choices: "Only Consumable Insert used as filler" copies the Fit stage's insert
-   type/size into the filler fields. Visibility is gated by the joint design (joint-page's
+   type/size into the filler fields. Visibility is gated by the joint design (data/joint-form/fit-signoff.ts
    jointDesignRequiresInsert()/jointDesignRequiresBackingRing()), and the MICs are only required when
    either joint member's MCL requires traceability (SignoffPanelComponent.micSignoffRequired()). */
 function insertAndBackingRingFields(): SignoffField[] {

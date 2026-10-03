@@ -106,7 +106,7 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
    was real AWS electrode classifications, inconsistent with Material Type 1's own style). */
 /* exported so Weld Engineering's procedures data (baseMetal1Type/baseMetal2Type) can use the same
    vocabulary -- a GWP's base metal pair is matched against a job's Material Type 1/2 to filter the
-   GWP droplist (see procedures.ts gwpOptionsForMaterials, joint-page.component.ts). */
+   GWP droplist (see procedures.ts gwpOptionsForMaterials, data/joint-form/stage-form.ts). */
 export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205', '61-TI64', '63-AL10', '65-CUNI', '67-IN625'];
 export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */

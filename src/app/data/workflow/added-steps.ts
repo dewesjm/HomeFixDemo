@@ -13,7 +13,7 @@ import { setRoutingFrom } from './current-routing';
 /* Repair's allowable thickness depends on the job's Nuclear Indicator (see the nInd tooltip,
    joint-details.component.ts's N_IND_MEANINGS: '1' = N 250-1500-1, '2' = N TP278, '3' = Non).
    '3' (Non) has no stated rule -- falls back to the TP278 value, unreviewed. Shown in the
-   "exceeded" checkbox's label (joint-page withStageRuntimeOptions). */
+   "exceeded" checkbox's label (data/joint-form/stage-form.ts stageFieldOptions). */
 export function allowableThicknessAmount(nInd: string): string {
   const inches = nInd === '1' ? '3/8' : '3/16';
   return `${inches} inch or 20% of material thickness, which is less`;
