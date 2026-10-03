@@ -185,9 +185,15 @@ function pickQuals(rand: () => number, min: number, max: number): string[] {
   return QUALIFICATIONS.filter(q => picked.has(q));
 }
 
+/* Fisher-Yates shuffle: always draws pool.length - 1 values from rand. A random sort comparator
+   would not: how often the browser calls it varies between runs, which shifts every value seeded after it. */
 function pickSome<T>(pool: T[], rand: () => number, min: number, max: number): T[] {
   const count = min + Math.floor(rand() * (max - min + 1));
-  const shuffled = [...pool].sort(() => rand() - 0.5);
+  const shuffled = [...pool];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
   return shuffled.slice(0, count);
 }
 
