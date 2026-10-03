@@ -24,12 +24,14 @@ import { bannerFor } from '../../data/banner';
 
 import { JOBS } from '../../data/jobs';
 import {
-  SearchField, SearchRow, Condition, FilterValues, FilterVariant, SearchLayout, Op,
-  OPS_BY_KIND, STANDARD_VARIANT, opLabel, isExclude, needsNoValue, newCondition, activeConditions,
-  searchFields, buildRow, isExtraKey, applyFilters, chipLabel, standardLayout,
+  SearchField, SearchRow, FilterVariant, SearchLayout, STANDARD_VARIANT,
+  searchFields, buildRow, isExtraKey, standardLayout,
   loadVariants, saveVariants, loadSearchState, loadTabSearchState, saveSearchState,
   loadDefaultVariant, saveDefaultVariant
 } from '../../data/filter-schema';
+import {
+  Condition, FilterValues, Op, OPS_BY_KIND, opLabel, isExclude, needsNoValue, newCondition, activeConditions, applyFilters, chipLabel
+} from '../../data/filter-engine';
 import { allStepAnswerFields } from '../../data/step-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';

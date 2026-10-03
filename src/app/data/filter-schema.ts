@@ -1,75 +1,18 @@
-/* Advanced Search: every searchable field, stacked filter conditions, saved variants (localStorage).
-   A field's conditions combine like this: the "include" ones (contains, is, starts with, is blank,
-   between, greater/less than) are OR'd, the "exclude" ones (does not contain, is not, is not blank)
-   must all hold. Different fields are AND'd. */
+/* Weld Record's Advanced Search: every searchable field, the rows it searches, and saved variants
+   (localStorage). Matching itself is data/filter-engine.ts. */
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
 import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel } from './workflow';
 import { shopOptions } from './shops';
 import { jointDesignOptions } from './joint-designs';
 import { StepConditionField, allStepAnswerFields } from './step-conditions';
+import { Condition, FieldKind, FilterValues, MatchField, isoDay } from './filter-engine';
 
-export type FieldKind = 'text' | 'list' | 'number' | 'date';
-
-export interface SearchField {
+export interface SearchField extends MatchField {
   key: string;            /* row key: a Job field, 'currentRouting', 'fab.<key>' or a step answer key */
-  label: string;
   group: string;
-  kind: FieldKind;
   width?: string;         /* results column min width */
 }
-
-export type Op = 'contains' | 'notContains' | 'is' | 'isNot' | 'startsWith' | 'blank' | 'notBlank' | 'between' | 'gt' | 'lt';
-
-export interface Condition {
-  op: Op;
-  value: string;          /* typed text / number / yyyy-mm-dd; 'between' start */
-  to: string;             /* 'between' end */
-  values: string[];       /* list fields: is / is not any of these */
-}
-
-export type FilterValues = Record<string, Condition[]>;
-
-export const OPS_BY_KIND: Record<FieldKind, Op[]> = {
-  text: ['contains', 'notContains', 'is', 'isNot', 'startsWith', 'blank', 'notBlank'],
-  list: ['is', 'isNot', 'contains', 'notContains', 'blank', 'notBlank'],
-  number: ['between', 'gt', 'lt'],
-  date: ['between', 'gt', 'lt'],
-};
-
-export function opLabel(op: Op, kind: FieldKind): string {
-  switch (op) {
-    case 'contains': return 'contains';
-    case 'notContains': return 'does not contain';
-    case 'is': return 'is';
-    case 'isNot': return 'is not';
-    case 'startsWith': return 'starts with';
-    case 'blank': return 'is blank';
-    case 'notBlank': return 'is not blank';
-    case 'between': return 'between';
-    case 'gt': return kind === 'date' ? 'after' : 'greater than';
-    case 'lt': return kind === 'date' ? 'before' : 'less than';
-  }
-}
-
-const EXCLUDES: Op[] = ['notContains', 'isNot', 'notBlank'];
-export const isExclude = (op: Op) => EXCLUDES.includes(op);
-export const needsNoValue = (op: Op) => op === 'blank' || op === 'notBlank';
-
-export function newCondition(kind: FieldKind): Condition {
-  return { op: OPS_BY_KIND[kind][0], value: '', to: '', values: [] };
-}
-
-/* a condition with nothing filled in yet doesn't filter */
-export function isActive(c: Condition, kind: FieldKind): boolean {
-  if (needsNoValue(c.op)) return true;
-  if (kind === 'list' && (c.op === 'is' || c.op === 'isNot')) return c.values.length > 0;
-  if (c.op === 'between') return !!c.value || !!c.to;
-  return !!c.value.trim();
-}
-
-export const activeConditions = (field: SearchField, conds: Condition[] | undefined) =>
-  (conds ?? []).filter(c => isActive(c, field.kind));
 
 /* ── Fields ── */
 
@@ -179,73 +122,6 @@ export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepField
 
 export const isExtraKey = (key: string) => !JOB_FIELDS.some(f => f.key === key);
 
-/* ── Matching ── */
-
-const day = (iso: string) => (iso ? new Date(iso + 'T00:00:00').getTime() : NaN);
-const DAY_MS = 24 * 3600 * 1000;
-
-function matches(c: Condition, kind: FieldKind, cell: any): boolean {
-  if (kind === 'number' || kind === 'date') {
-    const v = kind === 'date' ? (cell ? new Date(cell).getTime() : NaN) : Number(cell);
-    const n = (s: string) => (kind === 'date' ? day(s) : Number(s));
-    if (Number.isNaN(v)) return false;
-    switch (c.op) {
-      case 'between':
-        if (c.value && v < n(c.value)) return false;
-        if (c.to) return kind === 'date' ? v < n(c.to) + DAY_MS : v <= n(c.to);
-        return true;
-      case 'gt': return kind === 'date' ? v >= n(c.value) + DAY_MS : v > n(c.value);
-      case 'lt': return v < n(c.value);
-      default: return false;
-    }
-  }
-  const text = String(cell ?? '').trim().toLowerCase();
-  const typed = c.value.trim().toLowerCase();
-  switch (c.op) {
-    case 'contains': return text.includes(typed);
-    case 'notContains': return !text.includes(typed);
-    case 'startsWith': return text.startsWith(typed);
-    case 'blank': return !text;
-    case 'notBlank': return !!text;
-    case 'is':
-    case 'isNot': {
-      const hit = kind === 'list' ? c.values.some(v => v.trim().toLowerCase() === text) : text === typed;
-      return c.op === 'is' ? hit : !hit;
-    }
-    default: return false;
-  }
-}
-
-export function fieldMatches(field: SearchField, conds: Condition[] | undefined, cell: any): boolean {
-  const active = activeConditions(field, conds);
-  if (!active.length) return true;
-  const includes = active.filter(c => !isExclude(c.op));
-  const excludes = active.filter(c => isExclude(c.op));
-  return (!includes.length || includes.some(c => matches(c, field.kind, cell)))
-    && excludes.every(c => matches(c, field.kind, cell));
-}
-
-export function applyFilters(rows: SearchRow[], fields: SearchField[], values: FilterValues): SearchRow[] {
-  const used = fields.filter(f => activeConditions(f, values[f.key]).length);
-  if (!used.length) return rows;
-  return rows.filter(r => used.every(f => fieldMatches(f, values[f.key], r[f.key])));
-}
-
-/* chip text, e.g. Hull: contains "K7" or starts with "S", and not "S9" */
-export function chipLabel(field: SearchField, conds: Condition[]): string {
-  const one = (c: Condition) => {
-    const label = opLabel(c.op, field.kind);
-    if (needsNoValue(c.op)) return label;
-    if (field.kind === 'list' && (c.op === 'is' || c.op === 'isNot')) return `${label} ${c.values.join(', ')}`;
-    if (c.op === 'between') return `${label} ${c.value || '…'} and ${c.to || '…'}`;
-    return `${label} "${c.value.trim()}"`;
-  };
-  const active = activeConditions(field, conds);
-  const inc = active.filter(c => !isExclude(c.op)).map(one).join(' or ');
-  const exc = active.filter(c => isExclude(c.op)).map(one).join(', and ');
-  return `${field.label}: ${[inc, exc].filter(Boolean).join(', and ')}`;
-}
-
 /* ── Layouts (the page's own state and saved variants) ── */
 
 export interface SearchLayout {
@@ -278,11 +154,6 @@ export function standardLayout(): SearchLayout {
 
 /* the old XREFID key */
 const renameKey = (k: string) => (k === 'id' ? 'xrefid' : k);
-const isoDay = (d: any) => {
-  if (!d) return '';
-  const x = new Date(d);
-  return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`;
-};
 
 /* variants saved before stacked conditions held one value per field and no columns */
 function migrateOldValues(old: Record<string, any>): FilterValues {

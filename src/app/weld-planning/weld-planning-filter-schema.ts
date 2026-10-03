@@ -1,6 +1,7 @@
-/* schema-driven filter engine + saved variants for Weld Planning's Advanced Search,
-   mirrors data/filter-schema.ts but scoped to WeldJoint instead of Job */
+/* Weld Planning's Advanced Search: its filter fields (one value per field) and saved variants.
+   Matching goes through the shared engine (data/filter-engine.ts): each field's value becomes one condition. */
 import { STORAGE } from '../data/storage-keys';
+import { Condition, FieldKind, MatchField, applyFilters as applyConditions, isoDay } from '../data/filter-engine';
 import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, JOINT_EXTRA_FIELDS, type WeldJoint, type JointPriority } from './weld-planning.data';
 
 export type FilterField =
@@ -65,35 +66,23 @@ export function isEmpty(field: FilterField, value: any): boolean {
   }
 }
 
+const KIND: Record<FilterField['type'], FieldKind> = { text: 'text', multiselect: 'list', select: 'list', daterange: 'date' };
+
+/* a field's value as the engine's condition: text contains it, a list is any of the picked values, a date range is between */
+function asCondition(f: FilterField, v: any): Condition {
+  const cond: Condition = { op: 'is', value: '', to: '', values: [] };
+  switch (f.type) {
+    case 'text':        return { ...cond, op: 'contains', value: String(v) };
+    case 'multiselect': return { ...cond, values: (v as any[]).map(String) };
+    case 'select':      return { ...cond, values: [String(v)] };
+    case 'daterange':   return { ...cond, op: 'between', value: isoDay(v[0]), to: isoDay(v[1]) };
+  }
+}
+
 export function applyFilters(rows: WeldJoint[], values: FilterValues): WeldJoint[] {
-  return rows.filter(row => {
-    for (const f of FILTER_SCHEMA) {
-      const v = values[f.key];
-      if (isEmpty(f, v)) continue;
-
-      const cell = row[f.field] as any;
-
-      switch (f.type) {
-        case 'text':
-          if (!String(cell).toLowerCase().includes(String(v).toLowerCase())) return false;
-          break;
-        case 'multiselect':
-          if (!(v as any[]).includes(cell)) return false;
-          break;
-        case 'select':
-          if (cell !== v) return false;
-          break;
-        case 'daterange': {
-          const [start, end] = v as Date[];
-          const t = +new Date(cell as string);
-          if (start && t < +start) return false;
-          if (end && t > +end + 24 * 3600 * 1000) return false;
-          break;
-        }
-      }
-    }
-    return true;
-  });
+  const used = FILTER_SCHEMA.filter(f => !isEmpty(f, values[f.key]));
+  const fields: MatchField[] = used.map(f => ({ key: f.field, label: f.label, kind: KIND[f.type] }));
+  return applyConditions(rows, fields, Object.fromEntries(used.map(f => [f.field, [asCondition(f, values[f.key])]])));
 }
 
 export interface FilterVariant {
