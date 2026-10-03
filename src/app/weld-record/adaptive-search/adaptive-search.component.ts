@@ -236,8 +236,8 @@ export class AdaptiveSearchComponent {
   defaultTip = computed(() => {
     const name = this.selectedVariant();
     if (!this.isDefault(name)) return 'Make this your default: the page opens on it (only for you)';
-    return name === STANDARD_VARIANT ? 'Your default: the page opens on this variant'
-      : 'Your default: the page opens on this variant. Click to go back to Standard.';
+    return name === STANDARD_VARIANT ? 'Your default: the page opens on this view'
+      : 'Your default: the page opens on this view. Click to go back to Standard.';
   });
 
   private setDefault(name: string) {

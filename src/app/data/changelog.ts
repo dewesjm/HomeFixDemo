@@ -20,6 +20,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'My Assignments: a Ship assignment\'s Deck, Frame, P/S/CL and Usage now come from the joint, so changing them on the joint changes them here too.',
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
       'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',
+      'Advanced Search (Weld Record and Weld Planning): "Variant" is now called "View" (Save view…), and "Adapt filters" is now "Customize filters". Your saved ones are kept.',
       'Admin > Set Routing: the joint is found by typing its Hull, Drawing and Joint (no list to pick from), and a Reason for change is required. History shows the reason on the routing entry.',
     ],
     fixed: [

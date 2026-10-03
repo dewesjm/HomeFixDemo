@@ -1,10 +1,10 @@
 <!-- Advanced Search template (paired with adaptive-search.component.ts). -->
 <div class="table-page-wrap">
-<!-- Title, saved variants and filter actions on one line -->
+<!-- Title, saved views and filter actions on one line -->
 <div class="page-header search-head">
   <h2 class="section-title">Advanced Search</h2>
   <app-banner-pill [banner]="banner()" />
-  <span class="fw-bold ml-4">Variant</span>
+  <span class="fw-bold ml-4">View</span>
   <select class="select select-sm select-bordered w-auto"
           [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
     <option [value]="STANDARD">{{ STANDARD }}{{ isDefault(STANDARD) ? ' (default)' : '' }}</option>
@@ -17,13 +17,13 @@
     <svg lucideStar class="size-4" [class.fill-current]="isDefault(selectedVariant())"></svg>
   </button>
   @if (selectedVariant() !== STANDARD) {
-    <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this variant"
+    <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this view"
             (click)="deleteVariant(selectedVariant())">
       <svg lucideTrash2 class="size-4"></svg>
     </button>
   }
   @if (savingVariant()) {
-    <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="Variant name"
+    <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="View name"
            [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
            (keydown.enter)="saveCurrentVariant()" (keydown.escape)="savingVariant.set(false)" />
     <button type="button" class="btn btn-sm btn-primary" [disabled]="!canSaveVariant()"
@@ -34,7 +34,7 @@
   } @else {
     <button type="button" class="btn btn-sm btn-outline" appTooltip="Saves the filters, columns, sort and role"
             (click)="startSaveVariant()">
-      <svg lucideSave class="size-4"></svg> Save variant…
+      <svg lucideSave class="size-4"></svg> Save view…
     </button>
   }
   <span class="spacer"></span>
@@ -48,7 +48,7 @@
     </button>
   }
   <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
-    <svg lucideSlidersHorizontal class="size-4"></svg> Adapt filters
+    <svg lucideSlidersHorizontal class="size-4"></svg> Customize filters
   </button>
   <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
     <svg lucideListFilter class="size-4"></svg> Clear filters
@@ -212,11 +212,11 @@
 <app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
 </div>
 
-<!-- Adapt Filters dialog -->
+<!-- Customize Filters dialog -->
 <dialog #adaptDlg class="modal">
   @if (showAdapt()) {
     <div class="modal-box max-w-3xl">
-      <h3 class="text-lg font-semibold mb-2">Adapt filters</h3>
+      <h3 class="text-lg font-semibold mb-2">Customize filters</h3>
       <p class="dialog-hint">
         Check the fields you want in the filter bar, then drag them (or use the arrows) into the order you want.
         Taking a field out of the bar clears its conditions.
