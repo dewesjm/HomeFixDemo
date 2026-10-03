@@ -1273,14 +1273,14 @@ function seeded(n: number) {
 }
 
 /* how many leading stages are already signed off — varies the "current routing" per job.
-   Deterministic per job: ensures coverage of every stage including all NDT types. Never 0: every
-   seeded joint has some history, like real joints would; ones that landed on 0 are spread out instead. */
+   Deterministic per job: ensures coverage of every stage including all NDT types. Only a joint still
+   on its first step (Pre-Fit, or Fit when the joint has no Pre-Fit) starts with no history: any
+   count past that signs at least the first required step. */
 function signedStageCount(job: Job, total: number): number {
-  if (total <= 1) return total;
+  if (total <= 0) return 0;
   // Cycle through all stages so every position gets represented
   const id = String(job.id);
-  const idx = Math.abs(id.charCodeAt(0) * 7 + id.charCodeAt(1) * 3) % total;
-  return idx || 1 + Math.abs(id.charCodeAt(2) * 11 + id.charCodeAt(3) * 5) % (total - 1);
+  return Math.abs(id.charCodeAt(0) * 7 + id.charCodeAt(1) * 3) % total;
 }
 
 /* MIC (material identification code): hyphen-delimited heat/lot style, e.g. 250C-1500-290-5 */

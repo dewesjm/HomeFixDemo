@@ -14,6 +14,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
     ],
+    fixed: [
+      'Some demo joints start on Pre-Fit or Fit with nothing signed yet, as before. Every joint past its first step still has sign-offs in its history.',
+    ],
   },
   {
     date: '2026-10-01',
