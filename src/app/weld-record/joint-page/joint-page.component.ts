@@ -13,7 +13,8 @@ import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
 import { AttachmentsComponent } from '../attachments/attachments.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
-import { SignoffPanelComponent, SignoffContext } from '../signoff-panel/signoff-panel.component';
+import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
+import { SignoffContext } from '../signoff-panel/signoff-context';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
 import { JointOverridesService } from './joint-overrides.service';
 

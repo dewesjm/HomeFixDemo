@@ -1,0 +1,91 @@
+<!-- Weld stages: cards and layout driven by WELD_GROUPS (see component) -->
+@let st = stage();
+<div class="flex flex-col gap-3 stage-inputs">
+  @for (g of weldGroups; track $index) {
+    @if (groupVisible(g)) {
+      <div class="signoff-card">
+        @if (g.title) { <div class="signoff-card-title">{{ g.title }}</div> }
+        <div class="flex flex-col gap-3">
+          @for (sec of g.sections; track $index) {
+            @if (sectionVisible(sec)) {
+              <div>
+                @if (sec.title) { <div class="font-semibold text-sm mb-1">{{ sec.title }}</div> }
+                @if (sec.kind === 'checkbox') {
+                  @for (f of rowFields(sec.rows[0]); track f.key) {
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input type="checkbox" class="checkbox checkbox-sm"
+                             [disabled]="!fieldsEditable()"
+                             [checked]="st.inputs[f.key] === 'yes'"
+                             (change)="ctx().onConsumableInsertChange(st, $any($event.target).checked ? 'yes' : '')" />
+                      <span>{{ f.label }}</span>
+                    </label>
+                  }
+                } @else {
+                  @for (row of sec.rows; track $index) {
+                    <div class="flex gap-4" [class.mt-2]="$index > 0">
+                      @for (f of rowFields(row); track f.key) {
+                        @if (row.spacerBefore === f.key) {
+                          <div class="flex-1 invisible" [style.max-width.px]="row.width"></div>
+                        }
+                        <ng-container *ngTemplateOutlet="weldField; context: { $implicit: f, width: row.widths?.[f.key] ?? row.width }" />
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- One weld-stage field cell (label, control, validation error) -->
+<ng-template #weldField let-f let-width="width">
+  <div class="flex-1 min-w-0" [style.max-width.px]="width">
+    <label class="stage-field">
+      <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+      <!-- read-only values are plain text (like Joint Details); only editable fields get an input box -->
+      @if (f.key === 'qualificationCheck') {
+        @let qc = qualCheck();
+        <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
+      } @else if (isReadonlyLimit(f)) {
+        <div class="stage-readonly-value">{{ stage().inputs[f.key] || '-' }}</div>
+      } @else if (isActual(f) && stage().inputs[f.key] === 'NC') {
+        <div class="stage-readonly-value">NC</div>
+      } @else if (f.type === 'select') {
+        <div class="relative">
+          <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(stage().id, f.key)" [disabled]="!fieldsEditable() || isLocked(f)"
+                  [class.select-warning]="!ctx().fieldError(stage().id, f.key) && !!ctx().fieldWarning(stage(), f.key)"
+                  [class.select-overlay-label]="hasDetails(f)"
+                  [ngModel]="stage().inputs[f.key]" (ngModelChange)="onSelect(f, $event)">
+            @for (o of f.options || []; track o.value) {
+              <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option>
+            }
+          </select>
+          @if (hasDetails(f)) {
+            <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
+                  [class.opacity-40]="!fieldsEditable() || isLocked(f)">{{ selectedLabel(f) }}</span>
+          }
+        </div>
+      } @else {
+        <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(stage().id, f.key)"
+               [class.input-warning]="!ctx().fieldError(stage().id, f.key) && !!ctx().fieldWarning(stage(), f.key)"
+               [type]="f.type === 'number' ? 'number' : 'text'"
+               [disabled]="!fieldsEditable() || isLocked(f)"
+               [ngModel]="stage().inputs[f.key]"
+               (input)="isActual(f) ? digitsOnly($any($event.target)) : null"
+               (blur)="ctx().stageInputBlur(stage(), f, $any($event.target).value)" />
+      }
+    </label>
+    @if (f.description) {
+      <div class="text-sm mt-0.5">{{ f.description }}</div>
+    }
+    @if (ctx().fieldError(stage().id, f.key); as err) {
+      <div class="field-error">{{ err }}</div>
+    } @else if (ctx().fieldWarning(stage(), f.key)) {
+      <div class="text-warning text-sm mt-0.5">{{ ctx().fieldWarning(stage(), f.key) }}</div>
+    }
+  </div>
+</ng-template>
