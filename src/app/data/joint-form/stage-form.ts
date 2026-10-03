@@ -40,9 +40,19 @@ export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): st
 
 /* Fit's Weld Build-Up type uses Tack's fields, plus the override fields (Fit isn't a weld step
    when buildStages() runs, so it doesn't get them then) */
-export function weldBuildupFields(trade: Job['trade']): StageField[] {
+function weldBuildupFields(trade: Job['trade']): StageField[] {
   const tackTpl = (getTemplates()[trade] ?? []).find(t => t.id === 'tack');
   return [...(tackTpl?.fields ?? []), ...WELD_OVERRIDE_FIELDS];
+}
+
+/* Fit's fields for its Type: Weld Build-Up swaps in Tack's fields plus Affected Item; Fit, or Weld
+   Build-Up when Admin > Routing has no Tack step, keeps Fit's own fields */
+export function fitFieldsForType(trade: Job['trade'], routingType: string): StageField[] {
+  const templates = getTemplates()[trade] ?? [];
+  if (routingType === 'weld-buildup' && templates.some(t => t.id === 'tack')) {
+    return [...weldBuildupFields(trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text', required: true }];
+  }
+  return (templates.find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
 }
 
 /* Fields shown on the step. Fit under Weld Build-Up reads Tack's template rather than stage.fields,

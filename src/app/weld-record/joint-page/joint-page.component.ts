@@ -36,7 +36,7 @@ import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
 import { jointDesignRequiresBackingRing, jointDesignRequiresInsert, visibleSignoffFields } from '../../data/joint-form/fit-signoff';
 import {
-  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, weldBuildupFields,
+  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
 import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
 import { SignContext, errorsAfterBlur, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
@@ -419,9 +419,7 @@ export class JointPageComponent implements OnDestroy {
     const buildup = value === 'weld-buildup';
     this.signoffService.updateStageSignoff(this.job, stage.id, {
       routingType: value,
-      fields: buildup
-        ? [...weldBuildupFields(this.job.trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text' as const, required: true }]
-        : (fitTpl?.fields ?? []).map(f => ({ ...f })),
+      fields: fitFieldsForType(this.job.trade, value),
       signoffInputs: {},
       signoffFields: buildup ? [] : (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
     }, change);
