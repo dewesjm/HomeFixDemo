@@ -17,38 +17,49 @@ export const PSCL_VALUES = ['P', 'S', 'CL'];
 /* the Fabrication fields this table supplies options for */
 export const SHIP_LOCATION_KEYS = ['deck', 'frame', 'pscl', 'usage'];
 
-/* sample data: hulls with the same letter share one layout ("Deck Frame P/S/CL Usage") */
+/* sample data: hulls with the same letter share one layout. Each line is one Deck + Frame, then its
+   usages on the P | S | CL side; every side has two or more so the Usage droplist is a real choice. */
 const LAYOUTS: Record<string, string[]> = {
   S: [
-    'D1 F10 P Tank', 'D1 F10 S Tank', 'D1 F10 CL Machinery', 'D1 F22 P Engine', 'D1 F22 S Engine',
-    'D1 F22 CL Engine', 'D1 F22 CL Machinery',
-    'D2 F30 P Cargo', 'D2 F30 S Cargo', 'D2 F38 CL Other',
-    'D3 F45 P Living', 'D3 F45 S Living', 'D3 F52 CL Galley',
-    'D4 F60 P Habitability', 'D4 F60 S Habitability', 'D4 F66 CL Deck',
+    'D1 F10: Tank Piping | Tank Storage | Machinery Engine Electrical',
+    'D1 F22: Engine Machinery | Engine Piping Ventilation | Engine Machinery',
+    'D2 F30: Cargo Storage | Cargo Storage Other | Cargo Piping',
+    'D2 F38: Storage Electrical | Storage Other | Other Ventilation',
+    'D3 F45: Living Habitability | Living Habitability Storage | Galley Living',
+    'D3 F52: Galley Storage | Living Ventilation | Galley Electrical Other',
+    'D4 F60: Habitability Ventilation | Habitability Electrical | Deck Other',
   ],
   D: [
-    'D1 F12 P Tank', 'D1 F12 S Tank', 'D1 F24 CL Engine', 'D1 F24 CL Machinery',
-    'D2 F32 P Cargo', 'D2 F32 S Cargo', 'D2 F40 CL Other',
-    'D3 F48 P Living', 'D3 F48 S Living', 'D3 F54 CL Galley',
-    'D4 F62 P Habitability', 'D4 F62 S Habitability',
-    'D5 F68 CL Deck',
+    'D1 F12: Tank Piping | Tank Piping Storage | Engine Machinery',
+    'D1 F24: Machinery Electrical | Engine Machinery | Engine Machinery Ventilation',
+    'D2 F32: Cargo Storage Other | Cargo Storage | Cargo Piping',
+    'D2 F40: Storage Electrical | Other Ventilation | Other Storage',
+    'D3 F48: Living Habitability | Living Galley | Galley Storage',
+    'D4 F62: Habitability Electrical | Habitability Ventilation | Deck Habitability',
+    'D5 F68: Deck Other | Deck Storage | Deck Electrical Other',
   ],
   T: [
-    'D1 F14 P Tank', 'D1 F14 S Tank', 'D1 F20 CL Engine',
-    'D2 F34 P Cargo', 'D2 F34 S Cargo', 'D2 F34 CL Machinery',
-    'D3 F50 P Living', 'D3 F50 S Galley', 'D3 F56 CL Deck',
+    'D1 F14: Tank Piping | Tank Storage | Engine Machinery',
+    'D1 F20: Engine Machinery Electrical | Engine Ventilation | Engine Machinery',
+    'D2 F34: Cargo Storage | Cargo Machinery | Machinery Piping Other',
+    'D3 F50: Living Habitability | Galley Storage | Deck Living',
+    'D3 F56: Habitability Ventilation | Living Electrical | Deck Galley Other',
   ],
   N: [
-    'D1 F16 P Engine', 'D1 F16 S Engine', 'D1 F16 CL Machinery',
-    'D2 F28 P Tank', 'D2 F28 S Tank', 'D2 F42 CL Cargo',
-    'D3 F58 P Habitability', 'D3 F58 S Living', 'D3 F64 CL Galley', 'D3 F64 CL Other',
+    'D1 F16: Engine Machinery | Engine Piping | Machinery Electrical',
+    'D2 F28: Tank Piping | Tank Storage Other | Tank Machinery',
+    'D2 F42: Cargo Storage | Cargo Other | Cargo Ventilation',
+    'D3 F58: Habitability Living | Living Storage | Galley Habitability',
+    'D3 F64: Galley Electrical | Living Ventilation Other | Galley Other',
   ],
 };
 
 export const DEFAULT_SHIP_LOCATIONS: ShipLocationEntry[] = HULLS.flatMap(hull =>
-  (LAYOUTS[hull[0]] ?? []).map(line => {
-    const [deck, frame, pscl, usage] = line.split(' ');
-    return { hull, deck, frame, pscl, usage };
+  (LAYOUTS[hull[0]] ?? []).flatMap(line => {
+    const [place, sides] = line.split(': ');
+    const [deck, frame] = place.split(' ');
+    return sides.split(' | ').flatMap((usages, i) =>
+      usages.split(' ').map(usage => ({ hull, deck, frame, pscl: PSCL_VALUES[i], usage })));
   }));
 
 export function getShipLocations(): ShipLocationEntry[] {
