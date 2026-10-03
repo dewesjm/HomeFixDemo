@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideChevronRight, LucideChevronDown, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, isReadonlyLimit as readonlyLimit, isFieldLocked, FOREMAN_OVERRIDE_ENABLED, ACTUAL_REQUIREMENT, hasDecision, isExcavationNdtStageId, isInspectionStage, isEngineeringHoldId } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, isReadonlyLimit as readonlyLimit, isFieldLocked, FOREMAN_OVERRIDE_ENABLED, ACTUAL_REQUIREMENT, hasDecision, typeLockReason, isInspectionStage, isEngineeringHoldId } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { getProcedureByGwpWtn } from '../../data/procedures';
@@ -176,13 +176,9 @@ export class SignoffPanelComponent {
      because each block re-wrote the id/routingType check inline and one of them didn't match. */
   readonly hasDecision = hasDecision;
 
-  /* an inspection stage with one possible Type has it locked in; says why, so the disabled
-     droplist isn't left unexplained */
-  typeLockNote(st: WorkflowStage): string {
-    if (!(st.role ?? '').includes('Inspector') || st.routingOptions?.length !== 1) return '';
-    if (st.id.startsWith('layer-ndt-')) return `Set by NDT Each (${this.ctx().job.ndtEach})`;
-    if (isExcavationNdtStageId(st.id)) return 'Same inspection that rejected the joint';
-    return '';
+  /* locked Type droplist; the reason shows in the Routing Preview, see typeLockReason() */
+  typeLocked(st: WorkflowStage): boolean {
+    return !!typeLockReason(st, this.ctx().job);
   }
 
   /* Engineering Hold has Engineering's release form (comments + set routing) instead of Signoff */

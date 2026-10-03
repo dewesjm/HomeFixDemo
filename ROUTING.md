@@ -59,7 +59,7 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 | UT | VT, then RT/UT locked to UT |
 
 - **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a RT/UT step locked to RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
-- **Locked:** a locked step's Type dropdown is pre-filled and can't be changed. A note under it says why, for example "Set by NDT Each (MT)".
+- **Locked:** a locked step's Type dropdown is pre-filled and can't be changed. The Routing Preview says why, for example "Type is set by NDT Each (MT)."
 - **Valid values:** NDT Root, NDT Each and NDT Final take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid. RT Root and RT Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root 5X question:** when NDT Root is 5X, the Root step asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X step automatically when Root itself is signed.

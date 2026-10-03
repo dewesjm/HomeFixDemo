@@ -32,7 +32,7 @@ import { conditionQuals } from '../../data/qual-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel, activeStageId, allRequiredSigned, getTemplates, FABRICATION_FIELDS, FabricationField,
-  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences
+  shopOptions, WELD_OVERRIDE_FIELDS, snapshotInputs, SignoffInput, isFieldLocked, ACTUAL_REQUIREMENT, ACTUAL_MIN_MAX, DeviationItem, actualOrderError, SHOW_WELD_OVERRIDES, excavationNdtStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, SignoffRecord, allowableThicknessAmount, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, ENGINEERING_ENTRY_KEYS, displayValue, showsReferences, typeLockReason
 } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -808,10 +808,17 @@ export class JointPageComponent implements OnDestroy {
   /* Demo routing preview under the Signoff button (Admin > Feature Toggles). Repair/Excavation NDT
      keep their own wording below; every other step runs the real sign-off as a dry run
      (SignoffService.previewSignoff) and names where the joint ends up, plus "Why" (the special
-     routing rules it hit). A SAT/UNSAT step with no decision picked yet shows both outcomes. */
+     routing rules it hit). A SAT/UNSAT step with no decision picked yet shows both outcomes. A
+     locked Type says why at the end (typeLockReason). */
   private routingPreviewOn = loadFeatureToggles().routingPreview;
   routePreviewLabel(stage: WorkflowStage): string {
-    if (!this.routingPreviewOn || !this.job || !this.wf) return '';
+    if (!this.routingPreviewOn || !this.job) return '';
+    const route = this.routeLabel(stage);
+    return route ? [route, typeLockReason(stage, this.job)].filter(Boolean).join(' ') : '';
+  }
+
+  private routeLabel(stage: WorkflowStage): string {
+    if (!this.job || !this.wf) return '';
     if (isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)) return this.repairRouteLabel(stage);
     if (stage.signed || stage.id === 'sold' || stage.id !== this.activeStage() || isEngineeringHoldId(stage.id)) return '';
     const wf = this.wf();

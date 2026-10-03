@@ -815,6 +815,14 @@ export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
 export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
 /* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
    RT/UT (Root, Layer and Final NDT) and Repair only */
+/* an inspection step with one possible Type has it locked in (droplist disabled); returns why, for
+   the Routing Preview. '' = not locked */
+export function typeLockReason(st: WorkflowStage, job: Job): string {
+  if (!(st.role ?? '').includes('Inspector') || st.routingOptions?.length !== 1) return '';
+  if (st.id.startsWith('layer-ndt-')) return `Type is set by NDT Each (${job.ndtEach}).`;
+  if (isExcavationNdtStageId(st.id)) return 'Type is the same inspection that rejected the joint.';
+  return '';
+}
 export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(id) || isRepairStageId(id);
 const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';
 export const excavationIdForRepair = (repairId: string) => `excavation-ndt${roundSuffix(repairId)}`;
