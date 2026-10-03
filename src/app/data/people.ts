@@ -38,7 +38,7 @@ export const PEOPLE: Person[] = [
   p('E30508', '30050823', 'Anna', 'Petrov', 'Fitter'),
   p('E30509', '30050924', 'Chris', 'Okafor', 'NQC Inspector'),
   p('E30510', '30051025', 'Dana', 'Whitfield', 'Foreman'),
-  /* extra demo population: more shared first/last names so first+last, last+PERN etc. combos matter */
+  /* extra demo population: more shared first/last names so first+last, last+PERNR etc. combos matter */
   p('E40601', '40060126', 'James', 'Nguyen', 'Welder'),
   p('E40602', '40060227', 'Minh', 'Tran', 'Fitter'),
   p('E40603', '40060328', 'Sarah', 'Carter', 'NQC Inspector'),
@@ -91,13 +91,13 @@ export function stampWho(name: string): { whoId?: string; whoTitle?: string } {
   return x ? { whoId: x.id, whoTitle: x.title } : {};
 }
 
-/* Smart search: any mix of first name, last name, id and PERN, in any order -- "smith", "john smith",
-   "smith, john", "smith j", "smith 2004", "PERN 20041108", or a saved "First Last · PERN" label.
-   Every word must start a first name, last name, id or PERN (the words "pern"/"id" and punctuation
+/* Smart search: any mix of first name, last name, id and PERNR, in any order -- "smith", "john smith",
+   "smith, john", "smith j", "smith 2004", "PERNR 20041108", or a saved "First Last · PERNR" label.
+   Every word must start a first name, last name, id or PERNR (the words "pern"/"pernr"/"id" and punctuation
    are ignored). Last-name matches rank first. */
 export function searchPeople(query: string, limit = 8): Person[] {
   const words = query.toLowerCase().replace(/[^a-z0-9]+/g, ' ').split(' ')
-    .filter(w => w && w !== 'pern' && w !== 'id');
+    .filter(w => w && w !== 'pern' && w !== 'pernr' && w !== 'id');
   if (!words.length) return [];
   const hits = PEOPLE.filter(x => {
     const parts = [x.first.toLowerCase(), x.last.toLowerCase(), x.id.toLowerCase(), x.pern.toLowerCase()];

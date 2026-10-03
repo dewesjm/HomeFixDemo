@@ -1,9 +1,9 @@
-/* People-directory search assist: matches name, PERN or id as you type (searchPeople()). Two
+/* People-directory search assist: matches name, PERNR or id as you type (searchPeople()). Two
    modes:
    - 'text' (default): a free-text field with suggestions dropped in -- the underlying value stays
      plain free text (e.g. Probationary/Oversight Inspector), not a hard link to a Person record,
      so a name not in the directory can still be typed and saved. Picking a suggestion fills
-     "First Last · PERN" and commits immediately; blurring commits whatever's in the box.
+     "First Last · PERNR" and commits immediately; blurring commits whatever's in the box.
    - 'picker': choose an actual Person (Work History's/Makeup's person filters) -- shows a cleared
      search box until one is picked, then a chip (name + title, clearable) in its place. Caller
      owns the selected Person as its own state and passes it back in via `selected`. */
@@ -24,7 +24,7 @@ export class PersonSearchInputComponent {
   size = input<'xs' | 'sm' | 'md'>('md');
   disabled = input<boolean>(false);
   hasError = input<boolean>(false);
-  placeholder = input<string>('Search: name, PERN or ID');
+  placeholder = input<string>('Search: name, PERNR or ID');
   /* skip candidates with this title, e.g. 'Foreman' for Makeup -- a Foreman doesn't need to be
      granted makeup as one */
   excludeTitle = input<string | null>(null);

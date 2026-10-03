@@ -19,7 +19,7 @@
         <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
           @for (s of suggestions(); track s.id) {
             <li><a (mousedown)="choosePicked(s); $event.preventDefault()">
-              <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · PERN {{ s.pern }} · {{ s.id }}</span>
+              <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · PERNR {{ s.pern }} · {{ s.id }}</span>
             </a></li>
           } @empty {
             <li class="px-3 py-2 hist-old">No one {{ emptyHint() ? emptyHint() + ' ' : '' }}matches "{{ query() }}"</li>
@@ -38,7 +38,7 @@
       <ul class="menu bg-base-100 rounded-box shadow-lg border absolute z-20 w-full mt-1">
         @for (s of suggestions(); track s.id) {
           <li><a (mousedown)="chooseText(s); $event.preventDefault()">
-            <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · PERN {{ s.pern }} · {{ s.id }}</span>
+            <span>{{ s.last }}, {{ s.first }}</span> <span class="hist-old">{{ s.title }} · PERNR {{ s.pern }} · {{ s.id }}</span>
           </a></li>
         } @empty {
           <li class="px-3 py-2 hist-old">No match</li>
