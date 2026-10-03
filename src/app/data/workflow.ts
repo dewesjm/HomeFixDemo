@@ -369,11 +369,13 @@ const WELD_STAGE_FIELDS: StageField[] = [
 ];
 
 /* Override Requirements fields, appended to every welding stage (shown for matching WTNs).
-   Hidden and not filled in from the WTN while SHOW_WELD_OVERRIDES is false (2026-09-24): how an
-   override applies is unsettled (likely it replaces the requirement shown), so kept intact but off. */
+   SWITCHED OFF: hidden and not filled in from the WTN while SHOW_WELD_OVERRIDES is false, since how an
+   override applies is unsettled (likely it replaces the requirement shown). This could be turned back
+   on one day, so the code is kept working rather than removed, to avoid a rewrite. */
 export const SHOW_WELD_OVERRIDES = false;
-/* Foreman Override button on welding steps: turned off 2026-10-01 (blank values now come in as an
-   engineering override instead), code kept intact */
+/* Foreman Override button on welding steps. SWITCHED OFF: blank values come in as an engineering
+   override instead. This could be turned back on one day, so the code is kept working rather than
+   removed, to avoid a rewrite. */
 export const FOREMAN_OVERRIDE_ENABLED = false;
 export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
@@ -1110,29 +1112,6 @@ function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
   }
   saveOverrides(serialized);
   invalidateTemplateCache();
-}
-
-/* export the merged templates as the public constant */
-export const STAGE_TEMPLATES: Record<Job['trade'], StageTemplate[]> = new Proxy({} as Record<Job['trade'], StageTemplate[]>, {
-  get(_target, prop: string) {
-    return (getTemplates() as any)[prop];
-  },
-  ownKeys() {
-    return Object.keys(getTemplates());
-  },
-  getOwnPropertyDescriptor(target, prop) {
-    return { configurable: true, enumerable: true, value: (getTemplates() as any)[prop] };
-  }
-});
-
-/* fields for a trade stage, backfills old saved workflows */
-export function stageFieldsFor(trade: Job['trade'], stageId: string): StageField[] {
-  return getTemplates()[trade]?.find(t => t.id === stageId)?.fields ?? [];
-}
-
-/* sign-off fields for a trade stage, backfills old saved workflows */
-export function signoffFieldsFor(trade: Job['trade'], stageId: string): SignoffField[] {
-  return getTemplates()[trade]?.find(t => t.id === stageId)?.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
 }
 
 /* all unique stage ids across all trades (for the admin screen) */

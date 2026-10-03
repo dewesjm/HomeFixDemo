@@ -1,6 +1,6 @@
 import {
   procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure, hasOverride,
-  gwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, procedureDescription,
+  allGwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn, procedureDescription,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
   BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
 } from './procedures';
@@ -96,11 +96,11 @@ describe('procedures data layer', () => {
   });
 
   describe('GWP/WTN cascade', () => {
-    it('gwpOptions lists each distinct GWP once', () => {
+    it('allGwpOptions lists each distinct GWP once', () => {
       addProcedure(blankProcedure('TEST-CASCADE-1', 'TEST-GWP-CASCADE', '01.1-1'));
       addProcedure(blankProcedure('TEST-CASCADE-2', 'TEST-GWP-CASCADE', '01.1-2'));
 
-      const opts = gwpOptions();
+      const opts = allGwpOptions();
       const matching = opts.filter(o => o.value === 'TEST-GWP-CASCADE');
       expect(matching.length).toBe(1);
     });

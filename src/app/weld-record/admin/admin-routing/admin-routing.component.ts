@@ -128,8 +128,9 @@ export class AdminRoutingComponent {
   newRowId = signal<string | null>(null);  // highlights the newly added row
 
   // ── Field config dialog ──
-  /* turned off 2026-09-30 (user: "disable the other for now"); most Welding steps use hand-built
-     layouts on the weld record, so edits here don't reliably show up there */
+  /* SWITCHED OFF: most Welding steps use hand-built layouts on the weld record, so field edits here
+     don't reliably show up there. This could be turned back on one day, so the code is kept working
+     rather than removed, to avoid a rewrite. */
   readonly showFieldConfig = false;
   showFieldDlg = signal(false);
   fieldDlgTrade = signal<Job['trade']>('Welding');

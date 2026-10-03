@@ -3,7 +3,7 @@
    All data is persisted to localStorage (no backend). Storage keys live in data/storage-keys.ts.
 
    A GWP (Governing WPS) groups several specific WPS documents, one per WTN -- e.g. GWP W-101 covers
-   WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. gwpOptions() and wtnOptionsForGwp()
+   WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. allGwpOptions() and wtnOptionsForGwp()
    below are the source of truth Weld Record's GWP/WTN stage fields cascade from (workflow.ts,
    joint-page.component.ts) -- see ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
@@ -380,11 +380,6 @@ export function hasOverride(p: Procedure): boolean {
 
 /* ── GWP/WTN cascade -- source of truth for Weld Record's GWP/WTN stage fields (workflow.ts,
    joint-page.component.ts). A GWP groups several Procedure rows, one per WTN. ── */
-export function gwpOptions(): { label: string; value: string }[] {
-  const distinct = Array.from(new Set(procedures().map(p => p.gwp))).sort();
-  return distinct.map(g => ({ label: g, value: g }));
-}
-
 /* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */
 export function procedureDescription(p: Procedure | undefined, includeFiller = true): string {

@@ -292,7 +292,6 @@ export function generateJobs(count = 480): Job[] {
 }
 
 export const JOBS: Job[] = generateJobs();
-export const TECHNICIAN_OPTIONS = TECHNICIAN_NAMES.map(t => ({ label: t, value: t }));
 
 
 /* a fresh blank Welding job for tests (N Ind. 1, so its routing starts at Pre-Fit) */
