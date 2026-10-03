@@ -18,39 +18,39 @@ export const PSCL_VALUES = ['P', 'S', 'CL'];
 export const SHIP_LOCATION_KEYS = ['deck', 'frame', 'pscl', 'usage'];
 
 /* sample data: hulls with the same letter share one layout. Each line is one Deck + Frame, then its
-   usages on the P | S | CL side; every side has two or more so the Usage droplist is a real choice. */
+   usages on the P | S | CL side; about half the sides have more than one, so Usage is sometimes a choice. */
 const LAYOUTS: Record<string, string[]> = {
   S: [
-    'D1 F10: Tank Piping | Tank Storage | Machinery Engine Electrical',
-    'D1 F22: Engine Machinery | Engine Piping Ventilation | Engine Machinery',
-    'D2 F30: Cargo Storage | Cargo Storage Other | Cargo Piping',
-    'D2 F38: Storage Electrical | Storage Other | Other Ventilation',
-    'D3 F45: Living Habitability | Living Habitability Storage | Galley Living',
-    'D3 F52: Galley Storage | Living Ventilation | Galley Electrical Other',
-    'D4 F60: Habitability Ventilation | Habitability Electrical | Deck Other',
+    'D1 F10: Tank Piping | Tank | Machinery Engine Electrical',
+    'D1 F22: Engine | Engine Piping Ventilation | Machinery',
+    'D2 F30: Cargo Storage | Cargo | Piping',
+    'D2 F38: Storage | Storage Other | Ventilation',
+    'D3 F45: Living Habitability | Living | Galley Living',
+    'D3 F52: Galley | Living Ventilation | Electrical',
+    'D4 F60: Habitability Ventilation | Habitability | Deck Other',
   ],
   D: [
-    'D1 F12: Tank Piping | Tank Piping Storage | Engine Machinery',
-    'D1 F24: Machinery Electrical | Engine Machinery | Engine Machinery Ventilation',
-    'D2 F32: Cargo Storage Other | Cargo Storage | Cargo Piping',
-    'D2 F40: Storage Electrical | Other Ventilation | Other Storage',
-    'D3 F48: Living Habitability | Living Galley | Galley Storage',
-    'D4 F62: Habitability Electrical | Habitability Ventilation | Deck Habitability',
-    'D5 F68: Deck Other | Deck Storage | Deck Electrical Other',
+    'D1 F12: Tank Piping | Tank | Engine Machinery',
+    'D1 F24: Electrical | Engine Machinery | Ventilation',
+    'D2 F32: Cargo Storage Other | Cargo | Piping',
+    'D2 F40: Storage | Other Ventilation | Other',
+    'D3 F48: Living Habitability | Galley | Galley Storage',
+    'D4 F62: Habitability | Habitability Ventilation | Deck',
+    'D5 F68: Deck Other | Storage | Deck Electrical Other',
   ],
   T: [
-    'D1 F14: Tank Piping | Tank Storage | Engine Machinery',
-    'D1 F20: Engine Machinery Electrical | Engine Ventilation | Engine Machinery',
-    'D2 F34: Cargo Storage | Cargo Machinery | Machinery Piping Other',
-    'D3 F50: Living Habitability | Galley Storage | Deck Living',
-    'D3 F56: Habitability Ventilation | Living Electrical | Deck Galley Other',
+    'D1 F14: Tank Piping | Tank | Engine Machinery',
+    'D1 F20: Engine | Engine Ventilation | Machinery',
+    'D2 F34: Cargo Storage | Cargo | Machinery Piping Other',
+    'D3 F50: Living | Galley Storage | Deck',
+    'D3 F56: Habitability Ventilation | Electrical | Deck Galley Other',
   ],
   N: [
-    'D1 F16: Engine Machinery | Engine Piping | Machinery Electrical',
-    'D2 F28: Tank Piping | Tank Storage Other | Tank Machinery',
-    'D2 F42: Cargo Storage | Cargo Other | Cargo Ventilation',
-    'D3 F58: Habitability Living | Living Storage | Galley Habitability',
-    'D3 F64: Galley Electrical | Living Ventilation Other | Galley Other',
+    'D1 F16: Engine Machinery | Engine | Machinery Electrical',
+    'D2 F28: Tank | Tank Storage Other | Machinery',
+    'D2 F42: Cargo Storage | Cargo | Ventilation',
+    'D3 F58: Habitability Living | Living | Galley Habitability',
+    'D3 F64: Galley | Living Ventilation Other | Other',
   ],
 };
 
