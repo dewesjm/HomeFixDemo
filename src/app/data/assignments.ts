@@ -1,6 +1,6 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
-import { getShops, seededWorkflow, currentRoutingLabel } from './workflow';
+import { getShops, seededWorkflow, currentRoutingLabel, seedFabricationData } from './workflow';
 import { allWtns } from './procedures';
 
 export interface Assignment {
@@ -13,14 +13,9 @@ export interface Assignment {
   trade: string;
   /* no stored routing: My Assignments shows the linked job's live current routing, so it can't drift
      from what the joint page shows (see my-assignments.component.ts routingFor) */
-  location: string;           /* shop, same list as Fabrication's Location field; 'Ship' when there's no XREFID (see below) */
+  location: string;           /* shop, same list as Fabrication's Location field; 'Ship' for a couple of examples (see below) */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
-  /* shipboard location — only set when jobId is blank: an XREFID-less assignment isn't tracked
-     against a shop/bay, it's physically aboard the ship, so it's found by deck/frame position instead */
-  deck: string;
-  frame: string;
-  pscl: string;    /* P / S / CL -- one field, same as Fabrication's own P/S/CL droplist */
-  usage: string;   /* compartment usage/purpose, short code */
+  /* no stored Deck/Frame/P-S-CL/Usage either: a 'Ship' assignment shows the joint's own Fabrication values */
   assignedRoles: string[];
   source: string;   /* demo only: which external system the assignment came from, by role */
   dueDate: string;
@@ -57,16 +52,6 @@ const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];
 
 /* Location = shop, same pool as Fabrication's Location field; Specific Location = where within it */
 const SPECIFIC_LOCATIONS = ['Bay 1, Rack 3', 'Bay 2, Rack 7', 'Bay 3, Rack 1', 'Bay 4, Rack 12', 'Bay 5, Rack 5', 'Cell 2, Line B', 'Pad C, Yard 1', 'Yard 1, Row 4'];
-
-/* shipboard location, used instead of shop/bay when there's no XREFID -- compartment-number style
-   codes (e.g. "2 150 P HAB"), not descriptive text; P/S/CL and Usage reuse Fabrication's own
-   pscl/usage option sets (workflow.ts FABRICATION_FIELDS) rather than a separate invented pool,
-   Usage abbreviated to a short code instead of the full label. 2026-09-23, replacing earlier
-   descriptive placeholders ('1st Platform', 'Fr 156', 'Fuel Oil Tank', a separate CL offset field). */
-const DECKS = ['01', '02', '03', '1', '2', '3', '4'];
-const FRAMES = ['12', '26', '45', '60', '88', '104', '130', '150', '156', '172'];
-const PSCL_OPTIONS = ['P', 'S', 'CL'];
-const USAGE_POOL = ['GALY', 'LIVE', 'HAB', 'ENGR', 'CARGO', 'DK', 'TANK', 'MACH', 'OTHR'];
 
 const JOB_DESCRIPTIONS = [
   'Main deck framing, structural butt weld', 'Bulkhead penetration, pipe-to-shell weld', 'Hull plating seam, longitudinal joint',
@@ -165,12 +150,8 @@ function generateAssignments(): Assignment[] {
       trade: job.trade,
       /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
          like any other assignment; only a couple of examples get the shipboard treatment below */
-      location: pick(shops),
+      location: pick(shops.filter(s => s !== 'Ship')),
       specificLocation: pick(SPECIFIC_LOCATIONS),
-      deck: '',
-      frame: '',
-      pscl: '',
-      usage: '',
       assignedRoles,
       source: nextSource(primaryRole),
       dueDate: due.toISOString().slice(0, 10),
@@ -187,24 +168,25 @@ function generateAssignments(): Assignment[] {
     });
   }
 
-  /* just a couple of shipboard-location examples, not every XREFID-blank record: one guaranteed
-     near the top of the default My Assignments view (Welding role, sorted by due date), one more
-     picked from elsewhere among the blank-XREFID records for variety */
+  /* just a couple of shipboard-location examples, not every XREFID-blank record: the earliest-due
+     Welding assignment whose joint is on the Ship (near the top of the default My Assignments view),
+     and one more from elsewhere for variety. Deck/Frame/P-S-CL/Usage come from the joint itself. */
+  const jobsByKey = new Map(JOBS.map(j => [`${j.hull}|${j.drawing}|${j.joint}`, j]));
+  const onShip = (a: Assignment) => {
+    const job = jobsByKey.get(`${a.hull}|${a.drawing}|${a.joint}`);
+    return !!job && seedFabricationData(job)['location'] === 'ship';
+  };
   const toShip = (a: Assignment) => {
     a.jobId = '';
     a.location = 'Ship';
     a.specificLocation = '';
-    a.deck = pick(DECKS);
-    a.frame = pick(FRAMES);
-    a.pscl = pick(PSCL_OPTIONS);
-    a.usage = pick(USAGE_POOL);
   };
   const earliestWelding = [...assignments]
-    .filter(a => a.assignedRoles.includes('Welding'))
+    .filter(a => a.assignedRoles.includes('Welding') && onShip(a))
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
   if (earliestWelding) toShip(earliestWelding);
-  const anotherBlank = assignments.find(a => !a.jobId && a !== earliestWelding && a.deck === '');
-  if (anotherBlank) toShip(anotherBlank);
+  const another = assignments.find(a => !a.jobId && a !== earliestWelding && !a.assignedRoles.includes('Welding') && onShip(a));
+  if (another) toShip(another);
 
   return assignments.sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }

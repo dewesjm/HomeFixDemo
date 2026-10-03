@@ -1,0 +1,36 @@
+<div>
+  <div class="page-header">
+    <a routerLink="/admin/ship-locations" class="back-link">
+      <svg lucideArrowLeft class="size-4"></svg> Ship Locations
+    </a>
+    <span class="c-muted">/</span>
+    <h2 class="section-title">Import Ship Locations</h2>
+  </div>
+
+  <app-import-grid [importer]="this" noun="ship locations" doneLink="/admin/ship-locations">
+    <ng-template #headerCells>
+      <th class="min-w-32">Hull</th>
+      <th class="min-w-24">Deck</th>
+      <th class="min-w-24">Frame</th>
+      <th class="min-w-24">P/S/CL</th>
+      <th class="min-w-32">Usage</th>
+    </ng-template>
+    <ng-template #rowCells let-row>
+      <td>
+        <select class="select select-xs w-full" [(ngModel)]="row.hull" (ngModelChange)="revalidate(row)" [class.select-error]="!row.hull">
+          <option value="">-</option>
+          @for (h of hulls; track h) { <option [value]="h">{{ h }}</option> }
+        </select>
+      </td>
+      <td><input class="input input-xs w-full" [(ngModel)]="row.deck" (ngModelChange)="revalidate(row)" [class.input-error]="!row.deck" /></td>
+      <td><input class="input input-xs w-full" [(ngModel)]="row.frame" (ngModelChange)="revalidate(row)" [class.input-error]="!row.frame" /></td>
+      <td>
+        <select class="select select-xs w-full" [(ngModel)]="row.pscl" (ngModelChange)="revalidate(row)" [class.select-error]="!row.pscl">
+          <option value="">-</option>
+          @for (p of psclValues; track p) { <option [value]="p">{{ p }}</option> }
+        </select>
+      </td>
+      <td><input class="input input-xs w-full" [(ngModel)]="row.usage" (ngModelChange)="revalidate(row)" [class.input-error]="!row.usage" /></td>
+    </ng-template>
+  </app-import-grid>
+</div>

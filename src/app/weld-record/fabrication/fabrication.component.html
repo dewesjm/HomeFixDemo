@@ -34,10 +34,13 @@
         @if (f.row === 2) {
           <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
             <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-            <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                   [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
-                   [ngModel]="fabricationData()[f.key]"
-                   (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            <!-- options come from Admin > Ship Locations; a field waiting on Deck/Frame/P-S-CL says so instead of an empty list -->
+            <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]"
+                    [disabled]="fabLocked() || jobComplete() || !f.options?.length"
+                    [ngModel]="fabricationData()[f.key] || ''" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
+              <option [ngValue]="''" disabled>{{ f.options?.length ? '' : f.placeholder }}</option>
+              @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+            </select>
             @if (fabErrors()[f.key]) {
               <div class="field-error">{{ fabErrors()[f.key] }}</div>
             }

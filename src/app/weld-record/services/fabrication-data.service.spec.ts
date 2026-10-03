@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
 import { FabricationDataService } from './fabrication-data.service';
 import { WorkflowStore } from './workflow-store.service';
+import { setShipLocations } from '../../data/ship-locations';
 
 describe('FabricationDataService', () => {
   let service: FabricationDataService;
@@ -38,5 +39,27 @@ describe('FabricationDataService', () => {
     expect(entries[0].to).toBe('M-1');
     expect(entries[1].from).toBe('M-1');
     expect(entries[1].to).toBe('M-2');
+  });
+
+  it('blanks a Frame/Usage the new Deck no longer offers, and keeps one it still does', () => {
+    setShipLocations([
+      { hull: job.hull, deck: 'D1', frame: 'F10', pscl: 'P', usage: 'Tank' },
+      { hull: job.hull, deck: 'D2', frame: 'F10', pscl: 'P', usage: 'Tank' },
+      { hull: job.hull, deck: 'D3', frame: 'F20', pscl: 'P', usage: 'Cargo' },
+    ]);
+    for (const [k, v] of [['location', 'ship'], ['deck', 'D1'], ['frame', 'F10'], ['pscl', 'P'], ['usage', 'Tank']]) {
+      service.setFabricationData(job, k, v);
+    }
+    service.setFabricationData(job, 'deck', 'D2');
+    let fab = store.workflowFor(job)().fabricationData;
+    expect(fab['frame']).toBe('F10');
+    expect(fab['usage']).toBe('Tank');
+
+    service.setFabricationData(job, 'deck', 'D3');
+    fab = store.workflowFor(job)().fabricationData;
+    expect(fab['frame']).toBe('');
+    expect(fab['usage']).toBe('');
+    const cleared = store.workflowFor(job)().history.filter(h => h.section === 'Fabrication' && h.to === '-');
+    expect(cleared.map(h => h.action)).toEqual(['frame', 'usage']);
   });
 });

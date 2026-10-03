@@ -11,7 +11,12 @@ export interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-03',
+    added: [
+      'Admin > Ship Locations: per hull, the Deck, Frame, P/S/CL and Usage combinations a joint on the Ship can have, with an Import page for .csv/.xlsx files. A location a joint is using can\'t be changed or deleted.',
+    ],
     changed: [
+      'Fabrication on the Ship: Deck, Frame and Usage are now droplists from Admin > Ship Locations for the joint\'s hull. Frame lists only the frames on the Deck picked, and Usage only the usages at that Deck, Frame and P/S/CL. Changing Deck, Frame or P/S/CL blanks a Frame or Usage that no longer fits.',
+      'My Assignments: a Ship assignment\'s Deck, Frame, P/S/CL and Usage now come from the joint, so changing them on the joint changes them here too.',
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
       'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',
       'Admin > Set Routing: the joint is found by typing its Hull, Drawing and Joint (no list to pick from), and a Reason for change is required. History shows the reason on the routing entry.',

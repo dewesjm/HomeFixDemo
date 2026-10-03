@@ -82,12 +82,13 @@
                   <div class="font-mono mt-1 text-center">{{ a.charge }}</div>
                 </div>
               </div>
-              @if (!a.jobId) {
+              @if (a.location === 'Ship') {
+                @let fab = fabFor(a);
                 <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
-                  <div><span class="font-semibold">Deck</span><div>{{ a.deck }}</div></div>
-                  <div><span class="font-semibold">Frame</span><div>{{ a.frame }}</div></div>
-                  <div><span class="font-semibold">P/S/CL</span><div>{{ a.pscl }}</div></div>
-                  <div><span class="font-semibold">Usage</span><div>{{ a.usage }}</div></div>
+                  <div><span class="font-semibold">Deck</span><div>{{ fab['deck'] || '-' }}</div></div>
+                  <div><span class="font-semibold">Frame</span><div>{{ fab['frame'] || '-' }}</div></div>
+                  <div><span class="font-semibold">P/S/CL</span><div>{{ fab['pscl'] || '-' }}</div></div>
+                  <div><span class="font-semibold">Usage</span><div>{{ fab['usage'] || '-' }}</div></div>
                 </div>
               }
             </div>

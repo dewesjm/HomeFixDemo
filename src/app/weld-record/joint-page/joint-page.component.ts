@@ -37,6 +37,7 @@ import {
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
+import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../../data/ship-locations';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
@@ -285,6 +286,16 @@ export class JointPageComponent implements OnDestroy {
      field definition has none. Anything that shows a fabrication value's label must go through this. */
   private withRuntimeOptions(f: FabricationField): FabricationField {
     if (f.key === 'location') return { ...f, options: shopOptions() };
+    if (SHIP_LOCATION_KEYS.includes(f.key) && this.job && this.wf) {
+      const fab = this.wf().fabricationData;
+      const options = shipLocationOptions(f.key, this.job.hull, fab);
+      /* a saved value that's no longer on the list still shows, rather than a blank box */
+      const saved = fab[f.key] ?? '';
+      const all = saved && !options.some(o => o.value === saved) ? [{ label: saved, value: saved }, ...options] : options;
+      /* an empty list either waits on the field before it (Frame/Usage) or has nothing set up for this hull */
+      const waiting = (f.key === 'frame' && !fab['deck']) || (f.key === 'usage' && !(fab['deck'] && fab['frame'] && fab['pscl']));
+      return { ...f, options: all, placeholder: waiting ? f.placeholder : 'None set up in Admin' };
+    }
     if (f.key === 'revisedJointDesign') return { ...f, options: [{ label: '', value: '' }, ...jointDesignOptions()] };
     return f;
   }

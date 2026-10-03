@@ -40,6 +40,12 @@ export class MyAssignmentsComponent {
     return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
   }
 
+  /* a Ship assignment's Deck/Frame/P-S-CL/Usage are the joint's own Fabrication values, live */
+  fabFor(a: Assignment): Record<string, string> {
+    const job = this.jobFor(a);
+    return job ? this.store.workflowFor(job)().fabricationData : {};
+  }
+
   banner = signal(bannerFor('all'));
 
   /* demo only: lets you show that different roles' assignments come from different source systems;

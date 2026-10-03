@@ -1,0 +1,100 @@
+<h2 class="section-title">Ship Locations</h2>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search ship locations…" addLabel="Add ship location"
+                   (exportCsv)="exportCsv()" (add)="addRow()">
+  <a routerLink="/admin/ship-locations/import" class="btn btn-sm">
+    <svg lucideUpload class="size-4"></svg> Import
+  </a>
+</app-table-toolbar>
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th appSortHeader [table]="table" field="hull" label="Hull" class="min-w-32"></th>
+      <th appSortHeader [table]="table" field="deck" label="Deck" class="min-w-24"></th>
+      <th appSortHeader [table]="table" field="frame" label="Frame" class="min-w-24"></th>
+      <th appSortHeader [table]="table" field="pscl" label="P/S/CL" class="min-w-24"></th>
+      <th appSortHeader [table]="table" field="usage" label="Usage" class="min-w-32"></th>
+      <th class="min-w-24">Used by</th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of table.sorted(); track row.uid) {
+      <tr>
+        <td>
+          @if (editingId() === row.uid) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.hull" (ngModelChange)="updateField(row, 'hull', $event)">
+              <option value="" disabled>Select a hull</option>
+              @for (h of hulls; track h) { <option [value]="h">{{ h }}</option> }
+            </select>
+          } @else {
+            {{ row.hull || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. D1"
+                   [ngModel]="row.deck" (ngModelChange)="updateField(row, 'deck', $event)" />
+          } @else {
+            {{ row.deck || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. F10"
+                   [ngModel]="row.frame" (ngModelChange)="updateField(row, 'frame', $event)" />
+          } @else {
+            {{ row.frame || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.pscl" (ngModelChange)="updateField(row, 'pscl', $event)">
+              <option value="" disabled>Select</option>
+              @for (p of psclValues; track p) { <option [value]="p">{{ p }}</option> }
+            </select>
+          } @else {
+            {{ row.pscl || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="e.g. Galley"
+                   [ngModel]="row.usage" (ngModelChange)="updateField(row, 'usage', $event)" />
+          } @else {
+            {{ row.usage || '-' }}
+          }
+        </td>
+        <td>
+          @if (useCount(row); as n) { {{ n }} joint{{ n === 1 ? '' : 's' }} } @else { - }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() === row.uid) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="7" class="empty">{{ table.hasRows() ? 'No ship locations match your search.' : 'No ship locations yet.' }}</td></tr>
+    }
+  </tbody>
+</table>
+</div>

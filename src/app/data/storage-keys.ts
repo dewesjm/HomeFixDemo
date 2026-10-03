@@ -6,6 +6,7 @@ export const STORAGE = {
   routingOptions: 'welding:routing-options:v1',
   penetrants: 'welding:penetrants:v1',
   inspectionProcedures: 'welding:inspection-procedures:v1',
+  shipLocations: 'welding:ship-locations:v1',
   weldPositions: 'welding:weld-positions:v1',
   shops: 'welding:shops:v2',
   jointDesigns: 'welding:joint-designs:v3',
@@ -33,7 +34,7 @@ export const STORAGE = {
    procedures is included because its seeded GWP/WPS rows are generated from MATERIALS_1/MATERIALS_2
    (jobs.ts) -- a change to those codes without a matching cache clear leaves the GWP/WTN cascade
    silently blank (see storage-keys history, and the v4->v5 bump this line was added for). */
-const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.weldPositions, STORAGE.procedures];
+const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.shipLocations, STORAGE.weldPositions, STORAGE.procedures];
 
 export function clearStaleCaches() {
   STALE_ON_UPDATE.forEach(k => localStorage.removeItem(k));

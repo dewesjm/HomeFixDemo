@@ -2,6 +2,7 @@
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { STORAGE } from './storage-keys';
 import { inspectionProcedureOptions } from './inspection-procedures';
+import { DEFAULT_SHIP_LOCATIONS } from './ship-locations';
 import { Job } from './jobs';
 
 import { jointDesignOptions } from './joint-designs';
@@ -624,23 +625,12 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
   { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
-  // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship)
-  { key: 'deck', label: 'Deck', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
-  { key: 'frame', label: 'Frame', type: 'text', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
-  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true,
-    options: [{ label: 'P', value: 'P' }, { label: 'S', value: 'S' }, { label: 'CL', value: 'CL' }] },
-  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true,
-    options: [
-      { label: 'Galley', value: 'galley' },
-      { label: 'Living', value: 'living' },
-      { label: 'Habitability', value: 'habitability' },
-      { label: 'Engine', value: 'engine' },
-      { label: 'Cargo', value: 'cargo' },
-      { label: 'Deck', value: 'deck' },
-      { label: 'Tank', value: 'tank' },
-      { label: 'Machinery', value: 'machinery' },
-      { label: 'Other', value: 'other' },
-    ] },
+  // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship); options come from
+  // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts)
+  { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
+  { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick a Deck first' },
+  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
+  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick Deck, Frame and P/S/CL first' },
   // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see joint-page.component.ts
   // fabFields()) when that joint member's MCL requires traceability, so required is unconditional here
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },
@@ -1226,17 +1216,14 @@ export function seedFabricationData(job: Job): Record<string, string> {
   const ship = shops.find(s => s.value === 'ship');
   const onShip = !!ship && rand() < 0.3;
   const location = onShip ? ship!.value : pick(shops.filter(s => s.value !== 'ship')).value;
-  const usageOptions = FABRICATION_FIELDS.find(f => f.key === 'usage')?.options ?? [];
+  /* a real row from the hull's sample Ship Locations, so every droplist shows the saved value */
+  const shipRows = DEFAULT_SHIP_LOCATIONS.filter(e => e.hull === job.hull);
+  const shipRow = onShip && shipRows.length ? pick(shipRows) : undefined;
   const revised = rand() < 0.3;
   return {
     location,
     specificLocation: pick(SEED_SPECIFIC_LOCATIONS),
-    ...(onShip ? {
-      deck: `D${1 + Math.floor(rand() * 8)}`,
-      frame: `F${10 + Math.floor(rand() * 60)}`,
-      pscl: pick(['P', 'S', 'CL']),
-      usage: pick(usageOptions).value,
-    } : {}),
+    ...(shipRow ? { deck: shipRow.deck, frame: shipRow.frame, pscl: shipRow.pscl, usage: shipRow.usage } : {}),
     id1: seededMic(rand),
     id2: seededMic(rand),
     drawingRev: job.drawingRev || 'C',
