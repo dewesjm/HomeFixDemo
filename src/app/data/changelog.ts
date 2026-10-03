@@ -22,7 +22,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
       'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',
       'Advanced Search (Weld Record and Weld Planning): "Variant" is now called "View" (Save view…), and "Adapt filters" is now "Customize filters". Your saved ones are kept.',
-      'Attachments is now called References. It shows on Root and Final NDT (RT/UT and VT/5X), Layer NDT RT/UT, Repair and Excavation NDT, and no longer on Layer NDT VT/5X. The Correct dialog in Work History follows the same rule (it used to show References on every step).',
+      'Attachments is now called References. It shows only on RT/UT (Root, Layer and Final NDT) and Repair, no longer on VT/5X or Excavation NDT. The Correct dialog in Work History follows the same rule (it used to show References on every step).',
       'Admin > Set Routing: the joint is found by typing its Hull, Drawing and Joint (no list to pick from), and a Reason for change is required. History shows the reason on the routing entry.',
     ],
     fixed: [

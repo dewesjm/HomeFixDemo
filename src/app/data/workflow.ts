@@ -814,12 +814,8 @@ export const REPAIR_STAGE: StageTemplate = {
 export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
 export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
 /* the one rule for which steps show the References panel (joint page and the Correct dialog):
-   Root/Final NDT RT/UT and VT/5X, Layer NDT RT/UT, Repair and Excavation NDT. Not MT/PT, not
-   Layer NDT VT/5X */
-export const showsReferences = (id: string) => {
-  if (id.endsWith('-mtpt') || id === 'layer-ndt-vt5x') return false;
-  return /^(root|layer|final)-ndt-/.test(id) || isRepairStageId(id) || isExcavationNdtStageId(id);
-};
+   RT/UT (Root, Layer and Final NDT) and Repair only */
+export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(id) || isRepairStageId(id);
 const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';
 export const excavationIdForRepair = (repairId: string) => `excavation-ndt${roundSuffix(repairId)}`;
 export const repairIdForExcavation = (excavationId: string) => `repair${roundSuffix(excavationId)}`;
