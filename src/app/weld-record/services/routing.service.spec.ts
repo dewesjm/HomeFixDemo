@@ -65,7 +65,7 @@ describe('RoutingService', () => {
           ? { ...s, signed: true, signedAt: new Date().toISOString(), result: 'sat', inputs: { ppe: 'gloves' } }
           : s),
       }));
-      service.setRouting(job, 'pre-fit');
+      service.setRouting(job, 'pre-fit', 'wrong step');
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs).toEqual({});
@@ -77,12 +77,13 @@ describe('RoutingService', () => {
   describe('setRouting forward', () => {
     it('moves the current routing without signing anything; the passed stage stays as it was', () => {
       service.setStageInput(job, 'pre-fit', { key: 'ppe', label: 'PPE / safety', type: 'text' }, 'gloves');
-      service.setRouting(job, 'fit');
+      service.setRouting(job, 'fit', 'signed on paper');
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs['ppe']).toBe('gloves');
       expect(activeStageId(wf.stages)).toBe('fit');
-      expect(wf.history.some(h => h.section === 'Routing' && h.action === 'Routing set to Fit (admin)')).toBeTrue();
+      const entry = wf.history.find(h => h.section === 'Routing' && h.action === 'Routing set to Fit (admin)');
+      expect(entry?.inputs).toEqual([{ label: 'Reason', value: 'signed on paper' }]);
     });
   });
 

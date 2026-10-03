@@ -41,20 +41,20 @@ export class RoutingService {
      signed. Going back works like any route-back (that step and every step after it come up
      blank); going forward only moves the current routing, and the steps passed stay as they are.
      Deprogress can't reach past this, so the undo entries are dropped. */
-  setRouting(job: Job, targetId: string) {
+  setRouting(job: Job, targetId: string, reason: string) {
     let label = '';
     this.store.update(job, wf => {
       const target = wf.stages.find(s => s.id === targetId);
       if (!target) return wf;
       label = target.label;
-      return this.moveWithHistory(wf, job, targetId, 'Admin', 'admin');
+      return this.moveWithHistory(wf, job, targetId, 'Admin', 'admin', undefined, reason);
     });
     this.messages.add({ severity: 'success', summary: 'Routing updated', detail: `Set to ${label}`, life: 3000 });
   }
 
-  /* moveRouting() plus its History entry ("Routing set to X (<by>)" / "Routed back to X (<by>)");
-     Deprogress can't reach past a routing set by hand, so the undo entries are dropped */
-  moveWithHistory(wf: JobWorkflow, job: Job, targetId: string, who: string, by: string, routingAt?: string): JobWorkflow {
+  /* moveRouting() plus its History entry ("Routing set to X (<by>)" / "Routed back to X (<by>)", with the
+     reason when given); Deprogress can't reach past a routing set by hand, so the undo entries are dropped */
+  moveWithHistory(wf: JobWorkflow, job: Job, targetId: string, who: string, by: string, routingAt?: string, reason?: string): JobWorkflow {
     const target = wf.stages.find(s => s.id === targetId);
     if (!target) return wf;
     const r = moveRouting(wf, job, targetId);
@@ -62,6 +62,7 @@ export class RoutingService {
       section: 'Routing', who,
       action: `${r.back ? 'Routed back to' : 'Routing set to'} ${target.label} (${by})`,
       to: target.label,
+      inputs: reason ? [{ label: 'Reason', value: reason }] : undefined,
       fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
     }, routingAt);
   }

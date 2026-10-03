@@ -4,15 +4,24 @@
 <section class="panel">
   <div class="detail-grid mb-sm">
     <div>
-      <div class="meta">Job</div>
-      <select class="select select-sm select-bordered w-full"
-              [ngModel]="selectedJobId()" (ngModelChange)="pickJob($event)">
-        <option [ngValue]="null">Select a job</option>
-        @for (o of jobOptions; track o.value) {
-          <option [ngValue]="o.value">{{ o.label }}</option>
-        }
-      </select>
+      <div class="meta">Hull</div>
+      <input type="text" class="input input-sm input-bordered w-full"
+             [ngModel]="hull()" (ngModelChange)="setKey('hull', $event)">
     </div>
+    <div>
+      <div class="meta">Drawing</div>
+      <input type="text" class="input input-sm input-bordered w-full"
+             [ngModel]="drawing()" (ngModelChange)="setKey('drawing', $event)">
+    </div>
+    <div>
+      <div class="meta">Joint</div>
+      <input type="text" class="input input-sm input-bordered w-full"
+             [ngModel]="joint()" (ngModelChange)="setKey('joint', $event)">
+    </div>
+
+    @if (allTyped() && !selectedJob()) {
+      <div class="text-error">No joint matches that Hull, Drawing and Joint.</div>
+    }
 
     @if (selectedJob()) {
       <div>
@@ -30,10 +39,16 @@
           }
         </select>
       </div>
+
+      <div>
+        <div class="meta">Reason for change</div>
+        <input type="text" class="input input-sm input-bordered w-full"
+               [ngModel]="reason()" (ngModelChange)="reason.set($event)">
+      </div>
     }
   </div>
 
-  <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetId() === null" (click)="apply()">
+  <button type="button" class="btn btn-sm btn-primary" [disabled]="!selectedJob() || targetId() === null || !reason().trim()" (click)="apply()">
     <svg lucideRoute class="size-4"></svg> Set routing
   </button>
 </section>

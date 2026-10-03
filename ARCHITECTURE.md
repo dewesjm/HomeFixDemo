@@ -145,7 +145,7 @@ src/app/
                              step answers of earlier steps, built from the templates workflow.ts
                              registers via registerStepTemplates(); 'self.<key>' in reject rules),
                              Fabrication editable, Role
-      admin-set-routing/     Admin → Set routing (change a job's current routing)
+      admin-set-routing/     Admin → Set routing (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
       admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
       admin-signoff-fields/  Admin → Signoff fields
       admin-characteristics/ Admin → Attribute codes

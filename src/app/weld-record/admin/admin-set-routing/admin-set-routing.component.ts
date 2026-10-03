@@ -1,5 +1,7 @@
 // Admin → Set routing: change a job's current routing to any step. Nothing is marked signed;
 // going back blanks that step and every step after it, going forward leaves the steps passed as they are.
+// The joint is found by typing its Hull, Drawing and Joint exactly (no picking from a list), and a reason
+// is required; it's recorded on the History entry.
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,11 +25,19 @@ export class AdminSetRoutingComponent {
   private wfService = inject(RoutingService);
   private confirm = inject(ConfirmService);
 
-  jobOptions = JOBS.map(j => ({ label: `${j.hull} · ${j.drawing} · ${j.joint} (${j.id})`, value: j.id }));
-  selectedJobId = signal<string | null>(null);
+  hull = signal('');
+  drawing = signal('');
+  joint = signal('');
   targetId = signal<string | null>(null);
+  reason = signal('');
 
-  selectedJob = computed<Job | undefined>(() => JOBS.find(j => j.id === this.selectedJobId()));
+  /* all three typed in; matched ignoring case and surrounding spaces */
+  allTyped = computed(() => !!(this.hull().trim() && this.drawing().trim() && this.joint().trim()));
+  selectedJob = computed<Job | undefined>(() => {
+    if (!this.allTyped()) return undefined;
+    const eq = (a: string, b: string) => a.trim().toUpperCase() === String(b).trim().toUpperCase();
+    return JOBS.find(j => eq(this.hull(), j.hull) && eq(this.drawing(), j.drawing) && eq(this.joint(), j.joint));
+  });
 
   /* reactive read of the selected job's workflow */
   private workflow = computed(() => {
@@ -51,15 +61,17 @@ export class AdminSetRoutingComponent {
     return wf ? currentRoutingLabel(wf.stages) : '';
   });
 
-  pickJob(id: string | null) {
-    this.selectedJobId.set(id);
+  /* typing a different joint drops the routing picked for the previous one */
+  setKey(field: 'hull' | 'drawing' | 'joint', value: string) {
+    this[field].set(value);
     this.targetId.set(null);
   }
 
   apply() {
     const job = this.selectedJob();
     const id = this.targetId();
-    if (!job || id === null) return;
+    const reason = this.reason().trim();
+    if (!job || id === null || !reason) return;
     const label = this.routingOptions().find(o => o.value === id)?.label ?? id;
     const stages = this.workflow()?.stages ?? [];
     const activeIdx = stages.findIndex(s => s.id === activeStageId(stages));
@@ -72,8 +84,9 @@ export class AdminSetRoutingComponent {
       acceptLabel: 'Set routing',
       rejectLabel: 'Cancel',
       accept: () => {
-        this.wfService.setRouting(job, id);
+        this.wfService.setRouting(job, id, reason);
         this.targetId.set(null);   // current routing now reflects the change
+        this.reason.set('');
       }
     });
   }
