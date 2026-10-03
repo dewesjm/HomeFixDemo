@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Ship Locations: per hull, the Deck, Frame, P/S/CL and Usage combinations a joint on the Ship can have, with an Import page for .csv/.xlsx files. A location a joint is using can\'t be changed or deleted.',
     ],
     changed: [
+      'Admin > Attribute Codes is no longer in the menu (attribute codes are managed in another system). Joint details still show each code\'s description.',
       'Fabrication on the Ship: Deck, Frame and Usage are now droplists from Admin > Ship Locations for the joint\'s hull. Frame lists only the frames on the Deck picked, and Usage only the usages at that Deck, Frame and P/S/CL. Changing Deck, Frame or P/S/CL blanks a Frame or Usage that no longer fits.',
       'My Assignments: a Ship assignment\'s Deck, Frame, P/S/CL and Usage now come from the joint, so changing them on the joint changes them here too.',
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',

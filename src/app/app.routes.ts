@@ -47,6 +47,7 @@ export const routes: Routes = [
   { path: 'adaptive', component: AdaptiveSearchComponent, title: 'EWR - Advanced Search' },
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing' },
+  /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Set Routing' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'EWR - Penetrant' },
