@@ -2,7 +2,7 @@ import { CanDeactivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { ConfirmService } from './confirm.service';
 
-export interface CanComponentDeactivate {
+interface CanComponentDeactivate {
   canDeactivate(): boolean | Promise<boolean>;
 }
 

@@ -1,7 +1,7 @@
 import { Component, computed, input, model, signal } from '@angular/core';
 import { LucideGripVertical } from '@lucide/angular';
 
-export interface PickItem {
+interface PickItem {
   key: string;
   label: string;
   required?: boolean;   /* always shown, can't be unchecked, can still be reordered */

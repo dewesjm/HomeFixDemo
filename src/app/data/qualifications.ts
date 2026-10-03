@@ -15,7 +15,7 @@ export const QUALIFICATIONS = [
 
 /* quals only a joint condition requires (Admin > Qualifications conditions, qual-conditions.ts),
    never on a WPS; the Test User can hold them like any other */
-export const CONDITION_QUALS = ['CNTRLMTL1'];
+const CONDITION_QUALS = ['CNTRLMTL1'];
 export const ALL_QUALS = [...QUALIFICATIONS, ...CONDITION_QUALS];
 
 /* first 6 common, next 6 moderate, last 8 rare */

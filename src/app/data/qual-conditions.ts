@@ -13,7 +13,7 @@ export interface QualCondition {
   qual: string;
 }
 
-export interface ConditionField {
+interface ConditionField {
   key: string;
   label: string;
   values: string[];

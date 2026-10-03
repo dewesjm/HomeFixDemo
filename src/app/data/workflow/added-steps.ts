@@ -41,7 +41,7 @@ export function nextRepairStage(stages: { id: string }[]): StageTemplate {
 
 /* ── Excavation NDT ── */
 
-export const EXCAVATION_NDT_LABEL = 'Excavation NDT';
+const EXCAVATION_NDT_LABEL = 'Excavation NDT';
 
 /* Inserted after Repair when Repair Code = Weld Repair. The excavation is the removal of the rejected
    material; this step signs off that it was cleaned out correctly, so it "requires the same
@@ -79,7 +79,7 @@ export function excavationNdtStageFor(job: Job, inspectionType: string, repairId
    Engineering enters comments and sets the routing on that step (EngineeringReleaseComponent,
    DeviationService.disposition); Pipe Welding's Engineering role lists the joints waiting. Its
    Signoff button never shows. */
-export const ENGINEERING_HOLD_STAGE: StageTemplate = {
+const ENGINEERING_HOLD_STAGE: StageTemplate = {
   id: 'engineering-hold', label: 'Engineering Hold', required: true, role: 'Engineering', fields: [], signoffFields: [],
 };
 

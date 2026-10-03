@@ -15,5 +15,5 @@ export function setShops(shops: string[]) {
 }
 
 /* Location dropdown options; the value is the slugged shop name (Ship = 'ship') */
-export const shopValue = (shop: string) => shop.toLowerCase().replace(/\s+/g, '-');
+const shopValue = (shop: string) => shop.toLowerCase().replace(/\s+/g, '-');
 export const shopOptions = () => getShops().map(s => ({ label: s, value: shopValue(s) }));

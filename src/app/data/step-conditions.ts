@@ -175,7 +175,7 @@ function stepAnswerField(key: string): StepConditionField | undefined {
   return cache.fields.get(key);
 }
 
-export const conditionField = (key: string) =>
+const conditionField = (key: string) =>
   STEP_CONDITION_FIELDS.find(f => f.key === key) ?? (key.startsWith('step.') ? stepAnswerField(key) : undefined);
 
 const RT_TAKEN = ['10', '100', '360', '60', '75'];

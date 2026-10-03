@@ -3,7 +3,7 @@
    feeds it rows via setRows(), and reads paged()/total()/etc in its template. */
 import { computed, signal } from '@angular/core';
 
-export type SortOrder = 1 | -1;
+type SortOrder = 1 | -1;
 export type FilterPredicate<T> = (rowValue: any, filterValue: any, row: T) => boolean;
 
 export class TableState<T> {

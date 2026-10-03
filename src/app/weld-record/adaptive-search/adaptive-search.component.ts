@@ -36,14 +36,14 @@ import { allStepAnswerFields } from '../../data/step-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { activeStage, ROLES, type Role } from '../../data/workflow';
-import { AppDatePipe, formatDate } from '../../shared/date-format';
+import { formatDate } from '../../shared/date-format';
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [AppDatePipe, OrderedPickListComponent, BannerPillComponent, SyncStatusComponent,
+  imports: [OrderedPickListComponent, BannerPillComponent, SyncStatusComponent,
     CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,

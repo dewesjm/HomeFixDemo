@@ -4,7 +4,7 @@ import { WorkflowStage } from './types';
 import { getTemplates } from './stage-templates';
 
 /* index the current routing is counted from: the routingFrom stage, else the first stage */
-export function routingStart(stages: WorkflowStage[]): number {
+function routingStart(stages: WorkflowStage[]): number {
   return Math.max(0, stages.findIndex(s => s.routingFrom));
 }
 

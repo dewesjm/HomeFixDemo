@@ -1,7 +1,7 @@
 /* Change Log (Quick Links > Change Log). Plain-language summary for people using the demo, newest
    day first. Add to the top entry (or a new day) with every user-facing change; skip refactors,
    docs, code cleanup and data changes (sample values, formats, droplist option names). */
-export interface ChangeLogDay {
+interface ChangeLogDay {
   date: string;        /* ISO date */
   added?: string[];
   changed?: string[];

@@ -59,7 +59,7 @@ function save(grants: MakeupGrant[]) {
 
 export const makeupGrants = signal<MakeupGrant[]>(load());
 
-export function setMakeupGrants(grants: MakeupGrant[]) {
+function setMakeupGrants(grants: MakeupGrant[]) {
   save(grants);
   makeupGrants.set(grants);
 }
@@ -91,7 +91,7 @@ export function daySpan(startDate: string, endDate: string): number {
 
 /* days already used this calendar year across a person's other grants (by start date's year),
    optionally excluding one grant (the one currently being edited) */
-export function daysUsed(personId: string, year: number, grants: MakeupGrant[], excludeGrantId?: string): number {
+function daysUsed(personId: string, year: number, grants: MakeupGrant[], excludeGrantId?: string): number {
   return grants
     .filter(g => g.personId === personId && g.id !== excludeGrantId && new Date(g.startDate + 'T00:00:00').getFullYear() === year)
     .reduce((sum, g) => sum + daySpan(g.startDate, g.endDate), 0);

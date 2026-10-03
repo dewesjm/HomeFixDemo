@@ -1,5 +1,5 @@
 /* characteristic code lookup, job carries up to three */
-export interface CharacteristicCode {
+interface CharacteristicCode {
   code: string;          /* short numeric code, e.g. 1234 */
   description: string;   /* meaning, e.g. Hazardous */
 }

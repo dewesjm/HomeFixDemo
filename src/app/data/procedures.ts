@@ -25,7 +25,7 @@ export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
 export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic'];
 /* free-text "for ..." that ends the plain-text description (procedureDescription below); these are
    only placeholder values for the seed data */
-export const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
+const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
 export const BASE_METAL_1_TYPES = MATERIALS_1;
@@ -49,7 +49,7 @@ export const BACKING_OPTIONS = ['None', 'Backing Strip', 'Consumable Insert', 'G
 export const WELD_PROGRESSIONS = ['N/A', 'Uphill', 'Downhill'];
 export const CURRENT_TYPES = ['AC', 'DCEP', 'DCEN'];
 
-export interface RevisionNote {
+interface RevisionNote {
   wpsRev: string;
   date: string;    /* ISO date */
   note: string;

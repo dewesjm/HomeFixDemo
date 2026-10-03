@@ -189,7 +189,7 @@ const HULL_COUNT = 48;
 export const HULLS = [...new Set(Array.from({ length: HULL_COUNT }, (_, k) => makeHull(k + 1)))];
 export const SHIP_BY_HULL = new Map(HULLS.map((h, k) => [h, makeShip(k + 1)]));
 
-export function generateJobs(count = 480): Job[] {
+function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
   const out: Job[] = [];
   const usedIdentity = new Set<string>();

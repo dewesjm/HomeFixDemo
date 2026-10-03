@@ -75,22 +75,22 @@ export function setShipLocations(entries: ShipLocationEntry[]) {
 
 const unique = (values: string[]) => [...new Set(values)].map(v => ({ label: v, value: v }));
 
-export function deckOptions(hull: string) {
+function deckOptions(hull: string) {
   return unique(getShipLocations().filter(e => e.hull === hull).map(e => e.deck));
 }
 
-export function frameOptions(hull: string, deck: string) {
+function frameOptions(hull: string, deck: string) {
   return unique(getShipLocations().filter(e => e.hull === hull && e.deck === deck).map(e => e.frame));
 }
 
 /* only sides with a usage at this Deck + Frame, so a picked side always has a Usage to choose */
-export function psclOptions(hull: string, deck: string, frame: string) {
+function psclOptions(hull: string, deck: string, frame: string) {
   const sides = new Set(getShipLocations()
     .filter(e => e.hull === hull && e.deck === deck && e.frame === frame).map(e => e.pscl));
   return PSCL_VALUES.filter(v => sides.has(v)).map(v => ({ label: v, value: v }));
 }
 
-export function usageOptions(hull: string, deck: string, frame: string, pscl: string) {
+function usageOptions(hull: string, deck: string, frame: string, pscl: string) {
   return unique(getShipLocations()
     .filter(e => e.hull === hull && e.deck === deck && e.frame === frame && e.pscl === pscl)
     .map(e => e.usage));

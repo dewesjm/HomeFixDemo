@@ -1,7 +1,7 @@
 /* Admin > Weld Positions (localStorage) */
 import { STORAGE } from './storage-keys';
 
-export interface WeldPosition {
+interface WeldPosition {
   code: string;
   description: string;
 }

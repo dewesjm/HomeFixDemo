@@ -78,7 +78,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
      - MT, PT or UT adds that step with its Type locked to it; MT/PT adds the MT/PT step with a choice
      - an RT degree (anything but blank or NA) adds the RT/UT step locked to RT
    UT and an RT degree never come together in real data; if they did, that step would offer both. */
-export interface NdtStep { kind: NdtKind; methods: string[] }
+interface NdtStep { kind: NdtKind; methods: string[] }
 
 export function phaseNdtSteps(ndtValue: string, rtDegree = ''): NdtStep[] {
   const v = (ndtValue || '').trim().toUpperCase();

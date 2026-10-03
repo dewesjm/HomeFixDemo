@@ -1,9 +1,9 @@
 /* Signal-based toast queue. */
 import { Injectable, signal } from '@angular/core';
 
-export type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
+type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
-export interface ToastMessage {
+interface ToastMessage {
   id: number;
   severity: ToastSeverity;
   summary: string;

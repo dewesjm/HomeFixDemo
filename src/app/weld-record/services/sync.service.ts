@@ -1,7 +1,7 @@
 /* tracks online/offline and pending-sync count; push is stubbed */
 import { Injectable, NgZone, computed, inject, signal } from '@angular/core';
 
-export type SyncState = 'synced' | 'pending' | 'offline';
+type SyncState = 'synced' | 'pending' | 'offline';
 
 /* combines connectivity + pending-sync count into one status; flush() is a stub */
 @Injectable({ providedIn: 'root' })

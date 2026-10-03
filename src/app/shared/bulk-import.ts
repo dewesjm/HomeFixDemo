@@ -5,7 +5,7 @@ import { inject, signal } from '@angular/core';
 
 import { ToastService } from './toast.service';
 
-export interface ImportRowState {
+interface ImportRowState {
   _errors: string[];
   _saved: boolean;
 }

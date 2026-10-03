@@ -32,7 +32,7 @@ export interface Assignment {
 
 /* demo only: shows that different roles get assigned from different upstream systems.
    Inspector and NQC Inspector draw from either of two systems, so each shows a mix. */
-export const SOURCES_BY_ROLE: Record<string, string[]> = {
+const SOURCES_BY_ROLE: Record<string, string[]> = {
   'Fitting': ['SWIMS'],
   'Welding': ['EWICC'],
   'Foreman': ['EWR'],

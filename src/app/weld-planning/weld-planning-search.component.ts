@@ -28,7 +28,7 @@ import { AppDatePipe, formatDate } from '../shared/date-format';
 
 const DEFAULT_KEYS = ['hull', 'joint', 'status'];
 
-export interface ResultColumn {
+interface ResultColumn {
   key: string;
   label: string;
   field?: keyof WeldJoint;

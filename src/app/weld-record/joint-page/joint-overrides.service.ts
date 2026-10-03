@@ -15,7 +15,7 @@ import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { EngineeringOverrideService } from '../services/engineering-override.service';
 
 /* what the page hands over: its joint, live workflow, the state as loaded, and its visible fields */
-export interface JointOverridesSource {
+interface JointOverridesSource {
   job: Job;
   wf: () => JobWorkflow;
   loaded: { stages: Record<string, WorkflowStage> };

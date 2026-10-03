@@ -1,7 +1,7 @@
 /* Signal-based confirm dialog request queue. */
 import { Injectable, signal } from '@angular/core';
 
-export interface ConfirmRequest {
+interface ConfirmRequest {
   header?: string;
   message: string;
   acceptLabel?: string;

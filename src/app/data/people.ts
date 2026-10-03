@@ -83,7 +83,7 @@ export const TECHNICIAN_NAMES = PEOPLE.slice(0, 7).map(fullName);
 export const SEEDED_INSPECTOR_NAMES = PEOPLE.slice(7, 15).map(fullName);
 
 const nameIndex = new Map(PEOPLE.map(x => [fullName(x), x]));
-export const personByName = (name: string): Person | undefined => nameIndex.get(name);
+const personByName = (name: string): Person | undefined => nameIndex.get(name);
 
 /* who + the title they held now; stamped on every history entry so later title changes don't rewrite the past */
 export function stampWho(name: string): { whoId?: string; whoTitle?: string } {

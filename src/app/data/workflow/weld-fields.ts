@@ -52,7 +52,7 @@ export const WELD_OVERRIDE_FIELDS: StageField[] = [
 /* ── Which weld fields the user cannot type into ── */
 
 /* PH/IP limits and overrides are set from the WTN, never typed */
-export const READONLY_LIMIT_KEYS = new Set([
+const READONLY_LIMIT_KEYS = new Set([
   'phMin', 'phMax', 'ipMin', 'ipMax',
   'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
 ]);

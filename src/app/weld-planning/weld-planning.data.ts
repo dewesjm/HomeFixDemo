@@ -37,7 +37,7 @@ export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
    stored requirement on the weld record, so they keep blank/X/5X for now. Blank = not set yet. */
 const RT_MARKS = ['', ...RT_DEGREE_OPTIONS.map(o => o.value)];
 const NDT_METHOD_MARKS = ['', ...NDT_REQUIREMENT_VALUES];
-export const NDT_MARKS = ['', 'X', '5X'];
+const NDT_MARKS = ['', 'X', '5X'];
 export const NDT_FIELDS = [
   { key: 'rtRoot', label: 'RT Root', options: RT_MARKS }, { key: 'rtFinal', label: 'RT Final', options: RT_MARKS },
   { key: 'ndtRoot', label: 'NDT Root', options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: 'NDT Each', options: NDT_METHOD_MARKS },

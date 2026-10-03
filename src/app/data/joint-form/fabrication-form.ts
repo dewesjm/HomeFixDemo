@@ -24,7 +24,7 @@ export function fabricationFieldsShown(job: Job | undefined, fab: Fab): Fabricat
 
 /* Location, Ship Location and Revised Joint Design get their options at runtime (admin lists); the
    static field definition has none. Anything that shows a fabrication value's label must go through this. */
-export function withFabricationOptions(f: FabricationField, job: Job | undefined, fab: Fab): FabricationField {
+function withFabricationOptions(f: FabricationField, job: Job | undefined, fab: Fab): FabricationField {
   if (f.key === 'location') return { ...f, options: shopOptions() };
   if (SHIP_LOCATION_KEYS.includes(f.key) && job) {
     const options = shipLocationOptions(f.key, job.hull, fab);
