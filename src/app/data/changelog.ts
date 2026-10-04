@@ -17,7 +17,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The Repair step has an optional Comments box on its sign-off. The comment is saved with the sign-off and shows in History.',
     ],
     changed: [
-      'The sync status is now one coloured dot in the top bar, beside Quick Links, on every page (it was on Pipe Welding, Advanced Search and the joint page). Hover over it to see Synced, how many are pending, or Offline.',
+      'The sync status is now one coloured dot in the top bar, beside Quick Links, on every page (it was on Pipe Welding, Advanced Search and the joint page). Hover over it, or tap it on a touch screen, to see Synced, how many are pending, or Offline.',
+      'The theme button in the top bar is just the palette icon now (no "Theme" text).',
       'Advanced Search (Weld Record and Weld Planning) is less cluttered. Save view, make default and delete view are in a ⋯ menu next to the View droplist. "Customize filters" is now "+ Add field" at the end of the filter bar, and "Show/Hide filters" is one "Filters" button. "Clear filters" (Weld Planning: "Reset") is now "Clear all" next to the filter chips, and only shows while something is filtering. Columns and Export are in a ⋯ menu beside the keyword search. Deleting a view asks you to confirm first.',
       'Weld Record Advanced Search: the filter box in each column heading is hidden until you click the funnel next to the column name. The funnel is filled in while that column is filtering.',
       'The admin banner: a message over 60 characters shows as a full-width strip under the page title instead of a pill beside it. The preview in Admin > Banner shows which one you will get.',
