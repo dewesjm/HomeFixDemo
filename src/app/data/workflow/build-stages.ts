@@ -3,6 +3,7 @@ import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
 import { DEFAULT_SIGNOFF_FIELDS, getTemplates } from './stage-templates';
+import { inspectionTypeRequired } from './stage-rules';
 import { WELD_OVERRIDE_FIELDS } from './weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from './seed-fabrication';
@@ -51,7 +52,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       routingType: t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
       /* inspection stages start blank so the inspector must state what was performed */
-      inspectionType: t.role === 'Inspector' ? '' : (t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? ''),
+      inspectionType: inspectionTypeRequired({ id: t.id, role, routingOptions: t.routingOptions }) ? ''
+        : (t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? ''),
       decisionLabel: t.decisionLabel ?? '',
       routingOptions: t.routingOptions,
       signed: false,
@@ -69,9 +71,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     const step = stepFor(s.id);
     /* a step an admin rule adds without the NDT values calling for it offers every method */
     if (!step) return s;
-    /* only the method(s) the Joint Details values allow; a single one is locked in (pre-filled) */
-    const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
-    return { ...s, routingOptions, inspectionType: step.methods.length === 1 ? step.methods[0] : '' };
+    /* only the method(s) the Joint Details values allow; Type still starts blank, even with one */
+    return { ...s, routingOptions: s.routingOptions?.filter(o => step.methods.includes(o.value)) };
   });
 }
 

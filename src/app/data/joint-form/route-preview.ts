@@ -11,17 +11,16 @@
 import { Job } from '../jobs';
 import {
   WorkflowStage, excavationNdtStage, getTemplates, hasDecision, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId,
-  repairIdForExcavation, typeLockReason,
+  repairIdForExcavation,
 } from '../workflow';
 import { isNonFerrousOrAustenitic } from '../material-classification';
 
 export type SignoffPreview = (result?: WorkflowStage['result']) => { target: WorkflowStage | undefined; reasons: string[] };
 
 /* The preview for `stage`, '' when there's nothing to say. A SAT/UNSAT step with no decision picked
-   yet shows both outcomes; a locked Type says why at the end (typeLockReason). */
+   yet shows both outcomes. */
 export function routePreviewLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, activeId: string | null, preview: SignoffPreview): string {
-  const route = routeLabel(job, stages, stage, activeId, preview);
-  return route ? [route, typeLockReason(stage, job)].filter(Boolean).join(' ') : '';
+  return routeLabel(job, stages, stage, activeId, preview);
 }
 
 function routeLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, activeId: string | null, preview: SignoffPreview): string {

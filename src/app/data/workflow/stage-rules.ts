@@ -1,7 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
-import { Job } from '../jobs';
 import { WorkflowStage } from './types';
-import { isExcavationNdtStageId, isRepairStageId } from './step-ids';
+import { isRepairStageId } from './step-ids';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
@@ -15,13 +14,10 @@ export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
   return stage.id === 'pre-fit' || stage.id === 'fitup-insp' || /-ndt(-|$)/.test(stage.id);
 }
 
-/* an inspection step with one possible Type has it locked in (droplist disabled); returns why, for
-   the Routing Preview. '' = not locked */
-export function typeLockReason(st: WorkflowStage, job: Job): string {
-  if (!(st.role ?? '').includes('Inspector') || st.routingOptions?.length !== 1) return '';
-  if (st.id.startsWith('layer-ndt-')) return `Type is set by NDT Each (${job.ndtEach}).`;
-  if (isExcavationNdtStageId(st.id)) return 'Type is the same inspection that rejected the joint.';
-  return '';
+/* inspection/NDT steps: the inspector always picks the inspection performed. Type starts blank
+   ("Select the inspection performed…") even when only one method is allowed, and is never pre-filled */
+export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'role' | 'routingOptions'>): boolean {
+  return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
 }
 
 /* which steps show the References panel on the joint page (the Correct dialog shows it on every step):

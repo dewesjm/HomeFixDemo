@@ -29,7 +29,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
   activeStageId, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
-  ACTUAL_REQUIREMENT, HistoryRow, historyRows, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
+  ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
 } from '../../data/workflow';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -40,7 +40,7 @@ import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
 import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
-import { SignContext, errorsAfterBlur, errorsAfterSelect, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
+import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
 import { routePreviewLabel } from '../../data/joint-form/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from '../../data/joint-form/unsaved-edits';

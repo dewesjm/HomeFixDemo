@@ -53,13 +53,13 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 |---|---|
 | VT | VT |
 | 5X | 5X (instead of VT) |
-| MT | VT, then MT/PT locked to MT |
-| PT | VT, then MT/PT locked to PT |
+| MT | VT, then MT/PT offering only MT |
+| PT | VT, then MT/PT offering only PT |
 | MT/PT | VT, then MT/PT with the inspector choosing MT or PT |
-| UT | VT, then RT/UT locked to UT |
+| UT | VT, then RT/UT offering only UT |
 
-- **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a RT/UT step locked to RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
-- **Locked:** a locked step's Type dropdown is pre-filled and can't be changed. The Routing Preview says why, for example "Type is set by NDT Each (MT)."
+- **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a RT/UT step offering only RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
+- **Type is never pre-filled:** every inspection step's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
 - **Valid values:** NDT Root, NDT Each and NDT Final take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid. RT Root and RT Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root 5X question:** when NDT Root is 5X, the Root step asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X step automatically when Root itself is signed.
@@ -85,10 +85,10 @@ When the Repair step is signed, where the joint goes depends on what was chosen:
 
 ### Excavation NDT (after a Weld Repair)
 
-- It requires **the same inspection that failed**. For example, if PT failed, Excavation NDT is PT, with its Type locked.
+- It requires **the same inspection that failed**. For example, if PT failed, Excavation NDT offers only PT.
 - **Exception:** if PT failed and Material Type 1 or 2 is non-ferrous or austenitic (Admin > Material Classification), Excavation NDT is **5X instead of PT**.
 - **UNSAT:** back to its own Repair step, which comes up blank. No new Repair is added. The same Excavation NDT comes back when the Repair is signed as Weld Repair again.
-- **SAT:** back to the NDT step that originally failed. With the PT exception above, it goes to that phase's VT/5X step instead, with **5X allowed** and pre-selected (normally that step is locked to VT).
+- **SAT:** back to the NDT step that originally failed. With the PT exception above, it goes to that phase's VT/5X step instead, with **5X allowed** (normally that step offers only VT).
 
 ### Cut
 

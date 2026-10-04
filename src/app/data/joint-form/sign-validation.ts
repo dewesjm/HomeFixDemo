@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type and Routing Type use synthetic keys (__decision, __inspectionType, __routingType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision } from '../workflow';
+import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -13,11 +13,6 @@ export interface SignContext {
   fab: Record<string, string>;
   fabErrors: Record<string, string>;
   visibleFields: StageField[];
-}
-
-/* inspection/NDT stages must have the inspector explicitly choose what was performed */
-export function inspectionTypeRequired(stage: WorkflowStage): boolean {
-  return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
 }
 
 /* RT NDT: Degree of RT Performed must match the job's required degree (rtRoot/rtFinal); '' when it does */

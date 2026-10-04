@@ -25,7 +25,6 @@
           <label class="stage-field">
             <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
             <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
-                    [disabled]="typeLocked(st)"
                     [ngModel]="st.id === 'fit' ? (st.routingType || ctx().defaultRoutingOption(st)) : ctx().inspectionTypeRequired(st) ? st.inspectionType : (st.inspectionType || ctx().defaultRoutingOption(st))"
                     (ngModelChange)="st.id === 'fit' ? ctx().updateRoutingType(st, $event) : ctx().setInspectionType($event)">
               @if (ctx().inspectionTypeRequired(st)) {

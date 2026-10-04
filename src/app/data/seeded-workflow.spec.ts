@@ -26,7 +26,9 @@ describe('seeded joints', () => {
     for (const wf of onExcavation) {
       const repair = wf.stages.find(s => s.id === 'repair')!;
       expect(repair.signed && repair.inputs['repairType']).withContext(wf.jobId).toBe('weld-repair');
-      expect(wf.stages.find(s => s.id === 'excavation-ndt')!.inspectionType).toBe(repair.inputs['originInspectionType']);
+      const excavation = wf.stages.find(s => s.id === 'excavation-ndt')!;
+      expect(excavation.routingOptions?.map(o => o.value)).withContext(wf.jobId).toEqual([repair.inputs['originInspectionType']]);
+      expect(excavation.inspectionType).withContext(wf.jobId).toBe('');
     }
   });
 });

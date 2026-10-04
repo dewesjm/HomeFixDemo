@@ -66,11 +66,12 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
   };
 }
 
-/* Excavation NDT for `repairId`, already resolved to one method; the Inspector role gets the same
-   NQC Inspector remap buildStages() gives every other NDT step, since this one is built at runtime */
+/* Excavation NDT for `repairId`, its Type droplist offering only the one resolved method (still
+   blank until picked); the Inspector role gets the same NQC Inspector remap buildStages() gives every
+   other NDT step, since this one is built at runtime */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
   const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
-  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId), {}, inspectionType), role };
+  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId)), role };
 }
 
 /* ── Engineering Hold ── */
@@ -109,10 +110,8 @@ export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, 
 /* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
    NDT, Engineering Hold) -- same shape buildStages() makes, minus the parts only a job's real
    routing needs (role remap, override fields, etc.), since these are always the same regardless
-   of job. `inspectionType` pre-fills the Type droplist (e.g. Excavation NDT's single resolved
-   method) so an Inspector-role stage with exactly one real option doesn't force a redundant click
-   on something that isn't really a choice -- see inspectionTypeRequired(). */
-export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}, inspectionType = ''): WorkflowStage {
+   of job. Type starts blank. */
+export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
   return {
     id: t.id,
     label: t.label,
@@ -127,7 +126,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     repeatable: false,
     routingType: 'standard',
     swapStageId: '',
-    inspectionType,
+    inspectionType: '',
     routingOptions: t.routingOptions ?? [],
     signed: false,
     signedAt: null,

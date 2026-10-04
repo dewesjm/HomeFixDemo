@@ -1,6 +1,6 @@
 import { JOBS, Job } from '../jobs';
-import { buildStages, WorkflowStage } from '../workflow';
-import { inspectionTypeRequired, signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
+import { buildStages, inspectionTypeRequired, WorkflowStage } from '../workflow';
+import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });

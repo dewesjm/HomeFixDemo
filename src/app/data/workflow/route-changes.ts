@@ -16,11 +16,10 @@ const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspecti
 function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   const inputs = fresh ? { ...fresh.inputs }
     : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => isRepairStageId(s.id) && s.inputs[k]).map(k => [k, s.inputs[k]]));
-  const locked = (s.routingOptions?.length ?? 0) === 1;
   return {
     ...s, inputs, signoffInputs: {}, result: null, signed: false, signedAt: null,
     routingType: fresh?.routingType ?? s.routingType,
-    inspectionType: locked ? s.inspectionType : fresh?.inspectionType ?? '',
+    inspectionType: fresh?.inspectionType ?? '',
   };
 }
 

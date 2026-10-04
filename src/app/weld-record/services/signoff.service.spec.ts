@@ -285,7 +285,7 @@ describe('SignoffService', () => {
       const vt = stage(job, 'root-ndt-vt5x');
       expect(vt.signed).toBeFalse();
       expect(vt.routingOptions?.map(o => o.value)).toEqual(['vt', '5x']);
-      expect(vt.inspectionType).toBe('5x');
+      expect(vt.inspectionType).toBe('');
     });
 
     it('Grind Only on Layer goes back to the Layer NDT that failed', () => {
@@ -337,20 +337,20 @@ describe('SignoffService', () => {
     const summary = (job: Job, phase: string) =>
       ndtStages(job, phase).map(s => `${s.id}:${(s.routingOptions ?? []).map(o => o.value).join('/')}`);
 
-    it('VT is always required: a VT value gives only the VT step, locked to VT', () => {
+    it('VT is always required: a VT value gives only the VT step, offering only VT', () => {
       expect(summary(weldingJob({ ndtEach: 'VT' }), 'layer')).toEqual(['layer-ndt-vt5x:vt']);
     });
 
     it('5X replaces VT', () => {
       const [st] = ndtStages(weldingJob({ ndtRoot: '5X' }), 'root');
       expect(st.routingOptions?.map(o => o.value)).toEqual(['5x']);
-      expect(st.inspectionType).toBe('5x');
+      expect(st.inspectionType).toBe('');
     });
 
-    it('MT adds the MT/PT step locked to MT, after VT', () => {
+    it('MT adds the MT/PT step offering only MT, after VT', () => {
       const job = weldingJob({ ndtEach: 'MT' });
       expect(summary(job, 'layer')).toEqual(['layer-ndt-vt5x:vt', 'layer-ndt-mtpt:mt']);
-      expect(ndtStages(job, 'layer')[1].inspectionType).toBe('mt');
+      expect(ndtStages(job, 'layer')[1].inspectionType).toBe('');
     });
 
     it('MT/PT leaves the inspector to choose', () => {

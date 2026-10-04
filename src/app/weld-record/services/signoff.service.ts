@@ -238,10 +238,10 @@ export class SignoffService {
       const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
       const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
       if (resolvedType !== originInspectionType && phase) {
-        /* the VT/5X stage is normally locked to VT; here it must allow the 5X that replaces PT */
+        /* the VT/5X stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
         const vtId = `${phase}-ndt-vt5x`;
         routeBackTo(vtId);
-        stages = stages.map(s => s.id === vtId ? { ...s, routingOptions: ndtKindOptions('vt5x'), inspectionType: '5x' } : s);
+        stages = stages.map(s => s.id === vtId ? { ...s, routingOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
       } else if (originStageId) {
         routeBackTo(originStageId);
       }
