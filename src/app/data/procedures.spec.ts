@@ -160,11 +160,11 @@ describe('procedures data layer', () => {
 
     it('gwpOptionsForMaterials only returns GWPs matching that base metal pair', () => {
       addProcedure(blankProcedure('TEST-MAT-1', 'TEST-GWP-MAT-A', '06.6-1'));
-      updateProcedure('TEST-MAT-1', { baseMetal1Type: '02-CS', baseMetal2Type: '01-E60' });
+      updateProcedure('TEST-MAT-1', { baseMetal1Type: '02-CS', baseMetal2Type: '13-SS316' });
       addProcedure(blankProcedure('TEST-MAT-2', 'TEST-GWP-MAT-B', '07.7-1'));
-      updateProcedure('TEST-MAT-2', { baseMetal1Type: '12-SS304', baseMetal2Type: '02-E70' });
+      updateProcedure('TEST-MAT-2', { baseMetal1Type: '12-SS304', baseMetal2Type: '12-SS304' });
 
-      const opts = gwpOptionsForMaterials('02-CS', '01-E60').map(o => o.value);
+      const opts = gwpOptionsForMaterials('02-CS', '13-SS316').map(o => o.value);
       expect(opts).toContain('TEST-GWP-MAT-A');
       expect(opts).not.toContain('TEST-GWP-MAT-B');
     });
@@ -181,15 +181,15 @@ describe('procedures data layer', () => {
 
     it('procedureDescription reads as plain text and skips blank parts', () => {
       const p = { ...blankProcedure('TEST-DESC-1'), processType: 'Semiautomatic', weldProcess: 'GTAW',
-        baseMetal1Type: '02-CS', baseMetal2Type: '01-E60', fillerMetalClassification: 'MIL-70S-6',
+        baseMetal1Type: '02-CS', baseMetal2Type: '13-SS316', fillerMetalClassification: 'MIL-70S-6',
         application: 'Surface Structure', createdAt: '', updatedAt: '' };
-      expect(procedureDescription(p)).toBe('Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface Structure');
-      expect(procedureDescription(p, false)).toBe('Semiautomatic GTAW of 02-CS and 01-E60 for Surface Structure');
-      expect(procedureDescription({ ...p, processType: '', application: '' })).toBe('GTAW of 02-CS and 01-E60 using MIL-70S-6');
+      expect(procedureDescription(p)).toBe('Semiautomatic GTAW of 02-CS and 13-SS316 using MIL-70S-6 for Surface Structure');
+      expect(procedureDescription(p, false)).toBe('Semiautomatic GTAW of 02-CS and 13-SS316 for Surface Structure');
+      expect(procedureDescription({ ...p, processType: '', application: '' })).toBe('GTAW of 02-CS and 13-SS316 using MIL-70S-6');
     });
 
     it('gwpOptionsForMaterials returns an empty list when either material is blank', () => {
-      expect(gwpOptionsForMaterials('', '01-E60')).toEqual([]);
+      expect(gwpOptionsForMaterials('', '13-SS316')).toEqual([]);
       expect(gwpOptionsForMaterials('02-CS', '')).toEqual([]);
     });
   });

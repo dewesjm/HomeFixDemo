@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-04',
     changed: [
+      'Material Type 2 picks from the same base material list as Material Type 1 (it was showing filler metal codes). Weld Engineering\'s Base Metal 2 Type uses the same list. Filler metal stays its own list on the welding steps.',
       'NDT steps never fill in Type for you: it always starts on "Select the inspection performed…" and has to be picked, even when Joint Details allow only one method (that method is then the only choice). This includes Excavation NDT. The Type droplist is no longer greyed out, and the Routing Preview no longer adds "Type is set by NDT Each…".',
       'Records Review\'s Signoff History is now the History screen\'s table for that joint: the same entries, field names and values (blank fields shown as "(left blank)"), corrections, Fabrication at each sign-off, Deprogress and Correct, sort and column filters. The XREFID, Hull, Drawing, Joint and Order columns are left out.',
     ],

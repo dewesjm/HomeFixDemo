@@ -20,8 +20,8 @@ export interface Job {
   weldType: string;          /* one of WELD_TYPES, e.g. Butt, Fillet, Socket */
   pipeSize: string;          /* pipe size */
   wallThickness: string;     /* wall thickness */
-  materialType1: string;     /* base material 1 */
-  materialType2: string;     /* base material 2 / filler */
+  materialType1: string;     /* one of MATERIAL_TYPES, the base material on one side of the joint */
+  materialType2: string;     /* one of MATERIAL_TYPES, the other side; same or different */
   mcl1: string;              /* MCL 1 */
   mcl2: string;              /* MCL 2 */
   joiningItem: string;       /* joining item */
@@ -96,17 +96,15 @@ export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"',
 const FRACTION_PIPE_SIZES: Record<string, string> = { '1/2"': '0.5"', '3/4"': '0.75"', '1-1/4"': '1.25"', '1-1/2"': '1.5"', '2-1/2"': '2.5"' };
 export function decimalPipeSize(size: string): string { return FRACTION_PIPE_SIZES[size] ?? size; }
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
-/* Base metal (Material Type 1) and filler metal (Material Type 2) codes: one coherent internal
-   numbering scheme (not real AISI/AWS designations) -- NN-LETTERS, where NN
-   groups by family and the letters stay recognizable (real alloy chemistry/grade abbreviations,
-   e.g. CUNI for copper-nickel, SS304 for stainless 304) rather than reusing raw industry codes
-   verbatim. The two lists share the same family-block numbering (1x = stainless, 6x = nonferrous)
-   so a base metal and its typical filler read as part of one system. */
-/* exported so Weld Engineering's procedures data (baseMetal1Type/baseMetal2Type) can use the same
-   vocabulary -- a GWP's base metal pair is matched against a job's Material Type 1/2 to filter the
-   GWP droplist (see procedures.ts gwpOptionsForMaterials, data/joint-form/stage-form.ts). */
-export const MATERIALS_1 = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205', '61-TI64', '63-AL10', '65-CUNI', '67-IN625'];
-export const MATERIALS_2 = ['01-E60', '02-E70', '03-ER70', '04-ER80', '15-SS308', '16-SS316', '64-ALMG', '66-CUSI', '68-NICRMO', '69-NICR'];
+/* Base material codes, the one list both Material Type 1 and Material Type 2 pick from (the two
+   sides of a joint, same or different). Filler metal is a separate list (procedures.ts). An internal
+   NN-LETTERS numbering scheme, not real designations: NN groups by family (1x = stainless,
+   6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
+   Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
+   metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
+   procedures.ts gwpOptionsForMaterials, data/joint-form/stage-form.ts). */
+export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
+  '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
 export const MCL_POOL = ['STD', 'MC-I'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14. The leading letter
@@ -244,8 +242,8 @@ function generateJobs(count = 480): Job[] {
       weldType: pick(WELD_TYPES),
       pipeSize: pick(PIPE_SIZES),
       wallThickness: pick(WALL_THICKNESSES),
-      materialType1: pick(MATERIALS_1),
-      materialType2: pick(MATERIALS_2),
+      materialType1: pick(MATERIAL_TYPES),
+      materialType2: pick(MATERIAL_TYPES),
       mcl1: pick(MCL_POOL),
       mcl2: pick(MCL_POOL),
       joiningItem: pick(JOINING_ITEMS),

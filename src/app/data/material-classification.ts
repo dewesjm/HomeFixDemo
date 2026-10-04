@@ -13,7 +13,7 @@ export interface MaterialClassificationEntry {
 
 const LS_KEY = STORAGE.materialClassification;
 
-/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIALS_1 codes (an invented NN-LETTERS
+/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIAL_TYPES codes (an invented NN-LETTERS
    numbering scheme, see jobs.ts). Duplex stainless (25-DS2205) is a
    mixed austenitic/ferritic structure, defaulted to false here since it isn't purely austenitic;
    the admin table is exactly how this gets corrected without a code change. */
@@ -23,7 +23,9 @@ const DEFAULT_ENTRIES: MaterialClassificationEntry[] = [
   { code: '13-SS316', nonFerrousOrAustenitic: true },    /* austenitic stainless */
   { code: '04-AS', nonFerrousOrAustenitic: false },      /* alloy steel */
   { code: '06-CI', nonFerrousOrAustenitic: false },      /* cast iron */
-  { code: '61-TI64', nonFerrousOrAustenitic: true },     /* titanium -- non-ferrous */
+  { code: '60-TICP', nonFerrousOrAustenitic: true },     /* commercially pure titanium -- non-ferrous */
+  { code: '61-TI64', nonFerrousOrAustenitic: true },     /* titanium alloy -- non-ferrous */
+  { code: '62-TI12', nonFerrousOrAustenitic: true },     /* titanium alloy -- non-ferrous */
   { code: '63-AL10', nonFerrousOrAustenitic: true },     /* aluminum -- non-ferrous */
   { code: '65-CUNI', nonFerrousOrAustenitic: true },     /* copper-nickel -- non-ferrous */
   { code: '67-IN625', nonFerrousOrAustenitic: true },    /* Inconel / nickel alloy -- non-ferrous */

@@ -6,7 +6,7 @@ const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === '
 const noPreview: SignoffPreview = () => ({ target: undefined, reasons: [] });
 
 describe('joint-form route-preview', () => {
-  const j = job({ refitNumber: '02', materialType1: '02-CS', materialType2: '01-E60' });
+  const j = job({ refitNumber: '02', materialType1: '02-CS', materialType2: '02-CS' });
   const stages = buildStages(j);
   const repair = (inputs: Record<string, string>) => stageFromTemplate(nextRepairStage(stages), { originPhase: 'root', originStageId: 'root-ndt-vt5x', ...inputs });
 

@@ -97,7 +97,7 @@
         <label class="field-label">Material 1</label>
         <select class="select select-sm" [(ngModel)]="form.materialType1">
           <option value="">Select...</option>
-          @for (m of materials1; track m) {
+          @for (m of materialTypes; track m) {
             <option [value]="m">{{ m }}</option>
           }
         </select>
@@ -106,7 +106,7 @@
         <label class="field-label">Material 2</label>
         <select class="select select-sm" [(ngModel)]="form.materialType2">
           <option value="">Select...</option>
-          @for (m of materials2; track m) {
+          @for (m of materialTypes; track m) {
             <option [value]="m">{{ m }}</option>
           }
         </select>

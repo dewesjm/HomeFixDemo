@@ -5,7 +5,7 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../shared/toast.service';
-import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2, HULLS } from '../data/jobs';
+import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES, HULLS } from '../data/jobs';
 import {
   addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,
@@ -48,8 +48,7 @@ export class WeldPlanningFormComponent implements OnInit {
   jointTypeOptions = JOINT_TYPE_OPTIONS;
   pipeSizes = PIPE_SIZES;
   wallThicknesses = WALL_THICKNESSES;
-  materials1 = MATERIALS_1;
-  materials2 = MATERIALS_2;
+  materialTypes = MATERIAL_TYPES;
   weldTypes = WELD_TYPES;
   hulls = HULLS;
 

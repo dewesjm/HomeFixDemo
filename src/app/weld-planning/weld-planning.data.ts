@@ -4,7 +4,7 @@
    Storage keys live in data/storage-keys.ts. */
 import { STORAGE } from '../data/storage-keys';
 import {
-  jointNumbers, WELD_TYPES, PIPE_SIZES, decimalPipeSize, WALL_THICKNESSES, MATERIALS_1, MATERIALS_2,
+  jointNumbers, WELD_TYPES, PIPE_SIZES, decimalPipeSize, WALL_THICKNESSES, MATERIAL_TYPES,
   NDT_REQUIREMENT_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from '../data/jobs';
@@ -213,8 +213,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       weldType: pick(WELD_TYPES),
       pipeSize: jt === 'pipe' ? pick(PIPE_SIZES) : '',
       wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
-      materialType1: pick(MATERIALS_1),
-      materialType2: pick(MATERIALS_2),
+      materialType1: pick(MATERIAL_TYPES),
+      materialType2: pick(MATERIAL_TYPES),
       ndtRoot, ndtEach: pick(NDT_REQUIREMENT_VALUES), ndtFinal,
       rtRoot: ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS),
       rtFinal: ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS),

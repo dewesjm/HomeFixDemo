@@ -10,7 +10,7 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './weld-positions';
-import { MATERIALS_1, MATERIALS_2 } from './jobs';
+import { MATERIAL_TYPES } from './jobs';
 import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
@@ -28,8 +28,8 @@ export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic']
 const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
-export const BASE_METAL_1_TYPES = MATERIALS_1;
-export const BASE_METAL_2_TYPES = MATERIALS_2;
+export const BASE_METAL_1_TYPES = MATERIAL_TYPES;
+export const BASE_METAL_2_TYPES = MATERIAL_TYPES;
 /* MIL-spec filler metal designations, e.g. MIL-80S-50 -- used for the free-text Classification field.
    Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
    AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WPS's fillerMetalTypes/
@@ -386,7 +386,7 @@ export function hasOverride(p: Procedure): boolean {
 
 /* ── GWP/WTN cascade -- source of truth for Weld Record's GWP/WTN stage fields (workflow/weld-fields.ts,
    data/joint-form/stage-form.ts). A GWP groups several Procedure rows, one per WTN. ── */
-/* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 01-E60 using MIL-70S-6 for Surface
+/* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 13-SS316 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */
 export function procedureDescription(p: Procedure | undefined, includeFiller = true): string {
   if (!p) return '';
