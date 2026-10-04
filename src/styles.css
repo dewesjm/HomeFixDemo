@@ -194,6 +194,10 @@ html, body {
   .meta { margin-bottom: 0; }
 }
 
+/* Side-by-side detail columns: as many as fit the panel at a readable width, so a half-screen
+   window gets 2 or 1 instead of 3 squeezed ones */
+.detail-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(17rem, 100%), 1fr)); gap: 1rem 1.5rem; }
+
 /* Vertical label | value rows for multi-column detail layouts */
 .detail-col {
   display: flex;
@@ -205,7 +209,7 @@ html, body {
   gap: 0.5rem;
   align-items: baseline;
   .meta { flex-shrink: 0; width: 9.5rem; font-size: 0.9rem; color: var(--app-text-muted); }
-  span:last-child { min-width: 0; }
+  span:last-child { min-width: 0; overflow-wrap: anywhere; }
 }
 
 /* Stage pipeline */
@@ -281,6 +285,9 @@ html, body {
 
 /* Sticky column filter inputs hidden on mobile to save space */
 @media (max-width: 640px) { .col-filter-mobile { display: none; } }
+
+/* Row action buttons (History, Details) show just their icon on phones; the title keeps the name */
+@media (max-width: 640px) { .btn-label { display: none; } }
 
 /* Frozen columns — Actions pinned right, checkbox pinned left when scrolling horizontally */
 @media (max-width: 640px) {

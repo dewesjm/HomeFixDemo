@@ -2,8 +2,8 @@
 <app-toast-host />
 <app-confirm-dialog />
 <div class="layout">
-  <nav class="topnav">
-    <div class="topnav-left">
+  <nav class="topnav" appCompactNav>
+    <div class="topnav-left" data-fit-row>
       <span class="topnav-brand">{{ activeSystem() }}</span>
       <button type="button" class="flat-nav-toggle" (click)="toggleFlatNav()"
               [title]="flatNav() ? 'Show all systems' : 'Flatten ' + activeSystem() + ' into the top bar'">
@@ -18,7 +18,7 @@
           <!-- the active system's items flattened into the top bar; its Admin stays a dropdown -->
           @switch (activeSystem()) {
           @case ('Weld Engineering') {
-            <li><a routerLink="/weld-engineering" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideSearch class="size-4"></svg><span class="nav-label"> Procedure Lookup</span></a></li>
+            <li><a title="Procedure Lookup" routerLink="/weld-engineering" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideSearch class="size-4"></svg><span class="nav-label"> Procedure Lookup</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -30,9 +30,9 @@
             </li>
           }
           @case ('Weld Planning') {
-            <li><a routerLink="/weld-planning" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideTable class="size-4"></svg><span class="nav-label"> Joint Search</span></a></li>
-            <li><a routerLink="/weld-planning/import" routerLinkActive="menu-active"><svg lucideUpload class="size-4"></svg><span class="nav-label"> Import Joints</span></a></li>
-            <li><a routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
+            <li><a title="Joint Search" routerLink="/weld-planning" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideTable class="size-4"></svg><span class="nav-label"> Joint Search</span></a></li>
+            <li><a title="Import Joints" routerLink="/weld-planning/import" routerLinkActive="menu-active"><svg lucideUpload class="size-4"></svg><span class="nav-label"> Import Joints</span></a></li>
+            <li><a title="Advanced Search" routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -45,10 +45,10 @@
             </li>
           }
           @case ('Weld Dispatch') {
-            <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Active WICCs</span></a></li>
-            <li><a class="menu-disabled"><svg lucidePlus class="size-4"></svg><span class="nav-label"> Create WICC</span></a></li>
-            <li><a class="menu-disabled"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Filler Metal Attendant</span></a></li>
-            <li><a class="menu-disabled"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History Lookup</span></a></li>
+            <li><a title="Active WICCs" class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Active WICCs</span></a></li>
+            <li><a title="Create WICC" class="menu-disabled"><svg lucidePlus class="size-4"></svg><span class="nav-label"> Create WICC</span></a></li>
+            <li><a title="Filler Metal Attendant" class="menu-disabled"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Filler Metal Attendant</span></a></li>
+            <li><a title="History Lookup" class="menu-disabled"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History Lookup</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -60,12 +60,12 @@
             </li>
           }
           @default {
-            <li><a routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> My Assignments</span></a></li>
-            <li><a routerLink="/pipe-search" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
-            <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural Welding</span></a></li>
-            <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
-            <li><a routerLink="/adaptive" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
-            <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
+            <li><a title="My Assignments" routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> My Assignments</span></a></li>
+            <li><a title="Pipe Welding" routerLink="/pipe-search" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
+            <li><a title="Structural Welding" class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural Welding</span></a></li>
+            <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
+            <li><a title="Advanced Search" routerLink="/adaptive" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
+            <li><a title="Makeup" routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>

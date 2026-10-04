@@ -46,10 +46,12 @@ const THEME_KEY = STORAGE.theme;
   selector: 'app-theme-picker',
   standalone: true,
   imports: [LucidePalette],
+  /* icon only when the top bar is crowded (see CompactNavDirective) */
+  styles: [`:host-context(.nav-compact) .nav-label { display: none; }`],
   template: `
     <div class="dropdown dropdown-bottom dropdown-end w-full">
-      <div tabindex="0" role="button" class="btn btn-ghost btn-sm w-full justify-start">
-        <svg lucidePalette class="size-4"></svg> Theme
+      <div tabindex="0" role="button" title="Theme" class="btn btn-ghost btn-sm w-full justify-start">
+        <svg lucidePalette class="size-4"></svg><span class="nav-label"> Theme</span>
       </div>
       <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow max-h-[60vh] overflow-y-auto overflow-x-hidden flex-nowrap">
         @for (t of themes; track t.name) {

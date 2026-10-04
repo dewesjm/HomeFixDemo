@@ -5,6 +5,7 @@ import { Component, signal, inject, ViewChild, ElementRef } from '@angular/core'
 import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { CompactNavDirective } from './shared/compact-nav.directive';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
@@ -34,7 +35,7 @@ function systemForUrl(url: string): string {
   standalone: true,
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent,
+    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective,
     LucideCircleArrowUp, LucideRefreshCw, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,

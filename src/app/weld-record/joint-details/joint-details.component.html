@@ -1,8 +1,8 @@
 <section class="panel">
   <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
-  <div class="flex flex-col sm:flex-row gap-6">
+  <div class="detail-columns">
     <!-- Column 1: Job Info -->
-    <div class="flex-1 min-w-0">
+    <div class="min-w-0">
       <div class="detail-col">
         <div class="detail-row"><span class="meta">XREFID</span><span>{{ job().xrefid || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Ship</span><span>{{ job().ship }}</span></div>
@@ -22,7 +22,7 @@
     </div>
 
     <!-- Column 2: Joining -->
-    <div class="flex-1 min-w-0">
+    <div class="min-w-0">
       <div class="font-semibold text-sm mb-1">Joining Item</div>
       <div class="detail-col">
         <div class="detail-row"><span class="meta">MCL 1</span><span>{{ job().mcl1 || '-' }}</span></div>
@@ -40,7 +40,7 @@
     </div>
 
     <!-- Column 3: NDT Data -->
-    <div class="flex-1 min-w-0">
+    <div class="min-w-0">
       <div class="font-semibold text-sm mb-1">NDT Data</div>
       <div class="detail-col">
         <div class="detail-row"><span class="meta">RT Root</span><span>{{ ndtLabel('rtRoot') }}</span></div>
@@ -63,9 +63,9 @@
     <!-- Additional Data -->
     <div class="mt-sm">
       <div class="font-semibold text-sm mb-1">Additional Data</div>
-      <div class="flex flex-col sm:flex-row gap-6">
+      <div class="detail-columns">
         <!-- Column 1: Order - Serial Number -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0">
           <div class="detail-col">
             <div class="detail-row"><span class="meta">Order</span><span>{{ job().order || '-' }}</span></div>
             <div class="detail-row"><span class="meta">Work Package</span><span>{{ job().workPackage || '-' }}</span></div>
@@ -75,7 +75,7 @@
           </div>
         </div>
         <!-- Column 2: Refit - DSS -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0">
           <div class="detail-col">
             <div class="detail-row"><span class="meta">Refit #</span><span>{{ job().refitNumber || '-' }}</span></div>
             <div class="detail-row"><span class="meta">Repair #</span><span>{{ job().repairNumber || '-' }}</span></div>
@@ -85,7 +85,7 @@
           </div>
         </div>
         <!-- Column 3: ER1-ER4 -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0">
           <div class="detail-col">
             <div class="detail-row"><span class="meta">ER1</span><span>{{ job().er1 || '-' }}</span></div>
             <div class="detail-row"><span class="meta">ER2</span><span>{{ job().er2 || '-' }}</span></div>
