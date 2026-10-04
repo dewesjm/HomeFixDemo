@@ -18,6 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Weld Record Advanced Search no longer offers Technician as a filter or column.',
+      'Table keyword search boxes are wider so the hint text fits.',
       'Weld Record Advanced Search: the View droplist and its ⋯ menu sit on the right, just left of the Filters button.',
       'The sync status is now one coloured dot in the top bar, beside Quick Links, on every page (it was on Pipe Welding, Advanced Search and the joint page). Hover over it, or tap it on a touch screen, to see Synced, how many are pending, or Offline.',
       'The theme button in the top bar is just the palette icon now (no "Theme" text).',
@@ -30,6 +31,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Records Review\'s Signoff History is now the History screen\'s table for that joint: the same entries, field names and values (blank fields shown as "(left blank)"), corrections, Fabrication at each sign-off, Deprogress and Correct, sort and column filters. The XREFID, Hull, Drawing, Joint and Order columns are left out.',
     ],
     fixed: [
+      'The sync dot\'s status now opens below the dot instead of above it, where the top of the window cut it off.',
       'External Loads: "Data as of" now shows when the selected load finished, instead of always the live load.',
       'History records the Type a Repair step was signed with (Repair) instead of "(left blank)". The sign-off form now shows the Type that is actually saved on the step.',
       'Records Review no longer shows technical field names (like consumableInsertType) in a sign-off\'s fields.',

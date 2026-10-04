@@ -5,6 +5,8 @@
 @plugin 'daisyui' {
   themes: all;
 }
+/* tooltip.directive.ts builds tooltip-<position> at runtime, so Tailwind can't find it in the source */
+@source inline("tooltip-{top,bottom,left,right}");
 
 :root {
   color-scheme: light dark;
@@ -130,7 +132,7 @@ html, body {
 .min-w-12 { min-width: 12rem; }
 .min-w-13 { min-width: 13rem; }
 .min-w-14 { min-width: 14rem; }
-.search-input { min-width: 280px; }
+.search-input { width: 25rem; max-width: 100%; }   /* fits the longest placeholder plus the clear button */
 .slider-value { font-size: 0.875rem; color: var(--app-text-muted); margin-top: 0.5rem; }
 
 /* Adaptive-search filter bar + adapt dialog */
