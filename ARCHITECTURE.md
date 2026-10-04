@@ -168,6 +168,16 @@ src/app/
                           create-time rules exist (see "Weld Record services" above for the pattern to follow —
                           one store for state/persistence, one service per domain concern on top of it).
 
+    external-loads/       Weld Planning > External Loads: read-only demo of the planned vendor file load (nothing runs a real
+                          load). Process map on top picks which stage table shows below (stage-table.component.ts is the shared
+                          sortable table; column lists in external-loads-columns.ts), plus raw-lines (column ruler, shaded
+                          layout fields), record-lookup (XREFID or hull/drawing/joint through every stage) and the error log.
+                          Data and rules in data/external-loads/: layout.ts (fixed-width layout spec), convert.ts (Converted),
+                          rules.ts (Processed: Vendor Joint, Excluded by status, Not converted), merge.ts (into the shared weld
+                          joint table; joints with weld record data are never removed; a line that won't convert keeps the
+                          joint's previous values), file-checks.ts, seed.ts (three small sample files), loads.ts (runs the
+                          samples through every stage), lookup.ts, table-rows.ts. Static, no localStorage.
+
   weld-engineering/       Weld Engineering — Procedure Lookup (added 2026-09-23). Own data in data/procedures.ts.
                           One Procedure row per GWP+WTN pair (id `<gwp>-<n>`, e.g. `W-101-2`); a GWP's base
                           metal 1/2 is fixed across its WTN rows, 1-3 GWPs (2-4 WTNs each) per Material Type 1 x

@@ -33,6 +33,7 @@
             <li><a title="Joint Search" routerLink="/weld-planning" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideTable class="size-4"></svg><span class="nav-label"> Joint Search</span></a></li>
             <li><a title="Import Joints" routerLink="/weld-planning/import" routerLinkActive="menu-active"><svg lucideUpload class="size-4"></svg><span class="nav-label"> Import Joints</span></a></li>
             <li><a title="Advanced Search" routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
+            <li><a title="External Loads" routerLink="/weld-planning/external-loads" routerLinkActive="menu-active"><svg lucideDatabase class="size-4"></svg><span class="nav-label"> External Loads</span></a></li>
             <li class="dropdown-wrapper">
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
@@ -120,6 +121,7 @@
               <li><a routerLink="/weld-planning" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Joint Search</a></li>
               <li><a routerLink="/weld-planning/import" routerLinkActive="menu-active"><svg lucideUpload class="size-4"></svg> Import Joints</a></li>
               <li><a routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg> Advanced Search</a></li>
+              <li><a routerLink="/weld-planning/external-loads" routerLinkActive="menu-active"><svg lucideDatabase class="size-4"></svg> External Loads</a></li>
               <li class="dropdown-divider"></li>
               <li class="has-submenu">
                 <details (toggle)="fitSubmenu($event)">

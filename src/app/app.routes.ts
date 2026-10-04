@@ -32,6 +32,7 @@ import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detai
 import { WeldPlanningAdminComponent } from './weld-planning/weld-planning-admin.component';
 import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mass-edit.component';
 import { WeldPlanningSearchComponent } from './weld-planning/weld-planning-search.component';
+import { ExternalLoadsComponent } from './weld-planning/external-loads/external-loads.component';
 import { ProcedureLookupComponent } from './weld-engineering/procedure-lookup/procedure-lookup.component';
 import { ProcedureDetailComponent } from './weld-engineering/procedure-detail/procedure-detail.component';
 import { ManageProceduresComponent } from './weld-engineering/admin/manage-procedures/manage-procedures.component';
@@ -75,6 +76,7 @@ export const routes: Routes = [
   { path: 'weld-planning/search', component: WeldPlanningSearchComponent, title: 'EWP - Advanced Search' },
   { path: 'weld-planning/admin', component: WeldPlanningAdminComponent, title: 'EWP - Joint Designs & NDT' },
   { path: 'weld-planning/import', component: WeldPlanningMassEditComponent, title: 'EWP - Import Joints' },
+  { path: 'weld-planning/external-loads', component: ExternalLoadsComponent, title: 'EWP - External Loads' },
   { path: 'weld-planning/:id', component: WeldPlanningDetailComponent, title: 'EWP - Joint Details' },
   { path: 'weld-planning/:id/edit', component: WeldPlanningFormComponent, title: 'EWP - Edit Joint' },
 
