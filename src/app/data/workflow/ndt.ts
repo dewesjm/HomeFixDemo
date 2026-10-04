@@ -62,7 +62,8 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
     label: 'VT/5X',
     options: [{ label: 'VT', value: 'vt' }, { label: '5X', value: '5x' }],
     fields: [
-      { key: 'weldColor', label: 'Weld Color', type: 'select', showIf: { key: 'inspectionType', equals: 'vt' },
+      /* also hidden unless the joint is titanium (fieldAppliesToJob in stage-display.ts) */
+      { key: 'weldColor', label: 'Weld Color', type: 'select', required: true, showIf: { key: 'inspectionType', equals: 'vt' },
         options: [
           { label: 'Shiny Silver', value: 'shiny-silver' }, { label: 'Straw', value: 'straw' },
           { label: 'Light Blue', value: 'light-blue' }, { label: 'Dark Blue', value: 'dark-blue' },

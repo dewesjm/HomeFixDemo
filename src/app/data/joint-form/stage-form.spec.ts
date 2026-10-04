@@ -42,6 +42,16 @@ describe('joint-form stage-form', () => {
     expect(keys(job()).some(k => k.startsWith('override'))).toBeFalse();
   });
 
+  it('Weld Color shows on VT, required, only when either Material Type is titanium', () => {
+    const keys = (j: Job, type: string) =>
+      visibleStageFields(stageOf(j, 'root-ndt-vt5x', { inspectionType: type }), ctxFor(j)).map(f => f.key);
+    expect(keys(job({ materialType1: '61-TI64', materialType2: '02-CS' }), 'vt')).toContain('weldColor');
+    expect(keys(job({ materialType1: '02-CS', materialType2: '60-TICP' }), 'vt')).toContain('weldColor');
+    expect(keys(job({ materialType1: '02-CS', materialType2: '12-SS304' }), 'vt')).not.toContain('weldColor');
+    expect(keys(job({ materialType1: '61-TI64', materialType2: '61-TI64' }), '5x')).not.toContain('weldColor');
+    expect(field(stageOf(job(), 'root-ndt-vt5x'), 'weldColor').required).toBeTrue();
+  });
+
   it('Fit under Weld Build-Up shows Tack\'s fields even before its own fields are swapped', () => {
     const j = job();
     const fit = stageOf(j, 'fit', { routingType: 'weld-buildup', fields: [] });

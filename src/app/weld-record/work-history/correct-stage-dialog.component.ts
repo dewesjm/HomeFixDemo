@@ -43,7 +43,8 @@ export class CorrectStageDialogComponent {
 
   fields = computed<StageField[]>(() => {
     const st = this.stage();
-    return st ? fieldsShown(st).filter(f => isUserEditable(st, f)) : [];
+    const t = this.target();
+    return st && t ? fieldsShown(st, t.job).filter(f => isUserEditable(st, f)) : [];
   });
   signoffFields = computed<SignoffField[]>(() => this.stage()?.signoffFields ?? []);
 

@@ -18,6 +18,7 @@
         <tr>
           <th appSortHeader [table]="table" field="code" label="Material Code"></th>
           <th appSortHeader [table]="table" field="nonFerrousOrAustenitic" label="Non-Ferrous or Austenitic"></th>
+          <th appSortHeader [table]="table" field="titanium" label="Titanium"></th>
           <th></th>
         </tr>
       </thead>
@@ -28,7 +29,12 @@
             <td>
               <input type="checkbox" class="toggle toggle-sm toggle-success"
                      [checked]="entry.nonFerrousOrAustenitic"
-                     (change)="toggleClassification(entry)" />
+                     (change)="toggleFlag(entry, 'nonFerrousOrAustenitic')" />
+            </td>
+            <td>
+              <input type="checkbox" class="toggle toggle-sm toggle-success"
+                     [checked]="entry.titanium"
+                     (change)="toggleFlag(entry, 'titanium')" />
             </td>
             <td>
               <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeEntry(entry)">
@@ -37,7 +43,7 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No material codes match your search.' : 'No material codes yet.' }}</td></tr>
+          <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No material codes match your search.' : 'No material codes yet.' }}</td></tr>
         }
       </tbody>
     </table>

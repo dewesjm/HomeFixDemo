@@ -2,7 +2,7 @@
 import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
-  allowableThicknessAmount, showIfMet,
+  allowableThicknessAmount, showIfMet, fieldAppliesToJob,
 } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -68,7 +68,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
       /* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
       if (f.key === 'allowableThicknessExceeded'
           && !ctx.stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
-      if (!showIfMet(stage, f)) return false;
+      if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
       /* MIC fields only visible when traceability is required */
       if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
         return !!job && (requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2));

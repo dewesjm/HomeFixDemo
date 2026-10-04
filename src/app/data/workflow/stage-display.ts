@@ -2,6 +2,8 @@
 import { SignoffField, SignoffInput, StageField, WorkflowStage } from './types';
 import { isUserEditable } from './weld-fields';
 import { hasDecision } from './stage-rules';
+import { Job } from '../jobs';
+import { isTitaniumJoint } from '../material-classification';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
   const v = raw ?? '';
@@ -33,9 +35,17 @@ export function showIfMet(stage: WorkflowStage, f: StageField): boolean {
   return (f.showIf.and ?? []).every(c => (c.key === 'result' ? stage.result : stage.inputs[c.key]) === c.equals);
 }
 
-/* Fields whose showIf is met; a simple stand-in for the job page's visible fields, used only for seeded data. */
-export function fieldsShown(stage: WorkflowStage): StageField[] {
-  return stage.fields.filter(f => showIfMet(stage, f));
+/* false for a field the joint's Joint Details rule out, whatever the step's own answers:
+   Weld Color is only on a titanium joint */
+export function fieldAppliesToJob(f: StageField, job: Job | undefined): boolean {
+  if (f.key === 'weldColor') return !!job && isTitaniumJoint(job);
+  return true;
+}
+
+/* Fields whose showIf is met and that apply to the joint; a simple stand-in for the joint page's
+   visible fields (visibleStageFields), used by seeded History, Correct and its History entry. */
+export function fieldsShown(stage: WorkflowStage, job: Job): StageField[] {
+  return stage.fields.filter(f => showIfMet(stage, f) && fieldAppliesToJob(f, job));
 }
 
 /* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:

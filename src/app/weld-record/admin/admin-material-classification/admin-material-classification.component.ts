@@ -8,7 +8,7 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import {
-  materialClassification, setMaterialClassification, addMaterialCode, removeMaterialCode, MaterialClassificationEntry
+  materialClassification, setMaterialClassification, addMaterialCode, removeMaterialCode, MaterialClassificationEntry, MaterialFlag
 } from '../../../data/material-classification';
 
 @Component({
@@ -31,11 +31,12 @@ export class AdminMaterialClassificationComponent {
     downloadCsv('material-classification', [
       { header: 'Material Code', value: (r: MaterialClassificationEntry) => r.code },
       { header: 'Non-Ferrous or Austenitic', value: (r: MaterialClassificationEntry) => (r.nonFerrousOrAustenitic ? 'Yes' : 'No') },
+      { header: 'Titanium', value: (r: MaterialClassificationEntry) => (r.titanium ? 'Yes' : 'No') },
     ], this.table.sorted());
   }
 
-  toggleClassification(entry: MaterialClassificationEntry) {
-    entry.nonFerrousOrAustenitic = !entry.nonFerrousOrAustenitic;
+  toggleFlag(entry: MaterialClassificationEntry, flag: MaterialFlag) {
+    entry[flag] = !entry[flag];
     this.entries.update(e => [...e]);
   }
 
@@ -51,7 +52,7 @@ export class AdminMaterialClassificationComponent {
       this.messages.add({ severity: 'warn', summary: 'Material code already exists', life: 3000 });
       return;
     }
-    this.entries.update(e => [...e, { code: val, nonFerrousOrAustenitic: false }]);
+    this.entries.update(e => [...e, { code: val, nonFerrousOrAustenitic: false, titanium: false }]);
     addMaterialCode(val);
     this.newCode.set('');
     this.messages.add({ severity: 'success', summary: 'Material code added', detail: val, life: 3000 });

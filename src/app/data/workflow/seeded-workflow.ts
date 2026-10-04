@@ -109,7 +109,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       from: '',
       to: hasDecision(s) ? result.toUpperCase() : '',
       routing: s.label,
-      inputs: snapshotInputs(signedView, fieldsShown(signedView), s.signoffFields),
+      inputs: snapshotInputs(signedView, fieldsShown(signedView, job), s.signoffFields),
       stageId: s.id,
     });
     return {

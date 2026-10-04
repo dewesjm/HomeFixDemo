@@ -312,7 +312,7 @@ export class SignoffService {
       };
       const who = updated.signoffInputs['inspectorName'] || wf.technician;
       const stages = wf.stages.map(s => (s.id === stageId ? updated : s));
-      const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated).filter(f => isUserEditable(updated, f)), updated.signoffFields);
+      const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated, job).filter(f => isUserEditable(updated, f)), updated.signoffFields);
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
          convention -- Work History reads this to show exactly what changed, not just the reason */
       const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? updated.signoffFields.find(f => f.key === key);

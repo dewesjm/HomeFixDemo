@@ -11,7 +11,7 @@ export const STORAGE = {
   shops: 'welding:shops:v2',
   jointDesigns: 'welding:joint-designs:v3',
   mclTraceability: 'welding:mcl-traceability:v2',
-  materialClassification: 'welding:material-classification:v3',
+  materialClassification: 'welding:material-classification:v4',
   banner: 'welding:banner',
   theme: 'welding:theme',
   searchState: 'welding:search-state:v1',
