@@ -33,6 +33,7 @@ type Row = WeldJoint;
           <h2 class="section-title">Joint Search</h2>
           <app-banner-pill [banner]="banner()" />
         </div>
+        <app-banner-pill [banner]="banner()" placement="below" />
 
         <div class="facet-row">
           <button class="btn btn-sm btn-outline" (click)="clearFilters()">

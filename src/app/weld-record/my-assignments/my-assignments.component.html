@@ -2,6 +2,7 @@
   <h2 class="section-title">My Assignments</h2>
   <app-banner-pill [banner]="banner()" />
 </div>
+<app-banner-pill [banner]="banner()" placement="below" />
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search assignments…" (exportCsv)="exportCsv()">
   <div class="flex items-center gap-1.5" title="Demo only: shows different roles' assignments coming from different source systems">

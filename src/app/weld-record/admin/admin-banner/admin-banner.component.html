@@ -46,7 +46,8 @@
   @if (message()) {
     <div>
       <div class="font-semibold text-sm mb-1">Preview</div>
-      <app-banner-pill [banner]="{ message: message(), type: type() }" />
+      <app-banner-pill [banner]="{ message: message(), type: type() }" placement="auto" />
+      <p class="dialog-hint mt-1">Messages over {{ pillMax }} characters show as a full-width strip under the page title.</p>
     </div>
   }
 

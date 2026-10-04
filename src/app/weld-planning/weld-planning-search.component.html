@@ -14,12 +14,6 @@
       <option [value]="v.name">{{ v.name }}</option>
     }
   </select>
-  @if (selectedVariant()) {
-    <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this view"
-            (click)="deleteVariant(selectedVariant())">
-      <svg lucideTrash2 class="size-4"></svg>
-    </button>
-  }
   @if (savingVariant()) {
     <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="View name"
            [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
@@ -30,17 +24,15 @@
     </button>
     <button type="button" class="btn btn-sm btn-ghost" (click)="savingVariant.set(false)">Cancel</button>
   } @else {
-    <button type="button" class="btn btn-sm btn-outline" (click)="startSaveVariant()">
-      <svg lucideSave class="size-4"></svg> Save view…
-    </button>
+    <app-menu-button label="View options">
+      <li><button type="button" (click)="startSaveVariant()"><svg lucideSave class="size-4"></svg> Save view…</button></li>
+      @if (selectedVariant()) {
+        <li><button type="button" class="text-error" (click)="deleteVariant(selectedVariant())">
+          <svg lucideTrash2 class="size-4"></svg> Delete view
+        </button></li>
+      }
+    </app-menu-button>
   }
-  <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
-    <svg lucideSlidersHorizontal class="size-4"></svg> Customize filters
-  </button>
-  <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
-    <svg lucideListFilter class="size-4"></svg> Reset
-  </button>
 </div>
 
 <!-- Dynamic filter bar -->
@@ -76,9 +68,13 @@
       }
     </div>
   }
+  <button type="button" class="btn btn-sm btn-ghost add-field-tile" appTooltip="Add, remove or reorder the filter fields"
+          (click)="openAdapt()">
+    <svg lucidePlus class="size-4"></svg> Add field
+  </button>
 </div>
 
-<!-- Results: count, active filter chips, column/export actions -->
+<!-- Results: count, active filter chips, Clear all, then a menu with Columns and Export -->
 <div class="row mb-sm">
   <span class="fw-bold">{{ filtered().length }} of {{ totalJoints }} joints match</span>
   @for (c of activeChips(); track c.label) {
@@ -89,13 +85,16 @@
       </button>
     </span>
   }
+  @if (activeChips().length) {
+    <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">
+      <svg lucideListFilter class="size-4"></svg> Clear all
+    </button>
+  }
   <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-outline" (click)="openColPicker()">
-    <svg lucideColumns3 class="size-4"></svg> Columns
-  </button>
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel
-  </button>
+  <app-menu-button [alignEnd]="true">
+    <li><button type="button" (click)="openColPicker()"><svg lucideColumns3 class="size-4"></svg> Columns…</button></li>
+    <li><button type="button" (click)="exportCsv()"><svg lucideFileSpreadsheet class="size-4"></svg> Export to Excel</button></li>
+  </app-menu-button>
 </div>
 
 <div class="overflow-x-auto">

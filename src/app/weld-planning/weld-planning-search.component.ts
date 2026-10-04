@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter,
+  LucideSave, LucideX, LucideTrash2, LucidePlus, LucideListFilter,
   LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
 } from '@lucide/angular';
 
@@ -16,6 +16,7 @@ import { MultiselectDropdownComponent } from '../shared/multiselect-dropdown.com
 import { DateRangeComponent } from '../shared/date-range.component';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../shared/ordered-pick-list.component';
+import { MenuButtonComponent } from '../shared/menu-button.component';
 import { downloadCsv } from '../data/export-csv';
 
 import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from './weld-planning.data';
@@ -81,11 +82,11 @@ function saveColumnKeys(keys: string[]) {
 @Component({
   selector: 'app-weld-planning-search',
   standalone: true,
-  imports: [AppDatePipe, OrderedPickListComponent, 
+  imports: [AppDatePipe, OrderedPickListComponent, MenuButtonComponent,
     CommonModule, FormsModule, RouterLink,
     TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
-    LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter,
+    LucideSave, LucideX, LucideTrash2, LucidePlus, LucideListFilter,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
   ],
   templateUrl: './weld-planning-search.component.html'

@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
+  LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch, LucidePlus,
   LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
 } from '@lucide/angular';
 
@@ -18,6 +18,7 @@ import { DateRangeComponent } from '../../shared/date-range.component';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../../shared/ordered-pick-list.component';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
+import { MenuButtonComponent } from '../../shared/menu-button.component';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { downloadCsv } from '../../data/export-csv';
 import { bannerFor } from '../../data/banner';
@@ -43,11 +44,11 @@ const PAGE_SIZES = [10, 25, 50, 100];
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [OrderedPickListComponent, BannerPillComponent, SyncStatusComponent,
+  imports: [OrderedPickListComponent, BannerPillComponent, SyncStatusComponent, MenuButtonComponent,
     CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,
-    LucideSave, LucideX, LucideTrash2, LucideSlidersHorizontal, LucideListFilter, LucideSearch, LucidePlus,
+    LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch, LucidePlus,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
   ],
   templateUrl: './adaptive-search.component.html'
@@ -235,11 +236,11 @@ export class AdaptiveSearchComponent {
     this.setDefault(this.isDefault(name) ? STANDARD_VARIANT : name);
   }
 
-  defaultTip = computed(() => {
+  /* the View menu's default item; nothing to offer when Standard is already the default */
+  defaultMenuLabel = computed(() => {
     const name = this.selectedVariant();
-    if (!this.isDefault(name)) return 'Make this your default: the page opens on it (only for you)';
-    return name === STANDARD_VARIANT ? 'Your default: the page opens on this view'
-      : 'Your default: the page opens on this view. Click to go back to Standard.';
+    if (!this.isDefault(name)) return 'Make this my default';
+    return name === STANDARD_VARIANT ? '' : 'Stop using as my default';
   });
 
   private setDefault(name: string) {
@@ -391,6 +392,13 @@ export class AdaptiveSearchComponent {
     const iso = (d: Date | null) => d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '';
     this.updateCondition(f, i, { value: iso(from), to: iso(to) });
   }
+
+  /* anything narrowing the rows: filter bar, heading filters, keyword search or role */
+  isFiltering = computed(() =>
+    this.activeChips().length > 0
+    || Object.values(this.table.columnFilters()).some(v => Array.isArray(v) ? v.length : !!v)
+    || !!this.table.globalFilter()
+    || this.selectedRole() !== 'View');
 
   clear() {
     this.values.set({});

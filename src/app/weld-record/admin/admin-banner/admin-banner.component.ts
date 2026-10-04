@@ -1,4 +1,4 @@
-import { BannerData, BannerPage, loadBanner, saveBanner, clearBanner } from '../../../data/banner';
+import { BannerData, BannerPage, BANNER_PILL_MAX, loadBanner, saveBanner, clearBanner } from '../../../data/banner';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +13,7 @@ import { BannerPillComponent } from '../../../shared/banner-pill.component';
   templateUrl: './admin-banner.component.html'
 })
 export class AdminBannerComponent {
+  readonly pillMax = BANNER_PILL_MAX;
   message = signal(loadBanner().message);
   type = signal<BannerData['type']>(loadBanner().type);
   enabled = signal(loadBanner().enabled);

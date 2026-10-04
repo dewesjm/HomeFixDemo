@@ -12,16 +12,6 @@
       <option [value]="v.name">{{ v.name }}{{ isDefault(v.name) ? ' (default)' : '' }}</option>
     }
   </select>
-  <button type="button" class="btn btn-sm btn-ghost" [class.text-warning]="isDefault(selectedVariant())"
-          [appTooltip]="defaultTip()" [attr.aria-label]="defaultTip()" (click)="toggleDefault()">
-    <svg lucideStar class="size-4" [class.fill-current]="isDefault(selectedVariant())"></svg>
-  </button>
-  @if (selectedVariant() !== STANDARD) {
-    <button type="button" class="btn btn-sm btn-ghost text-error" appTooltip="Delete this view"
-            (click)="deleteVariant(selectedVariant())">
-      <svg lucideTrash2 class="size-4"></svg>
-    </button>
-  }
   @if (savingVariant()) {
     <input type="text" class="input input-sm input-bordered" style="min-width: 180px" placeholder="View name"
            [ngModel]="variantName()" (ngModelChange)="variantName.set($event)"
@@ -32,32 +22,31 @@
     </button>
     <button type="button" class="btn btn-sm btn-ghost" (click)="savingVariant.set(false)">Cancel</button>
   } @else {
-    <button type="button" class="btn btn-sm btn-outline" appTooltip="Saves the filters, columns, sort and role"
-            (click)="startSaveVariant()">
-      <svg lucideSave class="size-4"></svg> Save view…
-    </button>
+    <app-menu-button label="View options">
+      <li><button type="button" (click)="startSaveVariant()"><svg lucideSave class="size-4"></svg> Save view…</button></li>
+      @if (defaultMenuLabel(); as label) {
+        <li><button type="button" (click)="toggleDefault()">
+          <svg lucideStar class="size-4" [class.fill-current]="isDefault(selectedVariant())"></svg> {{ label }}
+        </button></li>
+      }
+      @if (selectedVariant() !== STANDARD) {
+        <li><button type="button" class="text-error" (click)="deleteVariant(selectedVariant())">
+          <svg lucideTrash2 class="size-4"></svg> Delete view
+        </button></li>
+      }
+    </app-menu-button>
   }
   <span class="spacer"></span>
-  @if (filterFields().length) {
-    <button type="button" class="btn btn-sm btn-outline" (click)="filtersHidden.set(!filtersHidden())">
-      @if (filtersHidden()) {
-        <svg lucideChevronDown class="size-4"></svg> Show filters ({{ filterFields().length }})
-      } @else {
-        <svg lucideChevronUp class="size-4"></svg> Hide filters
-      }
-    </button>
-  }
-  <button type="button" class="btn btn-sm btn-outline" (click)="openAdapt()">
-    <svg lucideSlidersHorizontal class="size-4"></svg> Customize filters
+  <button type="button" class="btn btn-sm btn-outline" (click)="filtersHidden.set(!filtersHidden())">
+    @if (filtersHidden()) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronUp class="size-4"></svg> }
+    Filters{{ filterFields().length ? ' (' + filterFields().length + ')' : '' }}
   </button>
-  <button type="button" class="btn btn-sm btn-outline" (click)="clear()">
-    <svg lucideListFilter class="size-4"></svg> Clear filters
-  </button>
-  <app-sync-status />
 </div>
 
+<app-banner-pill [banner]="banner()" placement="below" />
+
 <!-- Filter bar: each field stacks its own conditions -->
-@if (filterFields().length && !filtersHidden()) {
+@if (!filtersHidden()) {
   <div class="facet-row facet-row-compact cond-bar">
     @for (f of filterFields(); track f.key) {
       <div class="field-col cond-col">
@@ -117,6 +106,10 @@
         }
       </div>
     }
+    <button type="button" class="btn btn-sm btn-ghost add-field-tile" appTooltip="Add, remove or reorder the filter fields"
+            (click)="openAdapt()">
+      <svg lucidePlus class="size-4"></svg> Add field
+    </button>
   </div>
 }
 
@@ -134,6 +127,7 @@
     </button>
   }
   <span class="fw-bold">{{ table.total() }} of {{ totalJobs }} match</span>
+  <app-sync-status />
   @for (c of activeChips(); track c.key) {
     <span class="badge badge-outline gap-1 h-auto py-0.5">
       {{ c.label }}
@@ -141,6 +135,11 @@
         <svg lucideX class="size-3"></svg>
       </button>
     </span>
+  }
+  @if (isFiltering()) {
+    <button type="button" class="btn btn-sm btn-ghost" (click)="clear()">
+      <svg lucideListFilter class="size-4"></svg> Clear all
+    </button>
   }
   <span class="spacer"></span>
   <label class="input input-sm input-bordered flex items-center gap-2 search-input">
@@ -153,12 +152,10 @@
       </button>
     }
   </label>
-  <button type="button" class="btn btn-sm btn-outline" (click)="openColPicker()">
-    <svg lucideColumns3 class="size-4"></svg> Columns
-  </button>
-  <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv()">
-    <svg lucideFileSpreadsheet class="size-4"></svg> Export
-  </button>
+  <app-menu-button [alignEnd]="true">
+    <li><button type="button" (click)="openColPicker()"><svg lucideColumns3 class="size-4"></svg> Columns…</button></li>
+    <li><button type="button" (click)="exportCsv()"><svg lucideFileSpreadsheet class="size-4"></svg> Export</button></li>
+  </app-menu-button>
 </div>
 
 <div class="flex-1 min-h-0 min-w-0">
@@ -172,7 +169,7 @@
       @for (col of visibleColumns(); track col.key) {
         <!-- drag a heading (not its filter box) onto another to move the column -->
         <th appSortHeader [class]="(col.width || '') + ' col-drag'" [table]="table" [field]="col.key" [label]="col.label"
-            [filter]="headerFilter(col)" [options]="optionsFor(col.key)"
+            [filter]="headerFilter(col)" [options]="optionsFor(col.key)" [clickToFilter]="true"
             [attr.draggable]="armedCol() === col.key" [class.dragging]="dragCol() === col.key"
             [class.drop-before]="dropAt()?.key === col.key && dropAt()?.before" [class.drop-after]="dropAt()?.key === col.key && !dropAt()?.before"
             (mousedown)="armColDrag($event, col.key)" (mouseup)="armedCol.set(null)"

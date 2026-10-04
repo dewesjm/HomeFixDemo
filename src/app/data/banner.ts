@@ -36,3 +36,7 @@ export function bannerFor(page: BannerPage): BannerData | null {
   const b = loadBanner();
   return b.enabled && b.message && (b.pages.includes('all') || b.pages.includes(page)) ? b : null;
 }
+
+/* longer messages than this show as a full-width strip under the page title instead of a pill beside it */
+export const BANNER_PILL_MAX = 60;
+export function isLongBanner(message: string): boolean { return message.trim().length > BANNER_PILL_MAX; }
