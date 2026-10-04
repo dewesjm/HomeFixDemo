@@ -37,7 +37,7 @@ const VIEW_INTROS: Record<LoadView, string> = {
           @for (l of kept; track l.run.id) { <option [value]="l.run.id">{{ l.run.id }} ({{ l.run.status }})</option> }
         </select>
       </label>
-      <span>Data as of <span class="font-semibold">{{ data.live.run.finishedAt | appDateTime }}</span></span>
+      <span>Data as of <span class="font-semibold">{{ load().run.finishedAt | appDateTime }}</span></span>
     </div>
     <p class="section-sub">Sample data showing how the vendor file load is planned to work. Nothing on this page runs a real load.</p>
 
