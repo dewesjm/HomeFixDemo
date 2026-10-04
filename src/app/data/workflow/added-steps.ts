@@ -28,7 +28,8 @@ export const REPAIR_STAGE: StageTemplate = {
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
-  ], signoffFields: [], decisionLabel: 'Inspection Results',
+  ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+  decisionLabel: 'Inspection Results',
   routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
 

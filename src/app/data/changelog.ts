@@ -11,6 +11,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-04',
+    added: [
+      'The Repair step has an optional Comments box on its sign-off. The comment is saved with the sign-off and shows in History.',
+    ],
     changed: [
       'Weld Color on VT now shows only when either Material Type is titanium, and is required there. Admin > Material Classification has a Titanium column that marks which material codes count.',
       'Material Type 2 picks from the same base material list as Material Type 1 (it was showing filler metal codes). Weld Engineering\'s Base Metal 2 Type uses the same list. Filler metal stays its own list on the welding steps.',
