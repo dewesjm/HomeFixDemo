@@ -4,7 +4,8 @@
 <div class="page-header search-head">
   <h2 class="section-title">Advanced Search</h2>
   <app-banner-pill [banner]="banner()" />
-  <span class="fw-bold ml-4">View</span>
+  <span class="spacer"></span>
+  <span class="fw-bold">View</span>
   <select class="select select-sm select-bordered w-auto"
           [ngModel]="selectedVariant()" (ngModelChange)="pickVariant($event)">
     <option [value]="STANDARD">{{ STANDARD }}{{ isDefault(STANDARD) ? ' (default)' : '' }}</option>
@@ -36,8 +37,7 @@
       }
     </app-menu-button>
   }
-  <span class="spacer"></span>
-  <button type="button" class="btn btn-sm btn-outline" (click)="filtersHidden.set(!filtersHidden())">
+  <button type="button" class="btn btn-sm btn-outline ml-4" (click)="filtersHidden.set(!filtersHidden())">
     @if (filtersHidden()) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronUp class="size-4"></svg> }
     Filters{{ filterFields().length ? ' (' + filterFields().length + ')' : '' }}
   </button>
