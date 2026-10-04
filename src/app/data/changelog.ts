@@ -17,6 +17,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The Repair step has an optional Comments box on its sign-off. The comment is saved with the sign-off and shows in History.',
     ],
     changed: [
+      'Weld Record Advanced Search no longer offers Technician as a filter or column.',
       'Weld Record Advanced Search: the View droplist and its ⋯ menu sit on the right, just left of the Filters button.',
       'The sync status is now one coloured dot in the top bar, beside Quick Links, on every page (it was on Pipe Welding, Advanced Search and the joint page). Hover over it, or tap it on a touch screen, to see Synced, how many are pending, or Offline.',
       'The theme button in the top bar is just the palette icon now (no "Theme" text).',
