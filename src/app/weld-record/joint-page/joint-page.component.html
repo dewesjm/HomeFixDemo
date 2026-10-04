@@ -8,8 +8,6 @@
       Hull {{ j.hull }} · {{ j.drawing || '-' }} · {{ j.joint || '-' }} ·
       <strong>Routing:</strong> {{ currentRouting() }}
     </span>
-    <span class="spacer"></span>
-    <app-sync-status />
   </div>
 
   <app-routing-bar [stages]="routingModel()" [selectedRouting]="selectedRouting()" />

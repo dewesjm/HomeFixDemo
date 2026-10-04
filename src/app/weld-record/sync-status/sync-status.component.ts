@@ -1,4 +1,4 @@
-/* coloured dot for synced / pending / offline; the status text shows on hover */
+/* top-bar coloured dot for synced / pending / offline; the status text shows on hover */
 import { Component, computed, inject } from '@angular/core';
 import { SyncService } from '../services/sync.service';
 import { TooltipDirective } from '../../shared/tooltip.directive';
@@ -8,7 +8,7 @@ import { TooltipDirective } from '../../shared/tooltip.directive';
   standalone: true,
   imports: [TooltipDirective],
   template: `
-    <span class="sync-status" [appTooltip]="label()" role="status" [attr.aria-label]="label()">
+    <span class="sync-status" [appTooltip]="label()" tooltipPosition="bottom" role="status" [attr.aria-label]="label()">
       <span class="sync-dot" [class]="'sync-dot sync-dot--' + state()"></span>
     </span>
   `,

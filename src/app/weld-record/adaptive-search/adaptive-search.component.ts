@@ -20,7 +20,6 @@ import { OrderedPickListComponent } from '../../shared/ordered-pick-list.compone
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 import { MenuButtonComponent } from '../../shared/menu-button.component';
 import { ConfirmService } from '../../shared/confirm.service';
-import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { downloadCsv } from '../../data/export-csv';
 import { bannerFor } from '../../data/banner';
 
@@ -45,7 +44,7 @@ const PAGE_SIZES = [10, 25, 50, 100];
 @Component({
   selector: 'app-adaptive-search',
   standalone: true,
-  imports: [OrderedPickListComponent, BannerPillComponent, SyncStatusComponent, MenuButtonComponent,
+  imports: [OrderedPickListComponent, BannerPillComponent, MenuButtonComponent,
     CommonModule, FormsModule,
     TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
     TooltipDirective,

@@ -9,6 +9,7 @@ import { CompactNavDirective } from './shared/compact-nav.directive';
 import { ThemePickerComponent } from './theme-picker/theme-picker.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
+import { SyncStatusComponent } from './weld-record/sync-status/sync-status.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
@@ -35,7 +36,7 @@ function systemForUrl(url: string): string {
   standalone: true,
   imports: [
     RouterOutlet, RouterLink, RouterLinkActive,
-    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective,
+    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective, SyncStatusComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,

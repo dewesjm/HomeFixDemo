@@ -1,5 +1,4 @@
-/* Pagination bar (rows-per-page + prev/next + range report) for TableState-backed tables.
-   Projected content sits after the range report, e.g. a sync status. */
+/* Pagination bar (rows-per-page + prev/next + range report) for TableState-backed tables. */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TableState } from './table-state';
@@ -13,7 +12,6 @@ import { TableState } from './table-state';
       <span class="opacity-70 whitespace-nowrap">
         Showing {{ state().rangeStart() }} to {{ state().rangeEnd() }} of {{ state().total() }}
       </span>
-      <ng-content />
       <div class="flex items-center gap-2 ml-auto">
         <select class="select select-sm select-bordered"
                 [ngModel]="state().pageSize()"

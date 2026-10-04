@@ -9,7 +9,6 @@ import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, L
 
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { TablePagerComponent } from '../../shared/table-pager.component';
-import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { TableState, inArray } from '../../shared/table-state';
 import { downloadCsv } from '../../data/export-csv';
 
@@ -30,7 +29,7 @@ type Row = Job & { currentRouting: string };
   standalone: true,
   imports: [BannerPillComponent, 
     CommonModule, FormsModule,
-    SortHeaderComponent, TablePagerComponent, SyncStatusComponent,
+    SortHeaderComponent, TablePagerComponent,
     LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideX
   ],
   templateUrl: './pipe-search.component.html'
