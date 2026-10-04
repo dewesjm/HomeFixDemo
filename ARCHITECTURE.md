@@ -127,7 +127,7 @@ src/app/
                            signoff-context.ts (SignoffContext, what the joint page hands all three)
     deviation-dialog/      Deviation acceptance screen Signoff opens when the stage has deviations
     attachments/           References list (code still named attachments)
-    sync-status/           Online/offline indicator (stubbed)
+    sync-status/           Online/offline dot, status text on hover (stubbed)
     services/             Split 2026-09-22 from one god-service (routing.service.ts had grown to own state,
                           persistence, fabrication data, attachments, sign-off, and a dead Work Validation
                           feature) into a shared store + one service per concern. See "Weld Record services"
