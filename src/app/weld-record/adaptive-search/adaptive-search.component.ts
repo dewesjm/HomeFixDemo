@@ -19,6 +19,7 @@ import { TooltipDirective } from '../../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../../shared/ordered-pick-list.component';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 import { MenuButtonComponent } from '../../shared/menu-button.component';
+import { ConfirmService } from '../../shared/confirm.service';
 import { SyncStatusComponent } from '../sync-status/sync-status.component';
 import { downloadCsv } from '../../data/export-csv';
 import { bannerFor } from '../../data/banner';
@@ -80,7 +81,8 @@ export class AdaptiveSearchComponent {
   /* filter bar folded away (chips still show what's active); remembered, not part of a variant */
   filtersHidden = signal(false);
 
-  constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
+  constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService,
+              private confirm: ConfirmService) {
     /* this tab's state (refresh, back from a joint), else a new visit: the default variant */
     const saved = loadTabSearchState();
     if (saved) this.applyLayout(saved);
@@ -250,11 +252,18 @@ export class AdaptiveSearchComponent {
   }
 
   deleteVariant(name: string) {
-    const merged = this.variants().filter(v => v.name !== name);
-    this.variants.set(merged);
-    saveVariants(merged);
-    if (this.defaultVariant() === name) this.setDefault(STANDARD_VARIANT);
-    if (this.selectedVariant() === name) this.selectedVariant.set(STANDARD_VARIANT);
+    this.confirm.confirm({
+      header: 'Delete View',
+      message: `Delete the view "${name}"?`,
+      acceptLabel: 'Delete',
+      accept: () => {
+        const merged = this.variants().filter(v => v.name !== name);
+        this.variants.set(merged);
+        saveVariants(merged);
+        if (this.defaultVariant() === name) this.setDefault(STANDARD_VARIANT);
+        if (this.selectedVariant() === name) this.selectedVariant.set(STANDARD_VARIANT);
+      },
+    });
   }
 
   // --- Adapt Filters dialog ---

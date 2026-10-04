@@ -17,6 +17,7 @@ import { DateRangeComponent } from '../shared/date-range.component';
 import { TooltipDirective } from '../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../shared/ordered-pick-list.component';
 import { MenuButtonComponent } from '../shared/menu-button.component';
+import { ConfirmService } from '../shared/confirm.service';
 import { downloadCsv } from '../data/export-csv';
 
 import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from './weld-planning.data';
@@ -94,7 +95,7 @@ function saveColumnKeys(keys: string[]) {
 export class WeldPlanningSearchComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private confirm: ConfirmService) {
     effect(() => this.table.setRows(this.filtered()));
     effect(() => {
       const open = this.showAdapt();
@@ -215,10 +216,17 @@ export class WeldPlanningSearchComponent {
   }
 
   deleteVariant(name: string) {
-    const merged = this.variants().filter(v => v.name !== name);
-    this.variants.set(merged);
-    saveVariants(merged);
-    if (this.selectedVariant() === name) this.selectedVariant.set('');
+    this.confirm.confirm({
+      header: 'Delete View',
+      message: `Delete the view "${name}"?`,
+      acceptLabel: 'Delete',
+      accept: () => {
+        const merged = this.variants().filter(v => v.name !== name);
+        this.variants.set(merged);
+        saveVariants(merged);
+        if (this.selectedVariant() === name) this.selectedVariant.set('');
+      },
+    });
   }
 
   // --- Column picker (results grid) ---

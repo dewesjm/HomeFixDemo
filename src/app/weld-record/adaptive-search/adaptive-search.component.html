@@ -127,7 +127,6 @@
     </button>
   }
   <span class="fw-bold">{{ table.total() }} of {{ totalJobs }} match</span>
-  <app-sync-status />
   @for (c of activeChips(); track c.key) {
     <span class="badge badge-outline gap-1 h-auto py-0.5">
       {{ c.label }}
@@ -206,7 +205,9 @@
 </table>
 </div>
 
-<app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]" />
+<app-table-pager [state]="table" [pageSizeOptions]="[10, 25, 50, 100]">
+  <app-sync-status />
+</app-table-pager>
 </div>
 
 <!-- Customize Filters dialog -->
