@@ -19,6 +19,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     fixed: [
       'Records Review no longer shows technical field names (like consumableInsertType) in a sign-off\'s fields.',
+      'The top bar no longer runs under the Quick Links and Theme buttons in a narrow window: when the full labels don\'t fit, every top bar item (Theme too) shows just its icon, with the name on hover.',
+      'Joint details no longer overlap at half-screen widths: the columns drop from 3 to 2 to 1 as the panel narrows.',
+      'On a phone, the History and Details buttons in the Pipe Welding, Advanced Search and Weld Planning Advanced Search tables show just their icons.',
     ],
   },
   {
