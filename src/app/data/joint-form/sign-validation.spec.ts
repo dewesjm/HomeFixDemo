@@ -1,6 +1,6 @@
 import { JOBS, Job } from '../jobs';
 import { buildStages, WorkflowStage } from '../workflow';
-import { inspectionTypeRequired, signProblems, stageFieldErrors, errorsAfterBlur, SignContext } from './sign-validation';
+import { inspectionTypeRequired, signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
@@ -41,6 +41,9 @@ describe('joint-form sign-validation', () => {
     const stage = { ...rt, inspectionType: 'rt', inputs: { degreeRt: '60' } };
     expect(signProblems(stage, ctxFor(j, stage))).toContain('Degree of RT Performed must be 360');
     expect(stageFieldErrors(stage, ctxFor(j, stage))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be 360');
+    expect(errorsAfterSelect({}, stage, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be 360');
+    const matched = { ...stage, inputs: { degreeRt: '360' } };
+    expect(errorsAfterSelect({ 'root-ndt-utrt:degreeRt': 'x' }, matched, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBeUndefined();
   });
 
   it('field errors: required blanks, Actual Min above Max, and synthetic keys', () => {

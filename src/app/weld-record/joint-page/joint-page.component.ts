@@ -40,7 +40,7 @@ import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
 import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
-import { SignContext, errorsAfterBlur, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
+import { SignContext, errorsAfterBlur, errorsAfterSelect, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
 import { routePreviewLabel } from '../../data/joint-form/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits } from '../../data/joint-form/unsaved-edits';
@@ -362,7 +362,8 @@ export class JointPageComponent implements OnDestroy {
       /* the WTN filled in Weld Process */
       if (field.key === 'wtn' && matchedProc) this.clearFieldError(stage.id, 'weldProcess');
     }
-    this.clearFieldError(stage.id, field.key);
+    const live = this.wf?.().stages.find(s => s.id === stage.id);
+    this.fieldErrors.set(errorsAfterSelect(this.fieldErrors(), live, this.job, stage.id, field.key));
   }
 
   toggleAffectedItem(stage: WorkflowStage, item: string, event: Event) {

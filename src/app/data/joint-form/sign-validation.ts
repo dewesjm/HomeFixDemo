@@ -101,6 +101,17 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   return errors;
 }
 
+/* `errors` after a select field changes: its error is cleared, except a Degree of RT Performed that
+   doesn't match the job's required degree, which is flagged right away. `stage` is the live stage. */
+export function errorsAfterSelect(errors: Record<string, string>, stage: WorkflowStage | undefined, job: Job | undefined, stageId: string, fieldKey: string): Record<string, string> {
+  const key = `${stageId}:${fieldKey}`;
+  const next = { ...errors };
+  delete next[key];
+  const rt = fieldKey === 'degreeRt' && stage?.inputs['degreeRt'] ? rtDegreeError(job, stage) : '';
+  if (rt) next[key] = rt;
+  return next;
+}
+
 /* `errors` after one field loses focus: its required / typed-requirement check is redone, and an
    Actual Min above Max is flagged on the Max field (rechecked when either one changes). `stage` is
    the live stage, not a possibly stale copy from the click handler. */

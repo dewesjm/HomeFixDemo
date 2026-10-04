@@ -25,6 +25,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Attachments is now called References. It shows only on RT/UT (Root, Layer and Final NDT) and Repair, no longer on VT/5X or Excavation NDT. The Correct dialog in Work History still shows References on every step.',
       'A locked Type droplist (Layer NDT, Excavation NDT) no longer has a note under it. The reason is at the end of the Routing Preview instead, for example "Type is set by NDT Each (5X)."',
       'Admin > Routing: the Delete (trash) button now asks "Delete <step>?" before deleting.',
+      'RT/UT: picking a Degree of RT Performed that doesn\'t match the required degree shows the error right away, not only when Signoff is pressed.',
       'Admin > Set Routing: the joint is found by typing its Hull, Drawing and Joint (no list to pick from), and a Reason for change is required. History shows the reason on the routing entry.',
     ],
     fixed: [
