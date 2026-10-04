@@ -90,7 +90,7 @@ describe('Engineering Hold (deviations)', () => {
     const hold = wf.stages.find(s => s.id === 'engineering-hold')!;
     expect(hold.signed).toBeTrue();
     expect(hold.inputs['comments']).toBe('Accepted as is');
-    expect(hold.signoffRecords.at(-1)?.who).toBe('Engineering');
+    expect(wf.history.find(h => h.section === 'Deviation' && h.action.endsWith('Deviation dispositioned'))?.who).toBe('Engineering');
     expect(wf.deviations![0].status).toBe('dispositioned');
     expect(wf.deviations![0].disposition?.routeToLabel).toBe('Fit-Up Insp');
     expect(activeStageId(wf.stages)).toBe('fitup-insp');
@@ -110,7 +110,7 @@ describe('Engineering Hold (deviations)', () => {
     const tack = wf.stages.find(s => s.id === 'tack')!;
     expect(activeStageId(wf.stages)).toBe('tack');
     expect(tack.signed).toBeFalse();
-    expect(tack.signoffRecords.length).toBe(1);
+    expect(wf.history.filter(h => h.section === 'Sign-off' && h.stageId === 'tack').length).toBe(1);
     expect(wf.stages.find(s => s.id === 'engineering-hold')!.signed).toBeTrue();
     expect(wf.history.at(-1)?.action).toBe('Routed back to Tack (Engineering)');
     /* signing Tack again goes on to Fit-Up Insp, not back to the old hold */

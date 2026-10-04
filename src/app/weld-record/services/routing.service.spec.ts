@@ -69,7 +69,7 @@ describe('RoutingService', () => {
       const wf = store.workflowFor(job)();
       expect(wf.stages.every(s => !s.signed)).toBeTrue();
       expect(wf.stages[0].inputs).toEqual({});
-      expect(wf.stages[0].signoffRecords.some(r => r.action === 'deprogressed')).toBeFalse();
+      expect(wf.history.some(h => h.action.includes('Deprogressed'))).toBeFalse();
       expect(wf.history.some(h => h.section === 'Routing' && h.action.startsWith('Routed back to'))).toBeTrue();
     });
   });
@@ -103,8 +103,7 @@ describe('RoutingService', () => {
       expect(preFit.signed).toBeFalse();
       expect(preFit.result).toBeNull();
       expect(preFit.inputs).toEqual({});
-      expect(preFit.signoffRecords.at(-1)?.action).toBe('deprogressed');
-      const entry = wf.history.find(h => h.action.includes('Deprogressed'));
+            const entry = wf.history.find(h => h.action.includes('Deprogressed'));
       expect(entry?.action).toContain('wrong joint');
     });
 

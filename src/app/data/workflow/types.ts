@@ -45,18 +45,6 @@ export interface SignoffField {
   fullWidth?: boolean;   // spans full grid width (3 columns)
 }
 
-/* sequential stages, each its own sign-off */
-export interface SignoffRecord {
-  stageLabel: string;
-  fields: { key: string; label: string; value: string }[];
-  result: StageResult | null;
-  who: string;
-  when: string;         /* ISO */
-  action: 'signed' | 'deprogressed' | 'corrected';
-  reason?: string;                                              /* 'corrected' only */
-  changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' only */
-}
-
 export interface WorkflowStage {
   id: string;
   label: string;
@@ -78,7 +66,6 @@ export interface WorkflowStage {
   routingOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
-  signoffRecords: SignoffRecord[];
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
   /* the current routing was set to this stage (a route-back, or Admin > Set Routing): the joint
      proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
@@ -156,11 +143,11 @@ export interface JobWorkflow {
 }
 
 /* the joint as it stood just before one sign-off, so Deprogress can undo everything that sign-off
-   triggered. Field definitions and signoff records aren't kept here (records are never undone). */
+   triggered. Field definitions aren't kept here. */
 export interface SignoffUndo {
   stageId: string;
   historyWhen: string;       /* the sign-off's History entry, so Work History knows which row it is */
-  stages: Omit<WorkflowStage, 'fields' | 'signoffFields' | 'signoffRecords'>[];
+  stages: Omit<WorkflowStage, 'fields' | 'signoffFields'>[];
   fabricationData: Record<string, string>;
   refitNumber: string;
   repairNumber: string;

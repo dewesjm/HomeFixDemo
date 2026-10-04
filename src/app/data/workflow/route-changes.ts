@@ -44,7 +44,7 @@ function goesBackPastFit(stages: WorkflowStage[], idx: number): boolean {
 }
 
 /* Set the current routing back to `targetId`: every stage from there on comes up as on a new joint
-   (keeping its signoffRecords) and is signed again. Earlier signoffs are untouched. Other Repair /
+   and is signed again. Earlier signoffs are untouched. Other Repair /
    Excavation NDT rounds stay as records (unsigned ones stop being required); the target's own round
    comes up blank, its Excavation NDT waiting for the Repair to choose Weld Repair again. */
 export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: JobWorkflow; fabReset: boolean } {
@@ -59,7 +59,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
     }
     if (isExcavationNdtStageId(s.id)) return { ...blankStage(s), required: false };
     const f = fresh.get(s.id);
-    return f ? { ...f, signoffRecords: s.signoffRecords } : blankStage(s);
+    return f ?? blankStage(s);
   });
   const fabReset = goesBackPastFit(wf.stages, targetIdx);
   const fabricationData = fabReset ? blankFabricationData() : wf.fabricationData;
@@ -85,7 +85,7 @@ export function signoffUndo(wf: JobWorkflow, job: Job, stageId: string): Signoff
   return {
     stageId,
     historyWhen: '',
-    stages: wf.stages.map(({ fields: _f, signoffFields: _sf, signoffRecords: _r, ...rest }) => rest),
+    stages: wf.stages.map(({ fields: _f, signoffFields: _sf, ...rest }) => rest),
     fabricationData: { ...wf.fabricationData },
     refitNumber: job.refitNumber ?? '',
     repairNumber: job.repairNumber ?? '',
@@ -108,7 +108,7 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
       /* a signoff this one didn't touch stays as it is now (keeps any Correct made since) */
       if (cur?.signed && snap.signed && cur.signedAt === snap.signedAt) return cur;
       const defs = cur ?? fresh.get(snap.id);
-      return { ...snap, fields: defs?.fields ?? [], signoffFields: defs?.signoffFields ?? [], signoffRecords: cur?.signoffRecords ?? [] };
+      return { ...snap, fields: defs?.fields ?? [], signoffFields: defs?.signoffFields ?? [] };
     });
     const from = top.stages.find(s => s.routingFrom);
     stages = from ? setRoutingFrom(stages, from.id) : stages.map(({ routingFrom: _r, ...s }) => s as WorkflowStage);

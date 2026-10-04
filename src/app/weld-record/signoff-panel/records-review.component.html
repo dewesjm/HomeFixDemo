@@ -1,4 +1,4 @@
-<!-- Records Review: verify joint details against the record, the joint's Signoff History, then Comments -->
+<!-- Records Review: verify joint details against the record, the joint's History, then Comments -->
 @let st = stage();
 <div class="stage-inputs flex flex-col gap-4">
   <div>
@@ -33,86 +33,15 @@
   <div>
     <div class="flex items-center justify-between mb-1">
       <div class="font-semibold text-sm">Signoff History</div>
-      @if (ctx().wf().signoffRecords.length) {
-        <button type="button" class="btn btn-ghost btn-xs" (click)="toggleAllRecords(ctx().wf().signoffRecords)">
-          @if (allRecordsExpanded(ctx().wf().signoffRecords)) { Collapse all } @else { Expand all }
+      @if (table.expandableKeys().length) {
+        <button type="button" class="btn btn-ghost btn-xs" (click)="table.toggleAll()">
+          @if (table.allExpanded()) { Collapse all } @else { Expand all }
         </button>
       }
     </div>
-    <!-- Same pattern as the History screen: one row per sign-off event, expandable to its recorded fields -->
-    @if (ctx().wf().signoffRecords.length) {
-      <div class="overflow-x-auto">
-      <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>When</th>
-            <th>Who</th>
-            <th>Stage - Action</th>
-            <th>Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of ctx().wf().signoffRecords; track $index; let ri = $index) {
-            <tr>
-              <td class="text-xs hist-old">{{ r.when | appDateTime }}</td>
-              <td class="text-xs hist-old">{{ r.who }}</td>
-              <td>
-                @if (r.fields.length) {
-                  <button type="button" class="flex items-center gap-1" (click)="toggleRecord(ri)">
-                    @if (expandedRecords().has(ri)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
-                    {{ r.stageLabel }} - {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
-                  </button>
-                } @else {
-                  {{ r.stageLabel }} - {{ r.action === 'deprogressed' ? 'Deprogressed' : r.action === 'corrected' ? 'Corrected' : 'Signed off' }}
-                }
-              </td>
-              <td>
-                @if (r.action === 'deprogressed') {
-                  <span class="badge badge-sm badge-warning">DEPROGRESSED</span>
-                } @else if (r.action === 'corrected') {
-                  <span class="badge badge-sm badge-info">CORRECTED</span>
-                } @else if (r.result === 'sat') {
-                  <span class="badge badge-sm badge-success">SAT</span>
-                } @else if (r.result === 'unsat') {
-                  <span class="badge badge-sm badge-error">UNSAT</span>
-                }
-              </td>
-            </tr>
-            @if (r.fields.length && expandedRecords().has(ri)) {
-              @if (r.action === 'corrected' && r.reason) {
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td class="pl-8 text-xs hist-old">Reason</td>
-                  <td class="hist-new">{{ r.reason }}</td>
-                </tr>
-              }
-              @if (r.action === 'corrected' && r.changes?.length) {
-                @for (c of r.changes; track c.key) {
-                  <tr>
-                    <td></td>
-                    <td></td>
-                    <td class="pl-8 text-xs hist-old">{{ c.label }} (was)</td>
-                    <td class="hist-old">{{ c.from || '(left blank)' }}</td>
-                  </tr>
-                }
-              }
-              @for (f of r.fields; track f.key) {
-                <tr>
-                  <td></td>
-                  <td></td>
-                  <td class="pl-8 text-xs hist-old">{{ f.label }}</td>
-                  <td [class.hist-new]="f.value" [class.hist-old]="!f.value">{{ f.value || '(left blank)' }}</td>
-                </tr>
-              }
-            }
-          }
-        </tbody>
-      </table>
-      </div>
-    } @else {
-      <div class="empty">No signoff history yet.</div>
-    }
+    <!-- the History screen's table for this joint -->
+    <app-history-table [table]="table" [oneJoint]="true" [emptyText]="emptyText()"
+                       (deprogress)="ctx().deprogress($event.reason)" />
   </div>
 
   <!-- Comments from visible fields. Plain div, not .stage-field: that class's flex-basis (160px,

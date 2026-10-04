@@ -27,9 +27,9 @@ import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, hasDecision, isStageLocked, currentRoutingLabel,
+  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
   activeStageId, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
-  ACTUAL_REQUIREMENT, SignoffRecord, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
+  ACTUAL_REQUIREMENT, HistoryRow, historyRows, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
 } from '../../data/workflow';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -134,15 +134,8 @@ export class JointPageComponent implements OnDestroy {
   rejectedCount = computed(() =>
     this.wf ? this.wf().stages.filter(s => s.signed && s.result === 'unsat').length : 0);
 
-  signoffRecords = computed(() => {
-    if (!this.wf) return [];
-    const all: SignoffRecord[] = [];
-    for (const s of this.wf().stages) {
-      /* no SAT badge on stages where nobody chose SAT/UNSAT */
-      for (const r of s.signoffRecords) all.push(hasDecision(s) ? r : { ...r, result: null });
-    }
-    return all.sort((a, b) => a.when.localeCompare(b.when));
-  });
+  /* the joint's History rows, as the History screen shows them (Records Review) */
+  history = computed<HistoryRow[]>(() => (this.wf ? historyRows(this.wf(), this.job) : []));
 
   /* which steps show References: see showsReferences() in data/workflow/stage-rules.ts */
   showReferences = computed(() => !!this.wf && showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? ''));
@@ -232,7 +225,8 @@ export class JointPageComponent implements OnDestroy {
     const ov = this.overrides;
     return {
       job,
-      wf: () => ({ stages: w.stages, fabricationData: w.fabricationData, signoffRecords: this.signoffRecords() }),
+      wf: () => ({ stages: w.stages, fabricationData: w.fabricationData }),
+      history: () => this.history(),
       selectedRouting: () => this.selectedRouting(),
       jobComplete: () => this.jobComplete(),
       soldSigned: () => this.soldSigned(),
@@ -279,6 +273,7 @@ export class JointPageComponent implements OnDestroy {
       setInspectionType: (v) => this.setInspectionType(v),
       setStageResult: (s, r) => this.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
+      deprogress: (reason) => this.deprogress(reason),
     };
   });
 
@@ -553,6 +548,16 @@ export class JointPageComponent implements OnDestroy {
     const before = this.wf();
     this.signoffService.signStage(this.job, stageId, inputs, engineeringHold);
     if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
+  }
+
+  /* Records Review's Deprogress: undoes the latest sign-off, which the leave guard counts as loaded
+     (as after signing), and shows the step the joint is now at */
+  private deprogress(reason: string) {
+    if (!this.job || !this.wf) return;
+    const before = this.wf();
+    this.wfService.deprogress(this.job, reason);
+    if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
+    this.selectedRouting.set(this.indexOfActive());
   }
 
   /* The 5X question on Root only records the answer; once Root itself is signed, a "yes" auto-signs

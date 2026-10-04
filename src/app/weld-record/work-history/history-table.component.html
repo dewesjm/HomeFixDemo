@@ -1,0 +1,148 @@
+<!-- History table (paired with history-table.component.ts) -->
+@let t = table();
+@let all = !oneJoint();
+
+<!-- the joint's identifier cells; detail rows show them dimmed -->
+<ng-template #ids let-r let-dim="dim">
+  <td [class.hist-old]="dim">{{ r.jobId }}</td>
+  <td [class.hist-old]="dim">{{ r.hull }}</td>
+  <td class="whitespace-nowrap" [class.hist-old]="dim">{{ r.drawing }}</td>
+  <td class="whitespace-nowrap" [class.hist-old]="dim">{{ r.joint }}</td>
+  <td [class.hist-old]="dim">{{ r.order }}</td>
+</ng-template>
+
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th class="min-w-6"></th>
+      <th appSortHeader class="min-w-12" [table]="t" field="routing" label="Routing" filter="select" [options]="routingOptions()"></th>
+      <th appSortHeader class="min-w-14" [table]="t" field="action" label="Action" filter="text"></th>
+      <th appSortHeader class="min-w-13" [table]="t" field="when" label="When" filter="text"></th>
+      <th appSortHeader class="min-w-11" [table]="t" field="who" label="Who" filter="text"></th>
+      <th appSortHeader class="min-w-12" [table]="t" field="to" label="Value" filter="text"></th>
+      @if (all) {
+        <th appSortHeader style="min-width: 6ch" [table]="t" field="jobId" label="XREFID" filter="text"></th>
+        <th appSortHeader style="min-width: 6ch" [table]="t" field="hull" label="Hull" filter="text"></th>
+        <th appSortHeader class="min-w-24" [table]="t" field="drawing" label="Drawing" filter="text"></th>
+        <th appSortHeader class="min-w-20" [table]="t" field="joint" label="Joint" filter="text"></th>
+        <th appSortHeader style="min-width: 10ch" [table]="t" field="order" label="Order" filter="text"></th>
+      }
+      <th class="min-w-11">Deprogress</th>
+      <th class="min-w-11">Correct</th>
+      @if (all) { <th class="min-w-6"></th> }
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of t.paged(); track r.key) {
+      <tr>
+        <td>
+          @if (r.inputs?.length) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="t.toggle(r.key)">
+              @if (t.expanded().has(r.key)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+            </button>
+          }
+        </td>
+        <td>{{ r.routing }}</td>
+        <td>{{ r.action }}</td>
+        <td>{{ r.when | appDateTime }}</td>
+        <td>{{ r.who }}@if (r.whoTitle) { <span class="hist-old"> · {{ r.whoTitle }}</span> }</td>
+        <td class="hist-new">{{ r.to || '-' }}</td>
+        @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: false }" /> }
+        <td>
+          @if (isDeprogressable(r)) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="confirmDeprogress(r.jobId)" title="Reverse to previous routing">
+              <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
+            </button>
+          }
+        </td>
+        <td>
+          @if (isCorrectable(r)) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="openCorrect(r)" title="Fix a field recorded at this sign-off">
+              <svg lucidePencil class="size-4"></svg> Correct
+            </button>
+          }
+        </td>
+        @if (all) {
+          <td>
+            <button type="button" class="btn btn-primary btn-xs" title="Job details" (click)="openDetails(r.jobId)">
+              <svg lucideArrowUpRight class="size-3"></svg>
+            </button>
+          </td>
+        }
+      </tr>
+      @if (r.inputs?.length && t.expanded().has(r.key)) {
+        @if (r.changes?.length) {
+          @if (r.reason) {
+            <tr>
+              <td></td>
+              <td class="hist-old">{{ r.routing }}</td>
+              <td class="pl-8">Reason</td>
+              <td class="hist-old">{{ r.when | appDateTime }}</td>
+              <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+              <td class="hist-new">{{ r.reason }}</td>
+              @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: true }" /> }
+              <td></td><td></td>@if (all) { <td></td> }
+            </tr>
+          }
+          @for (c of r.changes; track c.key) {
+            <tr>
+              <td></td>
+              <td class="hist-old">{{ r.routing }}</td>
+              <td class="pl-8 font-semibold">{{ c.label }}</td>
+              <td class="hist-old">{{ r.when | appDateTime }}</td>
+              <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+              <td><span class="hist-old">{{ c.from || '(left blank)' }}</span> → <span class="hist-new">{{ c.to || '(left blank)' }}</span></td>
+              @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: true }" /> }
+              <td></td><td></td>@if (all) { <td></td> }
+            </tr>
+          }
+        }
+        @for (i of r.inputs; track $index) {
+          <tr>
+            <td></td>
+            <td class="hist-old">{{ r.routing }}</td>
+            <td class="pl-8">{{ i.label }}</td>
+            <td class="hist-old">{{ r.when | appDateTime }}</td>
+            <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+            <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
+            @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: true }" /> }
+            <td></td><td></td>@if (all) { <td></td> }
+          </tr>
+        }
+        @if (r.fabInputs?.length) {
+          <tr>
+            <td></td>
+            <td></td>
+            <td class="pl-8" [attr.colspan]="all ? 9 : 4">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="t.toggleFab(r.key)">
+                @if (t.fabExpanded().has(r.key)) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+                Fabrication {{ r.section === 'Refit' ? 'before the Cut' : 'at this sign-off' }} ({{ r.fabInputs!.length }} fields)
+              </button>
+            </td>
+            <td></td><td></td>@if (all) { <td></td> }
+          </tr>
+          @if (t.fabExpanded().has(r.key)) {
+            @for (i of r.fabInputs; track $index) {
+              <tr>
+                <td></td>
+                <td class="hist-old">{{ r.routing }}</td>
+                <td class="pl-12">{{ i.label }}</td>
+                <td class="hist-old">{{ r.when | appDateTime }}</td>
+                <td class="hist-old">{{ r.who }}@if (r.whoTitle) { · {{ r.whoTitle }} }</td>
+                <td [class.hist-new]="i.value" [class.hist-old]="!i.value">{{ i.value || '(left blank)' }}</td>
+                @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: true }" /> }
+                <td></td><td></td>@if (all) { <td></td> }
+              </tr>
+            }
+          }
+        }
+      }
+    } @empty {
+      <tr>
+        <td [attr.colspan]="all ? 14 : 8" class="empty">{{ emptyText() }}</td>
+      </tr>
+    }
+  </tbody>
+</table>
+
+<app-correct-stage-dialog [target]="correctTarget()" (closed)="closeCorrect()" />

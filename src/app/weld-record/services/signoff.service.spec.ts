@@ -3,7 +3,7 @@ import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { activeStageId, discardUnsignedEdits, seededWorkflow, updateStageTemplate } from '../../data/workflow';
+import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, seededWorkflow, updateStageTemplate } from '../../data/workflow';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -12,6 +12,11 @@ function weldingJob(overrides: Partial<Job> = {}): Job {
   const job = addTestJob();
   Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
   return job;
+}
+
+/* a stage's Sign-off History entries, oldest first */
+function signoffEntries(wf: JobWorkflow, stageId: string): HistoryEntry[] {
+  return wf.history.filter(h => h.section === 'Sign-off' && h.stageId === stageId);
 }
 
 describe('SignoffService', () => {
@@ -34,7 +39,7 @@ describe('SignoffService', () => {
     const tack = wf.stages.find(s => s.id === 'tack')!;
     expect(tack.signed).toBeTrue();
     expect(tack.signedAt).toBeTruthy();
-    expect(tack.signoffRecords.at(-1)?.action).toBe('signed');
+    expect(signoffEntries(wf, 'tack').at(-1)?.action).toBe('Tack - Signed off');
     expect(wf.history.some(h => h.section === 'Sign-off' && h.action.includes('Signed off'))).toBeTrue();
   });
 
@@ -126,7 +131,7 @@ describe('SignoffService', () => {
     expect(stage('pre-fit').signed).toBeTrue();
     for (const id of ['fit', 'tack', 'fitup-insp']) {
       expect(stage(id).signed).withContext(id).toBeFalse();
-      expect(stage(id).signoffRecords.at(-1)?.action).withContext(id).toBe('signed');
+      expect(signoffEntries(wf, id).at(-1)?.action).withContext(id).toMatch(/Signed off$/);
     }
     expect(stage('fitup-insp').result).toBeNull();
     expect(stage('fitup-insp').inputs['releaseToWelding']).toBe('yes');
@@ -234,9 +239,9 @@ describe('SignoffService', () => {
         expect(stage(job, id).signed).withContext(id).toBeFalse();
       }
       for (const id of ['fit', 'tack', 'fitup-insp', 'root-weld', 'root-ndt-utrt']) {
-        expect(stage(job, id).signoffRecords.every(r => r.action === 'signed')).withContext(id).toBeTrue();
+        expect(signoffEntries(store.workflowFor(job)(), id).every(h => h.action.endsWith('Signed off'))).withContext(id).toBeTrue();
       }
-      expect(stage(job, 'fit').signoffRecords.length).toBe(1);   /* the first fit's record is kept */
+      expect(signoffEntries(store.workflowFor(job)(), 'fit').length).toBe(1);   /* the first fit's sign-off stays in History */
       expect(stage(job, 'pre-fit').signed).toBeTrue();
       expect(stage(job, 'repair').signed).toBeTrue();
       expect(stage(job, 'repair-2').signed).toBeTrue();
@@ -290,7 +295,7 @@ describe('SignoffService', () => {
       const ndt = stage(job, 'layer-ndt-mtpt');
       expect(ndt.signed).toBeFalse();
       expect(ndt.result).toBeNull();
-      expect(ndt.signoffRecords.at(-1)?.action).toBe('signed');
+      expect(signoffEntries(store.workflowFor(job)(), 'layer-ndt-mtpt').at(-1)?.action).toMatch(/Signed off$/);
       expect(stage(job, 'repair').signed).toBeTrue();
       expect(store.workflowFor(job)().history.some(h => h.section === 'Routing' && h.to === ndt.label)).toBeTrue();
     });
@@ -305,7 +310,7 @@ describe('SignoffService', () => {
       const ndt = stage(job, 'root-ndt-utrt');
       expect(ndt.signed).toBeFalse();
       expect(ndt.result).toBeNull();
-      expect(ndt.signoffRecords.map(r => r.action)).toEqual(['signed', 'deprogressed']);
+      expect(signoffEntries(store.workflowFor(job)(), 'root-ndt-utrt').map(h => /Deprogressed/.test(h.action) ? 'deprogressed' : 'signed')).toEqual(['signed', 'deprogressed']);
     });
 
     it('Deprogress of a Cut brings back the earlier signoffs, fit-up data and Refit #; the Repair comes up blank', () => {
@@ -375,7 +380,7 @@ describe('SignoffService', () => {
     service.signStage(job, 'review-o04');
     const review = store.workflowFor(job)().stages.find(s => s.id === 'review-o04')!;
     expect(review.signed).toBeFalse();
-    expect(review.signoffRecords.at(-1)?.result).toBe('unsat');
+    expect(signoffEntries(store.workflowFor(job)(), 'review-o04').at(-1)?.to).toBe('UNSAT');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'final-ndt-vt5x')?.signed).toBeFalse();
   });
 

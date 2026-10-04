@@ -3,44 +3,29 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight, LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
+import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
-import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
-import { SortHeaderComponent } from '../../shared/sort-header.component';
-import { ConfirmService } from '../../shared/confirm.service';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { HistoryEntry, WorkflowStage, getTemplates } from '../../data/workflow';
+import { HistoryRow, historyRows } from '../../data/workflow';
 import { downloadCsv } from '../../data/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
-import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
-import { LucidePencil } from '@lucide/angular';
-import { AppDateTimePipe, formatDateTime } from '../../shared/date-format';
-
-/* one history entry; sign-offs carry inputs (every editable field and its value at that moment) */
-interface ActivityRow extends HistoryEntry {
-  key: string;
-  jobId: string;
-  hull: string;
-  drawing: string;
-  joint: string;
-  order: string;
-  /* searchable text of the sign-off's field values */
-  inputsText: string;
-}
+import { formatDateTime } from '../../shared/date-format';
+import { HistoryTableComponent } from './history-table.component';
+import { HistoryTableState } from './history-table-state';
 
 @Component({
   selector: 'app-work-history',
   standalone: true,
-  imports: [AppDateTimePipe, 
+  imports: [
     CommonModule, FormsModule,
-    TablePagerComponent, SortHeaderComponent, CorrectStageDialogComponent, PersonSearchInputComponent,
-    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideRotateCcw, LucideArrowLeft, LucideArrowUpRight,
-    LucideChevronRight, LucideChevronDown, LucideChevronsUpDown, LucideChevronsDownUp, LucidePencil
+    TablePagerComponent, PersonSearchInputComponent, HistoryTableComponent,
+    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft,
+    LucideChevronsUpDown, LucideChevronsDownUp
   ],
   templateUrl: './work-history.component.html'
 })
@@ -49,52 +34,16 @@ export class WorkHistoryComponent {
   private wfService = inject(RoutingService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private confirmSvc = inject(ConfirmService);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   back() { this.router.navigate(['/pipe-search']); }
-  openDetails(jobId: string) { this.router.navigate(['/jobs', jobId], { queryParams: { from: 'history' } }); }
 
   /* person filter: the chosen person (search assist itself is app-person-search-input) */
   person = signal<Person | null>(null);
   /* job filter: matches XREFID, drawing, joint or order */
   jobQuery = signal<string>('');
-  expanded = signal<ReadonlySet<string>>(new Set());
-  /* nested "Fabrication at this sign-off" toggle, independent of the row's own expand state */
-  fabExpanded = signal<ReadonlySet<string>>(new Set());
 
-  table = new TableState<ActivityRow>(
-    ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
-    {
-      /* match the formatted date shown in the column, not the raw ISO timestamp */
-      when: (rowValue: string, val: string) =>
-        formatDateTime(rowValue).toLowerCase().includes(String(val).toLowerCase()),
-      routing: inArray,
-    }
-  );
-
-  /* canonical stage order (first appearance across every trade's template), so the routing
-     filter reads like the actual workflow sequence instead of alphabetically; anything not a
-     real stage (e.g. 'All stages complete') sorts to the end */
-  private routingOrder = computed(() => {
-    const order = new Map<string, number>();
-    let i = 0;
-    for (const stages of Object.values(getTemplates())) {
-      for (const s of stages) {
-        const label = s.displayName || s.label;
-        if (!order.has(label)) order.set(label, i++);
-      }
-    }
-    return order;
-  });
-
-  /* distinct routing values among the pre-filtered rows, for the Routing column's multiselect */
-  routingOptions = computed(() => {
-    const order = this.routingOrder();
-    return [...new Set(this.preFiltered().map(r => r.routing))]
-      .sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity) || a.localeCompare(b))
-      .map(s => ({ label: s, value: s }));
-  });
+  table = new HistoryTableState();
 
   constructor() {
     this.table.setPageSize(15);
@@ -116,33 +65,6 @@ export class WorkHistoryComponent {
     this.person.set(null);
   }
 
-  /* every sign-off matching the current filters that has fields to show, across all pages */
-  expandableKeys = computed(() => this.table.sorted().filter(r => r.inputs?.length).map(r => r.key));
-  allExpanded = computed(() => {
-    const keys = this.expandableKeys();
-    return keys.length > 0 && keys.every(k => this.expanded().has(k));
-  });
-
-  toggleAll() {
-    this.expanded.set(this.allExpanded() ? new Set() : new Set(this.expandableKeys()));
-  }
-
-  toggle(key: string) {
-    this.expanded.update(s => {
-      const next = new Set(s);
-      if (!next.delete(key)) next.add(key);
-      return next;
-    });
-  }
-
-  toggleFab(key: string) {
-    this.fabExpanded.update(s => {
-      const next = new Set(s);
-      if (!next.delete(key)) next.add(key);
-      return next;
-    });
-  }
-
   /* scope label for the header */
   scopeLabel = computed(() => {
     const parts: string[] = [];
@@ -157,31 +79,13 @@ export class WorkHistoryComponent {
   });
 
   /* every joint's history flattened newest-first */
-  private allActivity = computed<ActivityRow[]>(() => {
-    const rows: ActivityRow[] = [];
-    /* per-field edits are not shown: History records what was input at each sign-off */
-    const add = (e: HistoryEntry, jobId: string) => {
-      if (e.section === 'Stages' || e.section === 'Fabrication') return;
-      const job = this.jobById.get(jobId);
-      rows.push({
-        ...e,
-        key: `${jobId}|${e.when}|${e.action}`,
-        jobId,
-        hull: job?.hull ?? `#${jobId}`,
-        drawing: job?.drawing ?? '',
-        joint: job?.joint ?? '',
-        order: job?.order ?? '',
-        inputsText: [...(e.inputs ?? []), ...(e.fabInputs ?? [])].map(i => `${i.label} ${i.value}`).join(' '),
-      });
-    };
-    for (const wf of this.store.everyWorkflow()) {
-      for (const e of wf.history) add(e, wf.jobId);
-    }
-    return rows.sort((a, b) => b.when.localeCompare(a.when));
-  });
+  private allActivity = computed<HistoryRow[]>(() =>
+    this.store.everyWorkflow()
+      .flatMap(wf => historyRows(wf, this.jobById.get(wf.jobId)))
+      .sort((a, b) => b.when.localeCompare(a.when)));
 
   /* person + job pre-filters, applied before TableState's own sort/search/column filters */
-  private preFiltered = computed<ActivityRow[]>(() => {
+  private preFiltered = computed<HistoryRow[]>(() => {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
     return this.allActivity().filter(r =>
@@ -190,106 +94,10 @@ export class WorkHistoryComponent {
     );
   });
 
-  /* Deprogress is only offered on a job's last sign-off that is still in effect. A job with undo entries
-     (signed in this app) offers it on the sign-off its newest undo entry belongs to. Otherwise (seeded demo
-     signoffs) it's computed from the job's whole history (not the filtered or sorted rows): a deprogress
-     cancels the sign-off before it, and the entry must also be the workflow's last signed stage, since
-     that is what deprogress reverses. */
-  private deprogressable = computed<ReadonlySet<string>>(() => {
-    const lastSigned = new Map<string, WorkflowStage | undefined>();
-    const undoTop = new Map<string, string>();
-    for (const wf of this.store.everyWorkflow()) {
-      lastSigned.set(wf.jobId, wf.stages.filter(s => s.signed).pop());
-      const top = wf.undo?.at(-1);
-      if (top) undoTop.set(wf.jobId, top.historyWhen);
-    }
-    const keys = new Set<string>();
-    const byJob = new Map<string, ActivityRow[]>();
-    for (const r of this.allActivity()) {
-      if (undoTop.has(r.jobId)) {
-        if (r.when === undoTop.get(r.jobId) && (r.section === 'Sign-off' || r.section === 'Release')) keys.add(r.key);
-        continue;
-      }
-      if (r.section === 'Sign-off') byJob.set(r.jobId, [...(byJob.get(r.jobId) ?? []), r]);
-    }
-    for (const [jobId, rows] of byJob) {
-      const inEffect: ActivityRow[] = [];
-      for (const r of [...rows].sort((a, b) => a.when.localeCompare(b.when))) {
-        if (/deprogressed/i.test(r.action)) inEffect.pop();
-        else inEffect.push(r);
-      }
-      const last = inEffect[inEffect.length - 1];
-      if (!last) continue;
-      /* by stage id where the row has one: the action text can name the routing option instead of
-         the stage (Weld Build-Up, Interim/Final Layer). Older saved entries use an em-dash separator. */
-      const expected = lastSigned.get(jobId);
-      if (expected && (last.stageId ? last.stageId !== expected.id : last.action.split(/ [-—] /)[0] !== expected.label)) continue;
-      keys.add(last.key);
-    }
-    return keys;
-  });
-
-  isLatestEntry(r: ActivityRow): boolean {
-    return this.deprogressable().has(r.key);
-  }
-
-  /* Correct is offered on a stage's current sign-off record: the latest Sign-off-section entry
-     for that (job, stage) pair, as long as it's not itself a deprogress (a deprogressed stage has nothing
-     signed to correct) and the live stage is still actually signed — mirrors deprogressable's
-     "trust the live workflow over the log" caveat, but per-stage instead of per-job's last stage,
-     since Correct can fix an earlier stage even after later ones have since been signed. */
-  private correctable = computed<ReadonlySet<string>>(() => {
-    const byStage = new Map<string, ActivityRow[]>();
-    for (const r of this.allActivity()) {
-      if (r.section === 'Sign-off' && r.stageId) {
-        const k = `${r.jobId}|${r.stageId}`;
-        byStage.set(k, [...(byStage.get(k) ?? []), r]);
-      }
-    }
-    const keys = new Set<string>();
-    const wfById = new Map(this.store.everyWorkflow().map(w => [w.jobId, w]));
-    for (const [k, rows] of byStage) {
-      const stageId = k.slice(k.indexOf('|') + 1);
-      const jobId = k.slice(0, k.indexOf('|'));
-      const latest = [...rows].sort((a, b) => a.when.localeCompare(b.when)).pop();
-      if (!latest || /deprogressed/i.test(latest.action)) continue;
-      const stage = wfById.get(jobId)?.stages.find(s => s.id === stageId);
-      if (!stage?.signed) continue;
-      keys.add(latest.key);
-    }
-    return keys;
-  });
-
-  isCorrectable(r: ActivityRow): boolean {
-    return this.correctable().has(r.key);
-  }
-
-  correctTarget = signal<CorrectTarget | null>(null);
-
-  openCorrect(r: ActivityRow) {
-    const job = this.jobById.get(r.jobId);
-    if (job && r.stageId) this.correctTarget.set({ job, stageId: r.stageId });
-  }
-
-  closeCorrect() {
-    this.correctTarget.set(null);
-  }
-
   /* undo a job's most recent sign-off */
-  goBack(jobId: string, comment: string) {
+  deprogress(jobId: string, reason: string) {
     const job = this.jobById.get(jobId);
-    if (!job) return;
-    this.wfService.deprogress(job, comment);
-  }
-
-  deprogress(jobId: string) {
-    this.confirmSvc.confirm({
-      header: 'Deprogress',
-      message: 'This reverses the job\'s most recent sign-off. Enter a reason for the record.',
-      acceptLabel: 'Deprogress',
-      textInput: { label: 'Reason for deprogress', placeholder: 'Reason for deprogress…' },
-      accept: (reason) => { if (reason?.trim()) this.goBack(jobId, reason.trim()); }
-    });
+    if (job) this.wfService.deprogress(job, reason);
   }
 
   clear() {
@@ -303,7 +111,7 @@ export class WorkHistoryComponent {
   exportCsv() {
     const p = this.person();
     const name = p ? `work-history-${fullName(p).replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';
-    type Line = { row: ActivityRow; field: string; value: string };
+    type Line = { row: HistoryRow; field: string; value: string };
     const lines: Line[] = this.table.sorted().flatMap(r =>
       r.inputs?.length
         ? r.inputs.map(i => ({ row: r, field: i.label, value: i.value }))

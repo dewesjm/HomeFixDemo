@@ -122,7 +122,6 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     inputs,
     signoffFields: (t.signoffFields ?? []).map(f => ({ ...f })),
     signoffInputs: {},
-    signoffRecords: [],
     result: null,
     rejectToStage: t.rejectToStage ?? '',
     repeatable: false,

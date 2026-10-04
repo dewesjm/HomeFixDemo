@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, labelFor, show, deprogressWorkflow, fabricationSnapshot, moveRouting } from '../../data/workflow';
+import { JobWorkflow, StageField, show, deprogressWorkflow, fabricationSnapshot, moveRouting } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
@@ -73,23 +73,9 @@ export class RoutingService {
       const d = deprogressWorkflow(wf, job);
       if (!d) return wf;
       const s = d.stage;
-      const record = {
-        stageLabel: s.label,
-        fields: [
-          ...Object.entries({ ...s.inputs, ...s.signoffInputs })
-            .filter(([, v]) => v)
-            .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
-          ...(comment ? [{ key: 'comment', label: 'Comment', value: comment }] : []),
-        ],
-        result: s.result,
-        who: 'Admin',
-        when: new Date().toISOString(),
-        action: 'deprogressed' as const,
-      };
-      const stages = d.wf.stages.map(st => st.id === s.id ? { ...st, signoffRecords: [...st.signoffRecords, record] } : st);
       if (d.wf.refitNumber !== undefined) job.refitNumber = d.wf.refitNumber;
       if (d.wf.repairNumber !== undefined) job.repairNumber = d.wf.repairNumber;
-      return this.store.withHistory(wf, { ...d.wf, stages }, {
+      return this.store.withHistory(wf, d.wf, {
         section: 'Sign-off',
         who: 'Admin',
         action: `${s.label} - Deprogressed${comment ? ': ' + comment : ''}`,

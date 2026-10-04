@@ -120,16 +120,6 @@ export function seededWorkflow(job: Job): JobWorkflow {
       result,
       signed: true,
       signedAt: new Date(t).toISOString(),
-      signoffRecords: [{
-        stageLabel: s.label,
-        fields: Object.entries({ ...inputs, ...signoffInputs })
-          .filter(([, v]) => v)
-          .map(([key, value]) => ({ key, label: key, value })),
-        result,
-        who,
-        when: new Date(t).toISOString(),
-        action: 'signed' as const,
-      }],
     };
   };
 

@@ -8,6 +8,8 @@ export type FilterPredicate<T> = (rowValue: any, filterValue: any, row: T) => bo
 
 export class TableState<T> {
   private allRows = signal<T[]>([]);
+  /* every row given to setRows(), before filtering */
+  rows = this.allRows.asReadonly();
   page = signal(0);
   pageSize = signal(10);
   sortField = signal<string | null>(null);

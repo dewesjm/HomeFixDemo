@@ -59,14 +59,9 @@ export class DeviationService {
       if (!target || (!open.length && !holds.length)) return wf;
       const when = new Date().toISOString();
       const disposition = { comments, routeTo: targetId, routeToLabel: target.label, who: 'Engineering', when };
-      const fields = [
-        { key: 'comments', label: 'Comments', value: comments },
-        { key: 'routeTo', label: 'Routing set to', value: target.label },
-      ];
       const stages = wf.stages.map((s): WorkflowStage => !isEngineeringHoldId(s.id) || s.signed ? s : {
         ...s, signed: true, signedAt: when, result: 'sat',
         inputs: { ...s.inputs, comments, routeTo: targetId },
-        signoffRecords: [...s.signoffRecords, { stageLabel: s.label, fields, result: 'sat', who: 'Engineering', when, action: 'signed' }],
       });
       const deviations = (wf.deviations ?? []).map(d => d.status === 'open' ? { ...d, status: 'dispositioned' as const, disposition } : d);
       const inputs = [{ label: 'Comments', value: comments }, { label: 'Routing set to', value: target.label }];

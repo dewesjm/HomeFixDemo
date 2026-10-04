@@ -10,6 +10,15 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-04',
+    changed: [
+      'Records Review\'s Signoff History is now the History screen\'s table for that joint: the same entries, field names and values (blank fields shown as "(left blank)"), corrections, Fabrication at each sign-off, Deprogress and Correct, sort and column filters. The XREFID, Hull, Drawing, Joint and Order columns are left out.',
+    ],
+    fixed: [
+      'Records Review no longer shows technical field names (like consumableInsertType) in a sign-off\'s fields.',
+    ],
+  },
+  {
     date: '2026-10-03',
     added: [
       'Admin > Ship Locations: per hull, the Deck, Frame, P/S/CL and Usage combinations a joint on the Ship can have, with an Import page for .csv/.xlsx files. A location a joint is using can\'t be changed or deleted.',

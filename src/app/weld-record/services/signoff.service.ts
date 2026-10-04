@@ -91,19 +91,6 @@ export class SignoffService {
         result: isInterimLayer(s) ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
         signed: !staysPut(s),
         signedAt: staysPut(s) ? null : new Date().toISOString(),
-        signoffRecords: [
-          ...s.signoffRecords,
-          {
-            stageLabel: s.label,
-            fields: Object.entries({ ...s.inputs, ...s.signoffInputs })
-              .filter(([, v]) => v)
-              .map(([key, value]) => ({ key, label: labelFor(s, key), value })),
-            result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
-            who: s.signoffInputs['inspectorName'] || wf.technician,
-            when: new Date().toISOString(),
-            action: 'signed' as const,
-          },
-        ],
       } : s);
     const st = stages.find(s => s.id === stageId)!;
     const decision = (st.result ?? '').toUpperCase();
@@ -147,7 +134,6 @@ export class SignoffService {
         result: null,
         inputs: {},
         signoffInputs: {},
-        signoffRecords: [],
         routingType: 'standard',
       };
       stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
@@ -324,23 +310,9 @@ export class SignoffService {
         inputs: { ...st.inputs, ...inputPatch },
         signoffInputs: { ...st.signoffInputs, ...signoffPatch },
       };
-      const now = new Date().toISOString();
       const who = updated.signoffInputs['inspectorName'] || wf.technician;
-      const record = {
-        stageLabel: updated.label,
-        fields: Object.entries({ ...updated.inputs, ...updated.signoffInputs })
-          .filter(([, v]) => v)
-          .map(([key, value]) => ({ key, label: labelFor(updated, key), value })),
-        result: updated.result,
-        who,
-        when: now,
-        action: 'corrected' as const,
-        reason,
-        changes,
-      };
-      const stages = wf.stages.map(s => (s.id === stageId ? { ...updated, signoffRecords: [...updated.signoffRecords, record] } : s));
-      const finalStage = stages.find(s => s.id === stageId)!;
-      const inputsSnapshot = snapshotInputs(finalStage, fieldsShown(finalStage).filter(f => isUserEditable(finalStage, f)), finalStage.signoffFields);
+      const stages = wf.stages.map(s => (s.id === stageId ? updated : s));
+      const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated).filter(f => isUserEditable(updated, f)), updated.signoffFields);
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
          convention -- Work History reads this to show exactly what changed, not just the reason */
       const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? updated.signoffFields.find(f => f.key === key);

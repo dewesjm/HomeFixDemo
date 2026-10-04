@@ -56,7 +56,6 @@ export function buildStages(job: Job): WorkflowStage[] {
       routingOptions: t.routingOptions,
       signed: false,
       signedAt: null,
-      signoffRecords: [],
     };
   };
 
