@@ -20,6 +20,14 @@ export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'role' 
   return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
 }
 
+/* the Type a step starts with and keeps until someone changes it: blank on inspection steps,
+   otherwise its default option (e.g. Repair, Tack, Interim Layer). The stored value is what the
+   joint page shows and what History records. */
+export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'role' | 'routingOptions'>): string {
+  if (inspectionTypeRequired(stage)) return '';
+  return stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '';
+}
+
 /* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
    RT/UT (Root, Layer and Final NDT) and Repair only */
 export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(id) || isRepairStageId(id);

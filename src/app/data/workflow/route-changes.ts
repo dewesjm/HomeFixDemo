@@ -8,6 +8,7 @@ import { buildStages } from './build-stages';
 import { blankFabricationData } from './fabrication';
 import { excavationIdForRepair, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
+import { initialInspectionType } from './stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
 const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];
@@ -19,7 +20,7 @@ function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   return {
     ...s, inputs, signoffInputs: {}, result: null, signed: false, signedAt: null,
     routingType: fresh?.routingType ?? s.routingType,
-    inspectionType: fresh?.inspectionType ?? '',
+    inspectionType: fresh?.inspectionType ?? initialInspectionType(s),
   };
 }
 

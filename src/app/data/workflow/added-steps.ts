@@ -7,6 +7,7 @@ import { StageTemplate, WorkflowStage } from './types';
 import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
+import { initialInspectionType } from './stage-rules';
 
 /* ── Repair ── */
 
@@ -111,7 +112,7 @@ export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, 
 /* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
    NDT, Engineering Hold) -- same shape buildStages() makes, minus the parts only a job's real
    routing needs (role remap, override fields, etc.), since these are always the same regardless
-   of job. Type starts blank. */
+   of job. Type starts as initialInspectionType() gives it. */
 export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
   return {
     id: t.id,
@@ -127,7 +128,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     repeatable: false,
     routingType: 'standard',
     swapStageId: '',
-    inspectionType: '',
+    inspectionType: initialInspectionType({ id: t.id, role: t.role ?? '', routingOptions: t.routingOptions }),
     routingOptions: t.routingOptions ?? [],
     signed: false,
     signedAt: null,

@@ -246,7 +246,6 @@ export class JointPageComponent implements OnDestroy {
       getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
       getReviewValue: (k) => reviewVerifyValue(k, job),
       fabFieldRequired: (f) => this.fabFieldRequired(f),
-      defaultRoutingOption: (s) => s.routingOptions?.find(o => o.default)?.value ?? s.routingOptions?.[0]?.value ?? '',
       inspectionTypeRequired: (s) => inspectionTypeRequired(s),
       jointDesignRequiresInsert: () => jointDesignRequiresInsert(job, this.fab()),
       jointDesignRequiresBackingRing: () => jointDesignRequiresBackingRing(job, this.fab()),

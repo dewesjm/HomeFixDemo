@@ -21,6 +21,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Records Review\'s Signoff History is now the History screen\'s table for that joint: the same entries, field names and values (blank fields shown as "(left blank)"), corrections, Fabrication at each sign-off, Deprogress and Correct, sort and column filters. The XREFID, Hull, Drawing, Joint and Order columns are left out.',
     ],
     fixed: [
+      'History records the Type a Repair step was signed with (Repair) instead of "(left blank)". The sign-off form now shows the Type that is actually saved on the step.',
       'Records Review no longer shows technical field names (like consumableInsertType) in a sign-off\'s fields.',
       'The top bar no longer runs under the Quick Links and Theme buttons in a narrow window: when the full labels don\'t fit, every top bar item (Theme too) shows just its icon, with the name on hover.',
       'Joint details no longer overlap at half-screen widths: the columns drop from 3 to 2 to 1 as the panel narrows.',

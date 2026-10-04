@@ -29,7 +29,6 @@ export interface SignoffContext {
   getFabValue: (fieldKey: string) => string;
   getReviewValue: (fieldKey: string) => string;
   fabFieldRequired: (f: FabricationField) => boolean;
-  defaultRoutingOption: (stage: WorkflowStage) => string;
   inspectionTypeRequired: (stage: WorkflowStage) => boolean;
   jointDesignRequiresInsert: () => boolean;
   jointDesignRequiresBackingRing: () => boolean;

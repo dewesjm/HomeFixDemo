@@ -3,7 +3,7 @@ import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
 import { DEFAULT_SIGNOFF_FIELDS, getTemplates } from './stage-templates';
-import { inspectionTypeRequired } from './stage-rules';
+import { initialInspectionType } from './stage-rules';
 import { WELD_OVERRIDE_FIELDS } from './weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from './seed-fabrication';
@@ -51,9 +51,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       repeatable: t.repeatable ?? false,
       routingType: t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
-      /* inspection stages start blank so the inspector must state what was performed */
-      inspectionType: inspectionTypeRequired({ id: t.id, role, routingOptions: t.routingOptions }) ? ''
-        : (t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? ''),
+      inspectionType: initialInspectionType({ id: t.id, role, routingOptions: t.routingOptions }),
       decisionLabel: t.decisionLabel ?? '',
       routingOptions: t.routingOptions,
       signed: false,
