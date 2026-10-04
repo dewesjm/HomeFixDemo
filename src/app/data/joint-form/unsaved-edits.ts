@@ -21,6 +21,21 @@ function recordEquals(a: Record<string, string>, b: Record<string, string>): boo
   return true;
 }
 
+/* After a sign-off: what the sign-off itself changed (a route-back blanking later steps, a Cut
+   blanking Fab) is the routing's doing, not typed by the user, so it becomes the loaded value.
+   Updates `loaded` in place, since the leave guard and JointOverridesService share it. */
+export function rebaselineAfterSignoff(loaded: LoadedJoint, before: JobWorkflow, after: JobWorkflow) {
+  if (!recordEquals(before.fabricationData, after.fabricationData)) loaded.fabricationData = { ...after.fabricationData };
+  const prev = new Map(before.stages.map(s => [s.id, s]));
+  const now = captureLoaded(after).stages;
+  for (const s of after.stages) {
+    const b = prev.get(s.id);
+    if (!b || !recordEquals(b.inputs, s.inputs) || !recordEquals(b.signoffInputs, s.signoffInputs) || b.routingType !== s.routingType) {
+      loaded.stages[s.id] = now[s.id];
+    }
+  }
+}
+
 /* true when Fab or step data was entered on an unsigned stage and not yet signed. `kept` gives the
    values on a stage that survive leaving anyway (an engineering override's), so they don't count. */
 export function hasUnsavedEdits(wf: JobWorkflow, loaded: LoadedJoint, kept: (stage: WorkflowStage) => Record<string, string>): boolean {

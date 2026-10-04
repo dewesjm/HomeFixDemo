@@ -1,6 +1,6 @@
 import { JOBS } from '../jobs';
 import { JobWorkflow, WorkflowStage, newWorkflow } from '../workflow';
-import { captureLoaded, hasUnsavedEdits } from './unsaved-edits';
+import { captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './unsaved-edits';
 
 const job = JOBS.find(j => j.trade === 'Welding')!;
 const none = () => ({});
@@ -20,6 +20,16 @@ describe('joint-form unsaved-edits', () => {
     expect(hasUnsavedEdits(withStage(wf, 'tack', { inputs: { comments: 'x' }, signed: true }), loaded, none)).toBeFalse();
     expect(hasUnsavedEdits(withStage(wf, 'fit', { signoffInputs: { deferTack: 'yes' } }), loaded, none)).toBeTrue();
     expect(hasUnsavedEdits(withStage(wf, 'fit', { routingType: 'weld-buildup' }), loaded, none)).toBeTrue();
+  });
+
+  it('what a sign-off changed (a route-back) is not unsaved; what was typed elsewhere still is', () => {
+    const wf = withStage(newWorkflow(job), 'tack', { inputs: { weldProcedure: 'W-101' } });
+    const loaded = captureLoaded(wf);
+    const typed = withStage(wf, 'fit', { inputs: { comments: 'x' } });
+    const signed = withStage(typed, 'tack', { inputs: {} });
+    rebaselineAfterSignoff(loaded, typed, signed);
+    expect(hasUnsavedEdits(withStage(signed, 'fit', { inputs: {} }), loaded, none)).toBeFalse();
+    expect(hasUnsavedEdits(signed, loaded, none)).toBeTrue();
   });
 
   it('a blank value and a missing key are the same', () => {

@@ -43,7 +43,7 @@ import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } fr
 import { SignContext, errorsAfterBlur, errorsAfterSelect, inspectionTypeRequired, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
 import { routePreviewLabel } from '../../data/joint-form/route-preview';
-import { LoadedJoint, captureLoaded, hasUnsavedEdits } from '../../data/joint-form/unsaved-edits';
+import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from '../../data/joint-form/unsaved-edits';
 
 @Component({
   selector: 'app-joint-page',
@@ -218,7 +218,7 @@ export class JointPageComponent implements OnDestroy {
     if (!req || !this.job) return;
     this.deviationService.record(this.job, req.stage.id, req.items, reason);
     this.overrides.recordOverrides(req.stage);
-    this.signoffService.signStage(this.job, req.stage.id, this.signoffSnapshot(req.stage), true);
+    this.sign(req.stage.id, this.signoffSnapshot(req.stage), true);
     /* no 5X auto-sign: the joint is now on Engineering Hold */
     this.router.navigate([this.backDestination()]);
   }
@@ -540,11 +540,19 @@ export class JointPageComponent implements OnDestroy {
       password: true,
       accept: () => {
         this.overrides.recordOverrides(st);
-        this.signoffService.signStage(this.job!, stage.id, this.signoffSnapshot(stage));
+        this.sign(stage.id, this.signoffSnapshot(stage));
         this.signRelated5xIfNeeded(stage);
         this.router.navigate([this.backDestination()]);
       }
     });
+  }
+
+  /* signs, then counts what the sign-off changed (a route-back, a Cut) as loaded, so the leave guard doesn't call it unsaved */
+  private sign(stageId: string, inputs: SignoffInput[], engineeringHold = false) {
+    if (!this.job || !this.wf) return;
+    const before = this.wf();
+    this.signoffService.signStage(this.job, stageId, inputs, engineeringHold);
+    if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
   }
 
   /* The 5X question on Root only records the answer; once Root itself is signed, a "yes" auto-signs
@@ -554,7 +562,7 @@ export class JointPageComponent implements OnDestroy {
     if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
     const ndtStage = this.wf().stages.find(s => s.id === 'root-ndt-vt5x');
     if (!ndtStage || ndtStage.signed) return;
-    this.signoffService.signStage(this.job, 'root-ndt-vt5x', this.signoffSnapshot(ndtStage));
+    this.sign('root-ndt-vt5x', this.signoffSnapshot(ndtStage));
   }
 
   /* ── References and navigation ── */

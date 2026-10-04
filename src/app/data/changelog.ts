@@ -29,6 +29,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Set Routing: the joint is found by typing its Hull, Drawing and Joint (no list to pick from), and a Reason for change is required. History shows the reason on the routing entry.',
     ],
     fixed: [
+      'Signing a step that sends the joint back (for example RT/UT UNSAT) no longer asks about unsaved changes when the page closes.',
       'Some demo joints start on Pre-Fit or Fit with nothing signed yet, as before. Every joint past its first step still has sign-offs in its history.',
     ],
   },
