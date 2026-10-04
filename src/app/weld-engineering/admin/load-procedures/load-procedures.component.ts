@@ -139,6 +139,7 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       rules: splitList(row.rules),
       conditions: splitList(row.conditions),
       qualificationsRequired: splitList(row.qualificationsRequired),
+      extraFields: existing?.extraFields ?? {},
       revisionHistory: existing?.revisionHistory ?? [],
       createdBy: 'Import',
     };

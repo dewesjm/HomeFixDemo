@@ -12,6 +12,7 @@ import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
 import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
+import { extraValueText, type ExtraFields, type ProcedureSection } from './procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -127,6 +128,8 @@ export interface Procedure {
   rules: string[];
   conditions: string[];
   qualificationsRequired: string[];
+  /* values for the fields of sections added after 11 (data/procedure-sections.ts), keyed by field key */
+  extraFields: ExtraFields;
   /* required whenever a change is saved to a procedure that is (or was) Active -- see
      requiresRevisionNote() in procedure-form.component.ts. Shown at the top of the PDF as "Revision Record". */
   revisionHistory: RevisionNote[];
@@ -316,6 +319,7 @@ function generateProcedures(): Procedure[] {
           rules: pickSome(RULE_POOL, rand, 2, 4),
           conditions: pickSome(CONDITION_POOL, rand, 1, 3),
           qualificationsRequired: pickQuals(qualRand, 1, 3),
+          extraFields: {},
           revisionHistory,
           createdBy: 'System',
           createdAt: createdAt.toISOString(),
@@ -333,7 +337,8 @@ const LS_KEY = STORAGE.procedures;
 function loadProcedures(): Procedure[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw);
+    /* rows saved before added sections existed have no extraFields */
+    if (raw) return (JSON.parse(raw) as Procedure[]).map(p => ({ ...p, extraFields: p.extraFields ?? {} }));
   } catch { /* ignore */ }
   const seededList = generateProcedures();
   persistProcedures(seededList);
@@ -459,7 +464,7 @@ export function allWtns(): string[] {
 }
 
 /* ── CSV Export columns (Admin > Manage Procedures) ── */
-export const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
+const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'WPS', value: r => r.id },
   { header: 'WPS Rev', value: r => r.wpsRev },
   { header: 'Effective Date', value: r => r.effectiveDate },
@@ -504,6 +509,16 @@ export const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Qualifications Required', value: r => r.qualificationsRequired.join('; ') },
   { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
 ];
+
+/* the columns above, then one per added-section field */
+export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Procedure>[] {
+  return [
+    ...PROCEDURE_CSV_COLUMNS,
+    ...sections.flatMap(s => s.fields.map(f => ({
+      header: `${s.name}: ${f.label}`, value: (r: Procedure) => extraValueText(r.extraFields[f.key]),
+    }))),
+  ];
+}
 
 /* ── CSV/XLSX Import (Admin > Load Procedures) ── */
 export function parseProcedureCsvImport(text: string): Record<string, string>[] {

@@ -22,6 +22,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   amperageRange: '', voltageRange: '', travelSpeedRange: '',
   pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [], qualificationsRequired: [],
+  extraFields: {},
   revisionHistory: [],
   createdBy: 'Test',
 });

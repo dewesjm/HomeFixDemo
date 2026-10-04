@@ -1,6 +1,7 @@
 /* The only file that touches the actual pdfmake renderer -- keeps procedure-pdf.ts's document-
    definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency. */
 import { Procedure } from '../../data/procedures';
+import { procedureSections } from '../../data/procedure-sections';
 import { procedureDocDefinition } from './procedure-pdf';
 
 let vfsReady: Promise<any> | null = null;
@@ -19,16 +20,16 @@ async function pdfMake() {
 
 export async function openProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p)).open();
+  pm.createPdf(procedureDocDefinition(p, procedureSections())).open();
 }
 
 export async function downloadProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p)).download(`${p.id}.pdf`);
+  pm.createPdf(procedureDocDefinition(p, procedureSections())).download(`${p.id}.pdf`);
 }
 
 /* data: URL for embedding in an <iframe> preview */
 export async function procedurePdfDataUrl(p: Procedure): Promise<string> {
   const pm = await pdfMake();
-  return pm.createPdf(procedureDocDefinition(p)).getDataUrl();
+  return pm.createPdf(procedureDocDefinition(p, procedureSections())).getDataUrl();
 }

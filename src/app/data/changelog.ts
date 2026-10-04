@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-04',
     added: [
+      'Weld Engineering > Admin > Procedure Sections: add your own sections after 11. Heat Treatment, each with its own fields (text, number, min/max range, or pick from a list; required or not). They show on the procedure form, the PDF (numbered from 12) and the CSV export. Sections and fields can only be added for now, not renamed or removed. A "How it\'s stored" panel shows the saved data.',
       'Weld Planning > External Loads: sample data showing how the planned vendor file load works. A process map (Vendor File, Raw, Converted, Processed, Weld Joints) shows each stage\'s counts; click a stage to see its table. Processed shows why a line didn\'t make it (Vendor Joint, Excluded by status, or a conversion error). Also an Error Log, and Look Up a Joint by XREFID or Hull/Drawing/Joint to follow it through every stage.',
       'The Repair step has an optional Comments box on its sign-off. The comment is saved with the sign-off and shows in History.',
     ],

@@ -208,7 +208,7 @@ src/app/
                             Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position,
                             4. Filler Metal, 5. Welder Qualifications, 6. Preheat & Interpass Temperatures,
                             7. Equipment, 8. Gas, 9. Heat Input, 10. Parameters, 11. Heat Treatment, then
-                            Rules/Specific Conditions. Every page has a header ("printed from Weld
+                            added sections (12 on, data/procedure-sections.ts), then Rules/Specific Conditions. Every page has a header ("printed from Weld
                             Engineering, verify revision prior to use") and footer (GWP - WTN, Rev N left;
                             pagination right).
     procedure-pdf-actions.ts  The only file touching the real pdfmake renderer (open/download/getDataUrl + vfs fonts)
@@ -222,6 +222,10 @@ src/app/
                               FILLER_METAL_SIZE_OPTIONS (which values are valid for this WPS), not a single
                               select/free-text range like the rest of the form.
       load-procedures/       Bulk import via .xlsx/.csv or "Use Sample"; shares BulkImport + app-import-grid with Weld Planning's mass-edit
+                              (keeps an existing procedure's extraFields; doesn't import added-section values)
+      procedure-sections/    Add sections after the built-in 1-11 and fields to them (text, number, min/max
+                              range, list; required or not). Add only: no rename/remove. A "How it's stored"
+                              panel shows the definitions and one procedure's extraFields as JSON.
 
   theme-picker/           DaisyUI theme switcher (32 themes, default: forest)
 
@@ -256,6 +260,11 @@ src/app/
                           hasOverride, allWtns), Filler Metal Type/Size cascade helpers
                           (fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure) and their
                           option lists (FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS), CSV export/import
+    procedure-sections.ts Added procedure sections: definitions (sections + fields, own localStorage key) and
+                          the rules for their values. A procedure stores every added field's value in one
+                          bag, `Procedure.extraFields`, keyed by field key (a real DB: two definition tables +
+                          one JSON column). Nothing in Weld Record reads added fields; they show on the
+                          procedure form, PDF and CSV export only. Procedure Lookup doesn't search them.
 
   shared/
     table-state.ts       Sorting, filtering, paging (one instance per table screen)
@@ -298,6 +307,7 @@ src/app/
 | `/weld-engineering`, `/weld-engineering/procedures/:id` | Procedure Lookup list + PDF detail |
 | `/weld-engineering/admin`, `/weld-engineering/admin/new`, `/weld-engineering/admin/:id/edit` | Manage Procedures list/create/edit |
 | `/weld-engineering/admin/import` | Load Procedures bulk import |
+| `/weld-engineering/admin/sections` | Procedure Sections (add sections/fields after 11) |
 
 ## Data flow
 

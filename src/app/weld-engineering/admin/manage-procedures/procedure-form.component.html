@@ -324,6 +324,43 @@
     </div>
   </div>
 
+  <!-- sections added in Admin > Procedure Sections; values go in form.extraFields -->
+  @for (s of addedSections(); track s.id; let i = $index) {
+    <h3 class="form-section-title">{{ sectionNumber(i) }}. {{ s.name }}</h3>
+    @if (!s.fields.length) {
+      <p class="text-sm" style="color: var(--app-text-muted)">This section has no fields yet. Add them in Admin &gt; Procedure Sections.</p>
+    }
+    <div class="stage-inputs">
+      @for (f of s.fields; track f.key) {
+        <div class="stage-field">
+          <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+          @switch (f.type) {
+            @case ('number') {
+              <input type="number" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
+            }
+            @case ('range') {
+              <div class="flex gap-2">
+                <input type="number" class="input input-sm input-bordered w-full" placeholder="Min" [(ngModel)]="range(f.key).min" />
+                <input type="number" class="input input-sm input-bordered w-full" placeholder="Max" [(ngModel)]="range(f.key).max" />
+              </div>
+            }
+            @case ('list') {
+              <select class="select select-sm select-bordered w-full" [(ngModel)]="form.extraFields[f.key]">
+                <option value="">-</option>
+                @for (o of f.options; track o) {
+                  <option [value]="o">{{ o }}</option>
+                }
+              </select>
+            }
+            @default {
+              <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
+            }
+          }
+        </div>
+      }
+    </div>
+  }
+
   @if (wasActive) {
     <h3 class="form-section-title">Revision Note<span class="req">*</span></h3>
     <p class="text-sm" style="color: var(--app-text-muted); margin-bottom: 0.5rem">

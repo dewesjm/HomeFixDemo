@@ -11,8 +11,9 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { ToastService } from '../../../shared/toast.service';
 import { downloadCsv } from '../../../data/export-csv';
 import {
-  procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, PROCEDURE_CSV_COLUMNS, type Procedure
+  procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, procedureCsvColumns, type Procedure
 } from '../../../data/procedures';
+import { procedureSections } from '../../../data/procedure-sections';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 
 @Component({
@@ -53,6 +54,6 @@ export class ManageProceduresComponent {
   }
 
   exportCsv() {
-    downloadCsv('procedures-export', PROCEDURE_CSV_COLUMNS, this.table.sorted());
+    downloadCsv('procedures-export', procedureCsvColumns(procedureSections()), this.table.sorted());
   }
 }

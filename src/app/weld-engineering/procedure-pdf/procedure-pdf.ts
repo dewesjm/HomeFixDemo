@@ -4,10 +4,12 @@
 
    Layout: Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position, 4. Filler Metal,
    5. Welder Qualifications, 6. Preheat & Interpass Temperatures, 7. Equipment, 8. Gas, 9. Heat Input,
-   10. Parameters, 11. Heat Treatment -- followed by the procedure's WTNs/Rules/Conditions. Every page
+   10. Parameters, 11. Heat Treatment, then any sections added in Admin > Procedure Sections (12 on,
+   data/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { extraValueText, sectionNumber, type ProcedureSection } from '../../data/procedure-sections';
 import { formatDate } from '../../shared/date-format';
 
 function fillerMetalTypeLabels(values: string[]): string {
@@ -75,7 +77,14 @@ function revisionRecord(p: Procedure): Content[] {
   ];
 }
 
-export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
+/* an added section with no fields yet prints its heading only */
+function addedSections(p: Procedure, sections: ProcedureSection[]): Content[] {
+  return sections.flatMap((s, i) => s.fields.length
+    ? numberedSection(sectionNumber(i), s.name, s.fields.map(f => [f.label, extraValueText(p.extraFields[f.key])]))
+    : [{ text: `${sectionNumber(i)}. ${s.name}`, style: 'sectionHeader' }]);
+}
+
+export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = []): TDocumentDefinitions {
   const content: Content[] = [
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },
@@ -142,6 +151,8 @@ export function procedureDocDefinition(p: Procedure): TDocumentDefinitions {
     ...numberedSection(11, 'Heat Treatment', [
       ['PWHT Temp', p.pwhtTemp], ['PWHT Time', p.pwhtTime],
     ]),
+
+    ...addedSections(p, sections),
 
     { text: 'Rules', style: 'sectionHeader' },
     { ul: p.rules.length ? p.rules : ['-'], margin: [0, 4, 0, 12] },

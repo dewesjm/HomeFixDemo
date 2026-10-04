@@ -61,6 +61,16 @@ html, body {
   font-size: 1.05rem;
   font-weight: 600;
 }
+/* raw JSON shown as an example of stored data (Admin > Procedure Sections) */
+.json-block {
+  margin: 0;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  background: var(--app-bg);
+  border: 1px solid var(--app-border);
+  border-radius: 0.5rem;
+}
 .section-sub {
   margin: 0 0 1rem;
   color: var(--app-text-muted);

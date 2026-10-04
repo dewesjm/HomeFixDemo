@@ -14,6 +14,9 @@ import {
   type Procedure
 } from '../../../data/procedures';
 import { QUALIFICATIONS } from '../../../data/qualifications';
+import {
+  procedureSections, sectionNumber, withAllFields, extraFieldProblems, compactExtras, type RangeValue
+} from '../../../data/procedure-sections';
 import { AppDatePipe } from '../../../shared/date-format';
 
 const EMPTY_FORM: Procedure = {
@@ -33,6 +36,7 @@ const EMPTY_FORM: Procedure = {
   amperageRange: '', voltageRange: '', travelSpeedRange: '',
   pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [], qualificationsRequired: [],
+  extraFields: {},
   revisionHistory: [],
   createdBy: 'User', createdAt: '', updatedAt: ''
 };
@@ -67,6 +71,8 @@ export class ProcedureFormComponent implements OnInit {
   weldProgressions = WELD_PROGRESSIONS;
   currentTypes = CURRENT_TYPES;
   weldPositions = getWeldPositions();
+  addedSections = procedureSections;
+  sectionNumber = sectionNumber;
 
   /* pending text for each "add a new list item" input */
   newRule = '';
@@ -89,6 +95,12 @@ export class ProcedureFormComponent implements OnInit {
         this.router.navigate(['/weld-engineering/admin']);
       }
     }
+    this.form.extraFields = withAllFields(this.addedSections(), this.form.extraFields);
+  }
+
+  /* a range field's {min, max}, for binding its two inputs */
+  range(key: string): RangeValue {
+    return this.form.extraFields[key] as RangeValue;
   }
 
   addListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', value: string) {
@@ -150,6 +162,12 @@ export class ProcedureFormComponent implements OnInit {
       });
       return;
     }
+    const extraProblems = extraFieldProblems(this.addedSections(), this.form.extraFields);
+    if (extraProblems.length) {
+      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: extraProblems.join(' ') });
+      return;
+    }
+    const extraFields = compactExtras(this.form.extraFields);
     if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {
       this.toast.add({ severity: 'warn', summary: 'Revision note required', detail: 'This procedure is Active -- describe the change before saving' });
       return;
@@ -162,7 +180,7 @@ export class ProcedureFormComponent implements OnInit {
         ];
       }
       const { id, createdAt, updatedAt, ...rest } = this.form;
-      updateProcedure(id, rest);
+      updateProcedure(id, { ...rest, extraFields });
       this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.id} updated` });
     } else {
       if (getProcedure(this.form.id)) {
@@ -170,7 +188,7 @@ export class ProcedureFormComponent implements OnInit {
         return;
       }
       const { createdAt, updatedAt, ...rest } = this.form;
-      addProcedure(rest);
+      addProcedure({ ...rest, extraFields });
       this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.id} created` });
     }
     this.router.navigate(['/weld-engineering/admin']);

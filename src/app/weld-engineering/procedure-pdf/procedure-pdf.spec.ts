@@ -1,5 +1,6 @@
 import { procedureDocDefinition } from './procedure-pdf';
 import { type Procedure } from '../../data/procedures';
+import { type ProcedureSection } from '../../data/procedure-sections';
 
 const baseProcedure: Procedure = {
   id: 'W-999-1', title: 'Test title', status: 'active',
@@ -20,6 +21,7 @@ const baseProcedure: Procedure = {
   rules: ['Rule one.', 'Rule two.', 'Rule three.'],
   conditions: ['Condition one.'],
   qualificationsRequired: ['Qualification one.', 'Qualification two.'],
+  extraFields: {},
   revisionHistory: [{ wpsRev: '1', date: '2026-01-15', note: 'Initial release.', by: 'Test' }],
   createdBy: 'Test', createdAt: '', updatedAt: '',
 };
@@ -47,6 +49,24 @@ describe('procedureDocDefinition', () => {
       '7. Equipment', '8. Gas', '9. Heat Input', '10. Parameters', '11. Heat Treatment',
       'Rules', 'Specific Conditions',
     ]);
+  });
+
+  it('prints added sections after 11, numbered from 12, with their values', () => {
+    const sections: ProcedureSection[] = [
+      { id: 'a', name: 'Taco Tuesday', fields: [
+        { key: 'shell_type', label: 'Shell Type', type: 'list', required: true, options: ['Hard', 'Soft'] },
+        { key: 'taco_count', label: 'Taco Count', type: 'range', required: false, options: [] },
+      ] },
+      { id: 'b', name: 'Empty One', fields: [] },
+    ];
+    const withExtras: Procedure = { ...baseProcedure, extraFields: { shell_type: 'Hard', taco_count: { min: 2, max: 4 } } };
+    const doc = procedureDocDefinition(withExtras, sections);
+    const headers = sectionHeaders(doc);
+    expect(headers.slice(headers.indexOf('11. Heat Treatment') + 1, headers.indexOf('Rules')))
+      .toEqual(['12. Taco Tuesday', '13. Empty One']);
+    const content = doc.content as any[];
+    const table = content[content.findIndex(c => c?.text === '12. Taco Tuesday') + 1].table;
+    expect(table.body[1]).toEqual(['Hard', '2 - 4']);
   });
 
   it('includes Override Requirements when any override field is set', () => {
