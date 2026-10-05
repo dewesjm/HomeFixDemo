@@ -42,7 +42,7 @@ function rangeText(stage: WorkflowStage, key: string): string {
 
 /* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see.
    baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. requiredQuals =
-   the requirements of the conditions the joint and the step's WTN match (conditionRequirements(),
+   the requirements of the conditions the joint and the step match (conditionRequirements(),
    qual-conditions.ts), checked even with no WPS picked. */
 export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals, requiredQuals: QualGroup[] = []): DeviationItem[] {
   const items: DeviationItem[] = [];

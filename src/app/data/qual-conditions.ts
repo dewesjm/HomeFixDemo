@@ -1,15 +1,16 @@
 /* Qual conditions (Admin > Qualifications): "when <field> is <value>, the welder or inspector needs
    <requirement>", where the requirement is an AND/OR group of quals (qual-requirements.ts). This is
-   the only place quals are required. Joint fields (Controlled Material, SS, SFFF, N Ind.) are checked
-   on every welding and inspection step as soon as it's open; WTN is checked on a welding step once a
-   WTN is picked. Controlled Material = either MCL 1 or MCL 2 is a value the MCL Traceability table
-   marks as requiring traceability (i.e. not STD). */
+   the only place quals are required. Joint fields (Controlled Material, SS, SFFF, N Ind., Titanium)
+   are checked on every welding and inspection step as soon as it's open; WTN once a welding step has
+   a WTN; Inspection Type once an inspection step's Type is picked. Controlled Material = either MCL 1
+   or MCL 2 is a value the MCL Traceability table marks as requiring traceability (i.e. not STD).
+   Titanium = either Material Type is flagged titanium in Admin > Material Classification. */
 import { signal } from '@angular/core';
 import { STORAGE } from './storage-keys';
 import { Job, N_IND_POOL } from './jobs';
 import { requiresTraceability } from './mcl-traceability';
 import { procedures } from './procedures';
-import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
+import { isTitaniumJoint } from './material-classification';
 import { QualGroup, cloneGroup, requirementText } from './qual-requirements';
 
 export interface QualCondition {
@@ -18,8 +19,11 @@ export interface QualCondition {
   require: QualGroup;
 }
 
-/* what a condition is checked against: the joint, plus the step's WTN once one is picked */
-export interface ConditionSubject { job: Job; wtn?: string; }
+/* the step being checked: its WTN and inspection Type, once picked */
+export interface ConditionStep { inputs?: Record<string, string>; inspectionType?: string; }
+
+/* what a condition is checked against */
+interface ConditionSubject { job: Job; step: ConditionStep; }
 
 interface ConditionField {
   key: string;
@@ -30,6 +34,8 @@ interface ConditionField {
 
 const yesNo = (v: string) => v === 'Yes' ? 'Yes' : 'No';
 const YES_NO = () => ['Yes', 'No'];
+/* the NDT methods (workflow/ndt.ts option values, upper-cased) */
+const INSPECTION_TYPES = ['VT', '5X', 'MT', 'PT', 'RT', 'UT'];
 
 /* every WTN on a procedure, sorted */
 function wtnValues(): string[] {
@@ -42,40 +48,20 @@ export const CONDITION_FIELDS: ConditionField[] = [
   { key: 'ss', label: 'SS', values: YES_NO, get: s => yesNo(s.job.ss) },
   { key: 'sfff', label: 'SFFF', values: YES_NO, get: s => yesNo(s.job.sfff) },
   { key: 'nInd', label: 'N Ind.', values: () => N_IND_POOL, get: s => s.job.nInd },
-  { key: 'wtn', label: 'WTN', values: wtnValues, get: s => s.wtn || undefined },
+  { key: 'titanium', label: 'Titanium', values: YES_NO,
+    get: s => isTitaniumJoint({ materialType1: s.job.materialType1 ?? '', materialType2: s.job.materialType2 ?? '' }) ? 'Yes' : 'No' },
+  { key: 'wtn', label: 'WTN', values: wtnValues, get: s => s.step.inputs?.['wtn'] || undefined },
+  { key: 'inspectionType', label: 'Inspection Type', values: () => INSPECTION_TYPES,
+    get: s => s.step.inspectionType ? s.step.inspectionType.toUpperCase() : undefined },
 ];
 
-/* weighted pick without repeats, kept in QUALIFICATIONS order: some quals are needed far more
-   often than others (QUAL_WEIGHTS) */
-function pickQuals(rand: () => number, min: number, max: number): string[] {
-  const count = min + Math.floor(rand() * (max - min + 1));
-  const pool = QUALIFICATIONS.map((q, i) => ({ q, w: QUAL_WEIGHTS[i] }));
-  const picked = new Set<string>();
-  while (picked.size < count) {
-    const left = pool.filter(x => !picked.has(x.q));
-    let r = rand() * left.reduce((sum, x) => sum + x.w, 0);
-    const hit = left.find(x => (r -= x.w) < 0) ?? left[left.length - 1];
-    picked.add(hit.q);
-  }
-  return QUALIFICATIONS.filter(q => picked.has(q));
-}
-
-function seeded(n: number) {
-  let s = n * 9301 + 49297;
-  return () => {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-}
-
-/* Controlled Material needs either controlled-material qual, then each WTN (in procedure order)
-   needs all of 1-3 WELD4xx quals */
+/* one seed row per kind of check: joint flags, a step's inspection type, and the base material */
 function defaultConditions(): QualCondition[] {
-  const rand = seeded(4242);
-  const wtns = [...new Set(procedures().map(p => p.wtn).filter(Boolean))];
   return [
     { field: 'controlledMaterial', value: 'Yes', require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
-    ...wtns.map((wtn): QualCondition => ({ field: 'wtn', value: wtn, require: { op: 'all', items: pickQuals(rand, 1, 3) } })),
+    { field: 'ss', value: 'Yes', require: { op: 'all', items: ['SSWELD1'] } },
+    { field: 'inspectionType', value: 'VT', require: { op: 'all', items: ['VTINSP1'] } },
+    { field: 'titanium', value: 'Yes', require: { op: 'all', items: ['TIWELD1'] } },
   ];
 }
 
@@ -98,10 +84,10 @@ export function conditionField(key: string): ConditionField | undefined {
   return CONDITION_FIELDS.find(f => f.key === key);
 }
 
-/* the requirements of every condition the joint (and the step's WTN, if given) matches, in table order */
-export function conditionRequirements(job: Job | undefined | null, wtn?: string): QualGroup[] {
+/* the requirements of every condition the joint and step match, in table order */
+export function conditionRequirements(job: Job | undefined | null, step: ConditionStep = {}): QualGroup[] {
   if (!job) return [];
-  const subject: ConditionSubject = { job, wtn };
+  const subject: ConditionSubject = { job, step };
   return qualConditions()
     .filter(c => { const v = conditionField(c.field)?.get(subject); return v !== undefined && v === c.value; })
     .map(c => cloneGroup(c.require));

@@ -1,14 +1,16 @@
 <div class="table-page-wrap">
   <h2 class="section-title">Qualifications</h2>
 
-  <p class="mb-1">A joint or WTN that matches a condition requires its quals on every welding and inspection step.
-    Controlled Material, SS, SFFF and N Ind. are checked as soon as a step opens. WTN is checked once a welding step has a WTN.</p>
-  <p class="mb-1">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.</p>
+  <p class="mb-1">A step that matches a condition requires its quals before sign-off.
+    Controlled Material, SS, SFFF, N Ind. and Titanium are checked as soon as a step with a Qualification Check opens.
+    Inspection Type is checked once the step's Type is picked.</p>
+  <p class="mb-1">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.
+    Titanium is Yes when either Material Type is marked Titanium in Admin &gt; Material Classification.</p>
   <p class="mb-3">The toggle on each qual shows whether the {{ userName }} holds it. Toggles save right away. Condition changes save with the Save button.</p>
 
   <app-table-toolbar [table]="table" searchPlaceholder="Search conditions…" (exportCsv)="exportCsv()">
     <span class="font-semibold">{{ userName }}: {{ held().length }} of {{ allQuals.length }} quals held</span>
-    <span>· fails {{ wtnFails().failing }} of {{ wtnFails().total }} WTNs</span>
+    <span>· fails {{ failingCount() }} of {{ savedCount() }} conditions</span>
     <div toolbarEnd class="flex flex-wrap gap-2 min-w-0 max-w-full">
       <button type="button" class="btn btn-sm" (click)="setAll(true)">Select all</button>
       <button type="button" class="btn btn-sm" (click)="setAll(false)">Clear all</button>

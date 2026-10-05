@@ -26,9 +26,9 @@ export class SignoffPanelComponent {
 
   foremanOverrideEnabled = FOREMAN_OVERRIDE_ENABLED;
 
-  /* inspection steps have no Qualification Check field; they check only the joint's condition quals */
+  /* inspection steps have no Qualification Check field; they check the conditions the joint and step match */
   inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {
-    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionRequirements(this.ctx().job)) : null;
+    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionRequirements(this.ctx().job, st)) : null;
   }
 
   /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)

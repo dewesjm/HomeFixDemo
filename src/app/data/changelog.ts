@@ -20,7 +20,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Fabrication: ER/IR Number only shows once a Revised Joint Design is picked, and is required then.',
       'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
 
-      'Admin > Qualifications is now one Conditions table. The quals each WTN needs are conditions too ("When WTN is ..."), so they are set here instead of on each procedure; the procedure form and PDF show them read-only.',
+      'Admin > Qualifications is now one Conditions table. Quals are no longer set on each procedure; a condition can require them for a WTN instead, and the procedure form and PDF show those read-only.',
+      'New condition fields: Titanium (either Material Type is titanium) and Inspection Type (checked once the step\'s Type is picked). Sample conditions: SS needs SSWELD1, a VT inspection needs VTINSP1, titanium needs TIWELD1.',
       'A condition can require quals with AND or OR, and groups inside groups, for example Controlled Material needs CNTRLMTL1 OR CNTRLMTL2.',
       'Each qual in the Conditions table has a toggle for whether the Test User holds it. Toggles save right away; condition edits still save with Save.',
     ],

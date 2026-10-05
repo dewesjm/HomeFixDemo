@@ -55,9 +55,9 @@ export class WeldStageFormComponent {
 
   weldGroups = WELD_GROUPS;
 
-  /* the conditions the joint and the picked WTN match against the Test User's quals (Admin > Qualifications) */
+  /* the conditions the joint and this step match against the Test User's quals (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
-    return qualCheck(testUserQuals(), conditionRequirements(this.ctx().job, this.stage().inputs['wtn']));
+    return qualCheck(testUserQuals(), conditionRequirements(this.ctx().job, this.stage()));
   }
 
   groupVisible(g: WeldGroup): boolean {

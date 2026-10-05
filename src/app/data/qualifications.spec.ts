@@ -1,7 +1,6 @@
 import { QUALIFICATIONS, DEFAULT_TEST_USER_QUALS, qualCheck } from './qualifications';
-import { procedures } from './procedures';
 import { qualConditions } from './qual-conditions';
-import { QualGroup, qualsIn, termMet } from './qual-requirements';
+import { QualGroup, termMet } from './qual-requirements';
 
 const all = (...items: string[]): QualGroup => ({ op: 'all', items });
 
@@ -16,18 +15,8 @@ describe('qualifications', () => {
     expect(DEFAULT_TEST_USER_QUALS.length).toBeLessThan(QUALIFICATIONS.length);
   });
 
-  it('seed WTN conditions use only known quals, and the default Test User passes some and fails some', () => {
-    const wtn = qualConditions().filter(c => c.field === 'wtn');
-    expect(wtn.length).toBeGreaterThan(0);
-    wtn.forEach(c => qualsIn(c.require).forEach(q => expect(QUALIFICATIONS).toContain(q)));
-    const fails = wtn.filter(c => !termMet(c.require, DEFAULT_TEST_USER_QUALS));
-    expect(fails.length).toBeGreaterThan(0);
-    expect(fails.length).toBeLessThan(wtn.length);
-  });
-
-  it('every seeded WTN has a seed condition', () => {
-    const wtns = new Set(qualConditions().filter(c => c.field === 'wtn').map(c => c.value));
-    procedures().filter(p => /^W-\d+-\d+$/.test(p.id)).forEach(p => expect(wtns).toContain(p.wtn));
+  it('the default Test User meets every seed condition', () => {
+    qualConditions().forEach(c => expect(termMet(c.require, DEFAULT_TEST_USER_QUALS)).withContext(c.field).toBeTrue());
   });
 
   it('reports pass with nothing required, pass, and missing quals', () => {

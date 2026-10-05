@@ -40,11 +40,9 @@ export class AdminQualificationsComponent {
   })));
   table = new TableState<ConditionRow>(['when', 'is', 'require']);
 
-  /* WTN conditions the Test User fails, as saved */
-  wtnFails = computed(() => {
-    const wtn = qualConditions().filter(c => c.field === 'wtn');
-    return { failing: wtn.filter(c => !termMet(c.require, this.held())).length, total: wtn.length };
-  });
+  /* saved conditions whose quals the Test User doesn't meet */
+  failingCount = computed(() => qualConditions().filter(c => !termMet(c.require, this.held())).length);
+  savedCount = computed(() => qualConditions().length);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));

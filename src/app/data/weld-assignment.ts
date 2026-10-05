@@ -41,7 +41,7 @@ function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): Proc
   const gwp = pick(gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? ''), job.id)?.value;
   if (!gwp) return undefined;
   const rows = procedures().filter(p => p.gwp === gwp);
-  const qualified = rows.filter(p => requirementsMet(heldQuals, conditionRequirements(job, p.wtn)));
+  const qualified = rows.filter(p => requirementsMet(heldQuals, conditionRequirements(job, { inputs: { wtn: p.wtn } })));
   return pick(qualified.length ? qualified : rows, `${job.id}:${stageId}`);
 }
 

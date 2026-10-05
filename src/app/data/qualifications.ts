@@ -7,25 +7,23 @@ import { signal } from '@angular/core';
 import { STORAGE } from './storage-keys';
 import { QualGroup, missingText, qualsIn, termMet } from './qual-requirements';
 
-/* ordered most to least common: seed WTN conditions pick with these weights (QUAL_WEIGHTS) */
+/* WELD4xx quals, offered when building a condition */
 export const QUALIFICATIONS = [
   'WELD412', 'WELD427', 'WELD403', 'WELD458', 'WELD431', 'WELD466',
   'WELD419', 'WELD474', 'WELD440', 'WELD485', 'WELD409', 'WELD452',
   'WELD437', 'WELD491', 'WELD415', 'WELD463', 'WELD448', 'WELD470', 'WELD426', 'WELD498',
 ];
 
-/* quals the seed Controlled Material condition requires (either one will do) */
-const CONDITION_QUALS = ['CNTRLMTL1', 'CNTRLMTL2'];
+/* quals the seed conditions require (qual-conditions.ts): controlled material (either one will do),
+   stainless, VT inspection, titanium */
+const CONDITION_QUALS = ['CNTRLMTL1', 'CNTRLMTL2', 'SSWELD1', 'VTINSP1', 'TIWELD1'];
 export const ALL_QUALS = [...QUALIFICATIONS, ...CONDITION_QUALS];
-
-/* first 6 common, next 6 moderate, last 8 rare */
-export const QUAL_WEIGHTS: number[] = QUALIFICATIONS.map((_, i) => i < 6 ? 8 : i < 12 ? 3 : 1);
 
 export const TEST_USER_NAME = 'Test User';
 
-/* the common and moderate quals, none of the rare ones, so some WTNs fail the check; plus
-   CNTRLMTL1, so controlled material (most joints) passes by default through the OR */
-export const DEFAULT_TEST_USER_QUALS = [...QUALIFICATIONS.slice(0, 12), CONDITION_QUALS[0]];
+/* the first 12 WELD4xx quals, plus every seed condition's quals except CNTRLMTL2, so every seed
+   condition passes by default (controlled material through the OR) */
+export const DEFAULT_TEST_USER_QUALS = [...QUALIFICATIONS.slice(0, 12), ...CONDITION_QUALS.filter(q => q !== 'CNTRLMTL2')];
 
 function load(): string[] {
   try {
