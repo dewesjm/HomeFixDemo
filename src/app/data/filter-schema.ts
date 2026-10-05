@@ -6,6 +6,7 @@ import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel, fabricationFieldV
 import { shopOptions } from './shops';
 import { jointDesignOptions } from './joint-designs';
 import { StepConditionField, allStepAnswerFields } from './step-conditions';
+import { jointDetailsUt, jointDetailsVt } from './joint-form/joint-details';
 import { Condition, FieldKind, FilterValues, MatchField, isoDay } from './filter-engine';
 
 export interface SearchField extends MatchField {
@@ -19,6 +20,8 @@ export interface SearchField extends MatchField {
 const job = (key: keyof Job, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-24'): SearchField =>
   ({ key, label, group, kind, width });
 
+/* Joint Details fields under the labels the Joint Details panel uses, plus WPS, NDT, PWHT and the
+   planning fields. UT and VT read the NDT requirement the way Joint Details shows them. */
 const JOB_FIELDS: SearchField[] = [
   job('xrefid', 'XREFID', 'Job', 'text', 'min-w-16'),
   job('ship', 'Ship', 'Job', 'text', 'min-w-16'),
@@ -26,50 +29,51 @@ const JOB_FIELDS: SearchField[] = [
   job('drawing', 'Drawing', 'Job'),
   job('drawingRev', 'Drawing Rev', 'Job'),
   job('joint', 'Joint', 'Job', 'text', 'min-w-20'),
-  { key: 'currentRouting', label: 'Current routing', group: 'Job', kind: 'list', width: 'min-w-36' },
-  job('jointDesign', 'Joint design', 'Welding', 'list'),
-  job('weldType', 'Weld type', 'Welding', 'list'),
-  job('materialType1', 'Material 1', 'Welding', 'list'),
-  job('materialType2', 'Material 2', 'Welding', 'list'),
-  job('pipeSize', 'Pipe size', 'Welding'),
-  job('wallThickness', 'Wall thickness', 'Welding'),
+  { key: 'currentRouting', label: 'Routing', group: 'Job', kind: 'list', width: 'min-w-36' },
+  job('jointDesign', 'Joint Design', 'Welding', 'list'),
+  job('weldType', 'Weld Type', 'Welding', 'list'),
+  job('materialType1', 'Material Type 1', 'Welding', 'list'),
+  job('materialType2', 'Material Type 2', 'Welding', 'list'),
+  job('pipeSize', 'Pipe Size', 'Welding'),
+  job('wallThickness', 'Wall Thickness', 'Welding'),
   job('mcl1', 'MCL 1', 'Welding', 'list'),
   job('mcl2', 'MCL 2', 'Welding', 'list'),
-  job('joiningItem', 'Joining item', 'Welding'),
-  job('joinToItem', 'Join to item', 'Welding'),
-  job('sequenceNumber', 'Sequence', 'Welding'),
+  job('joiningItem', 'Joining Item', 'Welding'),
+  job('joinToItem', 'Join To Item', 'Welding'),
+  job('sequenceNumber', 'Sequence #', 'Welding'),
   job('nInd', 'Nuclear Indicator', 'Welding', 'list'),
   job('wps', 'WPS', 'Welding'),
-  job('engineeringNotes', 'Eng. notes', 'Welding', 'text', 'min-w-32'),
+  job('engineeringNotes', 'Engineering Notes', 'Welding', 'text', 'min-w-32'),
   job('ndt', 'NDT', 'NDT'),
   job('rtRoot', 'RT Root', 'NDT', 'list'),
   job('rtFinal', 'RT Final', 'NDT', 'list'),
   job('ndtRoot', 'NDT Root', 'NDT', 'list'),
   job('ndtEach', 'NDT Each', 'NDT', 'list'),
   job('ndtFinal', 'NDT Final', 'NDT', 'list'),
-  job('ut', 'UT', 'NDT'),
+  job('ut', 'UT', 'NDT', 'list'),
+  { key: 'vt', label: 'VT', group: 'NDT', kind: 'list', width: 'min-w-24' },
   job('pwht', 'PWHT', 'NDT'),
   job('order', 'Order', 'Additional', 'text', 'min-w-28'),
-  job('workPackage', 'Work package', 'Additional'),
-  job('workPermit', 'Work permit', 'Additional'),
+  job('workPackage', 'Work Package', 'Additional'),
+  job('workPermit', 'Work Permit', 'Additional'),
   job('waff', 'WAFF', 'Additional'),
-  job('serialNumber', 'Serial number', 'Additional'),
-  job('refitNumber', 'Refit number', 'Additional'),
-  job('repairNumber', 'Repair number', 'Additional'),
+  job('serialNumber', 'Serial Number', 'Additional'),
+  job('refitNumber', 'Refit #', 'Additional'),
+  job('repairNumber', 'Repair #', 'Additional'),
   job('ss', 'SS', 'Additional'),
   job('sfff', 'SFFF', 'Additional'),
-  job('dssAaa', 'DSS/AAA', 'Additional'),
-  job('er1', 'ER 1', 'Additional'),
-  job('er2', 'ER 2', 'Additional'),
-  job('er3', 'ER 3', 'Additional'),
-  job('er4', 'ER 4', 'Additional'),
-  job('attributeCode1', 'Attribute code 1', 'Additional'),
-  job('attributeCode2', 'Attribute code 2', 'Additional'),
-  job('attributeCode3', 'Attribute code 3', 'Additional'),
-  job('attributeCode4', 'Attribute code 4', 'Additional'),
-  job('estimatedCost', 'Estimated cost', 'Additional', 'number'),
-  job('estimatedHours', 'Estimated hours', 'Additional', 'number'),
-  job('scheduledFor', 'Scheduled for', 'Additional', 'date'),
+  job('dssAaa', 'DSS-AAA', 'Additional'),
+  job('er1', 'ER1', 'Additional'),
+  job('er2', 'ER2', 'Additional'),
+  job('er3', 'ER3', 'Additional'),
+  job('er4', 'ER4', 'Additional'),
+  job('attributeCode1', 'Attribute Code 1', 'Additional'),
+  job('attributeCode2', 'Attribute Code 2', 'Additional'),
+  job('attributeCode3', 'Attribute Code 3', 'Additional'),
+  job('attributeCode4', 'Attribute Code 4', 'Additional'),
+  job('estimatedCost', 'Estimated Cost', 'Additional', 'number'),
+  job('estimatedHours', 'Estimated Hours', 'Additional', 'number'),
+  job('scheduledFor', 'Scheduled For', 'Additional', 'date'),
 ];
 
 const FAB_KEY = 'fab.';
@@ -103,10 +107,10 @@ function fabValue(fab: Record<string, string>, key: string): string {
   return options?.find(o => o.value === raw)?.label ?? raw;
 }
 
-/* one row per job: the Job's own fields and Current routing, plus any fabrication / step-answer
+/* one row per job: the Job's own fields, Routing, and UT/VT as Joint Details shows them, plus any fabrication / step-answer
    fields in `extraKeys` (only the ones in use are worked out; there are a lot of step fields) */
 export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepFields: Map<string, StepConditionField>): SearchRow {
-  const row: SearchRow = { ...j, currentRouting: currentRoutingLabel(wf.stages) };
+  const row: SearchRow = { ...j, currentRouting: currentRoutingLabel(wf.stages), ut: jointDetailsUt(j), vt: jointDetailsVt(j) };
   for (const key of extraKeys) {
     if (key.startsWith(FAB_KEY)) row[key] = fabValue(wf.fabricationData ?? {}, key.slice(FAB_KEY.length));
     else {

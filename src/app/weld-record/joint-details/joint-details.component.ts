@@ -4,6 +4,7 @@ import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular'
 import { Job, N_IND_MEANINGS } from '../../data/jobs';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 import { characteristicLabel } from '../../data/characteristics';
+import { jointDetailsUt, jointDetailsVt } from '../../data/joint-form/joint-details';
 
 @Component({
   selector: 'app-joint-details',
@@ -29,16 +30,11 @@ export class JointDetailsComponent {
   }
 
   ndtLabel(method: string): string {
-    const ndt = (this.job().ndt || '').toUpperCase();
-    const has = (m: string) => ndt.includes(m);
     if (method === 'rtRoot' || method === 'rtFinal' || method === 'ndtRoot' || method === 'ndtEach' || method === 'ndtFinal') {
       return this.job()[method] || '-';
     }
-    if (method === 'ut') return has('UT') ? 'X' : '-';
-    if (method === 'vt') {
-      if (has('5X')) return '5X';
-      return has('VT') || has('VISUAL') ? 'X' : '-';
-    }
+    if (method === 'ut') return jointDetailsUt(this.job());
+    if (method === 'vt') return jointDetailsVt(this.job());
     return '-';
   }
 }
