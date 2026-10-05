@@ -21,7 +21,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   heatInputMin: '', heatInputMax: '',
   amperageRange: '', voltageRange: '', travelSpeedRange: '',
   pwhtTemp: '', pwhtTime: '',
-  rules: [], conditions: [], qualificationsRequired: [],
+  rules: [], conditions: [],
   extraFields: {},
   revisionHistory: [],
   createdBy: 'Test',
@@ -53,7 +53,6 @@ describe('procedures data layer', () => {
     for (const p of seeded) {
       expect(p.rules.length).toBeGreaterThan(0);
       expect(p.conditions.length).toBeGreaterThan(0);
-      expect(p.qualificationsRequired.length).toBeGreaterThan(0);
     }
   });
 

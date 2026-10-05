@@ -5,6 +5,7 @@
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
 import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor, isInspectionStage } from './workflow';
+import { QualGroup, missingText, requirementText } from './qual-requirements';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
   FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS, gwpOptionsForMaterials
@@ -40,9 +41,10 @@ function rangeText(stage: WorkflowStage, key: string): string {
 }
 
 /* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see.
-   baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. conditionQuals =
-   the quals the joint's conditions require (qual-conditions.ts), checked even with no WPS picked. */
-export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals, conditionQuals: string[] = []): DeviationItem[] {
+   baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. requiredQuals =
+   the requirements of the conditions the joint and the step's WTN match (conditionRequirements(),
+   qual-conditions.ts), checked even with no WPS picked. */
+export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals, requiredQuals: QualGroup[] = []): DeviationItem[] {
   const items: DeviationItem[] = [];
   for (const key of Object.keys(ACTUAL_REQUIREMENT)) {
     if (visibleKeys.has(key) && isActualOutOfRange(stage, key)) {
@@ -64,9 +66,9 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
   /* welding steps check when the field is showing; inspection steps have no field, just the check */
   const checksQuals = stage.fields.some(f => f.key === 'qualificationCheck') ? visibleKeys.has('qualificationCheck') : isInspectionStage(stage);
   if (checksQuals) {
-    const required = [...new Set([...conditionQuals, ...(proc?.qualificationsRequired ?? [])])];
-    const missing = required.filter(q => !heldQuals.includes(q));
+    const missing = requiredQuals.map(g => missingText(g, heldQuals)).filter(Boolean);
     if (missing.length) {
+      const required = requiredQuals.map(g => requirementText(g, requiredQuals.length > 1)).filter(Boolean);
       items.push({ kind: 'qual', label: 'Qualification Check', entered: `Missing ${missing.join(', ')}`, required: required.join(', ') });
     }
   }

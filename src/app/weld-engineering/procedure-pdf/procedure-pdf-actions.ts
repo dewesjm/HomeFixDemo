@@ -2,6 +2,7 @@
    definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency. */
 import { Procedure } from '../../data/procedures';
 import { procedureSections } from '../../data/procedure-sections';
+import { wtnRequirementText } from '../../data/qual-conditions';
 import { procedureDocDefinition } from './procedure-pdf';
 
 let vfsReady: Promise<any> | null = null;
@@ -20,16 +21,16 @@ async function pdfMake() {
 
 export async function openProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p, procedureSections())).open();
+  pm.createPdf(procedureDocDefinition(p, procedureSections(), wtnRequirementText(p.wtn))).open();
 }
 
 export async function downloadProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p, procedureSections())).download(`${p.id}.pdf`);
+  pm.createPdf(procedureDocDefinition(p, procedureSections(), wtnRequirementText(p.wtn))).download(`${p.id}.pdf`);
 }
 
 /* data: URL for embedding in an <iframe> preview */
 export async function procedurePdfDataUrl(p: Procedure): Promise<string> {
   const pm = await pdfMake();
-  return pm.createPdf(procedureDocDefinition(p, procedureSections())).getDataUrl();
+  return pm.createPdf(procedureDocDefinition(p, procedureSections(), wtnRequirementText(p.wtn))).getDataUrl();
 }

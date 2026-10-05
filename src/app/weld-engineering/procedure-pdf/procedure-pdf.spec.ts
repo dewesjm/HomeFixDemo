@@ -20,7 +20,6 @@ const baseProcedure: Procedure = {
   pwhtTemp: 'N/A', pwhtTime: 'N/A',
   rules: ['Rule one.', 'Rule two.', 'Rule three.'],
   conditions: ['Condition one.'],
-  qualificationsRequired: ['Qualification one.', 'Qualification two.'],
   extraFields: {},
   revisionHistory: [{ wpsRev: '1', date: '2026-01-15', note: 'Initial release.', by: 'Test' }],
   createdBy: 'Test', createdAt: '', updatedAt: '',
@@ -85,13 +84,14 @@ describe('procedureDocDefinition', () => {
     const doc = procedureDocDefinition(baseProcedure);
     expect(ulFor(doc, 'Rules').length).toBe(baseProcedure.rules.length);
     expect(ulFor(doc, 'Specific Conditions').length).toBe(baseProcedure.conditions.length);
-    expect(ulFor(doc, '5. Welder Qualifications').length).toBe(baseProcedure.qualificationsRequired.length);
+    expect(ulFor(procedureDocDefinition(baseProcedure, [], 'WELD412 AND WELD427'), '5. Welder Qualifications')).toEqual(['WELD412 AND WELD427']);
   });
 
   it('renders a placeholder instead of an empty list when arrays are empty', () => {
-    const empty: Procedure = { ...baseProcedure, rules: [], conditions: [], qualificationsRequired: [] };
+    const empty: Procedure = { ...baseProcedure, rules: [], conditions: [] };
     const doc = procedureDocDefinition(empty);
     expect(ulFor(doc, 'Rules')).toEqual(['-']);
+    expect(ulFor(doc, '5. Welder Qualifications')).toEqual(['-']);
   });
 
   it('includes the procedure id and title as content', () => {

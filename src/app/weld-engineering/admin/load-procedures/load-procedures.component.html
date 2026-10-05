@@ -29,7 +29,6 @@
       <th class="min-w-20">IP Max</th>
       <th class="min-w-48">Rules</th>
       <th class="min-w-48">Conditions</th>
-      <th class="min-w-48">Qualifications Required</th>
     </ng-template>
     <ng-template #rowCells let-row>
       <td><input class="input input-xs w-full" [(ngModel)]="row.id" [class.input-error]="!row.id" /></td>
@@ -65,7 +64,6 @@
       <td><input class="input input-xs w-full" [(ngModel)]="row.ipMax" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.rules" placeholder="a; b" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.conditions" placeholder="a; b" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.qualificationsRequired" placeholder="a; b" /></td>
     </ng-template>
   </app-import-grid>
 </div>

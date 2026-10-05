@@ -1,6 +1,7 @@
-/* Admin > Qualifications: which quals the Test User holds (demo/testing aid), and the conditions
-   that make a joint require a qual (data/qual-conditions.ts). Both drive Weld Record's
-   Qualification Check (data/qualifications.ts). */
+/* Admin > Qualifications: the conditions that make a joint or WTN require quals
+   (data/qual-conditions.ts), each an AND/OR group, with a toggle on every qual for whether the Test
+   User holds it (demo/testing aid). Both drive Weld Record's Qualification Check
+   (data/qualifications.ts). Toggles save right away; conditions save with Save. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -10,81 +11,80 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
-import { procedures } from '../../../data/procedures';
 import {
-  ALL_QUALS, DEFAULT_TEST_USER_QUALS, TEST_USER_NAME, testUserQuals, setTestUserQuals
+  ALL_QUALS, DEFAULT_TEST_USER_QUALS, TEST_USER_NAME, testUserQuals, setTestUserQuals, toggleTestUserQual
 } from '../../../data/qualifications';
-import { CONDITION_FIELDS, QualCondition, qualConditions, setQualConditions } from '../../../data/qual-conditions';
+import { CONDITION_FIELDS, QualCondition, conditionField, qualConditions, setQualConditions } from '../../../data/qual-conditions';
+import { QualGroup, cloneGroup, pruneGroup, requirementText, termMet } from '../../../data/qual-requirements';
+import { QualGroupEditorComponent } from './qual-group-editor.component';
 
-interface QualRow { qual: string; wtnCount: number; conditions: string; has: boolean; }
+/* i = the condition's index in conditions(), so edits reach the right one while searched or sorted */
+interface ConditionRow { i: number; c: QualCondition; when: string; is: string; require: string; }
 
 @Component({
   selector: 'app-admin-qualifications',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePlus, LucideTrash2],
+  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, QualGroupEditorComponent, LucidePlus, LucideTrash2],
   templateUrl: './admin-qualifications.component.html'
 })
 export class AdminQualificationsComponent {
   private messages = inject(ToastService);
   userName = TEST_USER_NAME;
-  held = signal<ReadonlySet<string>>(new Set(testUserQuals()));
-  conditions = signal<QualCondition[]>(qualConditions().map(c => ({ ...c })));
-  conditionFields = CONDITION_FIELDS;
+  held = testUserQuals;
   allQuals = ALL_QUALS;
+  conditionFields = CONDITION_FIELDS;
+  conditions = signal<QualCondition[]>(qualConditions().map(c => ({ ...c, require: cloneGroup(c.require) })));
 
-  /* each qual with how many WPS rows (one per GWP+WTN) require it, and the conditions that do */
-  rows = computed(() => ALL_QUALS.map(q => ({
-    qual: q,
-    wtnCount: procedures().filter(p => p.qualificationsRequired.includes(q)).length,
-    conditions: this.conditions().filter(c => c.qual === q).map(c => `${this.fieldLabel(c.field)} = ${c.value}`).join(', '),
-    has: this.held().has(q),
+  rows = computed(() => this.conditions().map((c, i): ConditionRow => ({
+    i, c, when: this.fieldLabel(c.field), is: c.value, require: requirementText(c.require),
   })));
-  table = new TableState<QualRow>(['qual', 'conditions']);
+  table = new TableState<ConditionRow>(['when', 'is', 'require']);
+
+  /* WTN conditions the Test User fails, as saved */
+  wtnFails = computed(() => {
+    const wtn = qualConditions().filter(c => c.field === 'wtn');
+    return { failing: wtn.filter(c => !termMet(c.require, this.held())).length, total: wtn.length };
+  });
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));
   }
 
   exportCsv() {
-    downloadCsv('qualifications', [
-      { header: 'Qualification', value: (r: QualRow) => r.qual },
-      { header: 'Required by (WTNs)', value: (r: QualRow) => r.wtnCount },
-      { header: 'Required by conditions', value: (r: QualRow) => r.conditions },
-      { header: `${this.userName} has`, value: (r: QualRow) => (r.has ? 'Yes' : 'No') },
+    downloadCsv('qual-conditions', [
+      { header: 'When', value: (r: ConditionRow) => r.when },
+      { header: 'Is', value: (r: ConditionRow) => r.is },
+      { header: 'Require', value: (r: ConditionRow) => r.require },
+      { header: `${this.userName} meets`, value: (r: ConditionRow) => (termMet(r.c.require, this.held()) ? 'Yes' : 'No') },
     ], this.table.sorted());
   }
 
-  /* WPS rows the Test User would fail with the current (unsaved) selection */
-  failingCount = computed(() => procedures().filter(p => p.qualificationsRequired.some(q => !this.held().has(q))).length);
-  totalCount = computed(() => procedures().length);
-
-  toggle(qual: string) {
-    this.held.update(s => {
-      const next = new Set(s);
-      if (!next.delete(qual)) next.add(qual);
-      return next;
-    });
+  toggleHeld(qual: string) {
+    toggleTestUserQual(qual);
   }
 
   setAll(on: boolean) {
-    this.held.set(new Set(on ? ALL_QUALS : []));
+    setTestUserQuals(on ? [...ALL_QUALS] : []);
   }
 
   resetDefault() {
-    this.held.set(new Set(DEFAULT_TEST_USER_QUALS));
+    setTestUserQuals([...DEFAULT_TEST_USER_QUALS]);
   }
 
   fieldLabel(key: string): string {
-    return CONDITION_FIELDS.find(f => f.key === key)?.label ?? key;
+    return conditionField(key)?.label ?? key;
   }
 
   valuesFor(key: string): string[] {
-    return CONDITION_FIELDS.find(f => f.key === key)?.values ?? [];
+    return conditionField(key)?.values() ?? [];
   }
 
+  /* added at the top, with the search cleared, so the new row is in view */
   addCondition() {
     const f = CONDITION_FIELDS[0];
-    this.conditions.update(cs => [...cs, { field: f.key, value: f.values[0], qual: ALL_QUALS[0] }]);
+    this.conditions.update(cs => [{ field: f.key, value: f.values()[0], require: { op: 'all', items: [] } }, ...cs]);
+    this.table.clearFilters();
+    this.table.sortField.set(null);
   }
 
   removeCondition(i: number) {
@@ -96,13 +96,18 @@ export class AdminQualificationsComponent {
     this.conditions.update(cs => cs.map((c, j) => j === i ? { ...c, field, value: this.valuesFor(field)[0] ?? '' } : c));
   }
 
-  setCondition(i: number, patch: Partial<QualCondition>) {
-    this.conditions.update(cs => cs.map((c, j) => j === i ? { ...c, ...patch } : c));
+  setConditionValue(i: number, value: string) {
+    this.conditions.update(cs => cs.map((c, j) => j === i ? { ...c, value } : c));
+  }
+
+  setRequire(i: number, require: QualGroup) {
+    this.conditions.update(cs => cs.map((c, j) => j === i ? { ...c, require } : c));
   }
 
   save() {
-    setTestUserQuals([...this.held()]);
-    setQualConditions(this.conditions().map(c => ({ ...c })));
-    this.messages.add({ severity: 'success', summary: 'Qualifications saved', detail: `${this.held().size} of ${ALL_QUALS.length} held, ${this.conditions().length} conditions`, life: 3000 });
+    const cleaned = this.conditions().map(c => ({ ...c, require: pruneGroup(c.require) }));
+    this.conditions.set(cleaned);
+    setQualConditions(cleaned.map(c => ({ ...c, require: cloneGroup(c.require) })));
+    this.messages.add({ severity: 'success', summary: 'Qualifications saved', detail: `${cleaned.length} conditions`, life: 3000 });
   }
 }

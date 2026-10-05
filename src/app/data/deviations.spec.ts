@@ -12,7 +12,8 @@ function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; 
     inputs: { weldProcedure: proc.gwp, wtn: proc.wtn, phMin: '50', phMax: '300', ipMin: '50', ipMax: '300', ...extra },
   };
   const offListType = FILLER_METAL_TYPE_OPTIONS.find(o => !proc.fillerMetalTypes.includes(o.value))!.value;
-  return { stage, offListType, quals: proc.qualificationsRequired };
+  /* quals are only required through conditions passed to detectDeviations, so none are needed here */
+  return { stage, offListType, quals: [] };
 }
 
 const ALL_VISIBLE = new Set(['actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax', 'qualificationCheck', 'fillerMetalType', 'fillerMetalSize']);
@@ -37,10 +38,17 @@ describe('deviations', () => {
   });
 
   it('flags a failed Qualification Check', () => {
-    const { stage, quals } = tackOnWps();
-    const items = detectDeviations(stage, ALL_VISIBLE, []);
-    expect(items.length).toBe(quals.length ? 1 : 0);
-    if (quals.length) expect(items[0].kind).toBe('qual');
+    const { stage } = tackOnWps();
+    const items = detectDeviations(stage, ALL_VISIBLE, ['WELD412'], undefined, [{ op: 'all', items: ['WELD412', 'WELD498'] }]);
+    expect(items).toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing WELD498', required: 'WELD412 AND WELD498' })]);
+  });
+
+  it('passes an OR requirement with either qual and names the whole group when neither is held', () => {
+    const { stage } = tackOnWps();
+    const req = [{ op: 'any' as const, items: ['CNTRLMTL1', 'CNTRLMTL2'] }];
+    expect(detectDeviations(stage, ALL_VISIBLE, ['CNTRLMTL2'], undefined, req)).toEqual([]);
+    expect(detectDeviations(stage, ALL_VISIBLE, [], undefined, req))
+      .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1 OR CNTRLMTL2' })]);
   });
 
   it('flags a filler type the WPS does not allow', () => {
@@ -69,10 +77,11 @@ describe('deviations', () => {
   it('checks condition quals on a welding step with no WPS picked and on an inspection step', () => {
     const job = addTestJob();
     const tack = buildStages(job).find(s => s.id === 'tack')!;
-    expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, ['CNTRLMTL1']))
+    const req = [{ op: 'all' as const, items: ['CNTRLMTL1'] }];
+    expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, req))
       .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1', required: 'CNTRLMTL1' })]);
     const insp = buildStages(job).find(s => s.id === 'fitup-insp')!;
-    expect(detectDeviations(insp, new Set(), [], undefined, ['CNTRLMTL1']).map(i => i.kind)).toEqual(['qual']);
-    expect(detectDeviations(insp, new Set(), ['CNTRLMTL1'], undefined, ['CNTRLMTL1'])).toEqual([]);
+    expect(detectDeviations(insp, new Set(), [], undefined, req).map(i => i.kind)).toEqual(['qual']);
+    expect(detectDeviations(insp, new Set(), ['CNTRLMTL1'], undefined, req)).toEqual([]);
   });
 });

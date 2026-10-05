@@ -1,13 +1,21 @@
 <div class="table-page-wrap">
   <h2 class="section-title">Qualifications</h2>
 
-  <app-table-toolbar [table]="table" searchPlaceholder="Search qualifications…" (exportCsv)="exportCsv()">
-    <span class="font-semibold">{{ userName }}: {{ held().size }} of {{ rows().length }} held</span>
-    <span>· fails {{ failingCount() }} of {{ totalCount() }} WTNs</span>
-    <div toolbarEnd class="flex gap-2">
+  <p class="mb-1">A joint or WTN that matches a condition requires its quals on every welding and inspection step.
+    Controlled Material, SS, SFFF and N Ind. are checked as soon as a step opens. WTN is checked once a welding step has a WTN.</p>
+  <p class="mb-1">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.</p>
+  <p class="mb-3">The toggle on each qual shows whether the {{ userName }} holds it. Toggles save right away. Condition changes save with the Save button.</p>
+
+  <app-table-toolbar [table]="table" searchPlaceholder="Search conditions…" (exportCsv)="exportCsv()">
+    <span class="font-semibold">{{ userName }}: {{ held().length }} of {{ allQuals.length }} quals held</span>
+    <span>· fails {{ wtnFails().failing }} of {{ wtnFails().total }} WTNs</span>
+    <div toolbarEnd class="flex flex-wrap gap-2 min-w-0 max-w-full">
       <button type="button" class="btn btn-sm" (click)="setAll(true)">Select all</button>
       <button type="button" class="btn btn-sm" (click)="setAll(false)">Clear all</button>
       <button type="button" class="btn btn-sm" (click)="resetDefault()">Reset to default</button>
+      <button type="button" class="btn btn-sm btn-primary" (click)="addCondition()">
+        <svg lucidePlus class="size-4"></svg> Add condition
+      </button>
     </div>
   </app-table-toolbar>
 
@@ -15,78 +23,40 @@
     <table class="table table-sm">
       <thead>
         <tr>
-          <th appSortHeader [table]="table" field="qual" label="Qualification"></th>
-          <th appSortHeader [table]="table" field="wtnCount" label="Required by (WTNs)"></th>
-          <th appSortHeader [table]="table" field="conditions" label="Required by conditions"></th>
-          <th appSortHeader [table]="table" field="has" [label]="userName + ' has'"></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (r of table.sorted(); track r.qual) {
-          <tr>
-            <td class="font-medium">{{ r.qual }}</td>
-            <td>{{ r.wtnCount }}</td>
-            <td>{{ r.conditions }}</td>
-            <td>
-              <input type="checkbox" class="toggle toggle-sm toggle-success"
-                     [checked]="r.has" (change)="toggle(r.qual)" />
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="4" class="empty">No qualifications match your search.</td></tr>
-        }
-      </tbody>
-    </table>
-  </div>
-
-  <div class="mt-6">
-    <div class="flex flex-wrap items-center gap-2 mb-2">
-      <h3 class="panel-title mb-0">Conditions</h3>
-      <span>· a joint that matches a condition also requires its qual, on every welding and inspection step</span>
-    </div>
-    <p class="mb-2">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.</p>
-
-    <table class="table table-sm">
-      <thead>
-        <tr>
-          <th>When</th>
-          <th>Is</th>
-          <th>Require</th>
+          <th appSortHeader [table]="table" field="when" label="When"></th>
+          <th appSortHeader [table]="table" field="is" label="Is"></th>
+          <th appSortHeader [table]="table" field="require" label="Require"></th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        @for (c of conditions(); track $index; let i = $index) {
+        @for (r of table.sorted(); track r.i) {
           <tr>
-            <td>
-              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setConditionField(i, $event)">
+            <td class="align-top">
+              <select class="select select-bordered select-sm w-52" [ngModel]="r.c.field" (ngModelChange)="setConditionField(r.i, $event)">
                 @for (f of conditionFields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
               </select>
             </td>
-            <td>
-              <select class="select select-bordered select-sm" [ngModel]="c.value" (ngModelChange)="setCondition(i, { value: $event })">
-                @for (v of valuesFor(c.field); track v) { <option [ngValue]="v">{{ v }}</option> }
+            <td class="align-top">
+              <select class="select select-bordered select-sm w-36" [ngModel]="r.c.value" (ngModelChange)="setConditionValue(r.i, $event)">
+                @for (v of valuesFor(r.c.field); track v) { <option [ngValue]="v">{{ v }}</option> }
               </select>
             </td>
             <td>
-              <select class="select select-bordered select-sm" [ngModel]="c.qual" (ngModelChange)="setCondition(i, { qual: $event })">
-                @for (q of allQuals; track q) { <option [ngValue]="q">{{ q }}</option> }
-              </select>
+              <app-qual-group-editor [group]="r.c.require" [held]="held()" [allQuals]="allQuals"
+                                     (changed)="setRequire(r.i, $event)" (toggleHeld)="toggleHeld($event)" />
             </td>
-            <td class="text-right">
-              <button type="button" class="btn btn-ghost btn-sm" (click)="removeCondition(i)" aria-label="Remove condition">
+            <td class="text-right align-top">
+              <button type="button" class="btn btn-ghost btn-sm" (click)="removeCondition(r.i)" aria-label="Remove condition">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="4" class="empty">No conditions yet. Only the WTN's quals are checked.</td></tr>
+          <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No conditions match your search.' : 'No conditions yet. No quals are checked.' }}</td></tr>
         }
       </tbody>
     </table>
-    <button type="button" class="btn btn-sm mt-2" (click)="addCondition()">
-      <svg lucidePlus class="size-4"></svg> Add condition
-    </button>
   </div>
 
   <div class="flex justify-end mt-3">

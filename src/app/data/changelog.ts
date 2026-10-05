@@ -19,6 +19,10 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Degree of RT Performed only blocks sign-off when it is less than the required RT Root or RT Final degree; a higher degree is fine. The droplist is in number order.',
       'Fabrication: ER/IR Number only shows once a Revised Joint Design is picked, and is required then.',
       'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
+
+      'Admin > Qualifications is now one Conditions table. The quals each WTN needs are conditions too ("When WTN is ..."), so they are set here instead of on each procedure; the procedure form and PDF show them read-only.',
+      'A condition can require quals with AND or OR, and groups inside groups, for example Controlled Material needs CNTRLMTL1 OR CNTRLMTL2.',
+      'Each qual in the Conditions table has a toggle for whether the Test User holds it. Toggles save right away; condition edits still save with Save.',
     ],
   },
   {

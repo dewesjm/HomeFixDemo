@@ -84,7 +84,8 @@ function addedSections(p: Procedure, sections: ProcedureSection[]): Content[] {
     : [{ text: `${sectionNumber(i)}. ${s.name}`, style: 'sectionHeader' }]);
 }
 
-export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = []): TDocumentDefinitions {
+/* quals = the WTN's requirement from Admin > Qualifications (wtnRequirementText()), '' when none */
+export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = [], quals = ''): TDocumentDefinitions {
   const content: Content[] = [
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },
@@ -113,7 +114,7 @@ export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[
     ]),
 
     { text: '5. Welder Qualifications', style: 'sectionHeader' },
-    { ul: p.qualificationsRequired.length ? p.qualificationsRequired : ['-'], margin: [0, 4, 0, 12] },
+    { ul: [quals || '-'], margin: [0, 4, 0, 12] },
 
     ...numberedSection(6, 'Preheat & Interpass Temperatures', [
       ['PH Min', p.phMin], ['PH Max', p.phMax], ['IP Min', p.ipMin], ['IP Max', p.ipMax],

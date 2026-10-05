@@ -185,27 +185,10 @@
     </div>
   </div>
 
-  <!-- Welder Qualifications -->
+  <!-- Welder Qualifications: read-only, set per WTN in Admin > Qualifications -->
   <h3 class="form-section-title">5. Welder Qualifications</h3>
-  <div class="flex flex-wrap gap-2 mb-2">
-    @for (q of form.qualificationsRequired; track $index) {
-      <span class="badge badge-lg gap-1.5">
-        {{ q }}
-        <button type="button" (click)="removeListItem('qualificationsRequired', $index)"><svg lucideX class="size-3"></svg></button>
-      </span>
-    }
-  </div>
-  <div class="flex gap-2">
-    <select class="select select-sm select-bordered grow" [(ngModel)]="newQualification">
-      <option value="">Add a qualification…</option>
-      @for (q of availableQuals(); track q) {
-        <option [value]="q">{{ q }}</option>
-      }
-    </select>
-    <button type="button" class="btn btn-sm" (click)="addListItem('qualificationsRequired', newQualification)">
-      <svg lucidePlus class="size-4"></svg> Add
-    </button>
-  </div>
+  <p class="mb-2">{{ wtnQuals() || 'None required for this WTN.' }}</p>
+  <p class="mb-4">Set per WTN under Weld Record <a class="link" routerLink="/admin/qualifications">Admin &gt; Qualifications</a>.</p>
 
   <h3 class="form-section-title">6. Preheat & Interpass Temperatures</h3>
   <div class="stage-inputs">

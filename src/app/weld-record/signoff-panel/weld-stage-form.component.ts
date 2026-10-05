@@ -3,9 +3,8 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkflowStage, StageField, isReadonlyLimit as readonlyLimit, isFieldLocked, ACTUAL_REQUIREMENT } from '../../data/workflow';
-import { getProcedureByGwpWtn } from '../../data/procedures';
 import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
-import { conditionQuals } from '../../data/qual-conditions';
+import { conditionRequirements } from '../../data/qual-conditions';
 import { SignoffContext } from './signoff-context';
 
 /* width applies to every field in the row; widths overrides it for named fields */
@@ -56,10 +55,9 @@ export class WeldStageFormComponent {
 
   weldGroups = WELD_GROUPS;
 
-  /* the joint's condition quals plus the selected GWP+WTN's against the Test User's (Admin > Qualifications) */
+  /* the conditions the joint and the picked WTN match against the Test User's quals (Admin > Qualifications) */
   qualCheck(): QualCheckResult {
-    const p = getProcedureByGwpWtn(this.stage().inputs['weldProcedure'], this.stage().inputs['wtn']);
-    return qualCheck(testUserQuals(), conditionQuals(this.ctx().job), p?.qualificationsRequired);
+    return qualCheck(testUserQuals(), conditionRequirements(this.ctx().job, this.stage().inputs['wtn']));
   }
 
   groupVisible(g: WeldGroup): boolean {

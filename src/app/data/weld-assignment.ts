@@ -4,6 +4,8 @@
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
 import { Job } from './jobs';
 import { WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from './workflow';
+import { requirementsMet } from './qualifications';
+import { conditionRequirements } from './qual-conditions';
 import {
   Procedure, procedures, gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure,
   fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride,
@@ -39,7 +41,7 @@ function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): Proc
   const gwp = pick(gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? ''), job.id)?.value;
   if (!gwp) return undefined;
   const rows = procedures().filter(p => p.gwp === gwp);
-  const qualified = rows.filter(p => p.qualificationsRequired.every(q => heldQuals.includes(q)));
+  const qualified = rows.filter(p => requirementsMet(heldQuals, conditionRequirements(job, p.wtn)));
   return pick(qualified.length ? qualified : rows, `${job.id}:${stageId}`);
 }
 

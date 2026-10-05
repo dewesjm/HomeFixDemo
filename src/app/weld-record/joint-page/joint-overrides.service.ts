@@ -7,7 +7,7 @@ import { JobWorkflow, StageField, WorkflowStage, DeviationItem, ACTUAL_REQUIREME
 import { ASSIGNED_KEYS } from '../../data/weld-assignment';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
 import { testUserQuals } from '../../data/qualifications';
-import { conditionQuals } from '../../data/qual-conditions';
+import { conditionRequirements } from '../../data/qual-conditions';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
@@ -97,7 +97,7 @@ export class JointOverridesService {
   }
 
   private detect(stage: WorkflowStage, visibleKeys: ReadonlySet<string>): DeviationItem[] {
-    return detectDeviations(stage, visibleKeys, testUserQuals(), this.baseMetals(), conditionQuals(this.src?.job));
+    return detectDeviations(stage, visibleKeys, testUserQuals(), this.baseMetals(), conditionRequirements(this.src?.job, stage.inputs['wtn']));
   }
 
   private isOffList(stage: WorkflowStage, key: string): boolean {

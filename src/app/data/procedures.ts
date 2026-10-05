@@ -11,7 +11,6 @@ import { signal } from '@angular/core';
 import { CsvColumn } from './export-csv';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { QUALIFICATIONS, QUAL_WEIGHTS } from './qualifications';
 import { extraValueText, type ExtraFields, type ProcedureSection } from './procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
@@ -97,7 +96,8 @@ export interface Procedure {
   fillerMetalClassification: string;
   fillerMetalSizes: string[];
 
-  /* 5. Welder Qualifications -- see qualificationsRequired below */
+  /* 5. Welder Qualifications: not stored here; set by WTN conditions under Admin > Qualifications
+     (qual-conditions.ts, wtnRequirementText()) */
 
   /* 6. Preheat & Interpass Temperatures */
   phMin: string; phMax: string; ipMin: string; ipMax: string;               /* 'NC' = no limit, blank = not set */
@@ -127,7 +127,6 @@ export interface Procedure {
 
   rules: string[];
   conditions: string[];
-  qualificationsRequired: string[];
   /* values for the fields of sections added after 11 (data/procedure-sections.ts), keyed by field key */
   extraFields: ExtraFields;
   /* required whenever a change is saved to a procedure that is (or was) Active -- see
@@ -173,21 +172,6 @@ function seeded(n: number) {
   };
 }
 
-/* weighted pick without repeats, kept in QUALIFICATIONS order -- some quals are needed far more
-   often than others (QUAL_WEIGHTS) */
-function pickQuals(rand: () => number, min: number, max: number): string[] {
-  const count = min + Math.floor(rand() * (max - min + 1));
-  const pool = QUALIFICATIONS.map((q, i) => ({ q, w: QUAL_WEIGHTS[i] }));
-  const picked = new Set<string>();
-  while (picked.size < count) {
-    const left = pool.filter(x => !picked.has(x.q));
-    let r = rand() * left.reduce((sum, x) => sum + x.w, 0);
-    const hit = left.find(x => (r -= x.w) < 0) ?? left[left.length - 1];
-    picked.add(hit.q);
-  }
-  return QUALIFICATIONS.filter(q => picked.has(q));
-}
-
 /* Fisher-Yates shuffle: always draws pool.length - 1 values from rand. A random sort comparator
    would not: how often the browser calls it varies between runs, which shifts every value seeded after it. */
 function pickSome<T>(pool: T[], rand: () => number, min: number, max: number): T[] {
@@ -229,8 +213,6 @@ function materialCombos(): [string, string][] {
 
 function generateProcedures(): Procedure[] {
   const rand = seeded(777);
-  /* own sequence, so adding quals didn't shift every other seeded value */
-  const qualRand = seeded(4242);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const out: Procedure[] = [];
   const combos = materialCombos();
@@ -318,7 +300,6 @@ function generateProcedures(): Procedure[] {
           pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
           rules: pickSome(RULE_POOL, rand, 2, 4),
           conditions: pickSome(CONDITION_POOL, rand, 1, 3),
-          qualificationsRequired: pickQuals(qualRand, 1, 3),
           extraFields: {},
           revisionHistory,
           createdBy: 'System',
@@ -506,7 +487,6 @@ const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'PWHT Time', value: r => r.pwhtTime },
   { header: 'Rules', value: r => r.rules.join('; ') },
   { header: 'Conditions', value: r => r.conditions.join('; ') },
-  { header: 'Qualifications Required', value: r => r.qualificationsRequired.join('; ') },
   { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
 ];
 
@@ -555,7 +535,7 @@ export async function downloadProcedureXlsxTemplate(): Promise<void> {
     'heatInputMin', 'heatInputMax',
     'amperageRange', 'voltageRange', 'travelSpeedRange',
     'pwhtTemp', 'pwhtTime',
-    'rules', 'conditions', 'qualificationsRequired'
+    'rules', 'conditions'
   ];
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   const wb = XLSX.utils.book_new();

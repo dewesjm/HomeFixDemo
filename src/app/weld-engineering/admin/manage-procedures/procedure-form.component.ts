@@ -13,7 +13,7 @@ import {
   FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../data/procedures';
-import { QUALIFICATIONS } from '../../../data/qualifications';
+import { wtnRequirementText } from '../../../data/qual-conditions';
 import {
   procedureSections, sectionNumber, withAllFields, extraFieldProblems, compactExtras, type RangeValue
 } from '../../../data/procedure-sections';
@@ -35,7 +35,7 @@ const EMPTY_FORM: Procedure = {
   heatInputMin: '', heatInputMax: '',
   amperageRange: '', voltageRange: '', travelSpeedRange: '',
   pwhtTemp: '', pwhtTime: '',
-  rules: [], conditions: [], qualificationsRequired: [],
+  rules: [], conditions: [],
   extraFields: {},
   revisionHistory: [],
   createdBy: 'User', createdAt: '', updatedAt: ''
@@ -77,7 +77,6 @@ export class ProcedureFormComponent implements OnInit {
   /* pending text for each "add a new list item" input */
   newRule = '';
   newCondition = '';
-  newQualification = '';
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -87,7 +86,7 @@ export class ProcedureFormComponent implements OnInit {
       if (existing) {
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
-          qualificationsRequired: [...existing.qualificationsRequired], revisionHistory: [...existing.revisionHistory],
+          revisionHistory: [...existing.revisionHistory],
           fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes]
         };
         this.wasActive = existing.status === 'active';
@@ -103,21 +102,20 @@ export class ProcedureFormComponent implements OnInit {
     return this.form.extraFields[key] as RangeValue;
   }
 
-  addListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', value: string) {
+  addListItem(field: 'rules' | 'conditions', value: string) {
     const v = value.trim();
     if (!v) return;
     this.form[field] = [...this.form[field], v];
     if (field === 'rules') this.newRule = '';
     if (field === 'conditions') this.newCondition = '';
-    if (field === 'qualificationsRequired') this.newQualification = '';
   }
 
-  /* the WELD4xx quals not already on this WPS (data/qualifications.ts) */
-  availableQuals(): string[] {
-    return QUALIFICATIONS.filter(q => !this.form.qualificationsRequired.includes(q));
+  /* this WTN's requirement from the WTN conditions in Admin > Qualifications */
+  wtnQuals(): string {
+    return this.form.wtn ? wtnRequirementText(this.form.wtn) : '';
   }
 
-  removeListItem(field: 'rules' | 'conditions' | 'qualificationsRequired', index: number) {
+  removeListItem(field: 'rules' | 'conditions', index: number) {
     this.form[field] = this.form[field].filter((_, i) => i !== index);
   }
 

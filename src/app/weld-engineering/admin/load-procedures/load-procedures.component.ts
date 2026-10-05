@@ -33,7 +33,6 @@ type EditableRow = {
   phMin: string; phMax: string; ipMin: string; ipMax: string;
   rules: string;
   conditions: string;
-  qualificationsRequired: string;
 };
 
 const VALID_STATUSES = new Set(['active', 'draft', 'retired']);
@@ -83,7 +82,6 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       ipMax: raw['ipMax'] || raw['IP Max'] || '',
       rules: raw['rules'] || raw['Rules'] || '',
       conditions: raw['conditions'] || raw['Conditions'] || '',
-      qualificationsRequired: raw['qualificationsRequired'] || raw['Qualifications Required'] || '',
     };
   }
 
@@ -98,9 +96,9 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
 
   protected sampleRows(): EditableRow[] {
     return [
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalTypes: 'mil-70s-6; mil-70s-3', fillerMetalSizes: '1/16; 3/32', phMin: '100', phMax: '300', ipMin: '60', ipMax: '250', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.', qualificationsRequired: 'ASME Section IX welder qualification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalTypes: 'mil-80s-50', fillerMetalSizes: '3/32; 1/8', phMin: 'NC', phMax: '350', ipMin: '100', ipMax: '300', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.', qualificationsRequired: 'AWS D1.1 structural welder certification' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semiautomatic', application: 'Surface Structure', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalTypes: 'mil-70s-3', fillerMetalSizes: '1/8; 5/32; 3/16', phMin: '150', phMax: 'NC', ipMin: 'NC', ipMax: '400', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.', qualificationsRequired: 'Position qualification: 6G' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalTypes: 'mil-70s-6; mil-70s-3', fillerMetalSizes: '1/16; 3/32', phMin: '100', phMax: '300', ipMin: '60', ipMax: '250', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalTypes: 'mil-80s-50', fillerMetalSizes: '3/32; 1/8', phMin: 'NC', phMax: '350', ipMin: '100', ipMax: '300', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.' },
+      { _existing: false, _errors: [], _saved: false, id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semiautomatic', application: 'Surface Structure', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalTypes: 'mil-70s-3', fillerMetalSizes: '1/8; 5/32; 3/16', phMin: '150', phMax: 'NC', ipMin: 'NC', ipMax: '400', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.' },
     ];
   }
 
@@ -138,7 +136,6 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       pwhtTemp: existing?.pwhtTemp ?? '', pwhtTime: existing?.pwhtTime ?? '',
       rules: splitList(row.rules),
       conditions: splitList(row.conditions),
-      qualificationsRequired: splitList(row.qualificationsRequired),
       extraFields: existing?.extraFields ?? {},
       revisionHistory: existing?.revisionHistory ?? [],
       createdBy: 'Import',

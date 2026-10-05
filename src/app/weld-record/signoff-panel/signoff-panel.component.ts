@@ -6,7 +6,7 @@ import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, hasDecision, isInspectionStage
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
-import { conditionQuals } from '../../data/qual-conditions';
+import { conditionRequirements } from '../../data/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
 import { RecordsReviewComponent } from './records-review.component';
@@ -28,7 +28,7 @@ export class SignoffPanelComponent {
 
   /* inspection steps have no Qualification Check field; they check only the joint's condition quals */
   inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {
-    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionQuals(this.ctx().job)) : null;
+    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionRequirements(this.ctx().job)) : null;
   }
 
   /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)
