@@ -41,6 +41,16 @@
         </div>
       }
 
+    <!-- Layer Type (NDT steps): the weld activity being inspected, fixed by the step -->
+    @if (layerType(st); as layer) {
+      <div class="mb-sm">
+        <div class="stage-field">
+          <span class="stage-field-label font-semibold">Layer Type</span>
+          <div class="stage-readonly-value">{{ layer }}</div>
+        </div>
+      </div>
+    }
+
     <!-- Qualification Check on inspection steps (joint condition quals only; welding steps have it as a field) -->
     @if (inspectionQualCheck(st); as qc) {
       <div class="mb-sm">

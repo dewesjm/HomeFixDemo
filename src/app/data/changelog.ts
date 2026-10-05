@@ -11,6 +11,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-05',
+    added: [
+      'NDT steps show a Layer Type under Type (Root, Layer, Final, or Excavation) so the inspector sees which weld activity they are inspecting. It can't be changed.',
+    ],
     changed: [
       'Fabrication: ER/IR Number only shows once a Revised Joint Design is picked, and is required then.',
       'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
