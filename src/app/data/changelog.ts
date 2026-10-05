@@ -21,9 +21,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
 
       'Admin > Qualifications is now one Conditions table. Quals are no longer set on each procedure; a condition can require them for a WTN instead, and the procedure form and PDF show those read-only.',
-      'New condition fields: Titanium (either Material Type is titanium) and Inspection Type (checked once the step\'s Type is picked). Sample conditions: SS needs SSWELD1, a VT inspection needs VTINSP1, titanium needs TIWELD1.',
+      'A condition can use any Joint Details field, Titanium (either Material Type is titanium), the Step, or any sign-off field of the step being signed (checked once it is filled in). Sample conditions: SS needs SSWELD1, a VT inspection needs VTINSP1, titanium needs TIWELD1.',
       'A condition can require quals with AND or OR, and groups inside groups, for example Controlled Material needs CNTRLMTL1 OR CNTRLMTL2.',
-      'Each qual in the Conditions table has a toggle for whether the Test User holds it. Toggles save right away; condition edits still save with Save.',
+      'User is a condition option too: a User row lists the quals that person holds. SELF is you, for testing; the Qualification Check runs as SELF. This replaces the Test User toggles.',
     ],
   },
   {

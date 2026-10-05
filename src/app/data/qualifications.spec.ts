@@ -1,5 +1,5 @@
-import { QUALIFICATIONS, DEFAULT_TEST_USER_QUALS, qualCheck } from './qualifications';
-import { qualConditions } from './qual-conditions';
+import { QUALIFICATIONS, qualCheck } from './qualifications';
+import { heldQuals, qualConditions } from './qual-conditions';
 import { QualGroup, termMet } from './qual-requirements';
 
 const all = (...items: string[]): QualGroup => ({ op: 'all', items });
@@ -10,13 +10,9 @@ describe('qualifications', () => {
     QUALIFICATIONS.forEach(q => expect(q).toMatch(/^WELD4\d\d$/));
   });
 
-  it('Test User starts with some but not all quals', () => {
-    expect(DEFAULT_TEST_USER_QUALS.length).toBeGreaterThan(0);
-    expect(DEFAULT_TEST_USER_QUALS.length).toBeLessThan(QUALIFICATIONS.length);
-  });
-
-  it('the default Test User meets every seed condition', () => {
-    qualConditions().forEach(c => expect(termMet(c.require, DEFAULT_TEST_USER_QUALS)).withContext(c.field).toBeTrue());
+  it('SELF meets every seed requirement', () => {
+    qualConditions().filter(c => c.field !== 'user')
+      .forEach(c => expect(termMet(c.require, heldQuals())).withContext(c.field).toBeTrue());
   });
 
   it('reports pass with nothing required, pass, and missing quals', () => {

@@ -1,6 +1,6 @@
 /* Edits one AND/OR group of a qual condition's requirement (data/qual-requirements.ts). Items are
-   quals or nested groups, which render this same editor. Each qual carries a toggle for whether the
-   Test User holds it; the parent saves that right away. Edits are emitted as a new group. */
+   quals or nested groups, which render this same editor. On a User row (holds) it's a plain list of
+   the quals that person holds: no AND/OR and no groups. Edits are emitted as a new group. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
@@ -14,12 +14,11 @@ import { QualGroup, QualTerm } from '../../../data/qual-requirements';
 })
 export class QualGroupEditorComponent {
   group = input.required<QualGroup>();
-  held = input.required<readonly string[]>();
   allQuals = input.required<readonly string[]>();
   nested = input(false);
+  holds = input(false);
   changed = output<QualGroup>();
   removed = output<void>();
-  toggleHeld = output<string>();
 
   asGroup(t: QualTerm): QualGroup | null {
     return typeof t === 'string' ? null : t;

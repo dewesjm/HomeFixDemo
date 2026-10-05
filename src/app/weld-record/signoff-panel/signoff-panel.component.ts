@@ -5,8 +5,8 @@ import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lu
 import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, hasDecision, isInspectionStage, isEngineeringHoldId, ndtLayerType } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
-import { qualCheck, testUserQuals, QualCheckResult } from '../../data/qualifications';
-import { conditionRequirements } from '../../data/qual-conditions';
+import { qualCheck, QualCheckResult } from '../../data/qualifications';
+import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
 import { RecordsReviewComponent } from './records-review.component';
@@ -28,7 +28,7 @@ export class SignoffPanelComponent {
 
   /* inspection steps have no Qualification Check field; they check the conditions the joint and step match */
   inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {
-    return isInspectionStage(st) ? qualCheck(testUserQuals(), conditionRequirements(this.ctx().job, st)) : null;
+    return isInspectionStage(st) ? qualCheck(heldQuals(), conditionRequirements(this.ctx().job, st)) : null;
   }
 
   /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)

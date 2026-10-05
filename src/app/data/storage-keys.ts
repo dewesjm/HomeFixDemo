@@ -26,8 +26,7 @@ export const STORAGE = {
   procedures: 'welding:procedures:v9',
   procedureSections: 'welding:procedure-sections:v1',
   makeup: 'welding:makeup:v2',
-  qualifications: 'welding:qualifications:v2',
-  qualConditions: 'welding:qual-conditions:v3',
+  qualConditions: 'welding:qual-conditions:v4',
   featureToggles: 'welding:feature-toggles:v1',
 } as const;
 

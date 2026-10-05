@@ -108,7 +108,7 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
 /* ── Step answers: every step's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
 
 /* the part of a stage template these read (structural, so the workflow files aren't imported here) */
-interface StepTemplateShape extends StageShape { id: string; label: string }
+export interface StepTemplateShape extends StageShape { id: string; label: string }
 
 /* workflow/stage-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
 let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
@@ -145,6 +145,9 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
 }
 
 const stepsOf = (trade: string): StepTemplateShape[] => stepTemplates()[trade] ?? [];
+
+/* a trade's steps (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
+export const tradeSteps = (trade: string): StepTemplateShape[] => stepsOf(trade);
 
 /* the answers of a trade's steps before `stageId`, in routing order (what a rule on that step can use) */
 export function stepAnswerFieldsBefore(trade: string, stageId: string): StepConditionField[] {
@@ -267,7 +270,7 @@ export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, st
 }
 
 /* the shape of a stage template stageConditionFields() reads */
-interface StageShape {
+export interface StageShape {
   fields: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   signoffFields?: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   routingOptions?: { label: string; value: string }[];

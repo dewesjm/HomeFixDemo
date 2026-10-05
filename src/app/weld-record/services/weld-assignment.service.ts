@@ -4,7 +4,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage, ENGINEERING_ENTRY_KEYS, ACTUAL_REQUIREMENT, FILLER_KEYS } from '../../data/workflow';
-import { testUserQuals } from '../../data/qualifications';
+import { heldQuals } from '../../data/qual-conditions';
 import { assignedInputs, isAssignedStage, isEngineeringEntryJoint } from '../../data/weld-assignment';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -27,7 +27,7 @@ export class WeldAssignmentService {
     const stage = wf.stages.find(s => s.id === stageId);
     if (!stage) return wf;
     if (isEngineeringEntryJoint(job)) return stage.engineeringEntry ? wf : this.withEngineeringEntry(wf, stage);
-    const inputs = assignedInputs(job, stage, testUserQuals());
+    const inputs = assignedInputs(job, stage, heldQuals());
     if (Object.entries(inputs).every(([k, v]) => (stage.inputs[k] ?? '') === v)) return wf;
     return { ...wf, stages: wf.stages.map(s => s.id === stageId ? { ...s, inputs: { ...s.inputs, ...inputs } } : s) };
   }

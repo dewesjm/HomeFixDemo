@@ -2,19 +2,16 @@
   <h2 class="section-title">Qualifications</h2>
 
   <p class="mb-1">A step that matches a condition requires its quals before sign-off.
-    Controlled Material, SS, SFFF, N Ind. and Titanium are checked as soon as a step with a Qualification Check opens.
-    Inspection Type is checked once the step's Type is picked.</p>
+    Joint Details fields are checked as soon as a step with a Qualification Check opens.
+    Sign-off fields are read from the step being signed, once they're filled in.</p>
   <p class="mb-1">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.
     Titanium is Yes when either Material Type is marked Titanium in Admin &gt; Material Classification.</p>
-  <p class="mb-3">The toggle on each qual shows whether the {{ userName }} holds it. Toggles save right away. Condition changes save with the Save button.</p>
+  <p class="mb-3">A User row lists the quals that person holds. {{ self }} is you: give yourself quals there to test with.</p>
 
   <app-table-toolbar [table]="table" searchPlaceholder="Search conditions…" (exportCsv)="exportCsv()">
-    <span class="font-semibold">{{ userName }}: {{ held().length }} of {{ allQuals.length }} quals held</span>
-    <span>· fails {{ failingCount() }} of {{ savedCount() }} conditions</span>
+    <span class="font-semibold">{{ self }} holds {{ selfHeld().length }} quals</span>
+    <span>· fails {{ failingCount() }} of {{ requirementCount() }} requirements</span>
     <div toolbarEnd class="flex flex-wrap gap-2 min-w-0 max-w-full">
-      <button type="button" class="btn btn-sm" (click)="setAll(true)">Select all</button>
-      <button type="button" class="btn btn-sm" (click)="setAll(false)">Clear all</button>
-      <button type="button" class="btn btn-sm" (click)="resetDefault()">Reset to default</button>
       <button type="button" class="btn btn-sm btn-primary" (click)="addCondition()">
         <svg lucidePlus class="size-4"></svg> Add condition
       </button>
@@ -36,17 +33,27 @@
           <tr>
             <td class="align-top">
               <select class="select select-bordered select-sm w-52" [ngModel]="r.c.field" (ngModelChange)="setConditionField(r.i, $event)">
-                @for (f of conditionFields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+                @for (g of fieldGroups; track g.name) {
+                  <optgroup [label]="g.name">
+                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+                  </optgroup>
+                }
               </select>
             </td>
             <td class="align-top">
-              <select class="select select-bordered select-sm w-36" [ngModel]="r.c.value" (ngModelChange)="setConditionValue(r.i, $event)">
-                @for (v of valuesFor(r.c.field); track v) { <option [ngValue]="v">{{ v }}</option> }
-              </select>
+              @let opts = options(r.c.field);
+              @if (opts.length) {
+                <select class="select select-bordered select-sm w-44" [ngModel]="r.c.value" (ngModelChange)="setConditionValue(r.i, $event)">
+                  @for (o of opts; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+                </select>
+              } @else {
+                <input type="text" class="input input-bordered input-sm w-44" placeholder="Type a value"
+                       [ngModel]="r.c.value" (change)="setConditionValue(r.i, $any($event.target).value)" />
+              }
             </td>
             <td>
-              <app-qual-group-editor [group]="r.c.require" [held]="held()" [allQuals]="allQuals"
-                                     (changed)="setRequire(r.i, $event)" (toggleHeld)="toggleHeld($event)" />
+              <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.c.field === userField"
+                                     (changed)="setRequire(r.i, $event)" />
             </td>
             <td class="text-right align-top">
               <button type="button" class="btn btn-ghost btn-sm" (click)="removeCondition(r.i)" aria-label="Remove condition">
