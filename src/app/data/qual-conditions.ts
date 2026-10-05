@@ -1,9 +1,9 @@
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
-   - "when <field> is <value>, require <group>": the group is an AND/OR group of quals
-     (qual-requirements.ts). Joint Details fields are checked on every step with a Qualification
+   - "when <clauses>, require <group>": the clauses are an AND/OR group of "field is value"
+     (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts). Joint Details fields are checked on every step with a Qualification
      Check as soon as it opens; sign-off fields are read from the step being checked, so they apply
      once they're filled in.
-   - "when User is <person>, holds <quals>": the quals that person holds. There's no login, so the
+   - "when User is <person>, holds <quals>" (a When of just that one clause): the quals that person holds. There's no login, so the
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
    This is the only place quals are required or held. */
@@ -14,10 +14,10 @@ import { PEOPLE } from './people';
 import { isTitaniumJoint } from './material-classification';
 import { STEP_CONDITION_FIELDS, tradeSteps } from './step-conditions';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
+import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
 
 export interface QualCondition {
-  field: string;   /* conditionFields() key */
-  value: string;
+  when: WhenGroup;
   require: QualGroup;   /* on a User row: the quals held (always an 'all' list) */
 }
 
@@ -114,22 +114,44 @@ export function conditionField(key: string): ConditionField | undefined {
   return conditionFields().find(f => f.key === key);
 }
 
+/* the person a User row is for; null on a requirement row */
+export function userOf(c: QualCondition): string | null {
+  const [t] = c.when.items;
+  return c.when.items.length === 1 && !isWhenGroup(t) && t.field === USER_FIELD ? t.value : null;
+}
+
+/* e.g. "Type is VT" */
+export function clauseText(c: WhenClause): string {
+  const f = conditionField(c.field);
+  return `${f?.label ?? c.field} is ${f?.options().find(o => o.value === c.value)?.label ?? c.value}`;
+}
+
+export const conditionWhenText = (c: QualCondition) => whenText(c.when, clauseText);
+
+const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, value }] });
+
 /* SELF holds the seed quals except CNTRLMTL2, so every seed requirement passes (controlled material
    through the OR); one requirement per kind of check: joint flags, the step's Type, the base material */
 function defaultConditions(): QualCondition[] {
   return [
-    { field: USER_FIELD, value: SELF, require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
-    { field: 'controlledMaterial', value: 'Yes', require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
-    { field: 'ss', value: 'Yes', require: { op: 'all', items: ['SSWELD1'] } },
-    { field: `${STEP_PREFIX}inspectionType`, value: 'vt', require: { op: 'all', items: ['VTINSP1'] } },
-    { field: 'titanium', value: 'Yes', require: { op: 'all', items: ['TIWELD1'] } },
+    { when: when(USER_FIELD, SELF), require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
+    { when: when('controlledMaterial', 'Yes'), require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
+    { when: when('ss', 'Yes'), require: { op: 'all', items: ['SSWELD1'] } },
+    { when: when(`${STEP_PREFIX}inspectionType`, 'vt'), require: { op: 'all', items: ['VTINSP1'] } },
+    { when: when('titanium', 'Yes'), require: { op: 'all', items: ['TIWELD1'] } },
   ];
 }
+
+/* rows saved before a When could have several clauses ({ field, value, require }) */
+const PREVIOUS_KEY = 'welding:qual-conditions:v4';
+type PreviousCondition = { field: string; value: string; require: QualGroup };
 
 function load(): QualCondition[] {
   try {
     const raw = localStorage.getItem(STORAGE.qualConditions);
     if (raw) return JSON.parse(raw);
+    const prev = localStorage.getItem(PREVIOUS_KEY);
+    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => ({ when: when(c.field, c.value), require: c.require }));
   } catch { /* ignore */ }
   return defaultConditions();
 }
@@ -143,31 +165,28 @@ export function setQualConditions(conditions: QualCondition[]) {
 
 /* every qual the User rows give this person */
 export function heldBy(user: string, conditions: QualCondition[] = qualConditions()): string[] {
-  return qualsIn({ op: 'all', items: conditions.filter(c => c.field === USER_FIELD && c.value === user).map(c => c.require) });
+  return qualsIn({ op: 'all', items: conditions.filter(c => userOf(c) === user).map(c => c.require) });
 }
 
 /* the quals the Qualification Check compares against: SELF's, since there's no login */
 export const heldQuals = computed(() => heldBy(SELF));
-
-const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 /* the requirements of every condition the joint and step match, in table order (User rows aren't requirements) */
 export function conditionRequirements(job: Job | undefined | null, step: ConditionStep = {}): QualGroup[] {
   if (!job) return [];
   const subject: ConditionSubject = { job, step };
   const fields = new Map(conditionFields().map(f => [f.key, f]));
+  const valueOf = (key: string) => fields.get(key)?.get(subject) ?? '';
   return qualConditions()
-    .filter(c => {
-      if (c.field === USER_FIELD) return false;
-      const v = fields.get(c.field)?.get(subject);
-      return !!v && !!c.value && same(v, c.value);
-    })
+    .filter(c => userOf(c) === null && whenMatches(c.when, valueOf))
     .map(c => cloneGroup(c.require));
 }
 
-/* the requirement of every WTN condition for this WTN, joined by AND; '' when there's none */
+/* the requirement of every condition a step with this WTN matches on the WTN alone, joined by AND;
+   '' when there's none */
 export function wtnRequirementText(wtn: string): string {
-  const groups = qualConditions().filter(c => c.field === `${STEP_PREFIX}wtn` && same(c.value, wtn) && c.require.items.length);
+  const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : '';
+  const groups = qualConditions().filter(c => c.require.items.length && whenMatches(c.when, valueOf));
   if (groups.length === 1) return requirementText(groups[0].require);
   return groups.map(c => requirementText(c.require, true)).join(' AND ');
 }

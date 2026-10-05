@@ -1,5 +1,5 @@
 import { QUALIFICATIONS, qualCheck } from './qualifications';
-import { heldQuals, qualConditions } from './qual-conditions';
+import { conditionWhenText, heldQuals, qualConditions, userOf } from './qual-conditions';
 import { QualGroup, termMet } from './qual-requirements';
 
 const all = (...items: string[]): QualGroup => ({ op: 'all', items });
@@ -11,8 +11,8 @@ describe('qualifications', () => {
   });
 
   it('SELF meets every seed requirement', () => {
-    qualConditions().filter(c => c.field !== 'user')
-      .forEach(c => expect(termMet(c.require, heldQuals())).withContext(c.field).toBeTrue());
+    qualConditions().filter(c => userOf(c) === null)
+      .forEach(c => expect(termMet(c.require, heldQuals())).withContext(conditionWhenText(c)).toBeTrue());
   });
 
   it('reports pass with nothing required, pass, and missing quals', () => {

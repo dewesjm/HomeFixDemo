@@ -1,0 +1,54 @@
+<div class="flex flex-wrap items-center gap-2" [class]="nested() ? 'border border-base-300 rounded-box px-2 py-1' : ''">
+  @if (!userRow()) {
+    <select class="select select-bordered select-sm w-auto" [ngModel]="group().op" (ngModelChange)="setOp($event)"
+            aria-label="Match all or any of these">
+      <option value="all">All of (AND)</option>
+      <option value="any">Any of (OR)</option>
+    </select>
+  }
+
+  @for (t of group().items; track $index; let i = $index) {
+    @if (i > 0) { <span class="font-semibold">{{ group().op === 'all' ? 'AND' : 'OR' }}</span> }
+    @if (asGroup(t); as g) {
+      <app-when-group-editor [group]="g" [nested]="true" (changed)="setItem(i, $event)" (removed)="removeItem(i)" />
+    } @else {
+      @let c = asClause(t);
+      <span class="flex flex-wrap items-center gap-1">
+        <select class="select select-bordered select-sm w-52" [ngModel]="c.field" (ngModelChange)="setField(i, $event)"
+                aria-label="Field">
+          @for (fg of fieldGroupsFor(); track fg.name) {
+            <optgroup [label]="fg.name">
+              @for (f of fg.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+            </optgroup>
+          }
+        </select>
+        <span>is</span>
+        @let opts = options(c.field);
+        @if (opts.length) {
+          <select class="select select-bordered select-sm w-44" [ngModel]="c.value" (ngModelChange)="setValue(i, $event)"
+                  aria-label="Value">
+            @for (o of opts; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+          </select>
+        } @else {
+          <input type="text" class="input input-bordered input-sm w-44" placeholder="Type a value" aria-label="Value"
+                 [ngModel]="c.value" (change)="setValue(i, $any($event.target).value)" />
+        }
+        @if (group().items.length > 1 || nested()) {
+          <button type="button" class="btn btn-ghost btn-sm" (click)="removeItem(i)" aria-label="Remove clause">
+            <svg lucideX class="size-4"></svg>
+          </button>
+        }
+      </span>
+    }
+  }
+
+  @if (!userRow()) {
+    <button type="button" class="btn btn-sm" (click)="addClause()">Add clause</button>
+    <button type="button" class="btn btn-sm" (click)="addGroup()">Add group</button>
+  }
+  @if (nested()) {
+    <button type="button" class="btn btn-ghost btn-sm" (click)="removed.emit()" aria-label="Remove group">
+      <svg lucideX class="size-4"></svg>
+    </button>
+  }
+</div>

@@ -2,6 +2,7 @@
   <h2 class="section-title">Qualifications</h2>
 
   <p class="mb-1">A step that matches a condition requires its quals before sign-off.
+    A condition's When can join several fields with AND or OR, in groups, for example Type is VT AND Weld Color is Straw.
     Joint Details fields are checked as soon as a step with a Qualification Check opens.
     Sign-off fields are read from the step being signed, once they're filled in.</p>
   <p class="mb-1">Controlled Material is Yes when MCL 1 or MCL 2 requires traceability in Admin &gt; Material Traceability.
@@ -23,7 +24,6 @@
       <thead>
         <tr>
           <th appSortHeader [table]="table" field="when" label="When"></th>
-          <th appSortHeader [table]="table" field="is" label="Is"></th>
           <th appSortHeader [table]="table" field="require" label="Require"></th>
           <th></th>
         </tr>
@@ -32,27 +32,10 @@
         @for (r of table.sorted(); track r.i) {
           <tr>
             <td class="align-top">
-              <select class="select select-bordered select-sm w-52" [ngModel]="r.c.field" (ngModelChange)="setConditionField(r.i, $event)">
-                @for (g of fieldGroups; track g.name) {
-                  <optgroup [label]="g.name">
-                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
-                  </optgroup>
-                }
-              </select>
-            </td>
-            <td class="align-top">
-              @let opts = options(r.c.field);
-              @if (opts.length) {
-                <select class="select select-bordered select-sm w-44" [ngModel]="r.c.value" (ngModelChange)="setConditionValue(r.i, $event)">
-                  @for (o of opts; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                </select>
-              } @else {
-                <input type="text" class="input input-bordered input-sm w-44" placeholder="Type a value"
-                       [ngModel]="r.c.value" (change)="setConditionValue(r.i, $any($event.target).value)" />
-              }
+              <app-when-group-editor [group]="r.c.when" (changed)="setWhen(r.i, $event)" />
             </td>
             <td>
-              <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.c.field === userField"
+              <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.userRow"
                                      (changed)="setRequire(r.i, $event)" />
             </td>
             <td class="text-right align-top">
@@ -62,7 +45,7 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No conditions match your search.' : 'No conditions yet. No quals are checked.' }}</td></tr>
+          <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No conditions match your search.' : 'No conditions yet. No quals are checked.' }}</td></tr>
         }
       </tbody>
     </table>

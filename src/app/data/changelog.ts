@@ -23,6 +23,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Qualifications is now one Conditions table. Quals are no longer set on each procedure; a condition can require them for a WTN instead, and the procedure form and PDF show those read-only.',
       'A condition can use any Joint Details field, Titanium (either Material Type is titanium), the Step, or any sign-off field of the step being signed (checked once it is filled in). Sample conditions: SS needs SSWELD1, a VT inspection needs VTINSP1, titanium needs TIWELD1.',
       'A condition can require quals with AND or OR, and groups inside groups, for example Controlled Material needs CNTRLMTL1 OR CNTRLMTL2.',
+      "A condition's When can join several fields with AND or OR, in groups, for example Type is VT AND Weld Color is Straw, or Type is MT OR Type is VT.",
       'User is a condition option too: a User row lists the quals that person holds. SELF is you, for testing; the Qualification Check runs as SELF. This replaces the Test User toggles.',
     ],
   },
