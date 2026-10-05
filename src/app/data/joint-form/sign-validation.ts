@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type and Routing Type use synthetic keys (__decision, __inspectionType, __routingType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired } from '../workflow';
+import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -15,11 +15,13 @@ export interface SignContext {
   visibleFields: StageField[];
 }
 
-/* RT NDT: Degree of RT Performed must match the job's required degree (rtRoot/rtFinal); '' when it does */
+/* RT NDT: Degree of RT Performed must be at least the job's required degree (rtRoot/rtFinal), compared
+   as plain numbers of degrees; NA or blank counts as none. '' when it is enough. */
 function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
   if (stage.inspectionType !== 'rt') return '';
   const required = rtDegreeRequired(job, stage);
-  return required && stage.inputs['degreeRt'] !== required ? `Degree of RT Performed must be ${required}` : '';
+  return required && rtDegrees(stage.inputs['degreeRt']) < rtDegrees(required)
+    ? `Degree of RT Performed must be at least ${required}` : '';
 }
 
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
@@ -97,7 +99,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
 }
 
 /* `errors` after a select field changes: its error is cleared, except a Degree of RT Performed that
-   doesn't match the job's required degree, which is flagged right away. `stage` is the live stage. */
+   is less than the job's required degree, which is flagged right away. `stage` is the live stage. */
 export function errorsAfterSelect(errors: Record<string, string>, stage: WorkflowStage | undefined, job: Job | undefined, stageId: string, fieldKey: string): Record<string, string> {
   const key = `${stageId}:${fieldKey}`;
   const next = { ...errors };

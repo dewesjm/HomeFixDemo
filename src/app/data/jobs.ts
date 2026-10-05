@@ -131,7 +131,7 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    data/workflow/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
-   Job from this file); the Degree of RT Performed signoff field must match this to sign off.
+   Job from this file); the Degree of RT Performed signoff field must be at least this to sign off.
    Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */
 export const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];

@@ -20,18 +20,24 @@ export const NDT_COMMON_FIELDS: StageField[] = [
   { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', required: true, showIf: { key: 'partial', equals: 'yes' } },
 ];
 
-/* Degree of RT required/performed -- NA, or an angular/percentage coverage value. Shared by the
-   Degree of RT Performed signoff field and Job.rtRoot/rtFinal (the requirement each one must match
-   before its RT NDT stage can be signed off -- see signProblems() in data/joint-form/sign-validation.ts). */
+/* Degree of RT required/performed: NA, or a number of degrees, in number order. Shared by the
+   Degree of RT Performed signoff field and Job.rtRoot/rtFinal (the performed degree must be at least the
+   required one before its RT NDT stage can be signed off -- see signProblems() in data/joint-form/sign-validation.ts). */
 export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
-  ['NA', '10', '100', '360', '60', '75'].map(v => ({ label: v, value: v }));
+  ['NA', '10', '60', '75', '100', '360'].map(v => ({ label: v, value: v }));
+
+/* a Degree of RT as a number; NA or blank is 0 */
+export function rtDegrees(value: string | undefined): number {
+  const n = Number(value);
+  return value && Number.isFinite(n) ? n : 0;
+}
 
 export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; options: StageOption[] }> = {
   utrt: {
     label: 'RT/UT',
     options: [{ label: 'RT', value: 'rt' }, { label: 'UT', value: 'ut' }],
     fields: [
-      /* must equal the job's required degree (rtRoot/rtFinal) before this stage can be signed off
+      /* must be at least the job's required degree (rtRoot/rtFinal) before this stage can be signed off
          -- see signProblems() in data/joint-form/sign-validation.ts -- so it's a droplist (blank or the value), not a
          fixed radio choice */
       { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', required: true, showIf: { key: 'inspectionType', equals: 'rt' },

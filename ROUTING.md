@@ -132,7 +132,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - Type (unless locked), Procedure Used for Inspection (only the procedures listed for that Type on Admin > Inspection Procedures), and SAT or UNSAT.
 - Probationary Inspector and Oversight Inspector, when "Has Probationary Inspector" is checked.
 - Portion of Weld Inspected, when "Partial" is checked.
-- RT: Degree of RT Performed must match the RT Root or RT Final requirement. Defect Code is needed when RT is UNSAT.
+- RT: Degree of RT Performed must be at least the RT Root or RT Final requirement (plain number of degrees; NA counts as none). Defect Code is needed when RT is UNSAT.
 
 **Repair**
 - Repair Code (Grind Only, Weld Repair or Cut).

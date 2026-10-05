@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Weld Record Advanced Search uses the same field names as Joint Details (for example Material Type 1 and 2, Sequence #, Refit #), and adds VT. UT now shows X or - from the NDT requirement, as Joint Details does.',
+      'Degree of RT Performed only blocks sign-off when it is less than the required RT Root or RT Final degree; a higher degree is fine. The droplist is in number order.',
       'Fabrication: ER/IR Number only shows once a Revised Joint Design is picked, and is required then.',
       'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
     ],

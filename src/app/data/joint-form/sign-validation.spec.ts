@@ -34,16 +34,28 @@ describe('joint-form sign-validation', () => {
     expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
   });
 
-  it('RT NDT must record the job\'s required degree', () => {
+  it('RT NDT must record at least the job\'s required degree', () => {
     const j = job({ ndt: 'UT', rtRoot: '360' });
     const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');
     if (!rt) { pending('seed job has no Root RT/UT step'); return; }
     const stage = { ...rt, inspectionType: 'rt', inputs: { degreeRt: '60' } };
-    expect(signProblems(stage, ctxFor(j, stage))).toContain('Degree of RT Performed must be 360');
-    expect(stageFieldErrors(stage, ctxFor(j, stage))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be 360');
-    expect(errorsAfterSelect({}, stage, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be 360');
+    expect(signProblems(stage, ctxFor(j, stage))).toContain('Degree of RT Performed must be at least 360');
+    expect(stageFieldErrors(stage, ctxFor(j, stage))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
+    expect(errorsAfterSelect({}, stage, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
     const matched = { ...stage, inputs: { degreeRt: '360' } };
     expect(errorsAfterSelect({ 'root-ndt-utrt:degreeRt': 'x' }, matched, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBeUndefined();
+    const na = { ...stage, inputs: { degreeRt: 'NA' } };
+    expect(signProblems(na, ctxFor(j, na))).toContain('Degree of RT Performed must be at least 360');
+  });
+
+  it('RT NDT accepts more than the required degree', () => {
+    const j = job({ ndt: 'UT', rtRoot: '60' });
+    const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');
+    if (!rt) { pending('seed job has no Root RT/UT step'); return; }
+    const more = { ...rt, inspectionType: 'rt', inputs: { degreeRt: '75' } };
+    expect(stageFieldErrors(more, ctxFor(j, more))['root-ndt-utrt:degreeRt']).toBeUndefined();
+    const less = { ...rt, inspectionType: 'rt', inputs: { degreeRt: '10' } };
+    expect(stageFieldErrors(less, ctxFor(j, less))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 60');
   });
 
   it('field errors: required blanks, Actual Min above Max, and synthetic keys', () => {
