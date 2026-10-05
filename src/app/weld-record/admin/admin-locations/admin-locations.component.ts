@@ -1,19 +1,18 @@
-/* Admin → Locations: manage shop/location list used in Fabrication section */
+/* Admin → Locations: manage shop/location list used in Fabrication section; Shipboard ones show Ship Location fields */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
-import { getShops, setShops } from '../../../data/shops';
+import { Shop, getShops, setShops } from '../../../data/shops';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 
-interface LocRow {
+interface LocRow extends Shop {
   uid: string;
-  name: string;
 }
 
 @Component({
@@ -29,7 +28,7 @@ export class AdminLocationsComponent {
   private messages = inject(ToastService);
   private seq = 0;
 
-  rows = signal<LocRow[]>(getShops().map((name, i) => ({ uid: `l-${i}`, name })));
+  rows = signal<LocRow[]>(getShops().map((s, i) => ({ ...s, uid: `l-${i}` })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, LocRow> = {};
   table = new TableState<LocRow>(['name']);
@@ -40,7 +39,7 @@ export class AdminLocationsComponent {
 
   addRow() {
     const uid = `new-${++this.seq}`;
-    const row: LocRow = { uid, name: '' };
+    const row: LocRow = { uid, name: '', shipboard: false };
     this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingId.set(uid);
@@ -77,16 +76,20 @@ export class AdminLocationsComponent {
     this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, name: value } : x));
   }
 
+  updateShipboard(row: LocRow, shipboard: boolean) {
+    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, shipboard } : x));
+  }
+
   exportCsv() {
     downloadCsv('locations', [
       { header: 'Name', value: (r: LocRow) => r.name },
+      { header: 'Shipboard', value: (r: LocRow) => r.shipboard ? 'Yes' : 'No' },
     ], this.table.sorted());
   }
 
   private persist() {
-    const names = this.rows()
+    setShops(this.rows()
       .filter(r => r.name.trim())
-      .map(r => r.name.trim());
-    setShops(names);
+      .map(r => ({ name: r.name.trim(), shipboard: r.shipboard })));
   }
 }

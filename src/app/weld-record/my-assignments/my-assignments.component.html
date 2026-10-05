@@ -83,7 +83,7 @@
                   <div class="font-mono mt-1 text-center">{{ a.charge }}</div>
                 </div>
               </div>
-              @if (a.location === 'Ship') {
+              @if (isShipboard(a)) {
                 @let fab = fabFor(a);
                 <div class="w-full flex flex-wrap gap-x-8 gap-y-2">
                   <div><span class="font-semibold">Deck</span><div>{{ fab['deck'] || '-' }}</div></div>

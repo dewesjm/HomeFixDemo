@@ -22,6 +22,12 @@ describe('joint-form fabrication-form', () => {
     expect(keys(job(), { location: 'ship' })).toContain('deck');
   });
 
+  it('shows ER/IR Number only when Revised Joint Design is set', () => {
+    const keys = (fab: Record<string, string>) => fabricationFieldsShown(job(), fab).map(f => f.key);
+    expect(keys({})).not.toContain('changeNumber');
+    expect(keys({ revisedJointDesign: 'c-18' })).toContain('changeNumber');
+  });
+
   it('fills Location options from the shop list and resolves its label for display', () => {
     const location = fabricationFieldsShown(job(), {}).find(f => f.key === 'location')!;
     expect(location.options!.some(o => o.label === 'South Bay Welding' && o.value === 'south-bay-welding')).toBeTrue();
@@ -38,10 +44,11 @@ describe('joint-form fabrication-form', () => {
     expect(fabricationErrors(job({ mcl1: 'MC-I' }), {})['id1']).toBe('MIC 1 is required');
   });
 
-  it('requires Ship Location fields only when Location is Ship, and ER/IR Number when Revised Joint Design is set', () => {
+  it('requires Ship Location fields only when Location is Shipboard, and ER/IR Number when Revised Joint Design is set', () => {
     expect(fabricationErrors(job(), { location: 'south-bay-welding' })['deck']).toBeUndefined();
     expect(fabricationErrors(job(), { location: 'ship' })['deck']).toBe('Deck is required');
-    expect(fabricationErrors(job(), { revisedJointDesign: 'c-18' })['changeNumber']).toContain('is required when Revised Joint Design is set');
+    expect(fabricationErrors(job(), { revisedJointDesign: 'c-18' })['changeNumber']).toBe('ER/IR Number is required');
+    expect(fabricationErrors(job(), {})['changeNumber']).toBeUndefined();
     const changeNumber = FABRICATION_FIELDS.find(f => f.key === 'changeNumber')!;
     expect(fabricationFieldRequired(changeNumber, {})).toBeFalse();
     expect(fabricationFieldRequired(changeNumber, { revisedJointDesign: 'c-18' })).toBeTrue();

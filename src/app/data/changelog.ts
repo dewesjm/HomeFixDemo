@@ -10,6 +10,13 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-05',
+    changed: [
+      'Fabrication: ER/IR Number only shows once a Revised Joint Design is picked, and is required then.',
+      'Admin > Locations has a Shipboard checkbox. Any location marked Shipboard shows Deck, Frame, P/S/CL and Usage on the joint (before, only the location named "Ship" did).',
+    ],
+  },
+  {
     date: '2026-10-04',
     added: [
       'Weld Engineering > Admin > Procedure Sections: add your own sections after 11. Heat Treatment, each with its own fields (text, number, min/max range, or pick from a list; required or not). They show on the procedure form, the PDF (numbered from 12) and the CSV export. Sections and fields can only be added for now, not renamed or removed. A "How it\'s stored" panel shows the saved data.',

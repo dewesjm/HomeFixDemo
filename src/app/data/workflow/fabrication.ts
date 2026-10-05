@@ -1,6 +1,6 @@
 /* Fabrication: the cross-step data section on a Welding joint (location, MICs, drawing rev...) */
 import { jointDesignOptions } from '../joint-designs';
-import { shopOptions } from '../shops';
+import { isShipboardLocation, shopOptions } from '../shops';
 import { SignoffInput } from './types';
 
 export interface FabricationField {
@@ -12,8 +12,8 @@ export interface FabricationField {
   unit?: string;
   fullWidth?: boolean;
   row: 1 | 2 | 3 | 4 | 5;
-  requiredWhen?: { key: string; notEmpty: boolean };
-  showIf?: { key: string; equals: string };
+  /* shown only when another field has a value, or when Location is a Shipboard location */
+  showIf?: { key: string; notEmpty: true } | { shipboardLocation: true };
   required?: boolean;
 }
 
@@ -21,12 +21,12 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
   { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
-  // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location = Ship); options come from
+  // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
   // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts)
-  { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
-  { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick a Deck first' },
-  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true },
-  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { key: 'location', equals: 'ship' }, required: true, placeholder: 'Pick Deck, Frame and P/S/CL first' },
+  { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
+  { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
+  { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
+  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick Deck, Frame and P/S/CL first' },
   // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see data/joint-form/fabrication-form.ts
   // fabricationFieldsShown()) when that joint member's MCL requires traceability, so required is unconditional here
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },
@@ -39,14 +39,21 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'revisedJointDesign', label: 'Revised Joint Design', type: 'select', row: 5,
     options: [] },
   { key: 'changeNumber', label: 'ER/IR Number', type: 'text', row: 5,
-    requiredWhen: { key: 'revisedJointDesign', notEmpty: true } },
+    showIf: { key: 'revisedJointDesign', notEmpty: true }, required: true },
 ];
+
+/* whether a field's showIf is met by the joint's fabrication data */
+export function fabricationFieldVisible(f: FabricationField, fab: Record<string, string>): boolean {
+  if (!f.showIf) return true;
+  if ('shipboardLocation' in f.showIf) return isShipboardLocation(fab['location']);
+  return !!(fab[f.showIf.key] ?? '').trim();
+}
 
 /* fabrication data as it stood at some moment (e.g. a sign-off) — every field, blanks included, with
    Location/Revised Joint Design resolved to their display label the same way the live form does */
 export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[] {
   return FABRICATION_FIELDS
-    .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
+    .filter(f => fabricationFieldVisible(f, fab))
     .map(f => {
       const options = f.key === 'location' ? shopOptions()
         : f.key === 'revisedJointDesign' ? jointDesignOptions()

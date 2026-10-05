@@ -1,7 +1,7 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
 import { seededWorkflow, currentRoutingLabel, seedFabricationData } from './workflow';
-import { getShops } from './shops';
+import { getShops, isShipboardLocation } from './shops';
 import { allWtns } from './procedures';
 
 export interface Assignment {
@@ -14,9 +14,9 @@ export interface Assignment {
   trade: string;
   /* no stored routing: My Assignments shows the linked job's live current routing, so it can't drift
      from what the joint page shows (see my-assignments.component.ts routingFor) */
-  location: string;           /* shop, same list as Fabrication's Location field; 'Ship' for a couple of examples (see below) */
+  location: string;           /* shop, same list as Fabrication's Location field; a Shipboard one for a couple of examples (see below) */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
-  /* no stored Deck/Frame/P-S-CL/Usage either: a 'Ship' assignment shows the joint's own Fabrication values */
+  /* no stored Deck/Frame/P-S-CL/Usage either: a Shipboard assignment shows the joint's own Fabrication values */
   assignedRoles: string[];
   source: string;   /* demo only: which external system the assignment came from, by role */
   dueDate: string;
@@ -73,6 +73,8 @@ function generateAssignments(): Assignment[] {
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const assignments: Assignment[] = [];
   const shops = getShops();
+  const ashore = shops.filter(s => !s.shipboard);
+  const shipboard = shops.find(s => s.shipboard);
 
   /* one or more real routing labels a role's assignments draw from, for variety within the role's
      own block -- role is assigned directly per entry below, not derived from the routing label, so
@@ -150,7 +152,7 @@ function generateAssignments(): Assignment[] {
       trade: job.trade,
       /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
          like any other assignment; only a couple of examples get the shipboard treatment below */
-      location: pick(shops.filter(s => s !== 'Ship')),
+      location: pick(ashore.length ? ashore : shops)?.name ?? '',
       specificLocation: pick(SPECIFIC_LOCATIONS),
       assignedRoles,
       source: nextSource(primaryRole),
@@ -174,11 +176,12 @@ function generateAssignments(): Assignment[] {
   const jobsByKey = new Map(JOBS.map(j => [`${j.hull}|${j.drawing}|${j.joint}`, j]));
   const onShip = (a: Assignment) => {
     const job = jobsByKey.get(`${a.hull}|${a.drawing}|${a.joint}`);
-    return !!job && seedFabricationData(job)['location'] === 'ship';
+    return !!job && isShipboardLocation(seedFabricationData(job)['location']);
   };
   const toShip = (a: Assignment) => {
+    if (!shipboard) return;
     a.jobId = '';
-    a.location = 'Ship';
+    a.location = shipboard.name;
     a.specificLocation = '';
   };
   const earliestWelding = [...assignments]

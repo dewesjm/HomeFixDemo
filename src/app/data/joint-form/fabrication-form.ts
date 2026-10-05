@@ -1,6 +1,6 @@
 /* The joint page's Fabrication panel: which fields show, their options, and what's missing */
 import { Job } from '../jobs';
-import { FABRICATION_FIELDS, FabricationField } from '../workflow';
+import { FABRICATION_FIELDS, FabricationField, fabricationFieldVisible } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { shopOptions } from '../shops';
 import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../ship-locations';
@@ -17,7 +17,7 @@ export function micApplies(job: Job | undefined, key: 'id1' | 'id2'): boolean {
 /* the fields shown, with their options filled in */
 export function fabricationFieldsShown(job: Job | undefined, fab: Fab): FabricationField[] {
   return FABRICATION_FIELDS
-    .filter(f => !f.showIf || fab[f.showIf.key] === f.showIf.equals)
+    .filter(f => fabricationFieldVisible(f, fab))
     .filter(f => (f.key === 'id1' || f.key === 'id2') ? micApplies(job, f.key) : true)
     .map(f => withFabricationOptions(f, job, fab));
 }
@@ -50,38 +50,21 @@ export function fabricationDisplayValue(key: string, job: Job | undefined, fab: 
   return val;
 }
 
-/* live errors on the Fabrication panel, keyed by field */
+/* live errors on the Fabrication panel, keyed by field: required fields that are shown and blank
+   (MIC 1/2 only when they apply) */
 export function fabricationErrors(job: Job | undefined, fab: Fab): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const f of FABRICATION_FIELDS) {
-    if (f.requiredWhen) {
-      const triggerVal = fab[f.requiredWhen.key] ?? '';
-      if (f.requiredWhen.notEmpty && triggerVal.trim() && !(fab[f.key] ?? '').trim()) {
-        errors[f.key] = `${f.label} is required when ${FABRICATION_FIELDS.find(ff => ff.key === f.requiredWhen!.key)?.label ?? f.requiredWhen.key} is set`;
-      }
-    }
-    if (f.showIf && f.required) {
-      if (fab[f.showIf.key] === f.showIf.equals && !(fab[f.key] ?? '').trim()) {
-        errors[f.key] = `${f.label} is required`;
-      }
-    }
-    /* plain required fields (no showIf); MIC 1/2 only when they apply */
-    if (f.required && !f.showIf) {
-      if ((f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)) continue;
-      if (!(fab[f.key] ?? '').trim()) {
-        errors[f.key] = `${f.label} is required`;
-      }
-    }
+    if (!f.required || !fabricationFieldVisible(f, fab)) continue;
+    if ((f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)) continue;
+    if (!(fab[f.key] ?? '').trim()) errors[f.key] = `${f.label} is required`;
   }
   return errors;
 }
 
-/* the red * on a conditionally required field */
+/* the red * on a conditionally shown, required field */
 export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean {
-  if (f.showIf && f.required) return fab[f.showIf.key] === f.showIf.equals;
-  if (!f.requiredWhen) return false;
-  const val = (fab[f.requiredWhen.key] ?? '').trim();
-  return f.requiredWhen.notEmpty ? val.length > 0 : val.length === 0;
+  return !!f.showIf && !!f.required && fabricationFieldVisible(f, fab);
 }
 
 /* fabrication values that must be present before Fit can be signed */

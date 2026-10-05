@@ -9,6 +9,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideUpload } from '
 import { ToastService } from '../../../shared/toast.service';
 import { ShipLocationEntry, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS, JOBS } from '../../../data/jobs';
+import { isShipboardLocation } from '../../../data/shops';
 import { WorkflowStore } from '../../services/workflow-store.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -44,7 +45,7 @@ export class AdminShipLocationsComponent {
     const counts = new Map<string, number>();
     for (const job of JOBS) {
       const fab = this.store.workflowFor(job)().fabricationData;
-      if (fab['location'] !== 'ship') continue;
+      if (!isShipboardLocation(fab['location'])) continue;
       const k = keyOf({ hull: job.hull, deck: fab['deck'] ?? '', frame: fab['frame'] ?? '', pscl: fab['pscl'] ?? '', usage: fab['usage'] ?? '' });
       counts.set(k, (counts.get(k) ?? 0) + 1);
     }

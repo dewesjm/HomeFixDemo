@@ -8,7 +8,7 @@ export const STORAGE = {
   inspectionProcedures: 'welding:inspection-procedures:v1',
   shipLocations: 'welding:ship-locations:v1',
   weldPositions: 'welding:weld-positions:v1',
-  shops: 'welding:shops:v2',
+  shops: 'welding:shops:v3',
   jointDesigns: 'welding:joint-designs:v3',
   mclTraceability: 'welding:mcl-traceability:v2',
   materialClassification: 'welding:material-classification:v4',

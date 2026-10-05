@@ -9,6 +9,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { currentRoutingLabel } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
+import { isShipboardShop } from '../../data/shops';
 import { TableState } from '../../shared/table-state';
 import { TableToolbarComponent } from '../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
@@ -40,7 +41,9 @@ export class MyAssignmentsComponent {
     return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
   }
 
-  /* a Ship assignment's Deck/Frame/P-S-CL/Usage are the joint's own Fabrication values, live */
+  /* a Shipboard assignment's Deck/Frame/P-S-CL/Usage are the joint's own Fabrication values, live */
+  isShipboard = (a: Assignment) => isShipboardShop(a.location);
+
   fabFor(a: Assignment): Record<string, string> {
     const job = this.jobFor(a);
     return job ? this.store.workflowFor(job)().fabricationData : {};

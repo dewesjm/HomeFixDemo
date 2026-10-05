@@ -2,7 +2,7 @@
    (localStorage). Matching itself is data/filter-engine.ts. */
 import { STORAGE } from './storage-keys';
 import { Job } from './jobs';
-import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel } from './workflow';
+import { FABRICATION_FIELDS, JobWorkflow, currentRoutingLabel, fabricationFieldVisible } from './workflow';
 import { shopOptions } from './shops';
 import { jointDesignOptions } from './joint-designs';
 import { StepConditionField, allStepAnswerFields } from './step-conditions';
@@ -97,7 +97,7 @@ export type SearchRow = Job & { currentRouting: string } & Record<string, any>;
 function fabValue(fab: Record<string, string>, key: string): string {
   const f = FABRICATION_FIELDS.find(x => x.key === key);
   if (!f) return '';
-  if (f.showIf && fab[f.showIf.key] !== f.showIf.equals) return '';
+  if (!fabricationFieldVisible(f, fab)) return '';
   const options = key === 'location' ? shopOptions() : key === 'revisedJointDesign' ? jointDesignOptions() : f.options;
   const raw = fab[key] ?? '';
   return options?.find(o => o.value === raw)?.label ?? raw;

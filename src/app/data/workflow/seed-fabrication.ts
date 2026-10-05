@@ -1,7 +1,7 @@
 /* Demo data: deterministic Fabrication values for a joint, and the helpers the seeded workflows share */
 import { Job } from '../jobs';
 import { DEFAULT_SHIP_LOCATIONS } from '../ship-locations';
-import { shopOptions } from '../shops';
+import { getShops, shopValue } from '../shops';
 
 /* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts) */
 export function seeded(n: number) {
@@ -23,14 +23,15 @@ const SEED_SPECIFIC_LOCATIONS = ['Bay 3, Rack 12', 'Bay 1, Rack 4', 'Bay 5, Rack
 const seedWeMemo = (rand: () => number) => (rand() < 0.3 ? '' : `M-${10 + Math.floor(rand() * 40)}`);
 
 /* Realistic, deterministic fabrication data for a welding job. Every select value is taken from the real
-   option lists so the dropdowns are populated; Ship-only fields are set only when Location is Ship. */
+   option lists so the dropdowns are populated; Ship Location fields are set only when Location is a Shipboard location. */
 export function seedFabricationData(job: Job): Record<string, string> {
   const rand = seeded(job.id.charCodeAt(0) * 131 + job.id.charCodeAt(1) * 17 + job.id.charCodeAt(3));
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
-  const shops = shopOptions();
-  const ship = shops.find(s => s.value === 'ship');
-  const onShip = !!ship && rand() < 0.3;
-  const location = onShip ? ship!.value : pick(shops.filter(s => s.value !== 'ship')).value;
+  const shops = getShops();
+  const ship = shops.find(s => s.shipboard);
+  const ashore = shops.filter(s => !s.shipboard);
+  const onShip = !!ship && (rand() < 0.3 || !ashore.length);
+  const location = shopValue(onShip ? ship!.name : pick(ashore).name);
   /* a real row from the hull's sample Ship Locations, so every droplist shows the saved value */
   const shipRows = DEFAULT_SHIP_LOCATIONS.filter(e => e.hull === job.hull);
   const shipRow = onShip && shipRows.length ? pick(shipRows) : undefined;
