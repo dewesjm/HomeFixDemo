@@ -10,14 +10,14 @@ export interface InspectionProcedureEntry {
 /* the NDT steps' Type values, same order as on the steps */
 export const INSPECTION_TYPES = ['RT', 'UT', 'MT', 'PT', 'VT', '5X'];
 
-/* the four procedures the droplist always had, each given the types it covers */
+/* each Type has its own procedures; MT and PT share one, as do VT and 5X, and RT and UT share none */
 const DEFAULT_INSPECTION_PROCEDURES: InspectionProcedureEntry[] = [
-  { type: 'RT', procedure: 'ASME Sec V' }, { type: 'RT', procedure: 'SNT-TC-1A' },
-  { type: 'UT', procedure: 'ASME Sec V' }, { type: 'UT', procedure: 'SNT-TC-1A' },
-  { type: 'MT', procedure: 'ASME Sec V' }, { type: 'MT', procedure: 'AWS D1.1' },
-  { type: 'PT', procedure: 'ASME Sec V' }, { type: 'PT', procedure: 'ASTM E165' },
-  { type: 'VT', procedure: 'AWS D1.1' }, { type: 'VT', procedure: 'ASME Sec V' },
-  { type: '5X', procedure: 'AWS D1.1' }, { type: '5X', procedure: 'ASME Sec V' },
+  { type: 'RT', procedure: 'ASME Sec V Art. 2' }, { type: 'RT', procedure: 'ASTM E1032' },
+  { type: 'UT', procedure: 'ASME Sec V Art. 4' }, { type: 'UT', procedure: 'ASTM E164' },
+  { type: 'MT', procedure: 'ASME Sec V Art. 7' }, { type: 'MT', procedure: 'ASTM E709' }, { type: 'MT', procedure: 'AWS D1.1 MT/PT' },
+  { type: 'PT', procedure: 'ASME Sec V Art. 6' }, { type: 'PT', procedure: 'ASTM E165' }, { type: 'PT', procedure: 'AWS D1.1 MT/PT' },
+  { type: 'VT', procedure: 'AWS D1.1 Visual' }, { type: 'VT', procedure: 'ASME Sec V Art. 9' },
+  { type: '5X', procedure: '5X Magnified Visual' }, { type: '5X', procedure: 'ASME Sec V Art. 9' },
 ];
 
 export function getInspectionProcedures(): InspectionProcedureEntry[] {
