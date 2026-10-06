@@ -70,7 +70,7 @@ export const WELDING_STEPS: StageTemplate[] = [
   { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
     { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
     { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
-    { key: 'verifyDrawingRev', label: 'Drawing Rev verified', type: 'checkbox' },
+    { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
     { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
     { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
   ],
