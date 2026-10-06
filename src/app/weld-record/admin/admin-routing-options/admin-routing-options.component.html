@@ -26,10 +26,8 @@
                     <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(row, i)" [disabled]="i === row.options.length - 1">
                       <svg lucideChevronDown class="size-3"></svg>
                     </button>
-                    <input class="input input-sm input-bordered w-32" placeholder="Label"
+                    <input class="input input-sm input-bordered w-40" placeholder="Name"
                            [ngModel]="opt.label" (ngModelChange)="opt.label = $event" />
-                    <input class="input input-sm input-bordered w-24" placeholder="Value"
-                           [ngModel]="opt.value" (ngModelChange)="opt.value = $event" />
                     <label class="flex items-center gap-1 text-xs cursor-pointer">
                       <input type="radio" class="radio radio-xs" [name]="'default-' + row.uid"
                              [checked]="opt.default" (change)="setDefault(row, i)" />

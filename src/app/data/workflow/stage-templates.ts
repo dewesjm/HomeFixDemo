@@ -108,8 +108,13 @@ function saveOverrides(overrides: Record<string, SerializedStage[]>) {
 export function setStageRoutingOptions(trade: string, stageId: string, options: StageOption[]) {
   const raw = localStorage.getItem(STORAGE.routingOptions);
   const all: Record<string, StageOption[]> = raw ? JSON.parse(raw) : {};
-  all[`${trade}:${stageId}`] = options;
+  all[`${trade}:${stageId}`] = options.map(o => ({ ...o, value: o.value || valueFromLabel(o.label) }));
   localStorage.setItem(STORAGE.routingOptions, JSON.stringify(all));
+}
+
+/* an added option's stored value, made from its label (e.g. "Weld Build-Up" -> "weld-build-up") */
+function valueFromLabel(label: string): string {
+  return label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
 /* ── The merged templates ── */
