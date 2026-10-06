@@ -54,7 +54,7 @@ describe('joint-form stage-form', () => {
 
   it('Fit under Weld Build-Up shows Tack\'s fields even before its own fields are swapped', () => {
     const j = job();
-    const fit = stageOf(j, 'fit', { routingType: 'weld-buildup', fields: [] });
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: [] });
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('wtn');
   });
 

@@ -38,7 +38,7 @@ export const REPAIR_STAGE: StageTemplate = {
 export function nextRepairStage(stages: { id: string }[]): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...REPAIR_STAGE, id, label: roundLabel(REPAIR_STAGE.label, id), routingOptions: signoffTypeOptions(id) };
+  return { ...REPAIR_STAGE, id, label: roundLabel(REPAIR_STAGE.label, id), typeOptions: signoffTypeOptions(id) };
 }
 
 /* ── Excavation NDT ── */
@@ -65,7 +65,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: repairId, decisionLabel: 'Inspection Results',
-    routingOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
+    typeOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
   };
 }
 
@@ -126,11 +126,10 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     signoffInputs: {},
     result: null,
     rejectToStage: t.rejectToStage ?? '',
-    repeatable: false,
-    routingType: 'standard',
+    signoffType: 'standard',
     swapStageId: '',
     inspectionType: initialInspectionType(t),
-    routingOptions: t.routingOptions ?? [],
+    typeOptions: t.typeOptions ?? [],
     signed: false,
     signedAt: null,
     decisionLabel: t.decisionLabel,

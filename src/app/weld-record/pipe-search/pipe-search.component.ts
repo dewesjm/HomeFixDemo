@@ -150,7 +150,7 @@ export class PipeSearchComponent {
   });
 
   /* distinct current-routing values for that column's multiselect filter */
-  routingOptions = computed(() =>
+  typeOptions = computed(() =>
     [...new Set(this.displayedJobs().map(r => r.currentRouting))]
       .sort()
       .map(s => ({ label: s, value: s })));

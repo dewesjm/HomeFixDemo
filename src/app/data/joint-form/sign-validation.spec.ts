@@ -12,7 +12,7 @@ const FULL_FAB = { location: 'ship', drawingRev: 'A', actualThickness: '0.2' };
 describe('joint-form sign-validation', () => {
   it('inspection steps with a Type list need the inspection chosen; Fit never does', () => {
     const j = job();
-    const ndt = buildStages(j).find(s => s.id.includes('-ndt-') && !!s.routingOptions?.length)!;
+    const ndt = buildStages(j).find(s => s.id.includes('-ndt-') && !!s.typeOptions?.length)!;
     expect(inspectionTypeRequired(ndt)).toBeTrue();
     expect(inspectionTypeRequired(stageOf(j, 'fit'))).toBeFalse();
     expect(inspectionTypeRequired(stageOf(j, 'tack'))).toBeFalse();
@@ -71,7 +71,7 @@ describe('joint-form sign-validation', () => {
 
   it('Weld Build-Up needs an Affected Item, with its MIC verified when traceability applies', () => {
     const j = job({ mcl1: 'MC-I', joiningItem: 'Pipe A' });
-    const fit = stageOf(j, 'fit', { routingType: 'weld-buildup' });
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup' });
     expect(stageFieldErrors(fit, ctxFor(j, fit))['fit:affectedItem']).toBe('Select at least one Affected Item');
     const picked = { ...fit, inputs: { affectedItems: 'joiningItem' } };
     expect(stageFieldErrors(picked, ctxFor(j, picked))['fit:affectedItem']).toBe('Please verify MIC for Pipe A');

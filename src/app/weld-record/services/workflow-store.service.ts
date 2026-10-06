@@ -17,7 +17,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.30';
+const CURRENT_VERSION = '2.10.31';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -136,8 +136,7 @@ export class WorkflowStore {
           s.signed ??= false;
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;
-          s.repeatable ??= false;
-          s.routingType ??= 'standard';
+          s.signoffType ??= 'standard';
           s.swapStageId ??= '';
           s.role ??= '';
 

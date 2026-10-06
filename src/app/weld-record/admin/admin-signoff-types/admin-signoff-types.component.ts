@@ -23,21 +23,29 @@ interface TypeRow {
 
 const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
 
+/* a repeatable Type records the signoff but leaves the routing where it is (StageOption.repeatable) */
+const REPEAT_CHOICES: { value: '' | 'keep' | 'blank'; label: string }[] = [
+  { value: '', label: 'No' },
+  { value: 'keep', label: 'Yes, keep values' },
+  { value: 'blank', label: 'Yes, start blank' },
+];
+
 @Component({
-  selector: 'app-admin-routing-options',
+  selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
-  templateUrl: './admin-routing-options.component.html'
+  templateUrl: './admin-signoff-types.component.html'
 })
-export class AdminRoutingOptionsComponent {
+export class AdminSignoffTypesComponent {
   private messages = inject(ToastService);
   private seq = 0;
 
   readonly excavationId = EXCAVATION_TYPE_ROW;
   readonly excavationNote = EXCAVATION_NOTE;
+  readonly repeatChoices = REPEAT_CHOICES;
   /* every step a row can be for: the Routing Settings steps, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
@@ -73,11 +81,24 @@ export class AdminRoutingOptionsComponent {
     return row.options.some(o => o.default);
   }
 
+  /* e.g. "Interim Layer (default, repeatable, keeps values)" */
+  optionText(o: StageOption): string {
+    const notes = [
+      ...(o.default ? ['default'] : []),
+      ...(o.repeatable === 'keep' ? ['repeatable, keeps values'] : o.repeatable === 'blank' ? ['repeatable, starts blank'] : []),
+    ];
+    return notes.length ? `${o.label} (${notes.join(', ')})` : o.label;
+  }
+
+  setRepeatable(o: StageOption, value: '' | 'keep' | 'blank') {
+    if (value) o.repeatable = value; else delete o.repeatable;
+  }
+
   exportCsv() {
     downloadCsv('signoff-type-availability', [
       { header: 'Routing Step', value: (r: TypeRow) => r.stepLabel },
       { header: 'Options', value: (r: TypeRow) => r.stepId === EXCAVATION_TYPE_ROW ? EXCAVATION_NOTE
-          : r.options.map(o => o.label + (o.default ? ' (default)' : '')).join('; ') },
+          : r.options.map(o => this.optionText(o)).join('; ') },
     ], this.table.sorted());
   }
 

@@ -14,12 +14,12 @@ import { initialInspectionType } from './stage-rules';
 const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];
 
 /* a stage with nothing entered and not signed; `fresh` is its buildStages() copy, when it has one */
-function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
+export function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   const inputs = fresh ? { ...fresh.inputs }
     : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => isRepairStageId(s.id) && s.inputs[k]).map(k => [k, s.inputs[k]]));
   return {
     ...s, inputs, signoffInputs: {}, result: null, signed: false, signedAt: null,
-    routingType: fresh?.routingType ?? s.routingType,
+    signoffType: fresh?.signoffType ?? s.signoffType,
     inspectionType: fresh?.inspectionType ?? initialInspectionType(s),
   };
 }
@@ -150,7 +150,7 @@ export function discardUnsignedEdits(
       ...s,
       inputs: { ...snap.inputs }, signoffInputs: { ...snap.signoffInputs },
       fields: [...snap.fields], signoffFields: [...snap.signoffFields],
-      routingType: snap.routingType, result: snap.result, inspectionType: snap.inspectionType, swapStageId: snap.swapStageId,
+      signoffType: snap.signoffType, result: snap.result, inspectionType: snap.inspectionType, swapStageId: snap.swapStageId,
     };
   });
   return { ...wf, fabricationData, stages };

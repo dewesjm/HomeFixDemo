@@ -19,7 +19,7 @@ describe('joint-form unsaved-edits', () => {
     expect(hasUnsavedEdits(withStage(wf, 'tack', { inputs: { comments: 'x' } }), loaded, none)).toBeTrue();
     expect(hasUnsavedEdits(withStage(wf, 'tack', { inputs: { comments: 'x' }, signed: true }), loaded, none)).toBeFalse();
     expect(hasUnsavedEdits(withStage(wf, 'fit', { signoffInputs: { deferTack: 'yes' } }), loaded, none)).toBeTrue();
-    expect(hasUnsavedEdits(withStage(wf, 'fit', { routingType: 'weld-buildup' }), loaded, none)).toBeTrue();
+    expect(hasUnsavedEdits(withStage(wf, 'fit', { signoffType: 'weld-buildup' }), loaded, none)).toBeTrue();
   });
 
   it('what a sign-off changed (a route-back) is not unsaved; what was typed elsewhere still is', () => {

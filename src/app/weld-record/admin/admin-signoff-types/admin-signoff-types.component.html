@@ -46,6 +46,13 @@
                              [checked]="opt.default" (change)="setDefault(row, i)" />
                       Default
                     </label>
+                    <label class="flex items-center gap-1 text-xs">
+                      Repeatable
+                      <select class="select select-xs select-bordered"
+                              [ngModel]="opt.repeatable ?? ''" (ngModelChange)="setRepeatable(opt, $event)">
+                        @for (r of repeatChoices; track r.value) { <option [value]="r.value">{{ r.label }}</option> }
+                      </select>
+                    </label>
                     <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeOption(row, i)">
                       <svg lucideTrash2 class="size-3"></svg>
                     </button>
@@ -67,7 +74,7 @@
                 <span class="text-sm">No options</span>
               } @else {
                 @for (opt of row.options; track $index) {
-                  <span class="badge badge-sm me-1">{{ opt.label }}{{ opt.default ? ' (default)' : '' }}</span>
+                  <span class="badge badge-sm me-1">{{ optionText(opt) }}</span>
                 }
                 @if (!hasDefault(row)) {
                   <span class="text-sm">No default</span>

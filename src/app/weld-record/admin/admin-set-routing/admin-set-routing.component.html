@@ -34,7 +34,7 @@
         <select class="select select-sm select-bordered w-full"
                 [ngModel]="targetId()" (ngModelChange)="targetId.set($event)">
           <option [ngValue]="null">Select a routing</option>
-          @for (o of routingOptions(); track o.value) {
+          @for (o of typeOptions(); track o.value) {
             <option [ngValue]="o.value">{{ o.label }}</option>
           }
         </select>

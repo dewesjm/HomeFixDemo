@@ -66,9 +66,9 @@ export class SignoffPanelComponent {
   /* Single source of truth for "is this the Fit stage routed as Weld Build-up" -- Weld Build-up
      gets its fields/layout from the weld-stage form (app-weld-stage-form, like Tack) instead of Fit's own signoff-field
      rendering below, so every fit-specific block in the template must use this same check rather
-     than re-writing the id/routingType test inline (a mismatch duplicates Comments/Defer Tack). */
+     than re-writing the id/signoffType test inline (a mismatch duplicates Comments/Defer Tack). */
   isFitBuildup(st: WorkflowStage): boolean {
-    return st.id === 'fit' && st.routingType === 'weld-buildup';
+    return st.id === 'fit' && st.signoffType === 'weld-buildup';
   }
 
   /* Fit stage's Consumable Insert MIC / Backing Ring MIC (joint-wide, not per-item like the

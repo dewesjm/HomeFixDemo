@@ -19,18 +19,18 @@
   }
 
   @if (stage(); as st) {
-    <!-- Inspection Type / Routing Type dropdown -->
-    @if (st.routingOptions && st.routingOptions.length > 0) {
+    <!-- Type dropdown -->
+    @if (st.typeOptions && st.typeOptions.length > 0) {
       <div class="mb-sm">
           <label class="stage-field">
             <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
             <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
-                    [ngModel]="st.id === 'fit' ? st.routingType : st.inspectionType"
-                    (ngModelChange)="st.id === 'fit' ? ctx().updateRoutingType(st, $event) : ctx().setInspectionType($event)">
+                    [ngModel]="st.id === 'fit' ? st.signoffType : st.inspectionType"
+                    (ngModelChange)="st.id === 'fit' ? ctx().updateSignoffType(st, $event) : ctx().setInspectionType($event)">
               @if (ctx().inspectionTypeRequired(st)) {
                 <option [ngValue]="''">Select the inspection performed…</option>
               }
-              @for (opt of st.routingOptions; track opt.value) {
+              @for (opt of st.typeOptions; track opt.value) {
                 <option [ngValue]="opt.value">{{ opt.label }}</option>
               }
             </select>
@@ -359,28 +359,6 @@
               </div>
             }
           }
-        }
-        <!-- Routing type (repeatable stages only) -->
-        @if (st.repeatable && !st.signed) {
-          <div>
-            <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__routingType')">Routing type <span class="text-error">*</span></div>
-            <div class="result-radios">
-              <label>
-                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__routingType')" [name]="'routing-type-' + st.id"
-                       [checked]="st.routingType === 'repeat'" (change)="ctx().updateRoutingType(st, 'repeat')" />
-                <span>Repeat</span>
-              </label>
-              <label>
-                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__routingType')" [name]="'routing-type-' + st.id"
-                       [checked]="st.routingType === 'final' || st.routingType === 'standard'"
-                       (change)="ctx().updateRoutingType(st, 'final')" />
-                <span>Final</span>
-              </label>
-            </div>
-            @if (ctx().fieldError(st.id, '__routingType'); as err) {
-              <div class="field-error">{{ err }}</div>
-            }
-          </div>
         }
       </div>
 

@@ -1,6 +1,6 @@
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
-   Type and Routing Type use synthetic keys (__decision, __inspectionType, __routingType). */
+   Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
 import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
@@ -34,7 +34,6 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   const reasons: string[] = [];
   if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
-  if (stage.repeatable && !stage.routingType) reasons.push('Choose the routing type');
   if (stage.id === 'fit') {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
@@ -75,7 +74,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   }
   /* Weld Build-Up: at least one Affected Item, and its MIC verified when its MCL requires traceability
      (the same condition signoff-panel.component.ts uses to render the checkbox) */
-  if (stage.id === 'fit' && stage.routingType === 'weld-buildup') {
+  if (stage.id === 'fit' && stage.signoffType === 'weld-buildup') {
     const raw = stage.inputs?.['affectedItems'] ?? '';
     const items = raw ? raw.split(',') : [];
     const job = ctx.job;
@@ -89,7 +88,6 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   }
   if (stage.rejectToStage && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
-  if (stage.repeatable && !stage.routingType) errors[key('__routingType')] = 'Choose the routing type';
   /* Fit's fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
   if (stage.id === 'fit' && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
   for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = `${f.label} is required`;

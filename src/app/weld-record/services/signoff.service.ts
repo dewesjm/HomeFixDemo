@@ -1,9 +1,9 @@
 /* per-stage sign-off: locking a stage's decision and the routing side effects a sign-off can
-   trigger (defer-tack, fit-up release, repeat stages, reject/repair on NDT unsat, route-backs) */
+   trigger (defer-tack, fit-up release, repeatable Types, reject/repair on NDT unsat, route-backs) */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -22,19 +22,20 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
 /* History names Fit-as-Weld-Build-up and Layer's Interim/Final after the chosen option; the
    routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
-  const named = (st.id === 'fit' && st.routingType === 'weld-buildup') || st.id === 'root-layer';
+  const named = (st.id === 'fit' && st.signoffType === 'weld-buildup') || st.id === 'root-layer';
   if (!named) return st.label;
-  return st.routingOptions?.find(o => o.value === st.routingType)?.label ?? st.label;
+  return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
 }
 
-/* Interim Layer is an end-of-shift signoff: it's recorded, but Layer stays the current routing
-   (not signed) until it's signed as Final Layer */
-const isInterimLayer = (s: WorkflowStage) => s.id === 'root-layer' && s.routingType === 'interim';
+/* a repeatable Type (Admin > Signoff Type Availability, e.g. Interim Layer, Weld Build-Up): the signoff
+   is recorded, but the step stays unsigned and the routing stays where it is */
+const repeatable = (s: WorkflowStage) => typeRepeatable(s.id, s.signoffType);
+const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
 /* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
    recorded but the stage isn't signed, so the joint stays there */
 const isRecordsReviewUnsat = (s: WorkflowStage) => (s.id === 'review-o63' || s.id === 'review-o04') && s.result === 'unsat';
-const staysPut = (s: WorkflowStage) => isInterimLayer(s) || isRecordsReviewUnsat(s);
+const staysPut = (s: WorkflowStage) => !!repeatable(s) || isRecordsReviewUnsat(s);
 
 @Injectable({ providedIn: 'root' })
 export class SignoffService {
@@ -85,17 +86,21 @@ export class SignoffService {
     const reasons: string[] = [];
     const undo = signoffUndo(wf, job, stageId);
     /* stages with no SAT/UNSAT choice are accepted by signing */
-    let stages: WorkflowStage[] = wf.stages.map(s =>
-      s.id === stageId ? {
+    let stages: WorkflowStage[] = wf.stages.map(s => {
+      if (s.id !== stageId) return s;
+      const repeats = repeatable(s);
+      if (repeats === 'blank') return blankStage(s);
+      return {
         ...s,
-        result: isInterimLayer(s) ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
+        result: repeats ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
         signed: !staysPut(s),
         signedAt: staysPut(s) ? null : new Date().toISOString(),
-      } : s);
+      };
+    });
     const st = stages.find(s => s.id === stageId)!;
     const decision = (st.result ?? '').toUpperCase();
     signedLabel = st.label;
-    if (isInterimLayer(st)) reasons.push('Interim Layer is an end-of-shift signoff, so Layer stays open until it is signed as Final Layer');
+    if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
     if (isRecordsReviewUnsat(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
 
     /* go back (never un-sign): the current routing is set back to the target and every stage from
@@ -120,23 +125,6 @@ export class SignoffService {
         const rule = describeConditions(getTemplates()[job.trade]?.find(t => t.id === s.id)?.includeWhen);
         reasons.push(s.required ? `${s.label} is now required (included when ${rule})` : `${s.label} is skipped (included only when ${rule})`);
       });
-    }
-
-    /* repeatable stage + routingType='repeat': insert a fresh copy after this stage */
-    if (st.repeatable && st.routingType === 'repeat') {
-      reasons.push(`Repeat was chosen, so another ${st.label} is added`);
-      const idx = stages.findIndex(s => s.id === stageId);
-      const clone: typeof st = {
-        ...st,
-        id: `${st.id}-r${Date.now()}`,
-        signed: false,
-        signedAt: null,
-        result: null,
-        inputs: {},
-        signoffInputs: {},
-        routingType: 'standard',
-      };
-      stages = [...stages.slice(0, idx + 1), clone, ...stages.slice(idx + 1)];
     }
 
     if (st.result === 'unsat' && st.rejectToStage && !isRecordsReviewUnsat(st)) {
@@ -241,7 +229,7 @@ export class SignoffService {
         /* the VT/5X stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
         const vtId = `${phase}-ndt-vt5x`;
         routeBackTo(vtId);
-        stages = stages.map(s => s.id === vtId ? { ...s, routingOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
+        stages = stages.map(s => s.id === vtId ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
       } else if (originStageId) {
         routeBackTo(originStageId);
       }
@@ -286,7 +274,7 @@ export class SignoffService {
 
   /* Correct a signed stage's already-recorded field values without deprogressing it (Work History —
      distinct from Deprogress, which undoes the sign-off itself and everything it triggered). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
-     `routingType`/Decision -- those drive routing directly and are never offered here. Individual
+     `signoffType`/Decision -- those drive routing directly and are never offered here. Individual
      field keys that fed a routing decision at the original signoff (see ROUTING_LOCKED_FIELD_KEYS)
      are rejected even if the caller passes one -- the dialog already disables them, this is
      defense in depth against a stale form. */

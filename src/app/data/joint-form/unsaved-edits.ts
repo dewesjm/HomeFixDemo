@@ -30,7 +30,7 @@ export function rebaselineAfterSignoff(loaded: LoadedJoint, before: JobWorkflow,
   const now = captureLoaded(after).stages;
   for (const s of after.stages) {
     const b = prev.get(s.id);
-    if (!b || !recordEquals(b.inputs, s.inputs) || !recordEquals(b.signoffInputs, s.signoffInputs) || b.routingType !== s.routingType) {
+    if (!b || !recordEquals(b.inputs, s.inputs) || !recordEquals(b.signoffInputs, s.signoffInputs) || b.signoffType !== s.signoffType) {
       loaded.stages[s.id] = now[s.id];
     }
   }
@@ -47,7 +47,7 @@ export function hasUnsavedEdits(wf: JobWorkflow, loaded: LoadedJoint, kept: (sta
     if (!snap) continue;
     if (!recordEquals(s.inputs, { ...snap.inputs, ...kept(s) })) return true;
     if (!recordEquals(s.signoffInputs, snap.signoffInputs)) return true;
-    if (s.routingType !== snap.routingType) return true;
+    if (s.signoffType !== snap.signoffType) return true;
   }
   return false;
 }

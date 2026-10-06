@@ -60,8 +60,6 @@ function jointFields(): ConditionField[] {
   return fields;
 }
 
-/* a repeated step (e.g. a second Layer, id 'root-layer-r2') counts as its template */
-const stepIdOf = (id: string) => id.replace(/-r\d+$/, '');
 
 /* the step itself, then every field any step has (Type, fields, sign-off fields), once per key with
    the first label and the options of every step that has it */
@@ -70,7 +68,7 @@ function signoffFields(): ConditionField[] {
   const out: ConditionField[] = [{
     key: `${STEP_PREFIX}id`, label: 'Step', group: 'Sign-off',
     options: () => steps.map(t => ({ value: t.id, label: t.label })),
-    get: s => s.step.id ? stepIdOf(s.step.id) : '',
+    get: s => s.step.id ?? '',
   }];
   const byKey = new Map<string, { label: string; checkbox: boolean; options: Map<string, string> }>();
   const add = (key: string, label: string, type: string, opts: ConditionOption[] = []) => {
@@ -79,7 +77,7 @@ function signoffFields(): ConditionField[] {
     for (const o of opts) if (!e.options.has(o.value)) e.options.set(o.value, o.label);
   };
   for (const t of steps) {
-    if (t.routingOptions?.length) add('inspectionType', 'Type', 'select', t.routingOptions);
+    if (t.typeOptions?.length) add('inspectionType', 'Type', 'select', t.typeOptions);
     for (const f of [...t.fields, ...(t.signoffFields ?? [])]) add(f.key, f.label, f.type, f.options);
   }
   for (const [key, e] of byKey) {

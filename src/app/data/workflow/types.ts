@@ -59,11 +59,10 @@ export interface WorkflowStage {
   // --- per-stage sign-off ---
   result: StageResult | null;     /* required before signing, kept special */
   rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
-  repeatable: boolean;            /* signing with routingType='repeat' inserts another copy */
-  routingType: string;               /* 'standard' | 'repeat' | 'final' — chosen at signoff */
+  signoffType: string;            /* the Type picked at signoff (a typeOptions value), 'standard' when the step has none */
   swapStageId: string;            /* which stage template to use for fields (empty = own) */
   inspectionType: string;         /* admin-managed sub-type (e.g. MT/PT on NDT MT/PT stage) */
-  routingOptions?: StageOption[];    /* admin-managed options for this stage */
+  typeOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
@@ -158,6 +157,9 @@ export interface StageOption {
   label: string;
   value: string;
   default?: boolean;
+  /* signing with this Type records the signoff but leaves the routing where it is: 'keep' keeps the
+     step's values for the next signoff, 'blank' clears them. None = signing completes the step. */
+  repeatable?: 'keep' | 'blank';
 }
 
 /* the definition a joint's step is built from (stage-templates.ts) */
@@ -174,12 +176,10 @@ export interface StageTemplate {
   signoffFields?: SignoffField[];
   /* stage id to route back to when this stage is rejected (empty = no routing) */
   rejectToStage?: string;
-  /* signing inserts another copy of this stage after itself */
-  repeatable?: boolean;
   /* role that this stage routes to */
   role?: string;
   /* admin-managed signoff type options (Admin > Signoff Type Availability) (e.g. Fit/Weld Build-Up, MT/PT) */
-  routingOptions?: StageOption[];
+  typeOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */

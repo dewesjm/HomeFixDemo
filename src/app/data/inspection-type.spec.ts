@@ -10,7 +10,7 @@ describe('NDT Type is never pre-filled', () => {
   it('a single-method NDT step offers only that method, with Type blank', () => {
     const stages = buildStages(job({}));
     const layer = stages.find(s => s.id === 'layer-ndt-mtpt')!;
-    expect(layer.routingOptions?.map(o => o.value)).toEqual(['mt']);
+    expect(layer.typeOptions?.map(o => o.value)).toEqual(['mt']);
     expect(layer.inspectionType).toBe('');
   });
 
@@ -24,7 +24,7 @@ describe('NDT Type is never pre-filled', () => {
 
   it('Excavation NDT offers the method that rejected the joint, with Type blank', () => {
     const s = excavationNdtStageFor(job({}), 'rt', 'repair');
-    expect(s.routingOptions?.map(o => o.value)).toEqual(['rt']);
+    expect(s.typeOptions?.map(o => o.value)).toEqual(['rt']);
     expect(s.inspectionType).toBe('');
   });
 });

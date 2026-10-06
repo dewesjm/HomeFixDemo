@@ -59,7 +59,6 @@ interface SerializedStage {
   fields: StageField[];
   signoffFields: SignoffField[];
   rejectToStage: string;
-  repeatable?: boolean;
   role?: string;
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
@@ -76,7 +75,6 @@ function serializeStage(t: StageTemplate): SerializedStage {
     fields: t.fields,
     signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: t.rejectToStage ?? '',
-    repeatable: t.repeatable ?? false,
     role: t.role ?? '',
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
@@ -87,7 +85,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
 
 /* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '',
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
@@ -132,7 +130,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    _merged[trade] = _merged[trade].map(s => ({ ...s, routingOptions: signoffTypeOptions(s.id) }));
+    _merged[trade] = _merged[trade].map(s => ({ ...s, typeOptions: signoffTypeOptions(s.id) }));
   }
   /* not routing steps: Fabrication is a cross-stage data section, and Prep/Handover are generic
      steps from before this was a Welding-only app (older saves still have them; trades other than

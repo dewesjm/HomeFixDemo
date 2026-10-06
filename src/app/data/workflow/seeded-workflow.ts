@@ -87,7 +87,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   /* and a few after a PT failure on a GTAW weld (the built-in reject rule): that phase's weld step
      is GTAW, its NDT MT/PT was signed PT and UNSAT */
   const ptPhase = /^(root|layer|final)-ndt-mtpt$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
-  const ptAllowed = !!wf.stages[lastSigned]?.routingOptions?.some(o => o.value === 'pt');
+  const ptAllowed = !!wf.stages[lastSigned]?.typeOptions?.some(o => o.value === 'pt');
   const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
   const ptWeldId = ptPhase ? PHASE_WELD_STEP[ptPhase] : '';
   /* and a handful whose last NDT (VT/5X or RT/UT) was UNSAT, so they wait on Repair; a couple of those
@@ -145,7 +145,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     /* seeded joints didn't defer their Tack */
     if (s.id === 'fit') signoffInputs['deferTack'] = '';
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
-    const opts = s.routingOptions ?? [];
+    const opts = s.typeOptions ?? [];
     const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
     /* a procedure designated for the step's Type (picked without rand, so other seeds don't shift) */
     if ('procedureUsed' in inputs) {

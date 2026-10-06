@@ -21,20 +21,20 @@ describe('Signoff Type Availability', () => {
   });
 
   it('every Repair round uses the Repair row', () => {
-    expect(nextRepairStage([{ id: 'repair' }]).routingOptions?.map(o => o.value)).toEqual(['repair']);
+    expect(nextRepairStage([{ id: 'repair' }]).typeOptions?.map(o => o.value)).toEqual(['repair']);
   });
 
   it('Excavation NDT offers the rejecting method only while it has a row', () => {
-    expect(excavationNdtStage('rt').routingOptions?.map(o => o.value)).toEqual(['rt']);
+    expect(excavationNdtStage('rt').typeOptions?.map(o => o.value)).toEqual(['rt']);
     setSignoffTypeRows(getSignoffTypeRows().filter(r => r.stepId !== 'excavation-ndt'));
-    expect(excavationNdtStage('rt').routingOptions).toBeUndefined();
+    expect(excavationNdtStage('rt').typeOptions).toBeUndefined();
   });
 
   it('no default starts blank and is required; a default pre-fills', () => {
-    const noDefault = { id: 'tack', routingOptions: [{ label: 'A', value: 'a' }, { label: 'B', value: 'b' }] };
+    const noDefault = { id: 'tack', typeOptions: [{ label: 'A', value: 'a' }, { label: 'B', value: 'b' }] };
     expect(inspectionTypeRequired(noDefault)).toBeTrue();
     expect(initialInspectionType(noDefault)).toBe('');
-    const withDefault = { id: 'root-ndt-utrt', routingOptions: [{ label: 'RT', value: 'rt', default: true }] };
+    const withDefault = { id: 'root-ndt-utrt', typeOptions: [{ label: 'RT', value: 'rt', default: true }] };
     expect(inspectionTypeRequired(withDefault)).toBeFalse();
     expect(initialInspectionType(withDefault)).toBe('rt');
   });

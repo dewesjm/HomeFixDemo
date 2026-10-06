@@ -53,7 +53,7 @@ export class HistoryTableComponent {
   });
 
   /* distinct routing values among the table's rows, for the Routing column's multiselect */
-  routingOptions = computed(() => {
+  typeOptions = computed(() => {
     const order = this.routingOrder();
     return [...new Set(this.table().rows().map(r => r.routing))]
       .sort((a, b) => (order.get(a) ?? Infinity) - (order.get(b) ?? Infinity) || a.localeCompare(b))

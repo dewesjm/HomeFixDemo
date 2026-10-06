@@ -54,7 +54,7 @@ export interface SignoffContext {
   toggleAffectedItem: (stage: WorkflowStage, item: string, event: Event) => void;
   onConsumableInsertChange: (stage: WorkflowStage, value: string) => void;
   on5xChange: (stage: WorkflowStage, value: string) => void;
-  updateRoutingType: (stage: WorkflowStage, value: string) => void;
+  updateSignoffType: (stage: WorkflowStage, value: string) => void;
   setInspectionType: (value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;

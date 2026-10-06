@@ -52,9 +52,9 @@ export function fieldsShown(stage: WorkflowStage, job: Job): StageField[] {
    what was left empty is part of the record. The caller passes the fields that were visible. */
 export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signoffFields: SignoffField[]): SignoffInput[] {
   const out: SignoffInput[] = [];
-  const typeOpts = stage.routingOptions ?? [];
+  const typeOpts = stage.typeOptions ?? [];
   if (typeOpts.length) {
-    const cur = stage.id === 'fit' ? stage.routingType : stage.inspectionType;
+    const cur = stage.id === 'fit' ? stage.signoffType : stage.inspectionType;
     out.push({ label: 'Type', value: typeOpts.find(o => o.value === cur)?.label ?? '' });
   }
   for (const f of fields) {

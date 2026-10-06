@@ -71,7 +71,7 @@ export class JointPageComponent implements OnDestroy {
   wf = this.job ? this.store.workflowFor(this.job) : null;
 
   /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
-     fields, routing type choice) can be discarded when the user leaves without signing */
+     fields, Type choice) can be discarded when the user leaves without signing */
   private readonly loadSnapshot = this.wf ? this.assignAndSnapshot() : null;
 
   constructor() {
@@ -267,7 +267,7 @@ export class JointPageComponent implements OnDestroy {
       toggleAffectedItem: (s, item, e) => this.toggleAffectedItem(s, item, e),
       onConsumableInsertChange: (s, v) => this.onConsumableInsertChange(s, v),
       on5xChange: (s, v) => this.setInput(s, 'performed5x', v),
-      updateRoutingType: (s, v) => this.updateRoutingType(s, v),
+      updateSignoffType: (s, v) => this.updateSignoffType(s, v),
       setInspectionType: (v) => this.setInspectionType(v),
       setStageResult: (s, r) => this.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
@@ -385,7 +385,7 @@ export class JointPageComponent implements OnDestroy {
     this.setInput(stage, 'fillerMetalSize', '');
   }
 
-  /* routing option / inspection type handlers */
+  /* Type / inspection type handlers */
   setInspectionType(value: string) {
     if (!this.job || !this.wf) return;
     const idx = this.selectedRouting();
@@ -401,19 +401,19 @@ export class JointPageComponent implements OnDestroy {
     if (proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) this.setInput(stage, 'procedureUsed', '');
   }
 
-  updateRoutingType(stage: WorkflowStage, value: string) {
+  updateSignoffType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
-    if (value) this.clearFieldError(stage.id, '__routingType');
+    if (value) this.clearFieldError(stage.id, '__signoffType');
     const change = { action: `${stage.label} - Type changed to ${value}` };
     if (stage.id !== 'fit') {
-      this.signoffService.updateStageSignoff(this.job, stage.id, { routingType: value }, change);
+      this.signoffService.updateStageSignoff(this.job, stage.id, { signoffType: value }, change);
       return;
     }
     /* Fit: Weld Build-Up swaps in Tack's fields and drops the sign-off fields; Fit puts its own back */
     const fitTpl = (getTemplates()[this.job.trade] ?? []).find(t => t.id === 'fit');
     const buildup = value === 'weld-buildup';
     this.signoffService.updateStageSignoff(this.job, stage.id, {
-      routingType: value,
+      signoffType: value,
       fields: fitFieldsForType(this.job.trade, value),
       signoffInputs: {},
       signoffFields: buildup ? [] : (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
@@ -501,7 +501,7 @@ export class JointPageComponent implements OnDestroy {
   private signoffSnapshot(stage: WorkflowStage): SignoffInput[] {
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const out = snapshotInputs(st, this.visibleFields(st), this.visibleSignoffFields(st));
-    if (st.id === 'fit' && st.routingType === 'weld-buildup' && this.job) {
+    if (st.id === 'fit' && st.signoffType === 'weld-buildup' && this.job) {
       const names = (st.inputs['affectedItems'] ?? '').split(',').filter(Boolean).map(k => this.job![k as 'joiningItem' | 'joinToItem']);
       out.push({ label: 'Affected Item', value: names.join(', ') });
     }
@@ -515,19 +515,16 @@ export class JointPageComponent implements OnDestroy {
     this.fieldErrors.set(errors);
     if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
     if (!this.canSignStage(stage)) return;
-    /* Interim Layer goes through the same signoff; SignoffService keeps Layer as the current routing */
-    const routingNote = stage.repeatable && stage.routingType === 'repeat'
-      ? ' Another round will be added after this one.'
-      : '';
+    /* a repeatable Type (Interim Layer, Weld Build-Up) goes through the same signoff; SignoffService keeps the routing where it is */
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const deviations = this.overrides.stageDeviations(st);
     if (deviations.length) {
-      this.deviationRequest.set({ stage: st, stageLabel: st.label, items: deviations, routingNote });
+      this.deviationRequest.set({ stage: st, stageLabel: st.label, items: deviations });
       return;
     }
     this.confirm.confirm({
       header: 'Confirm sign-off',
-      message: `By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.${routingNote}`,
+      message: `By signing, I certify that all recorded values are accurate and the work has been performed in accordance with applicable standards.`,
       acceptLabel: 'Signoff',
       rejectLabel: 'Cancel',
       password: true,

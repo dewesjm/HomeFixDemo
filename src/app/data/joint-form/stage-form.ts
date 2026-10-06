@@ -48,9 +48,9 @@ function weldBuildupFields(trade: Job['trade']): StageField[] {
 
 /* Fit's fields for its Type: Weld Build-Up swaps in Tack's fields plus Affected Item; Fit, or Weld
    Build-Up when Admin > Routing Settings has no Tack step, keeps Fit's own fields */
-export function fitFieldsForType(trade: Job['trade'], routingType: string): StageField[] {
+export function fitFieldsForType(trade: Job['trade'], signoffType: string): StageField[] {
   const templates = getTemplates()[trade] ?? [];
-  if (routingType === 'weld-buildup' && templates.some(t => t.id === 'tack')) {
+  if (signoffType === 'weld-buildup' && templates.some(t => t.id === 'tack')) {
     return [...weldBuildupFields(trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text', required: true }];
   }
   return (templates.find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
@@ -61,7 +61,7 @@ export function fitFieldsForType(trade: Job['trade'], routingType: string): Stag
    change-detection tick. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
   const job = ctx.job;
-  const isFitWeldBuildup = stage.id === 'fit' && stage.routingType === 'weld-buildup';
+  const isFitWeldBuildup = stage.id === 'fit' && stage.signoffType === 'weld-buildup';
   const rawFields = isFitWeldBuildup ? (job ? weldBuildupFields(job.trade) : WELD_OVERRIDE_FIELDS) : stage.fields;
   return rawFields
     .map(f => stageFieldOptions(f, stage, ctx))

@@ -14,7 +14,7 @@ import { AdminInspectionProceduresComponent } from './weld-record/admin/admin-in
 import { AdminLocationsComponent } from './weld-record/admin/admin-locations/admin-locations.component';
 import { AdminShipLocationsComponent } from './weld-record/admin/admin-ship-locations/admin-ship-locations.component';
 import { ImportShipLocationsComponent } from './weld-record/admin/admin-ship-locations/import-ship-locations.component';
-import { AdminRoutingOptionsComponent } from './weld-record/admin/admin-routing-options/admin-routing-options.component';
+import { AdminSignoffTypesComponent } from './weld-record/admin/admin-signoff-types/admin-signoff-types.component';
 import { AdminWeldPositionsComponent } from './weld-record/admin/admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './weld-record/admin/admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './weld-record/admin/admin-joint-designs/admin-joint-designs.component';
@@ -59,7 +59,7 @@ export const routes: Routes = [
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations' },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },
-  { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'EWR - Signoff Type Availability' },
+  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent,     title: 'EWR - Signoff Type Availability' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs' },

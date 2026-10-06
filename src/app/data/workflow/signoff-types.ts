@@ -16,20 +16,20 @@ export interface SignoffTypeRow {
 export const REPAIR_TYPE_ROW = 'repair';
 export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
 
-const opt = (label: string, value: string, isDefault = false): StageOption =>
-  isDefault ? { label, value, default: true } : { label, value };
+const opt = (label: string, value: string, isDefault = false, repeatable?: StageOption['repeatable']): StageOption =>
+  ({ label, value, ...(isDefault ? { default: true } : {}), ...(repeatable ? { repeatable } : {}) });
 
 /* NDT rows have no default: the inspector picks the inspection performed */
 const ndtRows = (phase: string): SignoffTypeRow[] => (['vt5x', 'mtpt', 'utrt'] as const)
   .map(kind => ({ stepId: `${phase}-ndt-${kind}`, options: ndtKindOptions(kind) }));
 
 const SEED_ROWS: SignoffTypeRow[] = [
-  { stepId: 'fit', options: [opt('Fit', 'fit', true), opt('Weld Build-Up', 'weld-buildup')] },
+  { stepId: 'fit', options: [opt('Fit', 'fit', true), opt('Weld Build-Up', 'weld-buildup', false, 'blank')] },
   { stepId: 'tack', options: [opt('Tack', 'standard', true)] },
   { stepId: 'deferred-tack', options: [opt('Tack', 'standard', true)] },
   { stepId: 'root-weld', options: [opt('Root', 'standard', true)] },
   ...ndtRows('root'),
-  { stepId: 'root-layer', options: [opt('Interim Layer', 'interim', true), opt('Final Layer', 'final')] },
+  { stepId: 'root-layer', options: [opt('Interim Layer', 'interim', true, 'keep'), opt('Final Layer', 'final')] },
   ...ndtRows('layer'),
   { stepId: 'final-weld', options: [opt('Final Weld', 'standard', true)] },
   ...ndtRows('final'),
@@ -74,4 +74,9 @@ export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
   const id = signoffTypeRowId(stageId);
   const row = getSignoffTypeRows().find(r => r.stepId === id);
   return row?.options.length ? row.options.map(o => ({ ...o })) : undefined;
+}
+
+/* whether signing `stageId` with Type `type` leaves the routing where it is (see StageOption.repeatable) */
+export function typeRepeatable(stageId: string, type: string): StageOption['repeatable'] {
+  return signoffTypeOptions(stageId)?.find(o => o.value === type)?.repeatable;
 }

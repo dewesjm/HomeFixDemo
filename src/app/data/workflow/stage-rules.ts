@@ -16,16 +16,16 @@ export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
 
 /* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
-   only one option. Fit is the exception: its Type is routingType and starts on its first option. */
-export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'routingOptions'>): boolean {
-  return stage.id !== 'fit' && !!stage.routingOptions?.length && !stage.routingOptions.some(o => o.default);
+   only one option. Fit is the exception: its Type is signoffType and starts on its first option. */
+export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
+  return stage.id !== 'fit' && !!stage.typeOptions?.length && !stage.typeOptions.some(o => o.default);
 }
 
 /* the Type a step starts with and keeps until someone changes it: its default option, or blank when
    it has none. The stored value is what the joint page shows and what History records. */
-export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'routingOptions'>): string {
+export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): string {
   if (inspectionTypeRequired(stage)) return '';
-  return stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '';
+  return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
 /* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
@@ -37,8 +37,8 @@ export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.t
    moment a stage is signed, to decide what to insert or route back to. Changing the stored value afterward
    doesn't re-run that decision, so the record and the actual stage list would silently diverge.
    Keyed by stage id since these are only special on the stage that actually branches on them.
-   Decision/Type/Routing Type aren't in here because Correct never touches
-   `result`/`inspectionType`/`routingType` at all -- only `inputs`/`signoffInputs`. */
+   Decision/Type aren't in here because Correct never touches
+   `result`/`inspectionType`/`signoffType` at all -- only `inputs`/`signoffInputs`. */
 export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
   repair: ['repairType', 'allowableThicknessExceeded'],
   'fitup-insp': ['releaseToWelding'],

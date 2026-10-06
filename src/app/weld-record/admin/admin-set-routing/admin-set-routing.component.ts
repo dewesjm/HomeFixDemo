@@ -46,7 +46,7 @@ export class AdminSetRoutingComponent {
   });
 
   /* every required step except the current routing */
-  routingOptions = computed(() => {
+  typeOptions = computed(() => {
     const wf = this.workflow();
     if (!wf) return [];
     const active = activeStageId(wf.stages);
@@ -72,7 +72,7 @@ export class AdminSetRoutingComponent {
     const id = this.targetId();
     const reason = this.reason().trim();
     if (!job || id === null || !reason) return;
-    const label = this.routingOptions().find(o => o.value === id)?.label ?? id;
+    const label = this.typeOptions().find(o => o.value === id)?.label ?? id;
     const stages = this.workflow()?.stages ?? [];
     const activeIdx = stages.findIndex(s => s.id === activeStageId(stages));
     const back = activeIdx < 0 || stages.findIndex(s => s.id === id) < activeIdx;

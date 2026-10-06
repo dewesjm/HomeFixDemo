@@ -48,12 +48,11 @@ export function buildStages(job: Job): WorkflowStage[] {
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',
-      repeatable: t.repeatable ?? false,
-      routingType: t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? 'standard',
+      signoffType: t.typeOptions?.find(o => o.default)?.value ?? t.typeOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
       inspectionType: initialInspectionType(t),
       decisionLabel: t.decisionLabel ?? '',
-      routingOptions: t.routingOptions,
+      typeOptions: t.typeOptions,
       signed: false,
       signedAt: null,
     };
@@ -70,8 +69,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* a step an admin rule adds without the NDT values calling for it offers every method */
     if (!step) return s;
     /* only the method(s) the Joint Details values allow; a default that isn't one of them leaves Type blank */
-    const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
-    return { ...s, routingOptions, inspectionType: initialInspectionType({ id: s.id, routingOptions }) };
+    const typeOptions = s.typeOptions?.filter(o => step.methods.includes(o.value));
+    return { ...s, typeOptions, inspectionType: initialInspectionType({ id: s.id, typeOptions }) };
   });
 }
 

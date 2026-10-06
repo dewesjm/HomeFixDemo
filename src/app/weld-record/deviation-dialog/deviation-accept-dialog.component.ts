@@ -4,7 +4,7 @@ import { Component, ElementRef, effect, input, output, signal, viewChild } from 
 import { FormsModule } from '@angular/forms';
 import { DeviationItem } from '../../data/workflow';
 
-export interface DeviationAcceptRequest { stageLabel: string; items: DeviationItem[]; routingNote: string }
+export interface DeviationAcceptRequest { stageLabel: string; items: DeviationItem[] }
 
 @Component({
   selector: 'app-deviation-accept-dialog',
@@ -41,7 +41,7 @@ export interface DeviationAcceptRequest { stageLabel: string; items: DeviationIt
           </label>
           <p class="py-3">
             By signing, I certify that all recorded values are accurate and that the deviations above are what was
-            actually done.{{ req.routingNote }}
+            actually done.
           </p>
           <label class="block">
             <span class="meta mb-1 block">Password</span>

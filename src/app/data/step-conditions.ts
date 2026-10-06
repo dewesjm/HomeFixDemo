@@ -117,8 +117,7 @@ export function registerStepTemplates(fn: () => Record<string, StepTemplateShape
 /* covered by the fixed fields above (the built-in rules use those keys) */
 const FIXED_STEP_ANSWERS = new Set(['fit.deferTack', 'fitup-insp.releaseToWelding']);
 
-/* one step's answers as condition fields; blank until that step is signed (the latest signed copy,
-   so a repeated Layer reads its last round) */
+/* one step's answers as condition fields; blank until that step is signed */
 function answersOf(t: StepTemplateShape): StepConditionField[] {
   const out: StepConditionField[] = [];
   const add = (key: string, label: string, type: string, opts?: { label: string; value: string }[], signoff = false) => {
@@ -130,7 +129,7 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
       values: checkbox ? ['Yes', 'No'] : (opts ?? []).map(o => o.value),
       valueLabel: checkbox ? undefined : v => labels.get(v) ?? v,
       get: (_: Job, stages: StageAnswers[]) => {
-        const s = [...stages].reverse().find(st => st.signed && (st.id === t.id || st.id.startsWith(`${t.id}-r`)));
+        const s = stages.find(st => st.signed && st.id === t.id);
         if (!s) return '';
         if (key === 'inspectionType') return s.inspectionType ?? '';
         const v = (signoff ? s.signoffInputs : s.inputs)[key] ?? (signoff ? s.inputs : s.signoffInputs)[key] ?? '';
@@ -138,7 +137,7 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
       },
     });
   };
-  if ((t.routingOptions?.length ?? 0) > 1) add('inspectionType', 'Type', 'select', t.routingOptions);
+  if ((t.typeOptions?.length ?? 0) > 1) add('inspectionType', 'Type', 'select', t.typeOptions);
   for (const f of t.fields) add(f.key, f.label, f.type, f.type === 'checkbox' ? undefined : f.options);
   for (const f of t.signoffFields ?? []) add(f.key, f.label, f.type, f.type === 'checkbox' ? undefined : f.options, true);
   return out;
@@ -273,7 +272,7 @@ export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, st
 export interface StageShape {
   fields: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   signoffFields?: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
-  routingOptions?: { label: string; value: string }[];
+  typeOptions?: { label: string; value: string }[];
 }
 
 /* a step's own answers a reject rule can test: its Type, and every field */
@@ -285,7 +284,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
     out.push({ key: `self.${key}`, label: `This step: ${label}`, values: opts.map(o => o.value),
       valueLabel: v => labels.get(v) ?? v, get: () => '' });
   };
-  if (stage.routingOptions?.length) add('inspectionType', 'Type', stage.routingOptions);
+  if (stage.typeOptions?.length) add('inspectionType', 'Type', stage.typeOptions);
   for (const f of [...stage.fields, ...(stage.signoffFields ?? [])]) {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */

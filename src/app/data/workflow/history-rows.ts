@@ -48,7 +48,7 @@ export function deprogressableKey(wf: JobWorkflow, rows: HistoryRow[]): string |
   }
   const last = inEffect.at(-1);
   if (!last) return undefined;
-  /* by stage id where the row has one: the action text can name the routing option instead of
+  /* by stage id where the row has one: the action text can name the Type instead of
      the stage (Weld Build-Up, Interim/Final Layer). Older saved entries use an em-dash separator. */
   const expected = wf.stages.filter(s => s.signed).pop();
   if (expected && (last.stageId ? last.stageId !== expected.id : last.action.split(/ [-—] /)[0] !== expected.label)) return undefined;

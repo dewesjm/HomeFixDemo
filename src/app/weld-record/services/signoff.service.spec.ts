@@ -3,7 +3,7 @@ import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, seededWorkflow, updateStageTemplate } from '../../data/workflow';
+import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, getSignoffTypeRows, seededWorkflow, setSignoffTypeRows, updateStageTemplate } from '../../data/workflow';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -284,7 +284,7 @@ describe('SignoffService', () => {
 
       const vt = stage(job, 'root-ndt-vt5x');
       expect(vt.signed).toBeFalse();
-      expect(vt.routingOptions?.map(o => o.value)).toEqual(['vt', '5x']);
+      expect(vt.typeOptions?.map(o => o.value)).toEqual(['vt', '5x']);
       expect(vt.inspectionType).toBe('');
     });
 
@@ -335,7 +335,7 @@ describe('SignoffService', () => {
     const ndtStages = (job: Job, phase: string) =>
       store.workflowFor(job)().stages.filter(s => s.id.startsWith(`${phase}-ndt-`));
     const summary = (job: Job, phase: string) =>
-      ndtStages(job, phase).map(s => `${s.id}:${(s.routingOptions ?? []).map(o => o.value).join('/')}`);
+      ndtStages(job, phase).map(s => `${s.id}:${(s.typeOptions ?? []).map(o => o.value).join('/')}`);
 
     it('VT is always required: a VT value gives only the VT step, offering only VT', () => {
       expect(summary(weldingJob({ ndtEach: 'VT' }), 'layer')).toEqual(['layer-ndt-vt5x:vt']);
@@ -343,7 +343,7 @@ describe('SignoffService', () => {
 
     it('5X replaces VT', () => {
       const [st] = ndtStages(weldingJob({ ndtRoot: '5X' }), 'root');
-      expect(st.routingOptions?.map(o => o.value)).toEqual(['5x']);
+      expect(st.typeOptions?.map(o => o.value)).toEqual(['5x']);
       expect(st.inspectionType).toBe('');
     });
 
@@ -382,6 +382,48 @@ describe('SignoffService', () => {
     expect(review.signed).toBeFalse();
     expect(signoffEntries(store.workflowFor(job)(), 'review-o04').at(-1)?.to).toBe('UNSAT');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'final-ndt-vt5x')?.signed).toBeFalse();
+  });
+
+  describe('repeatable Types (Admin > Signoff Type Availability)', () => {
+    const setStage = (job: Job, id: string, patch: object) =>
+      store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) }));
+    const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
+
+    it('Interim Layer is recorded, Layer stays unsigned and keeps its values', () => {
+      const job = weldingJob();
+      setStage(job, 'root-layer', { signoffType: 'interim', inputs: { actualPhMin: '50' } });
+      service.signStage(job, 'root-layer');
+      expect(stage(job, 'root-layer').signed).toBeFalse();
+      expect(stage(job, 'root-layer').inputs['actualPhMin']).toBe('50');
+      expect(signoffEntries(store.workflowFor(job)(), 'root-layer').at(-1)?.action).toBe('Interim Layer - Signed off');
+    });
+
+    it('Weld Build-Up is recorded, Fit stays the current routing and starts blank; signing as Fit moves on', () => {
+      const job = weldingJob();
+      service.signStage(job, 'pre-fit');
+      setStage(job, 'fit', { signoffType: 'weld-buildup', inputs: { affectedItems: 'joiningItem' } });
+      service.signStage(job, 'fit');
+      const wf = store.workflowFor(job)();
+      expect(stage(job, 'fit').signed).toBeFalse();
+      expect(stage(job, 'fit').inputs['affectedItems']).toBeUndefined();
+      expect(stage(job, 'fit').signoffType).toBe('weld-buildup');
+      expect(activeStageId(wf.stages)).toBe('fit');
+      expect(wf.stages.filter(s => s.id === 'fit').length).toBe(1);
+      expect(signoffEntries(wf, 'fit').at(-1)?.action).toBe('Weld Build-Up - Signed off');
+
+      setStage(job, 'fit', { signoffType: 'fit' });
+      service.signStage(job, 'fit');
+      expect(stage(job, 'fit').signed).toBeTrue();
+      expect(activeStageId(store.workflowFor(job)().stages)).toBe('tack');
+    });
+
+    it('a Type that is not repeatable completes the step', () => {
+      setSignoffTypeRows(getSignoffTypeRows().map(r => ({ ...r, options: r.options.map(({ repeatable: _, ...o }) => o) })));
+      const job = weldingJob();
+      setStage(job, 'fit', { signoffType: 'weld-buildup' });
+      service.signStage(job, 'fit');
+      expect(stage(job, 'fit').signed).toBeTrue();
+    });
   });
 
   it('releaseFitUp signs the Fit-Up Release stage and logs a Release entry', () => {
