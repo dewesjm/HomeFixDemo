@@ -42,7 +42,7 @@ export class AdminRoutingOptionsComponent {
 
   exportCsv() {
     downloadCsv('signoff-type-availability', [
-      { header: 'Stage', value: (r: StageRow) => r.stageLabel },
+      { header: 'Routing Step', value: (r: StageRow) => r.stageLabel },
       { header: 'Options', value: (r: StageRow) => r.options.map(o => o.label + (o.default ? ' (default)' : '')).join('; ') },
     ], this.table.sorted());
   }

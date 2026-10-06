@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-10-06',
     changed: [
       'Admin > Routing Options is renamed Signoff Type Availability.',
-      'Signoff Type Availability: editing a step shows only each option\'s name; the separate internal value box is gone.',
+      'Signoff Type Availability: editing a step shows only each option\'s name; the separate internal value box is gone. Its first column is now titled Routing Step.',
       'Fit-Up Insp: the Drawing Rev row under Verify fitting values is now labelled Drawing Rev (Execution), the Fabrication field it checks.',
       'Admin > Routing is renamed Routing Settings.',
       'Admin > Set Routing is renamed Routing Override.',
