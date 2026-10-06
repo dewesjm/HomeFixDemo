@@ -180,7 +180,7 @@ export class WorkflowStore {
         if (job) {
           const hasFillers = wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label));
           /* a stage id the trade's templates no longer have; Repair, Excavation NDT and Repeat copies
-             are added at runtime, and a step an Admin > Routing condition now leaves out stays put */
+             are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
           const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
             && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !/-r\d+$/.test(s.id));

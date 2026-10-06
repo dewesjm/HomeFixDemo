@@ -184,8 +184,8 @@ export interface StageTemplate {
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */
   rejectRules?: RejectRule[];
-  /* set once Admin > Routing saves this step's reject rules; until then the built-in ones apply */
+  /* set once Admin > Routing Settings saves this step's reject rules; until then the built-in ones apply */
   rejectRulesEdited?: boolean;
-  /* Admin > Routing "Fabrication editable": the Fabrication fields can be changed while this is the current step */
+  /* Admin > Routing Settings "Fabrication editable": the Fabrication fields can be changed while this is the current step */
   fabricationEditable?: boolean;
 }

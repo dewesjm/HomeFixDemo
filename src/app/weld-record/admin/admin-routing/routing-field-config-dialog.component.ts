@@ -1,4 +1,4 @@
-/* Admin > Routing's Configure fields dialog: edit a step's reading fields and sign-off fields.
+/* Admin > Routing Settings's Configure fields dialog: edit a step's reading fields and sign-off fields.
    SWITCHED OFF (AdminRoutingComponent.showFieldConfig): most Welding steps use hand-built layouts on
    the weld record, so field edits here don't reliably show up there. Kept working so it can be
    turned back on without a rewrite. */

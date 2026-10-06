@@ -14,6 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'Admin > Routing Options is renamed Signoff Type Availability.',
       'Fit-Up Insp: the Drawing Rev row under Verify fitting values is now labelled Drawing Rev (Execution), the Fabrication field it checks.',
+      'Admin > Routing is renamed Routing Settings.',
     ],
   },
   {

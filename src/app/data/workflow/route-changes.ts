@@ -24,7 +24,7 @@ function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   };
 }
 
-/* required flags set by signed answers: every unsigned step whose Admin > Routing conditions use a
+/* required flags set by signed answers: every unsigned step whose Admin > Routing Settings conditions use a
    step answer (by default Tack, Deferred Tack and Fit-Up Release) is re-checked against them */
 export function applySignedFlags(stages: WorkflowStage[], job: Job): WorkflowStage[] {
   const templates = getTemplates()[job.trade] ?? [];

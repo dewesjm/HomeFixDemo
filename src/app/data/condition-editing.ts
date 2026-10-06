@@ -1,4 +1,4 @@
-/* How a condition clause behaves while it is edited in Admin > Routing's rule dialogs (Included when
+/* How a condition clause behaves while it is edited in Admin > Routing Settings's rule dialogs (Included when
    and Reject rules): the field droplist's sections, a field's value choices, and when a clause is complete */
 import { ConditionClause, StepConditionField, STEP_CONDITION_FIELDS } from './step-conditions';
 

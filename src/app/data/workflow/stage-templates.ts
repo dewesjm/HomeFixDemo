@@ -1,12 +1,12 @@
-/* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing's
-   saved changes (localStorage), and the functions Admin > Routing saves through */
+/* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
+   saved changes (localStorage), and the functions Admin > Routing Settings saves through */
 import { Job } from '../jobs';
 import { STORAGE } from '../storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from '../step-conditions';
 import { SignoffField, StageField, StageOption, StageTemplate } from './types';
 import { WELDING_STEPS } from './welding-steps';
 
-/* sign-off fields a new step starts with in Admin > Routing */
+/* sign-off fields a new step starts with in Admin > Routing Settings */
 export const DEFAULT_SIGNOFF_FIELDS: SignoffField[] = [
   { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
   { key: 'licenseNo',     label: 'License #',      type: 'text', required: false },
@@ -46,7 +46,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
     .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)),
 };
 
-/* ── Saved Admin > Routing changes (localStorage) ── */
+/* ── Saved Admin > Routing Settings changes (localStorage) ── */
 
 /* serialized form — required is always a plain boolean (no functions) */
 interface SerializedStage {
@@ -127,7 +127,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
     const overridden = saved[trade];
     if (overridden) {
-      /* saved order wins (Admin > Routing reorders); a built-in step the save doesn't have goes in
+      /* saved order wins (Admin > Routing Settings reorders); a built-in step the save doesn't have goes in
          after the built-in step before it */
       const staticMap = new Map(statics.map(s => [s.id, s]));
       const merged = overridden.map(s => deserializeStage(s, staticMap.get(s.id)));
@@ -161,7 +161,7 @@ registerStepTemplates(() => getTemplates());
 /* invalidate the merged cache so next read re-loads from localStorage */
 function invalidateTemplateCache() { _merged = null; }
 
-/* ── Admin > Routing edits ── */
+/* ── Admin > Routing Settings edits ── */
 
 export function addStageTemplate(trade: Job['trade'], stage: Omit<StageTemplate, 'required'> & { required?: boolean }) {
   const templates = getTemplates();
@@ -183,7 +183,7 @@ export function updateStageTemplate(trade: Job['trade'], stageId: string, patch:
   persistTemplates(templates);
 }
 
-/* Admin > Routing Order: `ids` is the trade's steps in their new order */
+/* Admin > Routing Settings Order: `ids` is the trade's steps in their new order */
 export function reorderStageTemplates(trade: Job['trade'], ids: string[]) {
   const templates = getTemplates();
   const list = templates[trade] ?? [];

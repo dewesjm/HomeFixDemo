@@ -3,7 +3,7 @@ import { JOBS, Job } from './jobs';
 import { getJointDesign } from './joint-designs';
 import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswerFieldsBefore } from './step-conditions';
 
-/* the step list buildStages() produced before the rules moved to Admin > Routing */
+/* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
 function oldStepIds(job: Job, ids: string[]): string[] {
   const ndt = jobNdtSteps(job);
   const hasO63 = Boolean(job.sfff || job.dssAaa || job.ss);
@@ -60,7 +60,7 @@ describe('step conditions', () => {
   });
 });
 
-describe('step order (Admin > Routing)', () => {
+describe('step order (Admin > Routing Settings)', () => {
   it('a saved order is what new joints get, and it survives a reload', () => {
     const original = getTemplates()['Welding'].map(t => t.id);
     const moved = original.filter(id => id !== 'fit');
@@ -87,7 +87,7 @@ describe('contains conditions', () => {
   });
 });
 
-describe('Fabrication editable (Admin > Routing)', () => {
+describe('Fabrication editable (Admin > Routing Settings)', () => {
   const job = JOBS.find(j => j.trade === 'Welding')!;
   const signThrough = (id: string) => {
     const stages = buildStages(job);
@@ -110,7 +110,7 @@ describe('Fabrication editable (Admin > Routing)', () => {
   });
 });
 
-describe('every field as a condition (Admin > Routing)', () => {
+describe('every field as a condition (Admin > Routing Settings)', () => {
   const job = JOBS.find(j => j.trade === 'Welding' && buildStages(j).some(s => s.id === 'root-ndt-vt5x'))!;
   afterEach(() => updateStageTemplate('Welding', 'root-layer', { includeWhen: [] }));
 

@@ -46,7 +46,7 @@ function weldBuildupFields(trade: Job['trade']): StageField[] {
 }
 
 /* Fit's fields for its Type: Weld Build-Up swaps in Tack's fields plus Affected Item; Fit, or Weld
-   Build-Up when Admin > Routing has no Tack step, keeps Fit's own fields */
+   Build-Up when Admin > Routing Settings has no Tack step, keeps Fit's own fields */
 export function fitFieldsForType(trade: Job['trade'], routingType: string): StageField[] {
   const templates = getTemplates()[trade] ?? [];
   if (routingType === 'weld-buildup' && templates.some(t => t.id === 'tack')) {

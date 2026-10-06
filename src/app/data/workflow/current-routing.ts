@@ -47,7 +47,7 @@ export function allRequiredSigned(stages: WorkflowStage[]): boolean {
   return activeStage(stages) === undefined;
 }
 
-/* Fabrication fields can be changed while the current step has Fabrication editable (Admin > Routing,
+/* Fabrication fields can be changed while the current step has Fabrication editable (Admin > Routing Settings,
    read live so a change applies to joints in progress; a Repeat copy uses its step's). Repair,
    Excavation NDT and a finished joint lock them. */
 export function fabricationEditable(trade: Job['trade'], stages: WorkflowStage[]): boolean {

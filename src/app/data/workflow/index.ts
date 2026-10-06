@@ -4,7 +4,7 @@
      ndt                NDT steps and which ones a joint gets
      fabrication        the Fabrication section's fields
      welding-steps      the built-in Welding routing
-     stage-templates    templates merged with Admin > Routing changes, and its edits
+     stage-templates    templates merged with Admin > Routing Settings changes, and its edits
      build-stages       a joint's steps from the templates
      step-ids           Repair / Excavation NDT / Engineering Hold ids and rounds
      added-steps        building those added steps

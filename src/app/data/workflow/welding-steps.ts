@@ -1,4 +1,4 @@
-/* The built-in Welding routing, in order. Admin > Routing can reorder, edit and add to these
+/* The built-in Welding routing, in order. Admin > Routing Settings can reorder, edit and add to these
    (stage-templates.ts keeps those changes). */
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import { SignoffField, StageField, StageTemplate } from './types';
@@ -104,7 +104,7 @@ export const WELDING_STEPS: StageTemplate[] = [
   ndtStage('final', 'mtpt'),
   ndtStage('final', 'utrt'),
   /* a joint gets exactly one Records Review: O63 when the job has any SFFF/DSS-AAA/SS data, O04
-     otherwise (their Admin > Routing conditions, see buildStages()) */
+     otherwise (their Admin > Routing Settings conditions, see buildStages()) */
   { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', fields: recordsReviewFields(),
     signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
   { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', fields: recordsReviewFields(),

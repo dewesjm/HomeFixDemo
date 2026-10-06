@@ -1,4 +1,4 @@
-/* Step conditions (Admin > Routing, "Included when"): which routing steps a joint gets. A step's
+/* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches
    when every one of its clauses does. No rules = always included.
    Joint Details clauses are decided once, when the joint's routing is built; a step whose rules
@@ -18,7 +18,7 @@ export interface ConditionClause {
 }
 export type ConditionRule = ConditionClause[];
 
-/* Reject rules (Admin > Routing, "Reject routes to"): when a step is signed UNSAT, the first rule
+/* Reject rules (Admin > Routing Settings, "Reject routes to"): when a step is signed UNSAT, the first rule
    whose conditions all match picks where it goes; none matching = the step's normal target. Besides
    Joint Details, a clause can test the rejected step's own answers ('self.<key>', raw option values). */
 export interface RejectRule {
@@ -188,7 +188,7 @@ const utrtRule = (ndtKey: string, rtKey?: string): ConditionRule[] => [
 ];
 const mtptRule = (ndtKey: string): ConditionRule[] => [[{ field: ndtKey, op: 'is', values: ['MT', 'PT', 'MT/PT'] }]];
 
-/* the rules the app was built with; Admin > Routing can change any of them */
+/* the rules the app was built with; Admin > Routing Settings can change any of them */
 export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   'pre-fit': [
     [{ field: 'nInd', op: 'is', values: ['1', '2'] }],
@@ -219,7 +219,7 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
 /* reject target that puts the joint on Engineering Hold instead (workflow/added-steps.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 
-/* built-in reject rules (Admin > Routing can change them): a PT failure on a GTAW weld goes to
+/* built-in reject rules (Admin > Routing Settings can change them): a PT failure on a GTAW weld goes to
    Engineering Hold instead of Repair; the weld that counts is that phase's own weld step */
 const gtawPtHold = (weldStepId: string): RejectRule[] => [{
   when: [

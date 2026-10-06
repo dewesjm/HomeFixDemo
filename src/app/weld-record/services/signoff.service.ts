@@ -111,7 +111,7 @@ export class SignoffService {
       routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined };
     };
 
-    /* steps whose Admin > Routing conditions use a signed answer (Defer Tack, Release to welding) turn on or off */
+    /* steps whose Admin > Routing Settings conditions use a signed answer (Defer Tack, Release to welding) turn on or off */
     const before = stages;
     stages = applySignedFlags(stages, job);
     if (st.result !== 'unsat') {
@@ -141,7 +141,7 @@ export class SignoffService {
 
     if (st.result === 'unsat' && st.rejectToStage && !isRecordsReviewUnsat(st)) {
       const currentIdx = stages.findIndex(s => s.id === stageId);
-      /* Admin > Routing reject rules: the first one matching this step's answers / Joint Details picks
+      /* Admin > Routing Settings reject rules: the first one matching this step's answers / Joint Details picks
          the target, if that step is earlier on this joint (or Repair on an NDT step); else the normal target */
       const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
       const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);

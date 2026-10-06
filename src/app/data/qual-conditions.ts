@@ -50,7 +50,7 @@ const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
 
-/* Admin > Routing's Joint Details fields (step-conditions.ts), plus Titanium */
+/* Admin > Routing Settings's Joint Details fields (step-conditions.ts), plus Titanium */
 function jointFields(): ConditionField[] {
   const fields = STEP_CONDITION_FIELDS.filter(f => !f.stepAnswer).map((f): ConditionField => ({
     key: f.key, label: f.label, group: 'Joint Details', options: () => plain(f.values), get: s => f.get(s.job, []),

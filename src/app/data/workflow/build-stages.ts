@@ -13,7 +13,7 @@ const WELD_STEP_IDS = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'fina
 export function buildStages(job: Job): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
   const tradeStages = getTemplates()['Welding'] ?? [];
-  /* Admin > Routing step conditions: Joint Details rules decide here whether the joint gets the step;
+  /* Admin > Routing Settings step conditions: Joint Details rules decide here whether the joint gets the step;
      a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
   const included = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
   /* Sold follows whichever Records Review the joint got */

@@ -155,7 +155,7 @@ describe('SignoffService', () => {
     expect(stages[ndtIdx + 1]?.id).toBe('repair');
   });
 
-  describe('reject rules (Admin > Routing)', () => {
+  describe('reject rules (Admin > Routing Settings)', () => {
     const straw = [{ when: [{ field: 'self.weldColor', op: 'is' as const, values: ['straw'] }], to: 'root-weld' }];
     afterEach(() => updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: [] }));
     const failVt = (job: Job, weldColor: string) => {
