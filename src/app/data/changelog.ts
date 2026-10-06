@@ -14,6 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'Admin > Routing Options is renamed Signoff Type Availability.',
       'Signoff Type Availability: each Type option has a Repeatable setting (No, Yes and keep values, or Yes and start blank). Signing with a repeatable Type records the signoff and History but leaves the routing where it is. Interim Layer is repeatable and keeps its values, as before.',
+      'Routing bar: a repair shows as one Repair dot after the NDT step that failed, with Excavation NDT after a Weld Repair, only until it is resolved, then both go away. There is no more Repair 2, Repair 3 on the bar (History still numbers them).',
       'Fit signed as Weld Build-Up now stays on Fit: the signoff is recorded, Fit stays the current routing with blank fields for the next Weld Build-Up, and signing it as Fit moves on to Tack. Before, Weld Build-Up moved the joint on to Tack.',
       'Signoff Type Availability: editing a step shows only each option\'s name; the separate internal value box is gone. Its first column is now titled Routing Step.',
       'Signoff Type Availability is now its own list, set up with the current routing steps plus Repair and Excavation NDT. Add a routing step to give it a Type droplist, or delete its row to take the droplist away. Steps added in Routing Settings no longer appear there automatically. Excavation NDT\'s Type is always the inspection that rejected the joint, so its row has no options to edit.',

@@ -3,7 +3,7 @@ import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, getSignoffTypeRows, seededWorkflow, setSignoffTypeRows, updateStageTemplate } from '../../data/workflow';
+import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, getSignoffTypeRows, routingBarSteps, seededWorkflow, setSignoffTypeRows, updateStageTemplate } from '../../data/workflow';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
    pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
@@ -201,6 +201,37 @@ describe('SignoffService', () => {
       expect(stage(job, 'repair-2').label).toBe('Repair 2');
       expect(stage(job, 'repair-2').signed).toBeFalse();
       expect(stage(job, 'repair').signed).toBeTrue();
+    });
+
+    describe('routing bar', () => {
+      /* the bar's labels from Root NDT up to Layer */
+      const bar = (job: Job) => {
+        const labels = routingBarSteps(store.workflowFor(job)().stages).map(s => s.label);
+        return labels.slice(labels.indexOf('Root NDT RT/UT'), labels.indexOf('Layer'));
+      };
+
+      it('shows one plain Repair while it is open, and none once Grind Only resolves it', () => {
+        const job = weldingJob({ ndtRoot: 'UT' });
+        failNdt(job, 'root-ndt-utrt');
+        expect(bar(job)).toEqual(['Root NDT RT/UT', 'Repair']);
+        signRepair(job, 'repair', 'grind');
+        expect(bar(job)).toEqual(['Root NDT RT/UT']);
+        failNdt(job, 'root-ndt-utrt');
+        expect(bar(job)).toEqual(['Root NDT RT/UT', 'Repair']);
+      });
+
+      it('after a Weld Repair, Repair and Excavation NDT stay until Excavation NDT passes', () => {
+        const job = weldingJob({ ndtRoot: 'UT' });
+        failNdt(job, 'root-ndt-utrt');
+        signRepair(job, 'repair', 'weld-repair');
+        expect(bar(job)).toEqual(['Root NDT RT/UT', 'Repair', 'Excavation NDT']);
+        failNdt(job, 'excavation-ndt');
+        expect(bar(job)).toEqual(['Root NDT RT/UT', 'Repair']);
+        signRepair(job, 'repair', 'weld-repair');
+        patch(job, 'excavation-ndt', { result: 'sat' });
+        service.signStage(job, 'excavation-ndt');
+        expect(bar(job)).toEqual(['Root NDT RT/UT']);
+      });
     });
 
     it("a later round's Weld Repair adds its own Excavation NDT, whose UNSAT goes back to that round's Repair", () => {

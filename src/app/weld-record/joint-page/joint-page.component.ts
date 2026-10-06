@@ -27,7 +27,7 @@ import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
-  activeStageId, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
+  activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
 } from '../../data/workflow';
 import { loadFeatureToggles } from '../../data/feature-toggles';
@@ -106,17 +106,9 @@ export class JointPageComponent implements OnDestroy {
 
   /* ── Page state ── */
 
-  /* routing model: only show stages that are signed, required, or the current active stage */
-  routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() => {
-    if (!this.wf) return [];
-    const stages = this.wf().stages;
-    /* the current routing, not the first unsigned step (a deferred Tack is unsigned but skipped) */
-    const activeIdx = stages.findIndex(s => s.id === activeStageId(stages));
-    return stages
-      .map((s, i) => ({ label: s.displayName || s.label, disabled: this.locked(i), signed: s.signed, required: s.required, stageIndex: i }))
-      .filter(s => s.signed || s.required || s.stageIndex === activeIdx)
-      .map(s => ({ label: s.label, disabled: s.disabled, stageIndex: s.stageIndex }));
-  });
+  /* the routing bar's steps (data/workflow/routing-bar.ts) */
+  routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() =>
+    this.wf ? routingBarSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
   /* which stage's sign-off shows; defaults to active */
   selectedRouting = signal<number>(this.indexOfActive());
   /* inline field validation errors: key = `${stageId}:${fieldKey}` */

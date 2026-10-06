@@ -12,6 +12,7 @@
      stage-rules        per-step rules (decision, references, type lock, Correct locks)
      stage-display      recorded values as shown in History
      current-routing    the current step and which steps are locked
+     routing-bar        which steps the joint page's routing bar shows
      route-changes      going back, Routing Override, Deprogress, discarding edits
      history-rows       History as table rows, and where Deprogress / Correct are offered
      seed-fabrication / seeded-workflow   demo data */
@@ -28,6 +29,7 @@ export * from './added-steps';
 export * from './stage-rules';
 export * from './stage-display';
 export * from './current-routing';
+export * from './routing-bar';
 export * from './route-changes';
 export * from './history-rows';
 export * from './seed-fabrication';

@@ -72,6 +72,7 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 - Each repair is its own step: Repair, then Repair 2, Repair 3 and so on. Earlier repairs stay as signed records.
 - **Repair #** goes up by one with each new Repair.
 - Repair is signed by the **Foreman**.
+- **Routing bar:** a repair shows as one plain **Repair** dot right after the NDT step that failed (plus **Excavation NDT** after a Weld Repair) only while it is open. Once it's resolved (Grind Only, Cut, thickness exceeded, or Excavation NDT passing) both dots go away. A failed Excavation NDT brings the Repair dot back. History keeps the round numbers (Repair 2, Repair 3).
 
 When the Repair step is signed, where the joint goes depends on what was chosen:
 
