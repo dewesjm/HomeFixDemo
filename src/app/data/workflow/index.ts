@@ -4,6 +4,7 @@
      ndt                NDT steps and which ones a joint gets
      fabrication        the Fabrication section's fields
      welding-steps      the built-in Welding routing
+     signoff-types      Admin > Signoff Type Availability: each step's Type options (seeded)
      stage-templates    templates merged with Admin > Routing Settings changes, and its edits
      build-stages       a joint's steps from the templates
      step-ids           Repair / Excavation NDT / Engineering Hold ids and rounds
@@ -19,6 +20,7 @@ export * from './weld-fields';
 export * from './ndt';
 export * from './fabrication';
 export * from './welding-steps';
+export * from './signoff-types';
 export * from './stage-templates';
 export * from './build-stages';
 export * from './step-ids';

@@ -51,7 +51,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       repeatable: t.repeatable ?? false,
       routingType: t.routingOptions?.find(o => o.default)?.value ?? t.routingOptions?.[0]?.value ?? 'standard',
       swapStageId: '',
-      inspectionType: initialInspectionType({ id: t.id, role, routingOptions: t.routingOptions }),
+      inspectionType: initialInspectionType(t),
       decisionLabel: t.decisionLabel ?? '',
       routingOptions: t.routingOptions,
       signed: false,
@@ -69,8 +69,9 @@ export function buildStages(job: Job): WorkflowStage[] {
     const step = stepFor(s.id);
     /* a step an admin rule adds without the NDT values calling for it offers every method */
     if (!step) return s;
-    /* only the method(s) the Joint Details values allow; Type still starts blank, even with one */
-    return { ...s, routingOptions: s.routingOptions?.filter(o => step.methods.includes(o.value)) };
+    /* only the method(s) the Joint Details values allow; a default that isn't one of them leaves Type blank */
+    const routingOptions = s.routingOptions?.filter(o => step.methods.includes(o.value));
+    return { ...s, routingOptions, inspectionType: initialInspectionType({ id: s.id, routingOptions }) };
   });
 }
 

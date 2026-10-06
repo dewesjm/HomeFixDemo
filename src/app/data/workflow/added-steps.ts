@@ -8,6 +8,7 @@ import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
 import { initialInspectionType } from './stage-rules';
+import { EXCAVATION_TYPE_ROW, hasSignoffTypeRow, signoffTypeOptions } from './signoff-types';
 
 /* ── Repair ── */
 
@@ -22,8 +23,8 @@ export function allowableThicknessAmount(nInd: string): string {
 
 /* Inserted when an NDT step is UNSAT. Its own routing on signoff (SignoffService.signStage()):
    Allowable thickness exceeded -> back to that phase's NDT RT/UT; else Grind Only -> that phase's
-   NDT VT/5X; Weld Repair -> inserts Excavation NDT next; Cut -> back to Fit. Its single-option Type
-   droplist is pre-filled, since Foreman isn't an Inspector role (inspectionTypeRequired()). */
+   NDT VT/5X; Weld Repair -> inserts Excavation NDT next; Cut -> back to Fit. Its Type options are the
+   Repair row of Admin > Signoff Type Availability. */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
@@ -31,14 +32,13 @@ export const REPAIR_STAGE: StageTemplate = {
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
   decisionLabel: 'Inspection Results',
-  routingOptions: [{ label: 'Repair', value: 'repair', default: true }],
 };
 
 /* every NDT UNSAT adds a new Repair round, with no limit */
 export function nextRepairStage(stages: { id: string }[]): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...REPAIR_STAGE, id, label: roundLabel(REPAIR_STAGE.label, id) };
+  return { ...REPAIR_STAGE, id, label: roundLabel(REPAIR_STAGE.label, id), routingOptions: signoffTypeOptions(id) };
 }
 
 /* ── Excavation NDT ── */
@@ -52,7 +52,8 @@ const EXCAVATION_NDT_LABEL = 'Excavation NDT';
    `inspectionType` is the resolved single value the caller (SignoffService) passes in -- normally the
    origin's own inspectionType, except PT on non-ferrous/austenitic material requires 5X instead (the
    caller decides that, since it needs the job's material classification). UNSAT routes back to its
-   own round's Repair via rejectToStage. */
+   own round's Repair via rejectToStage. No Type at all when Admin > Signoff Type Availability has no
+   Excavation NDT row. */
 export function excavationNdtStage(inspectionType: string, repairId = 'repair'): StageTemplate {
   const kind: NdtKind = (inspectionType === 'ut' || inspectionType === 'rt') ? 'utrt'
     : (inspectionType === 'mt' || inspectionType === 'pt') ? 'mtpt'
@@ -64,7 +65,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: repairId, decisionLabel: 'Inspection Results',
-    routingOptions: [{ label: opt.label, value: opt.value, default: true }],
+    routingOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
   };
 }
 
@@ -128,7 +129,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     repeatable: false,
     routingType: 'standard',
     swapStageId: '',
-    inspectionType: initialInspectionType({ id: t.id, role: t.role ?? '', routingOptions: t.routingOptions }),
+    inspectionType: initialInspectionType(t),
     routingOptions: t.routingOptions ?? [],
     signed: false,
     signedAt: null,

@@ -1,5 +1,5 @@
 /* The built-in Welding routing, in order. Admin > Routing Settings can reorder, edit and add to these
-   (stage-templates.ts keeps those changes). */
+   (stage-templates.ts keeps those changes). Type options are in signoff-types.ts. */
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import { SignoffField, StageField, StageTemplate } from './types';
 import { WELD_STAGE_FIELDS } from './weld-fields';
@@ -60,13 +60,8 @@ export const WELDING_STEPS: StageTemplate[] = [
   { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
     ...insertAndBackingRingFields(),
     { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
-  ], routingOptions: [
-    { label: 'Fit', value: 'fit', default: true },
-    { label: 'Weld Build-Up', value: 'weld-buildup' },
   ] },
-  { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
-    { label: 'Tack', value: 'standard', default: true },
-  ] },
+  { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
     { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
     { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
@@ -77,29 +72,20 @@ export const WELDING_STEPS: StageTemplate[] = [
     signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
   /* same form as Tack; only its position differs (after Fit-Up Insp) */
-  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
-    { label: 'Tack', value: 'standard', default: true },
-  ] },
+  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
       { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
-    ], signoffFields: [], routingOptions: [
-    { label: 'Root', value: 'standard', default: true },
-  ] },
+    ], signoffFields: [] },
   ndtStage('root', 'vt5x'),
   ndtStage('root', 'mtpt'),
   ndtStage('root', 'utrt'),
   { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
     fields: WELD_STAGE_FIELDS,
-    signoffFields: [], routingOptions: [
-      { label: 'Interim Layer', value: 'interim', default: true },
-      { label: 'Final Layer', value: 'final' },
-    ] },
+    signoffFields: [] },
   ndtStage('layer', 'vt5x'),
   ndtStage('layer', 'mtpt'),
   ndtStage('layer', 'utrt'),
-  { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [], routingOptions: [
-    { label: 'Final Weld', value: 'standard', default: true },
-  ] },
+  { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   ndtStage('final', 'vt5x'),
   ndtStage('final', 'mtpt'),
   ndtStage('final', 'utrt'),

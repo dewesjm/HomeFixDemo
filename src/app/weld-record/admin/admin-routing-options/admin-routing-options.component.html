@@ -1,22 +1,35 @@
 <h2 class="section-title">Signoff Type Availability</h2>
 
-<app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" (exportCsv)="exportCsv()" />
+<app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" addLabel="Add routing step"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
   <table class="table table-sm">
     <thead>
       <tr>
-        <th appSortHeader [table]="table" field="stageLabel" label="Routing Step"></th>
+        <th appSortHeader [table]="table" field="stepLabel" label="Routing Step" class="min-w-44"></th>
         <th>Options</th>
-        <th></th>
+        <th class="min-w-11"></th>
       </tr>
     </thead>
     <tbody>
       @for (row of table.sorted(); track row.uid) {
         <tr>
-          <td>{{ row.stageLabel }}</td>
           <td>
             @if (editingUid() === row.uid) {
+              <select class="select select-sm select-bordered w-full min-w-0"
+                      [ngModel]="row.stepId" (ngModelChange)="setStep(row, $event)">
+                <option value="" disabled>Select a routing step</option>
+                @for (s of stepChoices(row); track s.id) { <option [value]="s.id">{{ s.label }}</option> }
+              </select>
+            } @else {
+              {{ row.stepLabel }}
+            }
+          </td>
+          <td>
+            @if (row.stepId === excavationId) {
+              <span class="text-sm">{{ excavationNote }}</span>
+            } @else if (editingUid() === row.uid) {
               <div class="flex flex-col gap-1">
                 @for (opt of row.options; track $index; let i = $index) {
                   <div class="flex items-center gap-1">
@@ -38,37 +51,54 @@
                     </button>
                   </div>
                 }
+                @if (row.options.length > 0) {
+                  <label class="flex items-center gap-1 text-xs cursor-pointer">
+                    <input type="radio" class="radio radio-xs" [name]="'default-' + row.uid"
+                           [checked]="!hasDefault(row)" (change)="setDefault(row, -1)" />
+                    No default
+                  </label>
+                }
                 <button type="button" class="btn btn-ghost btn-xs w-fit" (click)="addOption(row)">
                   <svg lucidePlus class="size-3"></svg> Add option
                 </button>
               </div>
             } @else {
               @if (row.options.length === 0) {
-                <span class="text-muted text-sm">No options</span>
+                <span class="text-sm">No options</span>
               } @else {
                 @for (opt of row.options; track $index) {
                   <span class="badge badge-sm me-1">{{ opt.label }}{{ opt.default ? ' (default)' : '' }}</span>
                 }
+                @if (!hasDefault(row)) {
+                  <span class="text-sm">No default</span>
+                }
               }
             }
           </td>
-          <td class="text-right whitespace-nowrap">
-            @if (editingUid() === row.uid) {
-              <button type="button" class="btn btn-ghost btn-sm text-success" (click)="saveEdit(row)">
-                <svg lucideCheck class="size-4"></svg>
-              </button>
-              <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEdit(row)">
-                <svg lucideX class="size-4"></svg>
-              </button>
-            } @else {
-              <button type="button" class="btn btn-ghost btn-sm" (click)="startEdit(row)">
-                <svg lucidePencil class="size-4"></svg>
-              </button>
-            }
+          <td>
+            <div class="row-tight">
+              @if (editingUid() === row.uid) {
+                <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
+                  <svg lucideCheck class="size-4"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)">
+                  <svg lucideX class="size-4"></svg>
+                </button>
+              } @else {
+                @if (row.stepId !== excavationId) {
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                    <svg lucidePencil class="size-4"></svg>
+                  </button>
+                }
+                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                  <svg lucideTrash2 class="size-4"></svg>
+                </button>
+              }
+            </div>
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="4" class="empty">No signoff types match your search.</td></tr>
+        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No routing steps match your search.' : 'No routing steps yet.' }}</td></tr>
       }
     </tbody>
   </table>

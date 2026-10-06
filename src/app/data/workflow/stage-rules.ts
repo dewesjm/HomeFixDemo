@@ -14,16 +14,16 @@ export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
   return stage.id === 'pre-fit' || stage.id === 'fitup-insp' || /-ndt(-|$)/.test(stage.id);
 }
 
-/* inspection/NDT steps: the inspector always picks the inspection performed. Type starts blank
-   ("Select the inspection performed…") even when only one method is allowed, and is never pre-filled */
-export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'role' | 'routingOptions'>): boolean {
-  return stage.id !== 'fit' && (stage.role ?? '').includes('Inspector') && !!stage.routingOptions?.length;
+/* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
+   ("Select the inspection performed…") and can't be signed until one is picked, even when there is
+   only one option. Fit is the exception: its Type is routingType and starts on its first option. */
+export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'routingOptions'>): boolean {
+  return stage.id !== 'fit' && !!stage.routingOptions?.length && !stage.routingOptions.some(o => o.default);
 }
 
-/* the Type a step starts with and keeps until someone changes it: blank on inspection steps,
-   otherwise its default option (e.g. Repair, Tack, Interim Layer). The stored value is what the
-   joint page shows and what History records. */
-export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'role' | 'routingOptions'>): string {
+/* the Type a step starts with and keeps until someone changes it: its default option, or blank when
+   it has none. The stored value is what the joint page shows and what History records. */
+export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'routingOptions'>): string {
   if (inspectionTypeRequired(stage)) return '';
   return stage.routingOptions?.find(o => o.default)?.value ?? stage.routingOptions?.[0]?.value ?? '';
 }

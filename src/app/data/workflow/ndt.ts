@@ -131,6 +131,5 @@ export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: 'repair',
     decisionLabel: 'Inspection Results',
-    routingOptions: k.options.map(o => ({ ...o })),
   };
 }

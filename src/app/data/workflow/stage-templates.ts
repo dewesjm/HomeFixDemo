@@ -1,9 +1,11 @@
 /* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
-   saved changes (localStorage), and the functions Admin > Routing Settings saves through */
+   saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
+   Type options come from Admin > Signoff Type Availability (signoff-types.ts). */
 import { Job } from '../jobs';
 import { STORAGE } from '../storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from '../step-conditions';
-import { SignoffField, StageField, StageOption, StageTemplate } from './types';
+import { SignoffField, StageField, StageTemplate } from './types';
+import { signoffTypeOptions, signoffTypesVersion } from './signoff-types';
 import { WELDING_STEPS } from './welding-steps';
 
 /* sign-off fields a new step starts with in Admin > Routing Settings */
@@ -59,7 +61,6 @@ interface SerializedStage {
   rejectToStage: string;
   repeatable?: boolean;
   role?: string;
-  routingOptions?: StageOption[];
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
   rejectRulesEdited?: boolean;
@@ -77,7 +78,6 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectToStage: t.rejectToStage ?? '',
     repeatable: t.repeatable ?? false,
     role: t.role ?? '',
-    routingOptions: t.routingOptions,
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
     rejectRulesEdited: t.rejectRulesEdited,
@@ -87,7 +87,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
 
 /* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '', routingOptions: s.routingOptions,
+  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, repeatable: s.repeatable ?? false, role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
@@ -104,29 +104,16 @@ function saveOverrides(overrides: Record<string, SerializedStage[]>) {
   try { localStorage.setItem(STORAGE.stageTemplates, JSON.stringify(overrides)); } catch { /* */ }
 }
 
-/* Admin > Signoff Type Availability: each step's Type choices, saved separately from the rest of the template */
-export function setStageRoutingOptions(trade: string, stageId: string, options: StageOption[]) {
-  const raw = localStorage.getItem(STORAGE.routingOptions);
-  const all: Record<string, StageOption[]> = raw ? JSON.parse(raw) : {};
-  all[`${trade}:${stageId}`] = options.map(o => ({ ...o, value: o.value || valueFromLabel(o.label) }));
-  localStorage.setItem(STORAGE.routingOptions, JSON.stringify(all));
-}
-
-/* an added option's stored value, made from its label (e.g. "Weld Build-Up" -> "weld-build-up") */
-function valueFromLabel(label: string): string {
-  return label.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
 /* ── The merged templates ── */
 
 /* merged view: static defaults + admin overrides (saved to localStorage) */
 let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
+let _mergedTypesVersion = -1;
 
 export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
-  if (_merged) return _merged;
+  if (_merged && _mergedTypesVersion === signoffTypesVersion()) return _merged;
+  _mergedTypesVersion = signoffTypesVersion();
   const saved = loadSavedOverrides();
-  const routingOptsRaw = localStorage.getItem(STORAGE.routingOptions);
-  const routingOptsAll: Record<string, StageOption[]> = routingOptsRaw ? JSON.parse(routingOptsRaw) : {};
   _merged = {} as Record<Job['trade'], StageTemplate[]>;
   // Start with static defaults, merge admin overrides by stage ID
   for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
@@ -145,11 +132,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    // Merge routingOptions from separate localStorage key
-    for (const s of _merged[trade]) {
-      const key = `${trade}:${s.id}`;
-      if (routingOptsAll[key]) s.routingOptions = routingOptsAll[key];
-    }
+    _merged[trade] = _merged[trade].map(s => ({ ...s, routingOptions: signoffTypeOptions(s.id) }));
   }
   /* not routing steps: Fabrication is a cross-stage data section, and Prep/Handover are generic
      steps from before this was a Welding-only app (older saves still have them; trades other than
