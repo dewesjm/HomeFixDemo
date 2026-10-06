@@ -12,11 +12,12 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-06',
     fixed: [
+      'Interim Layer: after an Interim Layer signoff, Layer now comes up blank for the next one instead of keeping the last values.',
       'Signoff Type Availability: a divider now separates each option\'s Default choice from its Repeatable droplist, so they no longer read as one field.',
     ],
     changed: [
       'Admin > Routing Options is renamed Signoff Type Availability.',
-      'Signoff Type Availability: each Type option has a Repeatable setting (No, Yes and keep values, or Yes and start blank). Signing with a repeatable Type records the signoff and History but leaves the routing where it is. Interim Layer is repeatable and keeps its values, as before.',
+      'Signoff Type Availability: each Type option has a Repeatable checkbox. Signing with a repeatable Type records the signoff and History but leaves the routing where it is, and the step comes up blank for the next signoff.',
       'Routing bar: a repair shows as one Repair dot after the NDT step that failed, with Excavation NDT after a Weld Repair, only until it is resolved, then both go away. There is no more Repair 2, Repair 3 on the bar (History still numbers them).',
       'Fit signed as Weld Build-Up now stays on Fit: the signoff is recorded, Fit stays the current routing with blank fields for the next Weld Build-Up, and signing it as Fit moves on to Tack. Before, Weld Build-Up moved the joint on to Tack.',
       'Signoff Type Availability: editing a step shows only each option\'s name; the separate internal value box is gone. Its first column is now titled Routing Step.',

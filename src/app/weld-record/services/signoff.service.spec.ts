@@ -420,12 +420,12 @@ describe('SignoffService', () => {
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) }));
     const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
 
-    it('Interim Layer is recorded, Layer stays unsigned and keeps its values', () => {
+    it('Interim Layer is recorded, Layer stays unsigned and starts blank', () => {
       const job = weldingJob();
       setStage(job, 'root-layer', { signoffType: 'interim', inputs: { actualPhMin: '50' } });
       service.signStage(job, 'root-layer');
       expect(stage(job, 'root-layer').signed).toBeFalse();
-      expect(stage(job, 'root-layer').inputs['actualPhMin']).toBe('50');
+      expect(stage(job, 'root-layer').inputs['actualPhMin']).toBeUndefined();
       expect(signoffEntries(store.workflowFor(job)(), 'root-layer').at(-1)?.action).toBe('Interim Layer - Signed off');
     });
 

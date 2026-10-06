@@ -157,9 +157,9 @@ export interface StageOption {
   label: string;
   value: string;
   default?: boolean;
-  /* signing with this Type records the signoff but leaves the routing where it is: 'keep' keeps the
-     step's values for the next signoff, 'blank' clears them. None = signing completes the step. */
-  repeatable?: 'keep' | 'blank';
+  /* signing with this Type records the signoff, leaves the routing where it is and blanks the step
+     for the next signoff. Unset = signing completes the step. */
+  repeatable?: boolean;
 }
 
 /* the definition a joint's step is built from (stage-templates.ts) */

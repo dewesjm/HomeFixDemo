@@ -46,12 +46,10 @@
                              [checked]="opt.default" (change)="setDefault(row, i)" />
                       Default
                     </label>
-                    <label class="flex items-center gap-1 text-xs ml-2 pl-3 border-l border-base-300">
+                    <label class="flex items-center gap-1 text-xs cursor-pointer ml-2 pl-3 border-l border-base-300">
+                      <input type="checkbox" class="checkbox checkbox-xs"
+                             [checked]="!!opt.repeatable" (change)="setRepeatable(opt, $any($event.target).checked)" />
                       Repeatable
-                      <select class="select select-xs select-bordered"
-                              [ngModel]="opt.repeatable ?? ''" (ngModelChange)="setRepeatable(opt, $event)">
-                        @for (r of repeatChoices; track r.value) { <option [value]="r.value">{{ r.label }}</option> }
-                      </select>
                     </label>
                     <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeOption(row, i)">
                       <svg lucideTrash2 class="size-3"></svg>

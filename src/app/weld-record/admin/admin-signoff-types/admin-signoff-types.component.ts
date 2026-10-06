@@ -23,13 +23,6 @@ interface TypeRow {
 
 const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
 
-/* a repeatable Type records the signoff but leaves the routing where it is (StageOption.repeatable) */
-const REPEAT_CHOICES: { value: '' | 'keep' | 'blank'; label: string }[] = [
-  { value: '', label: 'No' },
-  { value: 'keep', label: 'Yes, keep values' },
-  { value: 'blank', label: 'Yes, start blank' },
-];
-
 @Component({
   selector: 'app-admin-signoff-types',
   standalone: true,
@@ -45,7 +38,6 @@ export class AdminSignoffTypesComponent {
 
   readonly excavationId = EXCAVATION_TYPE_ROW;
   readonly excavationNote = EXCAVATION_NOTE;
-  readonly repeatChoices = REPEAT_CHOICES;
   /* every step a row can be for: the Routing Settings steps, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
@@ -81,17 +73,18 @@ export class AdminSignoffTypesComponent {
     return row.options.some(o => o.default);
   }
 
-  /* e.g. "Interim Layer (default, repeatable, keeps values)" */
+  /* e.g. "Interim Layer (default, repeatable)" */
   optionText(o: StageOption): string {
     const notes = [
       ...(o.default ? ['default'] : []),
-      ...(o.repeatable === 'keep' ? ['repeatable, keeps values'] : o.repeatable === 'blank' ? ['repeatable, starts blank'] : []),
+      ...(o.repeatable ? ['repeatable'] : []),
     ];
     return notes.length ? `${o.label} (${notes.join(', ')})` : o.label;
   }
 
-  setRepeatable(o: StageOption, value: '' | 'keep' | 'blank') {
-    if (value) o.repeatable = value; else delete o.repeatable;
+  /* a repeatable Type records the signoff but leaves the routing where it is (StageOption.repeatable) */
+  setRepeatable(o: StageOption, on: boolean) {
+    if (on) o.repeatable = true; else delete o.repeatable;
   }
 
   exportCsv() {

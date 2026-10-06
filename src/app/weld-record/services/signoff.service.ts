@@ -35,7 +35,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 /* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
    recorded but the stage isn't signed, so the joint stays there */
 const isRecordsReviewUnsat = (s: WorkflowStage) => (s.id === 'review-o63' || s.id === 'review-o04') && s.result === 'unsat';
-const staysPut = (s: WorkflowStage) => !!repeatable(s) || isRecordsReviewUnsat(s);
+const staysPut = (s: WorkflowStage) => repeatable(s) || isRecordsReviewUnsat(s);
 
 @Injectable({ providedIn: 'root' })
 export class SignoffService {
@@ -88,11 +88,10 @@ export class SignoffService {
     /* stages with no SAT/UNSAT choice are accepted by signing */
     let stages: WorkflowStage[] = wf.stages.map(s => {
       if (s.id !== stageId) return s;
-      const repeats = repeatable(s);
-      if (repeats === 'blank') return blankStage(s);
+      if (repeatable(s)) return blankStage(s);
       return {
         ...s,
-        result: repeats ? null : hasDecision(s) ? s.result : (s.result ?? 'sat'),
+        result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
         signed: !staysPut(s),
         signedAt: staysPut(s) ? null : new Date().toISOString(),
       };
