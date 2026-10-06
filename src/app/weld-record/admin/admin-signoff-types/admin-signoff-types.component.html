@@ -46,7 +46,7 @@
                              [checked]="opt.default" (change)="setDefault(row, i)" />
                       Default
                     </label>
-                    <label class="flex items-center gap-1 text-xs">
+                    <label class="flex items-center gap-1 text-xs ml-2 pl-3 border-l border-base-300">
                       Repeatable
                       <select class="select select-xs select-bordered"
                               [ngModel]="opt.repeatable ?? ''" (ngModelChange)="setRepeatable(opt, $event)">

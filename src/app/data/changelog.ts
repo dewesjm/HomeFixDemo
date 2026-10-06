@@ -11,6 +11,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-06',
+    fixed: [
+      'Signoff Type Availability: a divider now separates each option\'s Default choice from its Repeatable droplist, so they no longer read as one field.',
+    ],
     changed: [
       'Admin > Routing Options is renamed Signoff Type Availability.',
       'Signoff Type Availability: each Type option has a Repeatable setting (No, Yes and keep values, or Yes and start blank). Signing with a repeatable Type records the signoff and History but leaves the routing where it is. Interim Layer is repeatable and keeps its values, as before.',
