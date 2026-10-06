@@ -1,5 +1,5 @@
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
-   routing (Admin > Set Routing, Deprogress). Sign-off decisions live in SignoffService. */
+   routing (Admin > Routing Override, Deprogress). Sign-off decisions live in SignoffService. */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
@@ -37,7 +37,7 @@ export class RoutingService {
     });
   }
 
-  /* Admin > Set Routing: changes the joint's current routing to any step. Nothing is marked
+  /* Admin > Routing Override: changes the joint's current routing to any step. Nothing is marked
      signed. Going back works like any route-back (that step and every step after it come up
      blank); going forward only moves the current routing, and the steps passed stay as they are.
      Deprogress can't reach past this, so the undo entries are dropped. */

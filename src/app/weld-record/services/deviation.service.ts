@@ -49,7 +49,7 @@ export class DeviationService {
 
   /* Engineering's release: every open deviation is dispositioned with the comments, each unsigned
      Engineering Hold is signed (by Engineering, with the comments and the routing chosen), and the
-     current routing is set to `targetId` the same way Admin > Set Routing does it. A hold a reject
+     current routing is set to `targetId` the same way Admin > Routing Override does it. A hold a reject
      rule added has no deviation; it's released the same way. */
   disposition(job: Job, comments: string, targetId: string) {
     this.store.update(job, wf => {

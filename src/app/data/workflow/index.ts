@@ -11,7 +11,7 @@
      stage-rules        per-step rules (decision, references, type lock, Correct locks)
      stage-display      recorded values as shown in History
      current-routing    the current step and which steps are locked
-     route-changes      going back, Set Routing, Deprogress, discarding edits
+     route-changes      going back, Routing Override, Deprogress, discarding edits
      history-rows       History as table rows, and where Deprogress / Correct are offered
      seed-fabrication / seeded-workflow   demo data */
 export * from './types';

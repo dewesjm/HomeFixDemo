@@ -1,4 +1,4 @@
-/* Moving a joint's routing: going back (never un-sign, see ROUTING.md), Set Routing, Deprogress, and
+/* Moving a joint's routing: going back (never un-sign, see ROUTING.md), Routing Override, Deprogress, and
    discarding unsigned edits */
 import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
@@ -66,7 +66,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId), job), fabricationData }, fabReset };
 }
 
-/* set the current routing to any step (Admin > Set Routing, Engineering's disposition): going back
+/* set the current routing to any step (Admin > Routing Override, Engineering's disposition): going back
    works like any route-back (that step and every step after it come up blank); going forward only
    moves the current routing, and the steps passed stay as they are */
 export function moveRouting(wf: JobWorkflow, job: Job, targetId: string): { wf: JobWorkflow; back: boolean; fabReset: boolean } {

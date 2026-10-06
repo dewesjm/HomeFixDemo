@@ -1,4 +1,4 @@
-// Admin → Set routing: change a job's current routing to any step. Nothing is marked signed;
+// Admin → Routing Override: change a job's current routing to any step. Nothing is marked signed;
 // going back blanks that step and every step after it, going forward leaves the steps passed as they are.
 // The joint is found by typing its Hull, Drawing and Joint exactly (no picking from a list), and a reason
 // is required; it's recorded on the History entry.

@@ -51,7 +51,7 @@ export const routes: Routes = [
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing Settings' },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
-  { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Set Routing' },
+  { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Routing Override' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'EWR - Penetrant' },
   { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },

@@ -67,7 +67,7 @@ export interface WorkflowStage {
   signed: boolean;
   signedAt: string | null;        /* ISO string, set when signed */
   role: string;                   /* role this stage routes to (e.g. 'Fitting', 'Welding') */
-  /* the current routing was set to this stage (a route-back, or Admin > Set Routing): the joint
+  /* the current routing was set to this stage (a route-back, or Admin > Routing Override): the joint
      proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
   routingFrom?: boolean;
   /* the external system sent no GWP/WTN/filler/PH/IP for this welding step, so they're typed in
