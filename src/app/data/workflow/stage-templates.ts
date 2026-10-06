@@ -104,7 +104,7 @@ function saveOverrides(overrides: Record<string, SerializedStage[]>) {
   try { localStorage.setItem(STORAGE.stageTemplates, JSON.stringify(overrides)); } catch { /* */ }
 }
 
-/* Admin > Routing Options: each step's Type choices, saved separately from the rest of the template */
+/* Admin > Signoff Type Availability: each step's Type choices, saved separately from the rest of the template */
 export function setStageRoutingOptions(trade: string, stageId: string, options: StageOption[]) {
   const raw = localStorage.getItem(STORAGE.routingOptions);
   const all: Record<string, StageOption[]> = raw ? JSON.parse(raw) : {};

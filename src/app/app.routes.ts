@@ -57,7 +57,7 @@ export const routes: Routes = [
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations' },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },
-  { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'EWR - Routing Options' },
+  { path: 'admin/routing-options', component: AdminRoutingOptionsComponent,     title: 'EWR - Signoff Type Availability' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs' },

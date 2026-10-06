@@ -10,6 +10,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-06',
+    changed: [
+      'Admin > Routing Options is renamed Signoff Type Availability.',
+    ],
+  },
+  {
     date: '2026-10-05',
     added: [
       'NDT steps show a Layer Type under Type (Root, Layer, Final, or Excavation) so the inspector sees which weld activity they are inspecting. It cannot be changed.',

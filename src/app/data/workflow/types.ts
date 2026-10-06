@@ -178,7 +178,7 @@ export interface StageTemplate {
   repeatable?: boolean;
   /* role that this stage routes to */
   role?: string;
-  /* admin-managed routing options (e.g. Fit/Weld Build-Up, MT/PT) */
+  /* admin-managed signoff type options (Admin > Signoff Type Availability) (e.g. Fit/Weld Build-Up, MT/PT) */
   routingOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */
   includeWhen?: ConditionRule[];

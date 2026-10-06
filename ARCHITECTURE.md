@@ -153,7 +153,7 @@ src/app/
                              dialogs: data/condition-editing.ts. routing-field-config-dialog: the
                              switched-off Configure fields dialog (showFieldConfig)
       admin-set-routing/     Admin → Set routing (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
-      admin-routing-options/ Admin → Routing options (per-stage Type dropdown options)
+      admin-routing-options/ Admin → Signoff Type Availability (per-stage Type dropdown options)
       admin-signoff-fields/  Admin → Signoff fields
       admin-characteristics/ Admin → Attribute codes
       admin-material-traceability/, admin-material-classification/, admin-ndt/, admin-locations/, admin-ship-locations/,

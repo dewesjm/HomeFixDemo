@@ -1,4 +1,4 @@
-/* Admin → Routing Options: manage per-stage dropdown options (e.g. Fit/Weld Build-Up, MT/PT) */
+/* Admin → Signoff Type Availability: manage each step's Type dropdown options (e.g. Fit/Weld Build-Up, MT/PT) */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -41,7 +41,7 @@ export class AdminRoutingOptionsComponent {
   }
 
   exportCsv() {
-    downloadCsv('routing-options', [
+    downloadCsv('signoff-type-availability', [
       { header: 'Stage', value: (r: StageRow) => r.stageLabel },
       { header: 'Options', value: (r: StageRow) => r.options.map(o => o.label + (o.default ? ' (default)' : '')).join('; ') },
     ], this.table.sorted());
