@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
@@ -34,6 +35,7 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
 })
 export class AdminSignoffTypesComponent {
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   readonly excavationId = EXCAVATION_TYPE_ROW;
@@ -109,9 +111,11 @@ export class AdminSignoffTypesComponent {
   }
 
   deleteRow(row: TypeRow) {
-    this.rows.update(r => r.filter(x => x.uid !== row.uid));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', detail: row.stepLabel, life: 3000 });
+    this.confirm.confirmDelete(row.stepLabel, () => {
+      this.rows.update(r => r.filter(x => x.uid !== row.uid));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', detail: row.stepLabel, life: 3000 });
+    });
   }
 
   startEdit(row: TypeRow) {

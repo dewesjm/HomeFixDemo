@@ -1,4 +1,4 @@
-import { Component, signal, computed, effect } from '@angular/core';
+import { Component, signal, computed, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
@@ -6,6 +6,7 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
+import { ConfirmService } from '../../../shared/confirm.service';
 
 interface Permission {
   key: string;
@@ -127,6 +128,7 @@ const DEFAULT_GROUPS: TeamGroup[] = [
   templateUrl: './admin-teams.component.html',
 })
 export class AdminTeamsComponent {
+  private confirm = inject(ConfirmService);
   groups = signal<TeamGroup[]>(DEFAULT_GROUPS.map(g => ({ ...g, permissions: { ...g.permissions } })));
   table = new TableState<TeamGroup>(['name', 'description']);
 
@@ -191,8 +193,11 @@ export class AdminTeamsComponent {
   }
 
   removeGroup(id: string) {
-    this.groups.update(g => g.filter(x => x.id !== id));
-    if (this.selectedGroupId() === id) this.selectedGroupId.set(null);
+    const name = this.groups().find(g => g.id === id)?.name ?? 'this group';
+    this.confirm.confirmDelete(name, () => {
+      this.groups.update(g => g.filter(x => x.id !== id));
+      if (this.selectedGroupId() === id) this.selectedGroupId.set(null);
+    });
   }
 
   initials(name: string): string {

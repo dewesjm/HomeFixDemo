@@ -1,45 +1,65 @@
 <div class="table-page-wrap">
   <h2 class="section-title">Material Classification</h2>
 
-  <app-table-toolbar [table]="table" searchPlaceholder="Search material codes…" (exportCsv)="exportCsv()">
-    <div toolbarEnd class="flex gap-2">
-      <input class="input input-bordered input-sm" placeholder="New material code…"
-             [ngModel]="newCode()" (ngModelChange)="newCode.set($event)"
-             (keyup.enter)="addEntry()" />
-      <button type="button" class="btn btn-sm btn-primary" (click)="addEntry()">
-        <svg lucidePlus class="size-4"></svg> Add
-      </button>
-    </div>
-  </app-table-toolbar>
+  <app-table-toolbar [table]="table" searchPlaceholder="Search material codes…" addLabel="Add material code"
+                     (exportCsv)="exportCsv()" (add)="addRow()" />
 
   <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead>
         <tr>
-          <th appSortHeader [table]="table" field="code" label="Material Code"></th>
+          <th appSortHeader [table]="table" field="code" label="Material Code" class="min-w-36"></th>
           <th appSortHeader [table]="table" field="nonFerrousOrAustenitic" label="Non-Ferrous or Austenitic"></th>
           <th appSortHeader [table]="table" field="titanium" label="Titanium"></th>
-          <th></th>
+          <th class="min-w-11"></th>
         </tr>
       </thead>
       <tbody>
-        @for (entry of table.sorted(); track entry.code) {
+        @for (row of table.sorted(); track row.uid) {
           <tr>
-            <td class="font-medium">{{ entry.code }}</td>
-            <td>
-              <input type="checkbox" class="toggle toggle-sm toggle-success"
-                     [checked]="entry.nonFerrousOrAustenitic"
-                     (change)="toggleFlag(entry, 'nonFerrousOrAustenitic')" />
+            <td class="font-medium">
+              @if (editingId() === row.uid && row.isNew) {
+                <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                       [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
+                       (keyup.enter)="saveEdit(row)" placeholder="e.g. 02-CS" />
+              } @else {
+                {{ row.code }}
+              }
             </td>
             <td>
-              <input type="checkbox" class="toggle toggle-sm toggle-success"
-                     [checked]="entry.titanium"
-                     (change)="toggleFlag(entry, 'titanium')" />
+              @if (editingId() === row.uid) {
+                <input type="checkbox" class="toggle toggle-sm toggle-success" aria-label="Non-Ferrous or Austenitic"
+                       [ngModel]="row.nonFerrousOrAustenitic" (ngModelChange)="updateFlag(row, 'nonFerrousOrAustenitic', $event)" />
+              } @else {
+                {{ row.nonFerrousOrAustenitic ? 'Yes' : 'No' }}
+              }
             </td>
             <td>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeEntry(entry)">
-                <svg lucideTrash2 class="size-3"></svg>
-              </button>
+              @if (editingId() === row.uid) {
+                <input type="checkbox" class="toggle toggle-sm toggle-success" aria-label="Titanium"
+                       [ngModel]="row.titanium" (ngModelChange)="updateFlag(row, 'titanium', $event)" />
+              } @else {
+                {{ row.titanium ? 'Yes' : 'No' }}
+              }
+            </td>
+            <td>
+              <div class="row-tight">
+                @if (editingId() === row.uid) {
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)" aria-label="Save">
+                    <svg lucideCheck class="size-4"></svg>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)" aria-label="Cancel">
+                    <svg lucideX class="size-4"></svg>
+                  </button>
+                } @else {
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)" aria-label="Edit">
+                    <svg lucidePencil class="size-4"></svg>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)" aria-label="Delete">
+                    <svg lucideTrash2 class="size-4"></svg>
+                  </button>
+                }
+              </div>
             </td>
           </tr>
         } @empty {
@@ -47,9 +67,5 @@
         }
       </tbody>
     </table>
-
-    <div class="flex justify-end mt-3">
-      <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>
-    </div>
   </div>
 </div>

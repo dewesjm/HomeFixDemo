@@ -25,23 +25,42 @@
         <tr>
           <th appSortHeader [table]="table" field="when" label="When"></th>
           <th appSortHeader [table]="table" field="require" label="Require"></th>
-          <th></th>
+          <th class="min-w-11"></th>
         </tr>
       </thead>
       <tbody>
-        @for (r of table.sorted(); track r.i) {
+        @for (r of table.sorted(); track r.uid) {
           <tr>
+            @if (editingId() === r.uid) {
+              <td class="align-top">
+                <app-when-group-editor [group]="r.c.when" (changed)="setWhen(r.uid, $event)" />
+              </td>
+              <td>
+                <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.userRow"
+                                       (changed)="setRequire(r.uid, $event)" />
+              </td>
+            } @else {
+              <td class="align-top">{{ r.when }}</td>
+              <td class="align-top">{{ r.require || '-' }}</td>
+            }
             <td class="align-top">
-              <app-when-group-editor [group]="r.c.when" (changed)="setWhen(r.i, $event)" />
-            </td>
-            <td>
-              <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.userRow"
-                                     (changed)="setRequire(r.i, $event)" />
-            </td>
-            <td class="text-right align-top">
-              <button type="button" class="btn btn-ghost btn-sm" (click)="removeCondition(r.i)" aria-label="Remove condition">
-                <svg lucideTrash2 class="size-4"></svg>
-              </button>
+              <div class="row-tight">
+                @if (editingId() === r.uid) {
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(r)" aria-label="Save">
+                    <svg lucideCheck class="size-4"></svg>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(r)" aria-label="Cancel">
+                    <svg lucideX class="size-4"></svg>
+                  </button>
+                } @else {
+                  <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(r)" aria-label="Edit">
+                    <svg lucidePencil class="size-4"></svg>
+                  </button>
+                  <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(r)" aria-label="Delete">
+                    <svg lucideTrash2 class="size-4"></svg>
+                  </button>
+                }
+              </div>
             </td>
           </tr>
         } @empty {
@@ -49,9 +68,5 @@
         }
       </tbody>
     </table>
-  </div>
-
-  <div class="flex justify-end mt-3">
-    <button type="button" class="btn btn-sm btn-primary" (click)="save()">Save</button>
   </div>
 </div>

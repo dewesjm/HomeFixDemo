@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { downloadCsv } from '../../../data/export-csv';
 import { JointDesignEntry, jointDesigns, setJointDesigns } from '../../../data/joint-designs';
@@ -26,6 +27,7 @@ export class AdminJointDesignsComponent {
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private clonedRows: Record<string, JointDesignEntry> = {};
   private seq = 0;
 
@@ -43,9 +45,11 @@ export class AdminJointDesignsComponent {
   }
 
   deleteRow(row: JointDesignEntry) {
-    this.rows.update(r => r.filter(x => x.code !== row.code));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Joint design deleted', life: 3000 });
+    this.confirm.confirmDelete(row.label, () => {
+      this.rows.update(r => r.filter(x => x.code !== row.code));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Joint design deleted', life: 3000 });
+    });
   }
 
   startEdit(row: JointDesignEntry) {

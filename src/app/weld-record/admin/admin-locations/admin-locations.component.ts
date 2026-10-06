@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { Shop, getShops, setShops } from '../../../data/shops';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -26,6 +27,7 @@ interface LocRow extends Shop {
 })
 export class AdminLocationsComponent {
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   rows = signal<LocRow[]>(getShops().map((s, i) => ({ ...s, uid: `l-${i}` })));
@@ -46,9 +48,11 @@ export class AdminLocationsComponent {
   }
 
   deleteRow(row: LocRow) {
-    this.rows.update(r => r.filter(x => x.uid !== row.uid));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    this.confirm.confirmDelete(row.name, () => {
+      this.rows.update(r => r.filter(x => x.uid !== row.uid));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    });
   }
 
   startEdit(row: LocRow) {

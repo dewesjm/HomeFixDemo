@@ -16,6 +16,10 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Signoff Type Availability: a divider now separates each option\'s Default choice from its Repeatable droplist, so they no longer read as one field.',
     ],
     changed: [
+      'Admin > Material Classification, Material Traceability and Qualifications: each row is edited on its own (pencil, then check to save or X to cancel), like the other admin tables. The Save button at the bottom is gone. A saved material code or MCL value can\'t be renamed; delete it and add it again.',
+      'Admin: every delete asks "Delete <name>?" before anything is removed.',
+      'Admin menu: pages are listed alphabetically, each with its own icon.',
+      'Admin > Penetrant\'s address is now /admin/penetrant (was /admin/ndt).',
       'Admin > Routing Options is renamed Signoff Type Availability.',
       'Signoff Type Availability: each Type option has a Repeatable checkbox. Signing with a repeatable Type records the signoff and History but leaves the routing where it is, and the step comes up blank for the next signoff.',
       'Routing bar: a repair shows as one Repair dot after the NDT step that failed, with Excavation NDT after a Weld Repair, only until it is resolved, then both go away. There is no more Repair 2, Repair 3 on the bar (History still numbers them).',

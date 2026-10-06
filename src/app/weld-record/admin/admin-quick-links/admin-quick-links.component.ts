@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { getQuickLinks, setQuickLinks, QuickLink } from '../../../data/quick-links';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -22,6 +23,7 @@ import { downloadCsv } from '../../../data/export-csv';
 })
 export class AdminQuickLinksComponent {
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   rows = signal<QuickLink[]>(getQuickLinks());
@@ -42,9 +44,11 @@ export class AdminQuickLinksComponent {
   }
 
   deleteRow(row: QuickLink) {
-    this.rows.update(r => r.filter(x => x.id !== row.id));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    this.confirm.confirmDelete(row.label, () => {
+      this.rows.update(r => r.filter(x => x.id !== row.id));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    });
   }
 
   startEdit(row: QuickLink) {

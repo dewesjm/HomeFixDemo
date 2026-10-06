@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { INSPECTION_TYPES } from '../../../data/inspection-procedures';
 import { DefectCodeEntry, getDefectCodes, setDefectCodes } from '../../../data/defect-codes';
 import { TableState } from '../../../shared/table-state';
@@ -34,6 +35,7 @@ function toRow(e: DefectCodeEntry, i: number): DefectRow {
 })
 export class AdminDefectCodesComponent {
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   types = INSPECTION_TYPES;
@@ -55,9 +57,11 @@ export class AdminDefectCodesComponent {
   }
 
   deleteRow(row: DefectRow) {
-    this.rows.update(r => r.filter(x => x.uid !== row.uid));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    this.confirm.confirmDelete(`${row.type} - ${row.code}`, () => {
+      this.rows.update(r => r.filter(x => x.uid !== row.uid));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    });
   }
 
   startEdit(row: DefectRow) {

@@ -33,20 +33,6 @@ export function setMclTraceability(entries: MclTraceabilityEntry[]) {
   mclTraceability.set(entries);
 }
 
-export function addMclValue(mclValue: string) {
-  const current = mclTraceability();
-  if (current.some(e => e.mclValue === mclValue)) return;
-  const updated = [...current, { mclValue, requiresTraceability: true }];
-  save(updated);
-  mclTraceability.set(updated);
-}
-
-export function removeMclValue(mclValue: string) {
-  const updated = mclTraceability().filter(e => e.mclValue !== mclValue);
-  save(updated);
-  mclTraceability.set(updated);
-}
-
 export function requiresTraceability(mclValue: string): boolean {
   return mclTraceability().find(e => e.mclValue === mclValue)?.requiresTraceability ?? false;
 }

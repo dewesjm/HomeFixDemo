@@ -24,6 +24,11 @@ export class ConfirmService {
     this.request.set(req);
   }
 
+  /* every admin delete asks first; `what` names the row, e.g. "PT - PO" */
+  confirmDelete(what: string, accept: () => void) {
+    this.confirm({ header: 'Delete', message: `Delete ${what}?`, acceptLabel: 'Delete', accept });
+  }
+
   resolve(accepted: boolean) {
     const req = this.request();
     const value = this.inputValue();

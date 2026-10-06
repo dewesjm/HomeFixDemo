@@ -3,7 +3,7 @@
      instead of PT on these materials, which commonly can't be effectively penetrant-tested through
      a weld repair the same way.
    - titanium: VT shows a required Weld Color when either Material Type is titanium.
-   Admin > Material Classification manages this table; same load/save/add/remove shape as
+   Admin > Material Classification manages this table; same load/save shape as
    data/mcl-traceability.ts. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
@@ -54,20 +54,6 @@ export const materialClassification = signal<MaterialClassificationEntry[]>(load
 export function setMaterialClassification(entries: MaterialClassificationEntry[]) {
   save(entries);
   materialClassification.set(entries);
-}
-
-export function addMaterialCode(code: string) {
-  const current = materialClassification();
-  if (current.some(e => e.code === code)) return;
-  const updated = [...current, { code, nonFerrousOrAustenitic: false, titanium: false }];
-  save(updated);
-  materialClassification.set(updated);
-}
-
-export function removeMaterialCode(code: string) {
-  const updated = materialClassification().filter(e => e.code !== code);
-  save(updated);
-  materialClassification.set(updated);
 }
 
 export function isNonFerrousOrAustenitic(code: string): boolean {

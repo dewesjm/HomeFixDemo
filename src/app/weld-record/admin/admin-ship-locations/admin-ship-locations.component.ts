@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideUpload } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { ShipLocationEntry, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS, JOBS } from '../../../data/jobs';
 import { isShipboardLocation } from '../../../data/shops';
@@ -31,6 +32,7 @@ const keyOf = (e: ShipLocationEntry) => [e.hull, e.deck, e.frame, e.pscl, e.usag
 export class AdminShipLocationsComponent {
   private messages = inject(ToastService);
   private store = inject(WorkflowStore);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   hulls = HULLS;
@@ -72,9 +74,11 @@ export class AdminShipLocationsComponent {
       this.messages.add({ severity: 'error', summary: 'In use', detail: `Used by ${n} joint${n === 1 ? '' : 's'}, so it can't be deleted.`, life: 4000 });
       return;
     }
-    this.rows.update(r => r.filter(x => x.uid !== row.uid));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    this.confirm.confirmDelete(`Hull ${row.hull}, Deck ${row.deck}, Frame ${row.frame}`, () => {
+      this.rows.update(r => r.filter(x => x.uid !== row.uid));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    });
   }
 
   startEdit(row: LocRow) {

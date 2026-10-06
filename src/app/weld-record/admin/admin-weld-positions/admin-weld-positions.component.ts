@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
 import { getWeldPositions, setWeldPositions } from '../../../data/weld-positions';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -28,6 +29,7 @@ interface WeldPositionRow {
 })
 export class AdminWeldPositionsComponent {
   private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
   private seq = 0;
 
   rows = signal<WeldPositionRow[]>(getWeldPositions().map((pos, i) => ({
@@ -52,9 +54,11 @@ export class AdminWeldPositionsComponent {
   }
 
   deleteRow(row: WeldPositionRow) {
-    this.rows.update(r => r.filter(x => x.uid !== row.uid));
-    this.persist();
-    this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    this.confirm.confirmDelete(row.code, () => {
+      this.rows.update(r => r.filter(x => x.uid !== row.uid));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
+    });
   }
 
   startEdit(row: WeldPositionRow) {
