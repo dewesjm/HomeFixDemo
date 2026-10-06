@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Fit-Up Insp: the Drawing Rev row under Verify fitting values is now labelled Drawing Rev (Execution), the Fabrication field it checks.',
       'Admin > Routing is renamed Routing Settings.',
       'Admin > Set Routing is renamed Routing Override.',
+      'New Admin > Defect Codes page: Type, Defect Code and Code Description. The Defect Code droplist on an RT step (shown when the result is UNSAT) lists the RT codes from it, as code and description, for example "PO - Porosity". Only RT steps show Defect Code; the Type column is there so other inspection types can have codes later.',
     ],
   },
   {

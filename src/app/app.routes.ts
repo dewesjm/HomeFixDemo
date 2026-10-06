@@ -9,6 +9,7 @@ import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-r
 import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
 import { AdminSetRoutingComponent } from './weld-record/admin/admin-set-routing/admin-set-routing.component';
 import { AdminNdtComponent } from './weld-record/admin/admin-ndt/admin-ndt.component';
+import { AdminDefectCodesComponent } from './weld-record/admin/admin-defect-codes/admin-defect-codes.component';
 import { AdminInspectionProceduresComponent } from './weld-record/admin/admin-inspection-procedures/admin-inspection-procedures.component';
 import { AdminLocationsComponent } from './weld-record/admin/admin-locations/admin-locations.component';
 import { AdminShipLocationsComponent } from './weld-record/admin/admin-ship-locations/admin-ship-locations.component';
@@ -54,6 +55,7 @@ export const routes: Routes = [
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Routing Override' },
   { path: 'admin/ndt', component: AdminNdtComponent, title: 'EWR - Penetrant' },
   { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures' },
+  { path: 'admin/defect-codes', component: AdminDefectCodesComponent, title: 'EWR - Defect Codes' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations' },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },

@@ -2,6 +2,7 @@
    joint gets from its Joint Details */
 import { Job } from '../jobs';
 import { inspectionProcedureOptions } from '../inspection-procedures';
+import { defectCodeOptions } from '../defect-codes';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../penetrants';
 import { StageField, StageOption, StageTemplate } from './types';
 import { isExcavationNdtStageId } from './step-ids';
@@ -43,11 +44,10 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
       { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', required: true, showIf: { key: 'inspectionType', equals: 'rt' },
         options: RT_DEGREE_OPTIONS },
       { key: 'rtFileNumber', label: 'RT File Number', type: 'text', showIf: { key: 'inspectionType', equals: 'rt' } },
+      /* options narrow to the step's Type from Admin > Defect Codes at render time (stageFieldOptions) */
       { key: 'defectCode', label: 'Defect Code', type: 'select', required: true,
         showIf: { key: 'inspectionType', equals: 'rt', and: [{ key: 'result', equals: 'unsat' }] },
-        options: [{ label: 'Porosity', value: 'porosity' }, { label: 'Slag Inclusion', value: 'slag-inclusion' },
-          { label: 'Lack of Fusion', value: 'lack-of-fusion' }, { label: 'Incomplete Penetration', value: 'incomplete-penetration' },
-          { label: 'Crack', value: 'crack' }, { label: 'Undercut', value: 'undercut' }] },
+        options: defectCodeOptions() },
     ],
   },
   mtpt: {

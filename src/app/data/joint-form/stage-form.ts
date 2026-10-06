@@ -6,6 +6,7 @@ import {
 } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { inspectionProcedureOptions } from '../inspection-procedures';
+import { defectCodeOptions } from '../defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment';
 import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
@@ -95,6 +96,12 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
     /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
     const cur = stage.inputs['procedureUsed'] ?? '';
     const options = inspectionProcedureOptions(stage.inspectionType);
+    return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
+  }
+  if (f.key === 'defectCode') {
+    /* Admin > Defect Codes for the step's Type; a code no longer listed stays selectable so it doesn't show blank */
+    const cur = stage.inputs['defectCode'] ?? '';
+    const options = defectCodeOptions(stage.inspectionType);
     return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
   }
   if (f.key === 'degreeRt') {

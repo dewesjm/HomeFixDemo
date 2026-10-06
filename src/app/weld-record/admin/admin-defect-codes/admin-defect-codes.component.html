@@ -1,0 +1,73 @@
+<h2 class="section-title">Defect Codes</h2>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search defect codes…" addLabel="Add defect code"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th appSortHeader [table]="table" field="type" label="Type" class="min-w-44"></th>
+      <th appSortHeader [table]="table" field="code" label="Defect Code" class="min-w-32"></th>
+      <th appSortHeader [table]="table" field="description" label="Code Description" class="min-w-48"></th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of table.sorted(); track row.uid) {
+      <tr>
+        <td>
+          @if (editingId() === row.uid) {
+            <select class="select select-sm select-bordered w-full min-w-0"
+                    [ngModel]="row.type" (ngModelChange)="updateField(row, 'type', $event)">
+              <option value="" disabled>Select a type</option>
+              @for (t of types; track t) { <option [value]="t">{{ t }}</option> }
+            </select>
+          } @else {
+            {{ row.type || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.code" (ngModelChange)="updateField(row, 'code', $event)"
+                   placeholder="e.g. PO" />
+          } @else {
+            {{ row.code || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.description" (ngModelChange)="updateField(row, 'description', $event)"
+                   placeholder="e.g. Porosity" />
+          } @else {
+            {{ row.description || '-' }}
+          }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() === row.uid) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No defect codes match your search.' : 'No defect codes yet.' }}</td></tr>
+    }
+  </tbody>
+</table>
+</div>
