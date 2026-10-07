@@ -20,6 +20,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin: every delete asks "Delete <name>?" before anything is removed.',
       'Admin menu: pages are listed alphabetically, each with its own icon.',
       'Admin > Penetrant\'s address is now /admin/penetrant (was /admin/ndt).',
+      'Admin > Penetrant is renamed Penetrant Types.',
       'Admin > Routing Options is renamed Signoff Type Availability.',
       'Signoff Type Availability: each Type option has a Repeatable checkbox. Signing with a repeatable Type records the signoff and History but leaves the routing where it is, and the step comes up blank for the next signoff.',
       'Routing bar: a repair shows as one Repair dot after the NDT step that failed, with Excavation NDT after a Weld Repair, only until it is resolved, then both go away. There is no more Repair 2, Repair 3 on the bar (History still numbers them).',

@@ -53,7 +53,7 @@ export const routes: Routes = [
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/set-routing', component: AdminSetRoutingComponent, title: 'EWR - Routing Override' },
-  { path: 'admin/penetrant', component: AdminPenetrantComponent, title: 'EWR - Penetrant' },
+  { path: 'admin/penetrant', component: AdminPenetrantComponent, title: 'EWR - Penetrant Types' },
   { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures' },
   { path: 'admin/defect-codes', component: AdminDefectCodesComponent, title: 'EWR - Defect Codes' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },
