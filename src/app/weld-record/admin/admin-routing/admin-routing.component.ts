@@ -484,8 +484,8 @@ export class AdminRoutingComponent {
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
-      { header: 'Role', value: (r: RoutingRow) => r.role },
-      { header: 'Role when N Ind 1 or 2', value: (r: RoutingRow) => r.nqcRole || 'Same as Role' }
+      { header: 'Persona', value: (r: RoutingRow) => r.role },
+      { header: 'Persona when N Ind 1 or 2', value: (r: RoutingRow) => r.nqcRole || 'Same as Persona' }
     ], this.visibleRows());
   }
 }

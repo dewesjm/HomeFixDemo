@@ -2,7 +2,7 @@ import { buildStages, updateStageTemplate } from './workflow';
 import { JOBS, Job } from './jobs';
 import { STORAGE } from './storage-keys';
 
-describe('Role when N Ind 1 or 2', () => {
+describe('Persona when N Ind 1 or 2', () => {
   const job = (nInd: string): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd });
   const roleOf = (j: Job, id: string) => buildStages(j).find(s => s.id === id)?.role;
 

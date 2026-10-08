@@ -14,7 +14,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'The VT/5X NDT steps are now labeled 5X/VT (Root, Layer and Final NDT).',
       'Fit-Up Insp goes to the NQC Inspector when the Nuclear Indicator is 1 or 2, like the NDT steps.',
-      'Admin > Routing Settings has a "Role when N Ind 1 or 2" column: who signs the step instead of Role on those joints. Blank means Role. It starts as NQC Inspector on Fit-Up Insp and every NDT step.',
+      'Admin > Routing Settings has a "Persona when N Ind 1 or 2" column: who signs the step instead of Persona on those joints. Blank means Persona. It starts as NQC Inspector on Fit-Up Insp and every NDT step.',
+      'Admin > Routing Settings: the Role column is now called Persona.',
     ],
   },
   {

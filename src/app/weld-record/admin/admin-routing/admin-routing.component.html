@@ -13,8 +13,8 @@
       <th class="min-w-64">Included when</th>
       <th class="min-w-48">Reject routes to</th>
       <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current step">Fabrication editable</th>
-      <th appSortHeader [table]="table" field="role" label="Role" class="whitespace-nowrap"></th>
-      <th class="whitespace-nowrap" appTooltip="Signs this step instead of Role when the joint's Nuclear Indicator is 1 or 2">Role when N Ind 1 or 2</th>
+      <th appSortHeader [table]="table" field="role" label="Persona" class="whitespace-nowrap"></th>
+      <th class="whitespace-nowrap" appTooltip="Signs this step instead of Persona when the joint's Nuclear Indicator is 1 or 2">Persona when N Ind 1 or 2</th>
       <th class="w-px"></th>
     </tr>
   </thead>
@@ -110,15 +110,15 @@
         </td>
         <td>
           @if (editingId() === row.id) {
-            <select class="select select-sm select-bordered w-full min-w-0" aria-label="Role when N Ind 1 or 2"
+            <select class="select select-sm select-bordered w-full min-w-0" aria-label="Persona when N Ind 1 or 2"
                     [ngModel]="row.nqcRole" (ngModelChange)="updateField(row, 'nqcRole', $event)">
-              <option value="">Same as Role</option>
+              <option value="">Same as Persona</option>
               @for (r of roleOptions(); track r) {
                 <option [value]="r">{{ r }}</option>
               }
             </select>
           } @else {
-            {{ row.nqcRole || 'Same as Role' }}
+            {{ row.nqcRole || 'Same as Persona' }}
           }
         </td>
         <td>
