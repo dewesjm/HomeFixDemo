@@ -26,7 +26,7 @@ export function routePreviewLabel(job: Job, stages: WorkflowStage[], stage: Work
 function routeLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, activeId: string | null, preview: SignoffPreview): string {
   if (isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)) {
     const templates = getTemplates()[job.trade] ?? [];
-    return repairRouteLabel(job, stages, stage, id => templates.find(t => t.id === id)?.label ?? id);
+    return repairRouteLabel(job, stages, stage, id => { const t = templates.find(t => t.id === id); return t?.displayName || t?.label || id; });
   }
   if (stage.signed || stage.id === 'sold' || stage.id !== activeId || isEngineeringHoldId(stage.id)) return '';
   const from = stages.findIndex(s => s.id === stage.id);

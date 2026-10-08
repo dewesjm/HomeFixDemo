@@ -75,7 +75,7 @@ describe('deviations', () => {
   });
 
   it('checks condition quals on a welding step with no WPS picked and on an inspection step', () => {
-    const job = addTestJob();
+    const job = { ...addTestJob(), nInd: '3' };
     const tack = buildStages(job).find(s => s.id === 'tack')!;
     const req = [{ op: 'all' as const, items: ['CNTRLMTL1'] }];
     expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, req))

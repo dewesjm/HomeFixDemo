@@ -6,11 +6,11 @@ import { WorkflowStore } from './workflow-store.service';
 import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, getSignoffTypeRows, routingBarSteps, seededWorkflow, setSignoffTypeRows, updateStageTemplate } from '../../data/workflow';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
-   pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
+   N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
    root-weld, root-layer, final-weld, review-o04, sold — plus a VT step per phase (NDT Root/Each/Final blank counts as VT only) unless noted. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
   const job = addTestJob();
-  Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '', ...overrides });
+  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: 'C-18', sfff: '', dssAaa: '', ss: '', ...overrides });
   return job;
 }
 
@@ -118,23 +118,24 @@ describe('SignoffService', () => {
     expect(store.workflowFor(job)().stages.find(s => s.id === 'fitup-release')?.required).toBeTrue();
   });
 
-  it('Fit-Up Insp UNSAT routes back to Fit: Fit onward comes up blank, records and Pre-Fit kept, fit-up data blanked', () => {
-    const job = weldingJob({ nInd: '1' });   // pulls in Pre-Fit
+  it('NQC Fit-Up Insp UNSAT routes back to Fit: Fit onward comes up blank, records and Pre-Fit kept, fit-up data blanked', () => {
+    const job = weldingJob({ nInd: '1' });   // N Ind 1: the NQC Fit-Up Insp row, shown as Fit-Up Insp
+    const insp = 'nqc-fitup-insp';
     store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
     for (const id of ['pre-fit', 'fit', 'tack']) service.signStage(job, id);
-    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'fitup-insp' ? { ...s, result: 'unsat' } : s) }));
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === insp ? { ...s, result: 'unsat' } : s) }));
 
-    service.signStage(job, 'fitup-insp');
+    service.signStage(job, insp);
 
     const wf = store.workflowFor(job)();
     const stage = (id: string) => wf.stages.find(s => s.id === id)!;
     expect(stage('pre-fit').signed).toBeTrue();
-    for (const id of ['fit', 'tack', 'fitup-insp']) {
+    for (const id of ['fit', 'tack', insp]) {
       expect(stage(id).signed).withContext(id).toBeFalse();
       expect(signoffEntries(wf, id).at(-1)?.action).withContext(id).toMatch(/Signed off$/);
     }
-    expect(stage('fitup-insp').result).toBeNull();
-    expect(stage('fitup-insp').inputs['releaseToWelding']).toBe('yes');
+    expect(stage(insp).result).toBeNull();
+    expect(stage(insp).inputs['releaseToWelding']).toBe('yes');
     expect(wf.fabricationData['specificLocation']).toBe('');
     const entry = wf.history.find(h => h.section === 'Routing')!;
     expect(entry.action).toBe('Fit-Up Insp - Routed back to Fit');

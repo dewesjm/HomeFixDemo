@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -106,10 +106,11 @@ export class SignoffService {
        there on comes up blank (routeBack). One History entry names where it went. */
     let fabricationData = wf.fabricationData;
     let routedBack: { label: string; fabBefore?: SignoffInput[] } | null = null;
+    /* a built-in target means the joint's own step for it (its NQC or regular row) */
     const routeBackTo = (id: string) => {
-      const target = stages.find(s => s.id === id);
+      const target = stepOnJoint(stages, id);
       if (!target) return;
-      const r = routeBack({ ...wf, stages, fabricationData }, job, id);
+      const r = routeBack({ ...wf, stages, fabricationData }, job, target.id);
       stages = r.wf.stages;
       fabricationData = r.wf.fabricationData;
       routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined };
@@ -133,7 +134,7 @@ export class SignoffService {
       const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
       const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
       const ruleUsable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (isNdtStage && rule.to === 'repair')
-        || (() => { const i = stages.findIndex(s => s.id === rule.to); return i >= 0 && i < currentIdx; })());
+        || (() => { const i = stages.findIndex(s => s.id === stepOnJoint(stages, rule.to)?.id); return i >= 0 && i < currentIdx; })());
       const rejectTo = ruleUsable ? rule!.to : st.rejectToStage;
       if (ruleUsable) reasons.push(`a reject rule matched (${describeConditions([rule!.when], stageConditionFields(st))})`);
       /* NDT UNSAT adds a new Repair right after this stage, however many repairs the joint has had,
@@ -150,7 +151,7 @@ export class SignoffService {
            Excavation NDT's routing back to "the original joint inspection" after a Weld Repair,
            both need this (see further down). Not real StageFields, just internal bookkeeping on
            stage.inputs. */
-        const originPhase = stageId.split('-ndt-')[0];
+        const originPhase = baseStepId(stageId).split('-ndt-')[0];
         const repairStage = stageFromTemplate(nextRepairStage(stages), {
           originPhase,
           originStageId: stageId,
@@ -164,7 +165,7 @@ export class SignoffService {
         repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');
       } else {
         /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair, or a reject rule's) */
-        const targetIdx = stages.findIndex(s => s.id === rejectTo);
+        const targetIdx = stages.findIndex(s => s.id === stepOnJoint(stages, rejectTo)?.id);
         if (targetIdx >= 0 && targetIdx < currentIdx) {
           routeBackTo(rejectTo);
           reasons.push('rejected (UNSAT)');
@@ -226,7 +227,7 @@ export class SignoffService {
       const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
       if (resolvedType !== originInspectionType && phase) {
         /* the 5X/VT stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
-        const vtId = `${phase}-ndt-vt5x`;
+        const vtId = stepOnJoint(stages, `${phase}-ndt-vt5x`)?.id ?? '';
         routeBackTo(vtId);
         stages = stages.map(s => s.id === vtId ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
       } else if (originStageId) {

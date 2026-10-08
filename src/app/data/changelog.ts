@@ -13,8 +13,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-10-08',
     changed: [
       'The VT/5X NDT steps are now labeled 5X/VT (Root, Layer and Final NDT).',
-      'Fit-Up Insp goes to the NQC Inspector when the Nuclear Indicator is 1 or 2, like the NDT steps.',
-      'Admin > Routing Settings has a "Persona when N Ind 1 or 2" column: who signs the step instead of Persona on those joints. Blank means Persona. It starts as NQC Inspector on Fit-Up Insp and every NDT step.',
+      'Admin > Routing Settings: Fit-Up Insp and every NDT step have a second, NQC row (for example NQC Fit-Up Insp, NQC Root NDT 5X/VT), included when N Ind. is 1 or 2 and signed by the NQC Inspector. The regular row is included when N Ind. is not 1 or 2. So Fit-Up Insp now goes to the NQC Inspector on those joints, like the NDT steps.',
+      'Admin > Routing Settings has a Display Name column: what the joint, its routing bar and lists show. Routing is the name the rules use. The NQC rows show the same name as the regular ones (Fit-Up Insp, Root NDT 5X/VT).',
       'Admin > Routing Settings: the Role column is now called Persona.',
     ],
   },

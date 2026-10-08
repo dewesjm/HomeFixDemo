@@ -28,7 +28,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
   activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
-  ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show,
+  ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
 } from '../../data/workflow';
 import { loadFeatureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -552,9 +552,9 @@ export class JointPageComponent implements OnDestroy {
   private signRelated5xIfNeeded(stage: WorkflowStage) {
     if (!this.job || !this.wf) return;
     if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
-    const ndtStage = this.wf().stages.find(s => s.id === 'root-ndt-vt5x');
+    const ndtStage = stepOnJoint(this.wf().stages, 'root-ndt-vt5x');
     if (!ndtStage || ndtStage.signed) return;
-    this.sign('root-ndt-vt5x', this.signoffSnapshot(ndtStage));
+    this.sign(ndtStage.id, this.signoffSnapshot(ndtStage));
   }
 
   /* ── References and navigation ── */

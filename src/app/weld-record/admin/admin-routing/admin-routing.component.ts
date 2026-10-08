@@ -32,12 +32,12 @@ import { RoutingFieldConfigDialogComponent } from './routing-field-config-dialog
 
 interface RoutingRow {
   id: string;
-  routing: string;
+  routing: string;        /* the name rules use (Included when, reject rules) */
+  displayName: string;    /* shown on the joint and the routing bar; blank = routing */
   trade: Job['trade'];
   sequence: number;
   rejectToStage: string;
   role: Role;
-  nqcRole: string;        /* signs instead of role when Nuclear Indicator is 1 or 2; blank = role */
   includedWhen: string;   /* describeConditions() of the step's rules */
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
@@ -73,7 +73,7 @@ export class AdminRoutingComponent {
   stageOptions = signal(allStageIds());
 
   rows = signal<RoutingRow[]>(this.buildInitialRows());
-  table = new TableState<RoutingRow>(['sequence', 'routing', 'includedWhen']);
+  table = new TableState<RoutingRow>(['sequence', 'routing', 'displayName', 'includedWhen']);
   visibleRows = computed(() => this.table.sorted());
 
   private messages = inject(ToastService);
@@ -109,11 +109,11 @@ export class AdminRoutingComponent {
         rows.push({
           id: `${trade}:${t.id}`,
           routing: t.label,
+          displayName: t.displayName ?? '',
           trade: trade as Job['trade'],
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) || 'View',
-          nqcRole: t.nqcRole ?? '',
           includedWhen: describeConditions(t.includeWhen),
           rejectRules: [],
           fabricationEditable: !!t.fabricationEditable,
@@ -130,7 +130,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', nqcRole: '', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -168,7 +168,7 @@ export class AdminRoutingComponent {
     if (isNew) {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
-        id: newId, label: row.routing, required: true, role: row.role, nqcRole: row.nqcRole,
+        id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
@@ -179,9 +179,9 @@ export class AdminRoutingComponent {
     } else {
       updateStageTemplate(row.trade, stageId, {
         label: row.routing,
+        displayName: row.displayName.trim() || undefined,
         rejectToStage: row.rejectToStage,
         role: row.role,
-        nqcRole: row.nqcRole,
         fabricationEditable: row.fabricationEditable,
       });
     }
@@ -201,7 +201,7 @@ export class AdminRoutingComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: RoutingRow, field: 'routing' | 'role' | 'nqcRole', value: string) {
+  updateField(row: RoutingRow, field: 'routing' | 'displayName' | 'role', value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
   }
 
@@ -480,12 +480,12 @@ export class AdminRoutingComponent {
     downloadCsv('routing', [
       { header: 'Order', value: (r: RoutingRow) => r.sequence },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
+      { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
-      { header: 'Persona', value: (r: RoutingRow) => r.role },
-      { header: 'Persona when N Ind 1 or 2', value: (r: RoutingRow) => r.nqcRole || 'Same as Persona' }
+      { header: 'Persona', value: (r: RoutingRow) => r.role }
     ], this.visibleRows());
   }
 }

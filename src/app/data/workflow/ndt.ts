@@ -5,7 +5,7 @@ import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../penetrants';
 import { StageField, StageOption, StageTemplate } from './types';
-import { isExcavationNdtStageId } from './step-ids';
+import { baseStepId, isExcavationNdtStageId } from './step-ids';
 
 export type NdtPhase = 'root' | 'layer' | 'final';
 export type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
@@ -116,7 +116,7 @@ export function ndtKindOptions(kind: NdtKind): StageOption[] {
    Excavation of a Weld Repair); '' for any other step */
 export function ndtLayerType(stageId: string): string {
   if (isExcavationNdtStageId(stageId)) return 'Excavation';
-  const phase = /^(root|layer|final)-ndt-/.exec(stageId)?.[1];
+  const phase = /^(root|layer|final)-ndt-/.exec(baseStepId(stageId))?.[1];
   return phase ? `${phase[0].toUpperCase()}${phase.slice(1)}` : '';
 }
 
@@ -127,7 +127,6 @@ export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     label: `${phase[0].toUpperCase()}${phase.slice(1)} NDT ${k.label}`,
     required: true,
     role: 'Inspector',
-    nqcRole: 'NQC Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: 'repair',

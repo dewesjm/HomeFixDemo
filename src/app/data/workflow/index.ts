@@ -7,7 +7,7 @@
      signoff-types      Admin > Signoff Type Availability: each step's Type options (seeded)
      stage-templates    templates merged with Admin > Routing Settings changes, and its edits
      build-stages       a joint's steps from the templates
-     step-ids           Repair / Excavation NDT / Engineering Hold ids and rounds
+     step-ids           Repair / Excavation NDT / Engineering Hold ids and rounds, the two Fit-Up Insp ids
      added-steps        building those added steps
      stage-rules        per-step rules (decision, references, type lock, Correct locks)
      stage-display      recorded values as shown in History

@@ -10,6 +10,7 @@ import { hasDecision } from './stage-rules';
 import { fieldsShown, labelFor, snapshotInputs } from './stage-display';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from './added-steps';
 import { setRoutingFrom } from './current-routing';
+import { baseStepId, isFitupInspId } from './step-ids';
 import { newWorkflow } from './build-stages';
 import { seeded, seededMic } from './seed-fabrication';
 
@@ -86,13 +87,13 @@ export function seededWorkflow(job: Job): JobWorkflow {
     && idHash % SEEDED_HOLD_EVERY === 5 ? lastSigned : -1;
   /* and a few after a PT failure on a GTAW weld (the built-in reject rule): that phase's weld step
      is GTAW, its NDT MT/PT was signed PT and UNSAT */
-  const ptPhase = /^(root|layer|final)-ndt-mtpt$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
+  const ptPhase = /^(root|layer|final)-ndt-mtpt$/.exec(baseStepId(wf.stages[lastSigned]?.id ?? ''))?.[1];
   const ptAllowed = !!wf.stages[lastSigned]?.typeOptions?.some(o => o.value === 'pt');
   const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
   const ptWeldId = ptPhase ? PHASE_WELD_STEP[ptPhase] : '';
   /* and a handful whose last NDT (5X/VT or RT/UT) was UNSAT, so they wait on Repair; a couple of those
      had a Weld Repair signed and wait on Excavation NDT. MT/PT is left out so the PT reject rule can't apply. */
-  const repairPhase = /^(root|layer|final)-ndt-(vt5x|utrt)$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
+  const repairPhase = /^(root|layer|final)-ndt-(vt5x|utrt)$/.exec(baseStepId(wf.stages[lastSigned]?.id ?? ''))?.[1];
   const repairAt = !awaitingRelease && holdAt < 0 && ptHoldAt < 0 && repairPhase
     && idHash % SEEDED_REPAIR_EVERY === SEEDED_REPAIR_AT ? lastSigned : -1;
   const repairSigned = repairAt >= 0 && job.id.charCodeAt(4) % 3 === 0;
@@ -130,7 +131,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     t += (20 + Math.floor(rand() * 180)) * MIN;
     const inputs = { ...s.inputs };
     for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
-    if (awaitingRelease && s.id === 'fitup-insp') inputs['releaseToWelding'] = '';
+    if (awaitingRelease && isFitupInspId(s.id)) inputs['releaseToWelding'] = '';
     if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
     if (i === holdAt) {
       const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);
@@ -173,7 +174,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
 function seededRepair(wf: JobWorkflow, job: Job, idx: number, signed: boolean, sign: SignFn, nextSigner: () => string) {
   const ndt = wf.stages[idx];
   let repair = stageFromTemplate(nextRepairStage(wf.stages), {
-    originPhase: ndt.id.split('-ndt-')[0], originStageId: ndt.id, originInspectionType: ndt.inspectionType,
+    originPhase: baseStepId(ndt.id).split('-ndt-')[0], originStageId: ndt.id, originInspectionType: ndt.inspectionType,
   });
   wf.repairNumber = '01';
   if (signed) {

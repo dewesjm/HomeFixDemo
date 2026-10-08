@@ -178,9 +178,6 @@ export interface StageTemplate {
   rejectToStage?: string;
   /* role that this stage routes to */
   role?: string;
-  /* Admin > Routing Settings "Persona when N Ind 1 or 2": signs instead of role when the joint's Nuclear
-     Indicator is 1 or 2; blank = role */
-  nqcRole?: string;
   /* admin-managed signoff type options (Admin > Signoff Type Availability) (e.g. Fit/Weld Build-Up, MT/PT) */
   typeOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */

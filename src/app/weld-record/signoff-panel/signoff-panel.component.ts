@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
-import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, hasDecision, isInspectionStage, isEngineeringHoldId, ndtLayerType } from '../../data/workflow';
+import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, hasDecision, isInspectionStage, isEngineeringHoldId, isFitupInspId, ndtLayerType } from '../../data/workflow';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { qualCheck, QualCheckResult } from '../../data/qualifications';
@@ -56,6 +56,11 @@ export class SignoffPanelComponent {
 
   layerType(st: WorkflowStage): string {
     return ndtLayerType(st.id);
+  }
+
+  /* Fit-Up Insp or NQC Fit-Up Insp: the verification grid and Release to welding */
+  isFitupInsp(st: WorkflowStage): boolean {
+    return isFitupInspId(st.id);
   }
 
   /* Engineering Hold has Engineering's release form (comments + set routing) instead of Signoff */

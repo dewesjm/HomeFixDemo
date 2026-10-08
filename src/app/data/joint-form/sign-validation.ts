@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees } from '../workflow';
+import { StageField, WorkflowStage, isFitupInspId, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -38,7 +38,7 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
   }
-  if (stage.id === 'fitup-insp') {
+  if (isFitupInspId(stage.id)) {
     if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
     if (Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   }
@@ -67,7 +67,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     if (err && !errors[key(pair.max)]) errors[key(pair.max)] = err;
   }
   /* Fit-Up Insp: each unchecked verification row gets its own error (the blockers give one summary reason) */
-  if (stage.id === 'fitup-insp') {
+  if (isFitupInspId(stage.id)) {
     for (const f of ctx.visibleFields) {
       if (stage.inputs?.[f.key] !== 'yes') errors[key(f.key)] = `${f.label} must be verified`;
     }

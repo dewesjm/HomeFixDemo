@@ -1,6 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
-import { isRepairStageId } from './step-ids';
+import { baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
@@ -11,7 +11,7 @@ export function hasDecision(stage: { rejectToStage?: string }): boolean {
 /* inspection steps (Pre-Fit, Fit-Up Insp, every NDT incl. Excavation NDT) run the Qualification
    Check on the joint's condition quals, like welding steps do with their Qualification Check field */
 export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
-  return stage.id === 'pre-fit' || stage.id === 'fitup-insp' || /-ndt(-|$)/.test(stage.id);
+  return stage.id === 'pre-fit' || isFitupInspId(stage.id) || /-ndt(-|$)/.test(stage.id);
 }
 
 /* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
@@ -30,7 +30,7 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'typeOpt
 
 /* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
    RT/UT (Root, Layer and Final NDT) and Repair only */
-export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(id) || isRepairStageId(id);
+export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(baseStepId(id)) || isRepairStageId(id);
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
@@ -46,5 +46,5 @@ export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
 };
 
 export function isRoutingLockedField(stageId: string, key: string): boolean {
-  return (ROUTING_LOCKED_FIELD_KEYS[isRepairStageId(stageId) ? 'repair' : stageId] ?? []).includes(key);
+  return (ROUTING_LOCKED_FIELD_KEYS[isRepairStageId(stageId) ? 'repair' : baseStepId(stageId)] ?? []).includes(key);
 }

@@ -1,7 +1,7 @@
 /* Steps added to a joint while it's worked, not part of the built-in routing: Repair (after an NDT
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in step-ids.ts. */
-import { Job, isNuclear } from '../jobs';
+import { Job } from '../jobs';
 import { RejectRule, describeClauses, stageConditionFields } from '../step-conditions';
 import { StageTemplate, WorkflowStage } from './types';
 import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
@@ -70,10 +70,10 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
 }
 
 /* Excavation NDT for `repairId`, its Type droplist offering only the one resolved method (still
-   blank until picked). It isn't a Routing Settings row, so on N Ind 1 or 2 joints it is signed by
-   NQC Inspector, like the NDT steps are seeded */
+   blank until picked); the Inspector role gets the same NQC Inspector remap buildStages() gives every
+   other NDT step, since this one is built at runtime */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
-  const role = isNuclear(job) ? 'NQC Inspector' : 'Inspector';
+  const role = (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : 'Inspector';
   return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId)), role };
 }
 

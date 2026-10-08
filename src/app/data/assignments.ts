@@ -83,7 +83,7 @@ function generateAssignments(): Assignment[] {
      lands in the 5-10 range. */
   const ROLE_ROUTINGS: Record<string, string[]> = {
     'Welding': ['Tack', 'Root', 'Layer', 'Final Weld', 'Deferred Tack'],
-    'NQC Inspector': ['Pre-Fit', 'Root NDT RT/UT', 'Layer NDT 5X/VT', 'Final NDT MT/PT'],
+    'NQC Inspector': ['Pre-Fit', 'NQC Fit-Up Insp', 'Root NDT RT/UT', 'Layer NDT 5X/VT', 'Final NDT MT/PT'],
     'Fitting': ['Fit'],
     'Inspector': ['Fit-Up Insp'],
     'Foreman': ['Fit-Up Insp', 'Fit-Up Release'],

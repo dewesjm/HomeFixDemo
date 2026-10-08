@@ -119,10 +119,6 @@ const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-00
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600°C/2hr', 'Required - 620°C/1hr', 'Pending review'];
 export const N_IND_POOL = ['1', '2', '3'];
-/* Nuclear Indicator 1 or 2: steps with a "Persona when N Ind 1 or 2" (Admin > Routing Settings) go to that role */
-export function isNuclear(job: Pick<Job, 'nInd'>): boolean {
-  return job.nInd === '1' || job.nInd === '2';
-}
 /* what each Nuclear Indicator code means; the raw digit alone isn't self-explanatory */
 export const N_IND_MEANINGS: Record<string, string> = {
   '1': 'N 250-1500-1',

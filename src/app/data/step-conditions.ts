@@ -10,6 +10,7 @@ import { Job, MCL_POOL, N_IND_POOL, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THI
 import { getJointDesign } from './joint-designs';
 import { jointDetailsUt, jointDetailsVt } from './joint-form/joint-details';
 import { requiresTraceability } from './mcl-traceability';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from './workflow/step-ids';
 
 export interface ConditionClause {
   field: string;          /* STEP_CONDITION_FIELDS key */
@@ -51,8 +52,8 @@ const upper = (v: string) => (v || '').trim().toUpperCase();
 const RT_DEGREES = ['NA', '10', '100', '360', '60', '75'];
 
 /* Yes/No from a signed step's checkbox, blank until that step is signed */
-const signedAnswer = (stageId: string, key: string, signoff: boolean) => (_: Job, stages: StageAnswers[]) => {
-  const s = stages.find(st => st.id === stageId);
+const signedAnswer = (stageIds: string[], key: string, signoff: boolean) => (_: Job, stages: StageAnswers[]) => {
+  const s = stages.find(st => stageIds.includes(st.id));
   if (!s?.signed) return '';
   return yesNo((signoff ? s.signoffInputs : s.inputs)[key] === 'yes');
 };
@@ -100,9 +101,9 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
   { key: 'rtFinal', label: 'RT Final', values: RT_DEGREES, get: j => j.rtFinal },
   ...JOINT_DETAILS_TEXT,
   { key: 'fitDeferTack', label: 'Fit: Defer Tack (once Fit is signed)', values: ['Yes', 'No'], stepAnswer: true,
-    get: signedAnswer('fit', 'deferTack', true) },
+    get: signedAnswer(['fit'], 'deferTack', true) },
   { key: 'inspReleaseToWelding', label: 'Fit-Up Insp: Release to welding (once Fit-Up Insp is signed)', values: ['Yes', 'No'], stepAnswer: true,
-    get: signedAnswer('fitup-insp', 'releaseToWelding', false) },
+    get: signedAnswer(['fitup-insp', nqcStepId('fitup-insp')], 'releaseToWelding', false) },
 ];
 
 /* ── Step answers: every step's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
@@ -115,7 +116,7 @@ let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
 export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
 
 /* covered by the fixed fields above (the built-in rules use those keys) */
-const FIXED_STEP_ANSWERS = new Set(['fit.deferTack', 'fitup-insp.releaseToWelding']);
+const FIXED_STEP_ANSWERS = new Set(['fit.deferTack', 'fitup-insp.releaseToWelding', `${nqcStepId('fitup-insp')}.releaseToWelding`]);
 
 /* one step's answers as condition fields; blank until that step is signed */
 function answersOf(t: StepTemplateShape): StepConditionField[] {
@@ -187,8 +188,8 @@ const utrtRule = (ndtKey: string, rtKey?: string): ConditionRule[] => [
 ];
 const mtptRule = (ndtKey: string): ConditionRule[] => [[{ field: ndtKey, op: 'is', values: ['MT', 'PT', 'MT/PT'] }]];
 
-/* the rules the app was built with; Admin > Routing Settings can change any of them */
-export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
+/* the rules the app was built with, before the NQC split below */
+const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'pre-fit': [
     [{ field: 'nInd', op: 'is', values: ['1', '2'] }],
     [{ field: 'jdInsert', op: 'is', values: ['Yes'] }],
@@ -215,6 +216,23 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ]],
 };
 
+/* every rule of `rules` (or the one rule, when it has none) gets the N Ind clause added */
+const withNInd = (rules: ConditionRule[] | undefined, op: ConditionClause['op']): ConditionRule[] => {
+  const clause: ConditionClause = { field: 'nInd', op, values: ['1', '2'] };
+  return rules?.length ? rules.map(r => [...r, clause]) : [[clause]];
+};
+
+/* the rules the app was built with; Admin > Routing Settings can change any of them. An NQC row
+   (step-ids.ts) is included when N Ind is 1 or 2, its regular row when it isn't, each on top of the
+   step's own rules */
+export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
+  ...BUILT_IN_CONDITIONS,
+  ...Object.fromEntries(NQC_SPLIT_STEP_IDS.flatMap(id => [
+    [id, withNInd(BUILT_IN_CONDITIONS[id], 'isNot')],
+    [nqcStepId(id), withNInd(BUILT_IN_CONDITIONS[id], 'is')],
+  ])),
+};
+
 /* reject target that puts the joint on Engineering Hold instead (workflow/added-steps.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 
@@ -227,10 +245,15 @@ const gtawPtHold = (weldStepId: string): RejectRule[] => [{
   ],
   to: ENGINEERING_HOLD_TARGET,
 }];
-export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
+const BUILT_IN_REJECT_RULES: Record<string, RejectRule[]> = {
   'root-ndt-mtpt': gtawPtHold('root-weld'),
   'layer-ndt-mtpt': gtawPtHold('root-layer'),
   'final-ndt-mtpt': gtawPtHold('final-weld'),
+};
+/* an NQC row starts with its regular row's reject rules */
+export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
+  ...BUILT_IN_REJECT_RULES,
+  ...Object.fromEntries(Object.entries(BUILT_IN_REJECT_RULES).map(([id, rules]) => [nqcStepId(id), rules])),
 };
 
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */

@@ -2,7 +2,7 @@
 import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
-  allowableThicknessAmount, showIfMet, fieldAppliesToJob,
+  allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
 } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -34,8 +34,8 @@ export function typedRequirementError(stage: WorkflowStage, f: { key: string; la
 /* Root's RT requirement is job.rtRoot, Final Weld's is job.rtFinal; Layer's RT NDT has no
    matching requirement field on Job, so nothing is enforced there. */
 export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): string {
-  if (stage.id === 'root-ndt-utrt') return job?.rtRoot ?? '';
-  if (stage.id === 'final-ndt-utrt') return job?.rtFinal ?? '';
+  if (baseStepId(stage.id) === 'root-ndt-utrt') return job?.rtRoot ?? '';
+  if (baseStepId(stage.id) === 'final-ndt-utrt') return job?.rtFinal ?? '';
   return '';
 }
 
@@ -68,7 +68,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
     .filter(f => {
       /* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
       if (f.key === 'allowableThicknessExceeded'
-          && !ctx.stages.some(s => s.id === `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
+          && !stepOnJoint(ctx.stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
       if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
       /* MIC fields only visible when traceability is required */
       if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {

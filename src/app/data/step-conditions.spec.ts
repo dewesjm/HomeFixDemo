@@ -1,6 +1,7 @@
 import { buildStages, applySignedFlags, updateStageTemplate, jobNdtSteps, reorderStageTemplates, getTemplates, fabricationEditable, activeStageId } from './workflow';
 import { JOBS, Job } from './jobs';
 import { getJointDesign } from './joint-designs';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from './workflow/step-ids';
 import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswerFieldsBefore } from './step-conditions';
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
@@ -29,7 +30,10 @@ describe('step conditions', () => {
 
   it('built-in rules give every seeded joint the same steps as before', () => {
     for (const job of JOBS.filter(j => j.trade === 'Welding')) {
-      expect(buildStages(job).map(s => s.id)).withContext(job.id).toEqual(oldStepIds(job, ALL_IDS));
+      /* N Ind 1 or 2 joints get the NQC row of each split step instead */
+      const nuclear = job.nInd === '1' || job.nInd === '2';
+      const expected = oldStepIds(job, ALL_IDS).map(id => nuclear && NQC_SPLIT_STEP_IDS.includes(id) ? nqcStepId(id) : id);
+      expect(buildStages(job).map(s => s.id)).withContext(job.id).toEqual(expected);
     }
   });
 
@@ -43,7 +47,7 @@ describe('step conditions', () => {
   });
 
   it('Defer Tack and Release to welding switch steps on once signed', () => {
-    const job = JOBS.find(j => j.trade === 'Welding')!;
+    const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' };
     let stages = buildStages(job);
     const req = (id: string) => stages.find(s => s.id === id)!.required;
     expect([req('tack'), req('deferred-tack'), req('fitup-release')]).toEqual([true, false, false]);
@@ -56,7 +60,7 @@ describe('step conditions', () => {
   it('describes rules in plain words', () => {
     expect(describeConditions([])).toBe('Always');
     expect(describeConditions(DEFAULT_STEP_CONDITIONS['root-ndt-utrt']))
-      .toBe('NDT Root is UT; or RT Root is 10 or 100 or 360 or 60 or 75');
+      .toBe('NDT Root is UT and N Ind. is not 1 or 2; or RT Root is 10 or 100 or 360 or 60 or 75 and N Ind. is not 1 or 2');
   });
 });
 
@@ -67,7 +71,7 @@ describe('step order (Admin > Routing Settings)', () => {
     moved.splice(moved.indexOf('tack') + 1, 0, 'fit');
     reorderStageTemplates('Welding', moved);
     try {
-      const ids = buildStages(JOBS.find(j => j.trade === 'Welding')!).map(s => s.id);
+      const ids = buildStages({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' }).map(s => s.id);
       expect(ids.indexOf('fit')).toBe(ids.indexOf('tack') + 1);
       /* written to storage: a second read (cache cleared by the save) still has it */
       expect(getTemplates()['Welding'].map(t => t.id)).toEqual(moved);
@@ -78,7 +82,7 @@ describe('step order (Admin > Routing Settings)', () => {
 });
 
 describe('contains conditions', () => {
-  const job = { ...JOBS.find(j => j.trade === 'Welding')!, weldType: 'Fillet' };
+  const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', weldType: 'Fillet' };
   it('matches typed text anywhere in the value, any case', () => {
     expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['ILL'] }]], job)).toBeTrue();
     expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['groove'] }]], job)).toBeFalse();
@@ -88,7 +92,7 @@ describe('contains conditions', () => {
 });
 
 describe('Fabrication editable (Admin > Routing Settings)', () => {
-  const job = JOBS.find(j => j.trade === 'Welding')!;
+  const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' };
   const signThrough = (id: string) => {
     const stages = buildStages(job);
     const upTo = stages.findIndex(s => s.id === id);

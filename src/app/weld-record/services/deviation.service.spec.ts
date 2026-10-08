@@ -8,7 +8,7 @@ import { activeStageId, isStageLocked, seededWorkflow, DeviationItem } from '../
 
 function weldingJob(): Job {
   const job = addTestJob();
-  Object.assign(job, { ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
+  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
   return job;
 }
 
@@ -151,14 +151,15 @@ describe('Engineering Hold from a reject rule (PT failure on a GTAW weld)', () =
   afterEach(() => localStorage.clear());
 
   /* Root welded with `process`, then Root NDT MT/PT signed PT and UNSAT */
+  /* an N Ind 1 joint, so this is the NQC row (it starts with the regular row's reject rules) */
   function ptFailure(process: string) {
     const job = addTestJob();
     Object.assign(job, { ndt: '', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
     store.update(job, wf => ({ ...wf, stages: wf.stages.map(s =>
       s.id === 'root-weld' ? { ...s, inputs: { ...s.inputs, weldProcess: process } }
-      : s.id === 'root-ndt-mtpt' ? { ...s, inspectionType: 'pt', result: 'unsat' } : s) }));
+      : s.id === 'nqc-root-ndt-mtpt' ? { ...s, inspectionType: 'pt', result: 'unsat' } : s) }));
     signoff.signStage(job, 'root-weld');
-    signoff.signStage(job, 'root-ndt-mtpt');
+    signoff.signStage(job, 'nqc-root-ndt-mtpt');
     return job;
   }
 

@@ -2,7 +2,7 @@ import { JOBS, Job } from '../jobs';
 import { buildStages, nextRepairStage, excavationNdtStage, stageFromTemplate, WorkflowStage } from '../workflow';
 import { routePreviewLabel, SignoffPreview } from './route-preview';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', ...over });
 const noPreview: SignoffPreview = () => ({ target: undefined, reasons: [] });
 
 describe('joint-form route-preview', () => {

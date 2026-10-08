@@ -6,7 +6,7 @@
 import { STORAGE } from '../storage-keys';
 import { StageOption } from './types';
 import { ndtKindOptions } from './ndt';
-import { isExcavationNdtStageId, isRepairStageId } from './step-ids';
+import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from './step-ids';
 
 export interface SignoffTypeRow {
   stepId: string;
@@ -19,9 +19,10 @@ export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
 const opt = (label: string, value: string, isDefault = false, repeatable = false): StageOption =>
   ({ label, value, ...(isDefault ? { default: true } : {}), ...(repeatable ? { repeatable: true } : {}) });
 
-/* NDT rows have no default: the inspector picks the inspection performed */
+/* NDT rows have no default: the inspector picks the inspection performed. Each NDT step's NQC row
+   (step-ids.ts) gets its own row too. */
 const ndtRows = (phase: string): SignoffTypeRow[] => (['vt5x', 'mtpt', 'utrt'] as const)
-  .map(kind => ({ stepId: `${phase}-ndt-${kind}`, options: ndtKindOptions(kind) }));
+  .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)].map(stepId => ({ stepId, options: ndtKindOptions(kind) })));
 
 const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'fit', options: [opt('Fit', 'fit', true), opt('Weld Build-Up', 'weld-buildup', false, true)] },

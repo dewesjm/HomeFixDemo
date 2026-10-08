@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { Job, isNuclear } from '../jobs';
+import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
 import { DEFAULT_SIGNOFF_FIELDS, getTemplates } from './stage-templates';
@@ -7,6 +7,7 @@ import { initialInspectionType } from './stage-rules';
 import { WELD_OVERRIDE_FIELDS } from './weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from './seed-fabrication';
+import { baseStepId, isFitupInspId } from './step-ids';
 
 const WELD_STEP_IDS = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'];
 
@@ -23,10 +24,9 @@ export function buildStages(job: Job): WorkflowStage[] {
     const required = usesStepAnswers(t.includeWhen) ? conditionsMatch(t.includeWhen, job)
       : typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
-    const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
-    /* the step's "Persona when N Ind 1 or 2" (Admin > Routing Settings) on those joints; Sold follows whichever Records track reviewed the job */
-    const role = (isNuclear(job) && t.nqcRole)
-      ? t.nqcRole : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
+    const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};
+    /* Sold follows whichever Records track reviewed the job */
+    const role = t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     /* Only Root (not Final Weld) gets the 5X inspection field, and only when NDT Root allows 5X --
        answering yes auto-signs the Root 5X/VT stage */
     let fields = (t.id === 'root-weld' && (job.ndtRoot || '').trim().toUpperCase() === '5X')
@@ -39,7 +39,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     }
     return {
       id: t.id,
-      label: t.label,
+      /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */
+      label: t.displayName || t.label,
       required,
       role,
       fields,
@@ -59,10 +60,10 @@ export function buildStages(job: Job): WorkflowStage[] {
   };
 
   const ndtFor = jobNdtSteps(job);
-  const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(id)?.[1] as NdtPhase | undefined;
+  const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(baseStepId(id))?.[1] as NdtPhase | undefined;
   const stepFor = (id: string) => {
     const phase = phaseOf(id);
-    return phase ? ndtFor[phase].find(st => id === `${phase}-ndt-${st.kind}`) : undefined;
+    return phase ? ndtFor[phase].find(st => baseStepId(id) === `${phase}-ndt-${st.kind}`) : undefined;
   };
   return tradeStages.filter(included).map(toStage).map(s => {
     const step = stepFor(s.id);

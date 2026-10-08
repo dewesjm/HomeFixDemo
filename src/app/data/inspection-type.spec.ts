@@ -5,7 +5,7 @@ import { JOBS, Job } from './jobs';
    Joint Details allow only one method */
 describe('NDT Type is never pre-filled', () => {
   const job = (over: Partial<Job>): Job =>
-    ({ ...JOBS.find(j => j.trade === 'Welding')!, ndt: '', ndtRoot: '', ndtEach: 'MT', ndtFinal: '', ...over });
+    ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', ndt: '', ndtRoot: '', ndtEach: 'MT', ndtFinal: '', ...over });
 
   it('a single-method NDT step offers only that method, with Type blank', () => {
     const stages = buildStages(job({}));

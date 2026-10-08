@@ -4,6 +4,7 @@ import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedu
 import { SignoffField, StageField, StageTemplate } from './types';
 import { WELD_STAGE_FIELDS } from './weld-fields';
 import { ndtStage } from './ndt';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
 
 const BACKING_RING_OPTIONS = [
   { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -53,7 +54,7 @@ function recordsReviewFields(): StageField[] {
   ];
 }
 
-export const WELDING_STEPS: StageTemplate[] = [
+const BUILT_IN_STEPS: StageTemplate[] = [
   /* Pre-Fit has no Defer Tack: there's no Tack yet to defer. As signoffFields (not fields) so it
      renders through the same signoff-fit-row layout as Fit. */
   { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: insertAndBackingRingFields() },
@@ -62,7 +63,7 @@ export const WELDING_STEPS: StageTemplate[] = [
     { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
   ] },
   { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
-  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', nqcRole: 'NQC Inspector', fields: [
+  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
     { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
     { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
     { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
@@ -72,7 +73,7 @@ export const WELDING_STEPS: StageTemplate[] = [
     signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
   /* same form as Tack; only its position differs (after Fit-Up Insp) */
-  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'deferred-tack', label: 'Deferred Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
       { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
     ], signoffFields: [] },
@@ -97,3 +98,9 @@ export const WELDING_STEPS: StageTemplate[] = [
     signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
   { id: 'sold', label: 'Sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
 ];
+
+/* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown
+   under the same Display Name (its Included when, seeded in step-conditions.ts, splits them by N Ind) */
+export const WELDING_STEPS: StageTemplate[] = BUILT_IN_STEPS.flatMap(t => NQC_SPLIT_STEP_IDS.includes(t.id)
+  ? [t, { ...t, id: nqcStepId(t.id), label: `NQC ${t.label}`, displayName: t.displayName ?? t.label, role: 'NQC Inspector' }]
+  : [t]);
