@@ -216,20 +216,20 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   ]],
 };
 
-/* every rule of `rules` (or the one rule, when it has none) gets the N Ind clause added */
-const withNInd = (rules: ConditionRule[] | undefined, op: ConditionClause['op']): ConditionRule[] => {
-  const clause: ConditionClause = { field: 'nInd', op, values: ['1', '2'] };
+/* every rule of `rules` (or the one rule, when it has none) gets an "N Ind. is <values>" clause added */
+const withNInd = (rules: ConditionRule[] | undefined, values: string[]): ConditionRule[] => {
+  const clause: ConditionClause = { field: 'nInd', op: 'is', values };
   return rules?.length ? rules.map(r => [...r, clause]) : [[clause]];
 };
 
 /* the rules the app was built with; Admin > Routing Settings can change any of them. An NQC row
-   (step-ids.ts) is included when N Ind is 1 or 2, its regular row when it isn't, each on top of the
+   (step-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
    step's own rules */
 export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ...BUILT_IN_CONDITIONS,
   ...Object.fromEntries(NQC_SPLIT_STEP_IDS.flatMap(id => [
-    [id, withNInd(BUILT_IN_CONDITIONS[id], 'isNot')],
-    [nqcStepId(id), withNInd(BUILT_IN_CONDITIONS[id], 'is')],
+    [id, withNInd(BUILT_IN_CONDITIONS[id], ['3'])],
+    [nqcStepId(id), withNInd(BUILT_IN_CONDITIONS[id], ['1', '2'])],
   ])),
 };
 

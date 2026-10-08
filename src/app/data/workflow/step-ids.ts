@@ -1,5 +1,5 @@
 /* NQC rows: Fit-Up Insp and every NDT step come as two Routing Settings rows, the NQC one
-   ('nqc-<id>', N Ind 1 or 2) and the regular one (the rest). A joint gets one of each pair; both work
+   ('nqc-<id>', N Ind 1 or 2) and the regular one (N Ind 3). A joint gets one of each pair; both work
    the same way, so rules that depend on the step (its phase, its method) read the base id. */
 const NQC_PREFIX = 'nqc-';
 export const NQC_SPLIT_STEP_IDS = ['fitup-insp',

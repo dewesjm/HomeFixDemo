@@ -60,7 +60,7 @@ describe('step conditions', () => {
   it('describes rules in plain words', () => {
     expect(describeConditions([])).toBe('Always');
     expect(describeConditions(DEFAULT_STEP_CONDITIONS['root-ndt-utrt']))
-      .toBe('NDT Root is UT and N Ind. is not 1 or 2; or RT Root is 10 or 100 or 360 or 60 or 75 and N Ind. is not 1 or 2');
+      .toBe('NDT Root is UT and N Ind. is 3; or RT Root is 10 or 100 or 360 or 60 or 75 and N Ind. is 3');
   });
 });
 
