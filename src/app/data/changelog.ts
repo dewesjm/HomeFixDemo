@@ -17,7 +17,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Routing Settings has a Display Name column: what the joint, its routing bar and lists show. Routing is the name the rules use. The NQC rows show the same name as the regular ones (Fit-Up Insp, Root NDT 5X/VT).',
       'Admin > Routing Settings: the Role column is now called Persona.',
       'Admin > Teams is now called Groups, and sits in the menu in alphabetical order.',
-      'Admin > Groups: the page address is now /admin/groups, its Export file is groups.csv, and the permission reads Manage groups and permissions.',
+      'Admin > Groups: the page address is now /admin/groups, and the permission reads Manage groups and permissions.',
+      'Admin > Groups no longer has an Export button.',
     ],
   },
   {

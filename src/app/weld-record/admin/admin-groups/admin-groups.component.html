@@ -7,7 +7,7 @@
 @if (!selectedGroupId()) {
   <!-- ======== GROUP LIST VIEW ======== -->
   <app-table-toolbar [table]="table" searchPlaceholder="Search groups…" addLabel="Add group"
-                     (exportCsv)="exportCsv()" (add)="showAddForm.set(true)" />
+                     [showExport]="false" (add)="showAddForm.set(true)" />
 
     @if (showAddForm()) {
       <div class="mb-4 p-4 rounded-lg border border-base-300 bg-base-200">

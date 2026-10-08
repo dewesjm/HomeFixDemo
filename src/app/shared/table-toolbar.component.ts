@@ -1,4 +1,4 @@
-/* Toolbar above an admin table: search box, then Export, then Add (only where rows can be added).
+/* Toolbar above an admin table: search box, then Export (unless showExport is false), then Add (only where rows can be added).
    Pages that add rows through their own inline controls put them in a [toolbarEnd] element instead of addLabel.
    Usage: <app-table-toolbar [table]="table" searchPlaceholder="Search locations…" addLabel="Add location"
             (exportCsv)="exportCsv()" (add)="addRow()" /> */
@@ -26,9 +26,11 @@ import { TableState } from './table-state';
       </label>
       <ng-content />
       <span class="spacer"></span>
-      <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv.emit()">
-        <svg lucideFileSpreadsheet class="size-4"></svg> Export
-      </button>
+      @if (showExport()) {
+        <button type="button" class="btn btn-sm btn-outline" (click)="exportCsv.emit()">
+          <svg lucideFileSpreadsheet class="size-4"></svg> Export
+        </button>
+      }
       @if (addLabel()) {
         <button type="button" class="btn btn-sm btn-primary" (click)="add.emit()">
           <svg lucidePlus class="size-4"></svg> {{ addLabel() }}
@@ -43,6 +45,7 @@ export class TableToolbarComponent {
   searchPlaceholder = input('Search…');
   /* blank = no Add button (the table's rows are fixed) */
   addLabel = input('');
+  showExport = input(true);
   exportCsv = output<void>();
   add = output<void>();
 }

@@ -5,7 +5,6 @@ import { LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
 import { ConfirmService } from '../../../shared/confirm.service';
 
 interface Permission {
@@ -135,12 +134,6 @@ export class AdminGroupsComponent {
     effect(() => this.table.setRows(this.groups()));
   }
 
-  exportCsv() {
-    downloadCsv('groups', [
-      { header: 'AD Group', value: (g: AdminGroup) => g.name },
-      { header: 'Description', value: (g: AdminGroup) => g.description },
-    ], this.table.sorted());
-  }
   permissions = PERMISSIONS;
   selectedGroupId = signal<string | null>(null);
   showAddForm = signal(false);
