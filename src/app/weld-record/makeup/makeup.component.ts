@@ -1,7 +1,7 @@
 /* Makeup — grant someone below the foreman level temporary "makeup" (acting-foreman) status.
    UI-only, see makeup.ts's header comment: nothing else in the app reads this yet. Flat grid, not
-   Teams' list-into-detail: the people who set makeup are a different audience than the people
-   managing Teams' permission matrix and are used to a grid view. Its own nav entry outside the
+   Groups' list-into-detail: the people who set makeup are a different audience than the people
+   managing Groups' permission matrix and are used to a grid view. Its own nav entry outside the
    Admin menu too, since this is routine foreman use, not admin configuration. */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';

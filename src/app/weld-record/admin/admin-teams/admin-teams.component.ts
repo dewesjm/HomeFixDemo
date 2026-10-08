@@ -51,7 +51,7 @@ const PERMISSIONS: Permission[] = [
   { key: 'edit-inspection', label: 'Edit inspection fields', category: 'Data Entry' },
   { key: 'edit-er-ir', label: 'Enter ER / IR numbers', category: 'Data Entry' },
   // Administration
-  { key: 'admin-teams', label: 'Manage teams and permissions', category: 'Administration' },
+  { key: 'admin-teams', label: 'Manage groups and permissions', category: 'Administration' },
   { key: 'admin-all', label: 'Full administration access', category: 'Administration' },
 ];
 
@@ -137,7 +137,7 @@ export class AdminTeamsComponent {
   }
 
   exportCsv() {
-    downloadCsv('teams', [
+    downloadCsv('groups', [
       { header: 'AD Group', value: (g: TeamGroup) => g.name },
       { header: 'Description', value: (g: TeamGroup) => g.description },
     ], this.table.sorted());
