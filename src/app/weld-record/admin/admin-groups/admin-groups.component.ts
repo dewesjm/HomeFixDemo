@@ -18,7 +18,6 @@ interface AdminGroup {
   id: string;
   name: string;
   description: string;
-  type: 'Group' | 'Team';
   avatarColor: string;
   memberCount: number;
   permissions: Record<string, 'allow' | 'deny' | 'not-set'>;
@@ -51,7 +50,7 @@ const PERMISSIONS: Permission[] = [
   { key: 'edit-inspection', label: 'Edit inspection fields', category: 'Data Entry' },
   { key: 'edit-er-ir', label: 'Enter ER / IR numbers', category: 'Data Entry' },
   // Administration
-  { key: 'admin-teams', label: 'Manage groups and permissions', category: 'Administration' },
+  { key: 'admin-groups', label: 'Manage groups and permissions', category: 'Administration' },
   { key: 'admin-all', label: 'Full administration access', category: 'Administration' },
 ];
 
@@ -60,12 +59,12 @@ const COLORS = ['#1976d2', '#e53935', '#f57c00', '#388e3c', '#7b1fa2', '#00838f'
 const DEFAULT_GROUPS: AdminGroup[] = [
   {
     id: 'g1', name: 'Hull Administrators', description: 'Members of this group can perform all operations on hull records.',
-    type: 'Group', avatarColor: '#1976d2', memberCount: 2,
+    avatarColor: '#1976d2', memberCount: 2,
     permissions: Object.fromEntries(PERMISSIONS.map(p => [p.key, 'allow'])),
   },
   {
     id: 'g2', name: 'Welding Inspectors', description: 'Certified welding inspectors with full sign-off authority across all welding stages.',
-    type: 'Group', avatarColor: '#388e3c', memberCount: 4,
+    avatarColor: '#388e3c', memberCount: 4,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
@@ -80,7 +79,7 @@ const DEFAULT_GROUPS: AdminGroup[] = [
   },
   {
     id: 'g3', name: 'NDT Technicians', description: 'NDT technicians authorized to perform and sign off non-destructive testing stages.',
-    type: 'Group', avatarColor: '#7b1fa2', memberCount: 3,
+    avatarColor: '#7b1fa2', memberCount: 3,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
@@ -95,7 +94,7 @@ const DEFAULT_GROUPS: AdminGroup[] = [
   },
   {
     id: 'g4', name: 'Weld Technicians', description: 'Welders and fitters - can enter data but cannot sign off on inspection stages.',
-    type: 'Group', avatarColor: '#f57c00', memberCount: 6,
+    avatarColor: '#f57c00', memberCount: 6,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
@@ -110,7 +109,7 @@ const DEFAULT_GROUPS: AdminGroup[] = [
   },
   {
     id: 'g5', name: 'Viewers', description: 'Members of this group have read-only access to hull records.',
-    type: 'Group', avatarColor: '#5d4037', memberCount: 8,
+    avatarColor: '#5d4037', memberCount: 8,
     permissions: (() => {
       const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
       for (const p of PERMISSIONS) {
@@ -184,7 +183,7 @@ export class AdminGroupsComponent {
     const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
     for (const p of PERMISSIONS) perms[p.key] = 'not-set';
     this.groups.update(g => [...g, {
-      id, name, description: this.newGroupDesc().trim(), type: 'Group' as const,
+      id, name, description: this.newGroupDesc().trim(),
       avatarColor: color, memberCount: 0, permissions: perms,
     }]);
     this.newGroupName.set('');
