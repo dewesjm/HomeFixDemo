@@ -18,7 +18,7 @@ import { AdminSignoffTypesComponent } from './weld-record/admin/admin-signoff-ty
 import { AdminWeldPositionsComponent } from './weld-record/admin/admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './weld-record/admin/admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './weld-record/admin/admin-joint-designs/admin-joint-designs.component';
-import { AdminTeamsComponent } from './weld-record/admin/admin-teams/admin-teams.component';
+import { AdminGroupsComponent } from './weld-record/admin/admin-groups/admin-groups.component';
 import { AdminMaterialTraceabilityComponent } from './weld-record/admin/admin-material-traceability/admin-material-traceability.component';
 import { AdminMaterialClassificationComponent } from './weld-record/admin/admin-material-classification/admin-material-classification.component';
 import { AdminQuickLinksComponent } from './weld-record/admin/admin-quick-links/admin-quick-links.component';
@@ -63,7 +63,7 @@ export const routes: Routes = [
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs' },
-  { path: 'admin/groups', component: AdminTeamsComponent, title: 'EWR - Groups' },
+  { path: 'admin/groups', component: AdminGroupsComponent, title: 'EWR - Groups' },
   { path: 'admin/teams', redirectTo: 'admin/groups' },
   { path: 'admin/qualifications', component: AdminQualificationsComponent, title: 'EWR - Qualifications' },
   { path: 'changelog', component: ChangelogComponent, title: 'Change Log' },

@@ -14,7 +14,7 @@ interface Permission {
   category: string;
 }
 
-interface TeamGroup {
+interface AdminGroup {
   id: string;
   name: string;
   description: string;
@@ -57,7 +57,7 @@ const PERMISSIONS: Permission[] = [
 
 const COLORS = ['#1976d2', '#e53935', '#f57c00', '#388e3c', '#7b1fa2', '#00838f', '#c2185b', '#5d4037'];
 
-const DEFAULT_GROUPS: TeamGroup[] = [
+const DEFAULT_GROUPS: AdminGroup[] = [
   {
     id: 'g1', name: 'Hull Administrators', description: 'Members of this group can perform all operations on hull records.',
     type: 'Group', avatarColor: '#1976d2', memberCount: 2,
@@ -122,15 +122,15 @@ const DEFAULT_GROUPS: TeamGroup[] = [
 ];
 
 @Component({
-  selector: 'app-admin-teams',
+  selector: 'app-admin-groups',
   standalone: true,
   imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucideChevronLeft, LucideChevronRight],
-  templateUrl: './admin-teams.component.html',
+  templateUrl: './admin-groups.component.html',
 })
-export class AdminTeamsComponent {
+export class AdminGroupsComponent {
   private confirm = inject(ConfirmService);
-  groups = signal<TeamGroup[]>(DEFAULT_GROUPS.map(g => ({ ...g, permissions: { ...g.permissions } })));
-  table = new TableState<TeamGroup>(['name', 'description']);
+  groups = signal<AdminGroup[]>(DEFAULT_GROUPS.map(g => ({ ...g, permissions: { ...g.permissions } })));
+  table = new TableState<AdminGroup>(['name', 'description']);
 
   constructor() {
     effect(() => this.table.setRows(this.groups()));
@@ -138,8 +138,8 @@ export class AdminTeamsComponent {
 
   exportCsv() {
     downloadCsv('groups', [
-      { header: 'AD Group', value: (g: TeamGroup) => g.name },
-      { header: 'Description', value: (g: TeamGroup) => g.description },
+      { header: 'AD Group', value: (g: AdminGroup) => g.name },
+      { header: 'Description', value: (g: AdminGroup) => g.description },
     ], this.table.sorted());
   }
   permissions = PERMISSIONS;

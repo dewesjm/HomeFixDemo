@@ -156,7 +156,7 @@ src/app/
       admin-signoff-types/ Admin → Signoff Type Availability (seeded table: which routing steps have a Type droplist, and its options)
       admin-characteristics/ Admin → Attribute codes
       admin-material-traceability/, admin-material-classification/, admin-penetrant/, admin-locations/, admin-ship-locations/,
-      admin-weld-positions/, admin-joint-designs/, admin-banner/, admin-teams/, admin-quick-links/,
+      admin-weld-positions/, admin-joint-designs/, admin-banner/, admin-groups/, admin-quick-links/,
       admin-qualifications/, admin-inspection-procedures/,
       admin-defect-codes/    Other admin pages
       Admin page conventions: table pages edit one row at a time (pencil, then check or cancel; opening
