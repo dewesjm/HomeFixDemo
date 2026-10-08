@@ -23,34 +23,33 @@ interface AdminGroup {
 }
 
 const PERMISSIONS: Permission[] = [
-  // General
-  { key: 'view-hull', label: 'View hull information', category: 'General' },
-  { key: 'edit-hull', label: 'Edit hull-level information', category: 'General' },
-  { key: 'delete-hull', label: 'Delete hull', category: 'General' },
-  // Routing & Stages
-  { key: 'manage-routing', label: 'Manage routing', category: 'Routing & Stages' },
-  { key: 'manage-templates', label: 'Manage stage templates', category: 'Routing & Stages' },
-  { key: 'force-routing', label: 'Force routing override', category: 'Routing & Stages' },
-  { key: 'view-all-stages', label: 'View all hull stages', category: 'Routing & Stages' },
+  // Routing
+  { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
+  { key: 'force-routing', label: 'Force routing override', category: 'Routing' },
   // Sign-off
+  { key: 'signoff-pre-fit', label: 'Sign off Pre-Fit', category: 'Sign-off' },
+  { key: 'signoff-fit', label: 'Sign off Fit', category: 'Sign-off' },
+  { key: 'signoff-tack', label: 'Sign off Tack', category: 'Sign-off' },
+  { key: 'signoff-fitup-insp', label: 'Sign off Fit-Up Insp', category: 'Sign-off' },
   { key: 'signoff-fitup-release', label: 'Sign off Fit-Up Release', category: 'Sign-off' },
-  { key: 'signoff-visual', label: 'Sign off Visual Inspection', category: 'Sign-off' },
-  { key: 'signoff-fitup-insp', label: 'Sign off Fit-Up Inspection', category: 'Sign-off' },
-  { key: 'signoff-fabrication', label: 'Sign off Fabrication', category: 'Sign-off' },
-  { key: 'signoff-ndt-root', label: 'Sign off NDT Root Pass', category: 'Sign-off' },
-  { key: 'signoff-ndt-each', label: 'Sign off NDT Each Pass', category: 'Sign-off' },
-  { key: 'signoff-ndt-final', label: 'Sign off NDT Final', category: 'Sign-off' },
-  { key: 'signoff-ut', label: 'Sign off UT', category: 'Sign-off' },
-  { key: 'signoff-mcl', label: 'Sign off MCL Verification', category: 'Sign-off' },
-  { key: 'signoff-final', label: 'Sign off Final Completion', category: 'Sign-off' },
+  { key: 'signoff-deferred-tack', label: 'Sign off Deferred Tack', category: 'Sign-off' },
+  { key: 'signoff-root', label: 'Sign off Root', category: 'Sign-off' },
+  { key: 'signoff-layer', label: 'Sign off Layer', category: 'Sign-off' },
+  { key: 'signoff-final-weld', label: 'Sign off Final Weld', category: 'Sign-off' },
+  { key: 'signoff-root-ndt', label: 'Sign off Root NDT', category: 'Sign-off' },
+  { key: 'signoff-layer-ndt', label: 'Sign off Layer NDT', category: 'Sign-off' },
+  { key: 'signoff-final-ndt', label: 'Sign off Final NDT', category: 'Sign-off' },
+  { key: 'signoff-repair', label: 'Sign off Repair', category: 'Sign-off' },
+  { key: 'signoff-excavation-ndt', label: 'Sign off Excavation NDT', category: 'Sign-off' },
+  { key: 'signoff-engineering-hold', label: 'Sign off Engineering Hold', category: 'Sign-off' },
+  { key: 'signoff-review-o63', label: 'Sign off O63 Records Review', category: 'Sign-off' },
+  { key: 'signoff-review-o04', label: 'Sign off O04 Records Review', category: 'Sign-off' },
+  { key: 'signoff-sold', label: 'Sign off Sold', category: 'Sign-off' },
   // Data Entry
-  { key: 'edit-ndt', label: 'Edit NDT data', category: 'Data Entry' },
   { key: 'edit-fabrication', label: 'Edit fabrication fields', category: 'Data Entry' },
-  { key: 'edit-inspection', label: 'Edit inspection fields', category: 'Data Entry' },
-  { key: 'edit-er-ir', label: 'Enter ER / IR numbers', category: 'Data Entry' },
   // Administration
   { key: 'admin-groups', label: 'Manage groups and permissions', category: 'Administration' },
-  { key: 'admin-all', label: 'Full administration access', category: 'Administration' },
+  { key: 'admin-tables', label: 'Maintain other admin tables', category: 'Administration' },
 ];
 
 const COLORS = ['#1976d2', '#e53935', '#f57c00', '#388e3c', '#7b1fa2', '#00838f', '#c2185b', '#5d4037'];
@@ -63,56 +62,54 @@ function allowOnly(keys: string[]): Record<string, 'allow' | 'deny' | 'not-set'>
 /* one sample group per persona (the Persona column in Admin > Routing Settings), plus Administrators */
 const DEFAULT_GROUPS: AdminGroup[] = [
   {
-    id: 'g1', name: 'Administrators', description: 'Full access to every record and admin page.',
+    id: 'g1', name: 'Administrators', description: 'Maintain groups and the other admin tables.',
     avatarColor: COLORS[0], memberCount: 2,
-    permissions: allowOnly(PERMISSIONS.map(p => p.key)),
+    permissions: allowOnly(['admin-groups', 'admin-tables']),
   },
   {
     id: 'g2', name: 'Fitting', description: 'Fitters who sign off the Fit step.',
     avatarColor: COLORS[1], memberCount: 6,
-    permissions: allowOnly(['view-hull', 'edit-fabrication']),
+    permissions: allowOnly(['signoff-fit', 'edit-fabrication']),
   },
   {
     id: 'g3', name: 'Welding', description: 'Welders who sign off Tack, Root, Layer and Final Weld.',
     avatarColor: COLORS[2], memberCount: 8,
-    permissions: allowOnly(['view-hull', 'edit-fabrication']),
+    permissions: allowOnly(['signoff-tack', 'signoff-deferred-tack', 'signoff-root', 'signoff-layer', 'signoff-final-weld', 'edit-fabrication']),
   },
   {
     id: 'g4', name: 'Foreman', description: 'Foremen who sign off Fit-Up Insp, Fit-Up Release and Repair.',
     avatarColor: COLORS[3], memberCount: 3,
-    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-fitup-release', 'edit-fabrication']),
+    permissions: allowOnly(['signoff-fitup-insp', 'signoff-fitup-release', 'signoff-repair', 'edit-fabrication']),
   },
   {
     id: 'g5', name: 'Inspector', description: 'Inspectors who sign off Fit-Up Insp and the NDT steps.',
     avatarColor: COLORS[4], memberCount: 4,
-    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-visual',
-      'signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'edit-inspection']),
+    permissions: allowOnly(['signoff-fitup-insp', 'signoff-root-ndt', 'signoff-layer-ndt', 'signoff-final-ndt', 'signoff-excavation-ndt']),
   },
   {
     id: 'g6', name: 'NQC Inspector', description: 'NQC Inspectors who sign off Pre-Fit, and Fit-Up Insp and the NDT steps on N Ind. 1 or 2 joints.',
     avatarColor: COLORS[5], memberCount: 2,
-    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-visual',
-      'signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'edit-inspection']),
+    permissions: allowOnly(['signoff-pre-fit', 'signoff-fitup-insp', 'signoff-root-ndt', 'signoff-layer-ndt', 'signoff-final-ndt']),
   },
   {
     id: 'g7', name: 'O63 Records', description: 'O63 Records, who sign off O63 Records Review and Sold.',
     avatarColor: COLORS[6], memberCount: 2,
-    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-final']),
+    permissions: allowOnly(['signoff-review-o63', 'signoff-sold']),
   },
   {
     id: 'g8', name: 'O04 Records', description: 'O04 Records, who sign off O04 Records Review.',
     avatarColor: COLORS[7], memberCount: 2,
-    permissions: allowOnly(['view-hull', 'view-all-stages']),
+    permissions: allowOnly(['signoff-review-o04']),
   },
   {
-    id: 'g9', name: 'Engineering', description: 'Engineers who sign off Engineering Hold and manage routing.',
+    id: 'g9', name: 'Engineering', description: 'Engineers who sign off Engineering Hold and can force a routing override.',
     avatarColor: COLORS[0], memberCount: 3,
-    permissions: allowOnly(['view-hull', 'view-all-stages', 'manage-routing', 'manage-templates', 'force-routing', 'edit-er-ir']),
+    permissions: allowOnly(['signoff-engineering-hold', 'manage-routing', 'force-routing']),
   },
   {
-    id: 'g10', name: 'View', description: 'Read-only access to joint records.',
+    id: 'g10', name: 'View', description: 'Read-only access; no sign-offs.',
     avatarColor: COLORS[1], memberCount: 10,
-    permissions: allowOnly(['view-hull']),
+    permissions: allowOnly([]),
   },
 ];
 

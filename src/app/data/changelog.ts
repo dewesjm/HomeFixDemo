@@ -19,6 +19,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Teams is now called Groups, and sits in the menu in alphabetical order.',
       'Admin > Groups: the page address is now /admin/groups, and the permission reads Manage groups and permissions.',
       'Admin > Groups no longer has an Export button.',
+      'Admin > Groups: the permissions are one Sign off permission per step (Pre-Fit through Sold), Manage routing, Force routing override, Edit fabrication fields (including ER / IR), Manage groups and permissions, and Maintain other admin tables. The hull, stage template, NDT, inspection and full-access permissions are gone.',
     ],
   },
   {
