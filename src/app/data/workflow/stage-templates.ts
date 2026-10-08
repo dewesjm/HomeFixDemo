@@ -60,6 +60,7 @@ interface SerializedStage {
   signoffFields: SignoffField[];
   rejectToStage: string;
   role?: string;
+  nqcRole?: string;
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
   rejectRulesEdited?: boolean;
@@ -76,6 +77,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
     signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: t.rejectToStage ?? '',
     role: t.role ?? '',
+    nqcRole: t.nqcRole ?? '',
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
     rejectRulesEdited: t.rejectRulesEdited,
@@ -83,9 +85,10 @@ function serializeStage(t: StageTemplate): SerializedStage {
   };
 }
 
-/* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
+/* saves from before step conditions / Fabrication editable / N Ind 1 or 2 role existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, role: s.role ?? '',
+    nqcRole: s.nqcRole ?? builtIn?.nqcRole ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };

@@ -2,18 +2,18 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each step. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-10-06.
+Last updated 2026-10-08.
 
 ## How routing works
 
 - A joint's routing is an ordered list of steps. The **current routing** is the first required step that isn't signed off yet.
 - Steps are signed in order. A step can't be signed until every required step before it is signed.
-- Each step is signed by one role (Fitting, Welding, Foreman, Inspector and so on). Inspection steps go to the **NQC Inspector** instead of the Inspector when the joint's Nuclear Indicator is 1 or 2.
+- Each step is signed by one role (Fitting, Welding, Foreman, Inspector and so on). When the joint's Nuclear Indicator is 1 or 2, a step is signed by its **Role when N Ind 1 or 2** (Admin > Routing Settings) instead, when it has one. Seeded: Fit-Up Insp and every NDT step go to the **NQC Inspector**. Excavation NDT isn't a Routing Settings row and goes to the NQC Inspector on those joints too.
 - **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that step and the joint proceeds along the path as normal from there: every step from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Step> — Routed back to <step>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on steps the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed step and every step after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
 - **Admin > Routing Override** changes a joint's current routing to any step. Nothing is marked signed. Going back works like any route-back (that step and every step after it come up blank). Going forward only moves the current routing: the steps before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new step. The joint is found by typing its Hull, Drawing and Joint exactly, and a Reason for change is required; the Routing History entry records it.
-- **Admin > Routing Settings** sets, per step: its order, when a joint gets it ("Included when"), where an UNSAT goes ("Reject routes to", plus reject rules), who signs it, and **Fabrication editable**. A condition compares a field with "is", "is not" or "contains" (typed text, any case). The fields are every Joint Details field and every earlier step's own answers (for example Root NDT VT/5X's Weld Color); a reject rule can also use the rejected step's own answers. Fields with a fixed list offer checkboxes; the others take a typed value. An earlier step's answer is blank until that step is signed, so a step that depends on one is always on the joint and turns on or off as it's signed.
+- **Admin > Routing Settings** sets, per step: its order, when a joint gets it ("Included when"), where an UNSAT goes ("Reject routes to", plus reject rules), who signs it (Role, and Role when N Ind 1 or 2), and **Fabrication editable**. A condition compares a field with "is", "is not" or "contains" (typed text, any case). The fields are every Joint Details field and every earlier step's own answers (for example Root NDT 5X/VT's Weld Color); a reject rule can also use the rejected step's own answers. Fields with a fixed list offer checkboxes; the others take a typed value. An earlier step's answer is blank until that step is signed, so a step that depends on one is always on the joint and turns on or off as it's signed.
 - **Repeatable Types** (Admin > Signoff Type Availability): a step's Type option can be repeatable. Signing with it records the signoff and History, but does nothing to the routing: the step stays unsigned and current, on the same routing bar step. The step comes up blank for the next signoff, so every signoff is filled in fresh. Built in: Interim Layer and Weld Build-Up. Signing with a Type that isn't repeatable completes the step.
 - **Fabrication editable**: the Fabrication fields can be changed while the current step has it checked. Built in, that's Prep through Fit-Up Insp, so the fields lock once Fit-Up Insp is signed. A change applies straight away, including to joints already in progress. Repair and Excavation NDT steps, and a finished joint, always lock them. Correct does not change Fabrication fields.
 
@@ -24,15 +24,15 @@ Last updated 2026-10-06.
 | 1 | Pre-Fit | NQC Inspector | Nuclear Indicator is 1 or 2, or the joint design calls for a consumable insert or backing ring | Moves on to Fit |
 | 2 | Fit | Fitting | Always | Type is **Fit** or **Weld Build-Up**. **Weld Build-Up** is repeatable: it's recorded, Fit stays the current routing and comes up blank for the next one. **Fit** moves on to Tack. If **Defer Tack** is checked, Tack is skipped and Deferred Tack is added after Fit-Up Release |
 | 3 | Tack | Welding | Unless Defer Tack was checked at Fit | Moves on to Fit-Up Insp |
-| 4 | Fit-Up Insp | Foreman or Inspector | Always | **SAT**: moves on. **UNSAT**: back to Fit (Fit, Tack and Fit-Up Insp come up blank, and so does the fit-up data). If **Release to welding** is unchecked, Fit-Up Release becomes required |
+| 4 | Fit-Up Insp | Foreman or Inspector; NQC Inspector when Nuclear Indicator is 1 or 2 | Always | **SAT**: moves on. **UNSAT**: back to Fit (Fit, Tack and Fit-Up Insp come up blank, and so does the fit-up data). If **Release to welding** is unchecked, Fit-Up Release becomes required |
 | 5 | Fit-Up Release | Foreman | Only when Fit-Up Insp didn't release to welding | Moves on |
 | 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Same form as Tack |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
-| 8 | Root NDT | Inspector | Always (see the NDT chart) | See "When an NDT step fails" |
+| 8 | Root NDT | Inspector; NQC Inspector when Nuclear Indicator is 1 or 2 | Always (see the NDT chart) | See "When an NDT step fails" |
 | 9 | Layer | Welding | Always | **Interim Layer** is repeatable: recorded, the joint stays on Layer and it comes up blank for the next one. **Final Layer**: moves on to Layer NDT |
-| 10 | Layer NDT | Inspector | Always (see the NDT chart) | See "When an NDT step fails" |
+| 10 | Layer NDT | Inspector; NQC Inspector when Nuclear Indicator is 1 or 2 | Always (see the NDT chart) | See "When an NDT step fails" |
 | 11 | Final Weld | Welding | Always | Moves on to Final NDT |
-| 12 | Final NDT | Inspector | Always (see the NDT chart) | See "When an NDT step fails" |
+| 12 | Final NDT | Inspector; NQC Inspector when Nuclear Indicator is 1 or 2 | Always (see the NDT chart) | See "When an NDT step fails" |
 | 13 | Records Review | O63 Records or O04 Records | Always. **O63** when the joint has SFFF, DSS-AAA or SS data; **O04** otherwise | **SAT**: moves on to Sold. **UNSAT**: recorded, but the joint stays in Records Review (what UNSAT should do is not decided yet) |
 | 14 | Sold | Same Records group as step 13 | Always | The joint is closed. Everything locks; only Deprogress can reverse it |
 
@@ -90,7 +90,7 @@ When the Repair step is signed, where the joint goes depends on what was chosen:
 - It requires **the same inspection that failed**. For example, if PT failed, Excavation NDT offers only PT.
 - **Exception:** if PT failed and Material Type 1 or 2 is non-ferrous or austenitic (Admin > Material Classification), Excavation NDT is **5X instead of PT**.
 - **UNSAT:** back to its own Repair step, which comes up blank. No new Repair is added. The same Excavation NDT comes back when the Repair is signed as Weld Repair again.
-- **SAT:** back to the NDT step that originally failed. With the PT exception above, it goes to that phase's VT/5X step instead, with **5X allowed** (normally that step offers only VT).
+- **SAT:** back to the NDT step that originally failed. With the PT exception above, it goes to that phase's 5X/VT step instead, with **5X allowed** (normally that step offers only VT).
 
 ### Cut
 

@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { Job } from '../jobs';
+import { Job, isNuclear } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
 import { DEFAULT_SIGNOFF_FIELDS, getTemplates } from './stage-templates';
@@ -24,9 +24,9 @@ export function buildStages(job: Job): WorkflowStage[] {
       : typeof t.required === 'function' ? t.required(job) : t.required;
     const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = t.id === 'fitup-insp' ? { releaseToWelding: 'yes' } : {};
-    /* route NDT inspections to NQC Inspector when N Ind. is 1 or 2; Sold follows whichever Records track reviewed the job */
-    const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
-      ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
+    /* the step's "Role when N Ind 1 or 2" (Admin > Routing Settings) on those joints; Sold follows whichever Records track reviewed the job */
+    const role = (isNuclear(job) && t.nqcRole)
+      ? t.nqcRole : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     /* Only Root (not Final Weld) gets the 5X inspection field, and only when NDT Root allows 5X --
        answering yes auto-signs the Root 5X/VT stage */
     let fields = (t.id === 'root-weld' && (job.ndtRoot || '').trim().toUpperCase() === '5X')

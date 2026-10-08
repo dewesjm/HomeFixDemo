@@ -127,6 +127,7 @@ export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     label: `${phase[0].toUpperCase()}${phase.slice(1)} NDT ${k.label}`,
     required: true,
     role: 'Inspector',
+    nqcRole: 'NQC Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
     rejectToStage: 'repair',

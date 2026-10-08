@@ -37,6 +37,7 @@ interface RoutingRow {
   sequence: number;
   rejectToStage: string;
   role: Role;
+  nqcRole: string;        /* signs instead of role when Nuclear Indicator is 1 or 2; blank = role */
   includedWhen: string;   /* describeConditions() of the step's rules */
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
@@ -112,6 +113,7 @@ export class AdminRoutingComponent {
           sequence: i + 1,
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) || 'View',
+          nqcRole: t.nqcRole ?? '',
           includedWhen: describeConditions(t.includeWhen),
           rejectRules: [],
           fabricationEditable: !!t.fabricationEditable,
@@ -128,7 +130,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
+    const row: RoutingRow = { id: fullId, routing: '', trade, sequence: -1, rejectToStage: '', role: 'View', nqcRole: '', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -166,7 +168,7 @@ export class AdminRoutingComponent {
     if (isNew) {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
-        id: newId, label: row.routing, required: true, role: row.role,
+        id: newId, label: row.routing, required: true, role: row.role, nqcRole: row.nqcRole,
         fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
@@ -179,6 +181,7 @@ export class AdminRoutingComponent {
         label: row.routing,
         rejectToStage: row.rejectToStage,
         role: row.role,
+        nqcRole: row.nqcRole,
         fabricationEditable: row.fabricationEditable,
       });
     }
@@ -198,7 +201,7 @@ export class AdminRoutingComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: RoutingRow, field: 'routing' | 'role', value: string) {
+  updateField(row: RoutingRow, field: 'routing' | 'role' | 'nqcRole', value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
   }
 
@@ -480,7 +483,9 @@ export class AdminRoutingComponent {
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
-      { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' }
+      { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
+      { header: 'Role', value: (r: RoutingRow) => r.role },
+      { header: 'Role when N Ind 1 or 2', value: (r: RoutingRow) => r.nqcRole || 'Same as Role' }
     ], this.visibleRows());
   }
 }
