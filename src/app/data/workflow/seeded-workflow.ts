@@ -90,7 +90,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const ptAllowed = !!wf.stages[lastSigned]?.typeOptions?.some(o => o.value === 'pt');
   const ptHoldAt = !awaitingRelease && ptPhase && ptAllowed && idHash % SEEDED_PT_HOLD_EVERY === SEEDED_PT_HOLD_AT ? lastSigned : -1;
   const ptWeldId = ptPhase ? PHASE_WELD_STEP[ptPhase] : '';
-  /* and a handful whose last NDT (VT/5X or RT/UT) was UNSAT, so they wait on Repair; a couple of those
+  /* and a handful whose last NDT (5X/VT or RT/UT) was UNSAT, so they wait on Repair; a couple of those
      had a Weld Repair signed and wait on Excavation NDT. MT/PT is left out so the PT reject rule can't apply. */
   const repairPhase = /^(root|layer|final)-ndt-(vt5x|utrt)$/.exec(wf.stages[lastSigned]?.id ?? '')?.[1];
   const repairAt = !awaitingRelease && holdAt < 0 && ptHoldAt < 0 && repairPhase

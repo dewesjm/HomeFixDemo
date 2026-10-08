@@ -66,7 +66,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
     ],
   },
   vt5x: {
-    label: 'VT/5X',
+    label: '5X/VT',
     options: [{ label: 'VT', value: 'vt' }, { label: '5X', value: '5x' }],
     fields: [
       /* also hidden unless the joint is titanium (fieldAppliesToJob in stage-display.ts) */
@@ -81,7 +81,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
 };
 
 /* Each phase's NDT steps come from its Joint Details values (NDT Root + RT Root, NDT Each for
-   Layer, NDT Final + RT Final), in VT/5X, MT/PT, RT/UT order:
+   Layer, NDT Final + RT Final), in 5X/VT, MT/PT, RT/UT order:
      - VT always, or 5X instead when the NDT value is 5X
      - MT, PT or UT adds that step with its Type locked to it; MT/PT adds the MT/PT step with a choice
      - an RT degree (anything but blank or NA) adds the RT/UT step locked to RT

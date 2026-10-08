@@ -44,7 +44,7 @@ function routeLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, act
 }
 
 /* The stage Excavation NDT's SAT routes back to (the NDT stage that originally rejected the joint,
-   or that phase's VT/5X when the PT/material rule applies). `repair` carries the origin bookkeeping
+   or that phase's 5X/VT when the PT/material rule applies). `repair` carries the origin bookkeeping
    (inputs originPhase / originStageId / originInspectionType). */
 function originInspectionLabel(job: Job, repair: WorkflowStage | undefined, labelOf: (id: string) => string): string {
   if (!repair) return 'the original joint inspection';

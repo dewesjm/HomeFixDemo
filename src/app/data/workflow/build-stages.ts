@@ -28,7 +28,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     const role = (t.role === 'Inspector' && (job.nInd === '1' || job.nInd === '2'))
       ? 'NQC Inspector' : t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     /* Only Root (not Final Weld) gets the 5X inspection field, and only when NDT Root allows 5X --
-       answering yes auto-signs the Root VT/5X stage */
+       answering yes auto-signs the Root 5X/VT stage */
     let fields = (t.id === 'root-weld' && (job.ndtRoot || '').trim().toUpperCase() === '5X')
       ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
           options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]

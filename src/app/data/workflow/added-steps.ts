@@ -23,7 +23,7 @@ export function allowableThicknessAmount(nInd: string): string {
 
 /* Inserted when an NDT step is UNSAT. Its own routing on signoff (SignoffService.signStage()):
    Allowable thickness exceeded -> back to that phase's NDT RT/UT; else Grind Only -> that phase's
-   NDT VT/5X; Weld Repair -> inserts Excavation NDT next; Cut -> back to Fit. Its Type options are the
+   NDT 5X/VT; Weld Repair -> inserts Excavation NDT next; Cut -> back to Fit. Its Type options are the
    Repair row of Admin > Signoff Type Availability. */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
@@ -48,7 +48,7 @@ const EXCAVATION_NDT_LABEL = 'Excavation NDT';
 /* Inserted after Repair when Repair Code = Weld Repair. The excavation is the removal of the rejected
    material; this step signs off that it was cleaned out correctly, so it "requires the same
    inspection that was noted as reject" -- same fields and the same single-option Type as whatever
-   method (RT/UT/MT/PT/VT/5X) originally rejected the joint, not a fresh generic NDT check.
+   method (RT/UT/MT/PT/5X/VT) originally rejected the joint, not a fresh generic NDT check.
    `inspectionType` is the resolved single value the caller (SignoffService) passes in -- normally the
    origin's own inspectionType, except PT on non-ferrous/austenitic material requires 5X instead (the
    caller decides that, since it needs the job's material classification). UNSAT routes back to its

@@ -305,7 +305,7 @@ describe('SignoffService', () => {
       expect(store.workflowFor(job)().repairNumber).toBe('02');
     });
 
-    it('PT on austenitic material: Excavation NDT SAT goes back to that phase VT/5X with 5X allowed', () => {
+    it('PT on austenitic material: Excavation NDT SAT goes back to that phase 5X/VT with 5X allowed', () => {
       const job = weldingJob({ ndtRoot: 'PT', materialType1: '12-SS304' });
       patch(job, 'root-ndt-mtpt', { inspectionType: 'pt' });
       failNdt(job, 'root-ndt-mtpt');

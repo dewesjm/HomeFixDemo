@@ -216,7 +216,7 @@ export class SignoffService {
        unless otherwise stated" -- goes back to the exact NDT stage that originally rejected the joint
        (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
        override applied when Excavation NDT was created (resolveExcavationInspectionType), in
-       which case it goes back to that phase's VT/5X stage instead. Excavation NDT's own UNSAT is
+       which case it goes back to that phase's 5X/VT stage instead. Excavation NDT's own UNSAT is
        handled generically above via its rejectToStage (its own round's Repair). */
     if (isExcavationNdtStageId(stageId) && st.result === 'sat') {
       const repair = stages.find(s => s.id === repairIdForExcavation(stageId));
@@ -225,7 +225,7 @@ export class SignoffService {
       const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
       const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
       if (resolvedType !== originInspectionType && phase) {
-        /* the VT/5X stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
+        /* the 5X/VT stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
         const vtId = `${phase}-ndt-vt5x`;
         routeBackTo(vtId);
         stages = stages.map(s => s.id === vtId ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);

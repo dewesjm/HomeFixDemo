@@ -137,6 +137,6 @@ describe('every field as a condition (Admin > Routing Settings)', () => {
     stages = applySignedFlags(stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, signed: true, inputs: { ...s.inputs, weldColor: 'straw' } } : s), job);
     expect(req()).toBeTrue();
     expect(describeConditions(getTemplates()['Welding'].find(t => t.id === 'root-layer')!.includeWhen))
-      .toBe('Root NDT VT/5X: Weld Color is Straw');
+      .toBe('Root NDT 5X/VT: Weld Color is Straw');
   });
 });

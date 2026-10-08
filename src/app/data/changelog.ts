@@ -10,6 +10,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-08',
+    changed: [
+      'The VT/5X NDT steps are now labeled 5X/VT (Root, Layer and Final NDT).',
+    ],
+  },
+  {
     date: '2026-10-06',
     fixed: [
       'Interim Layer: after an Interim Layer signoff, Layer now comes up blank for the next one instead of keeping the last values.',

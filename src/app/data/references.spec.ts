@@ -7,7 +7,7 @@ describe('showsReferences', () => {
     }
   });
 
-  it('does not show on VT/5X, MT/PT, Excavation NDT or non-NDT steps', () => {
+  it('does not show on 5X/VT, MT/PT, Excavation NDT or non-NDT steps', () => {
     for (const id of ['root-ndt-vt5x', 'layer-ndt-vt5x', 'final-ndt-vt5x', 'root-ndt-mtpt', 'layer-ndt-mtpt',
                       'final-ndt-mtpt', 'excavation-ndt', 'excavation-ndt-2', 'pre-fit', 'fit', 'fitup-insp', 'root-weld', '']) {
       expect(showsReferences(id)).withContext(id).toBeFalse();

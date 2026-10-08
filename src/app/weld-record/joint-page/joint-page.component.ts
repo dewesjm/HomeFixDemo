@@ -548,7 +548,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   /* The 5X question on Root only records the answer; once Root itself is signed, a "yes" auto-signs
-     the Root VT/5X NDT stage. Answering must never sign anything on its own. */
+     the Root 5X/VT NDT stage. Answering must never sign anything on its own. */
   private signRelated5xIfNeeded(stage: WorkflowStage) {
     if (!this.job || !this.wf) return;
     if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
