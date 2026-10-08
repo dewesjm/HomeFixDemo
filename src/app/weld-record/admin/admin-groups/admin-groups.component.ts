@@ -55,67 +55,64 @@ const PERMISSIONS: Permission[] = [
 
 const COLORS = ['#1976d2', '#e53935', '#f57c00', '#388e3c', '#7b1fa2', '#00838f', '#c2185b', '#5d4037'];
 
+/* sets the listed permissions to allow and every other one to not-set */
+function allowOnly(keys: string[]): Record<string, 'allow' | 'deny' | 'not-set'> {
+  return Object.fromEntries(PERMISSIONS.map(p => [p.key, keys.includes(p.key) ? 'allow' : 'not-set']));
+}
+
+/* one sample group per persona (the Persona column in Admin > Routing Settings), plus Administrators */
 const DEFAULT_GROUPS: AdminGroup[] = [
   {
-    id: 'g1', name: 'Hull Administrators', description: 'Members of this group can perform all operations on hull records.',
-    avatarColor: '#1976d2', memberCount: 2,
-    permissions: Object.fromEntries(PERMISSIONS.map(p => [p.key, 'allow'])),
+    id: 'g1', name: 'Administrators', description: 'Full access to every record and admin page.',
+    avatarColor: COLORS[0], memberCount: 2,
+    permissions: allowOnly(PERMISSIONS.map(p => p.key)),
   },
   {
-    id: 'g2', name: 'Welding Inspectors', description: 'Certified welding inspectors with full sign-off authority across all welding stages.',
-    avatarColor: '#388e3c', memberCount: 4,
-    permissions: (() => {
-      const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
-      for (const p of PERMISSIONS) {
-        if (p.key.startsWith('signoff-') || p.key === 'view-hull' || p.key === 'view-all-stages' || p.key.startsWith('edit-')) {
-          perms[p.key] = 'allow';
-        } else {
-          perms[p.key] = 'not-set';
-        }
-      }
-      return perms;
-    })(),
+    id: 'g2', name: 'Fitting', description: 'Fitters who sign off the Fit step.',
+    avatarColor: COLORS[1], memberCount: 6,
+    permissions: allowOnly(['view-hull', 'edit-fabrication']),
   },
   {
-    id: 'g3', name: 'NDT Technicians', description: 'NDT technicians authorized to perform and sign off non-destructive testing stages.',
-    avatarColor: '#7b1fa2', memberCount: 3,
-    permissions: (() => {
-      const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
-      for (const p of PERMISSIONS) {
-        if (['signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'view-hull'].includes(p.key)) {
-          perms[p.key] = 'allow';
-        } else {
-          perms[p.key] = 'not-set';
-        }
-      }
-      return perms;
-    })(),
+    id: 'g3', name: 'Welding', description: 'Welders who sign off Tack, Root, Layer and Final Weld.',
+    avatarColor: COLORS[2], memberCount: 8,
+    permissions: allowOnly(['view-hull', 'edit-fabrication']),
   },
   {
-    id: 'g4', name: 'Weld Technicians', description: 'Welders and fitters - can enter data but cannot sign off on inspection stages.',
-    avatarColor: '#f57c00', memberCount: 6,
-    permissions: (() => {
-      const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
-      for (const p of PERMISSIONS) {
-        if (['edit-fabrication', 'edit-inspection', 'edit-er-ir', 'view-hull'].includes(p.key)) {
-          perms[p.key] = 'allow';
-        } else {
-          perms[p.key] = 'not-set';
-        }
-      }
-      return perms;
-    })(),
+    id: 'g4', name: 'Foreman', description: 'Foremen who sign off Fit-Up Insp, Fit-Up Release and Repair.',
+    avatarColor: COLORS[3], memberCount: 3,
+    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-fitup-release', 'edit-fabrication']),
   },
   {
-    id: 'g5', name: 'Viewers', description: 'Members of this group have read-only access to hull records.',
-    avatarColor: '#5d4037', memberCount: 8,
-    permissions: (() => {
-      const perms: Record<string, 'allow' | 'deny' | 'not-set'> = {};
-      for (const p of PERMISSIONS) {
-        perms[p.key] = p.key === 'view-hull' ? 'allow' : 'not-set';
-      }
-      return perms;
-    })(),
+    id: 'g5', name: 'Inspector', description: 'Inspectors who sign off Fit-Up Insp and the NDT steps.',
+    avatarColor: COLORS[4], memberCount: 4,
+    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-visual',
+      'signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'edit-inspection']),
+  },
+  {
+    id: 'g6', name: 'NQC Inspector', description: 'NQC Inspectors who sign off Pre-Fit, and Fit-Up Insp and the NDT steps on N Ind. 1 or 2 joints.',
+    avatarColor: COLORS[5], memberCount: 2,
+    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-fitup-insp', 'signoff-visual',
+      'signoff-ndt-root', 'signoff-ndt-each', 'signoff-ndt-final', 'signoff-ut', 'edit-ndt', 'edit-inspection']),
+  },
+  {
+    id: 'g7', name: 'O63 Records', description: 'O63 Records, who sign off O63 Records Review and Sold.',
+    avatarColor: COLORS[6], memberCount: 2,
+    permissions: allowOnly(['view-hull', 'view-all-stages', 'signoff-final']),
+  },
+  {
+    id: 'g8', name: 'O04 Records', description: 'O04 Records, who sign off O04 Records Review.',
+    avatarColor: COLORS[7], memberCount: 2,
+    permissions: allowOnly(['view-hull', 'view-all-stages']),
+  },
+  {
+    id: 'g9', name: 'Engineering', description: 'Engineers who sign off Engineering Hold and manage routing.',
+    avatarColor: COLORS[0], memberCount: 3,
+    permissions: allowOnly(['view-hull', 'view-all-stages', 'manage-routing', 'manage-templates', 'force-routing', 'edit-er-ir']),
+  },
+  {
+    id: 'g10', name: 'View', description: 'Read-only access to joint records.',
+    avatarColor: COLORS[1], memberCount: 10,
+    permissions: allowOnly(['view-hull']),
   },
 ];
 
