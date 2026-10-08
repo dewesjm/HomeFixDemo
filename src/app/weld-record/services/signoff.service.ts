@@ -147,7 +147,7 @@ export class SignoffService {
       } else if (isNdtStage && rejectTo === 'repair') {
         reasons.push('the NDT was UNSAT, so a Repair is added');
         /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
-           method it was checked under (ut/rt/mt/pt/vt/5x) -- Repair's own routing on signoff, and
+           method it was checked under (ut/rt/mt/pt/5x/vt) -- Repair's own routing on signoff, and
            Excavation NDT's routing back to "the original joint inspection" after a Weld Repair,
            both need this (see further down). Not real StageFields, just internal bookkeeping on
            stage.inputs. */

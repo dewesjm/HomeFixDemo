@@ -105,7 +105,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'The top bar now starts flattened: the app opens on Weld Record\'s menu items with Pipe Welding selected. The button next to the system name still switches back to all systems.',
       'The app starts in the Light theme (was Forest). A theme picked with the Theme button is still remembered.',
       'Advanced Search (Weld Record and Weld Planning): "Variant" is now called "View" (Save view…), and "Adapt filters" is now "Customize filters". Your saved ones are kept.',
-      'Attachments is now called References. It shows only on RT/UT (Root, Layer and Final NDT) and Repair, no longer on VT/5X or Excavation NDT. The Correct dialog in Work History still shows References on every step.',
+      'Attachments is now called References. It shows only on RT/UT (Root, Layer and Final NDT) and Repair, no longer on 5X/VT or Excavation NDT. The Correct dialog in Work History still shows References on every step.',
       'A locked Type droplist (Layer NDT, Excavation NDT) no longer has a note under it. The reason is at the end of the Routing Preview instead, for example "Type is set by NDT Each (5X)."',
       'Admin > Routing: the Delete (trash) button now asks "Delete <step>?" before deleting.',
       'RT/UT: picking a Degree of RT Performed that doesn\'t match the required degree shows the error right away, not only when Signoff is pressed.',
@@ -129,7 +129,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Work History > Correct: the message under a locked field no longer ends with a leftover note asking if the value needs to change, and says routing instead of stage.',
       'The UT/RT steps (Root, Layer and Final NDT) are now called RT/UT, and their Type lists RT first.',
       'Every demo joint now has sign-offs in its history; none start with nothing signed. Work History shows each joint\'s actual sign-offs (the same ones as on the joint), so Correct and Deprogress show up wherever they apply. Before, joints not yet opened showed made-up rows with no Correct button.',
-      'A handful of demo joints now start on Repair after a failed VT/5X or RT/UT, and a few start on Excavation NDT after a Weld Repair. Their Repair # is 01.',
+      'A handful of demo joints now start on Repair after a failed 5X/VT or RT/UT, and a few start on Excavation NDT after a Weld Repair. Their Repair # is 01.',
     ],
   },
   {
@@ -156,7 +156,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Routing Order is saved now: drag a row (or use its arrows) to change the order new joints get their steps in. Before, the arrows only moved the row on screen and a refresh put it back.',
       'Admin > Routing has a "Fabrication editable" column: the Fabrication fields can be changed while the current step has it set to Yes. It starts as Yes from Prep through Fit-Up Insp, so the fields still lock once Fit-Up Insp is signed. Changes apply to joints already in progress too.',
       'Admin > Routing conditions can use "contains" with typed text (any case), besides "is" and "is not".',
-      'Admin > Routing conditions can use any Joint Details field and any earlier step\'s answers (for example Root NDT VT/5X Weld Color is Straw). A step that depends on another step\'s answer turns on or off once that step is signed.',
+      'Admin > Routing conditions can use any Joint Details field and any earlier step\'s answers (for example Root NDT 5X/VT Weld Color is Straw). A step that depends on another step\'s answer turns on or off once that step is signed.',
       'Admin > Routing reject rules: on a step with a SAT/UNSAT choice, the button in "Reject routes to" lets you send an UNSAT somewhere else when the step\'s own answers (for example Weld Color) or Joint Details match. The first matching rule wins; otherwise the normal target is used.',
     ],
     changed: [
@@ -281,7 +281,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Signoff button is always enabled; a failed signoff highlights every missing required field in red.',
-      'Root, Layer and Final NDT run in the order VT/5X, MT/PT, UT/RT.',
+      'Root, Layer and Final NDT run in the order 5X/VT, MT/PT, UT/RT.',
       'Interim Layer signoff is recorded, but Layer stays the current routing.',
       'Steps with no SAT/UNSAT choice don\'t show SAT anywhere.',
       'Repair Code is a droplist.',
