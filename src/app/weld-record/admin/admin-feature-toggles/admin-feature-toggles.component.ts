@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { FeatureToggles, loadFeatureToggles, saveFeatureToggles } from '../../../data/feature-toggles';
+import { Component } from '@angular/core';
+import { FeatureToggles, featureToggles, setFeatureToggle } from '../../../data/feature-toggles';
 
 /* Admin > Feature Toggles: each switch saves as soon as it's changed */
 @Component({
@@ -8,10 +8,9 @@ import { FeatureToggles, loadFeatureToggles, saveFeatureToggles } from '../../..
   templateUrl: './admin-feature-toggles.component.html'
 })
 export class AdminFeatureTogglesComponent {
-  toggles = signal<FeatureToggles>(loadFeatureToggles());
+  toggles = featureToggles;
 
   set(key: keyof FeatureToggles, on: boolean) {
-    this.toggles.update(t => ({ ...t, [key]: on }));
-    saveFeatureToggles(this.toggles());
+    setFeatureToggle(key, on);
   }
 }

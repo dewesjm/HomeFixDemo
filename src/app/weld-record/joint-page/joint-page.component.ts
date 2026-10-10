@@ -30,7 +30,7 @@ import {
   activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
 } from '../../data/workflow';
-import { loadFeatureToggles } from '../../data/feature-toggles';
+import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
@@ -282,7 +282,7 @@ export class JointPageComponent implements OnDestroy {
   /* ── Routing preview ── */
 
   /* the demo routing preview under the Signoff button (route-preview.ts) */
-  private routingPreviewOn = loadFeatureToggles().routingPreview;
+  private routingPreviewOn = featureToggles().routingPreview;
   routePreviewLabel(stage: WorkflowStage): string {
     if (!this.routingPreviewOn || !this.job || !this.wf) return '';
     const wf = this.wf();

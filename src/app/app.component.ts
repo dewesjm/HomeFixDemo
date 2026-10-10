@@ -19,12 +19,13 @@ import {
     LucideBug, LucideClipboardCheck, LucideDroplet, LucideMap, LucideListChecks
 } from '@lucide/angular';
 import { getQuickLinks, QuickLink } from './data/quick-links';
+import { featureToggles } from './data/feature-toggles';
 
 // check for version updates periodically, only full refresh will check
 const UPDATE_POLL_MS = 5 * 60 * 1000;
 
 /* which top-level system a page belongs to; anything not claimed by another system is Weld Record
-   (My Assignments, Pipe Welding, History, Advanced Search, Makeup, Admin) */
+   (My Assignments, Pipe Welding, History, Makeup, Admin) */
 function systemForUrl(url: string): string {
   if (url.startsWith('/weld-planning')) return 'Weld Planning';
   if (url.startsWith('/weld-assignment')) return 'Weld Dispatch';
@@ -74,6 +75,7 @@ export class AppComponent {
      the 4 system dropdowns), its Admin still as its own dropdown -- one click fewer per page. One switch
      for all systems: it always flattens whichever system the current page belongs to. On by default, so the
      app opens on Weld Record's flat bar with Pipe Welding (the '' route) selected. */
+  toggles = featureToggles;
   flatNav = signal(true);
   toggleFlatNav() { this.flatNav.update(v => !v); }
 

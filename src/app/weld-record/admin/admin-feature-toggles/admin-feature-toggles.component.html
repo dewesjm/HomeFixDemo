@@ -10,4 +10,12 @@
       <span class="block">Shows where each step will route to on signoff, under its Signoff button.</span>
     </span>
   </label>
+  <label class="flex items-start gap-3 cursor-pointer">
+    <input type="checkbox" class="toggle toggle-primary mt-0.5"
+           [checked]="toggles().classicPipeWelding" (change)="set('classicPipeWelding', $any($event.target).checked)" />
+    <span>
+      <span class="font-semibold">Classic Pipe Welding page</span>
+      <span class="block">Brings back the old Pipe Welding table, without Advanced Search's filters, columns and views, as Pipe Welding (Classic) in the Weld Record menu.</span>
+    </span>
+  </label>
 </div>

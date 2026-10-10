@@ -1,6 +1,8 @@
 /* route table */
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
+import { featureToggles } from './data/feature-toggles';
 import { PipeSearchComponent } from './weld-record/pipe-search/pipe-search.component';
 import { WorkHistoryComponent } from './weld-record/work-history/work-history.component';
 import { AdaptiveSearchComponent } from './weld-record/adaptive-search/adaptive-search.component';
@@ -44,10 +46,15 @@ import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-s
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-search' },
-  { path: 'pipe-search', component: PipeSearchComponent, title: 'EWR - Pipe Welding' },
+  /* Pipe Welding is the Advanced Search page; /adaptive was its address before the two merged */
+  { path: 'pipe-search', component: AdaptiveSearchComponent, title: 'EWR - Pipe Welding' },
+  { path: 'adaptive', redirectTo: 'pipe-search' },
+  /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
+     is on; kept so it can be turned back on without a rewrite */
+  { path: 'pipe-search-classic', component: PipeSearchComponent, title: 'EWR - Pipe Welding (Classic)',
+    canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-search')] },
   { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments' },
   { path: 'history', component: WorkHistoryComponent, title: 'EWR - History' },
-  { path: 'adaptive', component: AdaptiveSearchComponent, title: 'EWR - Advanced Search' },
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing Settings' },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */

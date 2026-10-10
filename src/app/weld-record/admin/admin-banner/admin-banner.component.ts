@@ -29,7 +29,6 @@ export class AdminBannerComponent {
   pageOptions: { label: string; value: BannerPage }[] = [
     { label: 'All pages', value: 'all' },
     { label: 'Pipe Welding', value: 'pipe-welding' },
-    { label: 'Advanced Search', value: 'advanced-search' },
     { label: 'Joint Search (Weld Planning)', value: 'weld-planning' },
   ];
 

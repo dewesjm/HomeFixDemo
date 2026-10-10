@@ -1,7 +1,7 @@
 /* Admin-managed site banner, stored in localStorage and shown on selected pages. */
 import { STORAGE } from './storage-keys';
 
-export type BannerPage = 'all' | 'pipe-welding' | 'advanced-search' | 'weld-planning';
+export type BannerPage = 'all' | 'pipe-welding' | 'weld-planning';
 
 export interface BannerData {
   message: string;
@@ -17,7 +17,10 @@ export function loadBanner(): BannerData {
     const raw = localStorage.getItem(STORAGE.banner);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return { ...DEFAULT_BANNER, pages: parsed.pages ?? ['all'], ...parsed };
+      /* a banner saved for Advanced Search shows on Pipe Welding, the page Advanced Search became */
+      const pages: string[] = parsed.pages ?? ['all'];
+      const mapped = [...new Set(pages.map(p => (p === 'advanced-search' ? 'pipe-welding' : p)))] as BannerPage[];
+      return { ...DEFAULT_BANNER, ...parsed, pages: mapped };
     }
   } catch { /* fall through to default */ }
   return { ...DEFAULT_BANNER };

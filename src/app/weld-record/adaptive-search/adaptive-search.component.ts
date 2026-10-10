@@ -1,6 +1,7 @@
-/* Advanced Search: Pipe Welding's table (role, keyword search, column filters, Release to Welding,
-   History) plus Adapt filters with stacked conditions, a column picker and saved variants that keep
-   filters and columns together. Every Job, Fabrication and step field can be a filter or a column. */
+/* Pipe Welding (built as Advanced Search, still named that in code): the job table (role, keyword
+   search, column filters, Release to Welding, History) plus Adapt filters with stacked conditions, a
+   column picker and saved variants that keep filters and columns together. Every Job, Fabrication and
+   step field can be a filter or a column. */
 import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -57,7 +58,7 @@ export class AdaptiveSearchComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
   readonly STANDARD = STANDARD_VARIANT;
-  banner = signal(bannerFor('advanced-search'));
+  banner = signal(bannerFor('pipe-welding'));
   roleOptions = ROLES.map(r => ({ label: r === 'View' ? 'View All' : r, value: r }));
 
   fields = searchFields();
@@ -472,7 +473,7 @@ export class AdaptiveSearchComponent {
   }
 
   exportCsv() {
-    downloadCsv('advanced-search', this.visibleColumns().map(f => ({
+    downloadCsv('pipe-welding', this.visibleColumns().map(f => ({
       header: f.label,
       value: (r: SearchRow) => f.kind === 'date' ? (r[f.key] ? formatDate(r[f.key]) : '') : String(r[f.key] ?? ''),
     })), this.table.sorted());

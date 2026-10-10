@@ -110,8 +110,8 @@ src/app/
                           here 2026-09-23 — was 24 flat top-level folders; every admin-* folder turned out to
                           belong to Weld Record specifically, none to Weld Planning). Nesting is purely file
                           location — routes/URLs/component names are unchanged.
-    pipe-search/           Pipe Welding — the deliberately simple, fast job table (filters, role, CSV, banner)
-    adaptive-search/       Advanced Search — Pipe Welding's table + stacked-condition filters, every field, variants with columns
+    pipe-search/           Pipe Welding (Classic) — the old simple job table, switched off by a feature toggle
+    adaptive-search/       Pipe Welding (built as Advanced Search) — job table + stacked-condition filters, every field, variants with columns
     work-history/          History — audit-trail activity log with deprogress; history-table is its table, which
                            Records Review also shows for one joint
     my-assignments/        My Assignments — assignment list with keyword search
@@ -298,16 +298,17 @@ src/app/
 
 | Route | Screen |
 |---|---|
-| `/pipe-search` | Pipe Welding (default) |
+| `/pipe-search` | Pipe Welding (default) = `AdaptiveSearchComponent` |
+| `/pipe-search-classic` | Pipe Welding (Classic) = `PipeSearchComponent`; redirects to `/pipe-search` unless Admin > Feature Toggles > Classic Pipe Welding page is on |
 | `/history` | History (`?job=<id>` deep-link) |
-| `/adaptive` | Advanced Search |
+| `/adaptive` | Redirects to `/pipe-search` (Advanced Search's address before the merge) |
 | `/jobs/:id` | Job detail (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
 | `/assignments` | My Assignments |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes from 2026-09-21 on, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
 | `/admin/routing`, `/admin/set-routing`, `/admin/signoff-types` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, ship-locations (+ /import), weld-positions, banner, joint-designs, groups, qualifications, material-traceability, inspection-procedures, defect-codes) |
 | `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |
-| `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — the older `/adaptive` pattern, before stacked conditions; scoped to `WeldJoint`) |
+| `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — the older pattern of Weld Record's search, before stacked conditions; scoped to `WeldJoint`) |
 | `/weld-planning/import` | Weld Planning mass import/edit |
 | `/weld-planning/admin` | Weld Planning admin (Joint Designs & NDT) |
 | `/weld-engineering`, `/weld-engineering/procedures/:id` | Procedure Lookup list + PDF detail |
@@ -333,14 +334,16 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
 
 ## Screens
 
-### Pipe Welding (`pipe-search`)
+### Pipe Welding (Classic) (`pipe-search`)
+- **Switched off**: Pipe Welding is the Advanced Search screen below. This one opens at `/pipe-search-classic` only while the `classicPipeWelding` feature toggle (`data/feature-toggles.ts`, a signal the menu and route guard read) is on, and then has its own Weld Record menu entry. Kept so it can be turned back on without a rewrite.
 - Deliberately the "dumb", fast version. Layout: `table-page-wrap` (fixed header/filters, scrollable table).
 - Columns: XREFID, Hull, Drawing, Joint, Order, Sequence, Current routing, Actions — sortable, with per-column filters via `appSortHeader`.
 - Role dropdown, CSV export (right-aligned, next to the keyword search box — moved 2026-09-23), page-size selector, admin banner pill, frozen Actions column on mobile.
 - Persists filter/sort/page/role to `STORAGE.searchState`.
 
-### Advanced Search (`adaptive-search`)
-- **Pipe Welding plus the adaptive tools** (2026-09-30, user: combine the two but leave Pipe Welding alone; if it works out, Pipe Welding may follow later). Layout is Pipe Welding's `table-page-wrap`. Has everything Pipe Welding has: role droplist (same "current step's role" filter, `View All`), keyword search over XREFID/hull/drawing/joint/order/sequence, `appSortHeader` sort + filter in every column heading (multiselect for list fields, text box for text, sort only for numbers/dates), checkbox select + Release to Welding (Foreman, Fit-Up Release rows), History + Details buttons, banner pill (own banner target `advanced-search`).
+### Pipe Welding, formerly Advanced Search (`adaptive-search`)
+- **Is Pipe Welding** since 2026-10-10: route `/pipe-search`, menu entry Pipe Welding, heading Pipe Welding, banner target `pipe-welding` (a banner saved for `advanced-search` loads as `pipe-welding`), CSV `pipe-welding.csv`. Code names (`adaptive-search`, `AdaptiveSearchComponent`, `STORAGE.advancedSearchState`) are unchanged.
+- **Pipe Welding plus the adaptive tools** (2026-09-30, user: combine the two but leave Pipe Welding alone; if it works out, Pipe Welding may follow later). Layout is Pipe Welding's `table-page-wrap`. Has everything Pipe Welding has: role droplist (same "current step's role" filter, `View All`), keyword search over XREFID/hull/drawing/joint/order/sequence, `appSortHeader` sort + filter in every column heading (multiselect for list fields, text box for text, sort only for numbers/dates), checkbox select + Release to Welding (Foreman, Fit-Up Release rows), History + Details buttons, banner pill.
 - **Fields** (`searchFields()` in `data/filter-schema.ts`): one list used for both filters and columns. Every `Job` field (incl. Ship), Current routing, every Fabrication field (`fab.<key>`, select values shown as labels), and every Welding step's own answers (`step.<stageId>.<key>`, from `allStepAnswerFields()` in `step-conditions.ts`, same fields Admin > Routing Settings conditions use; blank until that step is signed). Built when the screen opens since step templates are admin-editable. Rows are built by `buildRow()`; fabrication/step values are only worked out for keys a column, filter or sort uses (there are a lot of step fields).
 - **Stacked conditions**: filter values are `Record<fieldKey, Condition[]>`; each field in the bar shows its conditions (operator droplist + value) and "Add condition". Operators: text `contains / does not contain / is / is not / starts with / is blank / is not blank`; list fields `is / is not` (multiselect of the values present) plus contains/does not contain/blank; numbers and dates `between / greater than (after) / less than (before)`. Combining (user picked "same field OR, different fields AND"; how "not" operators fit is my reading, SAP-style): a field's include conditions are OR'd, its exclude conditions (does not contain, is not, is not blank) must all hold; different fields AND. The stacked rows are prefixed "or"/"and" to show this. Chips read e.g. `Hull: starts with "S" or starts with "T", and does not contain "7"`. Empty conditions don't filter. Taking a field out of the bar (Adapt filters) clears its conditions.
 - **UI wording (2026-10-03, user asked to drop SAP Fiori terms)**: the screens say **View** ("Save view…", "Delete this view", "View name") and **Customize filters**; the code, storage keys and the notes below still say variant / Adapt filters. The built-in one is still labeled **Standard**.

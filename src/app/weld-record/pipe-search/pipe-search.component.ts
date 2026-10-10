@@ -1,4 +1,7 @@
 //This is the main search, with filters, keywords, frozen columns, export to excel call
+/* Switched off: Pipe Welding is now the Advanced Search page. This classic table opens at
+   /pipe-search-classic only while the Classic Pipe Welding page feature toggle is on; kept so it can
+   be turned back on without a rewrite. */
 import { bannerFor } from '../../data/banner';
 import { STORAGE } from '../../data/storage-keys';
 import { Component, computed, effect, signal } from '@angular/core';
