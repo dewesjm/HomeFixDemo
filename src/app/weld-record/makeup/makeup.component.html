@@ -71,13 +71,7 @@
       @for (row of table.sorted(); track row.id) {
         <tr>
           <td class="font-medium">{{ row.person }}</td>
-          <td>
-            @switch (row.status) {
-              @case ('Active') { <span class="badge badge-sm badge-success">ACTIVE</span> }
-              @case ('Upcoming') { <span class="badge badge-sm badge-info">UPCOMING</span> }
-              @default { <span class="badge badge-sm badge-ghost">INACTIVE</span> }
-            }
-          </td>
+          <td>{{ row.status }}</td>
           <td>
             @if (editingId() === row.id) {
               <input type="date" class="input input-bordered input-xs" [attr.min]="today"

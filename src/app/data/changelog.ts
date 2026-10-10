@@ -14,7 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'Makeup has the same toolbar as the admin tables: search, Export, and Add makeup at the top (the new row opens at the top of the table). Columns sort when you click the heading, and a Changed by column shows who last added or edited each grant.',
       "Advanced Search is now the Pipe Welding page: same filters, columns and saved views, in Pipe Welding's place in the Weld Record menu. The separate Advanced Search menu entry is gone. The old Pipe Welding table is switched off; Admin > Feature Toggles > Classic Pipe Welding page brings it back as Pipe Welding (Classic). Admin > Banner's Advanced Search choice is now part of Pipe Welding.",
-      'Makeup hides grants that have ended; check Show inactive to see them. Grants that start later show as UPCOMING. Removing a grant asks you to confirm.',
+      'Makeup hides grants that have ended; check Show inactive to see them. Status is plain text: Active, Upcoming (starts later) or Inactive. Removing a grant asks you to confirm.',
     ],
   },
   {
