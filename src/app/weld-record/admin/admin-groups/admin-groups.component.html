@@ -19,8 +19,8 @@
   </thead>
   <tbody>
     @for (row of table.sorted(); track row.id) {
-      <tr class="align-top">
-        <td>
+      <tr>
+        <td class="align-top">
           @if (editingId() === row.id) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0"
                    [ngModel]="row.name" (ngModelChange)="updateField(row, 'name', $event)"
@@ -29,7 +29,7 @@
             <span class="font-semibold">{{ row.name || '-' }}</span>
           }
         </td>
-        <td>
+        <td class="align-top">
           @if (editingId() === row.id) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0"
                    [ngModel]="row.description" (ngModelChange)="updateField(row, 'description', $event)"
@@ -38,7 +38,7 @@
             {{ row.description || '-' }}
           }
         </td>
-        <td>
+        <td class="align-top">
           @if (editingId() === row.id) {
             @for (cat of categories; track cat) {
               <div class="mb-2 last:mb-0">
@@ -66,7 +66,7 @@
             }
           }
         </td>
-        <td>
+        <td class="align-top">
           <div class="row-tight">
             @if (editingId() === row.id) {
               <button type="button" class="btn btn-ghost btn-xs" title="Save" (click)="saveEdit(row)">
