@@ -10,6 +10,13 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-10',
+    changed: [
+      'Makeup has the same toolbar as the admin tables: search, Export, and Add makeup at the top (the new row opens at the top of the table). Columns sort when you click the heading, and a Changed by column shows who last added or edited each grant.',
+      'Makeup hides grants that have ended; check Show inactive to see them. Grants that start later show as UPCOMING. Removing a grant asks you to confirm.',
+    ],
+  },
+  {
     date: '2026-10-09',
     changed: [
       'Admin > Groups is one table like the other admin pages: each group shows its description and the permissions it allows (one per line, under its category), and the pencil edits the row with a checkbox per permission, one per line. Allow / Deny / Not set is gone (a group allows a permission or doesn\'t), and the trash button deletes a group.',

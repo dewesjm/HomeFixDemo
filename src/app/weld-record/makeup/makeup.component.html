@@ -11,82 +11,36 @@
     <h2 class="section-title m-0">Makeup</h2>
   </div>
 
-  <div class="facet-row mb-1">
-    <label class="input input-sm input-bordered flex items-center gap-2" style="min-width: 16rem">
-      <svg lucideSearch class="size-4 opacity-60"></svg>
-      <input type="text" class="grow" placeholder="Search by name, ID or title…"
-             [ngModel]="searchQuery()" (ngModelChange)="searchQuery.set($event)" />
+  <app-table-toolbar [table]="table" searchPlaceholder="Search by name, ID or title…" addLabel="Add makeup"
+                     (exportCsv)="exportCsv()" (add)="addRow()">
+    <label class="label cursor-pointer gap-2">
+      <input type="checkbox" class="checkbox checkbox-sm"
+             [ngModel]="showInactive()" (ngModelChange)="showInactive.set($event)" />
+      <span>Show inactive ({{ inactiveCount() }})</span>
     </label>
-  </div>
+  </app-table-toolbar>
 
-  <div class="panel">
-    <table class="table table-sm">
-      <thead>
+  <div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th appSortHeader [table]="table" field="person" label="Person" class="min-w-56"></th>
+        <th appSortHeader [table]="table" field="status" label="Status"></th>
+        <th appSortHeader [table]="table" field="startDate" label="Start"></th>
+        <th appSortHeader [table]="table" field="endDate" label="End"></th>
+        <th appSortHeader [table]="table" field="used" label="Days used"></th>
+        <th appSortHeader [table]="table" field="remaining" label="Days remaining"></th>
+        <th appSortHeader [table]="table" field="changedBy" label="Changed by"></th>
+        <th class="min-w-11"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @if (adding()) {
         <tr>
-          <th>Person</th>
-          <th>Status</th>
-          <th>Start</th>
-          <th>End</th>
-          <th>Days used</th>
-          <th>Days remaining</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (g of filteredGrants(); track g.id) {
-          <tr>
-            <td class="font-medium"><svg lucideUserCog class="size-4 mr-xs inline"></svg>{{ personLabel(g.personId) }}</td>
-            <td>
-              @if (isActive(g)) {
-                <span class="badge badge-sm badge-success">ACTIVE</span>
-              } @else {
-                <span class="badge badge-sm badge-ghost">INACTIVE</span>
-              }
-            </td>
-            <td>
-              @if (editingId() === g.id) {
-                <input type="date" class="input input-bordered input-xs" [attr.min]="today"
-                       [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
-              } @else {
-                {{ g.startDate | appDate }}
-              }
-            </td>
-            <td>
-              @if (editingId() === g.id) {
-                <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
-                       [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
-              } @else {
-                {{ g.endDate | appDate }}
-              }
-            </td>
-            <td>{{ usedFor(g) }}</td>
-            <td [class.text-error]="remainingFor(g) <= 0">{{ remainingFor(g) }}</td>
-            <td>
-              @if (editingId() === g.id) {
-                <button type="button" class="btn btn-ghost btn-xs text-success" (click)="confirmEdit(g)" title="Confirm">
-                  <svg lucideCheck class="size-3"></svg>
-                </button>
-                <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit()" title="Cancel">
-                  <svg lucideX class="size-3"></svg>
-                </button>
-              } @else {
-                <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(g)" title="Edit dates">
-                  <svg lucidePencil class="size-3"></svg>
-                </button>
-                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(g.id)" title="Remove">
-                  <svg lucideTrash2 class="size-3"></svg>
-                </button>
-              }
-            </td>
-          </tr>
-        } @empty {
-          <tr><td colspan="7" class="empty">No makeup grants yet.</td></tr>
-        }
-        <tr>
-          <td style="min-width: 14rem">
+          <td>
             <app-person-search-input mode="picker" size="xs" placeholder="Search by name, PERNR or ID…"
               excludeTitle="Foreman" emptyHint="below foreman level"
-              [selected]="newPerson()" (select)="choosePerson($event)" (clear)="clearPerson()" />
+              [selected]="newPerson()" (select)="newPerson.set($event)" (clear)="newPerson.set(null)" />
           </td>
           <td></td>
           <td>
@@ -97,19 +51,79 @@
             <input type="date" class="input input-bordered input-xs" [attr.min]="newStartDate()"
                    [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
           </td>
-          <td colspan="2">
+          <td colspan="3">
             @if (newPersonRemaining() !== null) {
               <span class="meta" [class.text-error]="newPersonRemaining()! <= 0">{{ newPersonRemaining() }} of {{ annualDays }} days left this year</span>
             }
           </td>
           <td>
-            <button type="button" class="btn btn-ghost btn-xs text-primary" (click)="addGrant()">
-              <svg lucidePlus class="size-3"></svg> Add
-            </button>
+            <div class="row-tight">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="saveAdd()" title="Save">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="cancelAdd()" title="Cancel">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            </div>
           </td>
         </tr>
-      </tbody>
-    </table>
+      }
+      @for (row of table.sorted(); track row.id) {
+        <tr>
+          <td class="font-medium">{{ row.person }}</td>
+          <td>
+            @switch (row.status) {
+              @case ('Active') { <span class="badge badge-sm badge-success">ACTIVE</span> }
+              @case ('Upcoming') { <span class="badge badge-sm badge-info">UPCOMING</span> }
+              @default { <span class="badge badge-sm badge-ghost">INACTIVE</span> }
+            }
+          </td>
+          <td>
+            @if (editingId() === row.id) {
+              <input type="date" class="input input-bordered input-xs" [attr.min]="today"
+                     [ngModel]="editStart()" (ngModelChange)="editStart.set($event)" />
+            } @else {
+              {{ row.startDate | appDate }}
+            }
+          </td>
+          <td>
+            @if (editingId() === row.id) {
+              <input type="date" class="input input-bordered input-xs" [attr.min]="editStart()"
+                     [ngModel]="editEnd()" (ngModelChange)="editEnd.set($event)" />
+            } @else {
+              {{ row.endDate | appDate }}
+            }
+          </td>
+          <td>{{ row.used }}</td>
+          <td [class.text-error]="row.remaining <= 0">{{ row.remaining }}</td>
+          <td>{{ row.changedBy || '-' }}</td>
+          <td>
+            <div class="row-tight">
+              @if (editingId() === row.id) {
+                <button type="button" class="btn btn-ghost btn-xs" (click)="confirmEdit(row)" title="Save">
+                  <svg lucideCheck class="size-4"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit()" title="Cancel">
+                  <svg lucideX class="size-4"></svg>
+                </button>
+              } @else {
+                <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)" title="Edit dates">
+                  <svg lucidePencil class="size-4"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeGrant(row)" title="Remove">
+                  <svg lucideTrash2 class="size-4"></svg>
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        @if (!adding()) {
+          <tr><td colspan="8" class="empty">{{ grants().length ? 'No makeup grants to show.' : 'No makeup grants yet.' }}</td></tr>
+        }
+      }
+    </tbody>
+  </table>
   </div>
 </div>
 }
