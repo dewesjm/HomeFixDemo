@@ -57,7 +57,10 @@
             }
           } @else {
             @for (line of summary(row.allowed); track line.category) {
-              <div><span class="font-semibold">{{ line.category }}:</span> {{ line.labels }}</div>
+              <div class="mb-2 last:mb-0">
+                <div class="font-semibold">{{ line.category }}</div>
+                @for (label of line.labels; track label) { <div class="pl-4">{{ label }}</div> }
+              </div>
             } @empty {
               None
             }

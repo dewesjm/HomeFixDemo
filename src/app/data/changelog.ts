@@ -12,7 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-09',
     changed: [
-      'Admin > Groups is one table like the other admin pages: each group shows its description and the permissions it allows, and the pencil edits the row with a checkbox per permission. Allow / Deny / Not set is gone (a group allows a permission or doesn\'t), and the trash button deletes a group.',
+      'Admin > Groups is one table like the other admin pages: each group shows its description and the permissions it allows (one per line, under its category), and the pencil edits the row with a checkbox per permission. Allow / Deny / Not set is gone (a group allows a permission or doesn\'t), and the trash button deletes a group.',
     ],
   },
   {

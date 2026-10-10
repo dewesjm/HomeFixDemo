@@ -46,14 +46,14 @@ export function permissionsIn(category: string): Permission[] {
   return PERMISSIONS.filter(p => p.category === category);
 }
 
-/* one line per category the group has anything in, e.g. "Sign-off: Tack, Root"; in permission-list order */
-export function permissionSummary(allowed: readonly string[]): { category: string; labels: string }[] {
+/* the categories the group has anything in, each with its allowed permission labels, in permission-list order */
+export function permissionSummary(allowed: readonly string[]): { category: string; labels: string[] }[] {
   return PERMISSION_CATEGORIES
     .map(category => ({
       category,
-      labels: permissionsIn(category).filter(p => allowed.includes(p.key)).map(p => p.label).join(', '),
+      labels: permissionsIn(category).filter(p => allowed.includes(p.key)).map(p => p.label),
     }))
-    .filter(line => line.labels);
+    .filter(line => line.labels.length);
 }
 
 /* one sample group per persona (the Persona column in Admin > Routing Settings), plus Administrators */
