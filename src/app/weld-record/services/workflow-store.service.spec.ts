@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
 import { addTestJob, Job } from '../../data/jobs';
-import { buildStages } from '../../data/workflow';
+import { buildStages, isFitupInspId } from '../../data/workflow';
 import { WorkflowStore } from './workflow-store.service';
 
 describe('WorkflowStore', () => {
@@ -16,6 +16,20 @@ describe('WorkflowStore', () => {
   });
 
   afterEach(() => localStorage.clear());
+
+  it('a reload keeps values that are not fields, such as Release to welding', () => {
+    jasmine.clock().install();
+    try {
+      store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => isFitupInspId(s.id) ? { ...s, inputs: { ...s.inputs, verifyMic1: 'yes' } } : s) }));
+      jasmine.clock().tick(300);
+    } finally {
+      jasmine.clock().uninstall();
+    }
+    TestBed.resetTestingModule();
+    const reloaded = TestBed.inject(WorkflowStore).workflowFor(job)().stages.find(s => isFitupInspId(s.id))!;
+    expect(reloaded.inputs['releaseToWelding']).toBe('yes');
+    expect(reloaded.inputs['verifyMic1']).toBe('yes');
+  });
 
   it('returns the same signal instance for repeated calls on the same job', () => {
     expect(store.workflowFor(job)).toBe(store.workflowFor(job));

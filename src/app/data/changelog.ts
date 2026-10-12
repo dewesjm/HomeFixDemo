@@ -11,6 +11,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-12',
+    fixed: [
+      'Reloading the app no longer unchecks Release to welding on Fit-Up Insp (it starts checked), so the joint no longer picks up a Fit-Up Release step it did not need. Other saved sign-off values that are not fields on the form are kept on reload too.',
+    ],
     added: [
       'Fit-Up Insp and Fit-Up Release have an optional Comments box on their sign-off, like every other step. The comment is saved with the sign-off and shows in History.',
     ],

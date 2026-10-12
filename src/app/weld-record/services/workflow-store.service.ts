@@ -17,7 +17,14 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.39';
+const CURRENT_VERSION = '2.10.40';
+
+/* a step's saved values after its fields are refreshed: a value for a field the step no longer has
+   is dropped; values that were never fields (Release to welding, Repair's origin, Affected Items...)
+   are kept */
+function keptValues(values: Record<string, string>, oldFieldKeys: string[], newFieldKeys: string[]): Record<string, string> {
+  return Object.fromEntries(Object.entries(values).filter(([k]) => newFieldKeys.includes(k) || !oldFieldKeys.includes(k)));
+}
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -126,6 +133,7 @@ export class WorkflowStore {
           wf.fabricationData = seedFabricationData(job);
         }
 
+        const fresh = new Map(job ? buildStages(job).map(st => [st.id, st]) : []);
         wf.stages.forEach(s => {
           s.inputs ??= {};
           s.fields ??= [];
@@ -140,33 +148,26 @@ export class WorkflowStore {
           s.swapStageId ??= '';
           s.role ??= '';
 
-          /* auto-backfill: merge current template fields/signoffFields/role
-             so future schema changes propagate without hand-written migrations */
+          /* auto-backfill: refresh each step's field definitions from what a new joint gets
+             (buildStages, so fields it adds such as Root's 5X question are kept), so future schema
+             changes propagate without hand-written migrations */
           if (job) {
-            const templates = getTemplates();
-            const tpl = (templates[job.trade] ?? []).find(t => t.id === s.id);
-            if (tpl) {
-              // rebuild reading fields from template, preserving existing inputs
-              if (tpl.fields.length) {
-                const inputMap = { ...s.inputs };
-                s.fields = tpl.fields.map(f => ({ ...f }));
-                // keep only inputs for fields that still exist
-                s.inputs = {};
-                for (const f of s.fields) {
-                  if (f.key in inputMap) s.inputs[f.key] = inputMap[f.key];
-                }
+            const tpl = (getTemplates()[job.trade] ?? []).find(t => t.id === s.id);
+            /* Fit signed as Weld Build-Up carries the weld fields instead of Fit's own; left as saved */
+            const buildup = s.id === 'fit' && s.signoffType === 'weld-buildup';
+            const def = buildup ? undefined : fresh.get(s.id) ?? tpl;
+            if (def) {
+              if (def.fields.length) {
+                const oldKeys = s.fields.map(f => f.key);
+                s.fields = def.fields.map(f => ({ ...f }));
+                s.inputs = keptValues(s.inputs, oldKeys, s.fields.map(f => f.key));
               }
-              // merge new signoff fields, drop stale ones
-              if (tpl.signoffFields?.length) {
-                const signoffInputMap = { ...s.signoffInputs };
-                s.signoffFields = tpl.signoffFields.map(f => ({ ...f }));
-                s.signoffInputs = {};
-                for (const f of withComments(s, s.signoffFields)) {
-                  if (f.key in signoffInputMap) s.signoffInputs[f.key] = signoffInputMap[f.key];
-                }
+              if (def.signoffFields?.length) {
+                const oldKeys = withComments(s, s.signoffFields).map(f => f.key);
+                s.signoffFields = def.signoffFields.map(f => ({ ...f }));
+                s.signoffInputs = keptValues(s.signoffInputs, oldKeys, withComments(s, s.signoffFields).map(f => f.key));
               }
-              // backfill role
-              if (!s.role) s.role = tpl.role ?? '';
+              if (!s.role) s.role = tpl?.role ?? '';
             }
             /* Repair isn't in the trade templates (it's inserted on UNSAT), so refresh its field
                definitions here; keys match, so inputs carry over as-is */
