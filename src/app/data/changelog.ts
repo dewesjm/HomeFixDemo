@@ -10,6 +10,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-12',
+    added: [
+      'Fit-Up Insp and Fit-Up Release have an optional Comments box on their sign-off, like every other step. The comment is saved with the sign-off and shows in History.',
+    ],
+  },
+  {
     date: '2026-10-10',
     changed: [
       'Makeup has the same toolbar as the admin tables: search, Export, and Add makeup at the top (the new row opens at the top of the table). Columns sort when you click the heading, and a Changed by column shows who last added or edited each grant.',

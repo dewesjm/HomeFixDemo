@@ -30,6 +30,11 @@ function insertAndBackingRingFields(): SignoffField[] {
   ];
 }
 
+/* the optional Comments box on a sign-off that has no other place for one */
+function commentsField(): SignoffField {
+  return { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true };
+}
+
 /* the checklist both Records Reviews (O63 and O04) go through */
 function recordsReviewFields(): StageField[] {
   return [
@@ -70,8 +75,9 @@ const BUILT_IN_STEPS: StageTemplate[] = [
     { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
     { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
   ],
-    signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
-  { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
+    signoffFields: [commentsField()], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
+  { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [],
+    signoffFields: [commentsField()] },
   /* same form as Tack; only its position differs (after Fit-Up Insp) */
   { id: 'deferred-tack', label: 'Deferred Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
