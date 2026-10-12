@@ -1,7 +1,7 @@
 /* What the joint page hands the Signoff panel and its parts: the joint, its workflow, and the
    page's rules and actions for the current step */
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, FabricationField, HistoryRow } from '../../data/workflow';
+import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, HistoryRow } from '../../data/workflow';
 
 export interface SignoffContext {
   job: Job;
@@ -10,17 +10,12 @@ export interface SignoffContext {
   history: () => HistoryRow[];
   selectedRouting: () => number;
   jobComplete: () => boolean;
-  soldSigned: () => boolean;
-  fabLocked: () => boolean;
   rejectedCount: () => number;
   resultOptions: typeof STAGE_RESULT_OPTIONS;
-  fabErrors: () => Record<string, string>;
-  fieldErrors: () => Record<string, string>;
 
   // Methods
   editable: (stage: WorkflowStage) => boolean;
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
-  canSignStage: (stage: WorkflowStage) => boolean;
   visibleFields: (stage: WorkflowStage) => StageField[];
   visibleSignoffFields: (stage: WorkflowStage) => SignoffField[];
   startsGroup: (stage: WorkflowStage, field: StageField) => boolean;
@@ -28,10 +23,7 @@ export interface SignoffContext {
   clearFieldError: (stageId: string, fieldKey: string) => void;
   getFabValue: (fieldKey: string) => string;
   getReviewValue: (fieldKey: string) => string;
-  fabFieldRequired: (f: FabricationField) => boolean;
   inspectionTypeRequired: (stage: WorkflowStage) => boolean;
-  jointDesignRequiresInsert: () => boolean;
-  jointDesignRequiresBackingRing: () => boolean;
   hasOverrideFields: (stage: WorkflowStage) => boolean;
   routePreviewLabel: (stage: WorkflowStage) => string;
   holdNote: () => string;

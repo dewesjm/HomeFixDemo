@@ -128,7 +128,7 @@ export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     required: true,
     role: 'Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
-    signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+    signoffFields: [],
     rejectToStage: 'repair',
     decisionLabel: 'Inspection Results',
   };

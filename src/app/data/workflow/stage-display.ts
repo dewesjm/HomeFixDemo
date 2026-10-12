@@ -2,6 +2,7 @@
 import { SignoffField, SignoffInput, StageField, WorkflowStage } from './types';
 import { isUserEditable } from './weld-fields';
 import { hasDecision } from './stage-rules';
+import { withComments } from './signoff-forms';
 import { Job } from '../jobs';
 import { isTitaniumJoint } from '../material-classification';
 
@@ -20,7 +21,7 @@ export const show = (v: string | null | undefined) => (v && v.length ? v : '-');
 /* display label for a raw stage input key, falling back to the key itself if undefined */
 export function labelFor(stage: WorkflowStage, key: string): string {
   return stage.fields.find(f => f.key === key)?.label
-    ?? stage.signoffFields.find(f => f.key === key)?.label
+    ?? withComments(stage, stage.signoffFields).find(f => f.key === key)?.label
     ?? key;
 }
 
@@ -60,7 +61,7 @@ export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signo
   for (const f of fields) {
     if (isUserEditable(stage, f)) out.push({ label: f.label, value: displayValue(f, stage.inputs[f.key]) });
   }
-  for (const f of signoffFields) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
+  for (const f of withComments(stage, signoffFields)) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
   if (stage.result && hasDecision(stage)) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
   return out;
 }

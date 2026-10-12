@@ -8,7 +8,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId
+  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId, withComments
 } from '../../data/workflow';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
@@ -17,7 +17,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.38';
+const CURRENT_VERSION = '2.10.39';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -161,7 +161,7 @@ export class WorkflowStore {
                 const signoffInputMap = { ...s.signoffInputs };
                 s.signoffFields = tpl.signoffFields.map(f => ({ ...f }));
                 s.signoffInputs = {};
-                for (const f of s.signoffFields) {
+                for (const f of withComments(s, s.signoffFields)) {
                   if (f.key in signoffInputMap) s.signoffInputs[f.key] = signoffInputMap[f.key];
                 }
               }

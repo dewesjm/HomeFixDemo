@@ -55,7 +55,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   const key = (k: string) => `${stage.id}:${k}`;
   const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
   for (const f of stage.fields ?? []) {
-    if (f.key === 'comments' || !visibleKeys.has(f.key)) continue;
+    if (!visibleKeys.has(f.key)) continue;
     const val = stage.inputs?.[f.key];
     if (f.required && (val === undefined || val === null || val === '')) errors[key(f.key)] = `${f.label} is required`;
     const typed = typedRequirementError(stage, f);

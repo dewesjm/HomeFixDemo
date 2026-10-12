@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -303,7 +303,7 @@ export class SignoffService {
       const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated, job).filter(f => isUserEditable(updated, f)), updated.signoffFields);
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
          convention -- Work History reads this to show exactly what changed, not just the reason */
-      const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? updated.signoffFields.find(f => f.key === key);
+      const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? withComments(updated, updated.signoffFields).find(f => f.key === key);
       const historyChanges = changes.map(c => {
         const fd = fieldDefFor(c.key);
         return fd ? { ...c, from: displayValue(fd, c.from), to: displayValue(fd, c.to) } : c;

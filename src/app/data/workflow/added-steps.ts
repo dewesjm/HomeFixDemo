@@ -30,7 +30,7 @@ export const REPAIR_STAGE: StageTemplate = {
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
-  ], signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+  ], signoffFields: [],
   decisionLabel: 'Inspection Results',
 };
 
@@ -63,7 +63,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
   return {
     id: excavationIdForRepair(repairId), label: roundLabel(EXCAVATION_NDT_LABEL, repairId), required: true, role: 'Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
-    signoffFields: [{ key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true }],
+    signoffFields: [],
     rejectToStage: repairId, decisionLabel: 'Inspection Results',
     typeOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
   };

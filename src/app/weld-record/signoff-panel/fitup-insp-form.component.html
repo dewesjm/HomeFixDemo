@@ -1,0 +1,61 @@
+<!-- Fit-Up Insp: fixed Type / Layer, verification grid, Release to welding -->
+@let st = stage();
+
+<!-- Type / Layer: fixed, informational, not a real choice. Same droplist convention as the panel's
+     Type dropdown (one per line), just with a single option. -->
+<div class="mb-sm">
+  <label class="stage-field">
+    <span class="stage-field-label font-semibold">Type</span>
+    <select class="select select-bordered" disabled>
+      <option>Fit-Up Inspection</option>
+    </select>
+  </label>
+</div>
+<div class="mb-sm">
+  <label class="stage-field">
+    <span class="stage-field-label font-semibold">Layer</span>
+    <select class="select select-bordered" disabled>
+      <option>Fit</option>
+    </select>
+  </label>
+</div>
+
+@if (ctx().visibleFields(st).length) {
+  <div class="flex flex-col items-start gap-1">
+    <div class="font-semibold text-sm">Verify fitting values</div>
+    <table class="table table-sm w-auto">
+      <thead>
+        <tr>
+          <th class="py-1.5 pl-0 pr-10">Field</th>
+          <th class="py-1.5 pr-14">Fabrication Value</th>
+          <th class="py-1.5 px-5 text-center bg-base-200">Verified</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of ctx().visibleFields(st); track f.key) {
+          <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
+            <td class="py-1 pl-0 pr-10" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
+            <td class="py-1 pr-14">{{ ctx().getFabValue(f.key) || '-' }}</td>
+            <td class="py-1 px-5 text-center bg-base-200/40">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
+                     [disabled]="!editable()"
+                     [checked]="st.inputs[f.key] === 'yes'"
+                     (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''; $any($event.target).checked && ctx().clearFieldError(st.id, f.key)" />
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
+
+<!-- Release to welding: above the panel's Inspection Results -->
+<div class="mt-3">
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
+           [checked]="st.inputs['releaseToWelding'] === 'yes'"
+           (change)="st.inputs['releaseToWelding'] = $any($event.target).checked ? 'yes' : ''" />
+    <span class="font-semibold">Release to welding upon inspection</span>
+  </label>
+</div>

@@ -1,4 +1,4 @@
-<!-- Records Review: verify joint details against the record, the joint's History, then Comments -->
+<!-- Records Review: verify joint details against the record, and the joint's History -->
 @let st = stage();
 <div class="stage-inputs flex flex-col gap-4">
   <div>
@@ -13,7 +13,6 @@
       </thead>
       <tbody>
         @for (f of ctx().visibleFields(stage()); track f.key) {
-          @if (f.key !== 'comments') {
           <tr>
             <td class="py-1">{{ f.label }}</td>
             <td class="py-1">{{ ctx().getReviewValue(f.key) || '-' }}</td>
@@ -24,7 +23,6 @@
                      (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
             </td>
           </tr>
-          }
         }
       </tbody>
     </table>
@@ -43,19 +41,4 @@
     <app-history-table [table]="table" [oneJoint]="true" [emptyText]="emptyText()"
                        (deprogress)="ctx().deprogress($event.reason)" />
   </div>
-
-  <!-- Comments from visible fields. Plain div, not .stage-field: that class's flex-basis (160px,
-       meant for width in the row-based stage-inputs grid) becomes a height basis in this flex-column
-       wrapper and left ~160px of dead space below the input. -->
-  @for (f of ctx().visibleFields(stage()); track f.key) {
-    @if (f.key === 'comments') {
-      <div>
-        <div class="stage-field-label">{{ f.label }}</div>
-        <input class="input input-bordered w-full" type="text"
-               [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-               [ngModel]="st.inputs[f.key]"
-               (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-      </div>
-    }
-  }
 </div>

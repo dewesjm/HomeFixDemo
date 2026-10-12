@@ -1,3 +1,5 @@
+<!-- The sign-off frame every step shares (Type, Inspection Results, Comments, Signoff), with the
+     step's own form from signoffForm() in the middle -->
 <section class="panel signoff-panel">
   <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
@@ -19,27 +21,29 @@
   }
 
   @if (stage(); as st) {
+    @let form = signoffForm(st);
+
     <!-- Type dropdown -->
     @if (st.typeOptions && st.typeOptions.length > 0) {
       <div class="mb-sm">
-          <label class="stage-field">
-            <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
-            <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
-                    [ngModel]="st.id === 'fit' ? st.signoffType : st.inspectionType"
-                    (ngModelChange)="st.id === 'fit' ? ctx().updateSignoffType(st, $event) : ctx().setInspectionType($event)">
-              @if (ctx().inspectionTypeRequired(st)) {
-                <option [ngValue]="''">Select the inspection performed…</option>
-              }
-              @for (opt of st.typeOptions; track opt.value) {
-                <option [ngValue]="opt.value">{{ opt.label }}</option>
-              }
-            </select>
-          </label>
-          @if (ctx().fieldError(st.id, '__inspectionType'); as err) {
-            <div class="field-error">{{ err }}</div>
-          }
-        </div>
-      }
+        <label class="stage-field">
+          <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
+          <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
+                  [ngModel]="st.id === 'fit' ? st.signoffType : st.inspectionType"
+                  (ngModelChange)="st.id === 'fit' ? ctx().updateSignoffType(st, $event) : ctx().setInspectionType($event)">
+            @if (ctx().inspectionTypeRequired(st)) {
+              <option [ngValue]="''">Select the inspection performed…</option>
+            }
+            @for (opt of st.typeOptions; track opt.value) {
+              <option [ngValue]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </label>
+        @if (ctx().fieldError(st.id, '__inspectionType'); as err) {
+          <div class="field-error">{{ err }}</div>
+        }
+      </div>
+    }
 
     <!-- Layer Type (NDT steps): the weld activity being inspected, fixed by the step -->
     @if (layerType(st); as layer) {
@@ -61,317 +65,20 @@
       </div>
     }
 
-    <!-- Type / Layer (Fit-Up Insp only) -- fixed, informational, not a real choice. Same droplist
-         convention as the Type dropdown above (one per line), just with a single option. -->
-    @if (isFitupInsp(st)) {
-      <div class="mb-sm">
-        <label class="stage-field">
-          <span class="stage-field-label font-semibold">Type</span>
-          <select class="select select-bordered" disabled>
-            <option>Fit-Up Inspection</option>
-          </select>
-        </label>
-      </div>
-      <div class="mb-sm">
-        <label class="stage-field">
-          <span class="stage-field-label font-semibold">Layer</span>
-          <select class="select select-bordered" disabled>
-            <option>Fit</option>
-          </select>
-        </label>
-      </div>
-    }
-
-    <!-- Affected Items + MIC, weld build-up only -->
-    @if (isFitBuildup(st)) {
-      <div class="flex flex-col gap-1 mb-sm">
-        <span class="stage-field-label">Affected Item<span class="text-error">*</span></span>
-        @for (it of affectedItemSlots; track it.key) {
-          @if (ctx().job[it.key]) {
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <!-- item and MIC are fixed 25ch columns so rows line up -->
-              <label class="flex items-center gap-1.5 cursor-pointer w-[25ch] shrink-0">
-                <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem')"
-                       [disabled]="!fieldsEditable()"
-                       [checked]="isAffected(it.key)"
-                       (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
-                <span class="truncate" [title]="ctx().job[it.key]">{{ ctx().job[it.key] }}</span>
-              </label>
-              @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
-                <span class="w-[25ch] shrink-0 truncate" [title]="it.micLabel + ': ' + (micValue(it.mic) || '-')">{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '-' }}</span></span>
-                <label class="flex items-center gap-1 cursor-pointer">
-                  <input type="checkbox" class="checkbox checkbox-xs" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem') && st.inputs[it.micVerified] !== 'yes'"
-                         [disabled]="!fieldsEditable()"
-                         [checked]="st.inputs[it.micVerified] === 'yes'"
-                         (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''; ctx().clearFieldError(st.id, 'affectedItem')" />
-                  <span>{{ it.micLabel }} verified<span class="text-error">*</span></span>
-                </label>
-              }
-            </div>
-          }
-        }
-        @if (ctx().fieldError(st.id, 'affectedItem'); as err) {
-          <div class="field-error">{{ err }}</div>
-        }
-      </div>
-    }
-
-
-    <!-- per-stage readings (recorded here; signoff below advances to the next stage) -->
-
-    @if (ctx().visibleFields(stage()).length) {
-      @if (isFitupInsp(st)) {
-        <!-- Fit-Up Insp: verification grid against fabrication data -->
-        <div class="flex flex-col items-start gap-1">
-          <div class="font-semibold text-sm">Verify fitting values</div>
-          <table class="table table-sm w-auto">
-            <thead>
-              <tr>
-                <th class="py-1.5 pl-0 pr-10">Field</th>
-                <th class="py-1.5 pr-14">Fabrication Value</th>
-                <th class="py-1.5 px-5 text-center bg-base-200">Verified</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (f of ctx().visibleFields(stage()); track f.key) {
-                <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
-                  <td class="py-1 pl-0 pr-10" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
-                  <td class="py-1 pr-14">{{ ctx().getFabValue(f.key) || '-' }}</td>
-                  <td class="py-1 px-5 text-center bg-base-200/40">
-                    <input type="checkbox" class="checkbox checkbox-sm"
-                           [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
-                           [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                           [checked]="st.inputs[f.key] === 'yes'"
-                           (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''; $any($event.target).checked && ctx().clearFieldError(st.id, f.key)" />
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else if (st.id === 'review-o63' || st.id === 'review-o04') {
-        <app-records-review [ctx]="ctx()" [stage]="st" />
-      } @else if (st.id === 'tack' || st.id === 'deferred-tack' || st.id === 'root-weld' || st.id === 'final-weld' || st.id === 'root-layer' || isFitBuildup(st)) {
-        <app-weld-stage-form [ctx]="ctx()" [stage]="st" />
-      } @else {
-        <!-- Default: generic field rendering -->
-        <div class="stage-inputs">
-          @for (f of ctx().visibleFields(stage()); track f.key) {
-            <!-- the checkbox+field rows below are full-width blocks already; a break before them only adds an empty line of gap -->
-            @if ((ctx().startsGroup(st, f) || f.showIf?.key === 'inspectionType') && f.key !== 'partial' && f.key !== 'hasProbationary' && f.key !== 'penetrantManufacturer' && f.key !== 'defectCode') { <span class="stage-field-break"></span> }
-            @if (f.key === 'partial') {
-              <div class="flex items-end gap-4 w-full">
-                <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                         [checked]="st.inputs[f.key] === 'yes'"
-                         (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
-                  <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                </label>
-                @for (g of ctx().visibleFields(stage()); track g.key) {
-                  @if (g.key === 'portionInspected') {
-                    <div class="flex-1">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
-                        <input class="input input-bordered w-full" type="text"
-                               [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                               [ngModel]="st.inputs[g.key]"
-                               (blur)="ctx().stageInputBlur(st, g, $any($event.target).value)" />
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-            } @else if (f.key === 'hasProbationary') {
-              <div class="flex items-end gap-4 w-full">
-                <label class="flex items-center gap-2 cursor-pointer" [class.mb-6]="st.inputs[f.key] === 'yes'">
-                  <input type="checkbox" class="checkbox checkbox-sm"
-                         [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                         [checked]="st.inputs[f.key] === 'yes'"
-                         (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
-                  <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-                </label>
-                @for (g of ctx().visibleFields(stage()); track g.key) {
-                  @if (g.key === 'probationaryInspector' || g.key === 'oversightInspector') {
-                    <div class="flex-1">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
-                        <app-person-search-input
-                          [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                          [hasError]="!!ctx().fieldError(st.id, g.key)"
-                          [value]="st.inputs[g.key]"
-                          (commit)="ctx().stageInputBlur(st, g, $event)" />
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-            } @else if (f.key === 'penetrantManufacturer') {
-              <div class="flex items-end gap-4 w-full">
-                @for (g of ctx().visibleFields(stage()); track g.key) {
-                  @if (g.key === 'penetrantManufacturer' || g.key === 'penetrantType') {
-                    <div class="flex-1">
-                      <label class="stage-field">
-                        <span class="stage-field-label">{{ g.label }}@if (g.required) { <span class="text-error">*</span> }</span>
-                        @if (g.type === 'select') {
-                          <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                                  [ngModel]="st.inputs[g.key]" (ngModelChange)="ctx().stageSelectChange(st, g, $event)">
-                            <option [ngValue]="null">Select</option>
-                            @for (o of g.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                          </select>
-                        }
-                      </label>
-                    </div>
-                  }
-                }
-              </div>
-            } @else if (f.key !== 'portionInspected' && f.key !== 'consumableInsertOnly' && f.key !== 'probationaryInspector' && f.key !== 'oversightInspector' && f.key !== 'penetrantType' && f.key !== 'defectCode') {
-            <div class="w-full">
-            @if (f.type === 'checkbox') {
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
-                       [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                       [checked]="st.inputs[f.key] === 'yes'"
-                       (change)="st.inputs[f.key] = $any($event.target).checked ? 'yes' : ''" />
-                <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-              </label>
-            } @else if (f.type === 'radio') {
-              <div>
-                <div class="meta mb-1" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
-                <div class="flex gap-4">
-                  @for (o of f.options || []; track o.value) {
-                    <label class="flex items-center gap-2 cursor-pointer">
-                      <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, f.key)" [name]="'field-' + st.id + '-' + f.key"
-                             [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                             [checked]="st.inputs[f.key] === o.value"
-                             (change)="ctx().stageInputBlur(st, f, o.value)" />
-                      <span>{{ o.label }}</span>
-                    </label>
-                  }
-                </div>
-              </div>
-            } @else {
-              <label class="stage-field">
-                <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</span>
-                @if (f.type === 'select') {
-                  <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                          [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
-                } @else {
-                  <input class="input input-bordered" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
-                         [placeholder]="f.placeholder || ''"
-                         [disabled]="f.disabled || !ctx().inputsEditable(st, ctx().selectedRouting())"
-                         [ngModel]="st.inputs[f.key]"
-                         (blur)="ctx().stageInputBlur(st, f, $any($event.target).value)" />
-                }
-              </label>
-            }
-            @if (ctx().fieldError(st.id, f.key); as err) {
-              <div class="field-error">{{ err }}</div>
-            }
-            </div>
-            }
-          }
-        </div>
+    <!-- the step's own form; Fit's sits below with the sign-off, since it's all sign-off fields -->
+    <div class="mb-3">
+      @switch (form) {
+        @case ('fitup-insp') { <app-fitup-insp-form [ctx]="ctx()" [stage]="st" /> }
+        @case ('records-review') { <app-records-review [ctx]="ctx()" [stage]="st" /> }
+        @case ('weld') { <app-weld-stage-form [ctx]="ctx()" [stage]="st" /> }
+        @case ('ndt') { <app-ndt-stage-form [ctx]="ctx()" [stage]="st" /> }
+        @case ('generic') { <app-generic-stage-form [ctx]="ctx()" [stage]="st" /> }
       }
-    }
+    </div>
 
     @if (st.required) {
-      <div class="signoff-fields">
-        <!-- Fit/Pre-Fit (not weld build-up): consumable insert row + backing ring row, same rules for
-             both. Weld build-up renders none of Fit's own signoff fields here -- its Comments comes
-             from WELD_GROUPS (stage fields, above) and it has no Defer Tack/Insert/Backing Ring concept. -->
-        @if ((st.id === 'fit' || st.id === 'pre-fit') && !isFitBuildup(st)) {
-          @if (ctx().jointDesignRequiresInsert()) {
-            <div class="signoff-fit-row">
-              @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-                @if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize' || f.key === 'consumableInsertId') {
-                  <div>
-                    <div class="meta">{{ f.label }}@if (f.required || (f.key === 'consumableInsertId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
-                    @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
-                              [ngModel]="st.signoffInputs[f.key]"
-                              (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
-                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                      </select>
-                    } @else {
-                      <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
-                             [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
-                             [ngModel]="st.signoffInputs[f.key]"
-                             (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
-                    }
-                    @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="field-error">{{ err }}</div>
-                    }
-                  </div>
-                }
-              }
-            </div>
-          }
-          @if (ctx().jointDesignRequiresBackingRing()) {
-            <div class="signoff-fit-row">
-              @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-                @if (f.key === 'backingRingType' || f.key === 'backingRingId') {
-                  <div>
-                    <div class="meta">{{ f.label }}@if (f.required || (f.key === 'backingRingId' && micSignoffRequired())) { <span class="text-error">*</span> }</div>
-                    @if (f.type === 'select') {
-                      <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
-                              [ngModel]="st.signoffInputs[f.key]"
-                              (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
-                        @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                      </select>
-                    } @else {
-                      <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(st.id, f.key)" type="text"
-                             [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
-                             [ngModel]="st.signoffInputs[f.key]"
-                             (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
-                    }
-                    @if (ctx().fieldError(st.id, f.key); as err) {
-                      <div class="field-error">{{ err }}</div>
-                    }
-                  </div>
-                }
-              }
-            </div>
-          }
-        } @else if (!isFitBuildup(st)) {
-          <!-- Default: one per row (every stage except Fit, Pre-Fit, and Fit weld build-up) -->
-          @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-            @if (f.key !== '_spacer' && !f.fullWidth) {
-              <div class="signoff-field-row">
-                <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
-                @if (f.type === 'select') {
-                  <select class="select select-bordered w-64" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
-                          [ngModel]="st.signoffInputs[f.key]"
-                          (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
-                    @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-                  </select>
-                } @else {
-                  <input class="input input-bordered w-64" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
-                         [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
-                         [ngModel]="st.signoffInputs[f.key]"
-                         (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
-                }
-                @if (ctx().fieldError(st.id, f.key); as err) {
-                  <div class="field-error">{{ err }}</div>
-                }
-              </div>
-            }
-          }
-        }
-      </div>
-
-      <!-- Release to welding checkbox (Fit-Up Insp only) — above Decision -->
-      @if (isFitupInsp(st)) {
-        <div class="mb-sm">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
-                   [checked]="st.inputs['releaseToWelding'] === 'yes'"
-                   (change)="st.inputs['releaseToWelding'] = $any($event.target).checked ? 'yes' : ''" />
-            <span class="font-semibold">Release to welding upon inspection</span>
-          </label>
-        </div>
+      @if (form === 'fit') {
+        <app-fit-signoff-form [ctx]="ctx()" [stage]="st" />
       }
 
       <!-- Decision (SAT/UNSAT) — own dedicated line -->
@@ -393,57 +100,25 @@
         </div>
       }
 
-      <!-- Defect Code — shown after Decision since it only applies once the result is UNSAT -->
-      @for (f of ctx().visibleFields(stage()); track f.key) {
-        @if (f.key === 'defectCode') {
-          <div class="mb-sm">
-            <label class="stage-field" style="max-width: 320px">
-              <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
-              <select class="select select-bordered w-full" [disabled]="!ctx().inputsEditable(st, ctx().selectedRouting())"
-                      [ngModel]="st.inputs[f.key]" (ngModelChange)="ctx().stageSelectChange(st, f, $event)">
-                <option [ngValue]="null">Select</option>
-                @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-              </select>
-            </label>
-          </div>
-        }
+      @if (form === 'ndt') {
+        <app-ndt-defect-code [ctx]="ctx()" [stage]="st" />
       }
 
-      <!-- Defer Tack checkbox (fit stage only, not weld build-up -- it has no Tack to defer) -->
-      @if (st.id === 'fit' && !isFitBuildup(st)) {
-        @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-          @if (f.key === 'deferTack') {
-            <div class="mb-sm">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
-                       [checked]="st.signoffInputs[f.key] === 'yes'"
-                       (change)="ctx().signoffCheckboxChange(st, f, $any($event.target).checked)" />
-                <span class="font-semibold">{{ f.label }}</span>
-              </label>
-            </div>
-          }
-        }
-      }
-
-      <!-- fullWidth signoff fields (Comments, Notes) — own line(s). Weld build-up excluded: its
-           Comments already comes from WELD_GROUPS (stage fields, above), so this would duplicate it. -->
-      @for (f of ctx().visibleSignoffFields(stage()); track f.key) {
-        @if (f.fullWidth && !isFitBuildup(st)) {
-          <div class="mb-sm">
-            <div class="meta">{{ f.label }}{{ f.required ? ' \u2032' : '' }}</div>
-            <input class="input input-bordered w-full" type="text"
-                   [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
-                   [ngModel]="st.signoffInputs[f.key]"
-                   (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
-          </div>
-        }
+      <!-- Comments: every hand-signed step has one (hasCommentsBox), saved with the sign-off -->
+      @if (hasCommentsBox(st)) {
+        <div class="mb-sm">
+          <div class="meta">{{ commentsField.label }}</div>
+          <input class="input input-bordered w-full" type="text" [disabled]="!ctx().editable(st)"
+                 [ngModel]="st.signoffInputs[commentsField.key]"
+                 (blur)="ctx().blurSignoffField(st, commentsField, $any($event.target).value)" />
+        </div>
       }
 
       <div class="signoff-actions">
-        @if (st.id === 'sold') {
+        @if (form === 'sold') {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
-        } @else if (!st.signed && isEngineeringHold(st)) {
+        } @else if (!st.signed && form === 'engineering-hold') {
           <div class="w-full"><app-engineering-release [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
@@ -458,7 +133,7 @@
               <svg lucideTriangleAlert class="size-4"></svg> Engineering Override
             </button>
           }
-          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || isFitBuildup(st))) {
+          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || form === 'weld')) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
             <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)">

@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'A step added in Admin > Routing Settings no longer starts with a generic list of sign-off fields (Inspector name, License #, Crew size and so on). It has Comments and the Signoff button.',
+      'Comments sits in the same place on every sign-off: just above the Signoff button, after Inspection Results. On the welding steps it is no longer inside the last card, and on Records Review it is below Inspection Results instead of above.',
     ],
   },
   {

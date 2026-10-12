@@ -34,7 +34,7 @@ import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
-import { jointDesignRequiresBackingRing, jointDesignRequiresInsert, visibleSignoffFields } from '../../data/joint-form/fit-signoff';
+import { visibleSignoffFields } from '../../data/joint-form/fit-signoff';
 import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
@@ -220,15 +220,10 @@ export class JointPageComponent implements OnDestroy {
       history: () => this.history(),
       selectedRouting: () => this.selectedRouting(),
       jobComplete: () => this.jobComplete(),
-      soldSigned: () => this.soldSigned(),
-      fabLocked: () => this.fabLocked(),
       rejectedCount: () => this.rejectedCount(),
       resultOptions: STAGE_RESULT_OPTIONS,
-      fabErrors: () => this.fabErrors(),
-      fieldErrors: () => this.fieldErrors(),
       editable: (s) => this.editable(s),
       inputsEditable: (s, i) => this.inputsEditable(s, i),
-      canSignStage: (s) => this.canSignStage(s),
       visibleFields: (s) => this.visibleFields(s),
       visibleSignoffFields: (s) => this.visibleSignoffFields(s),
       startsGroup: (s, f) => startsGroup(s, f),
@@ -236,10 +231,7 @@ export class JointPageComponent implements OnDestroy {
       clearFieldError: (sid, fk) => this.clearFieldError(sid, fk),
       getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
       getReviewValue: (k) => reviewVerifyValue(k, job),
-      fabFieldRequired: (f) => this.fabFieldRequired(f),
       inspectionTypeRequired: (s) => inspectionTypeRequired(s),
-      jointDesignRequiresInsert: () => jointDesignRequiresInsert(job, this.fab()),
-      jointDesignRequiresBackingRing: () => jointDesignRequiresBackingRing(job, this.fab()),
       hasOverrideFields: (s) => this.visibleFields(s).some(f => f.key.startsWith('override')),
       routePreviewLabel: (s) => this.routePreviewLabel(s),
       holdNote: () => this.holdNote(),

@@ -1,6 +1,5 @@
 /* The O63 / O04 Records Review step: verify the joint's record fields, with the joint's History alongside */
 import { Component, computed, effect, input } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { WorkflowStage } from '../../data/workflow';
 import { HistoryTableComponent } from '../work-history/history-table.component';
 import { HistoryTableState } from '../work-history/history-table-state';
@@ -9,7 +8,7 @@ import { SignoffContext } from './signoff-context';
 @Component({
   selector: 'app-records-review',
   standalone: true,
-  imports: [FormsModule, HistoryTableComponent],
+  imports: [HistoryTableComponent],
   host: { class: 'block' },
   templateUrl: './records-review.component.html'
 })

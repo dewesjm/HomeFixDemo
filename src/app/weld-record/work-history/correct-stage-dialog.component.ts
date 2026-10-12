@@ -5,7 +5,7 @@
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
-import { StageField, SignoffField, fieldsShown, isUserEditable, isRoutingLockedField } from '../../data/workflow';
+import { StageField, SignoffField, fieldsShown, isUserEditable, isRoutingLockedField, withComments } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
@@ -46,7 +46,10 @@ export class CorrectStageDialogComponent {
     const t = this.target();
     return st && t ? fieldsShown(st, t.job).filter(f => isUserEditable(st, f)) : [];
   });
-  signoffFields = computed<SignoffField[]>(() => this.stage()?.signoffFields ?? []);
+  signoffFields = computed<SignoffField[]>(() => {
+    const st = this.stage();
+    return st ? withComments(st, st.signoffFields) : [];
+  });
 
   /* pending edits, keyed by field key; absent = unchanged from the stage's current value */
   private edits = signal<Record<string, string>>({});

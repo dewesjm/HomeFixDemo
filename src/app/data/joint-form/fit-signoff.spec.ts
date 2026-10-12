@@ -16,7 +16,7 @@ describe('joint-form fit-signoff', () => {
 
   it('hides insert and backing ring fields the joint design does not call for', () => {
     const plain = job();
-    expect(keys(visibleSignoffFields(fitOf(plain), plain, {}))).toEqual(['comments', 'deferTack']);
+    expect(keys(visibleSignoffFields(fitOf(plain), plain, {}))).toEqual(['deferTack']);
     const both = job({ jointDesign: 'C-65' });
     expect(keys(visibleSignoffFields(fitOf(both), both, {}))).toEqual(jasmine.arrayContaining(['consumableInsertType', 'backingRingId']));
   });

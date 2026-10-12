@@ -29,7 +29,6 @@ export const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', required: true },
-  { key: 'comments', label: 'Comments', type: 'text', fullWidth: true },
 ];
 
 /* Override Requirements fields, appended to every welding stage (shown for matching WTNs).

@@ -1,0 +1,40 @@
+<!-- Pre-Fit / Fit: Consumable Insert row, Backing Ring row, Defer Tack -->
+@let st = stage();
+<div class="signoff-fields">
+  @for (row of rows(); track $index) {
+    <div class="signoff-fit-row">
+      @for (f of row; track f.key) {
+        <div>
+          <div class="meta">{{ f.label }}@if (required(f)) { <span class="text-error">*</span> }</div>
+          @if (f.type === 'select') {
+            <select class="select select-bordered w-full" [class.select-error]="!!ctx().fieldError(st.id, f.key)" [disabled]="!ctx().editable(st)"
+                    [ngModel]="st.signoffInputs[f.key]"
+                    (ngModelChange)="ctx().signoffSelectChange(st, f, $event)">
+              @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+            </select>
+          } @else {
+            <input class="input input-bordered w-full" [class.input-error]="!!ctx().fieldError(st.id, f.key)" [type]="f.type === 'number' ? 'number' : 'text'"
+                   [placeholder]="f.placeholder || ''" [disabled]="!ctx().editable(st)"
+                   [ngModel]="st.signoffInputs[f.key]"
+                   (blur)="ctx().blurSignoffField(st, f, $any($event.target).value)" />
+          }
+          @if (ctx().fieldError(st.id, f.key); as err) {
+            <div class="field-error">{{ err }}</div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>
+
+<!-- Defer Tack (Fit only; Pre-Fit has no Tack yet to defer) -->
+@if (deferTack(); as f) {
+  <div class="mb-sm">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
+             [checked]="st.signoffInputs[f.key] === 'yes'"
+             (change)="ctx().signoffCheckboxChange(st, f, $any($event.target).checked)" />
+      <span class="font-semibold">{{ f.label }}</span>
+    </label>
+  </div>
+}
