@@ -150,8 +150,8 @@ src/app/
                              step answers of earlier steps, built from the templates workflow/stage-templates.ts
                              registers via registerStepTemplates(); 'self.<key>' in reject rules),
                              Fabrication editable, Role. Clause editing rules shared by both rule
-                             dialogs: data/condition-editing.ts. routing-field-config-dialog: the
-                             switched-off Configure fields dialog (showFieldConfig)
+                             dialogs: data/condition-editing.ts. A step's fields aren't editable or
+                             saved here; they come from the built-in step definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
       admin-signoff-types/ Admin → Signoff Type Availability (seeded table: which routing steps have a Type droplist, and its options)
       admin-characteristics/ Admin → Attribute codes

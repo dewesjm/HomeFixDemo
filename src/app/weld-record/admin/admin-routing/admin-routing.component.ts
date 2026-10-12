@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucidePencil, LucideCheck, LucideX,
-  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
+  LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
@@ -17,7 +17,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import { Job } from '../../../data/jobs';
 import {
-  defaultSignoffFields, addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
+  addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
   allStageIds, getTemplates, ROLES, type Role
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
@@ -28,7 +28,6 @@ import {
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
 } from '../../../data/condition-editing';
-import { RoutingFieldConfigDialogComponent } from './routing-field-config-dialog.component';
 
 interface RoutingRow {
   id: string;
@@ -46,10 +45,10 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [TableToolbarComponent, RoutingFieldConfigDialogComponent,
+  imports: [TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
-    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideSettings, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
+    LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
   ],
   templateUrl: './admin-routing.component.html',
   styles: [`
@@ -83,13 +82,6 @@ export class AdminRoutingComponent {
 
   editingId = signal<string | null>(null);
   newRowId = signal<string | null>(null);  // highlights the newly added row
-
-  // ── Field config dialog ──
-  /* SWITCHED OFF: most Welding steps use hand-built layouts on the weld record, so field edits here
-     don't reliably show up there. This could be turned back on one day, so the code is kept working
-     rather than removed, to avoid a rewrite. */
-  readonly showFieldConfig = false;
-  fieldDlgRow = signal<RoutingRow | null>(null);
 
   // ── Included when dialog ──
   condFields = signal<StepConditionField[]>([]);
@@ -169,7 +161,7 @@ export class AdminRoutingComponent {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
-        fields: [], signoffFields: defaultSignoffFields(), rejectToStage: row.rejectToStage,
+        fields: [], signoffFields: [], rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
       const newFullId = `${row.trade}:${newId}`;
@@ -322,12 +314,6 @@ export class AdminRoutingComponent {
     // force recomputation — signal won't change if underlying data has same ids,
     // but the allStageIds() call will re-read from localStorage
     this.stageOptions.set(allStageIds());
-  }
-
-  /* ── Field config dialog ── */
-
-  openFieldConfig(row: RoutingRow) {
-    this.fieldDlgRow.set(row);
   }
 
   /* ── Included when (step conditions) dialog ── */

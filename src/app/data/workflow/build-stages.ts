@@ -2,7 +2,7 @@
 import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
-import { DEFAULT_SIGNOFF_FIELDS, getTemplates } from './stage-templates';
+import { getTemplates } from './stage-templates';
 import { initialInspectionType } from './stage-rules';
 import { WELD_OVERRIDE_FIELDS } from './weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
@@ -23,7 +23,6 @@ export function buildStages(job: Job): WorkflowStage[] {
   const toStage = (t: StageTemplate): WorkflowStage => {
     const required = usesStepAnswers(t.includeWhen) ? conditionsMatch(t.includeWhen, job)
       : typeof t.required === 'function' ? t.required(job) : t.required;
-    const sf = t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS;
     const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};
     /* Sold follows whichever Records track reviewed the job */
     const role = t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
@@ -45,7 +44,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       role,
       fields,
       inputs,
-      signoffFields: sf.map(f => ({ ...f })),
+      signoffFields: (t.signoffFields ?? []).map(f => ({ ...f })),
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',

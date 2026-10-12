@@ -4,37 +4,10 @@
 import { Job } from '../jobs';
 import { STORAGE } from '../storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from '../step-conditions';
-import { SignoffField, StageField, StageTemplate } from './types';
+import { StageTemplate } from './types';
 import { signoffTypeOptions, signoffTypesVersion } from './signoff-types';
 import { WELDING_STEPS } from './welding-steps';
 import { isFitupInspId } from './step-ids';
-
-/* sign-off fields a new step starts with in Admin > Routing Settings */
-export const DEFAULT_SIGNOFF_FIELDS: SignoffField[] = [
-  { key: 'inspectorName', label: 'Inspector name', type: 'text', required: true },
-  { key: 'licenseNo',     label: 'License #',      type: 'text', required: false },
-  { key: 'permitVerified', label: 'Permit verified', type: 'select', required: false,
-    options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }, { label: 'N/A', value: 'na' }] },
-  { key: 'testMethod',    label: 'Test method',    type: 'select', required: false,
-    options: [
-      { label: 'Visual + functional', value: 'visual-functional' },
-      { label: 'Pressure test', value: 'pressure' },
-      { label: 'Meter reading', value: 'meter' },
-      { label: 'Load test', value: 'load' }
-    ] },
-  { key: 'crewSize',      label: 'Crew size',      type: 'number', required: false, placeholder: 'e.g. 2' },
-  { key: 'safetyCheck',   label: 'Safety check',   type: 'select', required: false,
-    options: [{ label: 'Passed', value: 'passed' }, { label: 'Passed w/ notes', value: 'passed-notes' }, { label: 'N/A', value: 'na' }] },
-  { key: 'reworkNeeded',  label: 'Rework needed',  type: 'select', required: false,
-    options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
-  { key: 'customerSignature', label: 'Customer signature', type: 'select', required: false,
-    options: [{ label: 'On file', value: 'on-file' }, { label: 'Verbal', value: 'verbal' }, { label: 'Pending', value: 'pending' }] },
-  { key: 'notes',         label: 'Notes',          type: 'text', required: false, placeholder: 'Additional notes…' },
-];
-
-export function defaultSignoffFields(): SignoffField[] {
-  return DEFAULT_SIGNOFF_FIELDS.map(f => ({ ...f }));
-}
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
@@ -51,14 +24,13 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
 
-/* serialized form — required is always a plain boolean (no functions) */
+/* serialized form — required is always a plain boolean (no functions). A step's fields aren't saved:
+   they always come from the built-in step definitions (a step added here has none). */
 interface SerializedStage {
   id: string;
   label: string;
   displayName?: string;
   required: boolean;
-  fields: StageField[];
-  signoffFields: SignoffField[];
   rejectToStage: string;
   role?: string;
   includeWhen?: ConditionRule[];
@@ -73,8 +45,6 @@ function serializeStage(t: StageTemplate): SerializedStage {
     label: t.label,
     displayName: t.displayName,
     required: typeof t.required === 'function' ? true : t.required,
-    fields: t.fields,
-    signoffFields: t.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: t.rejectToStage ?? '',
     role: t.role ?? '',
     includeWhen: t.includeWhen ?? [],
@@ -86,7 +56,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
 
 /* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
-  return { ...s, signoffFields: s.signoffFields, rejectToStage: s.rejectToStage, role: s.role ?? '',
+  return { ...s, fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [], role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
@@ -155,7 +125,6 @@ export function addStageTemplate(trade: Job['trade'], stage: Omit<StageTemplate,
   const newStage: StageTemplate = {
     ...stage,
     required: stage.required ?? true,
-    signoffFields: stage.signoffFields ?? DEFAULT_SIGNOFF_FIELDS,
     rejectToStage: stage.rejectToStage ?? '',
   };
   templates[trade] = [...(templates[trade] ?? []), newStage];

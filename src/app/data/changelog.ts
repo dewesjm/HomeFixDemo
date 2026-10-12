@@ -14,6 +14,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     added: [
       'Fit-Up Insp and Fit-Up Release have an optional Comments box on their sign-off, like every other step. The comment is saved with the sign-off and shows in History.',
     ],
+    changed: [
+      'A step added in Admin > Routing Settings no longer starts with a generic list of sign-off fields (Inspector name, License #, Crew size and so on). It has Comments and the Signoff button.',
+    ],
   },
   {
     date: '2026-10-10',

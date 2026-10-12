@@ -119,12 +119,6 @@
         <td>
           <div class="row-tight">
             @if (editingId() !== row.id) {
-              @if (showFieldConfig) {
-                <button type="button" class="btn btn-ghost btn-xs" appTooltip="Configure fields"
-                        (click)="openFieldConfig(row)">
-                  <svg lucideSettings class="size-4"></svg>
-                </button>
-              }
               <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
               </button>
@@ -148,11 +142,6 @@
   </tbody>
 </table>
 </div>
-
-<!-- Field Configuration Dialog -->
-@if (fieldDlgRow(); as row) {
-  <app-routing-field-config-dialog [trade]="row.trade" [stageId]="row.id.split(':')[1]" [stageLabel]="row.routing" (closed)="fieldDlgRow.set(null)" />
-}
 
 <!-- Included when (step conditions) dialog -->
 @if (condRow(); as row) {
