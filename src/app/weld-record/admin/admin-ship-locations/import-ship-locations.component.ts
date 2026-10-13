@@ -39,7 +39,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
       hull: get('Hull', 'hull').toUpperCase(),
       deck: get('Deck', 'deck'),
       frame: get('Frame', 'frame'),
-      pscl: get('P/S/CL', 'pscl', 'PSCL').toUpperCase(),
+      pscl: get('P/S/CL', 'pscl', 'PSCL'),
       usage: get('Usage', 'usage'),
     };
   }
@@ -49,7 +49,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
     if (!HULLS.includes(row.hull)) errors.push('Hull not found');
     if (!row.deck.trim()) errors.push('Deck required');
     if (!row.frame.trim()) errors.push('Frame required');
-    if (!PSCL_VALUES.includes(row.pscl)) errors.push('P/S/CL must be P, S or CL');
+    if (!PSCL_VALUES.includes(row.pscl)) errors.push('P/S/CL must be a number from 0 to 9');
     if (!row.usage.trim()) errors.push('Usage required');
     if (getShipLocations().some(e => keyOf(e) === keyOf(row))) errors.push('Already on the list');
     row._errors = errors;
@@ -64,9 +64,9 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   protected sampleRows(): ImportRow[] {
     const hull = HULLS[0];
     return [
-      { ...blank(), hull, deck: 'D6', frame: 'F70', pscl: 'P', usage: 'Tank' },
-      { ...blank(), hull, deck: 'D6', frame: 'F70', pscl: 'S', usage: 'Tank' },
-      { ...blank(), hull, deck: 'D6', frame: 'F74', pscl: 'CL', usage: 'Machinery' },
+      { ...blank(), hull, deck: '5', frame: '230', pscl: '2', usage: 'L' },
+      { ...blank(), hull, deck: '5', frame: '230', pscl: '1', usage: 'L' },
+      { ...blank(), hull, deck: '5', frame: '240', pscl: '0', usage: 'M' },
     ];
   }
 

@@ -43,20 +43,20 @@ describe('FabricationDataService', () => {
 
   it('blanks a Frame/P-S-CL/Usage the new Deck no longer offers, and keeps one it still does', () => {
     setShipLocations([
-      { hull: job.hull, deck: 'D1', frame: 'F10', pscl: 'P', usage: 'Tank' },
-      { hull: job.hull, deck: 'D2', frame: 'F10', pscl: 'P', usage: 'Tank' },
-      { hull: job.hull, deck: 'D3', frame: 'F20', pscl: 'P', usage: 'Cargo' },
+      { hull: job.hull, deck: '1', frame: '110', pscl: '2', usage: 'L' },
+      { hull: job.hull, deck: '2', frame: '110', pscl: '2', usage: 'L' },
+      { hull: job.hull, deck: '3', frame: '120', pscl: '2', usage: 'Q' },
     ]);
-    for (const [k, v] of [['location', 'ship'], ['deck', 'D1'], ['frame', 'F10'], ['pscl', 'P'], ['usage', 'Tank']]) {
+    for (const [k, v] of [['location', 'ship'], ['deck', '1'], ['frame', '110'], ['pscl', '2'], ['usage', 'L']]) {
       service.setFabricationData(job, k, v);
     }
-    service.setFabricationData(job, 'deck', 'D2');
+    service.setFabricationData(job, 'deck', '2');
     let fab = store.workflowFor(job)().fabricationData;
-    expect(fab['frame']).toBe('F10');
-    expect(fab['pscl']).toBe('P');
-    expect(fab['usage']).toBe('Tank');
+    expect(fab['frame']).toBe('110');
+    expect(fab['pscl']).toBe('2');
+    expect(fab['usage']).toBe('L');
 
-    service.setFabricationData(job, 'deck', 'D3');
+    service.setFabricationData(job, 'deck', '3');
     fab = store.workflowFor(job)().fabricationData;
     expect(fab['frame']).toBe('');
     expect(fab['pscl']).toBe('');
@@ -67,13 +67,13 @@ describe('FabricationDataService', () => {
 
   it('blanks a P/S/CL the new Frame has nothing set up on', () => {
     setShipLocations([
-      { hull: job.hull, deck: 'D1', frame: 'F10', pscl: 'CL', usage: 'Tank' },
-      { hull: job.hull, deck: 'D1', frame: 'F20', pscl: 'P', usage: 'Cargo' },
+      { hull: job.hull, deck: '1', frame: '110', pscl: '0', usage: 'L' },
+      { hull: job.hull, deck: '1', frame: '120', pscl: '2', usage: 'Q' },
     ]);
-    for (const [k, v] of [['location', 'ship'], ['deck', 'D1'], ['frame', 'F10'], ['pscl', 'CL'], ['usage', 'Tank']]) {
+    for (const [k, v] of [['location', 'ship'], ['deck', '1'], ['frame', '110'], ['pscl', '0'], ['usage', 'L']]) {
       service.setFabricationData(job, k, v);
     }
-    service.setFabricationData(job, 'frame', 'F20');
+    service.setFabricationData(job, 'frame', '120');
     const fab = store.workflowFor(job)().fabricationData;
     expect(fab['pscl']).toBe('');
     expect(fab['usage']).toBe('');
