@@ -7,7 +7,7 @@ import { LucideArrowLeft } from '@lucide/angular';
 
 import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
-import { ShipLocationEntry, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
+import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS } from '../../../data/jobs';
 import { parseCsvImport, parseXlsxImport } from '../../../weld-planning/weld-planning.data';
 import { downloadCsv } from '../../../data/export-csv';
@@ -26,7 +26,7 @@ const blank = (): ImportRow => ({ _errors: [], _saved: false, hull: '', deck: ''
 export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   protected readonly noun = 'ship locations';
   hulls = HULLS;
-  psclValues = PSCL_VALUES;
+  psclOptions = PSCL_OPTIONS;
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
     return file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? parseXlsxImport(file) : file.text().then(parseCsvImport);

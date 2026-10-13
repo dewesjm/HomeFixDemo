@@ -15,6 +15,10 @@ export interface ShipLocationEntry {
 
 /* P/S/CL is a number below 10: 0 is centerline, even numbers are port, odd numbers are starboard */
 export const PSCL_VALUES = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+const psclSide = (v: string) => v === '0' ? 'Centerline' : Number(v) % 2 ? 'Starboard' : 'Port';
+/* droplist option for a P/S/CL number: the open list reads "2 Port", the stored value is just 2 */
+const psclOption = (v: string) => ({ label: `${v} ${psclSide(v)}`, value: v });
+export const PSCL_OPTIONS = PSCL_VALUES.map(psclOption);
 /* the Fabrication fields this table supplies options for */
 export const SHIP_LOCATION_KEYS = ['deck', 'frame', 'pscl', 'usage'];
 
@@ -91,7 +95,7 @@ function frameOptions(hull: string, deck: string) {
 function psclOptions(hull: string, deck: string, frame: string) {
   const sides = new Set(getShipLocations()
     .filter(e => e.hull === hull && e.deck === deck && e.frame === frame).map(e => e.pscl));
-  return PSCL_VALUES.filter(v => sides.has(v)).map(v => ({ label: v, value: v }));
+  return PSCL_VALUES.filter(v => sides.has(v)).map(psclOption);
 }
 
 function usageOptions(hull: string, deck: string, frame: string, pscl: string) {

@@ -25,10 +25,14 @@
       <td><input class="input input-xs w-full" [(ngModel)]="row.deck" (ngModelChange)="revalidate(row)" [class.input-error]="!row.deck" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.frame" (ngModelChange)="revalidate(row)" [class.input-error]="!row.frame" /></td>
       <td>
-        <select class="select select-xs w-full" [(ngModel)]="row.pscl" (ngModelChange)="revalidate(row)" [class.select-error]="!row.pscl">
-          <option value="">-</option>
-          @for (p of psclValues; track p) { <option [value]="p">{{ p }}</option> }
-        </select>
+        <!-- the open list reads "2 Port"; the closed box shows just the number -->
+        <div class="relative">
+          <select class="select select-xs select-overlay-label w-full" [(ngModel)]="row.pscl" (ngModelChange)="revalidate(row)" [class.select-error]="!row.pscl">
+            <option class="text-base-content" value="">-</option>
+            @for (p of psclOptions; track p.value) { <option class="text-base-content" [value]="p.value">{{ p.label }}</option> }
+          </select>
+          <span class="absolute inset-y-0 left-3 right-7 flex items-center pointer-events-none truncate text-xs">{{ row.pscl || '-' }}</span>
+        </div>
       </td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.usage" (ngModelChange)="revalidate(row)" [class.input-error]="!row.usage" /></td>
     </ng-template>

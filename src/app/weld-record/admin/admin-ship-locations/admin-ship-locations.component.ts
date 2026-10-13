@@ -8,7 +8,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideUpload } from '
 
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
-import { ShipLocationEntry, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
+import { ShipLocationEntry, PSCL_OPTIONS, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS, JOBS } from '../../../data/jobs';
 import { isShipboardLocation } from '../../../data/shops';
 import { WorkflowStore } from '../../services/workflow-store.service';
@@ -36,7 +36,7 @@ export class AdminShipLocationsComponent {
   private seq = 0;
 
   hulls = HULLS;
-  psclValues = PSCL_VALUES;
+  psclOptions = PSCL_OPTIONS;
   rows = signal<LocRow[]>(getShipLocations().map((e, i) => ({ ...e, uid: `sl-${i}` })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, LocRow> = {};

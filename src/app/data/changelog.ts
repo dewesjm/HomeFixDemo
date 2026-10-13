@@ -10,6 +10,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-13',
+    changed: [
+      'P/S/CL is a number from 0 to 9: 0 is centerline, even numbers are port, odd numbers are starboard. Its droplist (on Fabrication, Admin > Ship Locations and the Import page) lists each number with its side, like "2 Port", and the box shows just the number once picked.',
+    ],
+  },
+  {
     date: '2026-10-12',
     fixed: [
       'Reloading the app no longer unchecks Release to welding on Fit-Up Insp (it starts checked), so the joint no longer picks up a Fit-Up Release step it did not need. Other saved sign-off values that are not fields on the form are kept on reload too.',

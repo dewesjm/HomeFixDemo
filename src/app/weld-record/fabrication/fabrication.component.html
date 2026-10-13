@@ -34,13 +34,21 @@
         @if (f.row === 2) {
           <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
             <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-            <!-- options come from Admin > Ship Locations; a field waiting on Deck/Frame/P-S-CL says so instead of an empty list -->
-            <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]"
-                    [disabled]="fabLocked() || jobComplete() || !f.options?.length"
-                    [ngModel]="fabricationData()[f.key] || ''" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
-              <option [ngValue]="''" disabled>{{ f.options?.length ? '' : f.placeholder }}</option>
-              @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
-            </select>
+            <!-- options come from Admin > Ship Locations; a field waiting on Deck/Frame/P-S-CL says so instead of an empty list.
+                 P/S/CL's open list reads "2 Port"; its closed box shows just the number -->
+            <div class="relative">
+              <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]"
+                      [class.select-overlay-label]="f.key === 'pscl'"
+                      [disabled]="fabLocked() || jobComplete() || !f.options?.length"
+                      [ngModel]="fabricationData()[f.key] || ''" (ngModelChange)="selectChange.emit({ key: f.key, value: $event })">
+                <option class="text-base-content" [ngValue]="''" disabled>{{ f.options?.length ? '' : f.placeholder }}</option>
+                @for (o of f.options || []; track o.value) { <option class="text-base-content" [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+              @if (f.key === 'pscl') {
+                <span class="absolute inset-y-0 left-3 right-7 flex items-center pointer-events-none truncate"
+                      [class.select-overlay-locked]="fabLocked() || jobComplete() || !f.options?.length">{{ fabricationData()[f.key] || (f.options?.length ? '' : f.placeholder) }}</span>
+              }
+            </div>
             @if (fabErrors()[f.key]) {
               <div class="field-error">{{ fabErrors()[f.key] }}</div>
             }

@@ -52,11 +52,15 @@
         </td>
         <td>
           @if (editingId() === row.uid) {
-            <select class="select select-sm select-bordered w-full min-w-0"
-                    [ngModel]="row.pscl" (ngModelChange)="updateField(row, 'pscl', $event)">
-              <option value="" disabled>Select</option>
-              @for (p of psclValues; track p) { <option [value]="p">{{ p }}</option> }
-            </select>
+            <!-- the open list reads "2 Port"; the closed box shows just the number -->
+            <div class="relative">
+              <select class="select select-sm select-bordered select-overlay-label w-full min-w-0"
+                      [ngModel]="row.pscl" (ngModelChange)="updateField(row, 'pscl', $event)">
+                <option class="text-base-content" value="" disabled>Select</option>
+                @for (p of psclOptions; track p.value) { <option class="text-base-content" [value]="p.value">{{ p.label }}</option> }
+              </select>
+              <span class="absolute inset-y-0 left-3 right-7 flex items-center pointer-events-none truncate text-sm">{{ row.pscl || 'Select' }}</span>
+            </div>
           } @else {
             {{ row.pscl || '-' }}
           }
