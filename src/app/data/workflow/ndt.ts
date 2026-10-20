@@ -112,7 +112,7 @@ export function ndtKindOptions(kind: NdtKind): StageOption[] {
   return NDT_KINDS[kind].options.map(o => ({ ...o }));
 }
 
-/* Layer Type on an NDT step: the weld activity being inspected (Root, Layer, Final, or the
+/* Inspecting on an NDT step: the weld activity being inspected (Root, Layer, Final, or the
    Excavation of a Weld Repair); '' for any other step */
 export function ndtLayerType(stageId: string): string {
   if (isExcavationNdtStageId(stageId)) return 'Excavation';

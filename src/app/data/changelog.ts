@@ -14,6 +14,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     added: [
       'History: expanding a sign-off lists each Fabrication field that changed since the joint\'s previous sign-off, old value → new value (on the first sign-off, every field that was filled in). This shows on History and on Records Review.',
     ],
+    changed: [
+      'Inspection sign-offs: the Layer Type box on NDT steps and the Layer box on Fit-Up Insp are now labeled Inspecting.',
+    ],
     fixed: [
       'Sample joints\' sign-offs in History now carry their Fabrication data, so "Fabrication at this sign-off" shows for them too.',
       'A Cut\'s Refit entry in History can be expanded to show the Fabrication data from before the Cut.',

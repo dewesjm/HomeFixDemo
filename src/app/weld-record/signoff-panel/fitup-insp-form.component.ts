@@ -1,4 +1,4 @@
-/* Fit-Up Insp (and its NQC row): its fixed Type and Layer, the fitting values to verify against
+/* Fit-Up Insp (and its NQC row): its fixed Type and Inspecting, the fitting values to verify against
    Fabrication, and Release to welding */
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../../data/workflow';
