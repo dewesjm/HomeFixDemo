@@ -3,7 +3,7 @@
 import { computed, signal } from '@angular/core';
 import { TableState, inArray } from '../../shared/table-state';
 import { formatDateTime } from '../../shared/date-format';
-import { HistoryRow } from '../../data/workflow';
+import { HistoryRow, historyRowHasDetail } from '../../data/workflow';
 
 export class HistoryTableState extends TableState<HistoryRow> {
   constructor() {
@@ -23,7 +23,7 @@ export class HistoryTableState extends TableState<HistoryRow> {
   fabExpanded = signal<ReadonlySet<string>>(new Set());
 
   /* every entry matching the current filters that has fields to show, across all pages */
-  expandableKeys = computed(() => this.sorted().filter(r => r.inputs?.length).map(r => r.key));
+  expandableKeys = computed(() => this.sorted().filter(historyRowHasDetail).map(r => r.key));
   allExpanded = computed(() => {
     const keys = this.expandableKeys();
     return keys.length > 0 && keys.every(k => this.expanded().has(k));

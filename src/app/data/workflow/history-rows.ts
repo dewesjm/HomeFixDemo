@@ -1,7 +1,8 @@
 /* A joint's History as table rows (History screen, Records Review), and which rows offer
    Deprogress and Correct */
 import { Job } from '../jobs';
-import { HistoryEntry, JobWorkflow } from './types';
+import { HistoryEntry, JobWorkflow, SignoffInput } from './types';
+import { fabricationChanges } from './fabrication';
 
 /* one History entry with its joint's identifiers; sign-offs carry inputs (every editable field and its value at that moment) */
 export interface HistoryRow extends HistoryEntry {
@@ -13,15 +14,19 @@ export interface HistoryRow extends HistoryEntry {
   order: string;
   /* searchable text of the sign-off's field values */
   inputsText: string;
+  /* sign-offs only: the Fabrication fields that changed since the joint's previous sign-off */
+  fabChanges?: { label: string; from: string; to: string }[];
 }
 
 /* the joint's History newest-first; per-field edits (Stages, Fabrication) are left out, since
-   History records what was input at each sign-off */
+   History records what was input at each sign-off, and each sign-off lists the Fabrication changes since the last one */
 export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[] {
+  const fabChanges = fabricationChangesBySignoff(wf.history);
   return wf.history
     .filter(e => e.section !== 'Stages' && e.section !== 'Fabrication')
     .map(e => ({
       ...e,
+      fabChanges: fabChanges.get(e),
       key: `${wf.jobId}|${e.when}|${e.action}`,
       jobId: wf.jobId,
       hull: job?.hull ?? `#${wf.jobId}`,
@@ -31,6 +36,27 @@ export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[]
       inputsText: [...(e.inputs ?? []), ...(e.fabInputs ?? [])].map(i => `${i.label} ${i.value}`).join(' '),
     }))
     .sort((a, b) => b.when.localeCompare(a.when));
+}
+
+/* each sign-off's Fabrication changes, compared with the snapshot at the sign-off before it (the
+   first one against blank). A Refit or Routing entry's snapshot is the data it blanked, so the
+   comparison after it starts from blank again. */
+function fabricationChangesBySignoff(history: HistoryEntry[]): Map<HistoryEntry, { label: string; from: string; to: string }[]> {
+  const out = new Map<HistoryEntry, { label: string; from: string; to: string }[]>();
+  let before: SignoffInput[] = [];
+  for (const e of [...history].sort((a, b) => a.when.localeCompare(b.when))) {
+    if (!e.fabInputs) continue;
+    if (e.section !== 'Sign-off') { before = []; continue; }
+    const changes = fabricationChanges(before, e.fabInputs);
+    if (changes.length) out.set(e, changes);
+    before = e.fabInputs;
+  }
+  return out;
+}
+
+/* whether a History row has anything under it to expand: its recorded fields or a Fabrication snapshot */
+export function historyRowHasDetail(r: HistoryRow): boolean {
+  return !!(r.inputs?.length || r.fabInputs?.length);
 }
 
 /* Deprogress is only offered on a joint's last sign-off that is still in effect. A joint with undo

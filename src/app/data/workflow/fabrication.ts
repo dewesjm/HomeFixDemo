@@ -64,6 +64,16 @@ export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[]
     });
 }
 
+/* the fields whose value differs between two fabrication snapshots, in field order; a field missing
+   from one snapshot (hidden by its showIf) counts as blank there */
+export function fabricationChanges(before: SignoffInput[], after: SignoffInput[]): { label: string; from: string; to: string }[] {
+  const was = new Map(before.map(i => [i.label, i.value]));
+  const now = new Map(after.map(i => [i.label, i.value]));
+  return FABRICATION_FIELDS
+    .map(f => ({ label: f.label, from: was.get(f.label) ?? '', to: now.get(f.label) ?? '' }))
+    .filter(c => c.from !== c.to);
+}
+
 /* every Fabrication field blank: a joint sent back to Fit or earlier starts its fit-up data over */
 export function blankFabricationData(): Record<string, string> {
   return Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, '']));

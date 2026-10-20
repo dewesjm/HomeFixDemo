@@ -451,6 +451,10 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
 
 The one record of every sign-off, deprogress and correction. History and Records Review both show it
 (`historyRows()` in `data/workflow/history-rows.ts`); nothing else keeps a second copy.
+An expanded sign-off also lists the Fabrication fields that changed since the joint's previous sign-off
+(`fabChanges`, compared from each sign-off's `fabInputs`; the first sign-off against blank, and a Refit or
+Routing entry that blanked fit-up data starts the comparison from blank again). Seeded sign-offs carry
+`fabInputs` too.
 
 ```ts
 { when: string; who: string; whoId?: string; whoTitle?: string;

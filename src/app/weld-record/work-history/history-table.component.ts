@@ -10,7 +10,7 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { JOBS, Job } from '../../data/jobs';
-import { HistoryRow, correctableKeys, deprogressableKey, getTemplates, historyRows } from '../../data/workflow';
+import { HistoryRow, correctableKeys, deprogressableKey, getTemplates, historyRowHasDetail, historyRows } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { HistoryTableState } from './history-table-state';
@@ -31,6 +31,7 @@ export class HistoryTableComponent {
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
   table = input.required<HistoryTableState>();
+  hasDetail = historyRowHasDetail;
   /* one joint's history: leaves out the XREFID, Hull, Drawing, Joint and Order columns and the open-joint button */
   oneJoint = input(false);
   emptyText = input('No activity matches your filters. Each sign-off records every editable field and its value at that moment.');

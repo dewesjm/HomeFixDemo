@@ -12,6 +12,7 @@ import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHo
 import { setRoutingFrom } from './current-routing';
 import { baseStepId, isFitupInspId } from './step-ids';
 import { newWorkflow } from './build-stages';
+import { fabricationSnapshot } from './fabrication';
 import { seeded, seededMic } from './seed-fabrication';
 
 /* which jobs get each seeded situation: a job id hash modulo EVERY equal to AT */
@@ -111,6 +112,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       to: hasDecision(s) ? result.toUpperCase() : '',
       routing: s.label,
       inputs: snapshotInputs(signedView, fieldsShown(signedView, job), s.signoffFields),
+      fabInputs: fabricationSnapshot(wf.fabricationData),
       stageId: s.id,
     });
     return {

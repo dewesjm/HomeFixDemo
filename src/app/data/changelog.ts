@@ -10,6 +10,16 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-20',
+    added: [
+      'History: expanding a sign-off lists each Fabrication field that changed since the joint\'s previous sign-off, old value → new value (on the first sign-off, every field that was filled in). This shows on History and on Records Review.',
+    ],
+    fixed: [
+      'Sample joints\' sign-offs in History now carry their Fabrication data, so "Fabrication at this sign-off" shows for them too.',
+      'A Cut\'s Refit entry in History can be expanded to show the Fabrication data from before the Cut.',
+    ],
+  },
+  {
     date: '2026-10-13',
     changed: [
       'P/S/CL is a number from 0 to 9: 0 is centerline, even numbers are port, odd numbers are starboard. Its droplist (on Fabrication, Admin > Ship Locations and the Import page) lists each number with its side, like "2 Port", and the box shows just the number once picked.',
