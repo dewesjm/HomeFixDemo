@@ -20,6 +20,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     fixed: [
       'Sample joints\' sign-offs in History now carry their Fabrication data, so "Fabrication at this sign-off" shows for them too.',
       'A Cut\'s Refit entry in History can be expanded to show the Fabrication data from before the Cut.',
+      'Joints saved before this update (e.g. their Fit and Tack sign-offs) had no Fabrication data in History; saved joint data is reset so every sign-off shows it.',
     ],
   },
   {

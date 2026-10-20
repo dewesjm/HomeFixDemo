@@ -1,5 +1,7 @@
 import { HistoryEntry, JobWorkflow } from './types';
 import { historyRows } from './history-rows';
+import { seededWorkflow } from './seeded-workflow';
+import { JOBS } from '../jobs';
 
 const entry = (when: string, section: HistoryEntry['section'], fab?: Record<string, string>): HistoryEntry => ({
   when, who: 'A. Tester', section, action: `${section} ${when}`, routing: 'Fit',
@@ -22,6 +24,14 @@ describe('historyRows fabrication changes', () => {
       { label: 'Drawing Rev (Execution)', from: '', to: 'C' },
       { label: 'W.E. Memo', from: 'M-1', to: 'M-2' },
     ]);
+  });
+
+  it('every seeded sign-off records fabrication data', () => {
+    for (const job of JOBS) {
+      for (const e of seededWorkflow(job).history.filter(e => e.section === 'Sign-off')) {
+        expect(e.fabInputs?.length).withContext(`${job.id} ${e.action}`).toBeGreaterThan(0);
+      }
+    }
   });
 
   it('compares from blank again after a Refit', () => {
