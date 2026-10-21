@@ -9,8 +9,7 @@ export function jointDetailsUt(job: Job): string {
   return ndtHas(job, 'UT') ? 'X' : '-';
 }
 
-/* VT: 5X when the NDT requirement includes 5X, X for VT or Visual, otherwise - */
+/* VT: X when the NDT requirement includes VT or Visual, otherwise blank (5X alone doesn't count) */
 export function jointDetailsVt(job: Job): string {
-  if (ndtHas(job, '5X')) return '5X';
-  return ndtHas(job, 'VT') || ndtHas(job, 'VISUAL') ? 'X' : '-';
+  return ndtHas(job, 'VT') || ndtHas(job, 'VISUAL') ? 'X' : '';
 }

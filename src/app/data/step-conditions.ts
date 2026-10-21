@@ -63,7 +63,7 @@ const text = (key: keyof Job, label: string, values: string[] = []): StepConditi
   ({ key, label, values, get: j => String(j[key] ?? '') });
 
 /* Joint Details as shown on the weld record (Routing left out: it's what these rules decide).
-   UT/VT read the same X / 5X / - the Joint Details panel shows. */
+   UT/VT read the same values the Joint Details panel shows (UT X or -, VT X or blank). */
 const JOINT_DETAILS_TEXT: StepConditionField[] = [
   text('xrefid', 'XREFID'), text('ship', 'Ship'), text('hull', 'Hull'), text('drawing', 'Drawing'),
   text('drawingRev', 'Drawing Rev'), text('joint', 'Joint'), text('jointDesign', 'Joint Design'),
@@ -72,7 +72,7 @@ const JOINT_DETAILS_TEXT: StepConditionField[] = [
   text('mcl1', 'MCL 1', MCL_POOL), text('materialType1', 'Material Type 1'), text('joiningItem', 'Joining Item'),
   text('mcl2', 'MCL 2', MCL_POOL), text('materialType2', 'Material Type 2'), text('joinToItem', 'Join To Item'),
   { key: 'ut', label: 'UT', values: ['X', '-'], get: jointDetailsUt },
-  { key: 'vt', label: 'VT', values: ['X', '5X', '-'], get: jointDetailsVt },
+  { key: 'vt', label: 'VT', values: ['X'], get: jointDetailsVt },
   text('order', 'Order'), text('workPackage', 'Work Package'), text('workPermit', 'Work Permit'), text('waff', 'WAFF'),
   text('serialNumber', 'Serial Number'), text('refitNumber', 'Refit #'), text('repairNumber', 'Repair #'),
   text('er1', 'ER1'), text('er2', 'ER2'), text('er3', 'ER3'), text('er4', 'ER4'),

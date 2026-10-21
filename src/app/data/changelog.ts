@@ -10,6 +10,12 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-21',
+    changed: [
+      'Joint Details: VT shows X when the joint\'s NDT requirement includes VT or Visual, otherwise it is blank. It no longer shows 5X or -. Pipe Welding\'s VT column and VT in routing and qualification conditions follow it.',
+    ],
+  },
+  {
     date: '2026-10-20',
     added: [
       'History: expanding a sign-off lists each Fabrication field that changed since the joint\'s previous sign-off, old value → new value (on the first sign-off, every field that was filled in). This shows on History and on Records Review.',
