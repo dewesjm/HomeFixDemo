@@ -106,6 +106,28 @@ export function requiredToStore(key: string, required: boolean): boolean | undef
   return required === (lookupCatalogField(key)?.defaultRequired ?? false) ? undefined : required;
 }
 
+/* the Required droplist: Never, Always, or When a condition holds */
+export type RequiredMode = 'never' | 'always' | 'when';
+
+export function requiredMode(act: FieldActivation): RequiredMode {
+  if (!effectiveRequired(act)) return 'never';
+  return effectiveRequiredIf(act) ? 'when' : 'always';
+}
+
+/* the activation with Required set to a mode; When keeps the current condition, or the catalog
+   default when there is none, and the condition editor sets the rest */
+export function withRequiredMode(act: FieldActivation, mode: RequiredMode): FieldActivation {
+  const { required: _r, requiredIf: _ri, ...rest } = act;
+  const required = requiredToStore(act.key, mode !== 'never');
+  const requiredIf = mode === 'always' ? requiredIfToStore(act.key, [])
+    : mode === 'when' && effectiveRequiredIf(act) ? act.requiredIf : undefined;
+  return {
+    ...rest,
+    ...(required === undefined ? {} : { required }),
+    ...(requiredIf === undefined ? {} : { requiredIf }),
+  };
+}
+
 /* fields whose Disabled when rule can't be edited: always read-only ones */
 export function isAlwaysReadOnly(key: string): boolean {
   return !!lookupCatalogField(key)?.disabled;
@@ -164,9 +186,9 @@ export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) =
   return fill.when.all.length ? `Prepopulated from ${from} when ${conditionText(fill.when)}` : `Always prepopulated from ${from}`;
 }
 
-/* e.g. "Required when either part requires material traceability"; '' when not required */
+/* e.g. "Required when either part requires material traceability", "Always required", "Never required" */
 export function requiredRuleText(act: FieldActivation): string {
-  if (!effectiveRequired(act)) return '';
+  if (!effectiveRequired(act)) return 'Never required';
   const cond = effectiveRequiredIf(act);
   return cond ? `Required when ${conditionText(cond)}` : 'Always required';
 }

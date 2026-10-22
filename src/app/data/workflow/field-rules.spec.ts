@@ -1,5 +1,6 @@
 import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
-  defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf } from './field-rules';
+  defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf,
+  requiredMode, withRequiredMode } from './field-rules';
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
@@ -21,7 +22,7 @@ describe('field rules', () => {
     expect(disabledRuleText({ key: 'weldProcess', disabledIf: { all: [] } })).toBe('Never disabled');
     expect(requiredRuleText({ key: 'oversightInspector' })).toBe('Always required');
     expect(requiredRuleText({ key: 'consumableInsertId' })).toBe('Required when either part requires material traceability');
-    expect(requiredRuleText({ key: 'hasProbationary' })).toBe('');
+    expect(requiredRuleText({ key: 'hasProbationary' })).toBe('Never required');
     expect(effectiveRequired({ key: 'oversightInspector' })).toBeTrue();
     expect(effectiveRequired({ key: 'oversightInspector', required: false })).toBeFalse();
   });
@@ -49,6 +50,22 @@ describe('field rules', () => {
     expect(requiredRuleText({ key: 'consumableInsertId', requiredIf: cleared })).toBe('Always required');
     expect(requiredToStore('fillerMetalMic', true)).toBeUndefined();
     expect(requiredToStore('fillerMetalMic', false)).toBeFalse();
+  });
+
+  it('Required droplist: Never / Always / When, storing only what differs from the catalog', () => {
+    expect(requiredMode({ key: 'hasProbationary' })).toBe('never');
+    expect(requiredMode({ key: 'oversightInspector' })).toBe('always');
+    expect(requiredMode({ key: 'consumableInsertId' })).toBe('when');
+    const always = withRequiredMode({ key: 'consumableInsertId' }, 'always');
+    expect(always).toEqual({ key: 'consumableInsertId', requiredIf: { all: [] } });
+    expect(requiredMode(always)).toBe('always');
+    /* back to When brings the catalog condition back */
+    expect(withRequiredMode(always, 'when')).toEqual({ key: 'consumableInsertId' });
+    const never = withRequiredMode({ key: 'consumableInsertId', width: 160 }, 'never');
+    expect(never).toEqual({ key: 'consumableInsertId', width: 160, required: false });
+    expect(requiredRuleText(never)).toBe('Never required');
+    expect(withRequiredMode({ key: 'hasProbationary' }, 'always')).toEqual({ key: 'hasProbationary', required: true });
+    expect(withRequiredMode({ key: 'hasProbationary', required: true }, 'never')).toEqual({ key: 'hasProbationary' });
   });
 
   it('prepopulate rule: catalog default for the filler, stored only when it differs, null when cleared', () => {

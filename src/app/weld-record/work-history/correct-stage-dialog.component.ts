@@ -46,7 +46,7 @@ export class CorrectStageDialogComponent {
     const t = this.target();
     return st && t ? fieldsShown(st, t.job, this.wf()?.stages ?? [], this.wf()?.fabricationData ?? {}).filter(f => isUserEditable(st, f)) : [];
   });
-  /* the sign-off fields the step's definition shows on this joint, less greyed-out ones, plus Comments */
+  /* the sign-off fields the step's definition shows on this joint, less disabled ones, plus Comments */
   signoffFields = computed<SignoffField[]>(() => {
     const st = this.stage();
     const t = this.target();

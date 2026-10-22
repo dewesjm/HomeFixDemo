@@ -2,7 +2,7 @@
    Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
    as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
-   this step or the WTN), when it's disabled, and whether and when it's required. While the
+   this step or the WTN), when it's disabled, and when it's required (Never / Always / When). While the
    Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
    which fields share a line, their widths, headings, and where Inspection Results goes. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
@@ -26,14 +26,14 @@ import {
   DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
   FIELD_CATALOG,
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
-  getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
-  defaultRequiredIf, requiredIfToStore, requiredRuleText,
-  showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
+  getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, isAlwaysReadOnly,
+  defaultRequiredIf, requiredIfToStore, requiredRuleText, requiredMode, withRequiredMode,
+  showRuleText, disabledRuleText, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
   HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY,
 } from '../../../data/workflow';
-import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
+import type { ConditionClause, FieldCondition, FieldFill, RequiredMode } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
 
 interface DefRow {
@@ -317,8 +317,9 @@ export class AdminSignoffTypeDefinitionComponent {
     return disabledRuleText(this.activation(key));
   }
 
-  isRequired(key: string): boolean {
-    return effectiveRequired(this.activation(key));
+  /* While its condition editor is open the droplist stays on When, even before a clause is added */
+  requiredModeOf(key: string): RequiredMode {
+    return this.isCondOpen(key, 'required') ? 'when' : requiredMode(this.activation(key));
   }
 
   requiredLabel(key: string): string {
@@ -373,18 +374,19 @@ export class AdminSignoffTypeDefinitionComponent {
     this.editing.update(e => e ? { ...e, ...(partial.fillStepId !== undefined ? { fillFieldKey: '' } : {}), ...partial } : e);
   }
 
-  setRequired(key: string, required: boolean) {
+  /* When opens the condition editor; Never and Always close it without applying its clauses */
+  setRequiredMode(key: string, mode: RequiredMode) {
     this.editing.update(e => {
       if (!e) return e;
-      const set = (acts: FieldActivation[]) => acts.map(a => {
-        if (a.key !== key) return a;
-        const { required: _old, ...rest } = a;
-        const stored = requiredToStore(key, required);
-        return stored === undefined ? rest : { ...rest, required: stored };
-      });
-      /* unticking closes the field's "Required when" editor */
-      const condKey = !required && e.condKey === key && e.condKind === 'required' ? null : e.condKey;
-      return { ...e, fieldActivations: set(e.fieldActivations), condKey };
+      const editingRequired = e.condKey === key && e.condKind === 'required';
+      if (mode === 'when' && editingRequired) return e;
+      /* opening: apply the clauses of the editor that was open first */
+      if (mode === 'when' && e.condKey) this.applyCondClauses(e);
+      const fieldActivations = e.fieldActivations.map(a => a.key === key ? withRequiredMode(a, mode) : a);
+      if (mode !== 'when') return { ...e, fieldActivations, condKey: editingRequired ? null : e.condKey };
+      const act = fieldActivations.find(a => a.key === key);
+      const cond = act?.requiredIf ?? defaultRequiredIf(key);
+      return { ...e, fieldActivations, condKey: key, condKind: 'required', condClauses: cond?.all.map(c => this.clauseToWork(c)) ?? [] };
     });
   }
 

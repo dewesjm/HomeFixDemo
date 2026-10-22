@@ -74,7 +74,7 @@
         }
         <div class="mb-4">
           @for (f of fieldChoices; track f.key) {
-            <div class="border-b border-base-200 last:border-0">
+            <div class="border-b border-base-300 last:border-0 py-1">
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
                        [checked]="hasField(f.key)" [disabled]="isLocked(f.key)"
@@ -110,8 +110,8 @@
   </dialog>
 }
 
-<!-- A checked field's rules: when it shows, when it's prepopulated, when it's disabled, and whether
-     and when it's required (each rule opens the condition editor). Defer Tack and
+<!-- A checked field's rules: when it shows, when it's prepopulated, when it's disabled, and when
+     it's required (Never / Always / When; each rule opens the condition editor). Defer Tack and
      Release to welding and Affected Item have fixed rules (hasFixedRules). -->
 <ng-template #fieldRules let-key="key">
   <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
@@ -129,12 +129,16 @@
       } @else {
         <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'disabled', text: disabledLabel(key) }"></ng-container>
       }
-      <label class="flex items-center gap-1 px-2 text-xs cursor-pointer">
-        <input type="checkbox" class="checkbox checkbox-xs" [checked]="isRequired(key)"
-               (change)="setRequired(key, $any($event.target).checked)" />
-        Required for sign-off
+      <label class="flex items-center gap-1 px-2 text-xs">
+        Required
+        <select class="select select-bordered select-xs w-24"
+                [ngModel]="requiredModeOf(key)" (ngModelChange)="setRequiredMode(key, $event)">
+          <option value="never">Never</option>
+          <option value="always">Always</option>
+          <option value="when">When…</option>
+        </select>
       </label>
-      @if (isRequired(key)) {
+      @if (requiredModeOf(key) === 'when') {
         <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'required', text: requiredLabel(key) }"></ng-container>
       }
     }
@@ -179,7 +183,7 @@
       } @else {
         <div class="text-xs font-semibold mb-1">
           {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)'
-             : e.condKind === 'required' ? 'Required only when (no clauses = always required)'
+             : e.condKind === 'required' ? 'Required when (no clauses = always required)'
              : 'Disabled when (no clauses = never disabled)' }}
         </div>
       }
@@ -240,7 +244,7 @@
     <div class="mb-2">
       @for (a of e.fieldActivations; track a.key; let i = $index, first = $first, last = $last) {
         @if (!isHeading(a) || !orderOnly()) {
-          <div class="flex items-center gap-2 py-1 border-b border-base-200 last:border-0">
+          <div class="flex items-center gap-2 py-1 border-b border-base-300 last:border-0">
             <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
               <svg lucideArrowUp class="size-4"></svg>
             </button>
