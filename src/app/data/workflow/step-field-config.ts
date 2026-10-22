@@ -3,10 +3,12 @@
    Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v5) and take effect immediately. */
+   (welding:step-field-config:v6) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
-import { FieldCondition } from './field-conditions';
-import type { FieldFill } from './field-catalog';
+import { ConditionClause, FieldCondition } from './field-conditions';
+import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
+import { defaultDisabledIf, disabledIfToStore } from './field-rules';
+import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import type { WorkflowStage } from './types';
 import { FILLER_KEYS } from './weld-fields';
 import { signoffTypeRowId } from './signoff-types';
@@ -16,7 +18,7 @@ export interface FieldActivation {
   key: string;
   showIf?: FieldCondition;
   disabledIf?: FieldCondition;
-  /* null = never filled, overriding a catalog default */
+  /* Prepopulated from; null = not prepopulated, overriding a catalog default */
   fill?: FieldFill | null;
   required?: boolean;
   /* required only while this holds; an empty condition = always, overriding a catalog default */
@@ -260,19 +262,47 @@ export function withDefaultWidths(a: StepFieldActivation): StepFieldActivation {
   return { ...a, fields: at < 0 ? [...fields, DECISION] : [...fields.slice(0, at), DECISION, ...fields.slice(at)] };
 }
 
+/* Definitions saved before Prepopulated from and Disabled when were separate rules (v5), when a fill
+   also locked its field and the WTN's fills were skipped under an engineering override in code: a
+   WTN fill gets "Engineering override is off", and a field its fill locked gets that fill's
+   condition as its Disabled when. A field with its own Disabled when keeps it as it is. */
+const PRE_SPLIT_KEY = 'welding:step-field-config:v5';
+export function withSplitFill(a: StepFieldActivation): StepFieldActivation {
+  return { ...a, fields: a.fields.map(splitFill) };
+}
+
+const isEngineeringClause = (c: ConditionClause) => c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY;
+
+function splitFill(f: FieldActivation): FieldActivation {
+  if (isLayoutOnlyItem(f)) return f;
+  const { disabledIf, ...rest } = f;
+  const fill = f.fill?.from === 'wtn' && !f.fill.when.all.some(isEngineeringClause)
+    ? { ...f.fill, when: { all: [...ENGINEERING_OVERRIDE_OFF.all, ...f.fill.when.all] } } : f.fill;
+  const out: FieldActivation = fill === undefined ? rest : { ...rest, fill };
+  if (disabledIf?.all.length) return { ...out, disabledIf };
+  /* never prepopulated: never locked before, so never disabled now */
+  if (fill === null) return defaultDisabledIf(f.key) ? { ...out, disabledIf: { all: [] } } : out;
+  /* the catalog's fill: its default Disabled when is the same condition */
+  if (fill === undefined) return out;
+  const stored = disabledIfToStore(f.key, fill.when.all);
+  return stored ? { ...out, disabledIf: stored } : out;
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preWidth = saved ? null : localStorage.getItem(PRE_WIDTH_KEY);
-    const preLayout = saved || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-    const preReferences = saved || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    const preSplit = saved ? null : localStorage.getItem(PRE_SPLIT_KEY);
+    const preWidth = saved || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
+    const preLayout = saved || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+    const preReferences = saved || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
     _cache = saved ? parse(saved)
-      : preWidth ? parse(preWidth).map(withDefaultWidths)
-      : preLayout ? parse(preLayout).map(withDefaultLayout)
-      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout)
+      : preSplit ? parse(preSplit).map(withSplitFill)
+      : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill)
+      : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill)
+      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill)
       : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
@@ -288,6 +318,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_SPLIT_KEY);
   localStorage.removeItem(PRE_WIDTH_KEY);
   localStorage.removeItem(PRE_LAYOUT_KEY);
   localStorage.removeItem(PRE_REFERENCES_KEY);

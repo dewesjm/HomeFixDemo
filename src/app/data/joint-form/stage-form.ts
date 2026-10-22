@@ -1,7 +1,7 @@
 /* A step's fields on the joint page: which show, and the options each offers */
 import { Job } from '../jobs';
 import {
-  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFieldLocked,
+  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFilledByRule,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId,
   evaluateCondition, buildConditionContext, hasStepActivation, effectiveShowIf, fieldActivation,
   definedFields, definitionStageFields, allowableThicknessApplies,
@@ -96,8 +96,8 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
   if (f.key === 'allowableThicknessExceeded' && job) {
     return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(job.nInd)} has been exceeded - Volumetric inspection (UT/RT) is required` };
   }
-  /* engineering override: typed by hand, no list (a filler copied from Consumable Insert keeps its droplist below) */
-  if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFieldLocked(stage, f)) {
+  /* engineering override: typed by hand, no list (a filler prepopulated from Consumable Insert keeps its droplist below) */
+  if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFilledByRule(stage, f.key)) {
     return { ...f, type: 'text', options: undefined, description: '' };
   }
   /* typed PH/IP requirements take a number or NC, so they're text boxes */
@@ -117,9 +117,9 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
     return { ...f, options: wtnOptionsForGwp(gwp), description: wtn ? wtnDescription(gwp, wtn) : '' };
   }
   if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
-    /* Locked (filled from another step, e.g. Fit's Consumable Insert) or opened by a Foreman Override:
-       the full option set, so a copied value always has a matching <option> */
-    if (isFieldLocked(stage, f) || ctx.offListUnlocked) {
+    /* Prepopulated (e.g. from Fit's Consumable Insert) or opened by a Foreman Override: the full
+       option set, so a copied value always has a matching <option> */
+    if (isFilledByRule(stage, f.key) || ctx.offListUnlocked) {
       return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
     }
     const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');

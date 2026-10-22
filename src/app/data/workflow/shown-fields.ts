@@ -9,7 +9,6 @@ import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rules';
-import { isFilledByRule } from './field-fill';
 import { fieldAppliesToJob, showIfMet } from './stage-display';
 import { stepOnJoint } from './step-ids';
 import { drawnByOwnForm } from './signoff-forms';
@@ -45,8 +44,7 @@ export function allowableThicknessApplies(stage: WorkflowStage, stages: Workflow
   return !!stepOnJoint(stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`);
 }
 
-/* The definition's fields whose Show when holds, each required and greyed out as its rules say
-   right now (a field filled by a rule is greyed out too) */
+/* The definition's fields whose Show when holds, each required and disabled as its rules say right now */
 export function definedFields(stage: WorkflowStage, condCtx: ConditionContext, stages: WorkflowStage[]): StageField[] {
   return getActivationForStep(stage).fields.flatMap(act => {
     const cat = lookupCatalogField(act.key);
@@ -55,8 +53,8 @@ export function definedFields(stage: WorkflowStage, condCtx: ConditionContext, s
     const show = effectiveShowIf(act);
     if (show && !evaluateCondition(show, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
-    const greyed = (!!disabledCond && evaluateCondition(disabledCond, condCtx)) || isFilledByRule(stage, act.key);
-    return [{ ...toStageField(cat), required: isRequiredNow(act, condCtx), ...(cat.disabled || greyed ? { disabled: true } : {}) }];
+    const disabled = !!disabledCond && evaluateCondition(disabledCond, condCtx);
+    return [{ ...toStageField(cat), required: isRequiredNow(act, condCtx), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
   });
 }
 
@@ -76,7 +74,7 @@ export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStag
 
 /* Pre-Fit and Fit's Consumable Insert / Backing Ring / Defer Tack sign-off fields: the ones the
    step's definition lists, each shown when its condition is met (the insert and ring fields when
-   the joint design needs them), with whether it's required and greyed out right now */
+   the joint design needs them), with whether it's required and disabled right now */
 export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): SignoffField[] {
   const activation = hasStepActivation(stage) ? getActivationForStep(stage) : undefined;
   const condCtx = buildConditionContext(stage, job, [], fab);

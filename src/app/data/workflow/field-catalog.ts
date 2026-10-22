@@ -1,6 +1,7 @@
 /* The complete catalog of fields that can appear on any step. Per-step activations
    (step-field-config.ts) pick from this list; they cannot define fields outside it. */
 import { FieldCondition } from './field-conditions';
+import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import { getWeldPositions } from '../weld-positions';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -10,10 +11,11 @@ import { RT_DEGREE_OPTIONS } from './ndt';
 
 export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
-/* "Filled from ... and locked when": while `when` holds (checked against this step's own fields),
-   the field copies the source's value and can't be typed into. The source is another step's
-   recorded value, a field on this same step, or the WTN's WPS (never under an engineering
-   override, where there's no WTN on file and the values are typed). */
+/* "Prepopulated from ... when": when `when` starts holding (checked against this step's own fields
+   and whether an engineering override has it), or its source changes while it holds, the field
+   copies the source's value; it's blanked when `when` stops holding. Whether it can be typed into
+   is its separate Disabled when rule. The source is another step's recorded value, a field on this
+   same step, or the WTN's WPS. */
 export type FieldFill = { fieldKey: string; when: FieldCondition }
   & ({ from?: 'step'; stepId: string } | { from: 'thisStep' } | { from: 'wtn' });
 
@@ -61,11 +63,13 @@ const showIfRtUnsat: FieldCondition = {
    (the checkbox is only on Root, so the rule never holds on other steps) */
 const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
 const fillFromFit = (fieldKey: string): FieldFill => ({ stepId: 'fit', fieldKey, when: insertOnly });
-/* Weld Process and the PH/IP requirements come from the WTN's WPS */
-const fillFromWtn = (fieldKey: string): FieldFill => ({ from: 'wtn', fieldKey, when: { all: [] } });
+/* Weld Process and the PH/IP requirements come from the WTN's WPS, except under an engineering
+   override (no WTN on file, the values are typed) */
+export const ENGINEERING_OVERRIDE_OFF: FieldCondition = { all: [{ source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: '' }] };
+const fillFromWtn = (fieldKey: string): FieldFill => ({ from: 'wtn', fieldKey, when: ENGINEERING_OVERRIDE_OFF });
 /* an actual is NC while its requirement is NC */
-const ncFrom = (requirement: string): FieldFill =>
-  ({ from: 'thisStep', fieldKey: requirement, when: { all: [{ source: 'field', key: requirement, equals: 'NC' }] } });
+const ifNc = (requirement: string): FieldCondition => ({ all: [{ source: 'field', key: requirement, equals: 'NC' }] });
+const ncFrom = (requirement: string): FieldFill => ({ from: 'thisStep', fieldKey: requirement, when: ifNc(requirement) });
 
 const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
 /* virtual Joint Details keys (joint-facts.ts) */
@@ -89,29 +93,34 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'weldProcedure', label: 'GWP', type: 'select', defaultRequired: true },
   { key: 'wtn', label: 'WTN', type: 'select', defaultRequired: true },
   { key: 'weldProcess', label: 'Weld Process', type: 'select', defaultRequired: true, defaultFill: fillFromWtn('weldProcess'),
+    defaultDisabledIf: ENGINEERING_OVERRIDE_OFF,
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
   { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
-  { key: 'phMin', label: 'PH Min', type: 'number', defaultFill: fillFromWtn('phMin') },
-  { key: 'phMax', label: 'PH Max', type: 'number', defaultFill: fillFromWtn('phMax') },
-  { key: 'ipMin', label: 'IP Min', type: 'number', defaultFill: fillFromWtn('ipMin') },
-  { key: 'ipMax', label: 'IP Max', type: 'number', defaultFill: fillFromWtn('ipMax') },
+  { key: 'phMin', label: 'PH Min', type: 'number', defaultFill: fillFromWtn('phMin'),
+    defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
+  { key: 'phMax', label: 'PH Max', type: 'number', defaultFill: fillFromWtn('phMax'),
+    defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
+  { key: 'ipMin', label: 'IP Min', type: 'number', defaultFill: fillFromWtn('ipMin'),
+    defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
+  { key: 'ipMax', label: 'IP Max', type: 'number', defaultFill: fillFromWtn('ipMax'),
+    defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
   { key: 'actualPhMin', label: 'Actual PH Min', type: 'number', defaultRequired: true,
-    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMin') },
+    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMin'), defaultDisabledIf: ifNc('phMin') },
   { key: 'actualPhMax', label: 'Actual PH Max', type: 'number', defaultRequired: true,
-    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMax') },
+    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMax'), defaultDisabledIf: ifNc('phMax') },
   { key: 'actualIpMin', label: 'Actual IP Min', type: 'number', defaultRequired: true,
-    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMin') },
+    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMin'), defaultDisabledIf: ifNc('ipMin') },
   { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', defaultRequired: true,
-    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMax') },
+    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMax'), defaultDisabledIf: ifNc('ipMax') },
   { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true, defaultShowIf: showIfNuclear,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', defaultRequired: true,
-    defaultFill: fillFromFit('consumableInsertType') },
+    defaultFill: fillFromFit('consumableInsertType'), defaultDisabledIf: insertOnly },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', defaultRequired: true,
-    defaultFill: fillFromFit('consumableInsertSize') },
+    defaultFill: fillFromFit('consumableInsertSize'), defaultDisabledIf: insertOnly },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', defaultRequired: true,
-    defaultFill: fillFromFit('consumableInsertId') },
+    defaultFill: fillFromFit('consumableInsertId'), defaultDisabledIf: insertOnly },
   /* root-weld only; controlled by per-step activation showIf */
   { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
   /* SWITCHED OFF: weld override fields. Kept in catalog so they can be re-enabled without a rewrite. */

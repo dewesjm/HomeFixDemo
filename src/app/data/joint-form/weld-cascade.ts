@@ -1,6 +1,7 @@
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, and a
    WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
-   their fill rules (field-fill.ts, applied after the change); a filled field is left alone here. */
+   their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right
+   now is left alone here. */
 import { StageField, WorkflowStage, SHOW_WELD_OVERRIDES, isFilledByRule } from '../workflow';
 import {
   getProcedureByGwpWtn, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure

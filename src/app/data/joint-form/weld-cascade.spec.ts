@@ -1,5 +1,7 @@
 import { JOBS } from '../jobs';
-import { buildStages, WorkflowStage, fillChanges, isFieldLocked } from '../workflow';
+import {
+  buildStages, WorkflowStage, fillChanges, isFieldLocked, getActivationForStep, setStepFieldConfig, resetStepFieldConfig,
+} from '../workflow';
 import { procedures } from '../procedures';
 import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
@@ -68,5 +70,21 @@ describe('joint-form weld-cascade', () => {
     const result = fillChanges(filled, unchecked, [fit, unchecked]);
     expect(result.released).toEqual(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
     expect(result.values).toEqual({ fillerMetalType: '', fillerMetalSize: '', fillerMetalMic: '' });
+  });
+
+  describe('a prepopulated field that is never disabled', () => {
+    afterEach(() => resetStepFieldConfig());
+
+    it('is copied in when its rule starts holding, then keeps a value typed over it', () => {
+      const tack = getActivationForStep('tack');
+      setStepFieldConfig([{ ...tack, fields: tack.fields.map(f => f.key === 'actualPhMin' ? { ...f, disabledIf: { all: [] } } : f) }]);
+      /* an engineering override, so PH Min is typed rather than prepopulated from the WTN */
+      const before = stageOf('tack', { engineeringEntry: true, inputs: { phMin: '50', actualPhMin: '70' } });
+      const nc = { ...before, inputs: { ...before.inputs, phMin: 'NC' } };
+      expect(fillChanges(before, nc, [nc]).values).toEqual({ actualPhMin: 'NC' });
+      const typedOver = { ...nc, inputs: { ...nc.inputs, actualPhMin: '80' } };
+      expect(isFieldLocked(typedOver, { key: 'actualPhMin' })).toBeFalse();
+      expect(fillChanges(typedOver, { ...typedOver, inputs: { ...typedOver.inputs, ipMin: '60' } }, [typedOver]).values).toEqual({});
+    });
   });
 });

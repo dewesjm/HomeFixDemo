@@ -34,7 +34,7 @@ export class DefinitionFieldComponent {
     return this.signoff() ? '' : this.ctx().fieldWarning(this.stage(), this.field().key);
   }
 
-  /* greyed out by its rules, filled by a rule, or set by the external system until an override opens it */
+  /* disabled by its rules, or set by the external system until an override opens it */
   disabled(): boolean {
     const st = this.stage(), f = this.field();
     if (this.signoff()) return !this.ctx().editable(st) || !!f.disabled;

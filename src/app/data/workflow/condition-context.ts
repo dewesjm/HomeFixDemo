@@ -6,6 +6,15 @@ import { WorkflowStage } from './types';
 import { ConditionContext } from './field-conditions';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
+/* the stage property an "Engineering override is on/off" clause reads */
+export const ENGINEERING_OVERRIDE_KEY = 'engineeringEntry';
+
+/* the step's own fields, its id and whether an engineering override has it, without the joint or
+   other steps (they read as blank): what a fill's "when" may read */
+export function stepOnlyContext(stage: WorkflowStage): ConditionContext {
+  return { ...buildConditionContext(stage, undefined, []), jointDetail: () => '' };
+}
+
 export function buildConditionContext(stage: WorkflowStage, job: Job | undefined, allStages: WorkflowStage[],
     fab: Record<string, string> = {}): ConditionContext {
   return {
@@ -20,7 +29,7 @@ export function buildConditionContext(stage: WorkflowStage, job: Job | undefined
       return String(v);
     },
     stageProperty: (key: string): string => {
-      if (key === 'engineeringEntry') return stage.engineeringEntry ? 'yes' : '';
+      if (key === ENGINEERING_OVERRIDE_KEY) return stage.engineeringEntry ? 'yes' : '';
       return '';
     },
     priorInput: (stepId: string, fieldKey: string): string =>

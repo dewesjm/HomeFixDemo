@@ -370,9 +370,10 @@ export class JointPageComponent implements OnDestroy {
     this.applyFills(stage);
   }
 
-  /* Fields filled from another step (Admin > Signoff Type Definition, field-fill.ts) after a change
-     on the step: copied in when their rule starts holding, blanked when it stops. Blanked ones get
-     the external system's values back, unless a Foreman Override or engineering override has the step. */
+  /* Fields prepopulated from another value (Admin > Signoff Type Definition, field-fill.ts) after a
+     change on the step: copied in when their rule starts holding or its source changes, blanked when
+     it stops. Blanked ones get the external system's values back, unless a Foreman Override or
+     engineering override has the step. */
   private applyFills(before: WorkflowStage) {
     if (!this.job || !this.wf) return;
     const stages = this.wf().stages;

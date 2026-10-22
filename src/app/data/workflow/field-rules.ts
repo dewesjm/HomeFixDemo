@@ -3,6 +3,7 @@
 import { FieldCondition, ConditionClause, ConditionContext, evaluateCondition } from './field-conditions';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, lookupCatalogField } from './field-catalog';
+import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
@@ -15,7 +16,7 @@ const BUILT_IN_SHOW_TEXT: Record<string, string> = {
   references: 'Always shown',
 };
 
-/* never greyed out, and required as fixed in code: the checkboxes routing reads when the step is
+/* never disabled, and required as fixed in code: the checkboxes routing reads when the step is
    signed (never required), Affected Item (at least one must be picked, sign-validation.ts) and References */
 const FIXED_RULE_KEYS = new Set(['deferTack', 'releaseToWelding', 'affectedItem', 'references']);
 
@@ -38,7 +39,7 @@ export function defaultDisabledIf(key: string): FieldCondition | undefined {
   return lookupCatalogField(key)?.defaultDisabledIf;
 }
 
-/* An empty disabledIf ({ all: [] }) is an explicit "never greyed out", overriding a catalog default */
+/* An empty disabledIf ({ all: [] }) is an explicit "never disabled", overriding a catalog default */
 export function effectiveDisabledIf(act: FieldActivation): FieldCondition | undefined {
   const cond = act.disabledIf ?? defaultDisabledIf(act.key);
   return cond?.all.length ? cond : undefined;
@@ -48,7 +49,7 @@ export function defaultFill(key: string): FieldFill | undefined {
   return lookupCatalogField(key)?.defaultFill;
 }
 
-/* A null fill is an explicit "never filled", overriding a catalog default */
+/* A null fill is an explicit "not prepopulated", overriding a catalog default */
 export function effectiveFill(act: FieldActivation): FieldFill | undefined {
   return act.fill === null ? undefined : act.fill ?? defaultFill(act.key);
 }
@@ -105,12 +106,12 @@ export function requiredToStore(key: string, required: boolean): boolean | undef
   return required === (lookupCatalogField(key)?.defaultRequired ?? false) ? undefined : required;
 }
 
-/* fields whose greyed-out rule can't be edited: always read-only ones */
+/* fields whose Disabled when rule can't be edited: always read-only ones */
 export function isAlwaysReadOnly(key: string): boolean {
   return !!lookupCatalogField(key)?.disabled;
 }
 
-/* fields whose greyed-out and required settings can't be edited (FIXED_RULE_KEYS) */
+/* fields whose Disabled when and required settings can't be edited (FIXED_RULE_KEYS) */
 export function hasFixedRules(key: string): boolean {
   return FIXED_RULE_KEYS.has(key);
 }
@@ -121,6 +122,7 @@ function labelOf(key: string): string {
 
 function clauseText(c: ConditionClause): string {
   if (c.source === 'stepId') return `step ID matches ${c.matches}`;
+  if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return `Engineering override is ${c.equals ? 'on' : 'off'}`;
   const key = c.source === 'priorStep' ? c.fieldKey : c.key;
   const subject = c.source === 'jointDetail' ? `joint ${labelOf(key)}` : labelOf(key);
   const isCheckbox = lookupCatalogField(key)?.type === 'checkbox';
@@ -151,16 +153,15 @@ export function hasBuiltInShowRule(key: string): boolean {
   return !!BUILT_IN_SHOW_TEXT[key];
 }
 
-/* e.g. "Filled from Fit's Consumable Insert Type and locked when Only Consumable Insert used as
-   filler is checked", "Filled from the WTN's PH Min and locked, except under an engineering
-   override"; '' when the field is never filled */
+/* e.g. "Prepopulated from Fit's Consumable Insert Type when Only Consumable Insert used as filler
+   is checked", "Prepopulated from the WTN's PH Min when Engineering override is off"; "Not
+   prepopulated" when it never is */
 export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
   const fill = effectiveFill(act);
-  if (!fill) return '';
+  if (!fill) return 'Not prepopulated';
   const source = fill.from === 'wtn' ? 'the WTN' : fill.from === 'thisStep' ? 'this step' : stepLabel(fill.stepId);
   const from = `${source}'s ${labelOf(fill.fieldKey)}`;
-  const lock = fill.when.all.length ? `Filled from ${from} and locked when ${conditionText(fill.when)}` : `Always filled from ${from} and locked`;
-  return fill.from === 'wtn' ? `${lock}, except under an engineering override` : lock;
+  return fill.when.all.length ? `Prepopulated from ${from} when ${conditionText(fill.when)}` : `Always prepopulated from ${from}`;
 }
 
 /* e.g. "Required when either part requires material traceability"; '' when not required */
@@ -170,9 +171,9 @@ export function requiredRuleText(act: FieldActivation): string {
   return cond ? `Required when ${conditionText(cond)}` : 'Always required';
 }
 
-/* e.g. "Greyed out when PH Min is NC"; '' when the field is never greyed out */
+/* e.g. "Disabled when PH Min is NC", or "Never disabled" */
 export function disabledRuleText(act: FieldActivation): string {
-  if (lookupCatalogField(act.key)?.disabled) return 'Always read-only';
+  if (lookupCatalogField(act.key)?.disabled) return 'Always disabled';
   const cond = effectiveDisabledIf(act);
-  return cond?.all.length ? `Greyed out when ${conditionText(cond)}` : '';
+  return cond ? `Disabled when ${conditionText(cond)}` : 'Never disabled';
 }

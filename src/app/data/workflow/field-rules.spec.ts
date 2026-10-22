@@ -9,13 +9,16 @@ describe('field rules', () => {
     expect(showRuleText({ key: 'hasProbationary' })).toBe('Always shown');
   });
 
-  it('describes the WTN and NC fill rules, and required rules', () => {
+  it('describes the WTN and NC prepopulate and disabled rules, and required rules', () => {
     const label = (id: string) => id;
     expect(fillRuleText({ key: 'weldProcess' }, label))
-      .toBe('Always filled from the WTN\'s Weld Process and locked, except under an engineering override');
-    expect(fillRuleText({ key: 'actualPhMin' }, label)).toBe('Filled from this step\'s PH Min and locked when PH Min is NC');
-    expect(fillRuleText({ key: 'actualPhMax' }, label)).toBe('Filled from this step\'s PH Max and locked when PH Max is NC');
-    expect(disabledRuleText({ key: 'weldProcess' })).toBe('');
+      .toBe('Prepopulated from the WTN\'s Weld Process when Engineering override is off');
+    expect(fillRuleText({ key: 'actualPhMin' }, label)).toBe('Prepopulated from this step\'s PH Min when PH Min is NC');
+    expect(fillRuleText({ key: 'actualPhMax' }, label)).toBe('Prepopulated from this step\'s PH Max when PH Max is NC');
+    expect(disabledRuleText({ key: 'weldProcess' })).toBe('Disabled when Engineering override is off');
+    expect(disabledRuleText({ key: 'actualPhMin' })).toBe('Disabled when PH Min is NC');
+    expect(disabledRuleText({ key: 'wtn' })).toBe('Never disabled');
+    expect(disabledRuleText({ key: 'weldProcess', disabledIf: { all: [] } })).toBe('Never disabled');
     expect(requiredRuleText({ key: 'oversightInspector' })).toBe('Always required');
     expect(requiredRuleText({ key: 'consumableInsertId' })).toBe('Required when either part requires material traceability');
     expect(requiredRuleText({ key: 'hasProbationary' })).toBe('');
@@ -32,10 +35,12 @@ describe('field rules', () => {
     expect(showIfToStore('hasProbationary', [])).toBeUndefined();
   });
 
-  it('greyed-out, required and required-when rules store only what differs from the catalog', () => {
+  it('disabled, required and required-when rules store only what differs from the catalog', () => {
     const phNc = [{ source: 'field' as const, key: 'phMin', equals: 'NC' }];
-    expect(disabledIfToStore('actualPhMin', [])).toBeUndefined();
-    expect(disabledIfToStore('actualPhMin', phNc)).toEqual({ all: phNc });
+    expect(disabledIfToStore('actualPhMin', phNc)).toBeUndefined();
+    expect(disabledIfToStore('actualPhMin', [])).toEqual({ all: [] });
+    expect(disabledIfToStore('wtn', [])).toBeUndefined();
+    expect(disabledIfToStore('wtn', phNc)).toEqual({ all: phNc });
     const def = [{ source: 'jointDetail' as const, key: 'materialTraceability', equals: 'yes' }];
     expect(requiredIfToStore('consumableInsertId', def)).toBeUndefined();
     const cleared = requiredIfToStore('consumableInsertId', []);
@@ -46,11 +51,11 @@ describe('field rules', () => {
     expect(requiredToStore('fillerMetalMic', false)).toBeFalse();
   });
 
-  it('fill rule: catalog default for the filler, stored only when it differs, null when cleared', () => {
+  it('prepopulate rule: catalog default for the filler, stored only when it differs, null when cleared', () => {
     const label = (id: string) => id === 'fit' ? 'Fit' : id;
     expect(fillRuleText({ key: 'fillerMetalType' }, label))
-      .toBe('Filled from Fit\'s Consumable Insert Type and locked when Only Consumable Insert used as filler is checked');
-    expect(fillRuleText({ key: 'wtn' }, label)).toBe('');
+      .toBe('Prepopulated from Fit\'s Consumable Insert Type when Only Consumable Insert used as filler is checked');
+    expect(fillRuleText({ key: 'wtn' }, label)).toBe('Not prepopulated');
     const def = defaultFill('fillerMetalType');
     expect(fillToStore('fillerMetalType', def && { ...def })).toBeUndefined();
     expect(fillToStore('fillerMetalType', undefined)).toBeNull();
@@ -58,7 +63,9 @@ describe('field rules', () => {
     expect(fillToStore('wtn', undefined)).toBeUndefined();
     const always = { stepId: 'fit', fieldKey: 'deferTack', when: { all: [] } };
     expect(fillToStore('wtn', always)).toEqual(always);
-    expect(fillRuleText({ key: 'wtn', fill: always }, label)).toBe('Always filled from Fit\'s Defer Tack and locked');
+    expect(fillRuleText({ key: 'wtn', fill: always }, label)).toBe('Always prepopulated from Fit\'s Defer Tack');
+    const onOverride = { ...always, when: { all: [{ source: 'stageProperty' as const, key: 'engineeringEntry', equals: 'yes' }] } };
+    expect(fillRuleText({ key: 'wtn', fill: onOverride }, label)).toBe('Prepopulated from Fit\'s Defer Tack when Engineering override is on');
   });
 
   it('insert and ring fields show by a joint design rule, Weld Position only when N Ind. is 1', () => {

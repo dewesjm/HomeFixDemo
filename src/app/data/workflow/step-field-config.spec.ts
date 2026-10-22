@@ -1,4 +1,4 @@
-import { DECISION_KEY, HEADING_KEY_PREFIX, definitionFields, layoutItems, withDefaultLayout, withDefaultWidths } from './step-field-config';
+import { DECISION_KEY, HEADING_KEY_PREFIX, definitionFields, layoutItems, withDefaultLayout, withDefaultWidths, withSplitFill } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -34,6 +34,32 @@ describe('withDefaultWidths (definitions saved before widths and Inspection Resu
       .toEqual([{ key: 'procedureUsed' }, { key: DECISION_KEY }]);
     expect(withDefaultWidths({ stepId: 'tack', fields: [{ key: 'weldPosition' }] }).fields)
       .toEqual([{ key: 'weldPosition', width: 200 }]);
+  });
+});
+
+describe('withSplitFill (definitions saved before Prepopulated from and Disabled when were separate)', () => {
+  const off = { source: 'stageProperty' as const, key: 'engineeringEntry', equals: '' };
+  const insertOnly = { source: 'field' as const, key: 'consumableInsertOnly', equals: 'yes' };
+
+  it('adds "Engineering override is off" to a saved WTN fill and disables the field under the same condition', () => {
+    const fill = { from: 'wtn' as const, fieldKey: 'phMax', when: { all: [] } };
+    expect(withSplitFill({ stepId: 'tack', fields: [{ key: 'wtn', fill }, { key: 'phMin', fill }] }).fields).toEqual([
+      { key: 'wtn', fill: { ...fill, when: { all: [off] } }, disabledIf: { all: [off] } },
+      /* the same Disabled when as the catalog's, so nothing is stored */
+      { key: 'phMin', fill: { ...fill, when: { all: [off] } } },
+    ]);
+  });
+
+  it('a saved fill from another step disables the field while it holds; catalog fills are left to the catalog', () => {
+    const fill = { stepId: 'pre-fit', fieldKey: 'consumableInsertType', when: { all: [insertOnly] } };
+    expect(withSplitFill({ stepId: 'tack', fields: [{ key: 'wtn', fill }, { key: 'weldProcess' }] }).fields)
+      .toEqual([{ key: 'wtn', fill, disabledIf: { all: [insertOnly] } }, { key: 'weldProcess' }]);
+  });
+
+  it('a field never prepopulated is never disabled, and its own Disabled when is kept', () => {
+    const own = { all: [{ source: 'field' as const, key: 'wtn', equals: 'x' }] };
+    expect(withSplitFill({ stepId: 'tack', fields: [{ key: 'weldProcess', fill: null }, { key: 'phMin', disabledIf: own }] }).fields)
+      .toEqual([{ key: 'weldProcess', fill: null, disabledIf: { all: [] } }, { key: 'phMin', disabledIf: own }]);
   });
 });
 

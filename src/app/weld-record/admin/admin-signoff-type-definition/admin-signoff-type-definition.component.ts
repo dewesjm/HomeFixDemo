@@ -1,12 +1,12 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
    Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
    as Weld Build-Up; editing
-   picks any field from the catalog and sets when it shows, when it's filled (from another step, this
-   step or the WTN) and locked, when it's greyed out, and whether and when it's required. While the
+   picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
+   this step or the WTN), when it's disabled, and whether and when it's required. While the
    Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
    which fields share a line, their widths, headings, and where Inspection Results goes. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v5 (step-field-config.ts). */
+   Stored in welding:step-field-config:v6 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,7 +31,7 @@ import {
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems,
+  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -44,7 +44,8 @@ interface DefRow {
   fieldActivations: FieldActivation[];
 }
 
-type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
+/* 'engineering' = whether an engineering override has the step */
+type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering';
 /* which of a field's conditions the editor is changing */
 type CondKind = 'show' | 'disabled' | 'fill' | 'required';
 
@@ -54,8 +55,8 @@ const WTN = '@wtn';
 
 interface WorkClause {
   source: ClauseSrc;
-  key: string;   /* field key or joint detail key; ignored for stepId */
-  equals: string;  /* value for field/jointDetail; regex for stepId (mapped to 'matches') */
+  key: string;   /* field key or joint detail key; ignored for stepId and engineering */
+  equals: string;  /* value for field/jointDetail; regex for stepId (mapped to 'matches'); 'yes' or '' (on/off) for engineering */
 }
 
 interface EditState {
@@ -66,7 +67,7 @@ interface EditState {
   condKey: string | null;      /* field key whose condition editor is open */
   condKind: CondKind;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
-  fillStepId: string;          /* the open fill rule's source (a step id, THIS_STEP or WTN) and field ('' = never filled) */
+  fillStepId: string;          /* the open Prepopulated from rule's source (a step id, THIS_STEP or WTN) and field ('' = not prepopulated) */
   fillFieldKey: string;
 }
 
@@ -336,16 +337,16 @@ export class AdminSignoffTypeDefinitionComponent {
     return hasFixedRules(key);
   }
 
-  /* a fill rule needs a field the person could otherwise type into, drawn as an ordinary field of the step */
+  /* a Prepopulated from rule needs a field the person could otherwise type into, drawn as an ordinary field of the step */
   canFill(key: string): boolean {
     return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm(this.editing()?.stepId ?? '', key);
   }
 
   fillLabel(key: string): string {
-    return fillRuleText(this.activation(key), id => this.stepLabel(id)) || 'Never filled';
+    return fillRuleText(this.activation(key), id => this.stepLabel(id));
   }
 
-  /* what a fill can copy from: this step, the WTN, and every other step with a definition (Weld
+  /* what a field can be prepopulated from: this step, the WTN, and every other step with a definition (Weld
      Build-Up's is Fit's, so Fit is the step to copy from) */
   fillSteps = computed(() => {
     const own = this.editing()?.stepId;
@@ -419,19 +420,23 @@ export class AdminSignoffTypeDefinitionComponent {
   /* "one of" values (anyOf) are edited as a comma-separated list, e.g. "mt, pt" */
   private clauseToWork(c: ConditionClause): WorkClause {
     if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
+    if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return { source: 'engineering', key: '', equals: c.equals ?? '' };
     if (c.source === 'field' || c.source === 'jointDetail') return { source: c.source, key: c.key, equals: c.anyOf?.join(', ') ?? c.equals ?? '' };
     return { source: 'field', key: '', equals: '' };
   }
 
   private workToClause(w: WorkClause): ConditionClause {
     if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
+    if (w.source === 'engineering') return { source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: w.equals };
     const values = w.equals.split(',').map(v => v.trim()).filter(Boolean);
     return values.length > 1 ? { source: w.source, key: w.key, anyOf: values } : { source: w.source, key: w.key, equals: w.equals };
   }
 
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
-    const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
+    const clauses = e.condClauses
+      .filter(c => c.source === 'engineering' || (c.source === 'stepId' ? !!c.equals : !!c.key))
+      .map(c => this.workToClause(c));
     if (e.condKind === 'fill') { this.applyFill(e, clauses); return; }
     const prop = e.condKind === 'show' ? 'showIf' : e.condKind === 'disabled' ? 'disabledIf' : 'requiredIf';
     const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses)
@@ -447,7 +452,7 @@ export class AdminSignoffTypeDefinitionComponent {
     e.fieldActivations = update(e.fieldActivations);
   }
 
-  /* no source or field = never filled */
+  /* no source or field = not prepopulated */
   private applyFill(e: EditState, clauses: ConditionClause[]) {
     const fill = e.fillStepId && e.fillFieldKey ? fillFromSource(e.fillStepId, e.fillFieldKey, { all: clauses }) : undefined;
     const stored = fillToStore(e.condKey!, fill);

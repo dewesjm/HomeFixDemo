@@ -4,7 +4,7 @@
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
-import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFieldLocked, labelFor, isInspectionStage } from './workflow';
+import { WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, isFilledByRule, labelFor, isInspectionStage } from './workflow';
 import { QualGroup, missingText, requirementText } from './qual-requirements';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
@@ -76,7 +76,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
   for (const key of FILLER_KEYS) {
     const value = stage.inputs[key] ?? '';
     const f = stage.fields.find(ff => ff.key === key);
-    if (!value || !f || !visibleKeys.has(key) || isFieldLocked(stage, f)) continue;
+    if (!value || !f || !visibleKeys.has(key) || isFilledByRule(stage, key)) continue;
     const allowed = key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc);
     if (allowed.some(o => o.value === value)) continue;
     const all = key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS;
