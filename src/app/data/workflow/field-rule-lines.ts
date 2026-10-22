@@ -3,7 +3,7 @@
    conditions reads "Always | Show". Never-required, never-disabled and not-prepopulated add no line. */
 import { FieldActivation } from './step-field-config';
 import { lookupCatalogField } from './field-catalog';
-import { FieldCondition } from './field-conditions';
+import { FieldCondition, hasClauses } from './field-conditions';
 import {
   builtInShowCondition, conditionText, effectiveShowIf, effectiveFill, effectiveDisabledIf, effectiveRequired,
   effectiveRequiredIf, hasFixedRules, isAlwaysReadOnly, fillSourceText,
@@ -24,7 +24,7 @@ const FIXED_REQUIRED_BEHAVIOR: Record<string, string> = {
 const ALWAYS = 'Always';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-const whenText = (cond: FieldCondition | undefined) => cond?.all.length ? capitalize(conditionText(cond)) : ALWAYS;
+const whenText = (cond: FieldCondition | undefined) => hasClauses(cond) ? capitalize(conditionText(cond)) : ALWAYS;
 
 export function fieldRuleLines(act: FieldActivation, stepLabel: (stepId: string) => string): FieldRuleLine[] {
   const rules: [string, string][] = [];

@@ -4,9 +4,10 @@
    picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
    this step or the WTN), when it's disabled, and when it's required (Never / Always / When). While the
    Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
-   which fields share a line, their widths, headings, and where Inspection Results goes. Add's step list is the steps in
-   Admin > Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v6 (step-field-config.ts). */
+   which fields share a line, their widths, headings, and where Inspection Results goes. Conditions are
+   AND/OR groups (condition-group-editor). Add's step list is the steps in Admin > Signoff Type
+   Availability; picking one that already has a definition edits it.
+   Stored in welding:step-field-config:v8 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,12 +32,13 @@ import {
   showRuleText, disabledRuleText, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, drawnOutsideForm, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
-  VIRTUAL_JOINT_DETAILS, REJECTED_PHASE_UTRT_KEY,
+  HEADING_KEY_PREFIX, DECISION_KEY, TYPE_KEY, definitionFields, isHeadingItem, isVerifyGrid, drawnOutsideForm, fieldRuleLines,
+  signoffTypeOptions,
 } from '../../../data/workflow';
-import type { ConditionClause, FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
+import type { FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
-import { JOINT_DETAIL_FIELDS } from '../../../data/step-conditions';
+import { WorkGroup, conditionToWork, workToCondition } from './condition-work';
+import { ConditionGroupEditorComponent, StepFieldChoice } from './condition-group-editor.component';
 
 interface DefRow {
   uid: string;
@@ -47,21 +49,12 @@ interface DefRow {
   fieldRules: { key: string; label: string; lines: FieldRuleLine[] }[];
 }
 
-/* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
-   the rejected phase has an RT/UT step */
-type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering' | 'rejectedUtrt';
 /* which of a field's conditions the editor is changing */
 type CondKind = 'show' | 'disabled' | 'fill' | 'required';
 
 /* the fill source picker's entries for this same step and the WTN, beside the other steps' ids */
 const THIS_STEP = '@this-step';
 const WTN = '@wtn';
-
-interface WorkClause {
-  source: ClauseSrc;
-  key: string;   /* field key or joint detail key; ignored for stepId and engineering */
-  equals: string;  /* value for field/jointDetail; regex for stepId (mapped to 'matches'); 'yes' or '' (on/off) for engineering */
-}
 
 interface EditState {
   uid: string | null;   /* null = new row */
@@ -70,14 +63,14 @@ interface EditState {
   fieldActivations: FieldActivation[];
   condKey: string | null;      /* field key whose condition editor is open */
   condKind: CondKind;
-  condClauses: WorkClause[];   /* working copy of the open field's condition */
+  condGroup: WorkGroup;        /* working copy of the open field's condition */
   fillStepId: string;          /* the open Prepopulated from rule's source (a step id, THIS_STEP or WTN) and field ('' = not prepopulated) */
   fillFieldKey: string;
 }
 
 let seq = 0;
 
-const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? { all: c.all.map(x => ({ ...x })) } : undefined;
+const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? structuredClone(c) : undefined;
 const copyFill = (f: FieldFill | null | undefined) => f ? { ...f, when: copyCondition(f.when)! } : f;
 const copyActivation = (f: FieldActivation): FieldActivation =>
   ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf), requiredIf: copyCondition(f.requiredIf), fill: copyFill(f.fill) });
@@ -94,7 +87,7 @@ function fillFromSource(sourceId: string, fieldKey: string, when: FieldCondition
   selector: 'app-admin-signoff-type-definition',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, ConditionGroupEditorComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
     LucideChevronDown, LucideChevronRight, LucideArrowUp, LucideArrowDown,
   ],
@@ -199,7 +192,7 @@ export class AdminSignoffTypeDefinitionComponent {
   addRow() {
     this.table.clearFilters();
     this.editing.set({
-      uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condClauses: [],
+      uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condGroup: conditionToWork(undefined),
       fillStepId: '', fillFieldKey: '',
     });
   }
@@ -212,7 +205,7 @@ export class AdminSignoffTypeDefinitionComponent {
       fieldActivations: row.fieldActivations.map(copyActivation),
       condKey: null,
       condKind: 'show',
-      condClauses: [],
+      condGroup: conditionToWork(undefined),
       fillStepId: '',
       fillFieldKey: '',
     });
@@ -402,7 +395,7 @@ export class AdminSignoffTypeDefinitionComponent {
       if (mode !== 'when') return { ...e, fieldActivations, condKey: editingRequired ? null : e.condKey };
       const act = fieldActivations.find(a => a.key === key);
       const cond = act?.requiredIf ?? defaultRequiredIf(key);
-      return { ...e, fieldActivations, condKey: key, condKind: 'required', condClauses: cond?.all.map(c => this.clauseToWork(c)) ?? [] };
+      return { ...e, fieldActivations, condKey: key, condKind: 'required', condGroup: conditionToWork(cond) };
     });
   }
 
@@ -430,37 +423,17 @@ export class AdminSignoffTypeDefinitionComponent {
       const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key))
         : kind === 'disabled' ? (act?.disabledIf ?? defaultDisabledIf(key))
         : kind === 'required' ? (act?.requiredIf ?? defaultRequiredIf(key)) : fill?.when;
-      const clauses = current?.all.map(c => this.clauseToWork(c)) ?? [];
-      return { ...e, condKey: key, condKind: kind, condClauses: clauses, fillStepId: fillSourceId(fill), fillFieldKey: fill?.fieldKey ?? '' };
+      return { ...e, condKey: key, condKind: kind, condGroup: conditionToWork(current), fillStepId: fillSourceId(fill), fillFieldKey: fill?.fieldKey ?? '' };
     });
-  }
-
-  /* "one of" values (anyOf) are edited as a comma-separated list, e.g. "mt, pt" */
-  private clauseToWork(c: ConditionClause): WorkClause {
-    if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
-    if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return { source: 'engineering', key: '', equals: c.equals ?? '' };
-    if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return { source: 'rejectedUtrt', key: '', equals: c.equals ?? '' };
-    if (c.source === 'field' || c.source === 'jointDetail') return { source: c.source, key: c.key, equals: c.anyOf?.join(', ') ?? c.equals ?? '' };
-    return { source: 'field', key: '', equals: '' };
-  }
-
-  private workToClause(w: WorkClause): ConditionClause {
-    if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
-    if (w.source === 'engineering') return { source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: w.equals };
-    if (w.source === 'rejectedUtrt') return { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: w.equals };
-    const values = w.equals.split(',').map(v => v.trim()).filter(Boolean);
-    return values.length > 1 ? { source: w.source, key: w.key, anyOf: values } : { source: w.source, key: w.key, equals: w.equals };
   }
 
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
-    const clauses = e.condClauses
-      .filter(c => c.source === 'engineering' || c.source === 'rejectedUtrt' || (c.source === 'stepId' ? !!c.equals : !!c.key))
-      .map(c => this.workToClause(c));
-    if (e.condKind === 'fill') { this.applyFill(e, clauses); return; }
+    const cond = workToCondition(e.condGroup);
+    if (e.condKind === 'fill') { this.applyFill(e, cond); return; }
     const prop = e.condKind === 'show' ? 'showIf' : e.condKind === 'disabled' ? 'disabledIf' : 'requiredIf';
-    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses)
-      : e.condKind === 'disabled' ? disabledIfToStore(e.condKey, clauses) : requiredIfToStore(e.condKey, clauses);
+    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, cond)
+      : e.condKind === 'disabled' ? disabledIfToStore(e.condKey, cond) : requiredIfToStore(e.condKey, cond);
 
     const update = (acts: FieldActivation[]): FieldActivation[] =>
       acts.map(a => {
@@ -473,8 +446,8 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   /* no source or field = not prepopulated */
-  private applyFill(e: EditState, clauses: ConditionClause[]) {
-    const fill = e.fillStepId && e.fillFieldKey ? fillFromSource(e.fillStepId, e.fillFieldKey, { all: clauses }) : undefined;
+  private applyFill(e: EditState, when: FieldCondition) {
+    const fill = e.fillStepId && e.fillFieldKey ? fillFromSource(e.fillStepId, e.fillFieldKey, when) : undefined;
     const stored = fillToStore(e.condKey!, fill);
     e.fieldActivations = e.fieldActivations.map(a => {
       if (a.key !== e.condKey) return a;
@@ -483,39 +456,31 @@ export class AdminSignoffTypeDefinitionComponent {
     });
   }
 
-  addClause() {
-    this.editing.update(e => e ? { ...e, condClauses: [...e.condClauses, { source: 'field', key: '', equals: '' }] } : e);
+  setCondGroup(group: WorkGroup) {
+    this.editing.update(e => e ? { ...e, condGroup: group } : e);
   }
 
-  removeClause(i: number) {
-    this.editing.update(e => e ? { ...e, condClauses: e.condClauses.filter((_, idx) => idx !== i) } : e);
-  }
-
-  /* the condition editor's Joint detail picker: yes/no joint facts, then the Joint Details fields */
-  readonly jointFacts = Object.entries(VIRTUAL_JOINT_DETAILS).map(([key, f]) => ({ key, label: f.label }));
-  readonly jointFields = JOINT_DETAIL_FIELDS.map(f => ({ key: f.key, label: f.label, values: f.values }));
-
-  isJointFact(key: string): boolean {
-    return key in VIRTUAL_JOINT_DETAILS;
-  }
-
-  /* suggested values for a Joint Details field (typed values stay allowed) */
-  jointValues(key: string): string[] {
-    return this.jointFields.find(f => f.key === key)?.values ?? [];
-  }
-
-  /* a saved key the picker doesn't list (typed before it existed) still shows */
-  unlistedJointKey(key: string): boolean {
-    return !!key && !this.isJointFact(key) && !this.jointFields.some(f => f.key === key);
-  }
-
-  updateClause(i: number, partial: Partial<WorkClause>) {
-    this.editing.update(e => {
-      if (!e) return e;
-      const clauses = e.condClauses.map((c, idx) => idx === i ? { ...c, ...partial } : c);
-      return { ...e, condClauses: clauses };
-    });
-  }
+  /* what a condition's "This step field" can test: Type and Inspection Results (stored on the step
+     itself), then the step's own fields other than the one being edited; fields drawn their own way
+     aren't in the step's values, so they're left out */
+  condStepFields = computed((): StepFieldChoice[] => {
+    const e = this.editing();
+    if (!e) return [];
+    const own = definitionFields(e.fieldActivations)
+      .filter(a => a.key !== e.condKey && !drawnByOwnForm(e.stepId, a.key))
+      .flatMap(a => {
+        const cat = lookupCatalogField(a.key);
+        if (!cat) return [];
+        const values = cat.type === 'checkbox' ? [{ value: 'yes', label: 'Checked' }] : (cat.options ?? []).map(o => ({ value: o.value, label: o.label }));
+        return [{ key: a.key, label: cat.label, values }];
+      });
+    const typeOptions = signoffTypeOptions(e.stepId) ?? [];
+    const type = typeOptions.length || e.fieldActivations.some(a => a.key === TYPE_KEY)
+      ? [{ key: 'inspectionType', label: 'Type', values: typeOptions.map(o => ({ value: o.value, label: o.label })) }] : [];
+    const result = e.fieldActivations.some(a => a.key === DECISION_KEY)
+      ? [{ key: 'result', label: 'Inspection Results (SAT/UNSAT)', values: [{ value: 'sat', label: 'SAT' }, { value: 'unsat', label: 'UNSAT' }] }] : [];
+    return [...type, ...result, ...own];
+  });
 
   /* ── Layout (Layout from Signoff Type Definition toggle) ── */
 

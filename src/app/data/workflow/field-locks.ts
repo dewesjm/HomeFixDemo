@@ -2,7 +2,7 @@
    Weld Process and PH/IP (prepopulated from the WTN) unless an engineering override has the step, or
    an actual while its requirement is NC */
 import { WorkflowStage } from './types';
-import { ConditionClause, evaluateCondition } from './field-conditions';
+import { ConditionClause, conditionClauses, evaluateCondition } from './field-conditions';
 import { ACTUAL_REQUIREMENT } from './weld-fields';
 import { fieldActivation } from './step-field-config';
 import { effectiveDisabledIf } from './field-rules';
@@ -17,7 +17,7 @@ const readsStepOnly = (c: ConditionClause) => c.source === 'field' || c.source =
 export function isDisabledByOwnRule(stage: WorkflowStage, key: string): boolean {
   if (!stage.fields.some(f => f.key === key)) return false;
   const cond = effectiveDisabledIf(fieldActivation(stage, key));
-  return !!cond && cond.all.every(readsStepOnly) && evaluateCondition(cond, stepOnlyContext(stage));
+  return !!cond && conditionClauses(cond).every(readsStepOnly) && evaluateCondition(cond, stepOnlyContext(stage));
 }
 
 export function isFieldLocked(stage: WorkflowStage, f: { key: string; disabled?: boolean }): boolean {

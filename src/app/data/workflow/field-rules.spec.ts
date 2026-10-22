@@ -1,4 +1,5 @@
-import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
+import { ConditionContext, FieldCondition, evaluateCondition } from './field-conditions';
+import { conditionText, effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
   defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf,
   requiredMode, withRequiredMode } from './field-rules';
 
@@ -29,22 +30,22 @@ describe('field rules', () => {
 
   it('stores nothing when edits match the default, and an explicit "always" when cleared', () => {
     const def = [{ source: 'field' as const, key: 'partial', equals: 'yes' }];
-    expect(showIfToStore('portionInspected', def)).toBeUndefined();
-    const cleared = showIfToStore('portionInspected', []);
+    expect(showIfToStore('portionInspected', { all: def })).toBeUndefined();
+    const cleared = showIfToStore('portionInspected', { all: [] });
     expect(cleared).toEqual({ all: [] });
     expect(effectiveShowIf({ key: 'portionInspected', showIf: cleared })).toBeUndefined();
-    expect(showIfToStore('hasProbationary', [])).toBeUndefined();
+    expect(showIfToStore('hasProbationary', { all: [] })).toBeUndefined();
   });
 
   it('disabled, required and required-when rules store only what differs from the catalog', () => {
     const phNc = [{ source: 'field' as const, key: 'phMin', equals: 'NC' }];
-    expect(disabledIfToStore('actualPhMin', phNc)).toBeUndefined();
-    expect(disabledIfToStore('actualPhMin', [])).toEqual({ all: [] });
-    expect(disabledIfToStore('wtn', [])).toBeUndefined();
-    expect(disabledIfToStore('wtn', phNc)).toEqual({ all: phNc });
+    expect(disabledIfToStore('actualPhMin', { all: phNc })).toBeUndefined();
+    expect(disabledIfToStore('actualPhMin', { all: [] })).toEqual({ all: [] });
+    expect(disabledIfToStore('wtn', { all: [] })).toBeUndefined();
+    expect(disabledIfToStore('wtn', { all: phNc })).toEqual({ all: phNc });
     const def = [{ source: 'jointDetail' as const, key: 'materialTraceability', equals: 'yes' }];
-    expect(requiredIfToStore('consumableInsertId', def)).toBeUndefined();
-    const cleared = requiredIfToStore('consumableInsertId', []);
+    expect(requiredIfToStore('consumableInsertId', { all: def })).toBeUndefined();
+    const cleared = requiredIfToStore('consumableInsertId', { all: [] });
     expect(cleared).toEqual({ all: [] });
     expect(effectiveRequiredIf({ key: 'consumableInsertId', requiredIf: cleared })).toBeUndefined();
     expect(requiredRuleText({ key: 'consumableInsertId', requiredIf: cleared })).toBe('Always required');
@@ -100,5 +101,30 @@ describe('field rules: Tack filler wording', () => {
       { source: 'jointDetail', key: 'materialTraceability', equals: 'yes' },
     ] } });
     expect(text).toBe('Shown when the joint design doesn\'t need a consumable insert and either part requires material traceability');
+  });
+});
+
+describe('AND/OR conditions', () => {
+  const ctx: ConditionContext = {
+    stageId: 'root-ndt-vt5x', inputs: { inspectionType: 'vt', weldColor: 'straw' },
+    jointDetail: () => '', stageProperty: () => '', priorInput: () => '',
+  };
+  const vt = { source: 'field' as const, key: 'inspectionType', equals: 'vt' };
+  const color = (equals: string) => ({ source: 'field' as const, key: 'weldColor', equals });
+  const nested: FieldCondition = { all: [vt, { any: [color('straw'), color('light-blue')] }] };
+
+  it('any passes when one clause holds, and groups nest', () => {
+    expect(evaluateCondition({ any: [color('dark-blue'), vt] }, ctx)).toBeTrue();
+    expect(evaluateCondition({ any: [color('dark-blue'), color('light-blue')] }, ctx)).toBeFalse();
+    expect(evaluateCondition(nested, ctx)).toBeTrue();
+    expect(evaluateCondition({ any: [] }, ctx)).toBeTrue();
+  });
+
+  it('reads with parentheses around a nested group', () => {
+    expect(conditionText(nested)).toBe('Type is VT and (Weld Color is straw or Weld Color is light-blue)');
+  });
+
+  it('an any group with no clauses counts as always', () => {
+    expect(effectiveShowIf({ key: 'weldColor', showIf: { any: [{ all: [] }] } })).toBeUndefined();
   });
 });

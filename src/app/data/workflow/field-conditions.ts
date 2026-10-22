@@ -1,8 +1,7 @@
 /* Condition model for field visibility, disabled state, and required state.
    Used by the field catalog, per-step activations, and the stage renderer. */
 
-/* A single condition clause; all clauses in a FieldCondition must pass (AND logic).
-   For OR within one clause, use anyOf. */
+/* A single condition clause. For "one of" several values within one clause, use anyOf. */
 export type ConditionClause =
   /* A field in this step's inputs, e.g. hasProbationary === 'yes' */
   | { source: 'field'; key: string; equals?: string; anyOf?: string[] }
@@ -15,9 +14,34 @@ export type ConditionClause =
   /* A field in a prior step's inputs, e.g. consumableInsertOnly on root-weld */
   | { source: 'priorStep'; stepId: string; fieldKey: string; equals?: string; anyOf?: string[] };
 
-/* AND of all clauses; empty all = always passes */
-export interface FieldCondition {
-  all: ConditionClause[];
+/* A group of clauses and nested groups: every one must pass (all, AND) or at least one (any, OR),
+   e.g. Type is VT and (Weld Color is Straw or Weld Color is Light Blue). An empty group = always. */
+export type FieldCondition = { all: ConditionTerm[] } | { any: ConditionTerm[] };
+export type ConditionTerm = ConditionClause | FieldCondition;
+
+export const isConditionGroup = (t: ConditionTerm): t is FieldCondition => !('source' in t);
+
+export const conditionOp = (c: FieldCondition): 'all' | 'any' => 'any' in c ? 'any' : 'all';
+
+export const conditionTerms = (c: FieldCondition): ConditionTerm[] => 'any' in c ? c.any : c.all;
+
+export const conditionGroup = (op: 'all' | 'any', terms: ConditionTerm[]): FieldCondition =>
+  op === 'any' ? { any: terms } : { all: terms };
+
+/* whether a condition has any clause (an empty one means always) */
+export function hasClauses(c: FieldCondition | undefined): c is FieldCondition {
+  return !!c && conditionTerms(c).some(t => !isConditionGroup(t) || hasClauses(t));
+}
+
+/* every clause in the condition, nested groups included */
+export function conditionClauses(c: FieldCondition): ConditionClause[] {
+  return conditionTerms(c).flatMap(t => isConditionGroup(t) ? conditionClauses(t) : [t]);
+}
+
+/* both conditions must hold */
+export function andConditions(a: FieldCondition, b: FieldCondition): FieldCondition {
+  const terms = (c: FieldCondition) => conditionOp(c) === 'all' ? conditionTerms(c) : [c];
+  return { all: [...terms(a), ...terms(b)] };
 }
 
 export interface ConditionContext {
@@ -45,6 +69,10 @@ function clausePasses(clause: ConditionClause, ctx: ConditionContext): boolean {
   return !!val;
 }
 
+/* an empty group passes (always), whether it is all or any */
 export function evaluateCondition(condition: FieldCondition, ctx: ConditionContext): boolean {
-  return condition.all.every(c => clausePasses(c, ctx));
+  const passes = (t: ConditionTerm) => isConditionGroup(t) ? evaluateCondition(t, ctx) : clausePasses(t, ctx);
+  const terms = conditionTerms(condition);
+  if (!terms.length) return true;
+  return conditionOp(condition) === 'all' ? terms.every(passes) : terms.some(passes);
 }

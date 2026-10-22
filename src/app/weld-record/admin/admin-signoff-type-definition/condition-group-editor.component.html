@@ -1,0 +1,112 @@
+<div [class]="nested() ? 'border border-base-300 rounded-box p-2 my-1' : ''">
+  @if (group().items.length > 1 || nested()) {
+    <div class="flex items-center gap-1 mb-1">
+      <select class="select select-bordered select-xs w-36" aria-label="Match all or any of these"
+              [ngModel]="group().op" (ngModelChange)="setOp($event)">
+        <option value="all">All of (AND)</option>
+        <option value="any">Any of (OR)</option>
+      </select>
+      @if (nested()) {
+        <span class="flex-1"></span>
+        <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove group" (click)="removed.emit()">
+          <svg lucideX class="size-3"></svg>
+        </button>
+      }
+    </div>
+  }
+
+  @for (t of group().items; track $index; let i = $index) {
+    @if (i > 0) { <div class="text-xs font-semibold my-1">{{ group().op === 'all' ? 'and' : 'or' }}</div> }
+    @if (asGroup(t); as g) {
+      <app-condition-group-editor [group]="g" [nested]="true" [stepOnly]="stepOnly()" [stepFields]="stepFields()"
+                                  (changed)="setItem(i, $event)" (removed)="removeItem(i)" />
+    } @else {
+      @let c = asClause(t);
+      <div class="flex flex-wrap items-center gap-1 mb-1">
+        <select class="select select-bordered select-xs w-52" aria-label="Condition on"
+                [ngModel]="c.source"
+                (ngModelChange)="updateClause(i, { source: $event, key: '', equals: $event === 'rejectedUtrt' ? 'yes' : '' })">
+          <option value="field">This step field</option>
+          @if (!stepOnly()) {
+            <option value="jointDetail">Joint detail</option>
+            <option value="stepId">Step ID matches</option>
+            <option value="rejectedUtrt">Rejected phase has RT/UT</option>
+          }
+          <option value="engineering">Engineering override</option>
+        </select>
+        @if (c.source === 'engineering') {
+          <span class="text-xs">is</span>
+          <select class="select select-bordered select-xs w-24" aria-label="Engineering override is"
+                  [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+            <option value="">off</option>
+            <option value="yes">on</option>
+          </select>
+        } @else if (c.source === 'rejectedUtrt') {
+          <span class="text-xs">is</span>
+          <select class="select select-bordered select-xs w-20" aria-label="Rejected phase has RT/UT is"
+                  [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+            <option value="yes">Yes</option>
+            <option value="">No</option>
+          </select>
+        } @else if (c.source === 'jointDetail') {
+          <select class="select select-bordered select-xs w-64" aria-label="Joint detail"
+                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: isJointFact($event) ? 'yes' : '' })">
+            <option value="" disabled>Select a joint detail</option>
+            @if (unlistedJointKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
+            <optgroup label="Joint facts">
+              @for (f of jointFacts; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+            </optgroup>
+            <optgroup label="Joint Details">
+              @for (f of jointFields; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+            </optgroup>
+          </select>
+          @if (isJointFact(c.key)) {
+            <span class="text-xs">is</span>
+            <select class="select select-bordered select-xs w-20" aria-label="Joint fact is"
+                    [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+              <option value="yes">Yes</option>
+              <option value="">No</option>
+            </select>
+          } @else if (c.key) {
+            <span class="text-xs">=</span>
+            <input type="text" class="input input-bordered input-xs w-32" placeholder="Value" [attr.list]="valuesListId(i)"
+                   [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })" />
+            <datalist [id]="valuesListId(i)">
+              @for (v of jointValues(c.key); track v) { <option [value]="v"></option> }
+            </datalist>
+          }
+        } @else if (c.source === 'field') {
+          <select class="select select-bordered select-xs w-64" aria-label="Step field"
+                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: '' })">
+            <option value="" disabled>Select a field</option>
+            @if (unlistedFieldKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
+            @for (f of stepFields(); track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+          </select>
+          @if (c.key) {
+            <span class="text-xs">=</span>
+            <input type="text" class="input input-bordered input-xs w-32" placeholder="Value" [attr.list]="valuesListId(i)"
+                   [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })" />
+            <datalist [id]="valuesListId(i)">
+              @for (v of fieldValues(c.key); track v.value) { <option [value]="v.value">{{ v.label }}</option> }
+            </datalist>
+          }
+        } @else {
+          <input type="text" class="input input-bordered input-xs w-48" placeholder="Regex (e.g. ^root-weld$)"
+                 [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })" />
+        }
+        <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove clause" (click)="removeItem(i)">
+          <svg lucideX class="size-3"></svg>
+        </button>
+      </div>
+    }
+  }
+
+  <div class="flex gap-1 mt-1">
+    <button type="button" class="btn btn-ghost btn-xs" (click)="addClause()">
+      <svg lucidePlus class="size-3"></svg> Add clause
+    </button>
+    <button type="button" class="btn btn-ghost btn-xs" (click)="addGroup()">
+      <svg lucidePlus class="size-3"></svg> Add group
+    </button>
+  </div>
+</div>

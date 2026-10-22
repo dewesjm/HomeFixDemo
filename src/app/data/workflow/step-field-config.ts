@@ -5,7 +5,7 @@
    the current hardcoded behavior. Live overrides are stored in localStorage
    (welding:step-field-config:v8) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
-import { ConditionClause, FieldCondition } from './field-conditions';
+import { ConditionClause, FieldCondition, andConditions, conditionClauses, hasClauses } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
 import { defaultDisabledIf, disabledIfToStore } from './field-rules';
 import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
@@ -270,15 +270,15 @@ const isEngineeringClause = (c: ConditionClause) => c.source === 'stageProperty'
 function splitFill(f: FieldActivation): FieldActivation {
   if (isLayoutOnlyItem(f)) return f;
   const { disabledIf, ...rest } = f;
-  const fill = f.fill?.from === 'wtn' && !f.fill.when.all.some(isEngineeringClause)
-    ? { ...f.fill, when: { all: [...ENGINEERING_OVERRIDE_OFF.all, ...f.fill.when.all] } } : f.fill;
+  const fill = f.fill?.from === 'wtn' && !conditionClauses(f.fill.when).some(isEngineeringClause)
+    ? { ...f.fill, when: andConditions(ENGINEERING_OVERRIDE_OFF, f.fill.when) } : f.fill;
   const out: FieldActivation = fill === undefined ? rest : { ...rest, fill };
-  if (disabledIf?.all.length) return { ...out, disabledIf };
+  if (hasClauses(disabledIf)) return { ...out, disabledIf };
   /* never prepopulated: never locked before, so never disabled now */
   if (fill === null) return defaultDisabledIf(f.key) ? { ...out, disabledIf: { all: [] } } : out;
   /* the catalog's fill: its default Disabled when is the same condition */
   if (fill === undefined) return out;
-  const stored = disabledIfToStore(f.key, fill.when.all);
+  const stored = disabledIfToStore(f.key, fill.when);
   return stored ? { ...out, disabledIf: stored } : out;
 }
 

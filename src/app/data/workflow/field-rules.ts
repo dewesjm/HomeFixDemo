@@ -1,6 +1,6 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Definition */
-import { FieldCondition, ConditionClause, ConditionContext, evaluateCondition } from './field-conditions';
+import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
 import { jointDetailField } from '../step-conditions';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, lookupCatalogField } from './field-catalog';
@@ -38,7 +38,7 @@ export function defaultShowIf(key: string): FieldCondition | undefined {
 /* An empty showIf ({ all: [] }) is an explicit "always", overriding a catalog default */
 export function effectiveShowIf(act: FieldActivation): FieldCondition | undefined {
   const cond = act.showIf ?? defaultShowIf(act.key);
-  return cond?.all.length ? cond : undefined;
+  return hasClauses(cond) ? cond : undefined;
 }
 
 export function defaultDisabledIf(key: string): FieldCondition | undefined {
@@ -48,7 +48,7 @@ export function defaultDisabledIf(key: string): FieldCondition | undefined {
 /* An empty disabledIf ({ all: [] }) is an explicit "never disabled", overriding a catalog default */
 export function effectiveDisabledIf(act: FieldActivation): FieldCondition | undefined {
   const cond = act.disabledIf ?? defaultDisabledIf(act.key);
-  return cond?.all.length ? cond : undefined;
+  return hasClauses(cond) ? cond : undefined;
 }
 
 export function defaultFill(key: string): FieldFill | undefined {
@@ -71,7 +71,7 @@ export function defaultRequiredIf(key: string): FieldCondition | undefined {
 /* An empty requiredIf ({ all: [] }) is an explicit "always required", overriding a catalog default */
 export function effectiveRequiredIf(act: FieldActivation): FieldCondition | undefined {
   const cond = act.requiredIf ?? defaultRequiredIf(act.key);
-  return cond?.all.length ? cond : undefined;
+  return hasClauses(cond) ? cond : undefined;
 }
 
 /* required on this step right now: Required is on and its "only when" condition holds */
@@ -80,24 +80,24 @@ export function isRequiredNow(act: FieldActivation, ctx: ConditionContext): bool
   return effectiveRequired(act) && (!cond || evaluateCondition(cond, ctx));
 }
 
-/* The condition to store for edited clauses: none when they match the default, an explicit empty
-   condition when cleared over a default, otherwise the clauses */
-function conditionToStore(def: FieldCondition | undefined, clauses: ConditionClause[]): FieldCondition | undefined {
-  if (def && JSON.stringify(def.all) === JSON.stringify(clauses)) return undefined;
-  if (!clauses.length) return def ? { all: [] } : undefined;
-  return { all: clauses };
+/* The condition to store for an edited one: none when it matches the default, an explicit empty
+   condition when cleared over a default, otherwise the condition */
+function conditionToStore(def: FieldCondition | undefined, cond: FieldCondition): FieldCondition | undefined {
+  if (def && JSON.stringify(def) === JSON.stringify(cond)) return undefined;
+  if (!hasClauses(cond)) return def ? { all: [] } : undefined;
+  return cond;
 }
 
-export function showIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
-  return conditionToStore(defaultShowIf(key), clauses);
+export function showIfToStore(key: string, cond: FieldCondition): FieldCondition | undefined {
+  return conditionToStore(defaultShowIf(key), cond);
 }
 
-export function disabledIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
-  return conditionToStore(defaultDisabledIf(key), clauses);
+export function disabledIfToStore(key: string, cond: FieldCondition): FieldCondition | undefined {
+  return conditionToStore(defaultDisabledIf(key), cond);
 }
 
-export function requiredIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
-  return conditionToStore(defaultRequiredIf(key), clauses);
+export function requiredIfToStore(key: string, cond: FieldCondition): FieldCondition | undefined {
+  return conditionToStore(defaultRequiredIf(key), cond);
 }
 
 /* the fill to store: none when it matches the default, null when cleared over a default */
@@ -125,7 +125,7 @@ export function requiredMode(act: FieldActivation): RequiredMode {
 export function withRequiredMode(act: FieldActivation, mode: RequiredMode): FieldActivation {
   const { required: _r, requiredIf: _ri, ...rest } = act;
   const required = requiredToStore(act.key, mode !== 'never');
-  const requiredIf = mode === 'always' ? requiredIfToStore(act.key, [])
+  const requiredIf = mode === 'always' ? requiredIfToStore(act.key, { all: [] })
     : mode === 'when' && effectiveRequiredIf(act) ? act.requiredIf : undefined;
   return {
     ...rest,
@@ -166,8 +166,12 @@ function clauseText(c: ConditionClause): string {
   return `${subject} is filled in`;
 }
 
-export function conditionText(cond: FieldCondition): string {
-  return cond.all.map(clauseText).join(' and ');
+/* e.g. "Type is VT and (Weld Color is Straw or Weld Color is Light Blue)"; a nested group of two or
+   more gets parentheses */
+export function conditionText(cond: FieldCondition, nested = false): string {
+  const parts = conditionTerms(cond).map(t => isConditionGroup(t) ? conditionText(t, true) : clauseText(t)).filter(Boolean);
+  const text = parts.join(conditionOp(cond) === 'all' ? ' and ' : ' or ');
+  return nested && parts.length > 1 ? `(${text})` : text;
 }
 
 /* e.g. "Shown when Has Probationary Inspector is checked" or "Always shown" */
@@ -200,7 +204,7 @@ export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) =
   const fill = effectiveFill(act);
   if (!fill) return 'Not prepopulated';
   const from = fillSourceText(fill, stepLabel);
-  return fill.when.all.length ? `Prepopulated from ${from} when ${conditionText(fill.when)}` : `Always prepopulated from ${from}`;
+  return hasClauses(fill.when) ? `Prepopulated from ${from} when ${conditionText(fill.when)}` : `Always prepopulated from ${from}`;
 }
 
 /* e.g. "Required when either part requires material traceability", "Always required", "Never required" */
