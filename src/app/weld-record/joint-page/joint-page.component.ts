@@ -131,7 +131,10 @@ export class JointPageComponent implements OnDestroy {
   history = computed<HistoryRow[]>(() => (this.wf ? historyRows(this.wf(), this.job) : []));
 
   /* which steps show References: see showsReferences() in data/workflow/stage-rules.ts */
-  showReferences = computed(() => !!this.wf && showsReferences(this.wf().stages[this.selectedRouting()]?.id ?? ''));
+  showReferences = computed(() => {
+    const st = this.wf?.().stages[this.selectedRouting()];
+    return !!st && showsReferences(st);
+  });
 
   /* first unsigned required stage, or last when done */
   private indexOfActive(): number {

@@ -4,7 +4,7 @@
    picks any field from the catalog and sets when it shows, when it's filled (from another step, this
    step or the WTN) and locked, when it's greyed out, and whether and when it's required. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v2 (step-field-config.ts). */
+   Stored in welding:step-field-config:v3 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -96,12 +96,12 @@ export class AdminSignoffTypeDefinitionComponent {
   private confirm = inject(ConfirmService);
 
   /* the catalog fields offered for the step being edited: a field its own form draws (drawnByStepForm)
-     only on the steps that have it by default */
+     only on the steps that have it by default, unless any step can have it (References) */
   fieldChoices = computed(() => {
     const stepId = this.editing()?.stepId ?? '';
     const defaults = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId)?.fields ?? [];
     return FIELD_CATALOG
-      .filter(f => !f.drawnByStepForm || defaults.some(d => d.key === f.key))
+      .filter(f => !f.drawnByStepForm || f.anyStep || defaults.some(d => d.key === f.key))
       .map(f => ({ key: f.key, label: f.label }));
   });
 

@@ -6,17 +6,18 @@ import { FieldFill, lookupCatalogField } from './field-catalog';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
-   (shown-fields.ts), the two checkboxes routing reads, and Weld Build-Up's Affected Item */
+   (shown-fields.ts), the two checkboxes routing reads, Weld Build-Up's Affected Item and References */
 const BUILT_IN_SHOW_TEXT: Record<string, string> = {
   allowableThicknessExceeded: 'Shown when the rejected phase has an RT/UT step',
   deferTack: 'Always shown',
   releaseToWelding: 'Always shown',
   affectedItem: 'Always shown',
+  references: 'Always shown',
 };
 
 /* never greyed out, and required as fixed in code: the checkboxes routing reads when the step is
-   signed (never required), and Affected Item (at least one must be picked, sign-validation.ts) */
-const FIXED_RULE_KEYS = new Set(['deferTack', 'releaseToWelding', 'affectedItem']);
+   signed (never required), Affected Item (at least one must be picked, sign-validation.ts) and References */
+const FIXED_RULE_KEYS = new Set(['deferTack', 'releaseToWelding', 'affectedItem', 'references']);
 
 /* condition keys that aren't catalog fields */
 const EXTRA_LABELS: Record<string, string> = {

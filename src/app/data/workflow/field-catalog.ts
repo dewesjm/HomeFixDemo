@@ -40,6 +40,8 @@ export interface CatalogField {
   /* drawn by its step's own sign-off form (fit-signoff-form, fitup-insp-form), so it's offered only
      on the steps whose definition has it by default */
   drawnByStepForm?: boolean;
+  /* drawn by the joint page rather than a step's form, so any step's definition can have it */
+  anyStep?: boolean;
 }
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
@@ -171,6 +173,10 @@ export const FIELD_CATALOG: CatalogField[] = [
     options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
   /* also only shown when the rejected phase has an RT/UT step (built-in rule, field-rules.ts) */
   { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
+
+  /* ── Joint page ── */
+  /* the References panel under the sign-off (Correct shows it on every step regardless) */
+  { key: 'references', label: 'References', type: 'checkbox', drawnByStepForm: true, anyStep: true },
 
   /* ── Fit-Up Insp ── */
   { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', drawnByStepForm: true },

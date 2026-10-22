@@ -22,7 +22,7 @@
   }
   <app-deviation-accept-dialog [request]="deviationRequest()" (accepted)="acceptDeviations($event)" (cancelled)="deviationRequest.set(null)" />
 
-  <!-- 3.5 ───────── References (see showsReferences) ───────── -->
+  <!-- 3.5 ───────── References (see showsReferences: the step's definition) ───────── -->
   @if (showReferences()) {
     <app-attachments [attachments]="w.attachments" [disabled]="jobComplete()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
   }

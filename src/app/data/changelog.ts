@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Admin → Signoff Type Definition: References is a field in the Fields list. RT/UT on Root, Layer and Final NDT, and Repair, have it ticked as before, and ticking it on any other step (including a new one) shows the References panel there. The Correct window still shows References on every step.',
       'Admin → Signoff Type Definition: Release to welding can be unticked on Fit-Up Insp. The checkbox is then not shown, every joint is released to welding when Fit-Up Insp is signed, and Fit-Up Release never comes up.',
       'Admin → Signoff Type Definition: Fit signed as Weld Build-Up has its own definition, "Fit (Weld Build-Up)", with the welding fields and Affected Item, instead of borrowing Tack\'s fields. Unticking a field there (Affected Item included) takes it off the Weld Build-Up form.',
       'History and the Correct window list the same fields as the step\'s sign-off on the joint page: the fields its Signoff Type Definition has on, with their show rules. A sign-off field that is hidden on the joint (e.g. Backing Ring when the joint design has none) is no longer listed, and labels match the joint page.',

@@ -1,6 +1,6 @@
 /* Per-step field activation: which catalog fields are active on each step type and under what
    conditions. The defaults mirror the current hardcoded behavior. Live overrides are stored in
-   localStorage (welding:step-field-config:v2) and take effect immediately. */
+   localStorage (welding:step-field-config:v3) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
 import type { FieldFill } from './field-catalog';
@@ -68,7 +68,7 @@ const NDT_COMMON_FIELDS: FieldActivation[] = [
 
 const NDT_UTRT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, { key: 'rtFileNumber' }, { key: 'defectCode' },
+  { key: 'degreeRt' }, { key: 'rtFileNumber' }, { key: 'defectCode' }, { key: 'references' },
 ];
 
 const NDT_MTPT_FIELDS: FieldActivation[] = [
@@ -148,7 +148,7 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
   /* every Repair / Excavation NDT round reads these rows (activationStepId) */
-  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }] },
+  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }] },
   { stepId: 'excavation-ndt', fields: EXCAVATION_NDT_FIELDS },
   { stepId: 'review-o63', fields: RECORDS_REVIEW_FIELDS },
   { stepId: 'review-o04', fields: RECORDS_REVIEW_FIELDS },
@@ -164,11 +164,21 @@ type SavedActivation = StepFieldActivation & { signoffFields?: FieldActivation[]
 const oneList = ({ signoffFields, ...a }: SavedActivation): StepFieldActivation =>
   ({ ...a, fields: [...a.fields, ...(signoffFields ?? [])] });
 
+/* definitions saved before References was a field (v2) get it wherever it's on by default */
+const PRE_REFERENCES_KEY = 'welding:step-field-config:v2';
+function withReferences(a: StepFieldActivation): StepFieldActivation {
+  const byDefault = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields.some(f => f.key === 'references');
+  return byDefault && !a.fields.some(f => f.key === 'references') ? { ...a, fields: [...a.fields, { key: 'references' }] } : a;
+}
+
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as SavedActivation[]).map(oneList) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const older = saved ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    _cache = saved ? (JSON.parse(saved) as SavedActivation[]).map(oneList)
+      : older ? (JSON.parse(older) as SavedActivation[]).map(oneList).map(withReferences)
+      : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -183,6 +193,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_REFERENCES_KEY);
 }
 
 /* a step by id, or the step itself, whose Type can pick a different definition */

@@ -1,6 +1,7 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
 import { baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
+import { definitionHas, StepRef } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
@@ -28,9 +29,9 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'typeOpt
   return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
-/* which steps show the References panel on the joint page (the Correct dialog shows it on every step):
-   RT/UT (Root, Layer and Final NDT) and Repair only */
-export const showsReferences = (id: string) => /^(root|layer|final)-ndt-utrt$/.test(baseStepId(id)) || isRepairStageId(id);
+/* which steps show the References panel on the joint page: those whose Signoff Type Definition lists
+   References (by default RT/UT on Root, Layer and Final NDT, and Repair); Correct shows it on every step */
+export const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
