@@ -14,6 +14,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     added: [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
+    changed: [
+      'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
+    ],
   },
   {
     date: '2026-10-21',

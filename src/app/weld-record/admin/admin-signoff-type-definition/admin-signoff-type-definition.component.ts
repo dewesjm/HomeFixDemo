@@ -1,158 +1,357 @@
-/* Admin → Signoff Type Definition: toggle which catalog fields are active on each step.
+/* Admin → Signoff Type Definition: table of per-step field configurations.
+   Each row is a routing step; editing picks any field from the catalog and sets its showIf condition.
    Stored in welding:step-field-config:v1 (step-field-config.ts). */
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import {
+  LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
+  LucideChevronDown, LucideChevronRight,
+} from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
+import { TableState } from '../../../shared/table-state';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { downloadCsv } from '../../../data/export-csv';
 import {
-  DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation,
+  DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
   FIELD_CATALOG, SIGNOFF_FIELD_CATALOG,
-  getActivationForStep, getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
+  getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   getTemplates,
 } from '../../../data/workflow';
+import type { FieldCondition, ConditionClause } from '../../../data/workflow';
 
-interface StepOption {
+interface DefRow {
+  uid: string;
   stepId: string;
-  label: string;
+  stepLabel: string;
+  fieldLabels: string;          // flat text used for table search
+  signoffFieldLabels: string;
+  fieldActivations: FieldActivation[];
+  signoffFieldActivations: FieldActivation[];
 }
 
-interface FieldRow {
-  key: string;
-  label: string;
+type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
+
+interface WorkClause {
+  source: ClauseSrc;
+  key: string;   /* field key or joint detail key; ignored for stepId */
+  equals: string;  /* value for field/jointDetail; regex for stepId (mapped to 'matches') */
 }
+
+interface EditState {
+  uid: string | null;   /* null = new row */
+  stepId: string;
+  stepLabel: string;
+  fieldActivations: FieldActivation[];
+  signoffFieldActivations: FieldActivation[];
+  condKey: string | null;      /* field key whose condition editor is open */
+  condSection: 'f' | 'sf';
+  condClauses: WorkClause[];   /* working copy of the open field's condition */
+}
+
+let seq = 0;
 
 @Component({
   selector: 'app-admin-signoff-type-definition',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
+    LucideChevronDown, LucideChevronRight,
+  ],
   templateUrl: './admin-signoff-type-definition.component.html',
 })
 export class AdminSignoffTypeDefinitionComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
-  readonly steps: StepOption[];
+  readonly allFields = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
+  readonly allSignoffFields = SIGNOFF_FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
 
-  selectedStepId = signal('');
-  availableFields: FieldRow[] = [];
-  availableSignoffFields: FieldRow[] = [];
+  private labelMap = this.buildLabelMap();
+  private allSteps = this.buildStepList();
 
-  activeFieldKeys = signal(new Set<string>());
-  activeSignoffFieldKeys = signal(new Set<string>());
-
-  /* snapshot of what was last saved / loaded — used to detect unsaved changes */
-  private savedSnapshot = signal<{ fieldKeys: Set<string>; signoffKeys: Set<string> } | null>(null);
-
-  isDirty = computed(() => {
-    const snap = this.savedSnapshot();
-    if (!snap) return false;
-    const f = this.activeFieldKeys();
-    const sf = this.activeSignoffFieldKeys();
-    if (f.size !== snap.fieldKeys.size || sf.size !== snap.signoffKeys.size) return true;
-    for (const k of f) if (!snap.fieldKeys.has(k)) return true;
-    for (const k of sf) if (!snap.signoffKeys.has(k)) return true;
-    return false;
-  });
+  rows = signal<DefRow[]>([]);
+  editing = signal<EditState | null>(null);
+  table = new TableState<DefRow>(['stepLabel', 'fieldLabels', 'signoffFieldLabels']);
 
   constructor() {
-    const labelMap = new Map<string, string>();
+    this.rows.set(this.buildRows());
+    effect(() => this.table.setRows(this.rows()));
+  }
+
+  /* ── Table rows ── */
+
+  private buildLabelMap(): Map<string, string> {
+    const m = new Map<string, string>();
     const templates = getTemplates();
     for (const group of Object.values(templates)) {
       for (const s of group as { id: string; label: string; displayName?: string }[]) {
-        labelMap.set(s.id, s.displayName || s.label);
+        m.set(s.id, s.displayName || s.label);
       }
     }
-    this.steps = DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => ({
-      stepId: a.stepId,
-      label: labelMap.get(a.stepId) ?? a.stepId,
-    }));
+    return m;
   }
 
-  selectStep(stepId: string) {
-    this.selectedStepId.set(stepId);
-    if (!stepId) {
-      this.availableFields = [];
-      this.availableSignoffFields = [];
-      this.savedSnapshot.set(null);
+  private buildStepList(): { stepId: string; stepLabel: string }[] {
+    const templates = getTemplates();
+    const all: { stepId: string; stepLabel: string }[] = [];
+    for (const group of Object.values(templates)) {
+      for (const s of group as { id: string; label: string; displayName?: string }[]) {
+        all.push({ stepId: s.id, stepLabel: s.displayName || s.label });
+      }
+    }
+    return all;
+  }
+
+  private stepLabel(stepId: string): string {
+    return this.labelMap.get(stepId) ?? stepId;
+  }
+
+  private buildRows(): DefRow[] {
+    /* show every step that has a default activation, merged with any stored overrides */
+    const stored = getStepFieldConfig();
+    const storedIds = new Set(stored.map(a => a.stepId));
+
+    /* all default steps */
+    const rows: DefRow[] = DEFAULT_STEP_FIELD_ACTIVATIONS.map(def => {
+      const act = stored.find(a => a.stepId === def.stepId) ?? def;
+      return this.toRow(def.stepId, act.fields, act.signoffFields);
+    });
+
+    /* any custom stored steps not in the defaults */
+    for (const act of stored) {
+      if (!DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === act.stepId)) {
+        rows.push(this.toRow(act.stepId, act.fields, act.signoffFields));
+      }
+    }
+
+    return rows;
+  }
+
+  private toRow(stepId: string, fields: FieldActivation[], signoffFields: FieldActivation[]): DefRow {
+    return {
+      uid: `sfd-${++seq}`,
+      stepId,
+      stepLabel: this.stepLabel(stepId),
+      fieldLabels: fields.map(f => FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
+      signoffFieldLabels: signoffFields.map(f => SIGNOFF_FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
+      fieldActivations: fields.map(f => ({ ...f })),
+      signoffFieldActivations: signoffFields.map(f => ({ ...f })),
+    };
+  }
+
+  /* steps that don't yet have a row in the table (for adding new definitions) */
+  addableSteps = computed(() => {
+    const used = new Set(this.rows().map(r => r.stepId));
+    return this.allSteps.filter(s => !used.has(s.stepId));
+  });
+
+  /* ── Dialog: open / save / cancel ── */
+
+  addRow() {
+    this.table.clearFilters();
+    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], signoffFieldActivations: [], condKey: null, condSection: 'f', condClauses: [] });
+  }
+
+  openEdit(row: DefRow) {
+    this.editing.set({
+      uid: row.uid,
+      stepId: row.stepId,
+      stepLabel: row.stepLabel,
+      fieldActivations: row.fieldActivations.map(f => ({ ...f, showIf: f.showIf ? { all: f.showIf.all.map(c => ({ ...c })) } : undefined })),
+      signoffFieldActivations: row.signoffFieldActivations.map(f => ({ ...f, showIf: f.showIf ? { all: f.showIf.all.map(c => ({ ...c })) } : undefined })),
+      condKey: null,
+      condSection: 'f',
+      condClauses: [],
+    });
+  }
+
+  saveEdit() {
+    const e = this.editing();
+    if (!e) return;
+    if (!e.stepId) {
+      this.toast.add({ severity: 'warn', summary: 'Pick a step', life: 3000 });
       return;
     }
 
-    const defaultAct = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)!;
-    this.availableFields = defaultAct.fields.map(act => ({
-      key: act.key,
-      label: FIELD_CATALOG.find(f => f.key === act.key)?.label ?? act.key,
-    }));
-    this.availableSignoffFields = defaultAct.signoffFields.map(act => ({
-      key: act.key,
-      label: SIGNOFF_FIELD_CATALOG.find(f => f.key === act.key)?.label ?? act.key,
-    }));
+    /* commit any open condition editor first */
+    if (e.condKey) this.applyCondClauses(e);
 
-    const current = getActivationForStep(stepId);
-    const activeF = new Set(current.fields.map(f => f.key));
-    const activeSF = new Set(current.signoffFields.map(f => f.key));
-    this.activeFieldKeys.set(activeF);
-    this.activeSignoffFieldKeys.set(activeSF);
-    this.savedSnapshot.set({ fieldKeys: new Set(activeF), signoffKeys: new Set(activeSF) });
+    const updated = this.toRow(e.stepId, e.fieldActivations, e.signoffFieldActivations);
+
+    if (e.uid) {
+      this.rows.update(r => r.map(x => x.uid === e.uid ? { ...updated, uid: e.uid } : x));
+    } else {
+      this.rows.update(r => [...r, updated]);
+    }
+
+    this.persist();
+    this.editing.set(null);
+    this.toast.add({ severity: 'success', summary: 'Saved', detail: e.stepLabel, life: 3000 });
+  }
+
+  cancelEdit() {
+    this.editing.set(null);
+  }
+
+  setEditStep(stepId: string) {
+    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [], signoffFieldActivations: [] } : null);
+  }
+
+  /* ── Delete / Reset ── */
+
+  deleteRow(row: DefRow) {
+    if (DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === row.stepId)) {
+      this.confirm.confirmDelete(`${row.stepLabel} (resets to defaults)`, () => {
+        this.rows.update(r => r.map(x => x.uid === row.uid ? this.toRowFromDefaults(row.stepId, x.uid) : x));
+        this.persist();
+        this.toast.add({ severity: 'info', summary: 'Reset to defaults', detail: row.stepLabel, life: 3000 });
+      });
+    } else {
+      this.confirm.confirmDelete(row.stepLabel, () => {
+        this.rows.update(r => r.filter(x => x.uid !== row.uid));
+        this.persist();
+        this.toast.add({ severity: 'info', summary: 'Deleted', detail: row.stepLabel, life: 3000 });
+      });
+    }
+  }
+
+  private toRowFromDefaults(stepId: string, uid: string): DefRow {
+    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId);
+    const row = this.toRow(stepId, def?.fields ?? [], def?.signoffFields ?? []);
+    return { ...row, uid };
+  }
+
+  resetAll() {
+    this.confirm.confirmDelete('all custom definitions', () => {
+      resetStepFieldConfig();
+      this.rows.set(this.buildRows());
+      this.toast.add({ severity: 'info', summary: 'Reset to defaults', life: 3000 });
+    });
+  }
+
+  /* ── Field toggles ── */
+
+  hasField(key: string): boolean {
+    return !!this.editing()?.fieldActivations.some(f => f.key === key);
+  }
+
+  hasSignoffField(key: string): boolean {
+    return !!this.editing()?.signoffFieldActivations.some(f => f.key === key);
   }
 
   toggleField(key: string) {
-    this.activeFieldKeys.update(s => {
-      const n = new Set(s);
-      if (n.has(key)) n.delete(key); else n.add(key);
-      return n;
+    this.editing.update(e => {
+      if (!e) return e;
+      const acts = e.fieldActivations;
+      const idx = acts.findIndex(f => f.key === key);
+      const next = idx >= 0 ? acts.filter(f => f.key !== key) : [...acts, { key }];
+      /* close condition editor if the field was just removed */
+      const condKey = (idx >= 0 && e.condKey === key && e.condSection === 'f') ? null : e.condKey;
+      return { ...e, fieldActivations: next, condKey };
     });
   }
 
   toggleSignoffField(key: string) {
-    this.activeSignoffFieldKeys.update(s => {
-      const n = new Set(s);
-      if (n.has(key)) n.delete(key); else n.add(key);
-      return n;
+    this.editing.update(e => {
+      if (!e) return e;
+      const acts = e.signoffFieldActivations;
+      const idx = acts.findIndex(f => f.key === key);
+      const next = idx >= 0 ? acts.filter(f => f.key !== key) : [...acts, { key }];
+      const condKey = (idx >= 0 && e.condKey === key && e.condSection === 'sf') ? null : e.condKey;
+      return { ...e, signoffFieldActivations: next, condKey };
     });
   }
 
-  save() {
-    const stepId = this.selectedStepId();
-    const defaultAct = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId);
-    if (!defaultAct) return;
+  /* ── Condition editor ── */
 
-    /* preserve per-activation conditions (showIf, disabledIf, required) from the defaults */
-    const newFields = defaultAct.fields.filter(f => this.activeFieldKeys().has(f.key));
-    const newSignoffFields = defaultAct.signoffFields.filter(f => this.activeSignoffFieldKeys().has(f.key));
-    const newActivation: StepFieldActivation = { stepId, fields: newFields, signoffFields: newSignoffFields };
-
-    const full = getStepFieldConfig();
-    const idx = full.findIndex(a => a.stepId === stepId);
-    const updated = idx >= 0
-      ? full.map((a, i) => i === idx ? newActivation : a)
-      : [...full, newActivation];
-
-    setStepFieldConfig(updated);
-    this.savedSnapshot.set({
-      fieldKeys: new Set(this.activeFieldKeys()),
-      signoffKeys: new Set(this.activeSignoffFieldKeys()),
-    });
-    const label = this.steps.find(s => s.stepId === stepId)?.label ?? stepId;
-    this.toast.add({ severity: 'success', summary: 'Saved', detail: label, life: 3000 });
+  condLabel(key: string, section: 'f' | 'sf'): string {
+    const acts = section === 'f' ? this.editing()?.fieldActivations : this.editing()?.signoffFieldActivations;
+    const act = acts?.find(a => a.key === key);
+    return act?.showIf?.all?.length ? 'Conditional' : 'Always';
   }
 
-  discard() {
-    const snap = this.savedSnapshot();
-    if (snap) {
-      this.activeFieldKeys.set(new Set(snap.fieldKeys));
-      this.activeSignoffFieldKeys.set(new Set(snap.signoffKeys));
-    }
+  isCondOpen(key: string, section: 'f' | 'sf'): boolean {
+    const e = this.editing();
+    return !!e && e.condKey === key && e.condSection === section;
   }
 
-  resetToDefaults() {
-    this.confirm.confirmDelete('all custom step field configuration', () => {
-      resetStepFieldConfig();
-      this.toast.add({ severity: 'info', summary: 'Reset to defaults', life: 3000 });
-      /* reload active step if one is selected */
-      const step = this.selectedStepId();
-      if (step) this.selectStep(step);
+  toggleCondEditor(key: string, section: 'f' | 'sf') {
+    this.editing.update(e => {
+      if (!e) return e;
+      if (e.condKey === key && e.condSection === section) {
+        /* closing: apply the current clauses first */
+        this.applyCondClauses(e);
+        return { ...e, condKey: null };
+      }
+      /* opening: save pending clauses for previously open field, then load new */
+      if (e.condKey) this.applyCondClauses(e);
+      const acts = section === 'f' ? e.fieldActivations : e.signoffFieldActivations;
+      const act = acts.find(a => a.key === key);
+      const clauses = act?.showIf?.all?.map(c => this.clauseToWork(c)) ?? [];
+      return { ...e, condKey: key, condSection: section, condClauses: clauses };
     });
+  }
+
+  private clauseToWork(c: ConditionClause): WorkClause {
+    if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
+    if (c.source === 'field') return { source: 'field', key: c.key, equals: c.equals ?? '' };
+    if (c.source === 'jointDetail') return { source: 'jointDetail', key: c.key, equals: c.equals ?? '' };
+    return { source: 'field', key: '', equals: '' };
+  }
+
+  private workToClause(w: WorkClause): ConditionClause {
+    if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
+    if (w.source === 'field') return { source: 'field', key: w.key, equals: w.equals };
+    return { source: 'jointDetail', key: w.key, equals: w.equals };
+  }
+
+  private applyCondClauses(e: EditState) {
+    if (!e.condKey) return;
+    const condition: FieldCondition | undefined = e.condClauses.length
+      ? { all: e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c)) }
+      : undefined;
+
+    const update = (acts: FieldActivation[]): FieldActivation[] =>
+      acts.map(a => a.key === e.condKey ? (condition ? { ...a, showIf: condition } : { key: a.key }) : a);
+
+    if (e.condSection === 'f') e.fieldActivations = update(e.fieldActivations);
+    else e.signoffFieldActivations = update(e.signoffFieldActivations);
+  }
+
+  addClause() {
+    this.editing.update(e => e ? { ...e, condClauses: [...e.condClauses, { source: 'field', key: '', equals: '' }] } : e);
+  }
+
+  removeClause(i: number) {
+    this.editing.update(e => e ? { ...e, condClauses: e.condClauses.filter((_, idx) => idx !== i) } : e);
+  }
+
+  updateClause(i: number, partial: Partial<WorkClause>) {
+    this.editing.update(e => {
+      if (!e) return e;
+      const clauses = e.condClauses.map((c, idx) => idx === i ? { ...c, ...partial } : c);
+      return { ...e, condClauses: clauses };
+    });
+  }
+
+  /* ── Persist + Export ── */
+
+  private persist() {
+    const config: StepFieldActivation[] = this.rows()
+      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations, signoffFields: r.signoffFieldActivations }));
+    setStepFieldConfig(config);
+  }
+
+  exportCsv() {
+    downloadCsv('signoff-type-definition', [
+      { header: 'Step', value: (r: DefRow) => r.stepLabel },
+      { header: 'Fields', value: (r: DefRow) => r.fieldLabels },
+      { header: 'Sign-off Fields', value: (r: DefRow) => r.signoffFieldLabels },
+    ], this.table.sorted());
   }
 }
