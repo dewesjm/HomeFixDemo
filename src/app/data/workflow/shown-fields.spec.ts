@@ -20,7 +20,16 @@ describe('shown-fields', () => {
     expect(fieldsShown(fit, j).map(f => f.key)).toContain('weldPosition');
   });
 
-  it('History and Correct leave out a field taken off the definition', () => {
+  it('shows an NDT step’s Defect Code only on RT and UNSAT', () => {
+    const j = JOBS.find(x => x.trade === 'Welding' && buildStages(x).some(s => s.id.endsWith('-ndt-utrt')))!;
+    const id = buildStages(j).find(s => s.id.endsWith('-ndt-utrt'))!.id;
+    const keys = (change: Partial<WorkflowStage>) => fieldsShown(stageOf(j, id, change), j).map(f => f.key);
+    expect(keys({ inspectionType: 'rt', result: 'unsat' })).toContain('defectCode');
+    expect(keys({ inspectionType: 'rt', result: 'sat' })).not.toContain('defectCode');
+    expect(keys({ inspectionType: 'ut', result: 'unsat' })).not.toContain('defectCode');
+  });
+
+    it('History and Correct leave out a field taken off the definition', () => {
     const j = job();
     const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === WELD_BUILDUP_DEFINITION)!;
     setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition' && f.key !== 'affectedItem') }]);

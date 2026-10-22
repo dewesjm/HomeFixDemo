@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-22',
     added: [
+      'Admin → Signoff Type Definition, Layout list (Layout from Signoff Type Definition toggle on): Inspection Results (SAT/UNSAT) is an item you can move up or down, so fields like Defect Code can go before or after it. It shows only on a step with a reject target. Each field also has a Width box: type a width in pixels for the most that field is drawn wide (narrow screens still shrink it), or leave it blank to share the line. The starting widths match today's forms.',
       'Admin → Signoff Type Definition: every field can be ticked on every step (for example Consumable Insert on Tack, or Repair Code on an NDT step). Defer Tack and Release to welding still only steer routing on Fit and Fit-Up Insp; on other steps they are saved but routing ignores them, and the edit window says so. Fit-Up Insp and Records Review draw their extra fields below their grid. While the Layout from Signoff Type Definition toggle is off, a field added to a welding step or Pre-Fit/Fit does not show on the joint page.',
       'Admin → Feature Toggles: "Layout from Signoff Type Definition" (off by default). When on, each step\'s sign-off form is drawn from its Signoff Type Definition, and the definition\'s edit window has a Layout list: move fields up or down, tick "Same line" to put a field on the line of the one above, and add headings (a heading can start a box). The starting layouts match today\'s forms. Fit-Up Insp and Records Review keep their grids, in the Layout list\'s order.',
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
@@ -32,6 +33,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
     ],
     fixed: [
+      'NDT steps: Defect Code shows again when the Type is RT and Inspection Results is UNSAT.',
       'Signing now checks the fields a step actually shows, as its Signoff Type Definition sets them: a required field added to a step must be filled in, and one set not required no longer blocks signing.',
       'Fit-Up Insp can be signed when a verify row has been taken off its Signoff Type Definition (it used to ask for the hidden row to be checked).',
       'Admin → Signoff Type Definition: fields that only show under a condition (e.g. Probationary and Oversight Inspector, Portion of Weld Inspected) no longer say "Always". Each field now says when it is shown, when it is greyed out, and whether it is required, and the condition editor opens with the current condition filled in. Removing every clause makes the field always shown.',

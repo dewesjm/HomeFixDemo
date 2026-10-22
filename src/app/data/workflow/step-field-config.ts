@@ -1,8 +1,9 @@
 /* Per-step field activation: which catalog fields are active on each step type, under what
-   conditions, and how the form lays them out (order, fields sharing a line, headings; used while the
+   conditions, and how the form lays them out (order, fields sharing a line, widths, headings, where
+   Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v4) and take effect immediately. */
+   (welding:step-field-config:v5) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
 import type { FieldFill } from './field-catalog';
@@ -22,6 +23,8 @@ export interface FieldActivation {
   requiredIf?: FieldCondition;
   /* drawn on the same line as the field before it */
   sameLine?: boolean;
+  /* the most it's drawn wide, in pixels (narrow screens shrink it); unset = it shares its line's width */
+  width?: number;
   /* a heading item, not a field: its text (may be blank for a box), and whether it starts a new box */
   heading?: string;
   newBox?: boolean;
@@ -34,9 +37,23 @@ export function isHeadingItem(a: FieldActivation): boolean {
   return a.heading !== undefined;
 }
 
-/* the definition's fields, without its heading items */
+/* the Layout list's place for Inspection Results (the SAT/UNSAT decision), drawn only on a step with
+   a reject target */
+export const DECISION_KEY = 'decision';
+
+/* a Layout list item that isn't a field: a heading, or Inspection Results */
+export function isLayoutOnlyItem(a: FieldActivation): boolean {
+  return isHeadingItem(a) || a.key === DECISION_KEY;
+}
+
+/* the definition's fields, without its headings and Inspection Results */
 export function definitionFields(items: FieldActivation[]): FieldActivation[] {
-  return items.filter(a => !isHeadingItem(a));
+  return items.filter(a => !isLayoutOnlyItem(a));
+}
+
+/* the Layout list: a definition that doesn't place Inspection Results has it after its fields */
+export function layoutItems(items: FieldActivation[]): FieldActivation[] {
+  return items.some(a => a.key === DECISION_KEY) ? items : [...items, { key: DECISION_KEY }];
 }
 
 export interface StepFieldActivation {
@@ -62,10 +79,12 @@ const tackFiller: FieldCondition = {
   ]
 };
 
-/* layout shorthands: a field on the same line as the one before, a heading, a heading that starts a box */
-const same = (key: string): FieldActivation => ({ key, sameLine: true });
+/* layout shorthands: a field on the same line as the one before (and its width), a heading, a heading
+   that starts a box, Inspection Results */
+const same = (key: string, width?: number): FieldActivation => ({ key, sameLine: true, ...(width ? { width } : {}) });
 const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
 const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
+const DECISION: FieldActivation = { key: DECISION_KEY };
 
 /* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
@@ -79,14 +98,14 @@ const RING_FIELDS: FieldActivation[] = [
    Qualification Check and the filler */
 function weldFields(beforeFiller: FieldActivation[] = []): FieldActivation[] {
   return [
-    box('weld'), { key: 'weldProcedure' }, same('wtn'), same('weldProcess'),
+    box('weld'), { key: 'weldProcedure', width: 320 }, same('wtn', 320), same('weldProcess', 200),
     { key: 'qualificationCheck' },
     ...beforeFiller,
-    { key: 'fillerMetalType' }, same('fillerMetalSize'), same('fillerMetalMic'),
+    { key: 'fillerMetalType', width: 160 }, same('fillerMetalSize', 160), same('fillerMetalMic', 240),
     box('preheat', 'Preheat/Interpass'),
-    heading('requirements', 'Requirements'), { key: 'phMin' }, same('phMax'), same('ipMin'), same('ipMax'),
-    heading('actuals', 'Actuals'), { key: 'actualPhMin' }, same('actualPhMax'), same('actualIpMin'), same('actualIpMax'),
-    box('position'), { key: 'weldPosition' },
+    heading('requirements', 'Requirements'), { key: 'phMin', width: 150 }, same('phMax', 150), same('ipMin', 150), same('ipMax', 150),
+    heading('actuals', 'Actuals'), { key: 'actualPhMin', width: 150 }, same('actualPhMax', 150), same('actualIpMin', 150), same('actualIpMax', 150),
+    box('position'), { key: 'weldPosition', width: 200 },
   ];
 }
 const WELD_FIELDS = weldFields();
@@ -99,18 +118,18 @@ const NDT_COMMON_FIELDS: FieldActivation[] = [
 
 const NDT_UTRT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, same('rtFileNumber'), { key: 'defectCode' }, { key: 'references' },
+  { key: 'degreeRt' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' },
 ];
 
 const NDT_MTPT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'),
+  { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'), DECISION,
 ];
 
 /* weldColor condition adds the titanium check to the catalog's inspectionType=vt default */
 const NDT_VT5X_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'weldColor', showIf: titaniumVt },
+  { key: 'weldColor', showIf: titaniumVt }, DECISION,
 ];
 
 /* Excavation NDT repeats whichever inspection rejected the joint, so it carries every NDT field and
@@ -118,9 +137,10 @@ const NDT_VT5X_FIELDS: FieldActivation[] = [
 const showIfMtPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', anyOf: ['mt', 'pt'] }] };
 const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, same('rtFileNumber'), { key: 'defectCode' },
+  { key: 'degreeRt' }, same('rtFileNumber'),
   { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, same('penetrantType'),
   { key: 'weldColor', showIf: titaniumVt },
+  DECISION, { key: 'defectCode', width: 320 },
 ];
 
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
@@ -204,7 +224,8 @@ function withReferences(a: StepFieldActivation): StepFieldActivation {
 }
 
 /* definitions saved before the layout settings (v3) get the default layout: fields the default lists
-   in its order with its same-line settings and headings, the others after them as saved */
+   in its order with its same-line settings, widths, headings and Inspection Results, the others after
+   them as saved */
 const PRE_LAYOUT_KEY = 'welding:step-field-config:v3';
 export function withDefaultLayout(a: StepFieldActivation): StepFieldActivation {
   const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields;
@@ -213,14 +234,30 @@ export function withDefaultLayout(a: StepFieldActivation): StepFieldActivation {
   const ordered: FieldActivation[] = [];
   let headings: FieldActivation[] = [];
   for (const d of def) {
-    if (isHeadingItem(d)) { headings.push(d); continue; }
+    if (isLayoutOnlyItem(d)) { headings.push(d); continue; }
     const f = saved.get(d.key);
     if (!f) continue;
-    ordered.push(...headings, d.sameLine ? { ...f, sameLine: true } : f);
+    ordered.push(...headings, { ...f, ...(d.sameLine && { sameLine: true }), ...(d.width ? { width: d.width } : {}) });
     headings = [];
   }
   const extra = a.fields.filter(f => !def.some(d => d.key === f.key));
   return { ...a, fields: [...ordered, ...extra] };
+}
+
+/* definitions saved before widths and Inspection Results were in the Layout list (v4) get the
+   default's widths on fields that have one, and Inspection Results where the default has it: before
+   Defect Code, else after the fields */
+const PRE_WIDTH_KEY = 'welding:step-field-config:v4';
+export function withDefaultWidths(a: StepFieldActivation): StepFieldActivation {
+  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields;
+  if (!def) return a;
+  const fields = a.fields.map(f => {
+    const width = def.find(d => d.key === f.key)?.width;
+    return width ? { ...f, width } : f;
+  });
+  if (!def.some(d => d.key === DECISION_KEY)) return { ...a, fields };
+  const at = fields.findIndex(f => f.key === 'defectCode');
+  return { ...a, fields: at < 0 ? [...fields, DECISION] : [...fields.slice(0, at), DECISION, ...fields.slice(at)] };
 }
 
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
@@ -229,9 +266,11 @@ export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preLayout = saved ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-    const preReferences = saved || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    const preWidth = saved ? null : localStorage.getItem(PRE_WIDTH_KEY);
+    const preLayout = saved || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+    const preReferences = saved || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
     _cache = saved ? parse(saved)
+      : preWidth ? parse(preWidth).map(withDefaultWidths)
       : preLayout ? parse(preLayout).map(withDefaultLayout)
       : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout)
       : DEFAULT_STEP_FIELD_ACTIVATIONS;
@@ -249,6 +288,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_WIDTH_KEY);
   localStorage.removeItem(PRE_LAYOUT_KEY);
   localStorage.removeItem(PRE_REFERENCES_KEY);
 }

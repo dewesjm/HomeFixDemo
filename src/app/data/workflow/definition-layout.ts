@@ -1,7 +1,7 @@
 /* How a step's form is laid out from its Signoff Type Definition, while the Layout from Signoff Type
    Definition toggle is on: the fields in definition order, each on a new line unless it's set to the
-   same line as the one before, split by headings (a heading can start a box). Fields on a line share
-   its width. */
+   same line as the one before, split by headings (a heading can start a box). Inspection Results is
+   laid out like a field. Fields on a line share its width. */
 import type { FieldActivation } from './step-field-config';
 import { isHeadingItem } from './step-field-config';
 

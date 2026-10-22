@@ -1,6 +1,6 @@
 /* The values a step's field conditions are checked against. Virtual Joint Details keys
-   (joint-facts.ts) are resolved here; 'inspectionType' is merged into inputs so field-source
-   conditions can reach it. */
+   (joint-facts.ts) are resolved here; 'inspectionType' and 'result' (SAT/UNSAT) are merged into inputs
+   so field-source conditions can reach them. */
 import { Job } from '../jobs';
 import { WorkflowStage } from './types';
 import { ConditionContext } from './field-conditions';
@@ -10,7 +10,7 @@ export function buildConditionContext(stage: WorkflowStage, job: Job | undefined
     fab: Record<string, string> = {}): ConditionContext {
   return {
     stageId: stage.id,
-    inputs: { ...stage.inputs, inspectionType: stage.inspectionType },
+    inputs: { ...stage.inputs, inspectionType: stage.inspectionType, result: stage.result ?? '' },
     jointDetail: (key: string): string => {
       const virtual = VIRTUAL_JOINT_DETAILS[key];
       if (virtual) return virtual.value(job, fab) ? 'yes' : '';

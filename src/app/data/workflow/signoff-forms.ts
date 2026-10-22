@@ -54,9 +54,9 @@ export function drawnByOwnForm(step: StepRef, key: string): boolean {
 }
 
 /* fields a step's definition lists that the form leaves to another spot: References is the joint
-   page's panel, an NDT step's Defect Code is drawn below the decision */
-export function drawnOutsideForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>, key: string): boolean {
-  return key === 'references' || (key === 'defectCode' && signoffForm(stage) === 'ndt');
+   page's panel */
+export function drawnOutsideForm(key: string): boolean {
+  return key === 'references';
 }
 
 /* steps whose fields are a grid of values to check off; a Required row must be checked */

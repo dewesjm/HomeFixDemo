@@ -11,12 +11,13 @@ import { EngineeringReleaseComponent } from '../engineering-release/engineering-
 import { FitSignoffFormComponent } from './fit-signoff-form.component';
 import { NdtDefectCodeComponent } from './ndt-defect-code.component';
 import { SignoffContext } from './signoff-context';
+import { StageDecisionComponent } from './stage-decision.component';
 
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX,
-    CatalogStageFormComponent, EngineeringReleaseComponent, FitSignoffFormComponent, NdtDefectCodeComponent],
+    CatalogStageFormComponent, EngineeringReleaseComponent, FitSignoffFormComponent, NdtDefectCodeComponent, StageDecisionComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

@@ -76,27 +76,15 @@
         <app-fit-signoff-form [ctx]="ctx()" [stage]="st" />
       }
 
-      <!-- Decision (SAT/UNSAT) — own dedicated line -->
-      @if (st.rejectToStage) {
-        <div class="mb-sm">
-          <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__decision')">{{ st.decisionLabel || 'Decision' }} <span class="text-error">*</span></div>
-          <div class="result-radios">
-            @for (o of ctx().resultOptions; track o.value) {
-              <label>
-                <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__decision')" [name]="'result-' + st.id" [disabled]="!ctx().editable(st)"
-                       [checked]="st.result === o.value" (change)="ctx().setStageResult(st, o.value)" />
-                <span>{{ o.label }}</span>
-              </label>
-            }
-          </div>
-          @if (ctx().fieldError(st.id, '__decision'); as err) {
-            <div class="field-error">{{ err }}</div>
-          }
-        </div>
-      }
-
-      @if (form === 'ndt') {
-        <app-ndt-defect-code [ctx]="ctx()" [stage]="st" />
+      <!-- Decision (SAT/UNSAT) on its own line, and an NDT step's Defect Code below it; a form drawn
+           from its definition places both itself -->
+      @if (!drawsFromDefinition(st)) {
+        @if (hasDecision(st)) {
+          <app-stage-decision class="mb-sm" [ctx]="ctx()" [stage]="st" />
+        }
+        @if (form === 'ndt') {
+          <app-ndt-defect-code [ctx]="ctx()" [stage]="st" />
+        }
       }
 
       <!-- Comments: every hand-signed step has one (hasCommentsBox), saved with the sign-off -->

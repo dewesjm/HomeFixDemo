@@ -4,9 +4,9 @@
    picks any field from the catalog and sets when it shows, when it's filled (from another step, this
    step or the WTN) and locked, when it's greyed out, and whether and when it's required. While the
    Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
-   which fields share a line, and headings. Add's step list is the steps in
+   which fields share a line, their widths, headings, and where Inspection Results goes. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v4 (step-field-config.ts). */
+   Stored in welding:step-field-config:v5 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -31,7 +31,7 @@ import {
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, definitionFields, isHeadingItem, isVerifyGrid,
+  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -187,7 +187,7 @@ export class AdminSignoffTypeDefinitionComponent {
       uid: row.uid,
       stepId: row.stepId,
       stepLabel: row.stepLabel,
-      fieldActivations: row.fieldActivations.map(copyActivation),
+      fieldActivations: this.withLayoutItems(row.stepId, row.fieldActivations.map(copyActivation)),
       condKey: null,
       condKind: 'show',
       condClauses: [],
@@ -228,7 +228,12 @@ export class AdminSignoffTypeDefinitionComponent {
   setEditStep(stepId: string) {
     const existing = this.rows().find(r => r.stepId === stepId);
     if (existing) { this.openEdit(existing); return; }
-    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [] } : null);
+    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: this.withLayoutItems(stepId, []) } : null);
+  }
+
+  /* the Layout list has Inspection Results, except on the verify grids (the panel draws theirs) */
+  private withLayoutItems(stepId: string, items: FieldActivation[]): FieldActivation[] {
+    return isVerifyGrid({ id: stepId, signoffType: '' }) ? items : layoutItems(items);
   }
 
   /* ── Delete / Reset ── */
@@ -287,7 +292,10 @@ export class AdminSignoffTypeDefinitionComponent {
       if (!e) return e;
       const acts = e.fieldActivations;
       const idx = acts.findIndex(f => f.key === key);
-      const next = idx >= 0 ? acts.filter(f => f.key !== key) : [...acts, { key }];
+      /* a new field goes after the others, before Inspection Results when that's last */
+      const decisionLast = acts[acts.length - 1]?.key === DECISION_KEY;
+      const next = idx >= 0 ? acts.filter(f => f.key !== key)
+        : decisionLast ? [...acts.slice(0, -1), { key }, acts[acts.length - 1]] : [...acts, { key }];
       /* close condition editor if the field was just removed */
       const condKey = (idx >= 0 && e.condKey === key) ? null : e.condKey;
       return { ...e, fieldActivations: next, condKey };
@@ -478,8 +486,12 @@ export class AdminSignoffTypeDefinitionComponent {
 
   readonly isHeading = isHeadingItem;
 
+  isDecision(a: FieldActivation): boolean {
+    return a.key === DECISION_KEY;
+  }
+
   itemLabel(a: FieldActivation): string {
-    return lookupCatalogField(a.key)?.label ?? a.key;
+    return this.isDecision(a) ? 'Inspection Results (SAT/UNSAT)' : lookupCatalogField(a.key)?.label ?? a.key;
   }
 
   private updateItems(change: (items: FieldActivation[]) => FieldActivation[]) {
@@ -495,13 +507,14 @@ export class AdminSignoffTypeDefinitionComponent {
     });
   }
 
-  /* unticked layout settings are left off the saved definition */
+  /* unticked layout settings and blank widths are left off the saved definition */
   setItem(i: number, partial: Partial<FieldActivation>) {
     this.updateItems(items => items.map((a, idx) => {
       if (idx !== i) return a;
       const next = { ...a, ...partial };
       if (!next.sameLine) delete next.sameLine;
       if (!next.newBox) delete next.newBox;
+      if (!next.width || next.width <= 0) delete next.width;
       return next;
     }));
   }

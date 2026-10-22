@@ -1,5 +1,5 @@
 import { layoutSections } from './definition-layout';
-import { HEADING_KEY_PREFIX, getActivationForStep } from './step-field-config';
+import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep } from './step-field-config';
 
 const all = () => true;
 
@@ -47,5 +47,11 @@ describe('layoutSections', () => {
       { kind: 'line', keys: ['consumableInsertOnly'] }, { kind: 'line', keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'] },
     ]);
     expect(sections[1].parts[1]).toEqual({ kind: 'line', keys: ['phMin', 'phMax', 'ipMin', 'ipMax'] });
+  });
+
+  it('draws the default UT/RT NDT with Inspection Results just above Defect Code', () => {
+    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, all)
+      .flatMap(s => s.parts.flatMap(p => p.kind === 'line' ? p.keys : []));
+    expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode', 'references']);
   });
 });
