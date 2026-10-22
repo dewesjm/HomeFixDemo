@@ -39,3 +39,4 @@ export * from './seeded-workflow';
 export * from './field-conditions';
 export * from './field-catalog';
 export * from './step-field-config';
+export * from './field-rules';

@@ -17,6 +17,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: [
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
     ],
+    fixed: [
+      'Admin → Signoff Type Definition: fields that only show under a condition (e.g. Probationary and Oversight Inspector, Portion of Weld Inspected) no longer say "Always". Each field now says when it is shown, when it is greyed out, and whether it is required, and the condition editor opens with the current condition filled in. Removing every clause makes the field always shown.',
+    ],
   },
   {
     date: '2026-10-21',

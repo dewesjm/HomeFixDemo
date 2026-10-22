@@ -19,9 +19,10 @@ import {
   DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
   FIELD_CATALOG, SIGNOFF_FIELD_CATALOG,
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
-  getTemplates,
+  getTemplates, FieldSection, defaultShowIf, showIfToStore,
+  showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule,
 } from '../../../data/workflow';
-import type { FieldCondition, ConditionClause } from '../../../data/workflow';
+import type { ConditionClause } from '../../../data/workflow';
 
 interface DefRow {
   uid: string;
@@ -48,7 +49,7 @@ interface EditState {
   fieldActivations: FieldActivation[];
   signoffFieldActivations: FieldActivation[];
   condKey: string | null;      /* field key whose condition editor is open */
-  condSection: 'f' | 'sf';
+  condSection: FieldSection;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
 }
 
@@ -269,18 +270,33 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* ── Condition editor ── */
 
-  condLabel(key: string, section: 'f' | 'sf'): string {
+  private activation(key: string, section: FieldSection): FieldActivation {
     const acts = section === 'f' ? this.editing()?.fieldActivations : this.editing()?.signoffFieldActivations;
-    const act = acts?.find(a => a.key === key);
-    return act?.showIf?.all?.length ? 'Conditional' : 'Always';
+    return acts?.find(a => a.key === key) ?? { key };
   }
 
-  isCondOpen(key: string, section: 'f' | 'sf'): boolean {
+  condLabel(key: string, section: FieldSection): string {
+    return showRuleText(this.activation(key, section), section);
+  }
+
+  disabledLabel(key: string, section: FieldSection): string {
+    return disabledRuleText(this.activation(key, section), section);
+  }
+
+  isRequired(key: string, section: FieldSection): boolean {
+    return effectiveRequired(this.activation(key, section), section);
+  }
+
+  isBuiltIn(key: string, section: FieldSection): boolean {
+    return hasBuiltInShowRule(key, section);
+  }
+
+  isCondOpen(key: string, section: FieldSection): boolean {
     const e = this.editing();
     return !!e && e.condKey === key && e.condSection === section;
   }
 
-  toggleCondEditor(key: string, section: 'f' | 'sf') {
+  toggleCondEditor(key: string, section: FieldSection) {
     this.editing.update(e => {
       if (!e) return e;
       if (e.condKey === key && e.condSection === section) {
@@ -292,7 +308,7 @@ export class AdminSignoffTypeDefinitionComponent {
       if (e.condKey) this.applyCondClauses(e);
       const acts = section === 'f' ? e.fieldActivations : e.signoffFieldActivations;
       const act = acts.find(a => a.key === key);
-      const clauses = act?.showIf?.all?.map(c => this.clauseToWork(c)) ?? [];
+      const clauses = (act?.showIf ?? defaultShowIf(key, section))?.all.map(c => this.clauseToWork(c)) ?? [];
       return { ...e, condKey: key, condSection: section, condClauses: clauses };
     });
   }
@@ -312,12 +328,15 @@ export class AdminSignoffTypeDefinitionComponent {
 
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
-    const condition: FieldCondition | undefined = e.condClauses.length
-      ? { all: e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c)) }
-      : undefined;
+    const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
+    const condition = showIfToStore(e.condKey, e.condSection, clauses);
 
     const update = (acts: FieldActivation[]): FieldActivation[] =>
-      acts.map(a => a.key === e.condKey ? (condition ? { ...a, showIf: condition } : { key: a.key }) : a);
+      acts.map(a => {
+        if (a.key !== e.condKey) return a;
+        const { showIf: _old, ...rest } = a;
+        return condition ? { ...rest, showIf: condition } : rest;
+      });
 
     if (e.condSection === 'f') e.fieldActivations = update(e.fieldActivations);
     else e.signoffFieldActivations = update(e.signoffFieldActivations);

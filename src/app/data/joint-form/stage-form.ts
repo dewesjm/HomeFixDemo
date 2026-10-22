@@ -4,6 +4,7 @@ import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
   ConditionContext, evaluateCondition, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
+  effectiveShowIf, effectiveDisabledIf, effectiveRequired,
 } from '../workflow';
 import { isTitaniumJoint } from '../material-classification';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -91,14 +92,13 @@ export function resolveActivatedFields(
   const activation = getActivationForStep(stepId);
   return activation.fields
     .filter(act => {
-      const cat = lookupCatalogField(act.key);
-      if (!cat) return false;
-      const cond = act.showIf ?? cat.defaultShowIf;
+      if (!lookupCatalogField(act.key)) return false;
+      const cond = effectiveShowIf(act, 'f');
       return !cond || evaluateCondition(cond, condCtx);
     })
     .map(act => {
       const cat = lookupCatalogField(act.key)!;
-      const disabledCond = act.disabledIf ?? cat.defaultDisabledIf;
+      const disabledCond = effectiveDisabledIf(act);
       const disabledByCondition = !!disabledCond && evaluateCondition(disabledCond, condCtx);
       const sf: StageField = {
         key: cat.key,
@@ -107,7 +107,7 @@ export function resolveActivatedFields(
         ...(cat.unit !== undefined && { unit: cat.unit }),
         ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
         ...(cat.options !== undefined && { options: cat.options }),
-        required: act.required ?? cat.defaultRequired ?? false,
+        required: effectiveRequired(act, 'f'),
         ...(cat.disabled || disabledByCondition ? { disabled: true } : {}),
         ...(cat.minField !== undefined && { minField: cat.minField }),
         ...(cat.maxField !== undefined && { maxField: cat.maxField }),
