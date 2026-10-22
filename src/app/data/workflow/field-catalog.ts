@@ -70,6 +70,9 @@ const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nIn
 const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'yes' }] };
 const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'yes' }] };
 const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'materialTraceability', equals: 'yes' }] };
+const ifPart1Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part1Traceability', equals: 'yes' }] };
+const ifPart2Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part2Traceability', equals: 'yes' }] };
+const ifRevisedJointDesign: FieldCondition = { all: [{ source: 'jointDetail', key: 'revisedJointDesignEntered', equals: 'yes' }] };
 
 const BACKING_RING_OPTIONS = [
   { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -180,13 +183,15 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Fit-Up Insp ── */
   { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', drawnByStepForm: true },
-  { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
-  { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
-  { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
-  { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
-  { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
+  /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
+  { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
+  { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
+  { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox', defaultRequired: true },
+  { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox', defaultRequired: true },
+  { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox', defaultRequired: true,
+    defaultShowIf: ifRevisedJointDesign },
 
-  /* ── Records Review ── */
+  /* ── Records Review ── (verify-grid rows; none required by default) */
   { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
   { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
   { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },

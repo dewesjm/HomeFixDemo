@@ -29,6 +29,12 @@ export function signoffForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): S
   return 'generic';
 }
 
+/* steps whose fields are a grid of values to check off; a Required row must be checked */
+export function isVerifyGrid(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
+  const form = signoffForm(stage);
+  return form === 'fitup-insp' || form === 'records-review';
+}
+
 /* Not listed on any step: the panel draws it, History and Correct add it (withComments). Saved in
    the step's signoffInputs. */
 export const COMMENTS_FIELD: SignoffField = { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true };

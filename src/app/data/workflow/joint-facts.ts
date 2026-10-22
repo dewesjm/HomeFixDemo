@@ -50,4 +50,16 @@ export const VIRTUAL_JOINT_DETAILS: Record<string, VirtualJointDetail> = {
     value: job => jointRequiresTraceability(job),
     yesText: 'either part requires material traceability', noText: 'neither part requires material traceability',
   },
+  part1Traceability: {
+    value: job => !!job && requiresTraceability(job.mcl1),
+    yesText: 'part 1 requires material traceability', noText: 'part 1 does not require material traceability',
+  },
+  part2Traceability: {
+    value: job => !!job && requiresTraceability(job.mcl2),
+    yesText: 'part 2 requires material traceability', noText: 'part 2 does not require material traceability',
+  },
+  revisedJointDesignEntered: {
+    value: (_job, fab) => !!(fab['revisedJointDesign'] ?? '').trim(),
+    yesText: 'a Revised Joint Design is entered', noText: 'no Revised Joint Design is entered',
+  },
 };

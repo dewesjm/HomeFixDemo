@@ -97,7 +97,8 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
   'verifyPipeSize', 'verifyWallThickness', 'verifyMaterial1', 'verifyMaterial2',
   'verifyMcl1', 'verifyMcl2', 'verifyNdt', 'verifyPwht', 'verifyNInd',
   'verifyWps', 'verifyOrder', 'verifyWorkPackage',
-].map(key => ({ key }));
+/* Drawing Rev is also a Fit-Up Insp row, required there; here no row is required */
+].map(key => key === 'verifyDrawingRev' ? { key, required: false } : { key });
 
 /* NQC copies of NDT steps (nqc- prefix, matching nqcStepId() in step-ids.ts) share the same
    field activation as the base step */

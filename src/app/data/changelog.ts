@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Fit-Up Insp: MIC 1 and MIC 2 verified show only when that part requires material traceability, and Revised Joint Design verified only when one is entered. Only the rows shown must be checked. On Admin → Signoff Type Definition these are ordinary Show when and Required rules, so the rows of the Fit-Up Insp and Records Review grids, when each shows, and which must be checked can be changed there (Records Review rows are not required unless ticked).',
       'Admin → Signoff Type Definition: References is a field in the Fields list. RT/UT on Root, Layer and Final NDT, and Repair, have it ticked as before, and ticking it on any other step (including a new one) shows the References panel there. The Correct window still shows References on every step.',
       'Admin → Signoff Type Definition: Release to welding can be unticked on Fit-Up Insp. The checkbox is then not shown, every joint is released to welding when Fit-Up Insp is signed, and Fit-Up Release never comes up.',
       'Admin → Signoff Type Definition: Fit signed as Weld Build-Up has its own definition, "Fit (Weld Build-Up)", with the welding fields and Affected Item, instead of borrowing Tack\'s fields. Unticking a field there (Affected Item included) takes it off the Weld Build-Up form.',
@@ -28,6 +29,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
     ],
     fixed: [
+      'Fit-Up Insp can be signed when a verify row has been taken off its Signoff Type Definition (it used to ask for the hidden row to be checked).',
       'Admin → Signoff Type Definition: fields that only show under a condition (e.g. Probationary and Oversight Inspector, Portion of Weld Inspected) no longer say "Always". Each field now says when it is shown, when it is greyed out, and whether it is required, and the condition editor opens with the current condition filled in. Removing every clause makes the field always shown.',
       'Tack and Deferred Tack: Filler Metal Type, Size and MIC are hidden when the joint design (or Revised Joint Design) uses a consumable insert, and when neither part requires material traceability. Root\'s "Only Consumable Insert used as filler" checkbox is unchanged.',
     ],

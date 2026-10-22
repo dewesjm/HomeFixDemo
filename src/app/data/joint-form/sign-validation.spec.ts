@@ -34,6 +34,22 @@ describe('joint-form sign-validation', () => {
     expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
   });
 
+  it('Fit-Up Insp shows MIC rows only for parts needing traceability, Revised Joint Design only when entered', () => {
+    const rows = (j: Job, fab: Record<string, string> = {}) =>
+      visibleStageFields(stageOf(j, 'fitup-insp'), { job: j, stages: buildStages(j), offListUnlocked: false, fab }).map(f => f.key);
+    expect(rows(job())).toEqual(['verifyDrawingRev', 'verifyActualThickness']);
+    expect(rows(job({ mcl1: 'MC-I' }), { revisedJointDesign: 'C-24' }))
+      .toEqual(['verifyMic1', 'verifyDrawingRev', 'verifyActualThickness', 'verifyRevisedJointDesign']);
+  });
+
+  it('a verify grid needs only its shown, required rows checked', () => {
+    const j = job();
+    const insp = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
+    expect(signProblems(insp, ctxFor(j, insp))).toEqual([]);
+    const review = stageOf(j, 'review-o63');
+    expect(signProblems(review, ctxFor(j, review))).not.toContain('Verify every required record field');
+  });
+
   it('RT NDT must record at least the job\'s required degree', () => {
     const j = job({ ndt: 'UT', rtRoot: '360' });
     const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');

@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas } from '../workflow';
+import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -24,6 +24,11 @@ function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
     ? `Degree of RT Performed must be at least ${required}` : '';
 }
 
+/* a verify grid's shown rows that are required and not checked */
+function unverifiedRows(stage: WorkflowStage, ctx: SignContext): StageField[] {
+  return ctx.visibleFields.filter(f => f.required && stage.inputs?.[f.key] !== 'yes');
+}
+
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
   return requiredSignoffFields(stage, ctx.job, ctx.fab).filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0);
 }
@@ -38,10 +43,10 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
   }
-  if (isFitupInspId(stage.id)) {
-    if (!stage.fields.every(f => f.type === 'checkbox' && stage.inputs[f.key] === 'yes')) reasons.push('Verify every fitting value');
-    if (Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
+  if (isVerifyGrid(stage) && unverifiedRows(stage, ctx).length) {
+    reasons.push(isFitupInspId(stage.id) ? 'Verify every fitting value' : 'Verify every required record field');
   }
+  if (isFitupInspId(stage.id) && Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) reasons.push(rt);
   const missingSignoff = missingSignoffFields(stage, ctx).map(f => f.label);
@@ -66,11 +71,9 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
     if (err && !errors[key(pair.max)]) errors[key(pair.max)] = err;
   }
-  /* Fit-Up Insp: each unchecked verification row gets its own error (the blockers give one summary reason) */
-  if (isFitupInspId(stage.id)) {
-    for (const f of ctx.visibleFields) {
-      if (stage.inputs?.[f.key] !== 'yes') errors[key(f.key)] = `${f.label} must be verified`;
-    }
+  /* Fit-Up Insp, Records Review: each unchecked required row gets its own error (the blockers give one summary reason) */
+  if (isVerifyGrid(stage)) {
+    for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = `${f.label} must be verified`;
   }
   /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and its MIC verified
      when its MCL requires traceability (the same condition weld-stage-form uses to render the checkbox) */
