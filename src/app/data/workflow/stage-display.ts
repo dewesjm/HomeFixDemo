@@ -5,10 +5,7 @@ import { hasDecision } from './stage-rules';
 import { withComments } from './signoff-forms';
 import { Job } from '../jobs';
 import { isTitaniumJoint } from '../material-classification';
-import { fieldActivation } from './step-field-config';
-import { effectiveShowIf } from './field-rules';
-import { evaluateCondition } from './field-conditions';
-import { buildConditionContext } from './condition-context';
+import { lookupCatalogField } from './field-catalog';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
   const v = raw ?? '';
@@ -26,6 +23,7 @@ export const show = (v: string | null | undefined) => (v && v.length ? v : '-');
 export function labelFor(stage: WorkflowStage, key: string): string {
   return stage.fields.find(f => f.key === key)?.label
     ?? withComments(stage, stage.signoffFields).find(f => f.key === key)?.label
+    ?? lookupCatalogField(key)?.label
     ?? key;
 }
 
@@ -45,18 +43,6 @@ export function showIfMet(stage: WorkflowStage, f: StageField): boolean {
 export function fieldAppliesToJob(f: StageField, job: Job | undefined): boolean {
   if (f.key === 'weldColor') return !!job && isTitaniumJoint(job);
   return true;
-}
-
-/* Fields whose showIf is met, that apply to the joint, and that pass the step's Admin > Signoff Type
-   Definition conditions; a stand-in for the joint page's visible fields (visibleStageFields), used by
-   seeded History, Correct and its History entry. */
-export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStage[] = [], fab: Record<string, string> = {}): StageField[] {
-  const ctx = buildConditionContext(stage, job, stages, fab);
-  return stage.fields.filter(f => {
-    if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
-    const cond = effectiveShowIf(fieldActivation(stage.id, f.key));
-    return !cond || evaluateCondition(cond, ctx);
-  });
 }
 
 /* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:

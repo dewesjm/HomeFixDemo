@@ -22,7 +22,7 @@ function ownFieldsContext(stage: WorkflowStage): ConditionContext {
 /* the field's fill rule when it holds right now on this step */
 export function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {
   if (!stage.fields.some(f => f.key === key)) return undefined;
-  const fill = effectiveFill(fieldActivation(stage.id, key));
+  const fill = effectiveFill(fieldActivation(stage, key));
   if (!fill || (fill.from === 'wtn' && stage.engineeringEntry)) return undefined;
   return evaluateCondition(fill.when, ownFieldsContext(stage)) ? fill : undefined;
 }

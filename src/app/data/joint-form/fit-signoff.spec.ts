@@ -2,7 +2,8 @@ import { JOBS, Job } from '../jobs';
 import { buildStages, WorkflowStage, setStepFieldConfig, resetStepFieldConfig, DEFAULT_STEP_FIELD_ACTIVATIONS, FieldActivation } from '../workflow';
 import { STORAGE } from '../storage-keys';
 import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../workflow';
-import { visibleSignoffFields, requiredSignoffFields } from './fit-signoff';
+import { requiredSignoffFields } from './fit-signoff';
+import { visibleSignoffFields } from '../workflow';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', jointDesign: 'C-24', ...over });
 const fitOf = (j: Job): WorkflowStage => buildStages(j).find(s => s.id === 'fit')!;

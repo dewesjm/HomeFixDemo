@@ -1,10 +1,10 @@
 /* A step's fields on the joint page: which show, and the options each offers */
 import { Job } from '../jobs';
 import {
-  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
-  allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
-  ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, hasStepActivation,
-  effectiveShowIf, effectiveDisabledIf, isRequiredNow, isFilledByRule, fieldActivation,
+  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFieldLocked,
+  allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId,
+  evaluateCondition, buildConditionContext, hasStepActivation, effectiveShowIf, fieldActivation,
+  definedFields, definitionStageFields, allowableThicknessApplies,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -42,88 +42,25 @@ export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): st
   return '';
 }
 
-/* Fit's Weld Build-Up type uses Tack's fields, plus the override fields (Fit isn't a weld step
-   when buildStages() runs, so it doesn't get them then) */
-function weldBuildupFields(trade: Job['trade']): StageField[] {
-  const tackTpl = (getTemplates()[trade] ?? []).find(t => t.id === 'tack');
-  return [...(tackTpl?.fields ?? []), ...WELD_OVERRIDE_FIELDS];
-}
-
-/* Fit's fields for its Type: Weld Build-Up swaps in Tack's fields plus Affected Item; Fit, or Weld
-   Build-Up when Admin > Routing Settings has no Tack step, keeps Fit's own fields */
+/* Fit's fields for its Type: Weld Build-Up's are its own Signoff Type Definition's, Fit keeps its template's */
 export function fitFieldsForType(trade: Job['trade'], signoffType: string): StageField[] {
-  const templates = getTemplates()[trade] ?? [];
-  if (signoffType === 'weld-buildup' && templates.some(t => t.id === 'tack')) {
-    return [...weldBuildupFields(trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text', required: true }];
-  }
-  return (templates.find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
+  if (signoffType === 'weld-buildup') return definitionStageFields({ id: 'fit', signoffType });
+  return ((getTemplates()[trade] ?? []).find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
 }
 
-/* Resolves visible StageField[] from the catalog activation for a step, evaluating all conditions
-   and enriching each field with runtime options via stageFieldOptions(). Fields the step's own form
-   draws (drawnByStepForm) are left to it. */
-export function resolveActivatedFields(
-  stepId: string,
-  condCtx: ConditionContext,
-  formCtx: StageFormContext,
-  stage: WorkflowStage
-): StageField[] {
-  const activation = getActivationForStep(stepId);
-  return activation.fields
-    .filter(act => {
-      const cat = lookupCatalogField(act.key);
-      if (!cat || cat.drawnByStepForm) return false;
-      if (act.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, formCtx.stages)) return false;
-      const cond = effectiveShowIf(act);
-      return !cond || evaluateCondition(cond, condCtx);
-    })
-    .map(act => {
-      const cat = lookupCatalogField(act.key)!;
-      const disabledCond = effectiveDisabledIf(act);
-      const disabledByCondition = (!!disabledCond && evaluateCondition(disabledCond, condCtx)) || isFilledByRule(stage, act.key);
-      const sf: StageField = {
-        key: cat.key,
-        label: cat.label,
-        type: cat.type,
-        ...(cat.unit !== undefined && { unit: cat.unit }),
-        ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
-        ...(cat.options !== undefined && { options: cat.options }),
-        required: isRequiredNow(act, condCtx),
-        ...(cat.disabled || disabledByCondition ? { disabled: true } : {}),
-        ...(cat.minField !== undefined && { minField: cat.minField }),
-        ...(cat.maxField !== undefined && { maxField: cat.maxField }),
-        ...(cat.fullWidth !== undefined && { fullWidth: cat.fullWidth }),
-        ...(cat.description !== undefined && { description: cat.description }),
-      };
-      return stageFieldOptions(sf, stage, formCtx);
-    });
-}
-
-/* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
-function allowableThicknessApplies(stage: WorkflowStage, stages: WorkflowStage[]): boolean {
-  return !!stepOnJoint(stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`);
-}
-
-/* Fields shown on the step. Steps with an Admin > Signoff Type Definition (the built-in routing,
-   Repair, Excavation NDT) resolve from the field catalog via evaluateCondition(). Custom added steps
-   without one, and Fit as Weld Build-Up, use the template's stage.fields directly. */
+/* Fields shown on the step, with their runtime options. Steps with an Admin > Signoff Type
+   Definition (the built-in routing, Repair, Excavation NDT, Fit as Weld Build-Up) list its fields
+   (definedFields); steps added in Admin > Routing Settings use their template's fields. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
-  const job = ctx.job;
-  const isFitWeldBuildup = stage.id === 'fit' && stage.signoffType === 'weld-buildup';
-  if (!isFitWeldBuildup && hasStepActivation(stage.id)) {
-    const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
-    return resolveActivatedFields(stage.id, condCtx, ctx, stage);
-  }
-  /* non-catalog path: Fit as Weld Build-Up, custom added steps. Each field follows its catalog show
-     rule (e.g. Weld Position only when N Ind. is 1). */
-  const rawFields = isFitWeldBuildup ? (job ? weldBuildupFields(job.trade) : WELD_OVERRIDE_FIELDS) : stage.fields;
-  const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
-  return rawFields
+  const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);
+  if (hasStepActivation(stage)) return definedFields(stage, condCtx, ctx.stages).map(f => stageFieldOptions(f, stage, ctx));
+  /* each template field follows its catalog show rule (e.g. Weld Position only when N Ind. is 1) */
+  return stage.fields
     .map(f => stageFieldOptions(f, stage, ctx))
     .filter(f => {
       if (f.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, ctx.stages)) return false;
-      if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
-      const cond = effectiveShowIf(fieldActivation(stage.id, f.key));
+      if (!showIfMet(stage, f) || !fieldAppliesToJob(f, ctx.job)) return false;
+      const cond = effectiveShowIf(fieldActivation(stage, f.key));
       if (cond && !evaluateCondition(cond, condCtx)) return false;
       /* override fields only when the selected GWP+WTN's WPS has override values set */
       if (f.key.startsWith('override')) {

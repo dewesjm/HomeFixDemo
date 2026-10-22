@@ -161,6 +161,11 @@ export const FIELD_CATALOG: CatalogField[] = [
     defaultRequiredIf: ifTraceability, defaultShowIf: showIfRing, drawnByStepForm: true },
   { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', drawnByStepForm: true },
 
+  /* ── Weld Build-Up ── */
+  /* the joint members the build-up affects, each with its MIC verified when its MCL requires
+     traceability (weld-stage-form); at least one must be picked */
+  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', drawnByStepForm: true },
+
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
     options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },

@@ -5,7 +5,7 @@
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
-import { StageField, SignoffField, fieldsShown, isUserEditable, isRoutingLockedField, withComments } from '../../data/workflow';
+import { StageField, SignoffField, fieldsShown, visibleSignoffFields, isUserEditable, isRoutingLockedField, withComments } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { AttachmentService } from '../services/attachment.service';
@@ -46,9 +46,11 @@ export class CorrectStageDialogComponent {
     const t = this.target();
     return st && t ? fieldsShown(st, t.job, this.wf()?.stages ?? [], this.wf()?.fabricationData ?? {}).filter(f => isUserEditable(st, f)) : [];
   });
+  /* the sign-off fields the step's definition shows on this joint, less greyed-out ones, plus Comments */
   signoffFields = computed<SignoffField[]>(() => {
     const st = this.stage();
-    return st ? withComments(st, st.signoffFields) : [];
+    const t = this.target();
+    return st && t ? withComments(st, visibleSignoffFields(st, t.job, this.wf()?.fabricationData ?? {}).filter(f => !f.disabled)) : [];
   });
 
   /* pending edits, keyed by field key; absent = unchanged from the stage's current value */

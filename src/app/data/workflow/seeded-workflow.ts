@@ -7,7 +7,8 @@ import { inspectionProcedureOptions } from '../inspection-procedures';
 import { DEFAULT_REJECT_RULES } from '../step-conditions';
 import { DeviationItem, JobWorkflow, StageField, StageResult, WorkflowStage } from './types';
 import { hasDecision } from './stage-rules';
-import { fieldsShown, labelFor, snapshotInputs } from './stage-display';
+import { labelFor, snapshotInputs } from './stage-display';
+import { fieldsShown, visibleSignoffFields } from './shown-fields';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from './added-steps';
 import { setRoutingFrom } from './current-routing';
 import { baseStepId, isFitupInspId } from './step-ids';
@@ -111,7 +112,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       from: '',
       to: hasDecision(s) ? result.toUpperCase() : '',
       routing: s.label,
-      inputs: snapshotInputs(signedView, fieldsShown(signedView, job, wf.stages, wf.fabricationData), s.signoffFields),
+      inputs: snapshotInputs(signedView, fieldsShown(signedView, job, wf.stages, wf.fabricationData), visibleSignoffFields(signedView, job, wf.fabricationData)),
       fabInputs: fabricationSnapshot(wf.fabricationData),
       stageId: s.id,
     });

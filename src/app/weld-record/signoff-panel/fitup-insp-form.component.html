@@ -50,12 +50,15 @@
   </div>
 }
 
-<!-- Release to welding: above the panel's Inspection Results -->
-<div class="mt-3">
-  <label class="flex items-center gap-2 cursor-pointer">
-    <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
-           [checked]="st.inputs['releaseToWelding'] === 'yes'"
-           (change)="st.inputs['releaseToWelding'] = $any($event.target).checked ? 'yes' : ''" />
-    <span class="font-semibold">Release to welding upon inspection</span>
-  </label>
-</div>
+<!-- Release to welding: above the panel's Inspection Results. Left off the definition, it isn't
+     shown and the joint keeps its default (released on inspection) -->
+@if (showsRelease()) {
+  <div class="mt-3">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="checkbox" class="checkbox checkbox-sm" [disabled]="!ctx().editable(st)"
+             [checked]="st.inputs['releaseToWelding'] === 'yes'"
+             (change)="st.inputs['releaseToWelding'] = $any($event.target).checked ? 'yes' : ''" />
+      <span class="font-semibold">Release to welding upon inspection</span>
+    </label>
+  </div>
+}

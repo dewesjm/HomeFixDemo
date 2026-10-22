@@ -1,6 +1,6 @@
 /* Single entry point for the step's input form. Dispatches to the appropriate layout sub-component
    based on the step family determined by signoffForm(). Fields for built-in steps come from the
-   field catalog config (via visibleFields → resolveActivatedFields); the sub-components are
+   field catalog config (via visibleFields → definedFields); the sub-components are
    unchanged and remain responsible for layout.
 
    Replacing the @switch in signoff-panel.component.html with this component keeps the panel

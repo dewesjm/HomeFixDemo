@@ -27,12 +27,25 @@ describe('joint-form stage-form', () => {
     expect(rtDegreeRequired(j, { id: 'layer-ndt-utrt' } as WorkflowStage)).toBe('');
   });
 
-  it('Fit under Weld Build-Up gets Tack\'s fields plus Affected Item; plain Fit keeps its own', () => {
+  it('Fit under Weld Build-Up gets its definition\'s welding fields (Affected Item is drawn by its form); plain Fit keeps its own', () => {
     const buildup = fitFieldsForType('Welding', 'weld-buildup').map(f => f.key);
     expect(buildup).toContain('weldProcedure');
-    expect(buildup).toContain('overrideNote');
-    expect(buildup[buildup.length - 1]).toBe('affectedItem');
+    expect(buildup).toContain('fillerMetalMic');
+    expect(buildup).not.toContain('affectedItem');
     expect(fitFieldsForType('Welding', 'fit')).toEqual([]);
+  });
+
+  it('Fit as Weld Build-Up shows the fields its own Signoff Type Definition lists', () => {
+    const j = job({ nInd: '1' });
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: fitFieldsForType('Welding', 'weld-buildup') });
+    expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
+    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'fit-weld-buildup')!;
+    setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);
+    try {
+      expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).not.toContain('weldPosition');
+    } finally {
+      resetStepFieldConfig();
+    }
   });
 
   it('Repair and Excavation NDT rounds read their Signoff Type Definition', () => {

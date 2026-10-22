@@ -1,5 +1,6 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
-   Each row is a routing step, or Repair / Excavation NDT (one row shared by every round); editing
+   Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
+   as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's filled (from another step, this
    step or the WTN) and locked, when it's greyed out, and whether and when it's required. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
@@ -26,7 +27,7 @@ import {
   defaultRequiredIf, requiredIfToStore, requiredRuleText,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
-  getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
+  getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -127,6 +128,7 @@ export class AdminSignoffTypeDefinitionComponent {
     }
     m.set(REPAIR_TYPE_ROW, 'Repair');
     m.set(EXCAVATION_TYPE_ROW, 'Excavation NDT');
+    m.set(WELD_BUILDUP_DEFINITION, 'Fit (Weld Build-Up)');
     return m;
   }
 
@@ -332,13 +334,14 @@ export class AdminSignoffTypeDefinitionComponent {
     return fillRuleText(this.activation(key), id => this.stepLabel(id)) || 'Never filled';
   }
 
-  /* what a fill can copy from: this step, the WTN, and every other step with a definition */
+  /* what a fill can copy from: this step, the WTN, and every other step with a definition (Weld
+     Build-Up's is Fit's, so Fit is the step to copy from) */
   fillSteps = computed(() => {
     const own = this.editing()?.stepId;
     return [
       { stepId: THIS_STEP, stepLabel: 'This step' },
       { stepId: WTN, stepLabel: 'The WTN' },
-      ...this.rows().filter(r => r.stepId !== own).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel })),
+      ...this.rows().filter(r => r.stepId !== own && r.stepId !== WELD_BUILDUP_DEFINITION).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel })),
     ];
   });
 

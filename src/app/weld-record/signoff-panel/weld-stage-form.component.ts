@@ -3,7 +3,7 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WorkflowStage, StageField, isReadonlyLimit as readonlyLimit, isFieldLocked, ACTUAL_REQUIREMENT } from '../../data/workflow';
+import { WorkflowStage, StageField, isReadonlyLimit as readonlyLimit, isFieldLocked, ACTUAL_REQUIREMENT, definitionHas } from '../../data/workflow';
 import { qualCheck, QualCheckResult } from '../../data/qualifications';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
@@ -63,9 +63,9 @@ export class WeldStageFormComponent {
     { key: 'joinToItem', mcl: 'mcl2', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2' },
   ] as const;
 
-  /* this form shows Fit only when Fit is signed as Weld Build-Up */
-  isBuildup(): boolean {
-    return this.stage().id === 'fit';
+  /* Affected Item: on Fit signed as Weld Build-Up, while its Signoff Type Definition lists it */
+  showsAffectedItem(): boolean {
+    return definitionHas(this.stage(), 'affectedItem');
   }
 
   isAffected(key: string): boolean {

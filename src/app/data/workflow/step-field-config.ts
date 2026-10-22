@@ -4,6 +4,7 @@
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
 import type { FieldFill } from './field-catalog';
+import type { WorkflowStage } from './types';
 import { FILLER_KEYS } from './weld-fields';
 import { signoffTypeRowId } from './signoff-types';
 
@@ -122,9 +123,13 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
 ];
 
+/* Fit signed as Weld Build-Up has its own definition: the welding fields plus Affected Item */
+export const WELD_BUILDUP_DEFINITION = 'fit-weld-buildup';
+
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
+  { stepId: WELD_BUILDUP_DEFINITION, fields: [...WELD_FIELDS, { key: 'affectedItem' }] },
   tackStep('tack'),
   { stepId: 'fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
   { stepId: 'nqc-fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
@@ -180,25 +185,38 @@ export function resetStepFieldConfig(): void {
   localStorage.removeItem(STORAGE.stepFieldConfig);
 }
 
-/* the definition a step reads: its own, or the shared Repair / Excavation NDT one for any round */
-export const activationStepId = (stageId: string) => signoffTypeRowId(stageId);
+/* a step by id, or the step itself, whose Type can pick a different definition */
+export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
+
+/* the definition a step reads: Weld Build-Up's for Fit signed as Weld Build-Up, the shared Repair /
+   Excavation NDT one for any round, otherwise its own */
+export function activationStepId(step: StepRef): string {
+  if (typeof step !== 'string' && step.id === 'fit' && step.signoffType === 'weld-buildup') return WELD_BUILDUP_DEFINITION;
+  return signoffTypeRowId(typeof step === 'string' ? step : step.id);
+}
 
 /* whether a step's fields come from its definition (otherwise from its template) */
-export function hasStepActivation(stageId: string): boolean {
-  const id = activationStepId(stageId);
+export function hasStepActivation(step: StepRef): boolean {
+  const id = activationStepId(step);
   return DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === id) || getStepFieldConfig().some(a => a.stepId === id);
 }
 
 /* a field's settings on a step: its definition's entry, else the catalog defaults (a step with no
-   definition, or a field its definition doesn't list, such as Fit's Weld Build-Up fields) */
-export function fieldActivation(stageId: string, key: string): FieldActivation {
-  const listed = hasStepActivation(stageId) ? getActivationForStep(stageId).fields.find(a => a.key === key) : undefined;
+   definition, or a field its definition doesn't list) */
+export function fieldActivation(step: StepRef, key: string): FieldActivation {
+  const listed = hasStepActivation(step) ? getActivationForStep(step).fields.find(a => a.key === key) : undefined;
   return listed ?? { key };
 }
 
+/* whether the step's definition lists the field; used for fields its own form draws (Release to
+   welding, Affected Item), which show only when listed */
+export function definitionHas(step: StepRef, key: string): boolean {
+  return hasStepActivation(step) && getActivationForStep(step).fields.some(a => a.key === key);
+}
+
 /* Returns the activation for a step, falling back to defaults if not in the stored config */
-export function getActivationForStep(stageId: string): StepFieldActivation {
-  const stepId = activationStepId(stageId);
+export function getActivationForStep(step: StepRef): StepFieldActivation {
+  const stepId = activationStepId(step);
   const config = getStepFieldConfig();
   return config.find(a => a.stepId === stepId)
     ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)

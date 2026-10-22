@@ -29,6 +29,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
   activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
+  visibleSignoffFields, definitionHas,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
   fillChanges,
 } from '../../data/workflow';
@@ -36,7 +37,6 @@ import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
-import { visibleSignoffFields } from '../../data/joint-form/fit-signoff';
 import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
@@ -502,7 +502,7 @@ export class JointPageComponent implements OnDestroy {
   private signoffSnapshot(stage: WorkflowStage): SignoffInput[] {
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const out = snapshotInputs(st, this.visibleFields(st), this.visibleSignoffFields(st));
-    if (st.id === 'fit' && st.signoffType === 'weld-buildup' && this.job) {
+    if (definitionHas(st, 'affectedItem') && this.job) {
       const names = (st.inputs['affectedItems'] ?? '').split(',').filter(Boolean).map(k => this.job![k as 'joiningItem' | 'joinToItem']);
       out.push({ label: 'Affected Item', value: names.join(', ') });
     }

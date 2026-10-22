@@ -14,6 +14,7 @@
      added-steps        building those added steps
      stage-rules        per-step rules (decision, references, type lock, Correct locks)
      stage-display      recorded values as shown in History
+     shown-fields       the fields a step shows, from its Signoff Type Definition or its template
      current-routing    the current step and which steps are locked
      routing-bar        which steps the joint page's routing bar shows
      route-changes      going back, Routing Override, Deprogress, discarding edits
@@ -46,3 +47,4 @@ export * from './joint-facts';
 export * from './condition-context';
 export * from './field-fill';
 export * from './field-locks';
+export * from './shown-fields';

@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees } from '../workflow';
+import { StageField, WorkflowStage, isFitupInspId, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -72,9 +72,9 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
       if (stage.inputs?.[f.key] !== 'yes') errors[key(f.key)] = `${f.label} must be verified`;
     }
   }
-  /* Weld Build-Up: at least one Affected Item, and its MIC verified when its MCL requires traceability
-     (the same condition signoff-panel.component.ts uses to render the checkbox) */
-  if (stage.id === 'fit' && stage.signoffType === 'weld-buildup') {
+  /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and its MIC verified
+     when its MCL requires traceability (the same condition weld-stage-form uses to render the checkbox) */
+  if (definitionHas(stage, 'affectedItem')) {
     const raw = stage.inputs?.['affectedItems'] ?? '';
     const items = raw ? raw.split(',') : [];
     const job = ctx.job;
