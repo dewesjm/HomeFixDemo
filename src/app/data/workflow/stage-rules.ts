@@ -63,10 +63,17 @@ const OTHER_STEP_NOTES: Record<string, string> = {
   deferTack: "Only Fit's Defer Tack decides whether Tack is deferred; on this step it's saved but routing ignores it.",
 };
 
+/* fields drawn inside Affected Item */
+const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
+  affectedMicVerified1: 'Shown under Affected Item, beside the Joining Item while it is picked.',
+  affectedMicVerified2: 'Shown under Affected Item, beside the Join To Item while it is picked.',
+};
+
 /* what a routing-read field means on a step's definition: what taking it off does on its home step,
    or that routing ignores it on any other step. Fit signed as Weld Build-Up is still the Fit step, so
    routing reads a Defer Tack there too: no note. */
 export function definitionFieldNote(stageId: string, key: string): string {
+  if (key in AFFECTED_ITEM_PART_NOTES) return AFFECTED_ITEM_PART_NOTES[key];
   if (stageId === WELD_BUILDUP_DEFINITION) return '';
   if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';
   return OTHER_STEP_NOTES[key] ?? '';

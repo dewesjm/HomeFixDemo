@@ -1,7 +1,7 @@
 /* The complete catalog of fields that can appear on any step. Per-step activations
    (step-field-config.ts) pick from this list; they cannot define fields outside it. */
 import { FieldCondition } from './field-conditions';
-import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
 import { getWeldPositions } from '../weld-positions';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -181,15 +181,21 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', ownFormSteps: ['fit'] },
 
   /* ── Weld Build-Up ── */
-  /* the joint members the build-up affects, each with its MIC verified when its MCL requires
-     traceability (affected-item.component); at least one must be picked on any step that lists it */
+  /* the joint members the build-up affects (affected-item.component); at least one must be picked on
+     any step that lists it */
   { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', ownComponent: true },
+  /* drawn under Affected Item, beside its joint member while that one is picked */
+  { key: 'affectedMicVerified1', label: 'Affected Item MIC 1 verified', type: 'checkbox', ownComponent: true,
+    defaultRequired: true, defaultShowIf: ifPart1Traceability },
+  { key: 'affectedMicVerified2', label: 'Affected Item MIC 2 verified', type: 'checkbox', ownComponent: true,
+    defaultRequired: true, defaultShowIf: ifPart2Traceability },
 
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
     options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
-  /* also only shown when the rejected phase has an RT/UT step (built-in rule, field-rules.ts) */
-  { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
+  /* "exceeded" sends the joint to that phase's RT/UT, so by default it shows only when there is one */
+  { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox',
+    defaultShowIf: { all: [{ source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' }] } },
 
   /* ── Joint page ── */
   /* the References panel under the sign-off (Correct shows it on every step regardless) */

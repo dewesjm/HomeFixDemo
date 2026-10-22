@@ -4,14 +4,12 @@ import { FieldCondition, ConditionClause, ConditionContext, evaluateCondition } 
 import { jointDetailField } from '../step-conditions';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, lookupCatalogField } from './field-catalog';
-import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
-/* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
-   (shown-fields.ts), the two checkboxes routing reads, Weld Build-Up's Affected Item and References
-   ('' = always shown) */
+/* Fields whose visibility is decided in code, not by a condition: the two checkboxes routing reads,
+   Weld Build-Up's Affected Item and References ('' = always shown) */
 const BUILT_IN_SHOW_CONDITION: Record<string, string> = {
-  allowableThicknessExceeded: 'the rejected phase has an RT/UT step',
   deferTack: '',
   releaseToWelding: '',
   affectedItem: '',
@@ -147,6 +145,7 @@ function labelOf(key: string): string {
 function clauseText(c: ConditionClause): string {
   if (c.source === 'stepId') return `step ID matches ${c.matches}`;
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return `Engineering override is ${c.equals ? 'on' : 'off'}`;
+  if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return c.equals ? 'the rejected phase has an RT/UT step' : 'the rejected phase has no RT/UT step';
   const key = c.source === 'priorStep' ? c.fieldKey : c.key;
   const subject = c.source === 'jointDetail' ? `joint ${jointDetailField(key)?.label ?? labelOf(key)}` : labelOf(key);
   const isCheckbox = lookupCatalogField(key)?.type === 'checkbox';

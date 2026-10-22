@@ -2,8 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow } from '../workflow';
-import { requiresTraceability } from '../mcl-traceability';
+import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
 import { rtDegreeRequired, typedRequirementError } from './stage-form';
@@ -13,6 +12,8 @@ export interface SignContext {
   fab: Record<string, string>;
   fabErrors: Record<string, string>;
   visibleFields: StageField[];
+  /* the joint's steps, for conditions that read another step */
+  stages?: WorkflowStage[];
 }
 
 /* RT NDT: Degree of RT Performed must be at least the job's required degree (rtRoot/rtFinal), compared
@@ -75,17 +76,18 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   if (isVerifyGrid(stage)) {
     for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = `${f.label} must be verified`;
   }
-  /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and its MIC verified
-     when its MCL requires traceability (the same condition weld-stage-form uses to render the checkbox) */
+  /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and each picked
+     member's MIC verified row checked while its rule makes it required (affectedMicRule) */
   if (definitionHas(stage, 'affectedItem')) {
     const raw = stage.inputs?.['affectedItems'] ?? '';
     const items = raw ? raw.split(',') : [];
     const job = ctx.job;
+    const condCtx = buildConditionContext(stage, job, ctx.stages ?? [], ctx.fab);
     if (!items.length) errors[key('affectedItem')] = 'Select at least one Affected Item';
-    if (items.includes('joiningItem') && requiresTraceability(job?.mcl1 ?? '') && stage.inputs?.['micVerified1'] !== 'yes') {
+    if (items.includes('joiningItem') && affectedMicRule(stage, condCtx, 'affectedMicVerified1').required && stage.inputs?.['micVerified1'] !== 'yes') {
       errors[key('affectedItem')] = 'Please verify MIC for ' + (job?.joiningItem || 'item');
     }
-    if (items.includes('joinToItem') && requiresTraceability(job?.mcl2 ?? '') && stage.inputs?.['micVerified2'] !== 'yes') {
+    if (items.includes('joinToItem') && affectedMicRule(stage, condCtx, 'affectedMicVerified2').required && stage.inputs?.['micVerified2'] !== 'yes') {
       errors[key('affectedItem')] = 'Please verify MIC for ' + (job?.joinToItem || 'item');
     }
   }

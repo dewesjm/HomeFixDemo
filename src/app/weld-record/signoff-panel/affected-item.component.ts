@@ -1,8 +1,7 @@
 /* Weld Build-Up's Affected Item: the joint members the build-up affects, each with its MIC verified
-   when its MCL requires traceability; at least one must be picked */
+   row as the step's definition sets it (affectedMicRule); at least one must be picked */
 import { Component, input } from '@angular/core';
-import { WorkflowStage } from '../../data/workflow';
-import { requiresTraceability } from '../../data/mcl-traceability';
+import { WorkflowStage, affectedMicRule, buildConditionContext } from '../../data/workflow';
 import { SignoffContext } from './signoff-context';
 
 @Component({
@@ -24,14 +23,15 @@ import { SignoffContext } from './signoff-context';
                      (change)="ctx().toggleAffectedItem(st, it.key, $event)" />
               <span class="truncate" [title]="ctx().job[it.key]">{{ ctx().job[it.key] }}</span>
             </label>
-            @if (isAffected(it.key) && micRequired(ctx().job[it.mcl])) {
+            @let mic = micRule(it.rule);
+            @if (isAffected(it.key) && mic.shown) {
               <span class="w-[25ch] shrink-0 truncate" [title]="it.micLabel + ': ' + (micValue(it.mic) || '-')">{{ it.micLabel }}: <span class="mono">{{ micValue(it.mic) || '-' }}</span></span>
               <label class="flex items-center gap-1 cursor-pointer">
                 <input type="checkbox" class="checkbox checkbox-xs" [class.checkbox-error]="!!ctx().fieldError(st.id, 'affectedItem') && st.inputs[it.micVerified] !== 'yes'"
                        [disabled]="!fieldsEditable()"
                        [checked]="st.inputs[it.micVerified] === 'yes'"
                        (change)="st.inputs[it.micVerified] = $any($event.target).checked ? 'yes' : ''; ctx().clearFieldError(st.id, 'affectedItem')" />
-                <span>{{ it.micLabel }} verified<span class="text-error">*</span></span>
+                <span>{{ it.micLabel }} verified@if (mic.required) {<span class="text-error">*</span>}</span>
               </label>
             }
           </div>
@@ -47,21 +47,20 @@ export class AffectedItemComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
 
-  /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)
-     and MIC-verified keys */
+  /* the two joint members a weld build-up can affect, with their MIC (fabricationData key), the
+     input their MIC verified checkbox saves to and the definition field that sets its rules */
   affectedItemSlots = [
-    { key: 'joiningItem', mcl: 'mcl1', mic: 'id1', micLabel: 'MIC 1', micVerified: 'micVerified1' },
-    { key: 'joinToItem', mcl: 'mcl2', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2' },
+    { key: 'joiningItem', mic: 'id1', micLabel: 'MIC 1', micVerified: 'micVerified1', rule: 'affectedMicVerified1' },
+    { key: 'joinToItem', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2', rule: 'affectedMicVerified2' },
   ] as const;
 
   isAffected(key: string): boolean {
     return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
   }
 
-  /* MIC 1/MIC 2 (fabricationData id1/id2) only show for a joint member whose MCL requires
-     traceability per the admin MCL Traceability table (mcl-traceability.ts) */
-  micRequired(mclValue: string): boolean {
-    return requiresTraceability(mclValue);
+  micRule(key: 'affectedMicVerified1' | 'affectedMicVerified2') {
+    const wf = this.ctx().wf();
+    return affectedMicRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), key);
   }
 
   micValue(mic: string): string {

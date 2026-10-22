@@ -32,7 +32,7 @@ import {
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
   HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
-  VIRTUAL_JOINT_DETAILS,
+  VIRTUAL_JOINT_DETAILS, REJECTED_PHASE_UTRT_KEY,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -47,8 +47,9 @@ interface DefRow {
   fieldRules: { key: string; label: string; lines: FieldRuleLine[] }[];
 }
 
-/* 'engineering' = whether an engineering override has the step */
-type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering';
+/* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
+   the rejected phase has an RT/UT step */
+type ClauseSrc = 'field' | 'jointDetail' | 'stepId' | 'engineering' | 'rejectedUtrt';
 /* which of a field's conditions the editor is changing */
 type CondKind = 'show' | 'disabled' | 'fill' | 'required';
 
@@ -443,6 +444,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private clauseToWork(c: ConditionClause): WorkClause {
     if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
     if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return { source: 'engineering', key: '', equals: c.equals ?? '' };
+    if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return { source: 'rejectedUtrt', key: '', equals: c.equals ?? '' };
     if (c.source === 'field' || c.source === 'jointDetail') return { source: c.source, key: c.key, equals: c.anyOf?.join(', ') ?? c.equals ?? '' };
     return { source: 'field', key: '', equals: '' };
   }
@@ -450,6 +452,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private workToClause(w: WorkClause): ConditionClause {
     if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
     if (w.source === 'engineering') return { source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: w.equals };
+    if (w.source === 'rejectedUtrt') return { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: w.equals };
     const values = w.equals.split(',').map(v => v.trim()).filter(Boolean);
     return values.length > 1 ? { source: w.source, key: w.key, anyOf: values } : { source: w.source, key: w.key, equals: w.equals };
   }
@@ -457,7 +460,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
     const clauses = e.condClauses
-      .filter(c => c.source === 'engineering' || (c.source === 'stepId' ? !!c.equals : !!c.key))
+      .filter(c => c.source === 'engineering' || c.source === 'rejectedUtrt' || (c.source === 'stepId' ? !!c.equals : !!c.key))
       .map(c => this.workToClause(c));
     if (e.condKind === 'fill') { this.applyFill(e, clauses); return; }
     const prop = e.condKind === 'show' ? 'showIf' : e.condKind === 'disabled' ? 'disabledIf' : 'requiredIf';

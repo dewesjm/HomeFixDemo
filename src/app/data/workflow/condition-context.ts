@@ -6,9 +6,13 @@ import { WorkflowStage } from './types';
 import { ConditionContext } from './field-conditions';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 import { jointDetailField } from '../step-conditions';
+import { stepOnJoint } from './step-ids';
 
 /* the stage property an "Engineering override is on/off" clause reads */
 export const ENGINEERING_OVERRIDE_KEY = 'engineeringEntry';
+/* the stage property a "Rejected phase has RT/UT" clause reads: on a Repair, whether the phase whose
+   NDT rejected the joint has an RT/UT step on this joint */
+export const REJECTED_PHASE_UTRT_KEY = 'rejectedPhaseHasUtrt';
 
 /* the step's own fields, its id and whether an engineering override has it, without the joint or
    other steps (they read as blank): what a fill's "when" may read */
@@ -34,6 +38,7 @@ export function buildConditionContext(stage: WorkflowStage, job: Job | undefined
     },
     stageProperty: (key: string): string => {
       if (key === ENGINEERING_OVERRIDE_KEY) return stage.engineeringEntry ? 'yes' : '';
+      if (key === REJECTED_PHASE_UTRT_KEY) return stepOnJoint(allStages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`) ? 'yes' : '';
       return '';
     },
     priorInput: (stepId: string, fieldKey: string): string =>

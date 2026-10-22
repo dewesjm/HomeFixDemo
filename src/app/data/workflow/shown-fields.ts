@@ -10,7 +10,6 @@ import { buildConditionContext } from './condition-context';
 import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rules';
 import { fieldAppliesToJob, showIfMet } from './stage-display';
-import { stepOnJoint } from './step-ids';
 import { drawnByOwnForm } from './signoff-forms';
 
 type Fab = Record<string, string>;
@@ -39,17 +38,22 @@ export function definitionStageFields(step: StepRef): StageField[] {
   });
 }
 
-/* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
-export function allowableThicknessApplies(stage: WorkflowStage, stages: WorkflowStage[]): boolean {
-  return !!stepOnJoint(stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`);
+/* one of Affected Item's MIC verified rows (affected-item component, sign-validation): shown when the
+   step's definition lists it and its Show when holds (its joint member must also be picked), and
+   whether it must be checked */
+export function affectedMicRule(stage: WorkflowStage, condCtx: ConditionContext, key: 'affectedMicVerified1' | 'affectedMicVerified2'): { shown: boolean; required: boolean } {
+  const act = getActivationForStep(stage).fields.find(a => a.key === key);
+  if (!act) return { shown: false, required: false };
+  const show = effectiveShowIf(act);
+  const shown = !show || evaluateCondition(show, condCtx);
+  return { shown, required: shown && isRequiredNow(act, condCtx) };
 }
 
 /* The definition's fields whose Show when holds, each required and disabled as its rules say right now */
-export function definedFields(stage: WorkflowStage, condCtx: ConditionContext, stages: WorkflowStage[]): StageField[] {
+export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): StageField[] {
   return getActivationForStep(stage).fields.flatMap(act => {
     const cat = lookupCatalogField(act.key);
     if (!cat || drawnByOwnForm(stage, act.key)) return [];
-    if (act.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, stages)) return [];
     const show = effectiveShowIf(act);
     if (show && !evaluateCondition(show, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
@@ -63,9 +67,8 @@ export function definedFields(stage: WorkflowStage, condCtx: ConditionContext, s
    showIf and its catalog Show when rule. */
 export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStage[] = [], fab: Fab = {}): StageField[] {
   const ctx = buildConditionContext(stage, job, stages, fab);
-  if (hasStepActivation(stage)) return definedFields(stage, ctx, stages);
+  if (hasStepActivation(stage)) return definedFields(stage, ctx);
   return stage.fields.filter(f => {
-    if (f.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, stages)) return false;
     if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
     const cond = effectiveShowIf(fieldActivation(stage, f.key));
     return !cond || evaluateCondition(cond, ctx);

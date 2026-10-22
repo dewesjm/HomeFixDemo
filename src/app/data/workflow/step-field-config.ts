@@ -3,7 +3,7 @@
    Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v6) and take effect immediately. */
+   (welding:step-field-config:v7) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { ConditionClause, FieldCondition } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
@@ -178,10 +178,13 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
 ];
 
+/* Affected Item and its two MIC verified rows, drawn together by the affected-item component */
+const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
+
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
-  { stepId: WELD_BUILDUP_DEFINITION, fields: [{ key: 'affectedItem' }, ...WELD_FIELDS] },
+  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS] },
   tackStep('tack'),
   { stepId: 'fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
   { stepId: 'nqc-fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
@@ -286,22 +289,33 @@ function splitFill(f: FieldActivation): FieldActivation {
   return stored ? { ...out, disabledIf: stored } : out;
 }
 
+/* definitions saved before Affected Item's MIC verified rows were fields (v6) get them after
+   Affected Item wherever it's listed */
+const PRE_AFFECTED_MIC_KEY = 'welding:step-field-config:v6';
+export function withAffectedItemMics(a: StepFieldActivation): StepFieldActivation {
+  const at = a.fields.findIndex(f => f.key === 'affectedItem');
+  if (at < 0 || a.fields.some(f => f.key === 'affectedMicVerified1')) return a;
+  return { ...a, fields: [...a.fields.slice(0, at + 1), ...AFFECTED_ITEM_FIELDS.slice(1), ...a.fields.slice(at + 1)] };
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preSplit = saved ? null : localStorage.getItem(PRE_SPLIT_KEY);
-    const preWidth = saved || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
-    const preLayout = saved || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-    const preReferences = saved || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
-    _cache = saved ? parse(saved)
+    const preMic = saved ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
+    const preSplit = saved || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
+    const preWidth = saved || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
+    const preLayout = saved || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+    const preReferences = saved || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    const old = preMic ? parse(preMic)
       : preSplit ? parse(preSplit).map(withSplitFill)
       : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill)
       : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill)
       : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill)
-      : DEFAULT_STEP_FIELD_ACTIVATIONS;
+      : null;
+    _cache = saved ? parse(saved) : old ? old.map(withAffectedItemMics) : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -316,6 +330,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_AFFECTED_MIC_KEY);
   localStorage.removeItem(PRE_SPLIT_KEY);
   localStorage.removeItem(PRE_WIDTH_KEY);
   localStorage.removeItem(PRE_LAYOUT_KEY);

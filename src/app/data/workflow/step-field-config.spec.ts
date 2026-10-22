@@ -1,4 +1,4 @@
-import { DECISION_KEY, HEADING_KEY_PREFIX, definitionFields, layoutItems, withDefaultLayout, withDefaultWidths, withSplitFill } from './step-field-config';
+import { DECISION_KEY, HEADING_KEY_PREFIX, definitionFields, layoutItems, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -72,5 +72,13 @@ describe('Inspection Results in the Layout list', () => {
     expect(layoutItems([{ key: 'a' }])).toEqual([{ key: 'a' }, { key: DECISION_KEY }]);
     const placed = [{ key: DECISION_KEY }, { key: 'a' }];
     expect(layoutItems(placed)).toBe(placed);
+  });
+});
+
+describe('withAffectedItemMics (definitions saved before the MIC verified rows were fields)', () => {
+  it('adds both rows after Affected Item, and leaves definitions without it alone', () => {
+    expect(withAffectedItemMics({ stepId: 'fit-weld-buildup', fields: [{ key: 'affectedItem' }, { key: 'wtn' }] }).fields.map(f => f.key))
+      .toEqual(['affectedItem', 'affectedMicVerified1', 'affectedMicVerified2', 'wtn']);
+    expect(withAffectedItemMics({ stepId: 'tack', fields: [{ key: 'wtn' }] }).fields.map(f => f.key)).toEqual(['wtn']);
   });
 });

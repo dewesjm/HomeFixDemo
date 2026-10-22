@@ -4,7 +4,7 @@ import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFilledByRule,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId,
   evaluateCondition, buildConditionContext, hasStepActivation, effectiveShowIf, fieldActivation,
-  definedFields, definitionStageFields, allowableThicknessApplies,
+  definedFields, definitionStageFields,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -53,12 +53,11 @@ export function fitFieldsForType(trade: Job['trade'], signoffType: string): Stag
    (definedFields); steps added in Admin > Routing Settings use their template's fields. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
   const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);
-  if (hasStepActivation(stage)) return definedFields(stage, condCtx, ctx.stages).map(f => stageFieldOptions(f, stage, ctx));
+  if (hasStepActivation(stage)) return definedFields(stage, condCtx).map(f => stageFieldOptions(f, stage, ctx));
   /* each template field follows its catalog show rule (e.g. Weld Position only when N Ind. is 1) */
   return stage.fields
     .map(f => stageFieldOptions(f, stage, ctx))
     .filter(f => {
-      if (f.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, ctx.stages)) return false;
       if (!showIfMet(stage, f) || !fieldAppliesToJob(f, ctx.job)) return false;
       const cond = effectiveShowIf(fieldActivation(stage, f.key));
       if (cond && !evaluateCondition(cond, condCtx)) return false;

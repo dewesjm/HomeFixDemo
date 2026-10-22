@@ -450,7 +450,7 @@ export class JointPageComponent implements OnDestroy {
   /* ── Validation ── */
 
   private signCtx(stage: WorkflowStage): SignContext {
-    return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage) };
+    return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage), stages: this.wf?.().stages };
   }
 
   /* Everything currently preventing this stage from being signed, in reader-friendly wording. */

@@ -80,7 +80,7 @@ When the Repair step is signed, where the joint goes depends on what was chosen:
 
 | Choice on the Repair step | Where the joint goes |
 |---|---|
-| **Allowable thickness exceeded** (checked) | Back to that phase's RT/UT step. This wins over the Repair Code. The checkbox only shows when that phase has a RT/UT step |
+| **Allowable thickness exceeded** (checked) | Back to that phase's RT/UT step. This wins over the Repair Code. The checkbox only shows when that phase has a RT/UT step (by default; it's the field's Show when rule on Admin > Signoff Type Definition) |
 | **Grind Only** | Back to the NDT step that failed |
 | **Weld Repair** | An **Excavation NDT** step is added right after the Repair (see below) |
 | **Cut** | The joint starts over from Fit (see below) |
@@ -114,7 +114,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 **Fit as Weld Build up**
 - The weld fields below, plus at least one **Affected Item**.
-- **MIC verified** for each affected item whose MCL is MC-I.
+- **MIC verified** for each affected item whose MCL is MC-I (by default: Admin > Signoff Type Definition, Fit (Weld Build-Up), Affected Item MIC 1 / MIC 2 verified).
 
 **Weld steps (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed. Weld Process, the PH/IP limits and any override limits fill in from the WTN.

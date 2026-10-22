@@ -111,6 +111,16 @@ describe('joint-form sign-validation', () => {
     expect(stageFieldErrors(verified, ctxFor(j, verified))['fit:affectedItem']).toBeUndefined();
   });
 
+  it('Weld Build-Up: an Affected Item MIC verified row taken off the definition is no longer required', () => {
+    const j = job({ mcl1: 'MC-I', joiningItem: 'Pipe A' });
+    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => a.stepId === 'fit-weld-buildup'
+      ? { ...a, fields: a.fields.filter(f => f.key !== 'affectedMicVerified1') } : a);
+    setStepFieldConfig(def);
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', inputs: { affectedItems: 'joiningItem' } });
+    expect(stageFieldErrors(fit, ctxFor(j, fit))['fit:affectedItem']).toBeUndefined();
+    resetStepFieldConfig();
+  });
+
   it('on blur: a filled field loses its error and a fixed Min/Max order clears the Max error', () => {
     const j = job();
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: 'W-101', actualPhMin: '100', actualPhMax: '200' } });

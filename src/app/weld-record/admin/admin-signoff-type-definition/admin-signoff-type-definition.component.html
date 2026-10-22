@@ -225,11 +225,12 @@
           <!-- Prepopulated from reads only the step itself -->
           <select class="select select-bordered select-xs w-40" aria-label="Condition on"
                   [ngModel]="c.source"
-                  (ngModelChange)="updateClause(i, { source: $event, key: '', equals: '' })">
+                  (ngModelChange)="updateClause(i, { source: $event, key: '', equals: $event === 'rejectedUtrt' ? 'yes' : '' })">
             <option value="field">This step field</option>
             @if (e.condKind !== 'fill') {
               <option value="jointDetail">Joint detail</option>
               <option value="stepId">Step ID matches</option>
+              <option value="rejectedUtrt">Rejected phase has RT/UT</option>
             }
             <option value="engineering">Engineering override</option>
           </select>
@@ -239,6 +240,13 @@
                     [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
               <option value="">off</option>
               <option value="yes">on</option>
+            </select>
+          } @else if (c.source === 'rejectedUtrt') {
+            <span class="text-xs">is</span>
+            <select class="select select-bordered select-xs w-20" aria-label="Rejected phase has RT/UT is"
+                    [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+              <option value="yes">Yes</option>
+              <option value="">No</option>
             </select>
           } @else if (c.source === 'jointDetail') {
             <select class="select select-bordered select-xs w-64" aria-label="Joint detail"
