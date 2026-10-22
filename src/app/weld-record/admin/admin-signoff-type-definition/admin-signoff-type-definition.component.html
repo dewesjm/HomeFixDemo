@@ -11,7 +11,6 @@
       <tr>
         <th appSortHeader [table]="table" field="stepLabel" label="Step" class="min-w-44"></th>
         <th>Fields</th>
-        <th>Sign-off Fields</th>
         <th class="w-px"></th>
       </tr>
     </thead>
@@ -22,15 +21,6 @@
           <td class="text-sm">
             @if (row.fieldLabels) {
               @for (label of row.fieldLabels.split(', '); track $index) {
-                <span class="badge badge-sm me-1">{{ label }}</span>
-              }
-            } @else {
-              <span class="text-base-content/40">—</span>
-            }
-          </td>
-          <td class="text-sm">
-            @if (row.signoffFieldLabels) {
-              @for (label of row.signoffFieldLabels.split(', '); track $index) {
                 <span class="badge badge-sm me-1">{{ label }}</span>
               }
             } @else {
@@ -49,7 +39,7 @@
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No steps match your search.' : 'No definitions yet.' }}</td></tr>
+        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No steps match your search.' : 'No definitions yet.' }}</td></tr>
       }
     </tbody>
   </table>
@@ -77,10 +67,9 @@
       }
 
       <div class="overflow-y-auto flex-1 min-h-0">
-        <!-- Fields -->
         <h4 class="font-semibold mb-2">Fields</h4>
-        <div class="mb-5">
-          @for (f of allFields; track f.key) {
+        <div class="mb-4">
+          @for (f of fieldChoices(); track f.key) {
             <div class="border-b border-base-200 last:border-0">
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
@@ -89,32 +78,10 @@
                        (change)="toggleField(f.key)" />
                 <span class="text-sm flex-1">{{ f.label }}@if (isLocked(f.key)) {<span class="text-xs"> (always on: routing reads it)</span>}</span>
                 @if (hasField(f.key)) {
-                  <ng-container *ngTemplateOutlet="fieldRules; context: { key: f.key, section: 'f' }"></ng-container>
+                  <ng-container *ngTemplateOutlet="fieldRules; context: { key: f.key }"></ng-container>
                 }
               </div>
-              @if (isAnyCondOpen(f.key, 'f')) {
-                <ng-container *ngTemplateOutlet="condEditor"></ng-container>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Sign-off fields -->
-        <h4 class="font-semibold mb-2">Sign-off Fields</h4>
-        <div class="mb-4">
-          @for (sf of allSignoffFields; track sf.key) {
-            <div class="border-b border-base-200 last:border-0">
-              <div class="flex items-center gap-2 py-1">
-                <input type="checkbox" class="checkbox checkbox-sm"
-                       [checked]="hasSignoffField(sf.key)" [disabled]="isLocked(sf.key)"
-                       [title]="isLocked(sf.key) ? 'Routing reads this field when the step is signed, so it stays on' : ''"
-                       (change)="toggleSignoffField(sf.key)" />
-                <span class="text-sm flex-1">{{ sf.label }}@if (isLocked(sf.key)) {<span class="text-xs"> (always on: routing reads it)</span>}</span>
-                @if (hasSignoffField(sf.key)) {
-                  <ng-container *ngTemplateOutlet="fieldRules; context: { key: sf.key, section: 'sf' }"></ng-container>
-                }
-              </div>
-              @if (isAnyCondOpen(sf.key, 'sf')) {
+              @if (isAnyCondOpen(f.key)) {
                 <ng-container *ngTemplateOutlet="condEditor"></ng-container>
               }
             </div>
@@ -136,35 +103,33 @@
 }
 
 <!-- A checked field's rules: when it shows and when it's greyed out (each opens the condition
-     editor), and whether it's required -->
-<ng-template #fieldRules let-key="key" let-section="section">
+     editor), and whether it's required. Defer Tack and Release to welding have fixed rules (hasFixedRules). -->
+<ng-template #fieldRules let-key="key">
   <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
-    @if (isBuiltIn(key, section)) {
-      <span class="text-xs px-2">{{ condLabel(key, section) }}</span>
+    @if (isBuiltIn(key)) {
+      <span class="text-xs px-2">{{ condLabel(key) }}</span>
     } @else {
-      <ng-container *ngTemplateOutlet="condButton; context: { key, section, kind: 'show', text: condLabel(key, section) }"></ng-container>
+      <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'show', text: condLabel(key) }"></ng-container>
     }
-    @if (section === 'f') {
+    @if (!isFixed(key)) {
       @if (isReadOnly(key)) {
-        <span class="text-xs px-2">{{ disabledLabel(key, section) }}</span>
+        <span class="text-xs px-2">{{ disabledLabel(key) }}</span>
       } @else {
-        <ng-container *ngTemplateOutlet="condButton; context: { key, section, kind: 'disabled', text: disabledLabel(key, section) || 'Never greyed out' }"></ng-container>
+        <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'disabled', text: disabledLabel(key) || 'Never greyed out' }"></ng-container>
       }
       <label class="flex items-center gap-1 px-2 text-xs cursor-pointer">
-        <input type="checkbox" class="checkbox checkbox-xs" [checked]="isRequired(key, section)"
-               (change)="setRequired(key, section, $any($event.target).checked)" />
+        <input type="checkbox" class="checkbox checkbox-xs" [checked]="isRequired(key)"
+               (change)="setRequired(key, $any($event.target).checked)" />
         Required for sign-off
       </label>
-    } @else if (isRequired(key, section)) {
-      <span class="badge badge-sm badge-outline mx-2">Required</span>
     }
   </div>
 </ng-template>
 
-<ng-template #condButton let-key="key" let-section="section" let-kind="kind" let-text="text">
+<ng-template #condButton let-key="key" let-kind="kind" let-text="text">
   <button type="button" class="btn btn-ghost btn-xs gap-1 h-auto min-h-6 py-0.5 text-right"
-          (click)="toggleCondEditor(key, section, kind)">
-    @if (isCondOpen(key, section, kind)) {
+          (click)="toggleCondEditor(key, kind)">
+    @if (isCondOpen(key, kind)) {
       <svg lucideChevronDown class="size-3 shrink-0"></svg>
     } @else {
       <svg lucideChevronRight class="size-3 shrink-0"></svg>

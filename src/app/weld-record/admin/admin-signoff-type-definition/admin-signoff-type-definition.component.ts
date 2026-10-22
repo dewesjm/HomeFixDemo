@@ -19,10 +19,10 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import {
   DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
-  FIELD_CATALOG, SIGNOFF_FIELD_CATALOG,
+  FIELD_CATALOG,
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
-  getTemplates, FieldSection, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
-  showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule,
+  getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
+  showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition } from '../../../data/workflow';
@@ -32,9 +32,7 @@ interface DefRow {
   stepId: string;
   stepLabel: string;
   fieldLabels: string;          // flat text used for table search
-  signoffFieldLabels: string;
   fieldActivations: FieldActivation[];
-  signoffFieldActivations: FieldActivation[];
 }
 
 type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
@@ -52,9 +50,7 @@ interface EditState {
   stepId: string;
   stepLabel: string;
   fieldActivations: FieldActivation[];
-  signoffFieldActivations: FieldActivation[];
   condKey: string | null;      /* field key whose condition editor is open */
-  condSection: FieldSection;
   condKind: CondKind;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
 }
@@ -79,14 +75,21 @@ export class AdminSignoffTypeDefinitionComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
-  readonly allFields = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
-  readonly allSignoffFields = SIGNOFF_FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
+  /* the catalog fields offered for the step being edited: a field its own form draws (drawnByStepForm)
+     only on the steps that have it by default */
+  fieldChoices = computed(() => {
+    const stepId = this.editing()?.stepId ?? '';
+    const defaults = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId)?.fields ?? [];
+    return FIELD_CATALOG
+      .filter(f => !f.drawnByStepForm || defaults.some(d => d.key === f.key))
+      .map(f => ({ key: f.key, label: f.label }));
+  });
 
   private labelMap = this.buildLabelMap();
 
   rows = signal<DefRow[]>([]);
   editing = signal<EditState | null>(null);
-  table = new TableState<DefRow>(['stepLabel', 'fieldLabels', 'signoffFieldLabels']);
+  table = new TableState<DefRow>(['stepLabel', 'fieldLabels']);
 
   constructor() {
     this.rows.set(this.buildRows());
@@ -120,28 +123,26 @@ export class AdminSignoffTypeDefinitionComponent {
     /* all default steps */
     const rows: DefRow[] = DEFAULT_STEP_FIELD_ACTIVATIONS.map(def => {
       const act = stored.find(a => a.stepId === def.stepId) ?? def;
-      return this.toRow(def.stepId, act.fields, act.signoffFields);
+      return this.toRow(def.stepId, act.fields);
     });
 
     /* any custom stored steps not in the defaults */
     for (const act of stored) {
       if (!DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === act.stepId)) {
-        rows.push(this.toRow(act.stepId, act.fields, act.signoffFields));
+        rows.push(this.toRow(act.stepId, act.fields));
       }
     }
 
     return rows;
   }
 
-  private toRow(stepId: string, fields: FieldActivation[], signoffFields: FieldActivation[]): DefRow {
+  private toRow(stepId: string, fields: FieldActivation[]): DefRow {
     return {
       uid: `sfd-${++seq}`,
       stepId,
       stepLabel: this.stepLabel(stepId),
       fieldLabels: fields.map(f => FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
-      signoffFieldLabels: signoffFields.map(f => SIGNOFF_FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
       fieldActivations: fields.map(f => ({ ...f })),
-      signoffFieldActivations: signoffFields.map(f => ({ ...f })),
     };
   }
 
@@ -158,7 +159,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   addRow() {
     this.table.clearFilters();
-    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], signoffFieldActivations: [], condKey: null, condSection: 'f', condKind: 'show', condClauses: [] });
+    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condClauses: [] });
   }
 
   openEdit(row: DefRow) {
@@ -167,9 +168,7 @@ export class AdminSignoffTypeDefinitionComponent {
       stepId: row.stepId,
       stepLabel: row.stepLabel,
       fieldActivations: row.fieldActivations.map(copyActivation),
-      signoffFieldActivations: row.signoffFieldActivations.map(copyActivation),
       condKey: null,
-      condSection: 'f',
       condKind: 'show',
       condClauses: [],
     });
@@ -186,7 +185,7 @@ export class AdminSignoffTypeDefinitionComponent {
     /* commit any open condition editor first */
     if (e.condKey) this.applyCondClauses(e);
 
-    const updated = this.toRow(e.stepId, e.fieldActivations, e.signoffFieldActivations);
+    const updated = this.toRow(e.stepId, e.fieldActivations);
 
     if (e.uid) {
       this.rows.update(r => r.map(x => x.uid === e.uid ? { ...updated, uid: e.uid } : x));
@@ -207,7 +206,7 @@ export class AdminSignoffTypeDefinitionComponent {
   setEditStep(stepId: string) {
     const existing = this.rows().find(r => r.stepId === stepId);
     if (existing) { this.openEdit(existing); return; }
-    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [], signoffFieldActivations: [] } : null);
+    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [] } : null);
   }
 
   /* ── Delete / Reset ── */
@@ -230,7 +229,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   private toRowFromDefaults(stepId: string, uid: string): DefRow {
     const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId);
-    const row = this.toRow(stepId, def?.fields ?? [], def?.signoffFields ?? []);
+    const row = this.toRow(stepId, def?.fields ?? []);
     return { ...row, uid };
   }
 
@@ -248,14 +247,10 @@ export class AdminSignoffTypeDefinitionComponent {
     return !!this.editing()?.fieldActivations.some(f => f.key === key);
   }
 
-  hasSignoffField(key: string): boolean {
-    return !!this.editing()?.signoffFieldActivations.some(f => f.key === key);
-  }
-
   /* fields the step's routing reads when it's signed (e.g. Repair Code) can't be removed */
   isLocked(key: string): boolean {
     const e = this.editing();
-    return !!e?.stepId && isRoutingLockedField(e.stepId, key) && (this.hasField(key) || this.hasSignoffField(key));
+    return !!e?.stepId && isRoutingLockedField(e.stepId, key) && this.hasField(key);
   }
 
   toggleField(key: string) {
@@ -266,88 +261,77 @@ export class AdminSignoffTypeDefinitionComponent {
       const idx = acts.findIndex(f => f.key === key);
       const next = idx >= 0 ? acts.filter(f => f.key !== key) : [...acts, { key }];
       /* close condition editor if the field was just removed */
-      const condKey = (idx >= 0 && e.condKey === key && e.condSection === 'f') ? null : e.condKey;
+      const condKey = (idx >= 0 && e.condKey === key) ? null : e.condKey;
       return { ...e, fieldActivations: next, condKey };
-    });
-  }
-
-  toggleSignoffField(key: string) {
-    if (this.isLocked(key)) return;
-    this.editing.update(e => {
-      if (!e) return e;
-      const acts = e.signoffFieldActivations;
-      const idx = acts.findIndex(f => f.key === key);
-      const next = idx >= 0 ? acts.filter(f => f.key !== key) : [...acts, { key }];
-      const condKey = (idx >= 0 && e.condKey === key && e.condSection === 'sf') ? null : e.condKey;
-      return { ...e, signoffFieldActivations: next, condKey };
     });
   }
 
   /* ── Condition editor ── */
 
-  private activation(key: string, section: FieldSection): FieldActivation {
-    const acts = section === 'f' ? this.editing()?.fieldActivations : this.editing()?.signoffFieldActivations;
-    return acts?.find(a => a.key === key) ?? { key };
+  private activation(key: string): FieldActivation {
+    return this.editing()?.fieldActivations.find(a => a.key === key) ?? { key };
   }
 
-  condLabel(key: string, section: FieldSection): string {
-    return showRuleText(this.activation(key, section), section);
+  condLabel(key: string): string {
+    return showRuleText(this.activation(key));
   }
 
-  disabledLabel(key: string, section: FieldSection): string {
-    return disabledRuleText(this.activation(key, section), section);
+  disabledLabel(key: string): string {
+    return disabledRuleText(this.activation(key));
   }
 
-  isRequired(key: string, section: FieldSection): boolean {
-    return effectiveRequired(this.activation(key, section), section);
+  isRequired(key: string): boolean {
+    return effectiveRequired(this.activation(key));
   }
 
-  isBuiltIn(key: string, section: FieldSection): boolean {
-    return hasBuiltInShowRule(key, section);
+  isBuiltIn(key: string): boolean {
+    return hasBuiltInShowRule(key);
   }
 
   isReadOnly(key: string): boolean {
     return isAlwaysReadOnly(key);
   }
 
-  setRequired(key: string, section: FieldSection, required: boolean) {
+  isFixed(key: string): boolean {
+    return hasFixedRules(key);
+  }
+
+  setRequired(key: string, required: boolean) {
     this.editing.update(e => {
       if (!e) return e;
       const set = (acts: FieldActivation[]) => acts.map(a => {
         if (a.key !== key) return a;
         const { required: _old, ...rest } = a;
-        const stored = requiredToStore(key, section, required);
+        const stored = requiredToStore(key, required);
         return stored === undefined ? rest : { ...rest, required: stored };
       });
-      return section === 'f' ? { ...e, fieldActivations: set(e.fieldActivations) } : { ...e, signoffFieldActivations: set(e.signoffFieldActivations) };
+      return { ...e, fieldActivations: set(e.fieldActivations) };
     });
   }
 
-  isCondOpen(key: string, section: FieldSection, kind: CondKind = 'show'): boolean {
+  isCondOpen(key: string, kind: CondKind = 'show'): boolean {
     const e = this.editing();
-    return !!e && e.condKey === key && e.condSection === section && e.condKind === kind;
+    return !!e && e.condKey === key && e.condKind === kind;
   }
 
-  isAnyCondOpen(key: string, section: FieldSection): boolean {
-    const e = this.editing();
-    return !!e && e.condKey === key && e.condSection === section;
+  isAnyCondOpen(key: string): boolean {
+    return this.editing()?.condKey === key;
   }
 
-  toggleCondEditor(key: string, section: FieldSection, kind: CondKind = 'show') {
+  toggleCondEditor(key: string, kind: CondKind = 'show') {
     this.editing.update(e => {
       if (!e) return e;
-      if (e.condKey === key && e.condSection === section && e.condKind === kind) {
+      if (e.condKey === key && e.condKind === kind) {
         /* closing: apply the current clauses first */
         this.applyCondClauses(e);
         return { ...e, condKey: null };
       }
       /* opening: save pending clauses for previously open field, then load new */
       if (e.condKey) this.applyCondClauses(e);
-      const acts = section === 'f' ? e.fieldActivations : e.signoffFieldActivations;
-      const act = acts.find(a => a.key === key);
-      const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key, section)) : (act?.disabledIf ?? defaultDisabledIf(key));
+      const act = e.fieldActivations.find(a => a.key === key);
+      const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key)) : (act?.disabledIf ?? defaultDisabledIf(key));
       const clauses = current?.all.map(c => this.clauseToWork(c)) ?? [];
-      return { ...e, condKey: key, condSection: section, condKind: kind, condClauses: clauses };
+      return { ...e, condKey: key, condKind: kind, condClauses: clauses };
     });
   }
 
@@ -368,7 +352,7 @@ export class AdminSignoffTypeDefinitionComponent {
     if (!e.condKey) return;
     const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
     const prop = e.condKind === 'show' ? 'showIf' : 'disabledIf';
-    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, e.condSection, clauses) : disabledIfToStore(e.condKey, clauses);
+    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses) : disabledIfToStore(e.condKey, clauses);
 
     const update = (acts: FieldActivation[]): FieldActivation[] =>
       acts.map(a => {
@@ -377,8 +361,7 @@ export class AdminSignoffTypeDefinitionComponent {
         return condition ? { ...rest, [prop]: condition } : rest;
       });
 
-    if (e.condSection === 'f') e.fieldActivations = update(e.fieldActivations);
-    else e.signoffFieldActivations = update(e.signoffFieldActivations);
+    e.fieldActivations = update(e.fieldActivations);
   }
 
   addClause() {
@@ -401,7 +384,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   private persist() {
     const config: StepFieldActivation[] = this.rows()
-      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations, signoffFields: r.signoffFieldActivations }));
+      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations }));
     setStepFieldConfig(config);
   }
 
@@ -409,7 +392,6 @@ export class AdminSignoffTypeDefinitionComponent {
     downloadCsv('signoff-type-definition', [
       { header: 'Step', value: (r: DefRow) => r.stepLabel },
       { header: 'Fields', value: (r: DefRow) => r.fieldLabels },
-      { header: 'Sign-off Fields', value: (r: DefRow) => r.signoffFieldLabels },
     ], this.table.sorted());
   }
 }

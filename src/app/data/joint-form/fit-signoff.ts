@@ -1,40 +1,44 @@
-/* Pre-Fit and Fit's Consumable Insert / Backing Ring sign-off fields: shown when the joint design
-   calls for them, their MICs required only when traceability applies */
+/* Pre-Fit and Fit's Consumable Insert / Backing Ring / Defer Tack sign-off fields: the ones the step's
+   Signoff Type Definition has on, each shown when the joint design calls for it and its condition is
+   met, the MICs required only when traceability applies */
 import { Job } from '../jobs';
-import { SignoffField, WorkflowStage, jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../workflow';
+import {
+  SignoffField, WorkflowStage, jointDesignRequiresInsert, jointDesignRequiresBackingRing,
+  hasStepActivation, getActivationForStep, effectiveShowIf, effectiveDisabledIf, effectiveRequired, evaluateCondition, buildConditionContext,
+} from '../workflow';
 import { micApplies } from './fabrication-form';
 
 type Fab = Record<string, string>;
 
 const INSERT_KEYS = ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'];
 const BACKING_RING_KEYS = ['backingRingType', 'backingRingId'];
+const MIC_KEYS = ['consumableInsertId', 'backingRingId'];
 
-/* signoff fields shown (showIf, and Pre-Fit/Fit's joint-design gating) */
+/* signoff fields shown, each with whether it's required and greyed out right now */
 export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): SignoffField[] {
-  return stage.signoffFields.filter(f => {
-    if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return false;
-    if (stage.id === 'fit' || stage.id === 'pre-fit') {
-      if (INSERT_KEYS.includes(f.key) && !jointDesignRequiresInsert(job, fab)) return false;
-      if (BACKING_RING_KEYS.includes(f.key) && !jointDesignRequiresBackingRing(job, fab)) return false;
+  const activation = hasStepActivation(stage.id) ? getActivationForStep(stage.id) : undefined;
+  const condCtx = buildConditionContext(stage, job, [], fab);
+  const isFit = stage.id === 'fit' || stage.id === 'pre-fit';
+  const micRequired = micApplies(job, 'id1') || micApplies(job, 'id2');
+  return stage.signoffFields.flatMap(f => {
+    if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return [];
+    if (isFit) {
+      if (INSERT_KEYS.includes(f.key) && !jointDesignRequiresInsert(job, fab)) return [];
+      if (BACKING_RING_KEYS.includes(f.key) && !jointDesignRequiresBackingRing(job, fab)) return [];
     }
-    return true;
+    if (!activation) return [f];
+    const act = activation.fields.find(a => a.key === f.key);
+    if (!act) return [];
+    const cond = effectiveShowIf(act);
+    if (cond && !evaluateCondition(cond, condCtx)) return [];
+    const required = effectiveRequired(act) && (!isFit || !MIC_KEYS.includes(f.key) || micRequired);
+    const disabledCond = effectiveDisabledIf(act);
+    return [{ ...f, required, ...(disabledCond && evaluateCondition(disabledCond, condCtx) ? { disabled: true } : {}) }];
   });
 }
 
-/* Signoff fields currently required, accounting for Pre-Fit/Fit's joint-design and traceability
-   conditions -- shared by the sign blockers (reasons list) and field validation (per-field
-   highlighting) so they can't drift out of sync. */
+/* Signoff fields currently required: shared by the sign blockers (reasons list) and field
+   validation (per-field highlighting) so they can't drift out of sync. */
 export function requiredSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): SignoffField[] {
-  return stage.signoffFields.filter(f => {
-    if (stage.id === 'fit' || stage.id === 'pre-fit') {
-      const insertApplies = jointDesignRequiresInsert(job, fab);
-      const backingApplies = jointDesignRequiresBackingRing(job, fab);
-      const micRequired = micApplies(job, 'id1') || micApplies(job, 'id2');
-      if (f.key === 'consumableInsertType' || f.key === 'consumableInsertSize') return insertApplies;
-      if (f.key === 'consumableInsertId') return insertApplies && micRequired;
-      if (f.key === 'backingRingType') return backingApplies;
-      if (f.key === 'backingRingId') return backingApplies && micRequired;
-    }
-    return !!f.required;
-  });
+  return visibleSignoffFields(stage, job, fab).filter(f => f.required);
 }

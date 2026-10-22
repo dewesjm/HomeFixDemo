@@ -43,6 +43,7 @@ export interface SignoffField {
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals?: string; anyOf?: string[] };
   fullWidth?: boolean;   // spans full grid width (3 columns)
+  disabled?: boolean;    /* runtime only: greyed out by its Signoff Type Definition condition */
 }
 
 export interface WorkflowStage {

@@ -3,7 +3,6 @@
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SignoffField, WorkflowStage } from '../../data/workflow';
-import { requiresTraceability } from '../../data/mcl-traceability';
 import { SignoffContext } from './signoff-context';
 
 /* visibleSignoffFields() leaves out a row's fields when the joint design doesn't call for them */
@@ -11,9 +10,6 @@ const FIT_ROWS = [
   ['consumableInsertType', 'consumableInsertSize', 'consumableInsertId'],
   ['backingRingType', 'backingRingId'],
 ];
-
-/* the MICs are required only when either joint member's MCL requires traceability */
-const MIC_KEYS = ['consumableInsertId', 'backingRingId'];
 
 @Component({
   selector: 'app-fit-signoff-form',
@@ -35,12 +31,5 @@ export class FitSignoffFormComponent {
 
   deferTack(): SignoffField | undefined {
     return this.ctx().visibleSignoffFields(this.stage()).find(f => f.key === 'deferTack');
-  }
-
-  required(f: SignoffField): boolean {
-    if (f.required) return true;
-    if (!MIC_KEYS.includes(f.key)) return false;
-    const job = this.ctx().job;
-    return requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2);
   }
 }

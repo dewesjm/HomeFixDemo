@@ -1,6 +1,5 @@
-/* The complete catalog of fields that can appear on any step's reading section (CatalogField)
-   or sign-off section (CatalogSignoffField). Per-step activations (step-field-config.ts) pick
-   from this list; they cannot define fields outside it. */
+/* The complete catalog of fields that can appear on any step. Per-step activations
+   (step-field-config.ts) pick from this list; they cannot define fields outside it. */
 import { FieldCondition } from './field-conditions';
 import { getWeldPositions } from '../weld-positions';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
@@ -11,7 +10,6 @@ import { RT_DEGREE_OPTIONS } from './ndt';
 
 export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
-/* A field that appears in a step's reading/input section */
 export interface CatalogField {
   key: string;
   label: string;
@@ -29,18 +27,9 @@ export interface CatalogField {
   maxField?: string;
   fullWidth?: boolean;
   description?: string;
-}
-
-/* A field that appears in a step's sign-off section */
-export interface CatalogSignoffField {
-  key: string;
-  label: string;
-  type: FieldType;
-  defaultRequired?: boolean;
-  placeholder?: string;
-  options?: { label: string; value: string }[];
-  defaultShowIf?: FieldCondition;
-  fullWidth?: boolean;
+  /* drawn by its step's own sign-off form (fit-signoff-form, fitup-insp-form), so it's offered only
+     on the steps whose definition has it by default */
+  drawnByStepForm?: boolean;
 }
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
@@ -55,6 +44,11 @@ const showIfRtUnsat: FieldCondition = {
   ]
 };
 const disabledIfConsumableInsert: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
+
+const BACKING_RING_OPTIONS = [
+  { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
+  { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' },
+];
 
 export const FIELD_CATALOG: CatalogField[] = [
   /* ── Welding ── */
@@ -135,6 +129,18 @@ export const FIELD_CATALOG: CatalogField[] = [
       { label: 'Gray Powder', value: 'gray-powder' }, { label: 'Yellow Powder', value: 'yellow-powder' },
     ] },
 
+  /* ── Fit / Pre-Fit ── */
+  { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,
+    options: FILLER_METAL_TYPE_OPTIONS, drawnByStepForm: true },
+  { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', defaultRequired: true,
+    options: FILLER_METAL_SIZE_OPTIONS, drawnByStepForm: true },
+  /* the MICs are required only when either part's MCL requires traceability (fit-signoff.ts) */
+  { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', defaultRequired: true, drawnByStepForm: true },
+  { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', defaultRequired: true,
+    options: BACKING_RING_OPTIONS, drawnByStepForm: true },
+  { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', defaultRequired: true, drawnByStepForm: true },
+  { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', drawnByStepForm: true },
+
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
     options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
@@ -142,6 +148,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
 
   /* ── Fit-Up Insp ── */
+  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', drawnByStepForm: true },
   { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
   { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
   { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
@@ -167,30 +174,6 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
 ];
 
-const BACKING_RING_OPTIONS = [
-  { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
-  { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' },
-];
-
-export const SIGNOFF_FIELD_CATALOG: CatalogSignoffField[] = [
-  /* ── Fit / Pre-Fit ── */
-  { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,
-    options: FILLER_METAL_TYPE_OPTIONS },
-  { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', defaultRequired: true,
-    options: FILLER_METAL_SIZE_OPTIONS },
-  { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text' },
-  { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', defaultRequired: true,
-    options: BACKING_RING_OPTIONS },
-  { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text' },
-  { key: 'deferTack', label: 'Defer Tack', type: 'text' },
-  /* ── Fit-Up Insp ── */
-  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },
-];
-
 export function lookupCatalogField(key: string): CatalogField | undefined {
   return FIELD_CATALOG.find(f => f.key === key);
-}
-
-export function lookupCatalogSignoffField(key: string): CatalogSignoffField | undefined {
-  return SIGNOFF_FIELD_CATALOG.find(f => f.key === key);
 }

@@ -60,7 +60,8 @@ export function fitFieldsForType(trade: Job['trade'], signoffType: string): Stag
 }
 
 /* Resolves visible StageField[] from the catalog activation for a step, evaluating all conditions
-   and enriching each field with runtime options via stageFieldOptions(). */
+   and enriching each field with runtime options via stageFieldOptions(). Fields the step's own form
+   draws (drawnByStepForm) are left to it. */
 export function resolveActivatedFields(
   stepId: string,
   condCtx: ConditionContext,
@@ -70,9 +71,10 @@ export function resolveActivatedFields(
   const activation = getActivationForStep(stepId);
   return activation.fields
     .filter(act => {
-      if (!lookupCatalogField(act.key)) return false;
+      const cat = lookupCatalogField(act.key);
+      if (!cat || cat.drawnByStepForm) return false;
       if (act.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, formCtx.stages)) return false;
-      const cond = effectiveShowIf(act, 'f');
+      const cond = effectiveShowIf(act);
       return !cond || evaluateCondition(cond, condCtx);
     })
     .map(act => {
@@ -86,7 +88,7 @@ export function resolveActivatedFields(
         ...(cat.unit !== undefined && { unit: cat.unit }),
         ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
         ...(cat.options !== undefined && { options: cat.options }),
-        required: effectiveRequired(act, 'f'),
+        required: effectiveRequired(act),
         ...(cat.disabled || disabledByCondition ? { disabled: true } : {}),
         ...(cat.minField !== undefined && { minField: cat.minField }),
         ...(cat.maxField !== undefined && { maxField: cat.maxField }),

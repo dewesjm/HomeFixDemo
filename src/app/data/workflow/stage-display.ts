@@ -56,7 +56,7 @@ export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStag
   return stage.fields.filter(f => {
     if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
     const act = activation?.fields.find(a => a.key === f.key);
-    const cond = act && effectiveShowIf(act, 'f');
+    const cond = act && effectiveShowIf(act);
     return !cond || evaluateCondition(cond, ctx);
   });
 }

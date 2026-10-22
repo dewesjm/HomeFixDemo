@@ -17,7 +17,6 @@ export interface FieldActivation {
 export interface StepFieldActivation {
   stepId: string;
   fields: FieldActivation[];
-  signoffFields: FieldActivation[];
 }
 
 /* ── Condition shorthands ── */
@@ -39,8 +38,7 @@ const tackFiller: FieldCondition = {
   ]
 };
 
-/* Insert and ring fields: show when the joint design requires each (renderer interprets
-   via jointDesignRequiresInsert / jointDesignRequiresBackingRing; catalog defaults have no showIf) */
+/* Insert and ring fields: shown when the joint design requires each (fit-signoff.ts) */
 const INSERT_FIELDS: FieldActivation[] = [
   { key: 'consumableInsertType' }, { key: 'consumableInsertSize' }, { key: 'consumableInsertId' },
 ];
@@ -100,19 +98,19 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
    field activation as the base step */
 function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): StepFieldActivation[] {
   return [
-    { stepId: `${phase}-ndt-${kind}`, fields, signoffFields: [] },
-    { stepId: `nqc-${phase}-ndt-${kind}`, fields, signoffFields: [] },
+    { stepId: `${phase}-ndt-${kind}`, fields },
+    { stepId: `nqc-${phase}-ndt-${kind}`, fields },
   ];
 }
 
 /* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
 function weldStep(id: string, extra: FieldActivation[] = []): StepFieldActivation {
-  return { stepId: id, fields: [...WELD_FIELDS, ...extra], signoffFields: [] };
+  return { stepId: id, fields: [...WELD_FIELDS, ...extra] };
 }
 
 function tackStep(id: string): StepFieldActivation {
   const fields = WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f);
-  return { stepId: id, fields, signoffFields: [] };
+  return { stepId: id, fields };
 }
 
 const FITUP_INSP_FIELDS: FieldActivation[] = [
@@ -121,14 +119,12 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
 ];
 
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
-  { stepId: 'pre-fit', fields: [],
-    signoffFields: [...INSERT_FIELDS, ...RING_FIELDS] },
-  { stepId: 'fit', fields: [],
-    signoffFields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
+  { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
+  { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
   tackStep('tack'),
-  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
-  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
-  { stepId: 'fitup-release', fields: [], signoffFields: [] },
+  { stepId: 'fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
+  { stepId: 'nqc-fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
+  { stepId: 'fitup-release', fields: [] },
   tackStep('deferred-tack'),
   weldStep('root-weld', [{ key: 'consumableInsertOnly', showIf: rootWeldOnly }]),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
@@ -143,22 +139,27 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
   /* every Repair / Excavation NDT round reads these rows (activationStepId) */
-  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }], signoffFields: [] },
-  { stepId: 'excavation-ndt', fields: EXCAVATION_NDT_FIELDS, signoffFields: [] },
-  { stepId: 'review-o63', fields: RECORDS_REVIEW_FIELDS, signoffFields: [] },
-  { stepId: 'review-o04', fields: RECORDS_REVIEW_FIELDS, signoffFields: [] },
-  { stepId: 'sold', fields: [], signoffFields: [] },
+  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }] },
+  { stepId: 'excavation-ndt', fields: EXCAVATION_NDT_FIELDS },
+  { stepId: 'review-o63', fields: RECORDS_REVIEW_FIELDS },
+  { stepId: 'review-o04', fields: RECORDS_REVIEW_FIELDS },
+  { stepId: 'sold', fields: [] },
 ];
 
 /* ── Storage ── */
 
 let _cache: StepFieldActivation[] | null = null;
 
+/* a saved definition may hold some fields under signoffFields; they're read into the one list */
+type SavedActivation = StepFieldActivation & { signoffFields?: FieldActivation[] };
+const oneList = ({ signoffFields, ...a }: SavedActivation): StepFieldActivation =>
+  ({ ...a, fields: [...a.fields, ...(signoffFields ?? [])] });
+
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? JSON.parse(saved) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    _cache = saved ? (JSON.parse(saved) as SavedActivation[]).map(oneList) : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -190,5 +191,5 @@ export function getActivationForStep(stageId: string): StepFieldActivation {
   const config = getStepFieldConfig();
   return config.find(a => a.stepId === stepId)
     ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)
-    ?? { stepId, fields: [], signoffFields: [] };
+    ?? { stepId, fields: [] };
 }
