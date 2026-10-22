@@ -158,6 +158,9 @@ src/app/
                              saved here; they come from the built-in step definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
       admin-signoff-types/ Admin → Signoff Type Availability (seeded table: which routing steps have a Type droplist, and its options)
+      admin-signoff-type-definition/  Admin → Signoff Type Definition (PLANNED Phase 3): configure which
+                             catalog fields are active on each step type; live configuration stored in
+                             welding:step-field-config:v1
       admin-characteristics/ Admin → Attribute codes
       admin-material-traceability/, admin-material-classification/, admin-penetrant/, admin-locations/, admin-ship-locations/,
       admin-weld-positions/, admin-joint-designs/, admin-banner/, admin-groups/, admin-quick-links/,
@@ -253,7 +256,11 @@ src/app/
                          stage-templates (+ Admin > Routing Settings edits), build-stages, step-ids,
                          added-steps (Repair/Excavation NDT/Engineering Hold), stage-rules,
                          stage-display, current-routing, route-changes, seed-fabrication,
-                         seeded-workflow. Import from 'data/workflow' (index.ts re-exports all).
+                         seeded-workflow. Field config system (Phase 1 built, renderer/admin pending):
+                         field-conditions (FieldCondition type + evaluateCondition),
+                         field-catalog (CatalogField/CatalogSignoffField — every field by key),
+                         step-field-config (per-step activations, defaults, localStorage).
+                         Import from 'data/workflow' (index.ts re-exports all).
     assignments.ts       Assignment model + seeded generator (36)
     filter-engine.ts     Filter engine both Advanced Searches use: stacked conditions, matching, chip text
     filter-schema.ts     Weld Record's Advanced Search fields, rows, variants/page state
@@ -382,6 +389,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`data/wo
   4. (untitled) — 5X (**Root only**, as of 2026-09-23 — was Root/Final Weld).
 - **Fit/Pre-Fit's own signoff fields** (`fit-signoff-form`): Consumable Insert Type/Size/MIC on one row, Backing Ring Type/MIC on the next — shown only when the effective joint design (Revised Joint Design if set, else the job's own Joint Design; `jointDesignRequiresInsert()`/`jointDesignRequiresBackingRing()` in `data/joint-form/fit-signoff.ts`, applied by `visibleSignoffFields()`) calls for that group. Within a shown group, Type/Size (and Backing Ring Type) are always required; the MIC field is required only when *also* either joint member's MCL requires traceability — same condition gates its red `*`. Fit only, below that: **Defer Tack** checkbox. Pre-Fit has no Defer Tack (no Tack exists yet to defer). These are `signoffFields`; Pre-Fit's and Fit's `fields` are empty.
 - Steps without a layout of their own (Repair, Fit-Up Release, steps added in Admin > Routing Settings) use `generic-stage-form`; `showIf` / `requiredWhen` drive conditional fields.
+- **Configurable field system** (Phase 1 built 2026-10-22, renderer/admin pending): `data/workflow/field-catalog.ts` holds every field that can ever appear on any step (`FIELD_CATALOG` + `SIGNOFF_FIELD_CATALOG`); `data/workflow/step-field-config.ts` stores per-step activations in localStorage (`welding:step-field-config:v1`). Phase 2 will replace the five hand-built form components with one renderer that reads from the active field list; Phase 3 adds Admin → Signoff Type Definition.
 - **PH/IP actuals** (split into four 2026-09-24: Actual PH Min/Max, Actual IP Min/Max, all required) — blur-triggered range checks against their requirement pair; NC skips that limit. `ACTUAL_REQUIREMENT` (`data/workflow/weld-fields.ts`) pairs each actual with its requirement: NC there sets the actual to NC on WTN select and locks it (`isFieldLocked`), and it clears again when the WTN/GWP changes. Actual Min above its Max is flagged on the Max field (`ACTUAL_MIN_MAX`/`actualOrderError`). Seeded PH/IP limits are round numbers (e.g. 60, 200, 300).
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
 - **Defect Code** (RT, UNSAT only) renders in its own row right after Decision, not above it in the general fields loop — fixed 2026-09-22, since it only applies once UNSAT is chosen, showing it first read backwards.
