@@ -15,6 +15,7 @@
      added-steps        building those added steps
      stage-rules        per-step rules (decision, references, type lock, Correct locks)
      stage-display      recorded values as shown in History
+     field-rule-lines   a field's rules as Condition | Behaviors lines (Signoff Type Definition grid)
      shown-fields       the fields a step shows, from its Signoff Type Definition or its template
      current-routing    the current step and which steps are locked
      routing-bar        which steps the joint page's routing bar shows
@@ -44,6 +45,7 @@ export * from './field-conditions';
 export * from './field-catalog';
 export * from './step-field-config';
 export * from './field-rules';
+export * from './field-rule-lines';
 export * from './joint-facts';
 export * from './condition-context';
 export * from './field-fill';

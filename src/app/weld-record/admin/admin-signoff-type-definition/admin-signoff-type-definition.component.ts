@@ -1,5 +1,5 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
-   Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
+   A step's row expands to one line per field, its rules stacked as Conditions | Behaviors. Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
    as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
    this step or the WTN), when it's disabled, and when it's required (Never / Always / When). While the
@@ -31,9 +31,9 @@ import {
   showRuleText, disabledRuleText, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY,
+  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
 } from '../../../data/workflow';
-import type { ConditionClause, FieldCondition, FieldFill, RequiredMode } from '../../../data/workflow';
+import type { ConditionClause, FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
 
 interface DefRow {
@@ -42,6 +42,7 @@ interface DefRow {
   stepLabel: string;
   fieldLabels: string;          // flat text used for table search
   fieldActivations: FieldActivation[];
+  fieldRules: { key: string; label: string; lines: FieldRuleLine[] }[];
 }
 
 /* 'engineering' = whether an engineering override has the step */
@@ -155,13 +156,30 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   private toRow(stepId: string, fields: FieldActivation[]): DefRow {
+    const fieldRules = definitionFields(fields).map(f => ({
+      key: f.key,
+      label: lookupCatalogField(f.key)?.label ?? f.key,
+      lines: fieldRuleLines(f, id => this.stepLabel(id)),
+    }));
     return {
       uid: `sfd-${++seq}`,
       stepId,
       stepLabel: this.stepLabel(stepId),
-      fieldLabels: definitionFields(fields).map(f => FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
+      fieldLabels: fieldRules.map(f => f.label).join(', '),
       fieldActivations: fields.map(f => ({ ...f })),
+      fieldRules,
     };
+  }
+
+  /* steps whose rows are expanded to their fields' rules, by step id (kept across saves) */
+  expanded = signal(new Set<string>());
+
+  toggleExpanded(stepId: string) {
+    this.expanded.update(s => {
+      const next = new Set(s);
+      if (!next.delete(stepId)) next.add(stepId);
+      return next;
+    });
   }
 
   /* the steps in Admin > Signoff Type Availability; ones that already have a definition say so */
@@ -544,7 +562,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   exportCsv() {
     downloadCsv('signoff-type-definition', [
-      { header: 'Step', value: (r: DefRow) => r.stepLabel },
+      { header: 'Type', value: (r: DefRow) => r.stepLabel },
       { header: 'Fields', value: (r: DefRow) => r.fieldLabels },
     ], this.table.sorted());
   }

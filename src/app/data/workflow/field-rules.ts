@@ -7,13 +7,14 @@ import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
-   (shown-fields.ts), the two checkboxes routing reads, Weld Build-Up's Affected Item and References */
-const BUILT_IN_SHOW_TEXT: Record<string, string> = {
-  allowableThicknessExceeded: 'Shown when the rejected phase has an RT/UT step',
-  deferTack: 'Always shown',
-  releaseToWelding: 'Always shown',
-  affectedItem: 'Always shown',
-  references: 'Always shown',
+   (shown-fields.ts), the two checkboxes routing reads, Weld Build-Up's Affected Item and References
+   ('' = always shown) */
+const BUILT_IN_SHOW_CONDITION: Record<string, string> = {
+  allowableThicknessExceeded: 'the rejected phase has an RT/UT step',
+  deferTack: '',
+  releaseToWelding: '',
+  affectedItem: '',
+  references: '',
 };
 
 /* never disabled, and required as fixed in code: the checkboxes routing reads when the step is
@@ -165,14 +166,25 @@ export function conditionText(cond: FieldCondition): string {
 
 /* e.g. "Shown when Has Probationary Inspector is checked" or "Always shown" */
 export function showRuleText(act: FieldActivation): string {
-  const builtIn = BUILT_IN_SHOW_TEXT[act.key];
-  if (builtIn) return builtIn;
+  const builtIn = builtInShowCondition(act.key);
+  if (builtIn !== undefined) return builtIn ? `Shown when ${builtIn}` : 'Always shown';
   const cond = effectiveShowIf(act);
   return cond ? `Shown when ${conditionText(cond)}` : 'Always shown';
 }
 
 export function hasBuiltInShowRule(key: string): boolean {
-  return !!BUILT_IN_SHOW_TEXT[key];
+  return builtInShowCondition(key) !== undefined;
+}
+
+/* the condition text of a visibility rule decided in code ('' = always shown), undefined for other fields */
+export function builtInShowCondition(key: string): string | undefined {
+  return BUILT_IN_SHOW_CONDITION[key];
+}
+
+/* e.g. "Fit's Consumable Insert Type", "the WTN's PH Min" */
+export function fillSourceText(fill: FieldFill, stepLabel: (stepId: string) => string): string {
+  const source = fill.from === 'wtn' ? 'the WTN' : fill.from === 'thisStep' ? 'this step' : stepLabel(fill.stepId);
+  return `${source}'s ${labelOf(fill.fieldKey)}`;
 }
 
 /* e.g. "Prepopulated from Fit's Consumable Insert Type when Only Consumable Insert used as filler
@@ -181,8 +193,7 @@ export function hasBuiltInShowRule(key: string): boolean {
 export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
   const fill = effectiveFill(act);
   if (!fill) return 'Not prepopulated';
-  const source = fill.from === 'wtn' ? 'the WTN' : fill.from === 'thisStep' ? 'this step' : stepLabel(fill.stepId);
-  const from = `${source}'s ${labelOf(fill.fieldKey)}`;
+  const from = fillSourceText(fill, stepLabel);
   return fill.when.all.length ? `Prepopulated from ${from} when ${conditionText(fill.when)}` : `Always prepopulated from ${from}`;
 }
 

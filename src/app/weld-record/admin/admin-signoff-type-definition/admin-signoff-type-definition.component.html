@@ -5,41 +5,72 @@
   <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">Reset all to defaults</button>
 </app-table-toolbar>
 
+<!-- A step's row expands to one line per field, its rules stacked as Conditions | Behaviors -->
 <div class="overflow-x-auto">
   <table class="table table-sm">
     <thead>
       <tr>
-        <th appSortHeader [table]="table" field="stepLabel" label="Step" class="min-w-44"></th>
+        <th class="w-px"></th>
+        <th appSortHeader [table]="table" field="stepLabel" label="Type" class="min-w-44"></th>
         <th>Fields</th>
+        <th>Conditions</th>
+        <th>Behaviors</th>
         <th class="w-px"></th>
       </tr>
     </thead>
     <tbody>
       @for (row of table.sorted(); track row.uid) {
-        <tr>
-          <td>{{ row.stepLabel }}</td>
-          <td class="text-sm">
-            @if (row.fieldLabels) {
-              @for (label of row.fieldLabels.split(', '); track $index) {
-                <span class="badge badge-sm me-1">{{ label }}</span>
-              }
-            } @else {
+        @let open = expanded().has(row.stepId);
+        <tr class="hover:bg-base-200 cursor-pointer" (click)="toggleExpanded(row.stepId)">
+          <td>
+            <button type="button" class="btn btn-ghost btn-xs" [attr.aria-expanded]="open"
+                    [attr.aria-label]="(open ? 'Collapse ' : 'Expand ') + row.stepLabel">
+              @if (open) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+            </button>
+          </td>
+          <td class="font-semibold">{{ row.stepLabel }}</td>
+          <td colspan="3" class="text-sm">
+            @if (!row.fieldRules.length) {
               <span class="text-base-content/40">—</span>
+            } @else if (open) {
+              {{ row.fieldRules.length }} {{ row.fieldRules.length === 1 ? 'field' : 'fields' }}
+            } @else {
+              @for (f of row.fieldRules; track f.key) {
+                <span class="badge badge-sm me-1">{{ f.label }}</span>
+              }
             }
           </td>
-          <td>
+          <td (click)="$event.stopPropagation()">
             <div class="row-tight">
-              <button type="button" class="btn btn-ghost btn-xs" (click)="openEdit(row)">
+              <button type="button" class="btn btn-ghost btn-xs" title="Edit" (click)="openEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
               </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-error" title="Delete" (click)="deleteRow(row)">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             </div>
           </td>
         </tr>
+        @if (open) {
+          @for (f of row.fieldRules; track f.key) {
+            @for (line of f.lines; track $index; let first = $first, last = $last) {
+              <tr>
+                @if (first) {
+                  <td [attr.rowspan]="f.lines.length" colspan="2"></td>
+                  <td [attr.rowspan]="f.lines.length" class="align-top">{{ f.label }}</td>
+                }
+                <!-- a field's rule lines share one box: no line between them -->
+                <td class="align-top" [class.border-b-0]="!last">{{ line.condition }}</td>
+                <td class="align-top" [class.border-b-0]="!last">
+                  @for (b of line.behaviors; track $index) { <div>{{ b }}</div> }
+                </td>
+                @if (first) { <td [attr.rowspan]="f.lines.length"></td> }
+              </tr>
+            }
+          }
+        }
       } @empty {
-        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No steps match your search.' : 'No definitions yet.' }}</td></tr>
+        <tr><td colspan="6" class="empty">{{ table.hasRows() ? 'No steps match your search.' : 'No definitions yet.' }}</td></tr>
       }
     </tbody>
   </table>
