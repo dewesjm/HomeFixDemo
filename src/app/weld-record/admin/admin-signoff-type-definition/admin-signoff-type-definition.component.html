@@ -223,7 +223,7 @@
         @if (i > 0) { <div class="text-xs font-semibold my-1">and</div> }
         <div class="flex flex-wrap items-center gap-1 mb-1">
           <!-- Prepopulated from reads only the step itself -->
-          <select class="select select-bordered select-xs w-40" aria-label="Condition on"
+          <select class="select select-bordered select-xs w-52" aria-label="Condition on"
                   [ngModel]="c.source"
                   (ngModelChange)="updateClause(i, { source: $event, key: '', equals: $event === 'rejectedUtrt' ? 'yes' : '' })">
             <option value="field">This step field</option>
