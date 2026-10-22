@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Admin → Signoff Type Definition: Defer Tack can be unticked on Fit. The checkbox is then not shown, Tack always follows Fit, and Deferred Tack never comes up.',
       'Fit-Up Insp: MIC 1 and MIC 2 verified show only when that part requires material traceability, and Revised Joint Design verified only when one is entered. Only the rows shown must be checked. On Admin → Signoff Type Definition these are ordinary Show when and Required rules, so the rows of the Fit-Up Insp and Records Review grids, when each shows, and which must be checked can be changed there (Records Review rows are not required unless ticked).',
       'Admin → Signoff Type Definition: References is a field in the Fields list. RT/UT on Root, Layer and Final NDT, and Repair, have it ticked as before, and ticking it on any other step (including a new one) shows the References panel there. The Correct window still shows References on every step.',
       'Admin → Signoff Type Definition: Release to welding can be unticked on Fit-Up Insp. The checkbox is then not shown, every joint is released to welding when Fit-Up Insp is signed, and Fit-Up Release never comes up.',

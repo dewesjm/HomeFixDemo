@@ -54,6 +54,7 @@ export function isRoutingLockedField(stageId: string, key: string): boolean {
    the stored value then stays at the one the step starts with */
 export const DEFINITION_REMOVAL_NOTES: Record<string, string> = {
   releaseToWelding: 'Unticked: every joint is released to welding and Fit-Up Release never comes up.',
+  deferTack: 'Unticked: Tack is never deferred; Tack always follows Fit and Deferred Tack never comes up.',
 };
 
 /* routing-read fields that can't be taken off a Signoff Type Definition */
