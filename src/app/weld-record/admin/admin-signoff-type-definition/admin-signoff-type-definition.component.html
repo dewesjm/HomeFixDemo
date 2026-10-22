@@ -1,0 +1,61 @@
+<div class="page-wrap max-w-xl">
+  <div class="page-header">
+    <h1 class="page-title">Signoff Type Definition</h1>
+    <button class="btn btn-sm btn-ghost" (click)="resetToDefaults()">Reset to defaults</button>
+  </div>
+
+  <p class="text-sm text-base-content/60 mb-4">
+    Select a step to configure which fields appear on its sign-off form.
+    Changes take effect immediately after saving.
+  </p>
+
+  <div class="form-control mb-6">
+    <label class="label" for="step-select"><span class="label-text">Step</span></label>
+    <select id="step-select" class="select select-bordered w-full"
+            [ngModel]="selectedStepId()" (ngModelChange)="selectStep($event)">
+      <option value="">Select a step…</option>
+      @for (s of steps; track s.stepId) {
+        <option [value]="s.stepId">{{ s.label }}</option>
+      }
+    </select>
+  </div>
+
+  @if (selectedStepId()) {
+    @if (availableFields.length === 0 && availableSignoffFields.length === 0) {
+      <p class="text-sm text-base-content/60">This step has no configurable fields.</p>
+    } @else {
+      @if (availableFields.length > 0) {
+        <div class="mb-5">
+          <h2 class="font-semibold mb-2">Fields</h2>
+          @for (f of availableFields; track f.key) {
+            <label class="flex items-center gap-2 py-1 cursor-pointer select-none">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [checked]="activeFieldKeys().has(f.key)"
+                     (change)="toggleField(f.key)">
+              <span class="text-sm">{{ f.label }}</span>
+            </label>
+          }
+        </div>
+      }
+
+      @if (availableSignoffFields.length > 0) {
+        <div class="mb-5">
+          <h2 class="font-semibold mb-2">Sign-off Fields</h2>
+          @for (sf of availableSignoffFields; track sf.key) {
+            <label class="flex items-center gap-2 py-1 cursor-pointer select-none">
+              <input type="checkbox" class="checkbox checkbox-sm"
+                     [checked]="activeSignoffFieldKeys().has(sf.key)"
+                     (change)="toggleSignoffField(sf.key)">
+              <span class="text-sm">{{ sf.label }}</span>
+            </label>
+          }
+        </div>
+      }
+
+      <div class="flex gap-2">
+        <button class="btn btn-primary btn-sm" [disabled]="!isDirty()" (click)="save()">Save</button>
+        <button class="btn btn-ghost btn-sm" [disabled]="!isDirty()" (click)="discard()">Discard changes</button>
+      </div>
+    }
+  }
+</div>

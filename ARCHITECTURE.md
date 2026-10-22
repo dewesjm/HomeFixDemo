@@ -158,7 +158,7 @@ src/app/
                              saved here; they come from the built-in step definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
       admin-signoff-types/ Admin → Signoff Type Availability (seeded table: which routing steps have a Type droplist, and its options)
-      admin-signoff-type-definition/  Admin → Signoff Type Definition (PLANNED Phase 3): configure which
+      admin-signoff-type-definition/  Admin → Signoff Type Definition (/admin/signoff-fields): configure which
                              catalog fields are active on each step type; live configuration stored in
                              welding:step-field-config:v1
       admin-characteristics/ Admin → Attribute codes

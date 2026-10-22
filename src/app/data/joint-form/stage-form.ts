@@ -6,7 +6,6 @@ import {
   ConditionContext, evaluateCondition, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
 } from '../workflow';
 import { isTitaniumJoint } from '../material-classification';
-import { requiresTraceability } from '../mcl-traceability';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment';
