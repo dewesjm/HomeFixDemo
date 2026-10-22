@@ -2,8 +2,9 @@
    panel draws the parts every step shares (Type, Decision, Comments, Signoff) and picks the step's
    own form from signoffForm(). */
 import { SignoffField, WorkflowStage } from './types';
-import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
-import { StepRef, WELD_BUILDUP_DEFINITION, hasStepActivation } from './step-field-config';
+import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
+import { StepRef, hasStepActivation } from './step-field-config';
+import { typeDefinition } from './signoff-types';
 import { lookupCatalogField } from './field-catalog';
 import { featureToggles } from '../feature-toggles';
 
@@ -20,8 +21,11 @@ export type SignoffForm =
 const WELD_STEP_IDS = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'];
 
 export function signoffForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): SignoffForm {
+  /* a Type that loads another definition gets that definition's form (Weld Build-Up's is the weld form) */
+  const loaded = typeDefinition(stage.id, stage.signoffType);
+  if (loaded) return loaded === WELD_BUILDUP_DEFINITION ? 'weld' : signoffForm({ id: loaded, signoffType: '' });
   const id = baseStepId(stage.id);
-  if (id === 'fit') return stage.signoffType === 'weld-buildup' ? 'weld' : 'fit';
+  if (id === 'fit') return 'fit';
   if (id === 'pre-fit') return 'fit';
   if (id === 'fitup-insp') return 'fitup-insp';
   if (WELD_STEP_IDS.includes(id)) return 'weld';

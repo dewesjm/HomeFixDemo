@@ -2,7 +2,7 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each step. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-10-08.
+Last updated 2026-10-22.
 
 ## How routing works
 
@@ -15,7 +15,8 @@ Last updated 2026-10-08.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed step and every step after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
 - **Admin > Routing Override** changes a joint's current routing to any step. Nothing is marked signed. Going back works like any route-back (that step and every step after it come up blank). Going forward only moves the current routing: the steps before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new step. The joint is found by typing its Hull, Drawing and Joint exactly, and a Reason for change is required; the Routing History entry records it.
 - **Admin > Routing Settings** sets, per step: its order, when a joint gets it ("Included when"), where an UNSAT goes ("Reject routes to", plus reject rules), who signs it (**Persona**), and **Fabrication editable**. **Routing** is the step's name in rules (Included when, reject rules, condition fields); **Display Name** is what the joint, its routing bar, Pipe Welding and History show (blank = the Routing name). A condition compares a field with "is", "is not" or "contains" (typed text, any case). The fields are every Joint Details field and every earlier step's own answers (for example Root NDT 5X/VT's Weld Color); a reject rule can also use the rejected step's own answers. Fields with a fixed list offer checkboxes; the others take a typed value. An earlier step's answer is blank until that step is signed, so a step that depends on one is always on the joint and turns on or off as it's signed.
-- **Repeatable Types** (Admin > Signoff Type Availability): a step's Type option can be repeatable. Signing with it records the signoff and History, but does nothing to the routing: the step stays unsigned and current, on the same routing bar step. The step comes up blank for the next signoff, so every signoff is filled in fresh. Built in: Interim Layer and Weld Build-Up. Signing with a Type that isn't repeatable completes the step.
+- **Repeatable Types** (Admin > Signoff Type Availability): a step's Type option can be repeatable. Signing with it records the signoff and History, but does nothing to the routing: the step stays unsigned and current, on the same routing bar step. The step comes up blank for the next signoff, so every signoff is filled in fresh. Built in: Interim Layer and Weld Build-Up. Signing with a Type that isn't repeatable completes the step. When the step has NDT right after it (Layer and Layer NDT), a repeatable signoff completes the step instead so its NDT comes up, and once that NDT (and any Repair it adds) is signed, the joint goes back to the step, blank, for the next one.
+- **A Type's Definition** (Admin > Signoff Type Availability): a Type can show another Signoff Type Definition's fields (Weld Build-Up shows Fit (Weld Build-Up)'s). When that is a later routing step's definition, signing with the Type is that step's signoff: the later step is signed with the values, and the steps between are passed. Built in: Layer's **Final Weld**.
 - **Fabrication editable**: the Fabrication fields can be changed while the current step has it checked. Built in, that's Prep through Fit-Up Insp, so the fields lock once Fit-Up Insp is signed. A change applies straight away, including to joints already in progress. Repair and Excavation NDT steps, and a finished joint, always lock them. Correct does not change Fabrication fields.
 
 ## The path
@@ -30,9 +31,9 @@ Last updated 2026-10-08.
 | 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Same form as Tack |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
 | 8 | Root NDT | Inspector; NQC Inspector on its NQC rows | Always (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2) | See "When an NDT step fails" |
-| 9 | Layer | Welding | Always | **Interim Layer** is repeatable: recorded, the joint stays on Layer and it comes up blank for the next one. **Final Layer**: moves on to Layer NDT |
-| 10 | Layer NDT | Inspector; NQC Inspector on its NQC rows | Always (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2) | See "When an NDT step fails" |
-| 11 | Final Weld | Welding | Always | Moves on to Final NDT |
+| 9 | Layer | Welding | Always | Type is **Interim Layer** or **Final Weld**. **Interim Layer** is repeatable: recorded, then Layer NDT; when Layer NDT passes the joint comes back to Layer, blank, for the next layer. With no Layer NDT the joint just stays on Layer. **Final Weld** shows the Final Weld fields and is the Final Weld signoff: Final Weld is signed and the joint moves on to Final NDT. Layer then shows signed if it had an Interim Layer, otherwise it drops off the routing bar |
+| 10 | Layer NDT | Inspector; NQC Inspector on its NQC rows | Only when NDT Each Layer is set (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2); after each Interim Layer | See "When an NDT step fails". Passing goes back to Layer |
+| 11 | Final Weld | Welding | Always | Signed by Layer's Final Weld. If the joint is ever routed to it directly, signing it moves on to Final NDT |
 | 12 | Final NDT | Inspector; NQC Inspector on its NQC rows | Always (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2) | See "When an NDT step fails" |
 | 13 | Records Review | O63 Records or O04 Records | Always. **O63** when the joint has SFFF, DSS-AAA or SS data; **O04** otherwise | **SAT**: moves on to Sold. **UNSAT**: recorded, but the joint stays in Records Review (what UNSAT should do is not decided yet) |
 | 14 | Sold | Same Records group as step 13 | Always | The joint is closed. Everything locks; only Deprogress can reverse it |
@@ -45,9 +46,9 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 
 | Phase | NDT value | RT degree |
 |---|---|---|
-| Root | NDT Root | RT Root |
-| Layer | NDT Each | (none) |
-| Final | NDT Final | RT Final |
+| Root | NDT Root | RT Degree Root |
+| Layer | NDT Each Layer (blank = no Layer NDT) | (none) |
+| Final | NDT Final Weld | RT Degree Final |
 
 **VT is always required, unless 5X is required instead.** The NDT value can add one more step:
 
@@ -60,9 +61,9 @@ Each phase (Root, Layer, Final) gets its NDT steps from the joint's **Joint Deta
 | MT/PT | VT, then MT/PT with the inspector choosing MT or PT |
 | UT | VT, then RT/UT offering only UT |
 
-- **RT:** a degree in RT Root or RT Final (10, 100, 360, 60 or 75) adds a RT/UT step offering only RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
+- **RT:** a degree in RT Degree Root or RT Degree Final (10, 100, 360, 60 or 75) adds a RT/UT step offering only RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
 - **Type is never pre-filled:** every inspection step's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
-- **Valid values:** NDT Root, NDT Each and NDT Final take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid. RT Root and RT Final take blank, 10, 100, 360, 60, 75 or NA.
+- **Valid values:** NDT Root, NDT Each Layer and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root 5X question:** when NDT Root is 5X, the Root step asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X step automatically when Root itself is signed.
 
@@ -124,7 +125,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - Actual PH Min, Actual PH Max, Actual IP Min and Actual IP Max. A value outside its requirement limits is a **deviation** (see below), not a hard stop. If a requirement is NC (no limit), its matching actual is set to NC automatically and cannot be edited. An Actual Min can't be higher than its Actual Max (hard stop).
 - Filler Metal Type, Size and MIC (MIC is typed in). On Root only, **Only Consumable Insert used as filler** copies these from Fit and locks them.
 - Weld Position, only when the Nuclear Indicator is 1.
-- Layer also needs Interim Layer or Final Layer chosen.
+- Layer also needs Interim Layer or Final Weld chosen; Final Weld shows the Final Weld fields.
 
 **Fit-Up Insp**
 - Every verification box checked against the fit-up data.
@@ -135,7 +136,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - Type (unless locked), Procedure Used for Inspection (only the procedures listed for that Type on Admin > Inspection Procedures), and SAT or UNSAT.
 - Probationary Inspector and Oversight Inspector, when "Has Probationary Inspector" is checked.
 - Portion of Weld Inspected, when "Partial" is checked.
-- RT: Degree of RT Performed must be at least the RT Root or RT Final requirement (plain number of degrees; NA counts as none). Defect Code is needed when RT is UNSAT.
+- RT: Degree of RT Performed must be at least the RT Degree Root or RT Degree Final requirement (plain number of degrees; NA counts as none). Defect Code is needed when RT is UNSAT.
 
 **Repair**
 - Repair Code (Grind Only, Weld Repair or Cut).

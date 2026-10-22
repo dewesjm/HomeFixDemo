@@ -1,7 +1,7 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
-import { baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
-import { definitionHas, StepRef, WELD_BUILDUP_DEFINITION } from './step-field-config';
+import { WELD_BUILDUP_DEFINITION, baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
+import { definitionHas, StepRef } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */

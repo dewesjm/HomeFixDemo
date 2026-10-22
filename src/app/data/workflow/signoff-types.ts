@@ -6,7 +6,7 @@
 import { STORAGE } from '../storage-keys';
 import { StageOption } from './types';
 import { ndtKindOptions } from './ndt';
-import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from './step-ids';
+import { WELD_BUILDUP_DEFINITION, isExcavationNdtStageId, isRepairStageId, nqcStepId } from './step-ids';
 
 export interface SignoffTypeRow {
   stepId: string;
@@ -16,8 +16,8 @@ export interface SignoffTypeRow {
 export const REPAIR_TYPE_ROW = 'repair';
 export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
 
-const opt = (label: string, value: string, isDefault = false, repeatable = false): StageOption =>
-  ({ label, value, ...(isDefault ? { default: true } : {}), ...(repeatable ? { repeatable: true } : {}) });
+const opt = (label: string, value: string, isDefault = false, repeatable = false, definition = ''): StageOption =>
+  ({ label, value, ...(isDefault ? { default: true } : {}), ...(repeatable ? { repeatable: true } : {}), ...(definition ? { definition } : {}) });
 
 /* NDT rows have no default: the inspector picks the inspection performed. Each NDT step's NQC row
    (step-ids.ts) gets its own row too. */
@@ -25,12 +25,12 @@ const ndtRows = (phase: string): SignoffTypeRow[] => (['vt5x', 'mtpt', 'utrt'] a
   .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)].map(stepId => ({ stepId, options: ndtKindOptions(kind) })));
 
 const SEED_ROWS: SignoffTypeRow[] = [
-  { stepId: 'fit', options: [opt('Fit', 'fit', true), opt('Weld Build-Up', 'weld-buildup', false, true)] },
+  { stepId: 'fit', options: [opt('Fit', 'fit', true), opt('Weld Build-Up', 'weld-buildup', false, true, WELD_BUILDUP_DEFINITION)] },
   { stepId: 'tack', options: [opt('Tack', 'standard', true)] },
   { stepId: 'deferred-tack', options: [opt('Tack', 'standard', true)] },
   { stepId: 'root-weld', options: [opt('Root', 'standard', true)] },
   ...ndtRows('root'),
-  { stepId: 'root-layer', options: [opt('Interim Layer', 'interim', true, true), opt('Final Layer', 'final')] },
+  { stepId: 'root-layer', options: [opt('Interim Layer', 'interim', true, true), opt('Final Weld', 'final-weld', false, false, 'final-weld')] },
   ...ndtRows('layer'),
   { stepId: 'final-weld', options: [opt('Final Weld', 'standard', true)] },
   ...ndtRows('final'),
@@ -80,4 +80,9 @@ export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
 /* whether signing `stageId` with Type `type` leaves the routing where it is (see StageOption.repeatable) */
 export function typeRepeatable(stageId: string, type: string): boolean {
   return !!signoffTypeOptions(stageId)?.find(o => o.value === type)?.repeatable;
+}
+
+/* the definition signing `stageId` with Type `type` loads (StageOption.definition); undefined = its own */
+export function typeDefinition(stageId: string, type: string): string | undefined {
+  return signoffTypeOptions(stageId)?.find(o => o.value === type)?.definition || undefined;
 }

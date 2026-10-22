@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, visibleSignoffFields, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, visibleSignoffFields, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments, repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep, typeDefinition } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -19,10 +19,10 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
   return needs5xInstead ? '5x' : originInspectionType;
 }
 
-/* History names Fit-as-Weld-Build-up and Layer's Interim/Final after the chosen option; the
-   routing column still shows the stage (Fit, Layer) */
+/* History names a signoff whose Type loads another definition (Weld Build-Up) and Layer's Interim
+   Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
-  const named = (st.id === 'fit' && st.signoffType === 'weld-buildup') || st.id === 'root-layer';
+  const named = !!typeDefinition(st.id, st.signoffType) || st.id === 'root-layer';
   if (!named) return st.label;
   return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
 }
@@ -85,21 +85,33 @@ export class SignoffService {
     /* the special routing rules this sign-off hit, for the routing preview's "Why" */
     const reasons: string[] = [];
     const undo = signoffUndo(wf, job, stageId);
+    const signing = wf.stages.find(s => s.id === stageId)!;
+    /* a repeatable Type with NDT after the step completes it so the NDT comes up (type-routing.ts) */
+    const throughNdt = repeatable(signing) && repeatsThroughNdt(wf.stages, stageId);
+    /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
+    const asStepId = signedAsStep(wf.stages, signing);
+    const now = new Date().toISOString();
     /* stages with no SAT/UNSAT choice are accepted by signing */
-    let stages: WorkflowStage[] = wf.stages.map(s => {
+    let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now) : wf.stages.map(s => {
       if (s.id !== stageId) return s;
-      if (repeatable(s)) return blankStage(s);
+      const repeats = repeatable(s) ? { repeats: (s.repeats ?? 0) + 1 } : {};
+      if (repeatable(s) && !throughNdt) return { ...blankStage(s), ...repeats };
       return {
         ...s,
+        ...repeats,
         result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
-        signed: !staysPut(s),
-        signedAt: staysPut(s) ? null : new Date().toISOString(),
+        signed: !staysPut(s) || throughNdt,
+        signedAt: staysPut(s) && !throughNdt ? null : now,
       };
     });
-    const st = stages.find(s => s.id === stageId)!;
+    /* the History entry and the stage this signoff is recorded on */
+    const recordedId = asStepId || stageId;
+    const st = stages.find(s => s.id === recordedId)!;
     const decision = (st.result ?? '').toUpperCase();
     signedLabel = st.label;
-    if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
+    if (asStepId) reasons.push(`${typeLabel(signing)} is ${st.label}'s signoff, so ${st.label} is signed`);
+    else if (throughNdt) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label}'s NDT comes up and then the joint comes back to ${st.label}`);
+    else if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
     if (isRecordsReviewUnsat(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
 
     /* go back (never un-sign): the current routing is set back to the target and every stage from
@@ -235,9 +247,19 @@ export class SignoffService {
       }
     }
 
+    /* everything inspecting a repeatable signoff (Interim Layer's NDT) is signed: the joint comes back
+       to that step for the next one, which starts blank */
+    const returnTo = repeatReturnStep(stages, stageId);
+    if (returnTo) {
+      const step = stages.find(s => s.id === returnTo)!;
+      stages = routeBack({ ...wf, stages, fabricationData }, job, returnTo).wf.stages
+        .map(s => s.id === returnTo ? { ...s, repeats: step.repeats } : s);
+      reasons.push(`${step.label} was signed as ${typeLabel(step)}, so the joint goes back to ${step.label} for the next one`);
+    }
+
     /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */
     if (engineeringHold) {
-      stages = insertEngineeringHold(stages, stageId);
+      stages = insertEngineeringHold(stages, recordedId);
       reasons.push('a deviation was accepted, so the joint goes to Engineering Hold');
     }
 
@@ -248,7 +270,7 @@ export class SignoffService {
       action: `${signedActionLabel(st)} - Signed off`,
       to: hasDecision(st) ? decision : '',
       inputs,
-      stageId
+      stageId: recordedId
     });
     signed = { ...signed, undo: [...(wf.undo ?? []), { ...undo, historyWhen: signed.history.at(-1)!.when }] };
     const back = routedBack as { label: string; fabBefore?: SignoffInput[] } | null;

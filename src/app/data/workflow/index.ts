@@ -38,6 +38,7 @@ export * from './stage-display';
 export * from './current-routing';
 export * from './routing-bar';
 export * from './route-changes';
+export * from './type-routing';
 export * from './history-rows';
 export * from './seed-fabrication';
 export * from './seeded-workflow';

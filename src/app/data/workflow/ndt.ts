@@ -81,7 +81,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
 };
 
 /* Each phase's NDT steps come from its Joint Details values (NDT Root + RT Root, NDT Each for
-   Layer, NDT Final + RT Final), in 5X/VT, MT/PT, RT/UT order:
+   Layer, NDT Final + RT Final), in 5X/VT, MT/PT, RT/UT order (Layer has none when NDT Each is blank):
      - VT always, or 5X instead when the NDT value is 5X
      - MT, PT or UT adds that step with its Type locked to it; MT/PT adds the MT/PT step with a choice
      - an RT degree (anything but blank or NA) adds the RT/UT step locked to RT
@@ -102,7 +102,8 @@ export function phaseNdtSteps(ndtValue: string, rtDegree = ''): NdtStep[] {
 export function jobNdtSteps(job: Job): Record<NdtPhase, NdtStep[]> {
   return {
     root: phaseNdtSteps(job.ndtRoot, job.rtRoot),
-    layer: phaseNdtSteps(job.ndtEach),
+    /* Layer NDT only when NDT Each is set */
+    layer: (job.ndtEach || '').trim() ? phaseNdtSteps(job.ndtEach) : [],
     final: phaseNdtSteps(job.ndtFinal, job.rtFinal),
   };
 }

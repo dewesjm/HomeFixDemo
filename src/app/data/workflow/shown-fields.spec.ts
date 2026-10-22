@@ -1,7 +1,8 @@
 import { JOBS, Job } from '../jobs';
 import { buildStages } from './build-stages';
 import { WorkflowStage } from './types';
-import { DEFAULT_STEP_FIELD_ACTIVATIONS, WELD_BUILDUP_DEFINITION, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
+import { WELD_BUILDUP_DEFINITION } from './step-ids';
+import { DEFAULT_STEP_FIELD_ACTIVATIONS, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
 import { definitionStageFields, fieldsShown } from './shown-fields';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '1', ...over });

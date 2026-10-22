@@ -8,6 +8,7 @@ import { jointDesignOptions } from './joint-designs';
 import { StepConditionField, allStepAnswerFields } from './step-conditions';
 import { jointDetailsUt, jointDetailsVt } from './joint-form/joint-details';
 import { Condition, FieldKind, FilterValues, MatchField, isoDay } from './filter-engine';
+import { NDT_LABELS } from './ndt-labels';
 
 export interface SearchField extends MatchField {
   key: string;            /* row key: a Job field, 'currentRouting', 'fab.<key>' or a step answer key */
@@ -45,13 +46,13 @@ const JOB_FIELDS: SearchField[] = [
   job('wps', 'WPS', 'Welding'),
   job('engineeringNotes', 'Engineering Notes', 'Welding', 'text', 'min-w-32'),
   job('ndt', 'NDT', 'NDT'),
-  job('rtRoot', 'RT Root', 'NDT', 'list'),
-  job('rtFinal', 'RT Final', 'NDT', 'list'),
-  job('ndtRoot', 'NDT Root', 'NDT', 'list'),
-  job('ndtEach', 'NDT Each', 'NDT', 'list'),
-  job('ndtFinal', 'NDT Final', 'NDT', 'list'),
-  job('ut', 'UT', 'NDT', 'list'),
-  { key: 'vt', label: 'VT', group: 'NDT', kind: 'list', width: 'min-w-24' },
+  job('rtRoot', NDT_LABELS.rtRoot, 'NDT', 'list'),
+  job('rtFinal', NDT_LABELS.rtFinal, 'NDT', 'list'),
+  job('ndtRoot', NDT_LABELS.ndtRoot, 'NDT', 'list'),
+  job('ndtEach', NDT_LABELS.ndtEach, 'NDT', 'list'),
+  job('ndtFinal', NDT_LABELS.ndtFinal, 'NDT', 'list'),
+  job('ut', NDT_LABELS.ut, 'NDT', 'list'),
+  { key: 'vt', label: NDT_LABELS.vt, group: 'NDT', kind: 'list', width: 'min-w-24' },
   job('pwht', 'PWHT', 'NDT'),
   job('order', 'Order', 'Additional', 'text', 'min-w-28'),
   job('workPackage', 'Work Package', 'Additional'),

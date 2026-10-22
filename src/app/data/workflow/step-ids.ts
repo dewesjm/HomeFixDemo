@@ -4,6 +4,8 @@
 const NQC_PREFIX = 'nqc-';
 export const NQC_SPLIT_STEP_IDS = ['fitup-insp',
   ...['root', 'layer', 'final'].flatMap(p => ['vt5x', 'mtpt', 'utrt'].map(k => `${p}-ndt-${k}`))];
+/* Fit signed as Weld Build-Up has its own definition: Affected Item above the welding fields */
+export const WELD_BUILDUP_DEFINITION = 'fit-weld-buildup';
 export const nqcStepId = (id: string) => `${NQC_PREFIX}${id}`;
 export const baseStepId = (id: string) => id.startsWith(NQC_PREFIX) ? id.slice(NQC_PREFIX.length) : id;
 export const isFitupInspId = (id: string) => baseStepId(id) === 'fitup-insp';

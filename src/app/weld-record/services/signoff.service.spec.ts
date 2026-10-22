@@ -420,6 +420,15 @@ describe('SignoffService', () => {
     const setStage = (job: Job, id: string, patch: object) =>
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) }));
     const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
+    /* a joint on Layer: every step before it signed */
+    const layerJob = () => {
+      const job = weldingJob({ ndtEach: 'VT' });
+      store.update(job, wf => {
+        const at = wf.stages.findIndex(s => s.id === 'root-layer');
+        return { ...wf, stages: wf.stages.map((s, i) => i < at && s.required ? { ...s, signed: true, signedAt: '2026-01-01T00:00:00Z' } : s) };
+      });
+      return job;
+    };
 
     it('Interim Layer is recorded, Layer stays unsigned and starts blank', () => {
       const job = weldingJob();
@@ -428,6 +437,54 @@ describe('SignoffService', () => {
       expect(stage(job, 'root-layer').signed).toBeFalse();
       expect(stage(job, 'root-layer').inputs['actualPhMin']).toBeUndefined();
       expect(signoffEntries(store.workflowFor(job)(), 'root-layer').at(-1)?.action).toBe('Interim Layer - Signed off');
+    });
+
+    it('Interim Layer with NDT Each set brings up Layer NDT, then the joint comes back to Layer blank', () => {
+      const job = layerJob();
+      setStage(job, 'root-layer', { signoffType: 'interim', inputs: { actualPhMin: '50' } });
+      service.signStage(job, 'root-layer');
+      expect(stage(job, 'root-layer').signed).toBeTrue();
+      expect(activeStageId(store.workflowFor(job)().stages)).toBe('layer-ndt-vt5x');
+      setStage(job, 'layer-ndt-vt5x', { result: 'sat', inspectionType: 'vt' });
+      service.signStage(job, 'layer-ndt-vt5x');
+      const wf = store.workflowFor(job)();
+      expect(activeStageId(wf.stages)).toBe('root-layer');
+      expect(stage(job, 'root-layer').inputs['actualPhMin']).toBeUndefined();
+      expect(stage(job, 'root-layer').repeats).toBe(1);
+      expect(stage(job, 'layer-ndt-vt5x').signed).toBeFalse();
+      expect(signoffEntries(wf, 'root-layer').at(-1)?.action).toBe('Interim Layer - Signed off');
+    });
+
+    it('Final Weld on Layer is the Final Weld signoff; with no Interim Layer before it the Layer dot goes away', () => {
+      const job = layerJob();
+      setStage(job, 'root-layer', { signoffType: 'final-weld', inputs: { actualPhMin: '50' } });
+      service.signStage(job, 'root-layer');
+      const wf = store.workflowFor(job)();
+      expect(stage(job, 'final-weld').signed).toBeTrue();
+      expect(stage(job, 'final-weld').inputs['actualPhMin']).toBe('50');
+      expect(stage(job, 'root-layer').required).toBeFalse();
+      expect(stage(job, 'layer-ndt-vt5x').required).toBeFalse();
+      expect(activeStageId(wf.stages)).toBe('final-ndt-vt5x');
+      expect(signoffEntries(wf, 'final-weld').at(-1)?.action).toBe('Final Weld - Signed off');
+      const bar = routingBarSteps(wf.stages).map(b => wf.stages[b.stageIndex].id);
+      expect(bar).not.toContain('root-layer');
+      expect(bar).toContain('final-weld');
+    });
+
+    it('Final Weld on Layer after an Interim Layer shows Layer signed', () => {
+      const job = layerJob();
+      setStage(job, 'root-layer', { signoffType: 'interim' });
+      service.signStage(job, 'root-layer');
+      setStage(job, 'layer-ndt-vt5x', { result: 'sat', inspectionType: 'vt' });
+      service.signStage(job, 'layer-ndt-vt5x');
+      setStage(job, 'root-layer', { signoffType: 'final-weld' });
+      service.signStage(job, 'root-layer');
+      const wf = store.workflowFor(job)();
+      expect(stage(job, 'root-layer').signed).toBeTrue();
+      expect(stage(job, 'final-weld').signed).toBeTrue();
+      expect(stage(job, 'layer-ndt-vt5x').required).toBeFalse();
+      expect(activeStageId(wf.stages)).toBe('final-ndt-vt5x');
+      expect(routingBarSteps(wf.stages).map(b => wf.stages[b.stageIndex].id)).toContain('root-layer');
     });
 
     it('Weld Build-Up is recorded, Fit stays the current routing and starts blank; signing as Fit moves on', () => {

@@ -13,6 +13,7 @@ import { RT_DEGREE_OPTIONS } from '../data/workflow';
 import { signal } from '@angular/core';
 import { CsvColumn } from '../data/export-csv';
 import { JOINT_DESIGN_LABELS } from '../data/joint-designs';
+import { NDT_LABELS } from '../data/ndt-labels';
 
 /* ── Joints ── */
 export type JointStatus = 'development' | 'locked' | 'unlocked';
@@ -39,10 +40,10 @@ const RT_MARKS = ['', ...RT_DEGREE_OPTIONS.map(o => o.value)];
 const NDT_METHOD_MARKS = ['', ...NDT_REQUIREMENT_VALUES];
 const NDT_MARKS = ['', 'X', '5X'];
 export const NDT_FIELDS = [
-  { key: 'rtRoot', label: 'RT Root', options: RT_MARKS }, { key: 'rtFinal', label: 'RT Final', options: RT_MARKS },
-  { key: 'ndtRoot', label: 'NDT Root', options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: 'NDT Each', options: NDT_METHOD_MARKS },
-  { key: 'ndtFinal', label: 'NDT Final', options: NDT_METHOD_MARKS },
-  { key: 'ut', label: 'UT', options: NDT_MARKS }, { key: 'vt', label: 'VT', options: NDT_MARKS },
+  { key: 'rtRoot', label: NDT_LABELS.rtRoot, options: RT_MARKS }, { key: 'rtFinal', label: NDT_LABELS.rtFinal, options: RT_MARKS },
+  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: NDT_LABELS.ndtEach, options: NDT_METHOD_MARKS },
+  { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, options: NDT_METHOD_MARKS },
+  { key: 'ut', label: NDT_LABELS.ut, options: NDT_MARKS }, { key: 'vt', label: NDT_LABELS.vt, options: NDT_MARKS },
 ] as const;
 
 /* the rest of the weld record's joint details (Joint Info, Joining, Additional Data, Attribute

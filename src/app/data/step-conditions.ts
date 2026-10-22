@@ -11,6 +11,7 @@ import { getJointDesign } from './joint-designs';
 import { jointDetailsUt, jointDetailsVt } from './joint-form/joint-details';
 import { requiresTraceability } from './mcl-traceability';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from './workflow/step-ids';
+import { NDT_LABELS } from './ndt-labels';
 
 export interface ConditionClause {
   field: string;          /* STEP_CONDITION_FIELDS key */
@@ -71,8 +72,8 @@ const JOINT_DETAILS_TEXT: StepConditionField[] = [
   text('sequenceNumber', 'Sequence #'), text('engineeringNotes', 'Engineering Notes'),
   text('mcl1', 'MCL 1', MCL_POOL), text('materialType1', 'Material Type 1'), text('joiningItem', 'Joining Item'),
   text('mcl2', 'MCL 2', MCL_POOL), text('materialType2', 'Material Type 2'), text('joinToItem', 'Join To Item'),
-  { key: 'ut', label: 'UT', values: ['X', '-'], get: jointDetailsUt },
-  { key: 'vt', label: 'VT', values: ['X'], get: jointDetailsVt },
+  { key: 'ut', label: NDT_LABELS.ut, values: ['X', '-'], get: jointDetailsUt },
+  { key: 'vt', label: NDT_LABELS.vt, values: ['X'], get: jointDetailsVt },
   text('order', 'Order'), text('workPackage', 'Work Package'), text('workPermit', 'Work Permit'), text('waff', 'WAFF'),
   text('serialNumber', 'Serial Number'), text('refitNumber', 'Refit #'), text('repairNumber', 'Repair #'),
   text('er1', 'ER1'), text('er2', 'ER2'), text('er3', 'ER3'), text('er4', 'ER4'),
@@ -94,11 +95,11 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
   { key: 'controlledMaterial', label: 'Controlled Material', values: ['Yes', 'No'],
     get: j => yesNo(requiresTraceability(j.mcl1) || requiresTraceability(j.mcl2)) },
   { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
-  { key: 'ndtRoot', label: 'NDT Root', values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
-  { key: 'rtRoot', label: 'RT Root', values: RT_DEGREES, get: j => j.rtRoot },
-  { key: 'ndtEach', label: 'NDT Each', values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtEach) },
-  { key: 'ndtFinal', label: 'NDT Final', values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
-  { key: 'rtFinal', label: 'RT Final', values: RT_DEGREES, get: j => j.rtFinal },
+  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
+  { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },
+  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtEach) },
+  { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
+  { key: 'rtFinal', label: NDT_LABELS.rtFinal, values: RT_DEGREES, get: j => j.rtFinal },
   ...JOINT_DETAILS_TEXT,
   { key: 'fitDeferTack', label: 'Fit: Defer Tack (once Fit is signed)', values: ['Yes', 'No'], stepAnswer: true,
     get: signedAnswer(['fit'], 'deferTack', true) },
@@ -200,6 +201,8 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'deferred-tack': [[{ field: 'fitDeferTack', op: 'is', values: ['Yes'] }]],
   'root-ndt-mtpt': mtptRule('ndtRoot'),
   'root-ndt-utrt': utrtRule('ndtRoot', 'rtRoot'),
+  /* Layer NDT comes up only when NDT Each is set */
+  'layer-ndt-vt5x': [[{ field: 'ndtEach', op: 'is', values: NDT_REQUIREMENT_VALUES }]],
   'layer-ndt-mtpt': mtptRule('ndtEach'),
   'layer-ndt-utrt': utrtRule('ndtEach'),
   'final-ndt-mtpt': mtptRule('ndtFinal'),

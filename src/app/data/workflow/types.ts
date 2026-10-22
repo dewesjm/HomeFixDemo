@@ -70,6 +70,9 @@ export interface WorkflowStage {
   /* the current routing was set to this stage (a route-back, or Admin > Routing Override): the joint
      proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
   routingFrom?: boolean;
+  /* how many signoffs with a repeatable Type (Interim Layer, Weld Build-Up) this step has had since
+     its routing last came up fresh (type-routing.ts) */
+  repeats?: number;
   /* the external system sent no GWP/WTN/filler/PH/IP for this welding step, so they're typed in
      by hand (engineering override, ENGINEERING_ENTRY_KEYS). Set by WeldAssignmentService. */
   engineeringEntry?: boolean;
@@ -161,6 +164,9 @@ export interface StageOption {
   /* signing with this Type records the signoff, leaves the routing where it is and blanks the step
      for the next signoff. Unset = signing completes the step. */
   repeatable?: boolean;
+  /* the Signoff Type Definition this Type's form loads instead of the step's own. When it's a later
+     routing step's definition, signing with this Type is that step's signoff (type-routing.ts). */
+  definition?: string;
 }
 
 /* the definition a joint's step is built from (stage-templates.ts) */

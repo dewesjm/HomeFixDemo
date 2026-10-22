@@ -27,6 +27,7 @@ import {
   loadVariants, saveVariants
 } from './weld-planning-filter-schema';
 import { AppDatePipe, formatDate } from '../shared/date-format';
+import { NDT_LABELS } from '../data/ndt-labels';
 
 const DEFAULT_KEYS = ['hull', 'joint', 'status'];
 
@@ -54,13 +55,13 @@ const ALL_COLUMNS: ResultColumn[] = [
   { key: 'wallThickness', label: 'Wall Thickness', field: 'wallThickness', sortField: 'wallThickness', width: 'min-w-10' },
   { key: 'materialType1', label: 'Material 1',     field: 'materialType1', sortField: 'materialType1', width: 'min-w-14' },
   { key: 'materialType2', label: 'Material 2',     field: 'materialType2', sortField: 'materialType2', width: 'min-w-14' },
-  { key: 'rtRoot',        label: 'RT Root',        field: 'rtRoot',       sortField: 'rtRoot',        width: 'min-w-8' },
-  { key: 'rtFinal',       label: 'RT Final',       field: 'rtFinal',      sortField: 'rtFinal',       width: 'min-w-8' },
-  { key: 'ndtRoot',       label: 'NDT Root',       field: 'ndtRoot',      sortField: 'ndtRoot',       width: 'min-w-8' },
-  { key: 'ndtEach',       label: 'NDT Each',       field: 'ndtEach',      sortField: 'ndtEach',       width: 'min-w-8' },
-  { key: 'ndtFinal',      label: 'NDT Final',      field: 'ndtFinal',     sortField: 'ndtFinal',      width: 'min-w-8' },
-  { key: 'ut',            label: 'UT',             field: 'ut',           sortField: 'ut',            width: 'min-w-8' },
-  { key: 'vt',            label: 'VT',             field: 'vt',           sortField: 'vt',            width: 'min-w-8' },
+  { key: 'rtRoot',        label: NDT_LABELS.rtRoot,        field: 'rtRoot',       sortField: 'rtRoot',        width: 'min-w-8' },
+  { key: 'rtFinal',       label: NDT_LABELS.rtFinal,       field: 'rtFinal',      sortField: 'rtFinal',       width: 'min-w-8' },
+  { key: 'ndtRoot',       label: NDT_LABELS.ndtRoot,       field: 'ndtRoot',      sortField: 'ndtRoot',       width: 'min-w-8' },
+  { key: 'ndtEach',       label: NDT_LABELS.ndtEach,       field: 'ndtEach',      sortField: 'ndtEach',       width: 'min-w-8' },
+  { key: 'ndtFinal',      label: NDT_LABELS.ndtFinal,      field: 'ndtFinal',     sortField: 'ndtFinal',      width: 'min-w-8' },
+  { key: 'ut',            label: NDT_LABELS.ut,             field: 'ut',           sortField: 'ut',            width: 'min-w-8' },
+  { key: 'vt',            label: NDT_LABELS.vt,             field: 'vt',           sortField: 'vt',            width: 'min-w-8' },
   ...JOINT_EXTRA_FIELDS.map(f => ({ key: f.key, label: f.label, field: f.key, sortField: f.key, width: 'min-w-10' })),
   { key: 'notes',         label: 'Notes',          field: 'notes',        sortField: 'notes',         width: 'min-w-14' },
   { key: 'createdBy',     label: 'Created By',     field: 'createdBy',    sortField: 'createdBy',     width: 'min-w-10' },

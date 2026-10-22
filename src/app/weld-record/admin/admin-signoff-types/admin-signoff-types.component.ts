@@ -12,7 +12,8 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
 import {
-  EXCAVATION_TYPE_ROW, REPAIR_TYPE_ROW, getSignoffTypeRows, getTemplates, setSignoffTypeRows, type StageOption
+  DEFAULT_STEP_FIELD_ACTIVATIONS, EXCAVATION_TYPE_ROW, REPAIR_TYPE_ROW, WELD_BUILDUP_DEFINITION, getSignoffTypeRows, getTemplates,
+  setSignoffTypeRows, type StageOption
 } from '../../../data/workflow';
 
 interface TypeRow {
@@ -47,6 +48,11 @@ export class AdminSignoffTypesComponent {
     { id: EXCAVATION_TYPE_ROW, label: 'Excavation NDT' },
   ];
 
+  /* the Signoff Type Definitions a Type can load (StageOption.definition) */
+  readonly definitions = DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => ({
+    id: a.stepId, label: a.stepId === WELD_BUILDUP_DEFINITION ? 'Fit (Weld Build-Up)' : this.stepLabel(a.stepId),
+  }));
+
   rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => this.toRow(r.stepId, r.options)));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
@@ -75,11 +81,12 @@ export class AdminSignoffTypesComponent {
     return row.options.some(o => o.default);
   }
 
-  /* e.g. "Interim Layer (default, repeatable)" */
+  /* e.g. "Interim Layer (default, repeatable)", "Final Weld (Final Weld fields)" */
   optionText(o: StageOption): string {
     const notes = [
       ...(o.default ? ['default'] : []),
       ...(o.repeatable ? ['repeatable'] : []),
+      ...(o.definition ? [`${this.definitionLabel(o.definition)} fields`] : []),
     ];
     return notes.length ? `${o.label} (${notes.join(', ')})` : o.label;
   }
@@ -87,6 +94,15 @@ export class AdminSignoffTypesComponent {
   /* a repeatable Type records the signoff but leaves the routing where it is (StageOption.repeatable) */
   setRepeatable(o: StageOption, on: boolean) {
     if (on) o.repeatable = true; else delete o.repeatable;
+  }
+
+  definitionLabel(id: string): string {
+    return this.definitions.find(d => d.id === id)?.label ?? id;
+  }
+
+  /* '' = the step's own definition */
+  setDefinition(o: StageOption, id: string) {
+    if (id) o.definition = id; else delete o.definition;
   }
 
   exportCsv() {

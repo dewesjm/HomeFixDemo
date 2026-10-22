@@ -11,7 +11,8 @@ import { defaultDisabledIf, disabledIfToStore } from './field-rules';
 import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import type { WorkflowStage } from './types';
 import { FILLER_KEYS } from './weld-fields';
-import { signoffTypeRowId } from './signoff-types';
+import { signoffTypeRowId, typeDefinition } from './signoff-types';
+import { WELD_BUILDUP_DEFINITION } from './step-ids';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -177,9 +178,6 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
 ];
 
-/* Fit signed as Weld Build-Up has its own definition: Affected Item above the welding fields */
-export const WELD_BUILDUP_DEFINITION = 'fit-weld-buildup';
-
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
@@ -327,10 +325,14 @@ export function resetStepFieldConfig(): void {
 /* a step by id, or the step itself, whose Type can pick a different definition */
 export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 
-/* the definition a step reads: Weld Build-Up's for Fit signed as Weld Build-Up, the shared Repair /
-   Excavation NDT one for any round, otherwise its own */
+/* the definition a step reads: the one its Type loads (Admin > Signoff Type Availability, e.g. Weld
+   Build-Up's for Fit signed as Weld Build-Up, Final Weld's for Layer signed as Final Weld), the shared
+   Repair / Excavation NDT one for any round, otherwise its own */
 export function activationStepId(step: StepRef): string {
-  if (typeof step !== 'string' && step.id === 'fit' && step.signoffType === 'weld-buildup') return WELD_BUILDUP_DEFINITION;
+  if (typeof step !== 'string') {
+    const loaded = typeDefinition(step.id, step.signoffType);
+    if (loaded) return loaded;
+  }
   return signoffTypeRowId(typeof step === 'string' ? step : step.id);
 }
 

@@ -1,4 +1,6 @@
 <h2 class="section-title">Signoff Type Availability</h2>
+<p class="text-sm mb-sm">Definition: the Signoff Type Definition whose fields the Type shows. When it is a later routing
+  step's, signing with the Type is that step's signoff (Layer signed as Final Weld signs Final Weld).</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" addLabel="Add routing step"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -50,6 +52,14 @@
                       <input type="checkbox" class="checkbox checkbox-xs"
                              [checked]="!!opt.repeatable" (change)="setRepeatable(opt, $any($event.target).checked)" />
                       Repeatable
+                    </label>
+                    <label class="flex items-center gap-1 text-xs ml-2 pl-3 border-l border-base-300">
+                      Definition
+                      <select class="select select-xs select-bordered w-44"
+                              [ngModel]="opt.definition ?? ''" (ngModelChange)="setDefinition(opt, $event)">
+                        <option value="">This step's own</option>
+                        @for (d of definitions; track d.id) { <option [value]="d.id">{{ d.label }}</option> }
+                      </select>
                     </label>
                     <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeOption(row, i)">
                       <svg lucideTrash2 class="size-3"></svg>
