@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-22',
     added: [
+      'Admin → Feature Toggles: "Layout from Signoff Type Definition" (off by default). When on, each step\'s sign-off form is drawn from its Signoff Type Definition, and the definition\'s edit window has a Layout list: move fields up or down, tick "Same line" to put a field on the line of the one above, and add headings (a heading can start a box). The starting layouts match today\'s forms. Fit-Up Insp and Records Review keep their grids, in the Layout list\'s order.',
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [

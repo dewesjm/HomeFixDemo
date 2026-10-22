@@ -3,6 +3,8 @@
    own form from signoffForm(). */
 import { SignoffField, WorkflowStage } from './types';
 import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
+import { hasStepActivation } from './step-field-config';
+import { featureToggles } from '../feature-toggles';
 
 export type SignoffForm =
   | 'fit'             /* Pre-Fit, Fit: Consumable Insert / Backing Ring, Defer Tack */
@@ -27,6 +29,21 @@ export function signoffForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): S
   if (isEngineeringHoldId(id)) return 'engineering-hold';
   if (id === 'sold') return 'sold';
   return 'generic';
+}
+
+/* While the Layout from Signoff Type Definition toggle is on, these forms are drawn from the step's
+   definition (definition-layout.ts) instead of their built-in layouts. The verify grids keep their
+   grid, in definition order; a step with no definition (added in Routing Settings) keeps its template. */
+const DEFINITION_LAID_OUT: SignoffForm[] = ['fit', 'weld', 'ndt', 'generic'];
+
+export function drawsFromDefinition(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
+  return featureToggles().definitionLayout && DEFINITION_LAID_OUT.includes(signoffForm(stage)) && hasStepActivation(stage);
+}
+
+/* fields a step's definition lists that the form leaves to another spot: References is the joint
+   page's panel, an NDT step's Defect Code is drawn below the decision */
+export function drawnOutsideForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>, key: string): boolean {
+  return key === 'references' || (key === 'defectCode' && signoffForm(stage) === 'ndt');
 }
 
 /* steps whose fields are a grid of values to check off; a Required row must be checked */

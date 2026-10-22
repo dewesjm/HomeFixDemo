@@ -18,4 +18,12 @@
       <span class="block">Brings back the old Pipe Welding table, without Advanced Search's filters, columns and views, as Pipe Welding (Classic) in the Weld Record menu.</span>
     </span>
   </label>
+  <label class="flex items-start gap-3 cursor-pointer">
+    <input type="checkbox" class="toggle toggle-primary mt-0.5"
+           [checked]="toggles().definitionLayout" (change)="set('definitionLayout', $any($event.target).checked)" />
+    <span>
+      <span class="font-semibold">Layout from Signoff Type Definition</span>
+      <span class="block">Each step's sign-off form is drawn from its Signoff Type Definition: the order of its fields, which fields share a line, and its headings, all set on Admin → Signoff Type Definition. Off: the built-in layouts.</span>
+    </span>
+  </label>
 </div>

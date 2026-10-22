@@ -71,7 +71,8 @@
     </div>
 
     @if (st.required) {
-      @if (form === 'fit') {
+      <!-- drawn among the step's fields instead while its form comes from its definition -->
+      @if (form === 'fit' && !drawsFromDefinition(st)) {
         <app-fit-signoff-form [ctx]="ctx()" [stage]="st" />
       }
 

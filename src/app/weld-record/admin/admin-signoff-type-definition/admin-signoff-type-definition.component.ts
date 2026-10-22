@@ -2,15 +2,17 @@
    Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
    as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's filled (from another step, this
-   step or the WTN) and locked, when it's greyed out, and whether and when it's required. Add's step list is the steps in
+   step or the WTN) and locked, when it's greyed out, and whether and when it's required. While the
+   Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
+   which fields share a line, and headings. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v3 (step-field-config.ts). */
+   Stored in welding:step-field-config:v4 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
-  LucideChevronDown, LucideChevronRight,
+  LucideChevronDown, LucideChevronRight, LucideArrowUp, LucideArrowDown,
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
@@ -19,6 +21,7 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../data/export-csv';
+import { featureToggles } from '../../../data/feature-toggles';
 import {
   DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
   FIELD_CATALOG,
@@ -28,6 +31,7 @@ import {
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, DEFINITION_REMOVAL_NOTES, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
+  HEADING_KEY_PREFIX, definitionFields, isHeadingItem, isVerifyGrid,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -87,7 +91,7 @@ function fillFromSource(sourceId: string, fieldKey: string, when: FieldCondition
   imports: [
     CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
-    LucideChevronDown, LucideChevronRight,
+    LucideChevronDown, LucideChevronRight, LucideArrowUp, LucideArrowDown,
   ],
   templateUrl: './admin-signoff-type-definition.component.html',
 })
@@ -161,7 +165,7 @@ export class AdminSignoffTypeDefinitionComponent {
       uid: `sfd-${++seq}`,
       stepId,
       stepLabel: this.stepLabel(stepId),
-      fieldLabels: fields.map(f => FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
+      fieldLabels: definitionFields(fields).map(f => FIELD_CATALOG.find(c => c.key === f.key)?.label ?? f.key).join(', '),
       fieldActivations: fields.map(f => ({ ...f })),
     };
   }
@@ -358,7 +362,7 @@ export class AdminSignoffTypeDefinitionComponent {
     if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
     const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)
       : this.rows().find(r => r.stepId === sourceId)?.fieldActivations ?? getActivationForStep(sourceId).fields;
-    return acts.map(a => ({ key: a.key, label: lookupCatalogField(a.key)?.label ?? a.key }));
+    return definitionFields(acts).map(a => ({ key: a.key, label: lookupCatalogField(a.key)?.label ?? a.key }));
   });
 
   /* picking another step clears the field picked from the old one */
@@ -466,6 +470,54 @@ export class AdminSignoffTypeDefinitionComponent {
       const clauses = e.condClauses.map((c, idx) => idx === i ? { ...c, ...partial } : c);
       return { ...e, condClauses: clauses };
     });
+  }
+
+  /* ── Layout (Layout from Signoff Type Definition toggle) ── */
+
+  layoutOn = computed(() => featureToggles().definitionLayout);
+
+  /* the Fit-Up Insp and Records Review grids use only the order */
+  orderOnly = computed(() => {
+    const stepId = this.editing()?.stepId;
+    return !!stepId && isVerifyGrid({ id: stepId, signoffType: '' });
+  });
+
+  readonly isHeading = isHeadingItem;
+
+  itemLabel(a: FieldActivation): string {
+    return lookupCatalogField(a.key)?.label ?? a.key;
+  }
+
+  private updateItems(change: (items: FieldActivation[]) => FieldActivation[]) {
+    this.editing.update(e => e ? { ...e, fieldActivations: change([...e.fieldActivations]) } : e);
+  }
+
+  moveItem(i: number, by: -1 | 1) {
+    this.updateItems(items => {
+      const j = i + by;
+      if (j < 0 || j >= items.length) return items;
+      [items[i], items[j]] = [items[j], items[i]];
+      return items;
+    });
+  }
+
+  /* unticked layout settings are left off the saved definition */
+  setItem(i: number, partial: Partial<FieldActivation>) {
+    this.updateItems(items => items.map((a, idx) => {
+      if (idx !== i) return a;
+      const next = { ...a, ...partial };
+      if (!next.sameLine) delete next.sameLine;
+      if (!next.newBox) delete next.newBox;
+      return next;
+    }));
+  }
+
+  addHeading() {
+    this.updateItems(items => [...items, { key: `${HEADING_KEY_PREFIX}${Date.now()}-${++seq}`, heading: '' }]);
+  }
+
+  removeHeading(i: number) {
+    this.updateItems(items => items.filter((_, idx) => idx !== i));
   }
 
   /* ── Persist + Export ── */

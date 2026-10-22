@@ -1,6 +1,8 @@
-/* Per-step field activation: which catalog fields are active on each step type and under what
-   conditions. The defaults mirror the current hardcoded behavior. Live overrides are stored in
-   localStorage (welding:step-field-config:v3) and take effect immediately. */
+/* Per-step field activation: which catalog fields are active on each step type, under what
+   conditions, and how the form lays them out (order, fields sharing a line, headings; used while the
+   Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
+   the current hardcoded behavior. Live overrides are stored in localStorage
+   (welding:step-field-config:v4) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
 import type { FieldFill } from './field-catalog';
@@ -18,6 +20,23 @@ export interface FieldActivation {
   required?: boolean;
   /* required only while this holds; an empty condition = always, overriding a catalog default */
   requiredIf?: FieldCondition;
+  /* drawn on the same line as the field before it */
+  sameLine?: boolean;
+  /* a heading item, not a field: its text (may be blank for a box), and whether it starts a new box */
+  heading?: string;
+  newBox?: boolean;
+}
+
+/* heading items' keys start with this, so they never match a catalog field */
+export const HEADING_KEY_PREFIX = 'heading:';
+
+export function isHeadingItem(a: FieldActivation): boolean {
+  return a.heading !== undefined;
+}
+
+/* the definition's fields, without its heading items */
+export function definitionFields(items: FieldActivation[]): FieldActivation[] {
+  return items.filter(a => !isHeadingItem(a));
 }
 
 export interface StepFieldActivation {
@@ -43,37 +62,49 @@ const tackFiller: FieldCondition = {
   ]
 };
 
+/* layout shorthands: a field on the same line as the one before, a heading, a heading that starts a box */
+const same = (key: string): FieldActivation => ({ key, sameLine: true });
+const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
+const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
+
 /* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
-  { key: 'consumableInsertType' }, { key: 'consumableInsertSize' }, { key: 'consumableInsertId' },
+  { key: 'consumableInsertType' }, same('consumableInsertSize'), same('consumableInsertId'),
 ];
 const RING_FIELDS: FieldActivation[] = [
-  { key: 'backingRingType' }, { key: 'backingRingId' },
+  { key: 'backingRingType' }, same('backingRingId'),
 ];
 
-const WELD_FIELDS: FieldActivation[] = [
-  { key: 'weldProcedure' }, { key: 'wtn' }, { key: 'weldProcess' },
-  { key: 'qualificationCheck' },
-  { key: 'fillerMetalType' }, { key: 'fillerMetalSize' }, { key: 'fillerMetalMic' },
-  { key: 'phMin' }, { key: 'phMax' }, { key: 'ipMin' }, { key: 'ipMax' },
-  { key: 'actualPhMin' }, { key: 'actualPhMax' }, { key: 'actualIpMin' }, { key: 'actualIpMax' },
-  { key: 'weldPosition' },
-];
+/* the welding steps' boxes as the weld form draws them; Root's Only Consumable Insert goes between
+   Qualification Check and the filler */
+function weldFields(beforeFiller: FieldActivation[] = []): FieldActivation[] {
+  return [
+    box('weld'), { key: 'weldProcedure' }, same('wtn'), same('weldProcess'),
+    { key: 'qualificationCheck' },
+    ...beforeFiller,
+    { key: 'fillerMetalType' }, same('fillerMetalSize'), same('fillerMetalMic'),
+    box('preheat', 'Preheat/Interpass'),
+    heading('requirements', 'Requirements'), { key: 'phMin' }, same('phMax'), same('ipMin'), same('ipMax'),
+    heading('actuals', 'Actuals'), { key: 'actualPhMin' }, same('actualPhMax'), same('actualIpMin'), same('actualIpMax'),
+    box('position'), { key: 'weldPosition' },
+  ];
+}
+const WELD_FIELDS = weldFields();
 
 const NDT_COMMON_FIELDS: FieldActivation[] = [
   { key: 'procedureUsed' },
-  { key: 'hasProbationary' }, { key: 'probationaryInspector' }, { key: 'oversightInspector' },
-  { key: 'partial' }, { key: 'portionInspected' },
+  { key: 'hasProbationary' }, same('probationaryInspector'), same('oversightInspector'),
+  { key: 'partial' }, same('portionInspected'),
 ];
 
 const NDT_UTRT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, { key: 'rtFileNumber' }, { key: 'defectCode' }, { key: 'references' },
+  { key: 'degreeRt' }, same('rtFileNumber'), { key: 'defectCode' }, { key: 'references' },
 ];
 
 const NDT_MTPT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, { key: 'penetrantType' },
+  { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'),
 ];
 
 /* weldColor condition adds the titanium check to the catalog's inspectionType=vt default */
@@ -87,8 +118,8 @@ const NDT_VT5X_FIELDS: FieldActivation[] = [
 const showIfMtPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', anyOf: ['mt', 'pt'] }] };
 const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, { key: 'rtFileNumber' }, { key: 'defectCode' },
-  { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, { key: 'penetrantType' },
+  { key: 'degreeRt' }, same('rtFileNumber'), { key: 'defectCode' },
+  { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, same('penetrantType'),
   { key: 'weldColor', showIf: titaniumVt },
 ];
 
@@ -110,8 +141,8 @@ function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): Ste
 }
 
 /* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
-function weldStep(id: string, extra: FieldActivation[] = []): StepFieldActivation {
-  return { stepId: id, fields: [...WELD_FIELDS, ...extra] };
+function weldStep(id: string, fields = WELD_FIELDS): StepFieldActivation {
+  return { stepId: id, fields };
 }
 
 function tackStep(id: string): StepFieldActivation {
@@ -124,19 +155,19 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
 ];
 
-/* Fit signed as Weld Build-Up has its own definition: the welding fields plus Affected Item */
+/* Fit signed as Weld Build-Up has its own definition: Affected Item above the welding fields */
 export const WELD_BUILDUP_DEFINITION = 'fit-weld-buildup';
 
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
-  { stepId: WELD_BUILDUP_DEFINITION, fields: [...WELD_FIELDS, { key: 'affectedItem' }] },
+  { stepId: WELD_BUILDUP_DEFINITION, fields: [{ key: 'affectedItem' }, ...WELD_FIELDS] },
   tackStep('tack'),
   { stepId: 'fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
   { stepId: 'nqc-fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
   { stepId: 'fitup-release', fields: [] },
   tackStep('deferred-tack'),
-  weldStep('root-weld', [{ key: 'consumableInsertOnly', showIf: rootWeldOnly }]),
+  weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly', showIf: rootWeldOnly }])),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('root', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('root', 'utrt', NDT_UTRT_FIELDS),
@@ -172,13 +203,37 @@ function withReferences(a: StepFieldActivation): StepFieldActivation {
   return byDefault && !a.fields.some(f => f.key === 'references') ? { ...a, fields: [...a.fields, { key: 'references' }] } : a;
 }
 
+/* definitions saved before the layout settings (v3) get the default layout: fields the default lists
+   in its order with its same-line settings and headings, the others after them as saved */
+const PRE_LAYOUT_KEY = 'welding:step-field-config:v3';
+export function withDefaultLayout(a: StepFieldActivation): StepFieldActivation {
+  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields;
+  if (!def) return a;
+  const saved = new Map(a.fields.map(f => [f.key, f]));
+  const ordered: FieldActivation[] = [];
+  let headings: FieldActivation[] = [];
+  for (const d of def) {
+    if (isHeadingItem(d)) { headings.push(d); continue; }
+    const f = saved.get(d.key);
+    if (!f) continue;
+    ordered.push(...headings, d.sameLine ? { ...f, sameLine: true } : f);
+    headings = [];
+  }
+  const extra = a.fields.filter(f => !def.some(d => d.key === f.key));
+  return { ...a, fields: [...ordered, ...extra] };
+}
+
+const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
+
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const older = saved ? null : localStorage.getItem(PRE_REFERENCES_KEY);
-    _cache = saved ? (JSON.parse(saved) as SavedActivation[]).map(oneList)
-      : older ? (JSON.parse(older) as SavedActivation[]).map(oneList).map(withReferences)
+    const preLayout = saved ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+    const preReferences = saved || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    _cache = saved ? parse(saved)
+      : preLayout ? parse(preLayout).map(withDefaultLayout)
+      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout)
       : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
@@ -194,6 +249,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_LAYOUT_KEY);
   localStorage.removeItem(PRE_REFERENCES_KEY);
 }
 

@@ -42,6 +42,8 @@ export interface CatalogField {
   drawnByStepForm?: boolean;
   /* drawn by the joint page rather than a step's form, so any step's definition can have it */
   anyStep?: boolean;
+  /* typed with the person search (a name from People) */
+  personSearch?: boolean;
 }
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
@@ -121,9 +123,9 @@ export const FIELD_CATALOG: CatalogField[] = [
     options: inspectionProcedureOptions() },
   { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
   { key: 'probationaryInspector', label: 'Probationary Inspector', type: 'text', defaultRequired: true,
-    defaultShowIf: showIfHasProbationary },
+    defaultShowIf: showIfHasProbationary, personSearch: true },
   { key: 'oversightInspector', label: 'Oversight Inspector', type: 'text', defaultRequired: true,
-    defaultShowIf: showIfHasProbationary },
+    defaultShowIf: showIfHasProbationary, personSearch: true },
   { key: 'partial', label: 'Partial', type: 'checkbox' },
   { key: 'portionInspected', label: 'Portion of Weld Inspected', type: 'text', defaultRequired: true,
     defaultShowIf: showIfPartial },
@@ -212,4 +214,8 @@ export const FIELD_CATALOG: CatalogField[] = [
 
 export function lookupCatalogField(key: string): CatalogField | undefined {
   return FIELD_CATALOG.find(f => f.key === key);
+}
+
+export function isPersonField(key: string): boolean {
+  return !!lookupCatalogField(key)?.personSearch;
 }

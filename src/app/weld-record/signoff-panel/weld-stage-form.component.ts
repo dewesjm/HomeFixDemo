@@ -5,9 +5,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkflowStage, StageField, isReadonlyLimit as readonlyLimit, isFieldLocked, ACTUAL_REQUIREMENT, definitionHas } from '../../data/workflow';
 import { qualCheck, QualCheckResult } from '../../data/qualifications';
-import { requiresTraceability } from '../../data/mcl-traceability';
 import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
 import { SignoffContext } from './signoff-context';
+import { AffectedItemComponent } from './affected-item.component';
 
 /* width applies to every field in the row; widths overrides it for named fields */
 interface WeldRow { keys: string[]; width: number | null; widths?: Record<string, number>; spacerBefore?: string }
@@ -46,7 +46,7 @@ const WELD_GROUPS: WeldGroup[] = [
 @Component({
   selector: 'app-weld-stage-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AffectedItemComponent],
   host: { class: 'block' },
   templateUrl: './weld-stage-form.component.html'
 })
@@ -56,30 +56,9 @@ export class WeldStageFormComponent {
 
   weldGroups = WELD_GROUPS;
 
-  /* the two joint members a weld build-up can affect, with their MCL, MIC (fabricationData key)
-     and MIC-verified keys */
-  affectedItemSlots = [
-    { key: 'joiningItem', mcl: 'mcl1', mic: 'id1', micLabel: 'MIC 1', micVerified: 'micVerified1' },
-    { key: 'joinToItem', mcl: 'mcl2', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2' },
-  ] as const;
-
   /* Affected Item: on Fit signed as Weld Build-Up, while its Signoff Type Definition lists it */
   showsAffectedItem(): boolean {
     return definitionHas(this.stage(), 'affectedItem');
-  }
-
-  isAffected(key: string): boolean {
-    return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
-  }
-
-  /* MIC 1/MIC 2 (fabricationData id1/id2) only show for a joint member whose MCL requires
-     traceability per the admin MCL Traceability table (mcl-traceability.ts) */
-  micRequired(mclValue: string): boolean {
-    return requiresTraceability(mclValue);
-  }
-
-  micValue(mic: string): string {
-    return this.ctx().wf().fabricationData[mic] ?? '';
   }
 
   /* the conditions the joint and this step match against SELF's quals (Admin > Qualifications) */

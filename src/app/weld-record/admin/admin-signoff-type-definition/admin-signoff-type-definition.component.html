@@ -87,6 +87,10 @@
             </div>
           }
         </div>
+
+        @if (layoutOn()) {
+          <ng-container *ngTemplateOutlet="layoutList"></ng-container>
+        }
       </div>
 
       <div class="modal-action">
@@ -207,5 +211,58 @@
         <svg lucidePlus class="size-3"></svg> Add clause
       </button>
     </div>
+  }
+</ng-template>
+
+<!-- Layout: the order the form draws the ticked fields in, which share a line, and headings (Layout
+     from Signoff Type Definition toggle) -->
+<ng-template #layoutList>
+  @if (editing(); as e) {
+    <h4 class="font-semibold mb-1">Layout</h4>
+    @if (orderOnly()) {
+      <p class="text-sm mb-2">This step's fields are a grid of values to check off, drawn in this order.</p>
+    } @else {
+      <p class="text-sm mb-2">The form draws the fields in this order, each on a new line unless "Same line" is ticked, which puts it on the line of the field above. Fields on a line share its width. A heading can start a box around the fields under it.</p>
+    }
+    <div class="mb-2">
+      @for (a of e.fieldActivations; track a.key; let i = $index, first = $first, last = $last) {
+        @if (!isHeading(a) || !orderOnly()) {
+          <div class="flex items-center gap-2 py-1 border-b border-base-200 last:border-0">
+            <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
+              <svg lucideArrowUp class="size-4"></svg>
+            </button>
+            <button type="button" class="btn btn-ghost btn-xs" title="Move down" [disabled]="last" (click)="moveItem(i, 1)">
+              <svg lucideArrowDown class="size-4"></svg>
+            </button>
+            @if (isHeading(a)) {
+              <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
+                     aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
+              <label class="flex items-center gap-1 text-sm cursor-pointer">
+                <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.newBox"
+                       (change)="setItem(i, { newBox: $any($event.target).checked })" />
+                Starts a box
+              </label>
+              <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove heading" (click)="removeHeading(i)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <span class="text-sm flex-1">{{ itemLabel(a) }}</span>
+              @if (!orderOnly()) {
+                <label class="flex items-center gap-1 text-sm cursor-pointer">
+                  <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.sameLine"
+                         (change)="setItem(i, { sameLine: $any($event.target).checked })" />
+                  Same line
+                </label>
+              }
+            }
+          </div>
+        }
+      }
+    </div>
+    @if (!orderOnly()) {
+      <button type="button" class="btn btn-ghost btn-sm" (click)="addHeading()">
+        <svg lucidePlus class="size-4"></svg> Add heading
+      </button>
+    }
   }
 </ng-template>

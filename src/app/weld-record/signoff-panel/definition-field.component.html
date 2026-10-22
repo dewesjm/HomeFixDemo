@@ -1,0 +1,67 @@
+<!-- One field: checkbox, radio, read-only value, person search, select or text/number box -->
+@let f = field();
+@let st = stage();
+@if (f.type === 'checkbox') {
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input type="checkbox" class="checkbox checkbox-sm" [class.checkbox-error]="!!error()"
+           [disabled]="disabled()" [checked]="value() === 'yes'"
+           (change)="checkboxChange($any($event.target).checked)" />
+    <span>{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</span>
+  </label>
+} @else if (f.type === 'radio') {
+  <div>
+    <div class="stage-field-label mb-1" [class.text-error]="!!error()">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }</div>
+    <div class="flex gap-4">
+      @for (o of f.options || []; track o.value) {
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="radio" class="radio radio-sm" [class.radio-error]="!!error()" [name]="'field-' + st.id + '-' + f.key"
+                 [disabled]="disabled()" [checked]="value() === o.value" (change)="commit(o.value)" />
+          <span>{{ o.label }}</span>
+        </label>
+      }
+    </div>
+  </div>
+} @else {
+  <label class="stage-field">
+    <span class="stage-field-label">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ stageField().unit ? ' (' + stageField().unit + ')' : '' }}</span>
+    <!-- read-only values are plain text (like Joint Details); only editable fields get an input box -->
+    @if (f.key === 'qualificationCheck') {
+      @let qc = qualCheck();
+      <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
+    } @else if (!signoff() && isReadonlyLimit()) {
+      <div class="stage-readonly-value">{{ value() || '-' }}</div>
+    } @else if (!signoff() && isActual() && value() === 'NC') {
+      <div class="stage-readonly-value">NC</div>
+    } @else if (isPerson()) {
+      <app-person-search-input [disabled]="disabled()" [hasError]="!!error()" [value]="value()" (commit)="commit($event)" />
+    } @else if (f.type === 'select') {
+      <div class="relative">
+        <select class="select select-bordered w-full" [class.select-error]="!!error()"
+                [class.select-warning]="!error() && !!warning()" [class.select-overlay-label]="hasDetails()"
+                [disabled]="disabled()" [ngModel]="value()" (ngModelChange)="selectChange($event)">
+          @for (o of stageField().options || []; track o.value) {
+            <option class="text-base-content" [ngValue]="o.value">{{ o.detail ? o.label + ' · ' + o.detail : o.label }}</option>
+          }
+        </select>
+        @if (hasDetails()) {
+          <span class="absolute inset-y-0 left-4 right-10 flex items-center pointer-events-none truncate"
+                [class.opacity-40]="disabled()">{{ selectedLabel() }}</span>
+        }
+      </div>
+    } @else {
+      <input class="input input-bordered w-full" [class.input-error]="!!error()" [class.input-warning]="!error() && !!warning()"
+             [type]="f.type === 'number' ? 'number' : 'text'" [placeholder]="f.placeholder || ''"
+             [disabled]="disabled()" [ngModel]="value()"
+             (input)="!signoff() && isActual() ? digitsOnly($any($event.target)) : null"
+             (blur)="commit($any($event.target).value)" />
+    }
+  </label>
+  @if (stageField().description) {
+    <div class="text-sm mt-0.5">{{ stageField().description }}</div>
+  }
+}
+@if (error(); as err) {
+  <div class="field-error">{{ err }}</div>
+} @else if (warning()) {
+  <div class="text-warning text-sm mt-0.5">{{ warning() }}</div>
+}
