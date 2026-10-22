@@ -107,6 +107,10 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
     get: signedAnswer(['fitup-insp', nqcStepId('fitup-insp')], 'releaseToWelding', false) },
 ];
 
+/* the Joint Details fields (no step answers): also what a field condition's Joint detail can read */
+export const JOINT_DETAIL_FIELDS = STEP_CONDITION_FIELDS.filter(f => !f.stepAnswer);
+export const jointDetailField = (key: string) => JOINT_DETAIL_FIELDS.find(f => f.key === key);
+
 /* ── Step answers: every step's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
 
 /* the part of a stage template these read (structural, so the workflow files aren't imported here) */

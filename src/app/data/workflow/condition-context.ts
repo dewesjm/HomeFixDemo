@@ -1,10 +1,11 @@
 /* The values a step's field conditions are checked against. Virtual Joint Details keys
-   (joint-facts.ts) are resolved here; 'inspectionType' and 'result' (SAT/UNSAT) are merged into inputs
+   (joint-facts.ts) and the Joint Details fields (step-conditions.ts) are resolved here; 'inspectionType' and 'result' (SAT/UNSAT) are merged into inputs
    so field-source conditions can reach them. */
 import { Job } from '../jobs';
 import { WorkflowStage } from './types';
 import { ConditionContext } from './field-conditions';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
+import { jointDetailField } from '../step-conditions';
 
 /* the stage property an "Engineering override is on/off" clause reads */
 export const ENGINEERING_OVERRIDE_KEY = 'engineeringEntry';
@@ -23,6 +24,9 @@ export function buildConditionContext(stage: WorkflowStage, job: Job | undefined
     jointDetail: (key: string): string => {
       const virtual = VIRTUAL_JOINT_DETAILS[key];
       if (virtual) return virtual.value(job, fab) ? 'yes' : '';
+      /* a Joint Details field reads as Routing Settings shows it (e.g. SS Yes/No, NDT values upper case) */
+      const listed = jointDetailField(key);
+      if (listed) return job ? listed.get(job, []) : '';
       const v = (job as Record<string, unknown> | undefined)?.[key];
       if (v === undefined || v === null) return '';
       if (typeof v === 'boolean') return v ? 'yes' : '';

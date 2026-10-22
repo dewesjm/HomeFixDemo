@@ -32,9 +32,11 @@ import {
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
   HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
+  VIRTUAL_JOINT_DETAILS,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
+import { JOINT_DETAIL_FIELDS } from '../../../data/step-conditions';
 
 interface DefRow {
   uid: string;
@@ -489,6 +491,24 @@ export class AdminSignoffTypeDefinitionComponent {
 
   removeClause(i: number) {
     this.editing.update(e => e ? { ...e, condClauses: e.condClauses.filter((_, idx) => idx !== i) } : e);
+  }
+
+  /* the condition editor's Joint detail picker: yes/no joint facts, then the Joint Details fields */
+  readonly jointFacts = Object.entries(VIRTUAL_JOINT_DETAILS).map(([key, f]) => ({ key, label: f.label }));
+  readonly jointFields = JOINT_DETAIL_FIELDS.map(f => ({ key: f.key, label: f.label, values: f.values }));
+
+  isJointFact(key: string): boolean {
+    return key in VIRTUAL_JOINT_DETAILS;
+  }
+
+  /* suggested values for a Joint Details field (typed values stay allowed) */
+  jointValues(key: string): string[] {
+    return this.jointFields.find(f => f.key === key)?.values ?? [];
+  }
+
+  /* a saved key the picker doesn't list (typed before it existed) still shows */
+  unlistedJointKey(key: string): boolean {
+    return !!key && !this.isJointFact(key) && !this.jointFields.some(f => f.key === key);
   }
 
   updateClause(i: number, partial: Partial<WorkClause>) {

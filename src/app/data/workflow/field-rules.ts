@@ -1,6 +1,7 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Definition */
 import { FieldCondition, ConditionClause, ConditionContext, evaluateCondition } from './field-conditions';
+import { jointDetailField } from '../step-conditions';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, lookupCatalogField } from './field-catalog';
 import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
@@ -147,7 +148,7 @@ function clauseText(c: ConditionClause): string {
   if (c.source === 'stepId') return `step ID matches ${c.matches}`;
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return `Engineering override is ${c.equals ? 'on' : 'off'}`;
   const key = c.source === 'priorStep' ? c.fieldKey : c.key;
-  const subject = c.source === 'jointDetail' ? `joint ${labelOf(key)}` : labelOf(key);
+  const subject = c.source === 'jointDetail' ? `joint ${jointDetailField(key)?.label ?? labelOf(key)}` : labelOf(key);
   const isCheckbox = lookupCatalogField(key)?.type === 'checkbox';
   const show = (v: string) => key === 'inspectionType' ? v.toUpperCase() : v;
   if (c.equals !== undefined) {

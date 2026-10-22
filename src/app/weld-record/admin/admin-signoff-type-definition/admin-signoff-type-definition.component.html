@@ -240,6 +240,33 @@
               <option value="">off</option>
               <option value="yes">on</option>
             </select>
+          } @else if (c.source === 'jointDetail') {
+            <select class="select select-bordered select-xs w-64" aria-label="Joint detail"
+                    [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: isJointFact($event) ? 'yes' : '' })">
+              <option value="" disabled>Select a joint detail</option>
+              @if (unlistedJointKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
+              <optgroup label="Joint facts">
+                @for (f of jointFacts; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+              </optgroup>
+              <optgroup label="Joint Details">
+                @for (f of jointFields; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+              </optgroup>
+            </select>
+            @if (isJointFact(c.key)) {
+              <span class="text-xs">is</span>
+              <select class="select select-bordered select-xs w-20" aria-label="Joint fact is"
+                      [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+                <option value="yes">Yes</option>
+                <option value="">No</option>
+              </select>
+            } @else if (c.key) {
+              <span class="text-xs">=</span>
+              <input type="text" class="input input-bordered input-xs w-32" placeholder="Value" [attr.list]="'jd-values-' + i"
+                     [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })" />
+              <datalist [id]="'jd-values-' + i">
+                @for (v of jointValues(c.key); track v) { <option [value]="v"></option> }
+              </datalist>
+            }
           } @else if (c.source !== 'stepId') {
             <input type="text" class="input input-bordered input-xs w-40" placeholder="Key"
                    [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event })" />
