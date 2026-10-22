@@ -12,7 +12,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (f of ctx().visibleFields(stage()); track f.key) {
+        @for (f of gridRows(); track f.key) {
           <tr>
             <td class="py-1">{{ f.label }}</td>
             <td class="py-1">{{ ctx().getReviewValue(f.key) || '-' }}</td>
@@ -27,6 +27,11 @@
       </tbody>
     </table>
   </div>
+
+  <!-- the definition's other fields, laid out as it sets -->
+  @if (hasOtherFields()) {
+    <app-definition-form [ctx]="ctx()" [stage]="st" [except]="isVerifyRow" />
+  }
 
   <div>
     <div class="flex items-center justify-between mb-1">

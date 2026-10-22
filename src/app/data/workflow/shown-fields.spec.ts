@@ -28,4 +28,14 @@ describe('shown-fields', () => {
     expect(fieldsShown(fit, j).map(f => f.key)).not.toContain('weldPosition');
     expect(definitionHas(fit, 'affectedItem')).toBeFalse();
   });
+
+  it('a field drawn by another step form is an ordinary field elsewhere (Consumable Insert and Defer Tack on Tack)', () => {
+    const j = job();
+    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'tack')!;
+    setStepFieldConfig([{ ...def, fields: [...def.fields, { key: 'consumableInsertType', showIf: { all: [] } }, { key: 'deferTack' }, { key: 'affectedItem' }] }]);
+    const keys = fieldsShown(stageOf(j, 'tack'), j).map(f => f.key);
+    expect(keys).toContain('consumableInsertType');
+    expect(keys).toContain('deferTack');
+    expect(keys).not.toContain('affectedItem');
+  });
 });

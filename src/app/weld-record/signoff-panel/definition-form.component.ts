@@ -1,7 +1,8 @@
 /* A step's form drawn from its Signoff Type Definition, while the Layout from Signoff Type Definition
    toggle is on (drawsFromDefinition()): its fields in definition order, on the lines and under the
    headings and boxes the definition sets (layoutSections()). Pre-Fit/Fit's sign-off fields sit among
-   them, shown while the step is required, as the built-in Fit form is. */
+   them, shown while the step is required, as the built-in Fit form is. The verify grids use it for the
+   fields they list besides their grid rows (`except` leaves the rows out). */
 import { Component, input } from '@angular/core';
 import { LayoutSection, SignoffField, StageField, WorkflowStage, drawnOutsideForm, getActivationForStep, layoutSections } from '../../data/workflow';
 import { AffectedItemComponent } from './affected-item.component';
@@ -51,6 +52,8 @@ type Cell = { kind: 'stage'; field: StageField } | { kind: 'signoff'; field: Sig
 export class DefinitionFormComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
+  /* keys another part of the step's form draws */
+  except = input<(key: string) => boolean>(() => false);
 
   /* every key the form draws right now; a key not in it is hidden by its rules or drawn elsewhere */
   cellMap(): Map<string, Cell> {
@@ -59,7 +62,7 @@ export class DefinitionFormComponent {
     for (const field of this.ctx().visibleFields(st)) cells.set(field.key, { kind: 'stage', field });
     if (st.required) for (const field of this.ctx().visibleSignoffFields(st)) cells.set(field.key, { kind: 'signoff', field });
     if (getActivationForStep(st).fields.some(a => a.key === 'affectedItem')) cells.set('affectedItem', { kind: 'affectedItem' });
-    for (const key of [...cells.keys()]) if (drawnOutsideForm(st, key)) cells.delete(key);
+    for (const key of [...cells.keys()]) if (drawnOutsideForm(st, key) || this.except()(key)) cells.delete(key);
     return cells;
   }
 

@@ -30,7 +30,7 @@ import {
   defaultRequiredIf, requiredIfToStore, requiredRuleText,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
-  getSignoffTypeRows, isDefinitionLockedField, DEFINITION_REMOVAL_NOTES, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
+  getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
   HEADING_KEY_PREFIX, definitionFields, isHeadingItem, isVerifyGrid,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
@@ -99,15 +99,8 @@ export class AdminSignoffTypeDefinitionComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
-  /* the catalog fields offered for the step being edited: a field its own form draws (drawnByStepForm)
-     only on the steps that have it by default, unless any step can have it (References) */
-  fieldChoices = computed(() => {
-    const stepId = this.editing()?.stepId ?? '';
-    const defaults = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId)?.fields ?? [];
-    return FIELD_CATALOG
-      .filter(f => !f.drawnByStepForm || f.anyStep || defaults.some(d => d.key === f.key))
-      .map(f => ({ key: f.key, label: f.label }));
-  });
+  /* every catalog field can be on any step */
+  fieldChoices = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
 
   private labelMap = this.buildLabelMap();
 
@@ -282,9 +275,10 @@ export class AdminSignoffTypeDefinitionComponent {
     return !!e?.stepId && isDefinitionLockedField(e.stepId, key) && this.hasField(key);
   }
 
-  /* what taking a routing-read field off this step does (e.g. Release to welding) */
-  removalNote(key: string): string {
-    return DEFINITION_REMOVAL_NOTES[key] ?? '';
+  /* what taking a routing-read field off this step does (e.g. Release to welding), or that routing
+     ignores it on this step */
+  fieldNote(key: string): string {
+    return definitionFieldNote(this.editing()?.stepId ?? '', key);
   }
 
   toggleField(key: string) {
@@ -334,9 +328,9 @@ export class AdminSignoffTypeDefinitionComponent {
     return hasFixedRules(key);
   }
 
-  /* a fill rule needs a field the person could otherwise type into, drawn by the shared step form */
+  /* a fill rule needs a field the person could otherwise type into, drawn as an ordinary field of the step */
   canFill(key: string): boolean {
-    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !lookupCatalogField(key)?.drawnByStepForm;
+    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm(this.editing()?.stepId ?? '', key);
   }
 
   fillLabel(key: string): string {

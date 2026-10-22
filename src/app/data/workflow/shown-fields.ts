@@ -12,6 +12,7 @@ import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rul
 import { isFilledByRule } from './field-fill';
 import { fieldAppliesToJob, showIfMet } from './stage-display';
 import { stepOnJoint } from './step-ids';
+import { drawnByOwnForm } from './signoff-forms';
 
 type Fab = Record<string, string>;
 
@@ -30,12 +31,12 @@ function toStageField(cat: CatalogField): StageField {
   };
 }
 
-/* the fields a step's definition lists, as the step's own field list; fields its own form draws
-   (drawnByStepForm) are left to it */
+/* the fields a step's definition lists, as the step's own field list; fields drawn its own way
+   (drawnByOwnForm) are left to that */
 export function definitionStageFields(step: StepRef): StageField[] {
   return getActivationForStep(step).fields.flatMap(act => {
     const cat = lookupCatalogField(act.key);
-    return cat && !cat.drawnByStepForm ? [{ ...toStageField(cat), required: !!cat.defaultRequired, ...(cat.disabled && { disabled: true }) }] : [];
+    return cat && !drawnByOwnForm(step, act.key) ? [{ ...toStageField(cat), required: !!cat.defaultRequired, ...(cat.disabled && { disabled: true }) }] : [];
   });
 }
 
@@ -49,7 +50,7 @@ export function allowableThicknessApplies(stage: WorkflowStage, stages: Workflow
 export function definedFields(stage: WorkflowStage, condCtx: ConditionContext, stages: WorkflowStage[]): StageField[] {
   return getActivationForStep(stage).fields.flatMap(act => {
     const cat = lookupCatalogField(act.key);
-    if (!cat || cat.drawnByStepForm) return [];
+    if (!cat || drawnByOwnForm(stage, act.key)) return [];
     if (act.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, stages)) return [];
     const show = effectiveShowIf(act);
     if (show && !evaluateCondition(show, condCtx)) return [];

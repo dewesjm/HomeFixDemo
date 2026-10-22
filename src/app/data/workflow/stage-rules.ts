@@ -1,7 +1,7 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
 import { baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
-import { definitionHas, StepRef } from './step-field-config';
+import { definitionHas, StepRef, WELD_BUILDUP_DEFINITION } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
@@ -56,6 +56,21 @@ export const DEFINITION_REMOVAL_NOTES: Record<string, string> = {
   releaseToWelding: 'Unticked: every joint is released to welding and Fit-Up Release never comes up.',
   deferTack: 'Unticked: Tack is never deferred; Tack always follows Fit and Deferred Tack never comes up.',
 };
+
+/* routing-read fields on any other step: shown and saved there, but routing reads only the home step's */
+const OTHER_STEP_NOTES: Record<string, string> = {
+  releaseToWelding: "Only Fit-Up Insp's Release to welding decides Fit-Up Release; on this step it's saved but routing ignores it.",
+  deferTack: "Only Fit's Defer Tack decides whether Tack is deferred; on this step it's saved but routing ignores it.",
+};
+
+/* what a routing-read field means on a step's definition: what taking it off does on its home step,
+   or that routing ignores it on any other step. Fit signed as Weld Build-Up is still the Fit step, so
+   routing reads a Defer Tack there too: no note. */
+export function definitionFieldNote(stageId: string, key: string): string {
+  if (stageId === WELD_BUILDUP_DEFINITION) return '';
+  if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';
+  return OTHER_STEP_NOTES[key] ?? '';
+}
 
 /* routing-read fields that can't be taken off a Signoff Type Definition */
 export function isDefinitionLockedField(stageId: string, key: string): boolean {

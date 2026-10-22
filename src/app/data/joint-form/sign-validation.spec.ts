@@ -1,5 +1,5 @@
 import { JOBS, Job } from '../jobs';
-import { buildStages, inspectionTypeRequired, WorkflowStage } from '../workflow';
+import { buildStages, inspectionTypeRequired, WorkflowStage, DEFAULT_STEP_FIELD_ACTIVATIONS, setStepFieldConfig, resetStepFieldConfig } from '../workflow';
 import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 
@@ -48,6 +48,22 @@ describe('joint-form sign-validation', () => {
     expect(signProblems(insp, ctxFor(j, insp))).toEqual([]);
     const review = stageOf(j, 'review-o63');
     expect(signProblems(review, ctxFor(j, review))).not.toContain('Verify every required record field');
+  });
+
+  it('a required field the definition adds to a step is checked on signing; other fields on a verify grid are not verify rows', () => {
+    const j = job();
+    const tack = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'tack')!;
+    const insp = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'fitup-insp')!;
+    setStepFieldConfig([
+      { ...tack, fields: [...tack.fields, { key: 'repairType' }] },
+      { ...insp, fields: [...insp.fields, { key: 'repairType' }] },
+    ]);
+    const t = stageOf(j, 'tack');
+    expect(stageFieldErrors(t, ctxFor(j, t))['tack:repairType']).toBe('Repair Code is required');
+    const i = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
+    expect(signProblems(i, ctxFor(j, i))).toEqual([]);
+    expect(stageFieldErrors(i, ctxFor(j, i))['fitup-insp:repairType']).toBe('Repair Code is required');
+    resetStepFieldConfig();
   });
 
   it('RT NDT must record at least the job\'s required degree', () => {

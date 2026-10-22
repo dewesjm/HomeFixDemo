@@ -3,7 +3,8 @@
    own form from signoffForm(). */
 import { SignoffField, WorkflowStage } from './types';
 import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
-import { hasStepActivation } from './step-field-config';
+import { StepRef, WELD_BUILDUP_DEFINITION, hasStepActivation } from './step-field-config';
+import { lookupCatalogField } from './field-catalog';
 import { featureToggles } from '../feature-toggles';
 
 export type SignoffForm =
@@ -38,6 +39,18 @@ const DEFINITION_LAID_OUT: SignoffForm[] = ['fit', 'weld', 'ndt', 'generic'];
 
 export function drawsFromDefinition(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
   return featureToggles().definitionLayout && DEFINITION_LAID_OUT.includes(signoffForm(stage)) && hasStepActivation(stage);
+}
+
+/* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the
+   step: Affected Item and References on any step, Pre-Fit/Fit's insert, ring and Defer Tack (sign-off
+   fields, also on Fit signed as Weld Build-Up) and Fit-Up Insp's Release to welding on those steps.
+   Anywhere else those last ones are ordinary fields, saved with the step's own values. */
+export function drawnByOwnForm(step: StepRef, key: string): boolean {
+  const cat = lookupCatalogField(key);
+  if (!cat) return false;
+  const id = typeof step === 'string' ? step : step.id;
+  const home = id === WELD_BUILDUP_DEFINITION ? 'fit' : baseStepId(id);
+  return !!cat.ownComponent || !!cat.ownFormSteps?.includes(home);
 }
 
 /* fields a step's definition lists that the form leaves to another spot: References is the joint

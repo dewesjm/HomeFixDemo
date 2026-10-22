@@ -37,11 +37,11 @@ export interface CatalogField {
   maxField?: string;
   fullWidth?: boolean;
   description?: string;
-  /* drawn by its step's own sign-off form (fit-signoff-form, fitup-insp-form), so it's offered only
-     on the steps whose definition has it by default */
-  drawnByStepForm?: boolean;
-  /* drawn by the joint page rather than a step's form, so any step's definition can have it */
-  anyStep?: boolean;
+  /* the steps whose own form draws it its own way (Pre-Fit/Fit's sign-off fields, Fit-Up Insp's
+     Release to welding); on any other step it's an ordinary field of that step */
+  ownFormSteps?: string[];
+  /* drawn by its own component on whichever step lists it, never as an ordinary field */
+  ownComponent?: boolean;
   /* typed with the person search (a name from People) */
   personSearch?: boolean;
 }
@@ -75,6 +75,9 @@ const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'ma
 const ifPart1Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part1Traceability', equals: 'yes' }] };
 const ifPart2Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part2Traceability', equals: 'yes' }] };
 const ifRevisedJointDesign: FieldCondition = { all: [{ source: 'jointDetail', key: 'revisedJointDesignEntered', equals: 'yes' }] };
+
+/* Pre-Fit and Fit hold the insert and ring fields as sign-off fields (welding-steps.ts) */
+const FIT_STEPS = ['pre-fit', 'fit'];
 
 const BACKING_RING_OPTIONS = [
   { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -157,21 +160,21 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Fit / Pre-Fit ── */
   { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfInsert, options: FILLER_METAL_TYPE_OPTIONS, drawnByStepForm: true },
+    defaultShowIf: showIfInsert, options: FILLER_METAL_TYPE_OPTIONS, ownFormSteps: FIT_STEPS },
   { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfInsert, options: FILLER_METAL_SIZE_OPTIONS, drawnByStepForm: true },
+    defaultShowIf: showIfInsert, options: FILLER_METAL_SIZE_OPTIONS, ownFormSteps: FIT_STEPS },
   { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', defaultRequired: true,
-    defaultRequiredIf: ifTraceability, defaultShowIf: showIfInsert, drawnByStepForm: true },
+    defaultRequiredIf: ifTraceability, defaultShowIf: showIfInsert, ownFormSteps: FIT_STEPS },
   { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfRing, options: BACKING_RING_OPTIONS, drawnByStepForm: true },
+    defaultShowIf: showIfRing, options: BACKING_RING_OPTIONS, ownFormSteps: FIT_STEPS },
   { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', defaultRequired: true,
-    defaultRequiredIf: ifTraceability, defaultShowIf: showIfRing, drawnByStepForm: true },
-  { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', drawnByStepForm: true },
+    defaultRequiredIf: ifTraceability, defaultShowIf: showIfRing, ownFormSteps: FIT_STEPS },
+  { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', ownFormSteps: ['fit'] },
 
   /* ── Weld Build-Up ── */
   /* the joint members the build-up affects, each with its MIC verified when its MCL requires
-     traceability (weld-stage-form); at least one must be picked */
-  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', drawnByStepForm: true },
+     traceability (affected-item.component); at least one must be picked on any step that lists it */
+  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', ownComponent: true },
 
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
@@ -181,11 +184,12 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Joint page ── */
   /* the References panel under the sign-off (Correct shows it on every step regardless) */
-  { key: 'references', label: 'References', type: 'checkbox', drawnByStepForm: true, anyStep: true },
+  { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
 
   /* ── Fit-Up Insp ── */
-  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', drawnByStepForm: true },
-  /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
+  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', ownFormSteps: ['fitup-insp'] },
+  /* verify-grid rows (keys start with "verify", isVerifyRow): shown when the Fabrication value they
+     check applies; Required = must be checked */
   { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
   { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
   { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox', defaultRequired: true },
@@ -214,6 +218,11 @@ export const FIELD_CATALOG: CatalogField[] = [
 
 export function lookupCatalogField(key: string): CatalogField | undefined {
   return FIELD_CATALOG.find(f => f.key === key);
+}
+
+/* a row of the Fit-Up Insp / Records Review verify grid: checked against a Fabrication or record value */
+export function isVerifyRow(key: string): boolean {
+  return key.startsWith('verify');
 }
 
 export function isPersonField(key: string): boolean {

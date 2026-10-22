@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas } from '../workflow';
+import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow } from '../workflow';
 import { requiresTraceability } from '../mcl-traceability';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -26,7 +26,7 @@ function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
 
 /* a verify grid's shown rows that are required and not checked */
 function unverifiedRows(stage: WorkflowStage, ctx: SignContext): StageField[] {
-  return ctx.visibleFields.filter(f => f.required && stage.inputs?.[f.key] !== 'yes');
+  return ctx.visibleFields.filter(f => isVerifyRow(f.key) && f.required && stage.inputs?.[f.key] !== 'yes');
 }
 
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
@@ -59,8 +59,8 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   const errors: Record<string, string> = {};
   const key = (k: string) => `${stage.id}:${k}`;
   const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
-  for (const f of stage.fields ?? []) {
-    if (!visibleKeys.has(f.key)) continue;
+  /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
+  for (const f of ctx.visibleFields) {
     const val = stage.inputs?.[f.key];
     if (f.required && (val === undefined || val === null || val === '')) errors[key(f.key)] = `${f.label} is required`;
     const typed = typedRequirementError(stage, f);

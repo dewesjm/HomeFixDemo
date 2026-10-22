@@ -1,4 +1,4 @@
-import { COMMENTS_FIELD, hasCommentsBox, signoffForm, withComments } from './signoff-forms';
+import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, signoffForm, withComments } from './signoff-forms';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from './build-stages';
 import { JOBS } from '../jobs';
@@ -42,5 +42,19 @@ describe('Comments box', () => {
     const stage = { ...buildStages(JOBS[0]).find(s => s.id === 'fitup-insp' || s.id === 'nqc-fitup-insp')! };
     stage.signoffInputs = { comments: 'gap checked twice' };
     expect(snapshotInputs(stage, [], stage.signoffFields)).toContain({ label: 'Comments', value: 'gap checked twice' });
+  });
+});
+
+describe('drawnByOwnForm', () => {
+  it('insert, ring, Defer Tack and Release to welding only on their own steps; Affected Item and References everywhere', () => {
+    expect(drawnByOwnForm(step('fit'), 'consumableInsertType')).toBeTrue();
+    expect(drawnByOwnForm('fit-weld-buildup', 'consumableInsertType')).toBeTrue();
+    expect(drawnByOwnForm(step('tack'), 'consumableInsertType')).toBeFalse();
+    expect(drawnByOwnForm(step('pre-fit'), 'deferTack')).toBeFalse();
+    expect(drawnByOwnForm(step('nqc-fitup-insp'), 'releaseToWelding')).toBeTrue();
+    expect(drawnByOwnForm(step('root-ndt-vt5x'), 'releaseToWelding')).toBeFalse();
+    expect(drawnByOwnForm(step('repair'), 'affectedItem')).toBeTrue();
+    expect(drawnByOwnForm(step('fit'), 'references')).toBeTrue();
+    expect(drawnByOwnForm(step('fit'), 'weldProcedure')).toBeFalse();
   });
 });
