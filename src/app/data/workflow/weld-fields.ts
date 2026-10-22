@@ -1,5 +1,6 @@
-/* The fields every welding step (Tack, Root, Layer, Final Weld) records, and which of them the user
-   can't type into */
+/* The fields every welding step (Tack, Root, Layer, Final Weld) records, which PH/IP values are set
+   from the WTN rather than typed, and how actuals follow their requirements (field-locks.ts decides
+   what's locked) */
 import { StageField, WorkflowStage } from './types';
 import { getWeldPositions } from '../weld-positions';
 
@@ -48,7 +49,7 @@ export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overrideNote', label: 'Override Note', type: 'text' },
 ];
 
-/* ── Which weld fields the user cannot type into ── */
+/* ── Weld fields set from the WTN, not typed ── */
 
 /* PH/IP limits and overrides are set from the WTN, never typed */
 const READONLY_LIMIT_KEYS = new Set([
@@ -80,17 +81,4 @@ export function actualOrderError(inputs: Record<string, string>, pair: typeof AC
   const lo = Number(inputs[pair.min]), hi = Number(inputs[pair.max]);
   if (!inputs[pair.min] || !inputs[pair.max] || isNaN(lo) || isNaN(hi)) return '';
   return lo > hi ? `${pair.maxLabel} is below ${pair.minLabel}` : '';
-}
-
-/* Weld Process follows the WTN (unless typed, engineeringEntry); filler fields follow the Consumable Insert checkbox; an actual
-   follows an NC requirement */
-export function isFieldLocked(stage: WorkflowStage, f: { key: string }): boolean {
-  return (f.key === 'weldProcess' && !stage.engineeringEntry)
-    || (FILLER_KEYS.has(f.key) && stage.inputs['consumableInsertOnly'] === 'yes')
-    || (f.key in ACTUAL_REQUIREMENT && stage.inputs[ACTUAL_REQUIREMENT[f.key]] === 'NC');
-}
-
-/* true when the user can actually type or choose a value for this field */
-export function isUserEditable(stage: WorkflowStage, f: { key: string; disabled?: boolean }): boolean {
-  return !f.disabled && f.key !== 'qualificationCheck' && !isReadonlyLimit(stage, f.key) && !isFieldLocked(stage, f);
 }

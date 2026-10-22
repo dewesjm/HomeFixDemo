@@ -1,6 +1,6 @@
 /* Turning a step's recorded values into what History and the joint page show */
 import { SignoffField, SignoffInput, StageField, WorkflowStage } from './types';
-import { isUserEditable } from './weld-fields';
+import { isUserEditable } from './field-locks';
 import { hasDecision } from './stage-rules';
 import { withComments } from './signoff-forms';
 import { Job } from '../jobs';

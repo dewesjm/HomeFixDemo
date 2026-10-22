@@ -1,4 +1,5 @@
-import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, effectiveDisabledIf, requiredToStore } from './field-rules';
+import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, effectiveDisabledIf, requiredToStore,
+  defaultFill, effectiveFill, fillToStore, fillRuleText } from './field-rules';
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
@@ -25,14 +26,29 @@ describe('field rules', () => {
   });
 
   it('greyed-out rule and required store only what differs from the catalog', () => {
-    const def = [{ source: 'field' as const, key: 'consumableInsertOnly', equals: 'yes' }];
-    expect(disabledIfToStore('fillerMetalMic', def)).toBeUndefined();
-    const cleared = disabledIfToStore('fillerMetalMic', []);
+    const def = [{ source: 'field' as const, key: 'phMin', equals: 'NC' }];
+    expect(disabledIfToStore('actualPhMin', def)).toBeUndefined();
+    const cleared = disabledIfToStore('actualPhMin', []);
     expect(cleared).toEqual({ all: [] });
-    expect(effectiveDisabledIf({ key: 'fillerMetalMic', disabledIf: cleared })).toBeUndefined();
-    expect(disabledRuleText({ key: 'fillerMetalMic', disabledIf: cleared })).toBe('');
+    expect(effectiveDisabledIf({ key: 'actualPhMin', disabledIf: cleared })).toBeUndefined();
+    expect(disabledRuleText({ key: 'actualPhMin', disabledIf: cleared })).toBe('');
     expect(requiredToStore('fillerMetalMic', true)).toBeUndefined();
     expect(requiredToStore('fillerMetalMic', false)).toBeFalse();
+  });
+
+  it('fill rule: catalog default for the filler, stored only when it differs, null when cleared', () => {
+    const label = (id: string) => id === 'fit' ? 'Fit' : id;
+    expect(fillRuleText({ key: 'fillerMetalType' }, label))
+      .toBe('Filled from Fit\'s Consumable Insert Type and locked when Only Consumable Insert used as filler is checked');
+    expect(fillRuleText({ key: 'wtn' }, label)).toBe('');
+    const def = defaultFill('fillerMetalType');
+    expect(fillToStore('fillerMetalType', def && { ...def })).toBeUndefined();
+    expect(fillToStore('fillerMetalType', undefined)).toBeNull();
+    expect(effectiveFill({ key: 'fillerMetalType', fill: null })).toBeUndefined();
+    expect(fillToStore('wtn', undefined)).toBeUndefined();
+    const always = { stepId: 'fit', fieldKey: 'deferTack', when: { all: [] } };
+    expect(fillToStore('wtn', always)).toEqual(always);
+    expect(fillRuleText({ key: 'wtn', fill: always }, label)).toBe('Always filled from Fit\'s Defer Tack and locked');
   });
 
   it('describes joint-design sign-off fields as built-in rules', () => {

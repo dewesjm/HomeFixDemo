@@ -1,6 +1,7 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
    Each row is a routing step, or Repair / Excavation NDT (one row shared by every round); editing
-   picks any field from the catalog and sets when it shows, when it's greyed out and whether it's required. Add's step list is the steps in
+   picks any field from the catalog and sets when it shows, when it's filled from another step and
+   locked, when it's greyed out and whether it's required. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
    Stored in welding:step-field-config:v2 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -23,9 +24,10 @@ import {
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
+  defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
 } from '../../../data/workflow';
-import type { ConditionClause, FieldCondition } from '../../../data/workflow';
+import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 
 interface DefRow {
   uid: string;
@@ -37,7 +39,7 @@ interface DefRow {
 
 type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
 /* which of a field's conditions the editor is changing */
-type CondKind = 'show' | 'disabled';
+type CondKind = 'show' | 'disabled' | 'fill';
 
 interface WorkClause {
   source: ClauseSrc;
@@ -53,13 +55,16 @@ interface EditState {
   condKey: string | null;      /* field key whose condition editor is open */
   condKind: CondKind;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
+  fillStepId: string;          /* the open fill rule's source step and field ('' = never filled) */
+  fillFieldKey: string;
 }
 
 let seq = 0;
 
 const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? { all: c.all.map(x => ({ ...x })) } : undefined;
+const copyFill = (f: FieldFill | null | undefined) => f ? { ...f, when: copyCondition(f.when)! } : f;
 const copyActivation = (f: FieldActivation): FieldActivation =>
-  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf) });
+  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf), fill: copyFill(f.fill) });
 
 @Component({
   selector: 'app-admin-signoff-type-definition',
@@ -118,7 +123,6 @@ export class AdminSignoffTypeDefinitionComponent {
   private buildRows(): DefRow[] {
     /* show every step that has a default activation, merged with any stored overrides */
     const stored = getStepFieldConfig();
-    const storedIds = new Set(stored.map(a => a.stepId));
 
     /* all default steps */
     const rows: DefRow[] = DEFAULT_STEP_FIELD_ACTIVATIONS.map(def => {
@@ -159,7 +163,10 @@ export class AdminSignoffTypeDefinitionComponent {
 
   addRow() {
     this.table.clearFilters();
-    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condClauses: [] });
+    this.editing.set({
+      uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condClauses: [],
+      fillStepId: '', fillFieldKey: '',
+    });
   }
 
   openEdit(row: DefRow) {
@@ -171,6 +178,8 @@ export class AdminSignoffTypeDefinitionComponent {
       condKey: null,
       condKind: 'show',
       condClauses: [],
+      fillStepId: '',
+      fillFieldKey: '',
     });
   }
 
@@ -296,6 +305,34 @@ export class AdminSignoffTypeDefinitionComponent {
     return hasFixedRules(key);
   }
 
+  /* a fill rule needs a field the person could otherwise type into, drawn by the shared step form */
+  canFill(key: string): boolean {
+    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !lookupCatalogField(key)?.drawnByStepForm;
+  }
+
+  fillLabel(key: string): string {
+    return fillRuleText(this.activation(key), id => this.stepLabel(id)) || 'Never filled from another step';
+  }
+
+  /* steps a fill can copy from: every other step with a definition */
+  fillSteps = computed(() => {
+    const own = this.editing()?.stepId;
+    return this.rows().filter(r => r.stepId !== own).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel }));
+  });
+
+  /* the chosen source step's fields */
+  fillSourceFields = computed(() => {
+    const stepId = this.editing()?.fillStepId;
+    if (!stepId) return [];
+    const acts = this.rows().find(r => r.stepId === stepId)?.fieldActivations ?? getActivationForStep(stepId).fields;
+    return acts.map(a => ({ key: a.key, label: lookupCatalogField(a.key)?.label ?? a.key }));
+  });
+
+  /* picking another step clears the field picked from the old one */
+  setFillSource(partial: { fillStepId?: string; fillFieldKey?: string }) {
+    this.editing.update(e => e ? { ...e, ...(partial.fillStepId !== undefined ? { fillFieldKey: '' } : {}), ...partial } : e);
+  }
+
   setRequired(key: string, required: boolean) {
     this.editing.update(e => {
       if (!e) return e;
@@ -329,9 +366,11 @@ export class AdminSignoffTypeDefinitionComponent {
       /* opening: save pending clauses for previously open field, then load new */
       if (e.condKey) this.applyCondClauses(e);
       const act = e.fieldActivations.find(a => a.key === key);
-      const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key)) : (act?.disabledIf ?? defaultDisabledIf(key));
+      const fill = act ? effectiveFill(act) : defaultFill(key);
+      const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key))
+        : kind === 'disabled' ? (act?.disabledIf ?? defaultDisabledIf(key)) : fill?.when;
       const clauses = current?.all.map(c => this.clauseToWork(c)) ?? [];
-      return { ...e, condKey: key, condKind: kind, condClauses: clauses };
+      return { ...e, condKey: key, condKind: kind, condClauses: clauses, fillStepId: fill?.stepId ?? '', fillFieldKey: fill?.fieldKey ?? '' };
     });
   }
 
@@ -351,6 +390,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
     const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
+    if (e.condKind === 'fill') { this.applyFill(e, clauses); return; }
     const prop = e.condKind === 'show' ? 'showIf' : 'disabledIf';
     const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses) : disabledIfToStore(e.condKey, clauses);
 
@@ -362,6 +402,17 @@ export class AdminSignoffTypeDefinitionComponent {
       });
 
     e.fieldActivations = update(e.fieldActivations);
+  }
+
+  /* no source step or field = never filled */
+  private applyFill(e: EditState, clauses: ConditionClause[]) {
+    const fill = e.fillStepId && e.fillFieldKey ? { stepId: e.fillStepId, fieldKey: e.fillFieldKey, when: { all: clauses } } : undefined;
+    const stored = fillToStore(e.condKey!, fill);
+    e.fieldActivations = e.fieldActivations.map(a => {
+      if (a.key !== e.condKey) return a;
+      const { fill: _old, ...rest } = a;
+      return stored === undefined ? rest : { ...rest, fill: stored };
+    });
   }
 
   addClause() {

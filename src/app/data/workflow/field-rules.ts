@@ -2,7 +2,7 @@
    plain-language text for Admin > Signoff Type Definition */
 import { FieldCondition, ConditionClause } from './field-conditions';
 import { FieldActivation } from './step-field-config';
-import { lookupCatalogField } from './field-catalog';
+import { FieldFill, lookupCatalogField } from './field-catalog';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
@@ -46,6 +46,15 @@ export function effectiveDisabledIf(act: FieldActivation): FieldCondition | unde
   return cond?.all.length ? cond : undefined;
 }
 
+export function defaultFill(key: string): FieldFill | undefined {
+  return lookupCatalogField(key)?.defaultFill;
+}
+
+/* A null fill is an explicit "never filled", overriding a catalog default */
+export function effectiveFill(act: FieldActivation): FieldFill | undefined {
+  return act.fill === null ? undefined : act.fill ?? defaultFill(act.key);
+}
+
 export function effectiveRequired(act: FieldActivation): boolean {
   return act.required ?? lookupCatalogField(act.key)?.defaultRequired ?? false;
 }
@@ -64,6 +73,13 @@ export function showIfToStore(key: string, clauses: ConditionClause[]): FieldCon
 
 export function disabledIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
   return conditionToStore(defaultDisabledIf(key), clauses);
+}
+
+/* the fill to store: none when it matches the default, null when cleared over a default */
+export function fillToStore(key: string, fill: FieldFill | undefined): FieldFill | null | undefined {
+  const def = defaultFill(key);
+  if (JSON.stringify(fill) === JSON.stringify(def)) return undefined;
+  return fill ?? (def ? null : undefined);
 }
 
 /* the required flag to store: none when it matches the catalog default */
@@ -115,6 +131,15 @@ export function showRuleText(act: FieldActivation): string {
 
 export function hasBuiltInShowRule(key: string): boolean {
   return !!BUILT_IN_SHOW_TEXT[key];
+}
+
+/* e.g. "Filled from Fit's Consumable Insert Type and locked when Only Consumable Insert used as
+   filler is checked"; '' when the field is never filled from another step */
+export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
+  const fill = effectiveFill(act);
+  if (!fill) return '';
+  const from = `${stepLabel(fill.stepId)}'s ${labelOf(fill.fieldKey)}`;
+  return fill.when.all.length ? `Filled from ${from} and locked when ${conditionText(fill.when)}` : `Always filled from ${from} and locked`;
 }
 
 /* e.g. "Greyed out when PH Min is NC"; '' when the field is never greyed out */

@@ -24,11 +24,13 @@ import { AttachmentService } from '../services/attachment.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
+import { isAssignedStage } from '../../data/weld-assignment';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
   activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
+  fillChanges,
 } from '../../data/workflow';
 import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -38,7 +40,7 @@ import { visibleSignoffFields } from '../../data/joint-form/fit-signoff';
 import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
 } from '../../data/joint-form/stage-form';
-import { consumableInsertFill, selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
+import { selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
 import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
 import { routePreviewLabel } from '../../data/joint-form/route-preview';
@@ -308,6 +310,7 @@ export class JointPageComponent implements OnDestroy {
       this.overrides.engineeringEdit(stage, field, value, () => {
         this.wfService.setStageInput(job, stage.id, field, value);
         this.clearHidden(stage);
+        this.applyFills(stage);
       });
     }
     this.onFieldBlur(stage, field);
@@ -323,7 +326,10 @@ export class JointPageComponent implements OnDestroy {
     const changes = typedRequirementChanges(stage, field, raw);
     if (changes.length) {
       const job = this.job;
-      this.overrides.engineeringEdit(stage, field, changes[0].value, () => this.wfService.setStageInputs(job, stage.id, changes));
+      this.overrides.engineeringEdit(stage, field, changes[0].value, () => {
+        this.wfService.setStageInputs(job, stage.id, changes);
+        this.applyFills(stage);
+      });
     }
     this.onFieldBlur(stage, field);
   }
@@ -334,7 +340,10 @@ export class JointPageComponent implements OnDestroy {
     if (this.job && v !== (stage.inputs[field.key] ?? '')) {
       const { changes, matchedProc } = selectChangeCascade(stage, field, v, this.overrides.offListUnlocked(stage));
       const job = this.job;
-      this.overrides.engineeringEdit(stage, field, v, () => this.wfService.setStageInputs(job, stage.id, changes));
+      this.overrides.engineeringEdit(stage, field, v, () => {
+        this.wfService.setStageInputs(job, stage.id, changes);
+        this.applyFills(stage);
+      });
       this.clearHidden(stage);
       /* the WTN filled in Weld Process */
       if (field.key === 'wtn' && matchedProc) this.clearFieldError(stage.id, 'weldProcess');
@@ -352,21 +361,29 @@ export class JointPageComponent implements OnDestroy {
     this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
   }
 
-  /* Consumable Insert: when Yes, fill the filler fields from Fit's Consumable Insert and lock them */
+  /* "Only Consumable Insert used as filler": the filler fields' fill rule follows it (applyFills) */
   onConsumableInsertChange(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
     this.setInput(stage, 'consumableInsertOnly', value);
-    if (value === 'yes') {
-      const fill = consumableInsertFill(stage, this.wf().stages.find(s => s.id === 'fit'));
-      if (fill.length) this.wfService.setStageInputs(this.job, stage.id, fill);
-      return;
+    this.applyFills(stage);
+  }
+
+  /* Fields filled from another step (Admin > Signoff Type Definition, field-fill.ts) after a change
+     on the step: copied in when their rule starts holding, blanked when it stops. Blanked ones get
+     the external system's values back, unless a Foreman Override or engineering override has the step. */
+  private applyFills(before: WorkflowStage) {
+    if (!this.job || !this.wf) return;
+    const stages = this.wf().stages;
+    const after = stages.find(s => s.id === before.id);
+    if (!after) return;
+    const { values, released } = fillChanges(before, after, stages);
+    const changes = Object.entries(values).flatMap(([key, value]) => {
+      const field = after.fields.find(f => f.key === key);
+      return field ? [{ field, value }] : [];
+    });
+    if (changes.length) this.wfService.setStageInputs(this.job, after.id, changes);
+    if (released.length && isAssignedStage(after) && !this.overrides.offListUnlocked(after) && !after.engineeringEntry) {
+      this.weldAssignment.apply(this.job, after.id);
     }
-    /* unchecked: MIC must be re-entered; Type/Size go back to the external system's values,
-       or blank under a Foreman Override or engineering override */
-    this.setInput(stage, 'fillerMetalMic', '');
-    if (!this.overrides.offListUnlocked(stage) && !stage.engineeringEntry) { this.weldAssignment.apply(this.job, stage.id); return; }
-    this.setInput(stage, 'fillerMetalType', '');
-    this.setInput(stage, 'fillerMetalSize', '');
   }
 
   /* Type / inspection type handlers */

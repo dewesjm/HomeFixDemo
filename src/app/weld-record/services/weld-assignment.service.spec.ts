@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { gwpOptionsForMaterials, getProcedureByGwpWtn } from '../../data/procedures';
+import { isFilledByRule } from '../../data/workflow';
 import { isEngineeringEntryJoint } from '../../data/weld-assignment';
 import { detectDeviations } from '../../data/deviations';
 import { WeldAssignmentService } from './weld-assignment.service';
@@ -25,7 +26,7 @@ describe('WeldAssignmentService', () => {
     const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'], stage.inputs['wtn'])!;
     expect(proc).toBeTruthy();
     expect(gwpOptionsForMaterials(job.materialType1!, job.materialType2!).some(o => o.value === proc.gwp)).toBeTrue();
-    if (stage.inputs['consumableInsertOnly'] !== 'yes') {
+    if (!isFilledByRule(stage, 'fillerMetalType')) {
       expect(proc.fillerMetalTypes).toContain(stage.inputs['fillerMetalType']);
       expect(proc.fillerMetalSizes).toContain(stage.inputs['fillerMetalSize']);
     }

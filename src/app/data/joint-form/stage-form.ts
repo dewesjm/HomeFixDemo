@@ -4,7 +4,7 @@ import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
   ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, hasStepActivation,
-  effectiveShowIf, effectiveDisabledIf, effectiveRequired,
+  effectiveShowIf, effectiveDisabledIf, effectiveRequired, isFilledByRule,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -80,7 +80,7 @@ export function resolveActivatedFields(
     .map(act => {
       const cat = lookupCatalogField(act.key)!;
       const disabledCond = effectiveDisabledIf(act);
-      const disabledByCondition = !!disabledCond && evaluateCondition(disabledCond, condCtx);
+      const disabledByCondition = (!!disabledCond && evaluateCondition(disabledCond, condCtx)) || isFilledByRule(stage, act.key);
       const sf: StageField = {
         key: cat.key,
         label: cat.label,
@@ -179,8 +179,8 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
     return { ...f, options: wtnOptionsForGwp(gwp), description: wtn ? wtnDescription(gwp, wtn) : '' };
   }
   if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
-    /* Locked (consumable insert copied the value) or opened by a Foreman Override: the full option
-       set, so a value copied from Fit's Consumable Insert always has a matching <option> */
+    /* Locked (filled from another step, e.g. Fit's Consumable Insert) or opened by a Foreman Override:
+       the full option set, so a copied value always has a matching <option> */
     if (isFieldLocked(stage, f) || ctx.offListUnlocked) {
       return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
     }

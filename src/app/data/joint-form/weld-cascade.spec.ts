@@ -1,7 +1,7 @@
 import { JOBS } from '../jobs';
-import { buildStages, WorkflowStage } from '../workflow';
+import { buildStages, WorkflowStage, fillChanges } from '../workflow';
 import { procedures } from '../procedures';
-import { selectChangeCascade, typedRequirementChanges, consumableInsertFill, FieldChange } from './weld-cascade';
+import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
 const job = JOBS.find(j => j.trade === 'Welding')!;
 const stageOf = (id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(job).find(s => s.id === id)!, ...change });
@@ -45,10 +45,16 @@ describe('joint-form weld-cascade', () => {
     expect(typedRequirementChanges(tack, field(tack, 'phMin'), '50')).toEqual([]);
   });
 
-  it('Consumable Insert fill copies only the values Fit has', () => {
-    const root = stageOf('root-weld');
+  it('Only Consumable Insert fills Root\'s filler from Fit (only the values Fit has) and unchecking blanks it', () => {
     const fit = stageOf('fit', { signoffInputs: { consumableInsertType: 'mil-70s-6', consumableInsertSize: '1/8' } });
-    expect(asRecord(consumableInsertFill(root, fit))).toEqual({ fillerMetalType: 'mil-70s-6', fillerMetalSize: '1/8' });
-    expect(consumableInsertFill(root, undefined)).toEqual([]);
+    const off = stageOf('root-weld', { inputs: { fillerMetalType: 'mil-70s-3', fillerMetalMic: 'M1' } });
+    const on = { ...off, inputs: { ...off.inputs, consumableInsertOnly: 'yes' } };
+    expect(fillChanges(off, on, [fit, on])).toEqual({ values: { fillerMetalType: 'mil-70s-6', fillerMetalSize: '1/8' }, released: [] });
+    expect(fillChanges(on, on, [on]).values).toEqual({});
+    const filled = { ...on, inputs: { ...on.inputs, fillerMetalType: 'mil-70s-6', fillerMetalSize: '1/8' } };
+    const unchecked = { ...filled, inputs: { ...filled.inputs, consumableInsertOnly: '' } };
+    const result = fillChanges(filled, unchecked, [fit, unchecked]);
+    expect(result.released).toEqual(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
+    expect(result.values).toEqual({ fillerMetalType: '', fillerMetalSize: '', fillerMetalMic: '' });
   });
 });

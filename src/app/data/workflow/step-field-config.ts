@@ -3,6 +3,7 @@
    localStorage (welding:step-field-config:v2) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
+import type { FieldFill } from './field-catalog';
 import { FILLER_KEYS } from './weld-fields';
 import { signoffTypeRowId } from './signoff-types';
 
@@ -11,6 +12,8 @@ export interface FieldActivation {
   key: string;
   showIf?: FieldCondition;
   disabledIf?: FieldCondition;
+  /* null = never filled, overriding a catalog default */
+  fill?: FieldFill | null;
   required?: boolean;
 }
 

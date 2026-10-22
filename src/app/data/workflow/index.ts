@@ -1,6 +1,8 @@
 /* The workflow model and its rules, no UI. Each file is one concern:
      types              the data model (steps, history, deviations)
-     weld-fields        welding step fields and which can't be typed into
+     weld-fields        welding step fields and their PH/IP requirement rules
+     field-locks        which fields on a step can't be typed into
+     field-fill         fields filled from another step's value and locked
      ndt                NDT steps and which ones a joint gets
      fabrication        the Fabrication section's fields
      welding-steps      the built-in Welding routing
@@ -42,3 +44,5 @@ export * from './step-field-config';
 export * from './field-rules';
 export * from './joint-facts';
 export * from './condition-context';
+export * from './field-fill';
+export * from './field-locks';

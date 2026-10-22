@@ -1,7 +1,7 @@
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, WTN
-   fills in the procedure's values, a typed PH/IP requirement of NC locks its actuals, and "Only
-   Consumable Insert used as filler" copies Fit's insert into the filler fields */
-import { StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../workflow';
+   fills in the procedure's values, and a typed PH/IP requirement of NC locks its actuals. A field
+   filled from another step (field-fill.ts) is left alone. */
+import { StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, isFilledByRule } from '../workflow';
 import {
   getProcedureByGwpWtn, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
 } from '../procedures';
@@ -15,11 +15,9 @@ export function selectChangeCascade(stage: WorkflowStage, field: StageField, val
   const changes: FieldChange[] = [{ field, value }];
   const setIfPresent = (key: string, val: string) => {
     const f = stage.fields.find(ff => ff.key === key);
-    if (f) changes.push({ field: f, value: val });
+    if (f && !isFilledByRule(stage, key)) changes.push({ field: f, value: val });
   };
   let matchedProc = false;
-  /* Filler Metal Type/Size belong to the Consumable Insert copy while it's checked */
-  const fillerFieldsLocked = stage.inputs['consumableInsertOnly'] === 'yes';
   if (field.key === 'weldProcedure') {
     /* GWP drives which WTNs are selectable; clear WTN and everything WTN drives */
     setIfPresent('wtn', '');
@@ -29,7 +27,7 @@ export function selectChangeCascade(stage: WorkflowStage, field: StageField, val
     setIfPresent('overrideIpMin', ''); setIfPresent('overrideIpMax', ''); setIfPresent('overrideNote', '');
     /* an NC actual only existed because of the old requirement */
     for (const a of Object.keys(ACTUAL_REQUIREMENT)) if (stage.inputs[a] === 'NC') setIfPresent(a, '');
-    if (!fillerFieldsLocked) { setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', ''); }
+    setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', '');
   }
   if (field.key === 'wtn') {
     /* GWP+WTN identifies one Weld Engineering WPS document; it drives Weld Process, the PH/IP
@@ -53,7 +51,7 @@ export function selectChangeCascade(stage: WorkflowStage, field: StageField, val
     setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
     setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
     setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
-    if (!fillerFieldsLocked && !offListUnlocked) {
+    if (!offListUnlocked) {
       const currentType = stage.inputs['fillerMetalType'] ?? '';
       const currentSize = stage.inputs['fillerMetalSize'] ?? '';
       if (currentType && !fillerMetalTypeOptionsForProcedure(proc).some(o => o.value === currentType)) {
@@ -80,17 +78,4 @@ export function typedRequirementChanges(stage: WorkflowStage, field: StageField,
     else if (stage.inputs[a] === 'NC') changes.push({ field: af, value: '' });
   }
   return changes;
-}
-
-/* filler values copied from Fit's Consumable Insert sign-off (only the ones Fit has) */
-export function consumableInsertFill(stage: WorkflowStage, fit: WorkflowStage | undefined): FieldChange[] {
-  if (!fit) return [];
-  const pairs: [string, string][] = [
-    ['fillerMetalType', 'consumableInsertType'], ['fillerMetalSize', 'consumableInsertSize'], ['fillerMetalMic', 'consumableInsertId'],
-  ];
-  return pairs.flatMap(([fillerKey, insertKey]) => {
-    const field = stage.fields.find(f => f.key === fillerKey);
-    const value = fit.signoffInputs[insertKey] ?? '';
-    return field && value ? [{ field, value }] : [];
-  });
 }

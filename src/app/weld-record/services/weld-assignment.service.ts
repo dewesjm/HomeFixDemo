@@ -3,7 +3,7 @@
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, WorkflowStage, ENGINEERING_ENTRY_KEYS, ACTUAL_REQUIREMENT, FILLER_KEYS } from '../../data/workflow';
+import { JobWorkflow, WorkflowStage, ENGINEERING_ENTRY_KEYS, ACTUAL_REQUIREMENT, isFilledByRule } from '../../data/workflow';
 import { heldQuals } from '../../data/qual-conditions';
 import { assignedInputs, isAssignedStage, isEngineeringEntryJoint } from '../../data/weld-assignment';
 import { WorkflowStore } from './workflow-store.service';
@@ -35,9 +35,8 @@ export class WeldAssignmentService {
   /* first time only: blank anything an earlier assignment left, so the step starts empty */
   private withEngineeringEntry(wf: JobWorkflow, stage: WorkflowStage): JobWorkflow {
     const inputs = { ...stage.inputs };
-    const insertOwnsFiller = inputs['consumableInsertOnly'] === 'yes';
     for (const f of stage.fields) {
-      if (ENGINEERING_ENTRY_KEYS.has(f.key) && !(insertOwnsFiller && FILLER_KEYS.has(f.key))) inputs[f.key] = '';
+      if (ENGINEERING_ENTRY_KEYS.has(f.key) && !isFilledByRule(stage, f.key)) inputs[f.key] = '';
     }
     for (const a of Object.keys(ACTUAL_REQUIREMENT)) if (inputs[a] === 'NC') inputs[a] = '';
     return { ...wf, stages: wf.stages.map(s => s.id === stage.id ? { ...s, inputs, engineeringEntry: true } : s) };

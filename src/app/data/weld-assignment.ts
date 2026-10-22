@@ -3,7 +3,7 @@
    it: those need an engineering override, where the values are typed in by hand (see
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
 import { Job } from './jobs';
-import { WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from './workflow';
+import { WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, isFilledByRule } from './workflow';
 import { requirementsMet } from './qualifications';
 import { conditionRequirements } from './qual-conditions';
 import {
@@ -66,9 +66,8 @@ export function assignedInputs(job: Job, stage: WorkflowStage, heldQuals: string
   out['overrideIpMin'] = hasOv ? proc.overrideIpMin : '';
   out['overrideIpMax'] = hasOv ? proc.overrideIpMax : '';
   out['overrideNote'] = hasOv ? proc.overrideNote : '';
-  if (stage.inputs['consumableInsertOnly'] !== 'yes') {
-    out['fillerMetalType'] = pick(fillerMetalTypeOptionsForProcedure(proc), `${job.id}:${stage.id}:type`)?.value ?? '';
-    out['fillerMetalSize'] = pick(fillerMetalSizeOptionsForProcedure(proc), `${job.id}:${stage.id}:size`)?.value ?? '';
-  }
-  return Object.fromEntries(Object.entries(out).filter(([k]) => has(k)));
+  out['fillerMetalType'] = pick(fillerMetalTypeOptionsForProcedure(proc), `${job.id}:${stage.id}:type`)?.value ?? '';
+  out['fillerMetalSize'] = pick(fillerMetalSizeOptionsForProcedure(proc), `${job.id}:${stage.id}:size`)?.value ?? '';
+  /* a field filled from another step (e.g. filler from Fit's Consumable Insert) keeps that value */
+  return Object.fromEntries(Object.entries(out).filter(([k]) => has(k) && !isFilledByRule(stage, k)));
 }

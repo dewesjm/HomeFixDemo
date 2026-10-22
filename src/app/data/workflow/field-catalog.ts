@@ -10,6 +10,14 @@ import { RT_DEGREE_OPTIONS } from './ndt';
 
 export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
+/* "Filled from another step's field and locked when": while `when` holds (checked against this
+   step's own fields), the field copies that step's recorded value and can't be typed into */
+export interface FieldFill {
+  stepId: string;
+  fieldKey: string;
+  when: FieldCondition;
+}
+
 export interface CatalogField {
   key: string;
   label: string;
@@ -18,8 +26,9 @@ export interface CatalogField {
   placeholder?: string;
   options?: { label: string; value: string; detail?: string }[];
   defaultShowIf?: FieldCondition;
-  /* conditionally disabled (e.g. filler fields when consumableInsertOnly is set) */
+  /* conditionally disabled (e.g. Actual PH Min when PH Min is NC) */
   defaultDisabledIf?: FieldCondition;
+  defaultFill?: FieldFill;
   /* always read-only (e.g. weldProcess driven by WTN) */
   disabled?: boolean;
   defaultRequired?: boolean;
@@ -43,7 +52,10 @@ const showIfRtUnsat: FieldCondition = {
     { source: 'field', key: 'result', equals: 'unsat' },
   ]
 };
-const disabledIfConsumableInsert: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
+/* Root's filler follows Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked
+   (the checkbox is only on Root, so the rule never holds on other steps) */
+const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
+const fillFromFit = (fieldKey: string): FieldFill => ({ stepId: 'fit', fieldKey, when: insertOnly });
 
 const BACKING_RING_OPTIONS = [
   { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -78,11 +90,11 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', defaultRequired: true,
-    defaultDisabledIf: disabledIfConsumableInsert },
+    defaultFill: fillFromFit('consumableInsertType') },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', defaultRequired: true,
-    defaultDisabledIf: disabledIfConsumableInsert },
+    defaultFill: fillFromFit('consumableInsertSize') },
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', defaultRequired: true,
-    defaultDisabledIf: disabledIfConsumableInsert },
+    defaultFill: fillFromFit('consumableInsertId') },
   /* root-weld only; controlled by per-step activation showIf */
   { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
   /* SWITCHED OFF: weld override fields. Kept in catalog so they can be re-enabled without a rewrite. */

@@ -102,14 +102,18 @@
   </dialog>
 }
 
-<!-- A checked field's rules: when it shows and when it's greyed out (each opens the condition
-     editor), and whether it's required. Defer Tack and Release to welding have fixed rules (hasFixedRules). -->
+<!-- A checked field's rules: when it shows, when it's filled from another step and locked, and when
+     it's greyed out (each opens the condition editor), and whether it's required. Defer Tack and
+     Release to welding have fixed rules (hasFixedRules). -->
 <ng-template #fieldRules let-key="key">
   <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
     @if (isBuiltIn(key)) {
       <span class="text-xs px-2">{{ condLabel(key) }}</span>
     } @else {
       <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'show', text: condLabel(key) }"></ng-container>
+    }
+    @if (canFill(key)) {
+      <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'fill', text: fillLabel(key) }"></ng-container>
     }
     @if (!isFixed(key)) {
       @if (isReadOnly(key)) {
@@ -142,20 +146,43 @@
 <ng-template #condEditor>
   @if (editing(); as e) {
     <div class="ml-5 mb-2 bg-base-200 rounded-box p-2 text-sm">
-      <div class="text-xs font-semibold mb-1">
-        {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)' : 'Greyed out when (no clauses = never greyed out)' }}
-      </div>
+      @if (e.condKind === 'fill') {
+        <div class="text-xs font-semibold mb-1">Filled from (no field = never filled)</div>
+        <div class="flex flex-wrap items-center gap-1 mb-2">
+          <select class="select select-bordered select-xs w-44" aria-label="Step to fill from"
+                  [ngModel]="e.fillStepId" (ngModelChange)="setFillSource({ fillStepId: $event })">
+            <option value="">No step</option>
+            @for (s of fillSteps(); track s.stepId) {
+              <option [value]="s.stepId">{{ s.stepLabel }}</option>
+            }
+          </select>
+          <select class="select select-bordered select-xs w-56" aria-label="Field to fill from"
+                  [ngModel]="e.fillFieldKey" (ngModelChange)="setFillSource({ fillFieldKey: $event })" [disabled]="!e.fillStepId">
+            <option value="">No field</option>
+            @for (f of fillSourceFields(); track f.key) {
+              <option [value]="f.key">{{ f.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="text-xs font-semibold mb-1">and locked when this step's fields match (no clauses = always)</div>
+      } @else {
+        <div class="text-xs font-semibold mb-1">
+          {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)' : 'Greyed out when (no clauses = never greyed out)' }}
+        </div>
+      }
       <div class="text-xs mb-1">For "one of" several values, separate them with commas (e.g. mt, pt).</div>
       @for (c of e.condClauses; track $index; let i = $index) {
         @if (i > 0) { <div class="text-xs font-semibold my-1">and</div> }
         <div class="flex flex-wrap items-center gap-1 mb-1">
-          <select class="select select-bordered select-xs w-36"
-                  [ngModel]="c.source"
-                  (ngModelChange)="updateClause(i, { source: $event, key: '', equals: '' })">
-            <option value="field">This step field</option>
-            <option value="jointDetail">Joint detail</option>
-            <option value="stepId">Step ID matches</option>
-          </select>
+          @if (e.condKind !== 'fill') {
+            <select class="select select-bordered select-xs w-36"
+                    [ngModel]="c.source"
+                    (ngModelChange)="updateClause(i, { source: $event, key: '', equals: '' })">
+              <option value="field">This step field</option>
+              <option value="jointDetail">Joint detail</option>
+              <option value="stepId">Step ID matches</option>
+            </select>
+          }
           @if (c.source !== 'stepId') {
             <input type="text" class="input input-bordered input-xs w-40" placeholder="Key"
                    [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event })" />

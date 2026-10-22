@@ -15,7 +15,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
-      'Admin → Signoff Type Definition: one Fields list per step. Consumable Insert, Backing Ring, Defer Tack and Release to welding are in it with the step's other fields, and unticking an insert or backing ring field, its Required checkbox or its greyed-out rule now changes the joint page.',
+      'Admin → Signoff Type Definition: a field can be filled from another step\'s field and locked while a condition holds ("Filled from ... and locked when ..."). Root\'s Filler Metal Type, Size and MIC use this rule to copy Fit\'s Consumable Insert while "Only Consumable Insert used as filler" is checked, so the rule can be seen and changed there. The joint page works the same as before.',
+      'Admin → Signoff Type Definition: one Fields list per step. Consumable Insert, Backing Ring, Defer Tack and Release to welding are in it with the step\'s other fields, and unticking an insert or backing ring field, its Required checkbox or its greyed-out rule now changes the joint page.',
       'Admin → Signoff Type Definition: Repair and Excavation NDT have their own definitions (one each, shared by every round), and Add definition lists the steps in Signoff Type Availability; picking one that already has a definition opens it. Fields the step\'s routing reads when signed (e.g. Repair Code) stay on.',
       'Admin → Signoff Type Definition: each field\'s "greyed out when" rule can be edited like its "shown when" rule, and a Required for sign-off checkbox sets whether it must be filled in. The edit window is wider.',
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
