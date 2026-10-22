@@ -102,8 +102,8 @@
   </dialog>
 }
 
-<!-- A checked field's rules: when it shows, when it's filled from another step and locked, and when
-     it's greyed out (each opens the condition editor), and whether it's required. Defer Tack and
+<!-- A checked field's rules: when it shows, when it's filled and locked, when it's greyed out, and
+     whether and when it's required (each rule opens the condition editor). Defer Tack and
      Release to welding have fixed rules (hasFixedRules). -->
 <ng-template #fieldRules let-key="key">
   <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
@@ -126,6 +126,9 @@
                (change)="setRequired(key, $any($event.target).checked)" />
         Required for sign-off
       </label>
+      @if (isRequired(key)) {
+        <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'required', text: requiredLabel(key) }"></ng-container>
+      }
     }
   </div>
 </ng-template>
@@ -149,9 +152,9 @@
       @if (e.condKind === 'fill') {
         <div class="text-xs font-semibold mb-1">Filled from (no field = never filled)</div>
         <div class="flex flex-wrap items-center gap-1 mb-2">
-          <select class="select select-bordered select-xs w-44" aria-label="Step to fill from"
+          <select class="select select-bordered select-xs w-44" aria-label="Fill from"
                   [ngModel]="e.fillStepId" (ngModelChange)="setFillSource({ fillStepId: $event })">
-            <option value="">No step</option>
+            <option value="">Nothing</option>
             @for (s of fillSteps(); track s.stepId) {
               <option [value]="s.stepId">{{ s.stepLabel }}</option>
             }
@@ -167,7 +170,9 @@
         <div class="text-xs font-semibold mb-1">and locked when this step's fields match (no clauses = always)</div>
       } @else {
         <div class="text-xs font-semibold mb-1">
-          {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)' : 'Greyed out when (no clauses = never greyed out)' }}
+          {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)'
+             : e.condKind === 'required' ? 'Required only when (no clauses = always required)'
+             : 'Greyed out when (no clauses = never greyed out)' }}
         </div>
       }
       <div class="text-xs mb-1">For "one of" several values, separate them with commas (e.g. mt, pt).</div>

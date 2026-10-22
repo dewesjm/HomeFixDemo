@@ -1,7 +1,7 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
    Each row is a routing step, or Repair / Excavation NDT (one row shared by every round); editing
-   picks any field from the catalog and sets when it shows, when it's filled from another step and
-   locked, when it's greyed out and whether it's required. Add's step list is the steps in
+   picks any field from the catalog and sets when it shows, when it's filled (from another step, this
+   step or the WTN) and locked, when it's greyed out, and whether and when it's required. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
    Stored in welding:step-field-config:v2 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -23,11 +23,13 @@ import {
   FIELD_CATALOG,
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
+  defaultRequiredIf, requiredIfToStore, requiredRuleText,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
+import { WTN_FILL_FIELDS } from '../../../data/procedures';
 
 interface DefRow {
   uid: string;
@@ -39,7 +41,11 @@ interface DefRow {
 
 type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
 /* which of a field's conditions the editor is changing */
-type CondKind = 'show' | 'disabled' | 'fill';
+type CondKind = 'show' | 'disabled' | 'fill' | 'required';
+
+/* the fill source picker's entries for this same step and the WTN, beside the other steps' ids */
+const THIS_STEP = '@this-step';
+const WTN = '@wtn';
 
 interface WorkClause {
   source: ClauseSrc;
@@ -55,7 +61,7 @@ interface EditState {
   condKey: string | null;      /* field key whose condition editor is open */
   condKind: CondKind;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
-  fillStepId: string;          /* the open fill rule's source step and field ('' = never filled) */
+  fillStepId: string;          /* the open fill rule's source (a step id, THIS_STEP or WTN) and field ('' = never filled) */
   fillFieldKey: string;
 }
 
@@ -64,7 +70,15 @@ let seq = 0;
 const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? { all: c.all.map(x => ({ ...x })) } : undefined;
 const copyFill = (f: FieldFill | null | undefined) => f ? { ...f, when: copyCondition(f.when)! } : f;
 const copyActivation = (f: FieldActivation): FieldActivation =>
-  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf), fill: copyFill(f.fill) });
+  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf), requiredIf: copyCondition(f.requiredIf), fill: copyFill(f.fill) });
+
+/* a fill's source as the picker's value, and back */
+const fillSourceId = (f: FieldFill | undefined) => !f ? '' : f.from === 'wtn' ? WTN : f.from === 'thisStep' ? THIS_STEP : f.stepId;
+function fillFromSource(sourceId: string, fieldKey: string, when: FieldCondition): FieldFill {
+  if (sourceId === WTN) return { from: 'wtn', fieldKey, when };
+  if (sourceId === THIS_STEP) return { from: 'thisStep', fieldKey, when };
+  return { stepId: sourceId, fieldKey, when };
+}
 
 @Component({
   selector: 'app-admin-signoff-type-definition',
@@ -293,6 +307,10 @@ export class AdminSignoffTypeDefinitionComponent {
     return effectiveRequired(this.activation(key));
   }
 
+  requiredLabel(key: string): string {
+    return requiredRuleText(this.activation(key));
+  }
+
   isBuiltIn(key: string): boolean {
     return hasBuiltInShowRule(key);
   }
@@ -311,20 +329,27 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   fillLabel(key: string): string {
-    return fillRuleText(this.activation(key), id => this.stepLabel(id)) || 'Never filled from another step';
+    return fillRuleText(this.activation(key), id => this.stepLabel(id)) || 'Never filled';
   }
 
-  /* steps a fill can copy from: every other step with a definition */
+  /* what a fill can copy from: this step, the WTN, and every other step with a definition */
   fillSteps = computed(() => {
     const own = this.editing()?.stepId;
-    return this.rows().filter(r => r.stepId !== own).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel }));
+    return [
+      { stepId: THIS_STEP, stepLabel: 'This step' },
+      { stepId: WTN, stepLabel: 'The WTN' },
+      ...this.rows().filter(r => r.stepId !== own).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel })),
+    ];
   });
 
-  /* the chosen source step's fields */
+  /* the chosen source's fields: the WTN's WPS values, this step's other fields, or that step's fields */
   fillSourceFields = computed(() => {
-    const stepId = this.editing()?.fillStepId;
-    if (!stepId) return [];
-    const acts = this.rows().find(r => r.stepId === stepId)?.fieldActivations ?? getActivationForStep(stepId).fields;
+    const e = this.editing();
+    const sourceId = e?.fillStepId;
+    if (!e || !sourceId) return [];
+    if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
+    const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)
+      : this.rows().find(r => r.stepId === sourceId)?.fieldActivations ?? getActivationForStep(sourceId).fields;
     return acts.map(a => ({ key: a.key, label: lookupCatalogField(a.key)?.label ?? a.key }));
   });
 
@@ -342,7 +367,9 @@ export class AdminSignoffTypeDefinitionComponent {
         const stored = requiredToStore(key, required);
         return stored === undefined ? rest : { ...rest, required: stored };
       });
-      return { ...e, fieldActivations: set(e.fieldActivations) };
+      /* unticking closes the field's "Required when" editor */
+      const condKey = !required && e.condKey === key && e.condKind === 'required' ? null : e.condKey;
+      return { ...e, fieldActivations: set(e.fieldActivations), condKey };
     });
   }
 
@@ -368,9 +395,10 @@ export class AdminSignoffTypeDefinitionComponent {
       const act = e.fieldActivations.find(a => a.key === key);
       const fill = act ? effectiveFill(act) : defaultFill(key);
       const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key))
-        : kind === 'disabled' ? (act?.disabledIf ?? defaultDisabledIf(key)) : fill?.when;
+        : kind === 'disabled' ? (act?.disabledIf ?? defaultDisabledIf(key))
+        : kind === 'required' ? (act?.requiredIf ?? defaultRequiredIf(key)) : fill?.when;
       const clauses = current?.all.map(c => this.clauseToWork(c)) ?? [];
-      return { ...e, condKey: key, condKind: kind, condClauses: clauses, fillStepId: fill?.stepId ?? '', fillFieldKey: fill?.fieldKey ?? '' };
+      return { ...e, condKey: key, condKind: kind, condClauses: clauses, fillStepId: fillSourceId(fill), fillFieldKey: fill?.fieldKey ?? '' };
     });
   }
 
@@ -391,8 +419,9 @@ export class AdminSignoffTypeDefinitionComponent {
     if (!e.condKey) return;
     const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
     if (e.condKind === 'fill') { this.applyFill(e, clauses); return; }
-    const prop = e.condKind === 'show' ? 'showIf' : 'disabledIf';
-    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses) : disabledIfToStore(e.condKey, clauses);
+    const prop = e.condKind === 'show' ? 'showIf' : e.condKind === 'disabled' ? 'disabledIf' : 'requiredIf';
+    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, clauses)
+      : e.condKind === 'disabled' ? disabledIfToStore(e.condKey, clauses) : requiredIfToStore(e.condKey, clauses);
 
     const update = (acts: FieldActivation[]): FieldActivation[] =>
       acts.map(a => {
@@ -404,9 +433,9 @@ export class AdminSignoffTypeDefinitionComponent {
     e.fieldActivations = update(e.fieldActivations);
   }
 
-  /* no source step or field = never filled */
+  /* no source or field = never filled */
   private applyFill(e: EditState, clauses: ConditionClause[]) {
-    const fill = e.fillStepId && e.fillFieldKey ? { stepId: e.fillStepId, fieldKey: e.fillFieldKey, when: { all: clauses } } : undefined;
+    const fill = e.fillStepId && e.fillFieldKey ? fillFromSource(e.fillStepId, e.fillFieldKey, { all: clauses }) : undefined;
     const stored = fillToStore(e.condKey!, fill);
     e.fieldActivations = e.fieldActivations.map(a => {
       if (a.key !== e.condKey) return a;

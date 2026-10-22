@@ -26,6 +26,10 @@ describe('WeldAssignmentService', () => {
     const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'], stage.inputs['wtn'])!;
     expect(proc).toBeTruthy();
     expect(gwpOptionsForMaterials(job.materialType1!, job.materialType2!).some(o => o.value === proc.gwp)).toBeTrue();
+    /* Weld Process and PH/IP come in by their fill rules, an NC requirement makes its actual NC */
+    expect(stage.inputs['weldProcess']).toBe(proc.weldProcess.toLowerCase());
+    expect(stage.inputs['phMax']).toBe(proc.phMax);
+    if (proc.phMin === 'NC') expect(stage.inputs['actualPhMin']).toBe('NC');
     if (!isFilledByRule(stage, 'fillerMetalType')) {
       expect(proc.fillerMetalTypes).toContain(stage.inputs['fillerMetalType']);
       expect(proc.fillerMetalSizes).toContain(stage.inputs['fillerMetalSize']);

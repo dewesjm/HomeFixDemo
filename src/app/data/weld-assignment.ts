@@ -3,7 +3,7 @@
    it: those need an engineering override, where the values are typed in by hand (see
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
 import { Job } from './jobs';
-import { WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, isFilledByRule } from './workflow';
+import { WorkflowStage, SHOW_WELD_OVERRIDES, isFilledByRule } from './workflow';
 import { requirementsMet } from './qualifications';
 import { conditionRequirements } from './qual-conditions';
 import {
@@ -45,21 +45,15 @@ function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): Proc
   return pick(qualified.length ? qualified : rows, `${job.id}:${stageId}`);
 }
 
-/* every input the assignment sets: the four assigned fields plus what the WPS drives (Weld
-   Process, PH/IP, NC actuals), same as picking GWP then WTN by hand. Filler is left alone while
-   "Only Consumable Insert used as filler" owns it. */
+/* every input the assignment sets: the four assigned fields plus the override values. Weld Process,
+   PH/IP and NC actuals follow by their fill rules (the caller applies them, field-fill.ts), same as
+   picking GWP then WTN by hand. A filled field, e.g. filler while "Only Consumable Insert used as
+   filler" owns it, is left alone. */
 export function assignedInputs(job: Job, stage: WorkflowStage, heldQuals: string[]): Record<string, string> {
   const proc = assignedProcedure(job, stage.id, heldQuals);
   if (!proc) return {};
   const has = (k: string) => stage.fields.some(f => f.key === k);
-  const out: Record<string, string> = {
-    weldProcedure: proc.gwp, wtn: proc.wtn, weldProcess: proc.weldProcess.toLowerCase(),
-    phMin: proc.phMin, phMax: proc.phMax, ipMin: proc.ipMin, ipMax: proc.ipMax,
-  };
-  for (const [a, req] of Object.entries(ACTUAL_REQUIREMENT)) {
-    if (proc[req as 'phMin'] === 'NC') out[a] = 'NC';
-    else if (stage.inputs[a] === 'NC') out[a] = '';
-  }
+  const out: Record<string, string> = { weldProcedure: proc.gwp, wtn: proc.wtn };
   const hasOv = SHOW_WELD_OVERRIDES && procedureHasOverride(proc);
   out['overridePhMin'] = hasOv ? proc.overridePhMin : '';
   out['overridePhMax'] = hasOv ? proc.overridePhMax : '';
@@ -68,6 +62,5 @@ export function assignedInputs(job: Job, stage: WorkflowStage, heldQuals: string
   out['overrideNote'] = hasOv ? proc.overrideNote : '';
   out['fillerMetalType'] = pick(fillerMetalTypeOptionsForProcedure(proc), `${job.id}:${stage.id}:type`)?.value ?? '';
   out['fillerMetalSize'] = pick(fillerMetalSizeOptionsForProcedure(proc), `${job.id}:${stage.id}:size`)?.value ?? '';
-  /* a field filled from another step (e.g. filler from Fit's Consumable Insert) keeps that value */
   return Object.fromEntries(Object.entries(out).filter(([k]) => has(k) && !isFilledByRule(stage, k)));
 }

@@ -1,16 +1,16 @@
-/* The fields every welding step (Tack, Root, Layer, Final Weld) records, which PH/IP values are set
-   from the WTN rather than typed, and how actuals follow their requirements (field-locks.ts decides
-   what's locked) */
-import { StageField, WorkflowStage } from './types';
+/* The fields every welding step (Tack, Root, Layer, Final Weld) records, which are typed under an
+   engineering override, and how actuals follow their requirements (fill rules in field-catalog.ts
+   set Weld Process, PH/IP and NC actuals; field-locks.ts decides what's locked) */
+import { StageField } from './types';
 import { getWeldPositions } from '../weld-positions';
 
 export const WELD_STAGE_FIELDS: StageField[] = [
   /* GWP and WTN cascade from Weld Engineering's procedures data at render time (see
      data/joint-form/stage-form.ts stageFieldOptions) -- a GWP groups several WPS documents, one
-     per WTN. weldProcess is then read-only, driven by the matching Procedure's own weldProcess. */
+     per WTN. weldProcess is then filled from the matching Procedure's own weldProcess. */
   { key: 'weldProcedure', label: 'GWP', type: 'select', required: true },
   { key: 'wtn', label: 'WTN', type: 'select', required: true },
-  { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true, disabled: true,
+  { key: 'weldProcess', label: 'Weld Process', type: 'select', required: true,
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
   { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
@@ -49,25 +49,14 @@ export const WELD_OVERRIDE_FIELDS: StageField[] = [
   { key: 'overrideNote', label: 'Override Note', type: 'text' },
 ];
 
-/* ── Weld fields set from the WTN, not typed ── */
-
-/* PH/IP limits and overrides are set from the WTN, never typed */
-const READONLY_LIMIT_KEYS = new Set([
-  'phMin', 'phMax', 'ipMin', 'ipMax',
-  'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote',
-]);
 export const FILLER_KEYS = new Set(['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic']);
 /* typed by hand on an engineeringEntry step. Weld Process too, since there's no WTN on file for it to follow */
 export const ENGINEERING_ENTRY_KEYS = new Set([
   'weldProcedure', 'wtn', 'weldProcess', 'phMin', 'phMax', 'ipMin', 'ipMax', 'fillerMetalType', 'fillerMetalSize',
 ]);
 
-/* PH/IP limits and overrides shown as plain text; an engineeringEntry step's PH/IP are typed instead */
-export function isReadonlyLimit(stage: WorkflowStage, key: string): boolean {
-  return READONLY_LIMIT_KEYS.has(key) && !(stage.engineeringEntry && ENGINEERING_ENTRY_KEYS.has(key));
-}
-
-/* each actual and the requirement it follows: NC there sets the actual to NC and locks it */
+/* each actual and the requirement it follows: NC there sets the actual to NC and locks it (the
+   actual's fill rule, field-catalog.ts) */
 export const ACTUAL_REQUIREMENT: Record<string, string> = {
   actualPhMin: 'phMin', actualPhMax: 'phMax', actualIpMin: 'ipMin', actualIpMax: 'ipMax',
 };

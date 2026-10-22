@@ -4,7 +4,7 @@ import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
   ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, hasStepActivation,
-  effectiveShowIf, effectiveDisabledIf, effectiveRequired, isFilledByRule,
+  effectiveShowIf, effectiveDisabledIf, isRequiredNow, isFilledByRule, fieldActivation,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -88,7 +88,7 @@ export function resolveActivatedFields(
         ...(cat.unit !== undefined && { unit: cat.unit }),
         ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
         ...(cat.options !== undefined && { options: cat.options }),
-        required: effectiveRequired(act),
+        required: isRequiredNow(act, condCtx),
         ...(cat.disabled || disabledByCondition ? { disabled: true } : {}),
         ...(cat.minField !== undefined && { minField: cat.minField }),
         ...(cat.maxField !== undefined && { maxField: cat.maxField }),
@@ -114,16 +114,17 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
     const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
     return resolveActivatedFields(stage.id, condCtx, ctx, stage);
   }
-  /* non-catalog path: Fit as Weld Build-Up, custom added steps */
+  /* non-catalog path: Fit as Weld Build-Up, custom added steps. Each field follows its catalog show
+     rule (e.g. Weld Position only when N Ind. is 1). */
   const rawFields = isFitWeldBuildup ? (job ? weldBuildupFields(job.trade) : WELD_OVERRIDE_FIELDS) : stage.fields;
+  const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
   return rawFields
     .map(f => stageFieldOptions(f, stage, ctx))
     .filter(f => {
       if (f.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, ctx.stages)) return false;
       if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
-      /* Weld Position's row is only rendered when N Ind. is '1' (WELD_GROUPS in weld-stage-form.component.ts);
-         kept in step so it isn't required when it can't be seen */
-      if (f.key === 'weldPosition') return job?.nInd === '1';
+      const cond = effectiveShowIf(fieldActivation(stage.id, f.key));
+      if (cond && !evaluateCondition(cond, condCtx)) return false;
       /* override fields only when the selected GWP+WTN's WPS has override values set */
       if (f.key.startsWith('override')) {
         if (!SHOW_WELD_OVERRIDES) return false;

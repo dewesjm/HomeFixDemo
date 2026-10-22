@@ -1,5 +1,5 @@
-import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, effectiveDisabledIf, requiredToStore,
-  defaultFill, effectiveFill, fillToStore, fillRuleText } from './field-rules';
+import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
+  defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf } from './field-rules';
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
@@ -9,9 +9,16 @@ describe('field rules', () => {
     expect(showRuleText({ key: 'hasProbationary' })).toBe('Always shown');
   });
 
-  it('describes greyed-out and required rules', () => {
-    expect(disabledRuleText({ key: 'actualPhMin' })).toBe('Greyed out when PH Min is NC');
-    expect(disabledRuleText({ key: 'weldProcess' })).toBe('Always read-only');
+  it('describes the WTN and NC fill rules, and required rules', () => {
+    const label = (id: string) => id;
+    expect(fillRuleText({ key: 'weldProcess' }, label))
+      .toBe('Always filled from the WTN\'s Weld Process and locked, except under an engineering override');
+    expect(fillRuleText({ key: 'actualPhMin' }, label)).toBe('Filled from this step\'s PH Min and locked when PH Min is NC');
+    expect(fillRuleText({ key: 'actualPhMax' }, label)).toBe('Filled from this step\'s PH Max and locked when PH Max is NC');
+    expect(disabledRuleText({ key: 'weldProcess' })).toBe('');
+    expect(requiredRuleText({ key: 'oversightInspector' })).toBe('Always required');
+    expect(requiredRuleText({ key: 'consumableInsertId' })).toBe('Required when either part requires material traceability');
+    expect(requiredRuleText({ key: 'hasProbationary' })).toBe('');
     expect(effectiveRequired({ key: 'oversightInspector' })).toBeTrue();
     expect(effectiveRequired({ key: 'oversightInspector', required: false })).toBeFalse();
   });
@@ -25,13 +32,16 @@ describe('field rules', () => {
     expect(showIfToStore('hasProbationary', [])).toBeUndefined();
   });
 
-  it('greyed-out rule and required store only what differs from the catalog', () => {
-    const def = [{ source: 'field' as const, key: 'phMin', equals: 'NC' }];
-    expect(disabledIfToStore('actualPhMin', def)).toBeUndefined();
-    const cleared = disabledIfToStore('actualPhMin', []);
+  it('greyed-out, required and required-when rules store only what differs from the catalog', () => {
+    const phNc = [{ source: 'field' as const, key: 'phMin', equals: 'NC' }];
+    expect(disabledIfToStore('actualPhMin', [])).toBeUndefined();
+    expect(disabledIfToStore('actualPhMin', phNc)).toEqual({ all: phNc });
+    const def = [{ source: 'jointDetail' as const, key: 'materialTraceability', equals: 'yes' }];
+    expect(requiredIfToStore('consumableInsertId', def)).toBeUndefined();
+    const cleared = requiredIfToStore('consumableInsertId', []);
     expect(cleared).toEqual({ all: [] });
-    expect(effectiveDisabledIf({ key: 'actualPhMin', disabledIf: cleared })).toBeUndefined();
-    expect(disabledRuleText({ key: 'actualPhMin', disabledIf: cleared })).toBe('');
+    expect(effectiveRequiredIf({ key: 'consumableInsertId', requiredIf: cleared })).toBeUndefined();
+    expect(requiredRuleText({ key: 'consumableInsertId', requiredIf: cleared })).toBe('Always required');
     expect(requiredToStore('fillerMetalMic', true)).toBeUndefined();
     expect(requiredToStore('fillerMetalMic', false)).toBeFalse();
   });
@@ -51,8 +61,11 @@ describe('field rules', () => {
     expect(fillRuleText({ key: 'wtn', fill: always }, label)).toBe('Always filled from Fit\'s Defer Tack and locked');
   });
 
-  it('describes joint-design sign-off fields as built-in rules', () => {
+  it('insert and ring fields show by a joint design rule, Weld Position only when N Ind. is 1', () => {
     expect(showRuleText({ key: 'backingRingType' })).toBe('Shown when the joint design needs a backing ring');
+    expect(showRuleText({ key: 'consumableInsertId' })).toBe('Shown when the joint design needs a consumable insert');
+    expect(showRuleText({ key: 'weldPosition' })).toBe('Shown when joint N Ind. is 1');
+    expect(showRuleText({ key: 'consumableInsertId', showIf: { all: [] } })).toBe('Always shown');
   });
 });
 

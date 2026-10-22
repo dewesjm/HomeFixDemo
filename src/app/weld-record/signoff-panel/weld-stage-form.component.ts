@@ -36,7 +36,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { title: 'Actuals', rows: [{ keys: ['actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax'], width: 150 }] },
   ] },
   { sections: [
-    { when: (_st, ctx) => ctx.job.nInd === '1', rows: [{ keys: ['weldPosition'], width: 200 }] },
+    { rows: [{ keys: ['weldPosition'], width: 200 }] },
   ] },
   { sections: [
     { when: st => st.id === 'root-weld', rows: [{ keys: ['performed5x'], width: 400 }] },

@@ -15,6 +15,8 @@ export interface FieldActivation {
   /* null = never filled, overriding a catalog default */
   fill?: FieldFill | null;
   required?: boolean;
+  /* required only while this holds; an empty condition = always, overriding a catalog default */
+  requiredIf?: FieldCondition;
 }
 
 export interface StepFieldActivation {
@@ -23,7 +25,6 @@ export interface StepFieldActivation {
 }
 
 /* ── Condition shorthands ── */
-const nuclearOnly: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
 const titaniumVt: FieldCondition = {
   all: [
     { source: 'field', key: 'inspectionType', equals: 'vt' },
@@ -41,7 +42,7 @@ const tackFiller: FieldCondition = {
   ]
 };
 
-/* Insert and ring fields: shown when the joint design requires each (fit-signoff.ts) */
+/* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
   { key: 'consumableInsertType' }, { key: 'consumableInsertSize' }, { key: 'consumableInsertId' },
 ];
@@ -55,7 +56,7 @@ const WELD_FIELDS: FieldActivation[] = [
   { key: 'fillerMetalType' }, { key: 'fillerMetalSize' }, { key: 'fillerMetalMic' },
   { key: 'phMin' }, { key: 'phMax' }, { key: 'ipMin' }, { key: 'ipMax' },
   { key: 'actualPhMin' }, { key: 'actualPhMax' }, { key: 'actualIpMin' }, { key: 'actualIpMax' },
-  { key: 'weldPosition', showIf: nuclearOnly },
+  { key: 'weldPosition' },
 ];
 
 const NDT_COMMON_FIELDS: FieldActivation[] = [
@@ -186,6 +187,13 @@ export const activationStepId = (stageId: string) => signoffTypeRowId(stageId);
 export function hasStepActivation(stageId: string): boolean {
   const id = activationStepId(stageId);
   return DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === id) || getStepFieldConfig().some(a => a.stepId === id);
+}
+
+/* a field's settings on a step: its definition's entry, else the catalog defaults (a step with no
+   definition, or a field its definition doesn't list, such as Fit's Weld Build-Up fields) */
+export function fieldActivation(stageId: string, key: string): FieldActivation {
+  const listed = hasStepActivation(stageId) ? getActivationForStep(stageId).fields.find(a => a.key === key) : undefined;
+  return listed ?? { key };
 }
 
 /* Returns the activation for a step, falling back to defaults if not in the stored config */

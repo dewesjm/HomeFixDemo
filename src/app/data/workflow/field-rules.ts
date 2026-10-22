@@ -1,19 +1,14 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Definition */
-import { FieldCondition, ConditionClause } from './field-conditions';
+import { FieldCondition, ConditionClause, ConditionContext, evaluateCondition } from './field-conditions';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, lookupCatalogField } from './field-catalog';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
-   (stage-form.ts), the insert/ring fields (fit-signoff.ts), and the two checkboxes routing reads */
+   (stage-form.ts) and the two checkboxes routing reads */
 const BUILT_IN_SHOW_TEXT: Record<string, string> = {
   allowableThicknessExceeded: 'Shown when the rejected phase has an RT/UT step',
-  consumableInsertType: 'Shown when the joint design needs a consumable insert',
-  consumableInsertSize: 'Shown when the joint design needs a consumable insert',
-  consumableInsertId: 'Shown when the joint design needs a consumable insert',
-  backingRingType: 'Shown when the joint design needs a backing ring',
-  backingRingId: 'Shown when the joint design needs a backing ring',
   deferTack: 'Always shown',
   releaseToWelding: 'Always shown',
 };
@@ -59,6 +54,22 @@ export function effectiveRequired(act: FieldActivation): boolean {
   return act.required ?? lookupCatalogField(act.key)?.defaultRequired ?? false;
 }
 
+export function defaultRequiredIf(key: string): FieldCondition | undefined {
+  return lookupCatalogField(key)?.defaultRequiredIf;
+}
+
+/* An empty requiredIf ({ all: [] }) is an explicit "always required", overriding a catalog default */
+export function effectiveRequiredIf(act: FieldActivation): FieldCondition | undefined {
+  const cond = act.requiredIf ?? defaultRequiredIf(act.key);
+  return cond?.all.length ? cond : undefined;
+}
+
+/* required on this step right now: Required is on and its "only when" condition holds */
+export function isRequiredNow(act: FieldActivation, ctx: ConditionContext): boolean {
+  const cond = effectiveRequiredIf(act);
+  return effectiveRequired(act) && (!cond || evaluateCondition(cond, ctx));
+}
+
 /* The condition to store for edited clauses: none when they match the default, an explicit empty
    condition when cleared over a default, otherwise the clauses */
 function conditionToStore(def: FieldCondition | undefined, clauses: ConditionClause[]): FieldCondition | undefined {
@@ -73,6 +84,10 @@ export function showIfToStore(key: string, clauses: ConditionClause[]): FieldCon
 
 export function disabledIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
   return conditionToStore(defaultDisabledIf(key), clauses);
+}
+
+export function requiredIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
+  return conditionToStore(defaultRequiredIf(key), clauses);
 }
 
 /* the fill to store: none when it matches the default, null when cleared over a default */
@@ -134,12 +149,22 @@ export function hasBuiltInShowRule(key: string): boolean {
 }
 
 /* e.g. "Filled from Fit's Consumable Insert Type and locked when Only Consumable Insert used as
-   filler is checked"; '' when the field is never filled from another step */
+   filler is checked", "Filled from the WTN's PH Min and locked, except under an engineering
+   override"; '' when the field is never filled */
 export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
   const fill = effectiveFill(act);
   if (!fill) return '';
-  const from = `${stepLabel(fill.stepId)}'s ${labelOf(fill.fieldKey)}`;
-  return fill.when.all.length ? `Filled from ${from} and locked when ${conditionText(fill.when)}` : `Always filled from ${from} and locked`;
+  const source = fill.from === 'wtn' ? 'the WTN' : fill.from === 'thisStep' ? 'this step' : stepLabel(fill.stepId);
+  const from = `${source}'s ${labelOf(fill.fieldKey)}`;
+  const lock = fill.when.all.length ? `Filled from ${from} and locked when ${conditionText(fill.when)}` : `Always filled from ${from} and locked`;
+  return fill.from === 'wtn' ? `${lock}, except under an engineering override` : lock;
+}
+
+/* e.g. "Required when either part requires material traceability"; '' when not required */
+export function requiredRuleText(act: FieldActivation): string {
+  if (!effectiveRequired(act)) return '';
+  const cond = effectiveRequiredIf(act);
+  return cond ? `Required when ${conditionText(cond)}` : 'Always required';
 }
 
 /* e.g. "Greyed out when PH Min is NC"; '' when the field is never greyed out */

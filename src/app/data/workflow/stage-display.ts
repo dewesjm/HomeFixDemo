@@ -5,7 +5,7 @@ import { hasDecision } from './stage-rules';
 import { withComments } from './signoff-forms';
 import { Job } from '../jobs';
 import { isTitaniumJoint } from '../material-classification';
-import { getActivationForStep, hasStepActivation } from './step-field-config';
+import { fieldActivation } from './step-field-config';
 import { effectiveShowIf } from './field-rules';
 import { evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
@@ -51,12 +51,10 @@ export function fieldAppliesToJob(f: StageField, job: Job | undefined): boolean 
    Definition conditions; a stand-in for the joint page's visible fields (visibleStageFields), used by
    seeded History, Correct and its History entry. */
 export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStage[] = [], fab: Record<string, string> = {}): StageField[] {
-  const activation = hasStepActivation(stage.id) ? getActivationForStep(stage.id) : undefined;
   const ctx = buildConditionContext(stage, job, stages, fab);
   return stage.fields.filter(f => {
     if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
-    const act = activation?.fields.find(a => a.key === f.key);
-    const cond = act && effectiveShowIf(act);
+    const cond = effectiveShowIf(fieldActivation(stage.id, f.key));
     return !cond || evaluateCondition(cond, ctx);
   });
 }

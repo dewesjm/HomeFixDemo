@@ -425,6 +425,21 @@ export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | unde
   return procedures().find(p => p.gwp === gwp && p.wtn === wtn);
 }
 
+/* the WPS values a welding step's fields can be filled from (a "Filled from the WTN" rule) */
+export const WTN_FILL_FIELDS = [
+  { key: 'weldProcess', label: 'Weld Process' },
+  { key: 'phMin', label: 'PH Min' }, { key: 'phMax', label: 'PH Max' },
+  { key: 'ipMin', label: 'IP Min' }, { key: 'ipMax', label: 'IP Max' },
+] as const;
+export type WtnFillKey = typeof WTN_FILL_FIELDS[number]['key'];
+
+/* one of those values for a GWP+WTN; '' when the pair matches no WPS */
+export function wtnFillValue(gwp: string, wtn: string, key: string): string {
+  const proc = getProcedureByGwpWtn(gwp, wtn);
+  if (!proc || !WTN_FILL_FIELDS.some(f => f.key === key)) return '';
+  return key === 'weldProcess' ? proc.weldProcess.toLowerCase() : proc[key as Exclude<WtnFillKey, 'weldProcess'>];
+}
+
 /* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
    Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
    On the weld record the external-system stand-in (weld-assignment.ts) picks one of these; a

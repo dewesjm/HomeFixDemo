@@ -42,6 +42,10 @@ export const VIRTUAL_JOINT_DETAILS: Record<string, VirtualJointDetail> = {
     value: jointDesignRequiresInsert,
     yesText: 'the joint design needs a consumable insert', noText: 'the joint design doesn\'t need a consumable insert',
   },
+  backingRingRequired: {
+    value: jointDesignRequiresBackingRing,
+    yesText: 'the joint design needs a backing ring', noText: 'the joint design doesn\'t need a backing ring',
+  },
   materialTraceability: {
     value: job => jointRequiresTraceability(job),
     yesText: 'either part requires material traceability', noText: 'neither part requires material traceability',

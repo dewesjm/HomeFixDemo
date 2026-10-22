@@ -10,13 +10,12 @@ import { RT_DEGREE_OPTIONS } from './ndt';
 
 export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
-/* "Filled from another step's field and locked when": while `when` holds (checked against this
-   step's own fields), the field copies that step's recorded value and can't be typed into */
-export interface FieldFill {
-  stepId: string;
-  fieldKey: string;
-  when: FieldCondition;
-}
+/* "Filled from ... and locked when": while `when` holds (checked against this step's own fields),
+   the field copies the source's value and can't be typed into. The source is another step's
+   recorded value, a field on this same step, or the WTN's WPS (never under an engineering
+   override, where there's no WTN on file and the values are typed). */
+export type FieldFill = { fieldKey: string; when: FieldCondition }
+  & ({ from?: 'step'; stepId: string } | { from: 'thisStep' } | { from: 'wtn' });
 
 export interface CatalogField {
   key: string;
@@ -29,9 +28,11 @@ export interface CatalogField {
   /* conditionally disabled (e.g. Actual PH Min when PH Min is NC) */
   defaultDisabledIf?: FieldCondition;
   defaultFill?: FieldFill;
-  /* always read-only (e.g. weldProcess driven by WTN) */
+  /* always read-only */
   disabled?: boolean;
   defaultRequired?: boolean;
+  /* a required field is required only while this holds (e.g. an MIC only when traceability applies) */
+  defaultRequiredIf?: FieldCondition;
   minField?: string;
   maxField?: string;
   fullWidth?: boolean;
@@ -56,6 +57,17 @@ const showIfRtUnsat: FieldCondition = {
    (the checkbox is only on Root, so the rule never holds on other steps) */
 const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
 const fillFromFit = (fieldKey: string): FieldFill => ({ stepId: 'fit', fieldKey, when: insertOnly });
+/* Weld Process and the PH/IP requirements come from the WTN's WPS */
+const fillFromWtn = (fieldKey: string): FieldFill => ({ from: 'wtn', fieldKey, when: { all: [] } });
+/* an actual is NC while its requirement is NC */
+const ncFrom = (requirement: string): FieldFill =>
+  ({ from: 'thisStep', fieldKey: requirement, when: { all: [{ source: 'field', key: requirement, equals: 'NC' }] } });
+
+const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
+/* virtual Joint Details keys (joint-facts.ts) */
+const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'yes' }] };
+const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'yes' }] };
+const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'materialTraceability', equals: 'yes' }] };
 
 const BACKING_RING_OPTIONS = [
   { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
@@ -66,28 +78,23 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── Welding ── */
   { key: 'weldProcedure', label: 'GWP', type: 'select', defaultRequired: true },
   { key: 'wtn', label: 'WTN', type: 'select', defaultRequired: true },
-  /* driven by the matched WTN; engineeringEntry steps unlock it (renderer-level override) */
-  { key: 'weldProcess', label: 'Weld Process', type: 'select', defaultRequired: true, disabled: true,
+  { key: 'weldProcess', label: 'Weld Process', type: 'select', defaultRequired: true, defaultFill: fillFromWtn('weldProcess'),
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
   { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
-  { key: 'phMin', label: 'PH Min', type: 'number' },
-  { key: 'phMax', label: 'PH Max', type: 'number' },
-  { key: 'ipMin', label: 'IP Min', type: 'number' },
-  { key: 'ipMax', label: 'IP Max', type: 'number' },
+  { key: 'phMin', label: 'PH Min', type: 'number', defaultFill: fillFromWtn('phMin') },
+  { key: 'phMax', label: 'PH Max', type: 'number', defaultFill: fillFromWtn('phMax') },
+  { key: 'ipMin', label: 'IP Min', type: 'number', defaultFill: fillFromWtn('ipMin') },
+  { key: 'ipMax', label: 'IP Max', type: 'number', defaultFill: fillFromWtn('ipMax') },
   { key: 'actualPhMin', label: 'Actual PH Min', type: 'number', defaultRequired: true,
-    minField: 'phMin', maxField: 'phMax',
-    defaultDisabledIf: { all: [{ source: 'field', key: 'phMin', equals: 'NC' }] } },
+    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMin') },
   { key: 'actualPhMax', label: 'Actual PH Max', type: 'number', defaultRequired: true,
-    minField: 'phMin', maxField: 'phMax',
-    defaultDisabledIf: { all: [{ source: 'field', key: 'phMin', equals: 'NC' }] } },
+    minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMax') },
   { key: 'actualIpMin', label: 'Actual IP Min', type: 'number', defaultRequired: true,
-    minField: 'ipMin', maxField: 'ipMax',
-    defaultDisabledIf: { all: [{ source: 'field', key: 'ipMin', equals: 'NC' }] } },
+    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMin') },
   { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', defaultRequired: true,
-    minField: 'ipMin', maxField: 'ipMax',
-    defaultDisabledIf: { all: [{ source: 'field', key: 'ipMin', equals: 'NC' }] } },
-  { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true,
+    minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMax') },
+  { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true, defaultShowIf: showIfNuclear,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', defaultRequired: true,
     defaultFill: fillFromFit('consumableInsertType') },
@@ -143,14 +150,15 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Fit / Pre-Fit ── */
   { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,
-    options: FILLER_METAL_TYPE_OPTIONS, drawnByStepForm: true },
+    defaultShowIf: showIfInsert, options: FILLER_METAL_TYPE_OPTIONS, drawnByStepForm: true },
   { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', defaultRequired: true,
-    options: FILLER_METAL_SIZE_OPTIONS, drawnByStepForm: true },
-  /* the MICs are required only when either part's MCL requires traceability (fit-signoff.ts) */
-  { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', defaultRequired: true, drawnByStepForm: true },
+    defaultShowIf: showIfInsert, options: FILLER_METAL_SIZE_OPTIONS, drawnByStepForm: true },
+  { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', defaultRequired: true,
+    defaultRequiredIf: ifTraceability, defaultShowIf: showIfInsert, drawnByStepForm: true },
   { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', defaultRequired: true,
-    options: BACKING_RING_OPTIONS, drawnByStepForm: true },
-  { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', defaultRequired: true, drawnByStepForm: true },
+    defaultShowIf: showIfRing, options: BACKING_RING_OPTIONS, drawnByStepForm: true },
+  { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', defaultRequired: true,
+    defaultRequiredIf: ifTraceability, defaultShowIf: showIfRing, drawnByStepForm: true },
   { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', drawnByStepForm: true },
 
   /* ── Repair ── */
