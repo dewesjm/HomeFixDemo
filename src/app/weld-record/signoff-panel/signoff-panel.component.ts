@@ -6,22 +6,17 @@ import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, COMMENTS_FIELD, hasCommentsBox
 import { qualCheck, QualCheckResult } from '../../data/qualifications';
 import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
+import { CatalogStageFormComponent } from './catalog-stage-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
 import { FitSignoffFormComponent } from './fit-signoff-form.component';
-import { FitupInspFormComponent } from './fitup-insp-form.component';
-import { GenericStageFormComponent } from './generic-stage-form.component';
 import { NdtDefectCodeComponent } from './ndt-defect-code.component';
-import { NdtStageFormComponent } from './ndt-stage-form.component';
-import { RecordsReviewComponent } from './records-review.component';
-import { WeldStageFormComponent } from './weld-stage-form.component';
 import { SignoffContext } from './signoff-context';
 
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX,
-    EngineeringReleaseComponent, FitSignoffFormComponent, FitupInspFormComponent, GenericStageFormComponent,
-    NdtDefectCodeComponent, NdtStageFormComponent, RecordsReviewComponent, WeldStageFormComponent],
+    CatalogStageFormComponent, EngineeringReleaseComponent, FitSignoffFormComponent, NdtDefectCodeComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

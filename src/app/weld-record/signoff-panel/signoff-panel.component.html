@@ -67,13 +67,7 @@
 
     <!-- the step's own form; Fit's sits below with the sign-off, since it's all sign-off fields -->
     <div class="mb-3">
-      @switch (form) {
-        @case ('fitup-insp') { <app-fitup-insp-form [ctx]="ctx()" [stage]="st" /> }
-        @case ('records-review') { <app-records-review [ctx]="ctx()" [stage]="st" /> }
-        @case ('weld') { <app-weld-stage-form [ctx]="ctx()" [stage]="st" /> }
-        @case ('ndt') { <app-ndt-stage-form [ctx]="ctx()" [stage]="st" /> }
-        @case ('generic') { <app-generic-stage-form [ctx]="ctx()" [stage]="st" /> }
-      }
+      <app-catalog-stage-form [ctx]="ctx()" [stage]="st" />
     </div>
 
     @if (st.required) {

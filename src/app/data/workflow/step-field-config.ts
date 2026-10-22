@@ -23,7 +23,8 @@ const nuclearOnly: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd'
 const titaniumVt: FieldCondition = {
   all: [
     { source: 'field', key: 'inspectionType', equals: 'vt' },
-    { source: 'jointDetail', key: 'materialType1', anyOf: ['Titanium'] },
+    /* 'titanium' is a virtual key resolved in buildConditionContext() via isTitaniumJoint() */
+    { source: 'jointDetail', key: 'titanium', equals: 'yes' },
   ]
 };
 const rootWeldOnly: FieldCondition = { all: [{ source: 'stepId', matches: '^root-weld$' }] };
@@ -75,46 +76,44 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
   'verifyWps', 'verifyOrder', 'verifyWorkPackage',
 ].map(key => ({ key }));
 
-/* NQC copies of NDT steps share the same field activation as the base step */
+/* NQC copies of NDT steps (nqc- prefix, matching nqcStepId() in step-ids.ts) share the same
+   field activation as the base step */
 function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): StepFieldActivation[] {
   return [
     { stepId: `${phase}-ndt-${kind}`, fields, signoffFields: [] },
-    { stepId: `${phase}-ndt-${kind}-nqc`, fields, signoffFields: [] },
+    { stepId: `nqc-${phase}-ndt-${kind}`, fields, signoffFields: [] },
   ];
 }
 
-/* Weld step and its NQC twin */
-function weldPair(id: string, extra: FieldActivation[] = []): StepFieldActivation[] {
-  return [
-    { stepId: id, fields: [...WELD_FIELDS, ...extra], signoffFields: [] },
-    { stepId: `${id}-nqc`, fields: [...WELD_FIELDS, ...extra], signoffFields: [] },
-  ];
+/* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
+function weldStep(id: string, extra: FieldActivation[] = []): StepFieldActivation {
+  return { stepId: id, fields: [...WELD_FIELDS, ...extra], signoffFields: [] };
 }
+
+const FITUP_INSP_FIELDS: FieldActivation[] = [
+  { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
+  { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
+];
 
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'pre-fit', fields: [],
     signoffFields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [],
     signoffFields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
-  ...weldPair('tack'),
-  { stepId: 'fitup-insp',
-    fields: [
-      { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
-      { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
-    ],
-    signoffFields: [{ key: 'releaseToWelding' }] },
+  weldStep('tack'),
+  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
+  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
   { stepId: 'fitup-release', fields: [], signoffFields: [] },
-  { stepId: 'fitup-release-nqc', fields: [], signoffFields: [] },
-  ...weldPair('deferred-tack'),
-  ...weldPair('root-weld', [{ key: 'consumableInsertOnly', showIf: rootWeldOnly }]),
+  weldStep('deferred-tack'),
+  weldStep('root-weld', [{ key: 'consumableInsertOnly', showIf: rootWeldOnly }]),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('root', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('root', 'utrt', NDT_UTRT_FIELDS),
-  ...weldPair('root-layer'),
+  weldStep('root-layer'),
   ...ndtNqcPair('layer', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('layer', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('layer', 'utrt', NDT_UTRT_FIELDS),
-  ...weldPair('final-weld'),
+  weldStep('final-weld'),
   ...ndtNqcPair('final', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),

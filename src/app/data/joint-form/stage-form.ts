@@ -3,7 +3,9 @@ import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
+  ConditionContext, evaluateCondition, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
 } from '../workflow';
+import { isTitaniumJoint } from '../material-classification';
 import { requiresTraceability } from '../mcl-traceability';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -56,12 +58,78 @@ export function fitFieldsForType(trade: Job['trade'], signoffType: string): Stag
   return (templates.find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
 }
 
-/* Fields shown on the step. Fit under Weld Build-Up reads Tack's template rather than stage.fields,
-   which may not have propagated yet when Angular re-evaluates the @if gate in the same
-   change-detection tick. */
+/* Builds the evaluation context the catalog condition system needs to resolve field visibility
+   and disabled state for a step. 'titanium' is a virtual jointDetail key for isTitaniumJoint().
+   'inspectionType' is merged into inputs so field-source conditions can reach it. */
+export function buildConditionContext(stage: WorkflowStage, job: Job | undefined, allStages: WorkflowStage[]): ConditionContext {
+  return {
+    stageId: stage.id,
+    inputs: { ...stage.inputs, inspectionType: stage.inspectionType },
+    jointDetail: (key: string): string => {
+      if (key === 'titanium') return job && isTitaniumJoint(job) ? 'yes' : '';
+      const v = (job as Record<string, unknown> | undefined)?.[key];
+      if (v === undefined || v === null) return '';
+      if (typeof v === 'boolean') return v ? 'yes' : '';
+      return String(v);
+    },
+    stageProperty: (key: string): string => {
+      if (key === 'engineeringEntry') return stage.engineeringEntry ? 'yes' : '';
+      return '';
+    },
+    priorInput: (stepId: string, fieldKey: string): string =>
+      allStages.find(s => s.id === stepId)?.inputs[fieldKey] ?? '',
+  };
+}
+
+/* Resolves visible StageField[] from the catalog activation for a step, evaluating all conditions
+   and enriching each field with runtime options via stageFieldOptions(). */
+export function resolveActivatedFields(
+  stepId: string,
+  condCtx: ConditionContext,
+  formCtx: StageFormContext,
+  stage: WorkflowStage
+): StageField[] {
+  const activation = getActivationForStep(stepId);
+  return activation.fields
+    .filter(act => {
+      const cat = lookupCatalogField(act.key);
+      if (!cat) return false;
+      const cond = act.showIf ?? cat.defaultShowIf;
+      return !cond || evaluateCondition(cond, condCtx);
+    })
+    .map(act => {
+      const cat = lookupCatalogField(act.key)!;
+      const disabledCond = act.disabledIf ?? cat.defaultDisabledIf;
+      const disabledByCondition = !!disabledCond && evaluateCondition(disabledCond, condCtx);
+      const sf: StageField = {
+        key: cat.key,
+        label: cat.label,
+        type: cat.type,
+        ...(cat.unit !== undefined && { unit: cat.unit }),
+        ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
+        ...(cat.options !== undefined && { options: cat.options }),
+        required: act.required ?? cat.defaultRequired ?? false,
+        ...(cat.disabled || disabledByCondition ? { disabled: true } : {}),
+        ...(cat.minField !== undefined && { minField: cat.minField }),
+        ...(cat.maxField !== undefined && { maxField: cat.maxField }),
+        ...(cat.fullWidth !== undefined && { fullWidth: cat.fullWidth }),
+        ...(cat.description !== undefined && { description: cat.description }),
+      };
+      return stageFieldOptions(sf, stage, formCtx);
+    });
+}
+
+/* Fields shown on the step. Catalog-managed steps (built-in welding routing) resolve from the
+   field catalog config via evaluateCondition(). Non-catalog steps (Repair, Excavation NDT,
+   custom added steps) and Fit as Weld Build-Up use the template's stage.fields directly. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
   const job = ctx.job;
   const isFitWeldBuildup = stage.id === 'fit' && stage.signoffType === 'weld-buildup';
+  if (!isFitWeldBuildup && DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === stage.id)) {
+    const condCtx = buildConditionContext(stage, job, ctx.stages);
+    return resolveActivatedFields(stage.id, condCtx, ctx, stage);
+  }
+  /* non-catalog path: Repair, Excavation NDT, Fit as Weld Build-Up, custom added steps */
   const rawFields = isFitWeldBuildup ? (job ? weldBuildupFields(job.trade) : WELD_OVERRIDE_FIELDS) : stage.fields;
   return rawFields
     .map(f => stageFieldOptions(f, stage, ctx))
@@ -70,12 +138,8 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
       if (f.key === 'allowableThicknessExceeded'
           && !stepOnJoint(ctx.stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
       if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
-      /* MIC fields only visible when traceability is required */
-      if (f.key === 'consumableInsertId' || f.key === 'backingRingId') {
-        return !!job && (requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2));
-      }
-      /* Weld Position's row is only rendered when N Ind. is '1' (WELD_GROUPS in
-         signoff-panel.component.ts); kept in step so it isn't required when it can't be seen */
+      /* Weld Position's row is only rendered when N Ind. is '1' (WELD_GROUPS in weld-stage-form.component.ts);
+         kept in step so it isn't required when it can't be seen */
       if (f.key === 'weldPosition') return job?.nInd === '1';
       /* override fields only when the selected GWP+WTN's WPS has override values set */
       if (f.key.startsWith('override')) {
