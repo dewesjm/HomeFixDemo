@@ -1,7 +1,10 @@
 import { layoutSections } from './definition-layout';
 import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep } from './step-field-config';
+import { drawnOutsideForm } from './signoff-forms';
 
 const all = () => true;
+/* the form never draws Type, Comments or References itself */
+const inForm = (key: string) => !drawnOutsideForm(key);
 
 describe('layoutSections', () => {
   it('puts each field on its own line unless it is set to the same line', () => {
@@ -40,7 +43,7 @@ describe('layoutSections', () => {
   });
 
   it('draws the default Root Weld as the weld form does: three boxes, the requirements on one line', () => {
-    const sections = layoutSections(getActivationForStep('root-weld').fields, all);
+    const sections = layoutSections(getActivationForStep('root-weld').fields, inForm);
     expect(sections.map(s => s.title)).toEqual(['', 'Preheat/Interpass', '']);
     expect(sections[0].parts).toEqual([
       { kind: 'line', keys: ['weldProcedure', 'wtn', 'weldProcess'] }, { kind: 'line', keys: ['qualificationCheck'] },
@@ -50,8 +53,8 @@ describe('layoutSections', () => {
   });
 
   it('draws the default UT/RT NDT with Inspection Results just above Defect Code', () => {
-    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, all)
+    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, inForm)
       .flatMap(s => s.parts.flatMap(p => p.kind === 'line' ? p.keys : []));
-    expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode', 'references']);
+    expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode']);
   });
 });

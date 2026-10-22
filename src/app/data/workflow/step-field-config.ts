@@ -3,7 +3,7 @@
    Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v7) and take effect immediately. */
+   (welding:step-field-config:v8) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { ConditionClause, FieldCondition } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
@@ -11,8 +11,9 @@ import { defaultDisabledIf, disabledIfToStore } from './field-rules';
 import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import type { WorkflowStage } from './types';
 import { FILLER_KEYS } from './weld-fields';
-import { signoffTypeRowId, typeDefinition } from './signoff-types';
-import { WELD_BUILDUP_DEFINITION } from './step-ids';
+import { hasSignoffTypeRow, signoffTypeRowId, typeDefinition } from './signoff-types';
+import { WELD_BUILDUP_DEFINITION, isExcavationNdtStageId } from './step-ids';
+import { templateHasRejectTarget } from './stage-templates';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -40,23 +41,20 @@ export function isHeadingItem(a: FieldActivation): boolean {
   return a.heading !== undefined;
 }
 
-/* the Layout list's place for Inspection Results (the SAT/UNSAT decision), drawn only on a step with
-   a reject target */
+/* the signoff section's fields, drawn by the sign-off panel: Type above the form, Inspection Results
+   (SAT/UNSAT) where the Layout list places it, Comments below the form */
+export const TYPE_KEY = 'type';
 export const DECISION_KEY = 'decision';
+export const COMMENTS_KEY = 'comments';
 
-/* a Layout list item that isn't a field: a heading, or Inspection Results */
+/* a Layout list item that isn't a field: a heading */
 export function isLayoutOnlyItem(a: FieldActivation): boolean {
-  return isHeadingItem(a) || a.key === DECISION_KEY;
+  return isHeadingItem(a);
 }
 
-/* the definition's fields, without its headings and Inspection Results */
+/* the definition's fields, without its headings */
 export function definitionFields(items: FieldActivation[]): FieldActivation[] {
   return items.filter(a => !isLayoutOnlyItem(a));
-}
-
-/* the Layout list: a definition that doesn't place Inspection Results has it after its fields */
-export function layoutItems(items: FieldActivation[]): FieldActivation[] {
-  return items.some(a => a.key === DECISION_KEY) ? items : [...items, { key: DECISION_KEY }];
 }
 
 export interface StepFieldActivation {
@@ -65,13 +63,6 @@ export interface StepFieldActivation {
 }
 
 /* ── Condition shorthands ── */
-const titaniumVt: FieldCondition = {
-  all: [
-    { source: 'field', key: 'inspectionType', equals: 'vt' },
-    /* 'titanium' is a virtual key resolved in buildConditionContext() via isTitaniumJoint() */
-    { source: 'jointDetail', key: 'titanium', equals: 'yes' },
-  ]
-};
 const rootWeldOnly: FieldCondition = { all: [{ source: 'stepId', matches: '^root-weld$' }] };
 /* Tack's filler is hidden when a consumable insert is used, and when neither part requires
    material traceability (virtual keys in joint-facts.ts) */
@@ -88,6 +79,8 @@ const same = (key: string, width?: number): FieldActivation => ({ key, sameLine:
 const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
 const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
 const DECISION: FieldActivation = { key: DECISION_KEY };
+const TYPE: FieldActivation = { key: TYPE_KEY };
+const COMMENTS: FieldActivation = { key: COMMENTS_KEY };
 
 /* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
@@ -129,10 +122,9 @@ const NDT_MTPT_FIELDS: FieldActivation[] = [
   { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'), DECISION,
 ];
 
-/* weldColor condition adds the titanium check to the catalog's inspectionType=vt default */
 const NDT_VT5X_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'weldColor', showIf: titaniumVt }, DECISION,
+  { key: 'weldColor' }, DECISION,
 ];
 
 /* Excavation NDT repeats whichever inspection rejected the joint, so it carries every NDT field and
@@ -142,7 +134,7 @@ const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
   { key: 'degreeRt' }, same('rtFileNumber'),
   { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, same('penetrantType'),
-  { key: 'weldColor', showIf: titaniumVt },
+  { key: 'weldColor' },
   DECISION, { key: 'defectCode', width: 320 },
 ];
 
@@ -158,37 +150,38 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
    field activation as the base step */
 function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): StepFieldActivation[] {
   return [
-    { stepId: `${phase}-ndt-${kind}`, fields },
-    { stepId: `nqc-${phase}-ndt-${kind}`, fields },
+    { stepId: `${phase}-ndt-${kind}`, fields: [TYPE, ...fields, COMMENTS] },
+    { stepId: `nqc-${phase}-ndt-${kind}`, fields: [TYPE, ...fields, COMMENTS] },
   ];
 }
 
 /* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
 function weldStep(id: string, fields = WELD_FIELDS): StepFieldActivation {
-  return { stepId: id, fields };
+  return { stepId: id, fields: [TYPE, ...fields, COMMENTS] };
 }
 
 function tackStep(id: string): StepFieldActivation {
-  const fields = WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f);
-  return { stepId: id, fields };
+  return weldStep(id, WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f));
 }
 
 const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
+  { key: 'releaseToWelding' }, DECISION, COMMENTS,
 ];
 
 /* Affected Item and its two MIC verified rows, drawn together by the affected-item component */
 const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
 
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
-  { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS] },
-  { stepId: 'fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
-  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS] },
+  { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
+  { stepId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
+  /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
+  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, COMMENTS] },
   tackStep('tack'),
-  { stepId: 'fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
-  { stepId: 'nqc-fitup-insp', fields: [...FITUP_INSP_FIELDS, { key: 'releaseToWelding' }] },
-  { stepId: 'fitup-release', fields: [] },
+  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS },
+  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS },
+  { stepId: 'fitup-release', fields: [COMMENTS] },
   tackStep('deferred-tack'),
   weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly', showIf: rootWeldOnly }])),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
@@ -203,10 +196,10 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
   /* every Repair / Excavation NDT round reads these rows (activationStepId) */
-  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }] },
-  { stepId: 'excavation-ndt', fields: EXCAVATION_NDT_FIELDS },
-  { stepId: 'review-o63', fields: RECORDS_REVIEW_FIELDS },
-  { stepId: 'review-o04', fields: RECORDS_REVIEW_FIELDS },
+  { stepId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
+  { stepId: 'excavation-ndt', fields: [TYPE, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
+  { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
+  { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
   { stepId: 'sold', fields: [] },
 ];
 
@@ -298,24 +291,41 @@ export function withAffectedItemMics(a: StepFieldActivation): StepFieldActivatio
   return { ...a, fields: [...a.fields.slice(0, at + 1), ...AFFECTED_ITEM_FIELDS.slice(1), ...a.fields.slice(at + 1)] };
 }
 
+/* Definitions saved before Type, Inspection Results and Comments were fields (v7) get them where the
+   step showed them: Type on a step with a Signoff Type Availability row (not Weld Build-Up's, which
+   Fit's own decides), Inspection Results on a step with a reject target (taken off any other, where
+   it was a Layout item that never showed), Comments on every step but Sold */
+const PRE_SIGNOFF_SECTION_KEY = 'welding:step-field-config:v7';
+export function withSignoffSectionFields(a: StepFieldActivation): StepFieldActivation {
+  const has = (key: string) => a.fields.some(f => f.key === key);
+  const decision = isExcavationNdtStageId(a.stepId) || templateHasRejectTarget(a.stepId);
+  let fields = decision ? a.fields : a.fields.filter(f => f.key !== DECISION_KEY);
+  if (decision && !has(DECISION_KEY)) fields = [...fields, DECISION];
+  if (!has(TYPE_KEY) && a.stepId !== WELD_BUILDUP_DEFINITION && hasSignoffTypeRow(a.stepId)) fields = [TYPE, ...fields];
+  if (!has(COMMENTS_KEY) && a.stepId !== 'sold') fields = [...fields, COMMENTS];
+  return { ...a, fields };
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preMic = saved ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
-    const preSplit = saved || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
-    const preWidth = saved || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
-    const preLayout = saved || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-    const preReferences = saved || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
-    const old = preMic ? parse(preMic)
-      : preSplit ? parse(preSplit).map(withSplitFill)
-      : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill)
-      : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill)
-      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill)
+    const preSection = saved ? null : localStorage.getItem(PRE_SIGNOFF_SECTION_KEY);
+    const preMic = saved || preSection ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
+    const preSplit = saved || preSection || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
+    const preWidth = saved || preSection || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
+    const preLayout = saved || preSection || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+    const preReferences = saved || preSection || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+    const old = preSection ? parse(preSection)
+      : preMic ? parse(preMic).map(withAffectedItemMics)
+      : preSplit ? parse(preSplit).map(withSplitFill).map(withAffectedItemMics)
+      : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill).map(withAffectedItemMics)
+      : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
+      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
       : null;
-    _cache = saved ? parse(saved) : old ? old.map(withAffectedItemMics) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    _cache = saved ? parse(saved) : old ? old.map(withSignoffSectionFields) : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -330,6 +340,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_SIGNOFF_SECTION_KEY);
   localStorage.removeItem(PRE_AFFECTED_MIC_KEY);
   localStorage.removeItem(PRE_SPLIT_KEY);
   localStorage.removeItem(PRE_WIDTH_KEY);

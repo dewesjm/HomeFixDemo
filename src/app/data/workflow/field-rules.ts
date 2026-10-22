@@ -8,17 +8,23 @@ import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-c
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: the two checkboxes routing reads,
-   Weld Build-Up's Affected Item and References ('' = always shown) */
+   Weld Build-Up's Affected Item, References and the signoff section's Type, Inspection Results and
+   Comments ('' = always shown) */
 const BUILT_IN_SHOW_CONDITION: Record<string, string> = {
   deferTack: '',
   releaseToWelding: '',
   affectedItem: '',
   references: '',
+  type: '',
+  decision: '',
+  comments: '',
 };
 
 /* never disabled, and required as fixed in code: the checkboxes routing reads when the step is
-   signed (never required), Affected Item (at least one must be picked, sign-validation.ts) and References */
-const FIXED_RULE_KEYS = new Set(['deferTack', 'releaseToWelding', 'affectedItem', 'references']);
+   signed (never required), Affected Item (at least one must be picked, sign-validation.ts),
+   References, Type (required when it has no default), Inspection Results (always required) and
+   Comments (never required) */
+const FIXED_RULE_KEYS = new Set(['deferTack', 'releaseToWelding', 'affectedItem', 'references', 'type', 'decision', 'comments']);
 
 /* condition keys that aren't catalog fields */
 const EXTRA_LABELS: Record<string, string> = {

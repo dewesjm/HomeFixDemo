@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
-import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, COMMENTS_FIELD, drawsFromDefinition, hasCommentsBox, hasDecision, isInspectionStage, ndtLayerType, signoffForm } from '../../data/workflow';
+import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, COMMENTS_FIELD, drawsFromDefinition, hasCommentsBox, hasDecision, showsType, isInspectionStage, ndtLayerType, signoffForm } from '../../data/workflow';
 import { qualCheck, QualCheckResult } from '../../data/qualifications';
 import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
@@ -31,6 +31,7 @@ export class SignoffPanelComponent {
   readonly drawsFromDefinition = drawsFromDefinition;
   readonly hasCommentsBox = hasCommentsBox;
   readonly hasDecision = hasDecision;
+  readonly showsType = showsType;
 
   /* inspection steps have no Qualification Check field; they check the conditions the joint and step match */
   inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {

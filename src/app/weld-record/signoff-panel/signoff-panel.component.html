@@ -23,8 +23,8 @@
   @if (stage(); as st) {
     @let form = signoffForm(st);
 
-    <!-- Type dropdown -->
-    @if (st.typeOptions && st.typeOptions.length > 0) {
+    <!-- Type dropdown: options from Signoff Type Availability, shown while the step's definition lists Type -->
+    @if (showsType(st)) {
       <div class="mb-sm">
         <label class="stage-field">
           <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
@@ -34,7 +34,7 @@
             @if (ctx().inspectionTypeRequired(st)) {
               <option [ngValue]="''">Select the inspection performed…</option>
             }
-            @for (opt of st.typeOptions; track opt.value) {
+            @for (opt of st.typeOptions ?? []; track opt.value) {
               <option [ngValue]="opt.value">{{ opt.label }}</option>
             }
           </select>
@@ -87,7 +87,7 @@
         }
       }
 
-      <!-- Comments: every hand-signed step has one (hasCommentsBox), saved with the sign-off -->
+      <!-- Comments: while the step's definition lists it (hasCommentsBox), saved with the sign-off -->
       @if (hasCommentsBox(st)) {
         <div class="mb-sm">
           <div class="meta">{{ commentsField.label }}</div>

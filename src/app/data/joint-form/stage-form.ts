@@ -2,7 +2,7 @@
 import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFilledByRule,
-  allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId,
+  allowableThicknessAmount, showIfMet, baseStepId,
   evaluateCondition, buildConditionContext, hasStepActivation, effectiveShowIf, fieldActivation,
   definedFields, definitionStageFields,
 } from '../workflow';
@@ -58,7 +58,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
   return stage.fields
     .map(f => stageFieldOptions(f, stage, ctx))
     .filter(f => {
-      if (!showIfMet(stage, f) || !fieldAppliesToJob(f, ctx.job)) return false;
+      if (!showIfMet(stage, f)) return false;
       const cond = effectiveShowIf(fieldActivation(stage, f.key));
       if (cond && !evaluateCondition(cond, condCtx)) return false;
       /* override fields only when the selected GWP+WTN's WPS has override values set */

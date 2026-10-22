@@ -1,12 +1,27 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
 import { WELD_BUILDUP_DEFINITION, baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
-import { definitionHas, StepRef } from './step-field-config';
+import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
-   condition); other stages are accepted on signoff with no choice, so their SAT isn't shown or recorded */
-export function hasDecision(stage: { rejectToStage?: string }): boolean {
-  return !!stage.rejectToStage;
+   condition): its Signoff Type Definition lists Inspection Results, or, for a step with no definition
+   (added in Admin > Routing Settings), it has a reject target. Other stages are accepted on signoff
+   with no choice, so their SAT isn't shown or recorded. */
+export function hasDecision(stage: Pick<WorkflowStage, 'id' | 'signoffType' | 'rejectToStage'>): boolean {
+  return hasStepActivation(stage) ? definitionHas(stage, DECISION_KEY) : !!stage.rejectToStage;
+}
+
+/* UNSAT has nowhere to go on a step with no reject target, so it can't be signed */
+export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | 'rejectToStage'>): boolean {
+  return stage.result === 'unsat' && !stage.rejectToStage;
+}
+
+/* whether the Type droplist shows: the step has Type options (Admin > Signoff Type Availability) and
+   its own Signoff Type Definition lists Type (a step with no definition always shows it). A Type that
+   loads another definition doesn't change this, so Fit signed as Weld Build-Up can still switch back. */
+export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
+  if (!stage.typeOptions?.length) return false;
+  return !hasStepActivation(stage.id) || definitionHas(stage.id, TYPE_KEY);
 }
 
 /* inspection steps (Pre-Fit, Fit-Up Insp, every NDT incl. Excavation NDT) run the Qualification
@@ -15,11 +30,11 @@ export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
   return stage.id === 'pre-fit' || isFitupInspId(stage.id) || /-ndt(-|$)/.test(stage.id);
 }
 
-/* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
+/* a shown Type whose options have no default (Admin > Signoff Type Availability) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
    only one option. Fit is the exception: its Type is signoffType and starts on its first option. */
 export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
-  return stage.id !== 'fit' && !!stage.typeOptions?.length && !stage.typeOptions.some(o => o.default);
+  return stage.id !== 'fit' && showsType(stage) && !stage.typeOptions!.some(o => o.default);
 }
 
 /* the Type a step starts with and keeps until someone changes it: its default option, or blank when
@@ -69,10 +84,20 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
   affectedMicVerified2: 'Shown under Affected Item, beside the Join To Item while it is picked.',
 };
 
-/* what a routing-read field means on a step's definition: what taking it off does on its home step,
-   or that routing ignores it on any other step. Fit signed as Weld Build-Up is still the Fit step, so
-   routing reads a Defer Tack there too: no note. */
+/* fields the sign-off panel or joint page draws outside the form, and Inspection Results' routing */
+const OWN_SPOT_NOTES: Record<string, string> = {
+  type: 'Drawn above the form when Admin > Signoff Type Availability gives the step options. No default there means it must be picked.',
+  decision: 'UNSAT can be signed only on a step with a Reject routes to target (Admin > Routing Settings).',
+  comments: 'Drawn below the form.',
+  references: 'Drawn as the References panel under the sign-off.',
+};
+
+/* what a field means on a step's definition: where the panel draws it, or for a routing-read field,
+   what taking it off does on its home step or that routing ignores it on any other step. Fit signed as
+   Weld Build-Up is still the Fit step, so routing reads a Defer Tack there too: no note. */
 export function definitionFieldNote(stageId: string, key: string): string {
+  if (key === TYPE_KEY && stageId === WELD_BUILDUP_DEFINITION) return "Not used here: Fit's own definition decides whether Fit shows Type, also when signed as Weld Build-Up.";
+  if (key in OWN_SPOT_NOTES) return OWN_SPOT_NOTES[key];
   if (key in AFFECTED_ITEM_PART_NOTES) return AFFECTED_ITEM_PART_NOTES[key];
   if (stageId === WELD_BUILDUP_DEFINITION) return '';
   if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';

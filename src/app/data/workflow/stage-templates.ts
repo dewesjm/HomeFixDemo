@@ -163,6 +163,11 @@ function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
   invalidateTemplateCache();
 }
 
+/* whether any trade's step with this id has a Reject routes to target (Admin > Routing Settings) */
+export function templateHasRejectTarget(stepId: string): boolean {
+  return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.rejectToStage));
+}
+
 /* all unique stage ids across all trades (for the admin screen) */
 export function allStageIds(): { id: string; label: string }[] {
   const seen = new Map<string, string>();

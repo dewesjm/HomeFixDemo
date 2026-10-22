@@ -9,7 +9,7 @@ import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rules';
-import { fieldAppliesToJob, showIfMet } from './stage-display';
+import { showIfMet } from './stage-display';
 import { drawnByOwnForm } from './signoff-forms';
 
 type Fab = Record<string, string>;
@@ -69,7 +69,7 @@ export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStag
   const ctx = buildConditionContext(stage, job, stages, fab);
   if (hasStepActivation(stage)) return definedFields(stage, ctx);
   return stage.fields.filter(f => {
-    if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
+    if (!showIfMet(stage, f)) return false;
     const cond = effectiveShowIf(fieldActivation(stage, f.key));
     return !cond || evaluateCondition(cond, ctx);
   });

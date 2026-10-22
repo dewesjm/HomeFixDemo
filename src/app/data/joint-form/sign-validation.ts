@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
+import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
 import { missingFitFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
 import { rtDegreeRequired, typedRequirementError } from './stage-form';
@@ -15,6 +15,8 @@ export interface SignContext {
   /* the joint's steps, for conditions that read another step */
   stages?: WorkflowStage[];
 }
+
+const UNSAT_NO_TARGET = 'UNSAT needs a Reject routes to target in Admin > Routing Settings';
 
 /* RT NDT: Degree of RT Performed must be at least the job's required degree (rtRoot/rtFinal), compared
    as plain numbers of degrees; NA or blank counts as none. '' when it is enough. */
@@ -39,6 +41,7 @@ function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
 export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   const reasons: string[] = [];
   if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
+  if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
   if (stage.id === 'fit') {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
@@ -91,7 +94,8 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
       errors[key('affectedItem')] = 'Please verify MIC for ' + (job?.joinToItem || 'item');
     }
   }
-  if (stage.rejectToStage && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
+  if (hasDecision(stage) && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
+  if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
   /* Fit's fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
   if (stage.id === 'fit' && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';

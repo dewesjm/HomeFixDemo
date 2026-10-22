@@ -17,6 +17,8 @@ export interface FieldRuleLine {
 /* the behavior for fields whose required rule is fixed in code (sign-validation.ts) */
 const FIXED_REQUIRED_BEHAVIOR: Record<string, string> = {
   affectedItem: 'Required (at least one must be picked)',
+  type: 'Required when it has no default',
+  decision: 'Required',
 };
 
 const ALWAYS = 'Always';

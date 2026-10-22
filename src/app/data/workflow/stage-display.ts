@@ -1,10 +1,8 @@
 /* Turning a step's recorded values into what History and the joint page show */
 import { SignoffField, SignoffInput, StageField, WorkflowStage } from './types';
 import { isUserEditable } from './field-locks';
-import { hasDecision } from './stage-rules';
+import { hasDecision, showsType } from './stage-rules';
 import { withComments } from './signoff-forms';
-import { Job } from '../jobs';
-import { isTitaniumJoint } from '../material-classification';
 import { lookupCatalogField } from './field-catalog';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
@@ -38,19 +36,12 @@ export function showIfMet(stage: WorkflowStage, f: StageField): boolean {
   return (f.showIf.and ?? []).every(c => (c.key === 'result' ? stage.result : stage.inputs[c.key]) === c.equals);
 }
 
-/* false for a field the joint's Joint Details rule out, whatever the step's own answers:
-   Weld Color is only on a titanium joint */
-export function fieldAppliesToJob(f: StageField, job: Job | undefined): boolean {
-  if (f.key === 'weldColor') return !!job && isTitaniumJoint(job);
-  return true;
-}
-
 /* Every editable field the user was shown, with its value, plus Type and the decision. Blanks are kept:
    what was left empty is part of the record. The caller passes the fields that were visible. */
 export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signoffFields: SignoffField[]): SignoffInput[] {
   const out: SignoffInput[] = [];
   const typeOpts = stage.typeOptions ?? [];
-  if (typeOpts.length) {
+  if (showsType(stage)) {
     const cur = stage.id === 'fit' ? stage.signoffType : stage.inspectionType;
     out.push({ label: 'Type', value: typeOpts.find(o => o.value === cur)?.label ?? '' });
   }

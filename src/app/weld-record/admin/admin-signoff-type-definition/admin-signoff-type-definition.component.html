@@ -329,7 +329,9 @@
                 <svg lucideX class="size-4"></svg>
               </button>
             } @else if (isDecision(a)) {
-              <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">Shown only on a step with a reject target (Admin &gt; Routing Settings), on its own line.</span></span>
+              <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">On its own line.</span></span>
+            } @else if (isOutsideForm(a) && !orderOnly()) {
+              <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ fieldNote(a.key) }}</span></span>
             } @else {
               <span class="text-sm flex-1">{{ itemLabel(a) }}</span>
               @if (!orderOnly()) {

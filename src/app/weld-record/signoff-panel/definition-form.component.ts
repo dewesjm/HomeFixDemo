@@ -1,15 +1,15 @@
 /* A step's form drawn from its Signoff Type Definition, while the Layout from Signoff Type Definition
    toggle is on (drawsFromDefinition()): its fields in definition order, on the lines and under the
    headings and boxes the definition sets (layoutSections()), each field at most the width the
-   definition gives it. Inspection Results goes where the Layout list places it (after the fields when
-   it doesn't), while the step is required; on the verify grids the panel draws it. Pre-Fit/Fit's
+   definition gives it. Inspection Results goes where the Layout list places it, while the step is
+   required; on the verify grids the panel draws it. Pre-Fit/Fit's
    sign-off fields sit among them, shown while the step is required, as the built-in Fit form is. The
    verify grids use it for the
    fields they list besides their grid rows (`except` leaves the rows out). */
 import { Component, input } from '@angular/core';
 import {
   DECISION_KEY, FieldActivation, LayoutSection, SignoffField, StageField, WorkflowStage,
-  drawnOutsideForm, drawsFromDefinition, getActivationForStep, hasDecision, layoutItems, layoutSections,
+  drawnOutsideForm, drawsFromDefinition, getActivationForStep, hasDecision, layoutSections,
 } from '../../data/workflow';
 import { AffectedItemComponent } from './affected-item.component';
 import { DefinitionFieldComponent } from './definition-field.component';
@@ -103,6 +103,6 @@ export class DefinitionFormComponent {
   }
 
   private items(): FieldActivation[] {
-    return layoutItems(getActivationForStep(this.stage()).fields);
+    return getActivationForStep(this.stage()).fields;
   }
 }

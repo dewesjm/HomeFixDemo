@@ -52,7 +52,13 @@ const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'h
 const showIfPartial: FieldCondition = { all: [{ source: 'field', key: 'partial', equals: 'yes' }] };
 const showIfRt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', equals: 'rt' }] };
 const showIfPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', equals: 'pt' }] };
-const showIfVt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', equals: 'vt' }] };
+/* 'titanium' is a virtual Joint Details key (joint-facts.ts) */
+const showIfTitaniumVt: FieldCondition = {
+  all: [
+    { source: 'field', key: 'inspectionType', equals: 'vt' },
+    { source: 'jointDetail', key: 'titanium', equals: 'yes' },
+  ]
+};
 const showIfRtUnsat: FieldCondition = {
   all: [
     { source: 'field', key: 'inspectionType', equals: 'rt' },
@@ -158,9 +164,8 @@ export const FIELD_CATALOG: CatalogField[] = [
     defaultShowIf: showIfPt, options: penetrantTypeOptions() },
 
   /* ── NDT 5X/VT ── */
-  /* also hidden unless the joint is titanium; activation adds a jointDetail condition per step */
   { key: 'weldColor', label: 'Weld Color', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfVt,
+    defaultShowIf: showIfTitaniumVt,
     options: [
       { label: 'Shiny Silver', value: 'shiny-silver' }, { label: 'Straw', value: 'straw' },
       { label: 'Light Blue', value: 'light-blue' }, { label: 'Dark Blue', value: 'dark-blue' },
@@ -200,6 +205,14 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── Joint page ── */
   /* the References panel under the sign-off (Correct shows it on every step regardless) */
   { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
+
+  /* ── Signoff section ── (drawn by the sign-off panel on whichever step lists them) */
+  /* the Type droplist above the form; its options and default are on Admin > Signoff Type Availability */
+  { key: 'type', label: 'Type', type: 'select', ownComponent: true },
+  /* SAT/UNSAT, placed in the form by the Layout list; UNSAT needs a reject target to be signed */
+  { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true },
+  /* the Comments box below the form, saved in the step's signoffInputs */
+  { key: 'comments', label: 'Comments', type: 'text', ownComponent: true },
 
   /* ── Fit-Up Insp ── */
   { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', ownFormSteps: ['fitup-insp'] },

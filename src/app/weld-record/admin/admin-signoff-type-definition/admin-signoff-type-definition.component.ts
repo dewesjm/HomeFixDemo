@@ -31,7 +31,7 @@ import {
   showRuleText, disabledRuleText, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
   getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, layoutItems, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
+  HEADING_KEY_PREFIX, DECISION_KEY, definitionFields, isHeadingItem, isVerifyGrid, drawnOutsideForm, ENGINEERING_OVERRIDE_KEY, fieldRuleLines,
   VIRTUAL_JOINT_DETAILS, REJECTED_PHASE_UTRT_KEY,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
@@ -209,7 +209,7 @@ export class AdminSignoffTypeDefinitionComponent {
       uid: row.uid,
       stepId: row.stepId,
       stepLabel: row.stepLabel,
-      fieldActivations: this.withLayoutItems(row.stepId, row.fieldActivations.map(copyActivation)),
+      fieldActivations: row.fieldActivations.map(copyActivation),
       condKey: null,
       condKind: 'show',
       condClauses: [],
@@ -250,12 +250,7 @@ export class AdminSignoffTypeDefinitionComponent {
   setEditStep(stepId: string) {
     const existing = this.rows().find(r => r.stepId === stepId);
     if (existing) { this.openEdit(existing); return; }
-    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: this.withLayoutItems(stepId, []) } : null);
-  }
-
-  /* the Layout list has Inspection Results, except on the verify grids (the panel draws theirs) */
-  private withLayoutItems(stepId: string, items: FieldActivation[]): FieldActivation[] {
-    return isVerifyGrid({ id: stepId, signoffType: '' }) ? items : layoutItems(items);
+    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [] } : null);
   }
 
   /* ── Delete / Reset ── */
@@ -538,8 +533,13 @@ export class AdminSignoffTypeDefinitionComponent {
     return a.key === DECISION_KEY;
   }
 
+  /* Type, Comments and References keep their own spot outside the form, whatever the order */
+  isOutsideForm(a: FieldActivation): boolean {
+    return drawnOutsideForm(a.key);
+  }
+
   itemLabel(a: FieldActivation): string {
-    return this.isDecision(a) ? 'Inspection Results (SAT/UNSAT)' : lookupCatalogField(a.key)?.label ?? a.key;
+    return lookupCatalogField(a.key)?.label ?? a.key;
   }
 
   private updateItems(change: (items: FieldActivation[]) => FieldActivation[]) {

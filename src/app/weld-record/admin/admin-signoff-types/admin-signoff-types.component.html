@@ -1,6 +1,8 @@
 <h2 class="section-title">Signoff Type Availability</h2>
 <p class="text-sm mb-sm">Definition: the Signoff Type Definition whose fields the Type shows. When it is a later routing
   step's, signing with the Type is that step's signoff (Layer signed as Final Weld signs Final Weld).</p>
+<p class="text-sm mb-sm">No default: the Type starts blank and must be picked before the step can be signed, even when
+  there is only one option. Whether a step shows Type at all is set on its Signoff Type Definition.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" addLabel="Add routing step"
                    (exportCsv)="exportCsv()" (add)="addRow()" />

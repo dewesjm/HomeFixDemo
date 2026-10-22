@@ -1,4 +1,4 @@
-import { DECISION_KEY, HEADING_KEY_PREFIX, definitionFields, layoutItems, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics } from './step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -63,15 +63,39 @@ describe('withSplitFill (definitions saved before Prepopulated from and Disabled
   });
 });
 
-describe('Inspection Results in the Layout list', () => {
-  it('is not one of the definition fields', () => {
-    expect(definitionFields([{ key: 'a' }, { key: DECISION_KEY }])).toEqual([{ key: 'a' }]);
+describe('signoff section fields (Type, Inspection Results, Comments)', () => {
+  it('Inspection Results is one of the definition fields', () => {
+    expect(definitionFields([{ key: 'a' }, { key: DECISION_KEY }])).toEqual([{ key: 'a' }, { key: DECISION_KEY }]);
   });
 
-  it('goes after the fields when the definition does not place it', () => {
-    expect(layoutItems([{ key: 'a' }])).toEqual([{ key: 'a' }, { key: DECISION_KEY }]);
-    const placed = [{ key: DECISION_KEY }, { key: 'a' }];
-    expect(layoutItems(placed)).toBe(placed);
+  it('are seeded where they showed: Inspection Results only on steps with a reject target, Comments on every step but Sold', () => {
+    const keys = (id: string) => DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === id)!.fields.map(f => f.key);
+    expect(keys('root-ndt-utrt')).toContain(DECISION_KEY);
+    expect(keys('fitup-insp')).toContain(DECISION_KEY);
+    expect(keys('review-o63')).toContain(DECISION_KEY);
+    expect(keys('root-weld')).not.toContain(DECISION_KEY);
+    expect(keys('root-weld')[0]).toBe(TYPE_KEY);
+    expect(keys('pre-fit')).not.toContain(TYPE_KEY);
+    expect(keys('fit-weld-buildup')).not.toContain(TYPE_KEY);
+    expect(keys('fitup-release')).toEqual([COMMENTS_KEY]);
+    expect(keys('sold')).toEqual([]);
+  });
+});
+
+describe('withSignoffSectionFields (definitions saved before Type, Inspection Results and Comments were fields)', () => {
+  it('drops Inspection Results from a step with no reject target and adds Type and Comments', () => {
+    expect(withSignoffSectionFields({ stepId: 'root-weld', fields: [{ key: 'wtn' }, { key: DECISION_KEY }] }).fields.map(f => f.key))
+      .toEqual([TYPE_KEY, 'wtn', COMMENTS_KEY]);
+  });
+
+  it('adds Inspection Results where the step has a reject target, and leaves listed fields where they are', () => {
+    expect(withSignoffSectionFields({ stepId: 'review-o63', fields: [{ key: 'verifyDrawing' }, { key: COMMENTS_KEY }] }).fields.map(f => f.key))
+      .toEqual(['verifyDrawing', COMMENTS_KEY, DECISION_KEY]);
+  });
+
+  it('gives Sold nothing and Weld Build-Up no Type', () => {
+    expect(withSignoffSectionFields({ stepId: 'sold', fields: [] }).fields).toEqual([]);
+    expect(withSignoffSectionFields({ stepId: 'fit-weld-buildup', fields: [] }).fields.map(f => f.key)).toEqual([COMMENTS_KEY]);
   });
 });
 

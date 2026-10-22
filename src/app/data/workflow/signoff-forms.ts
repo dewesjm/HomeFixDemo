@@ -1,9 +1,9 @@
-/* Which form a step's sign-off shows, and the Comments box every hand-signed step has. The sign-off
-   panel draws the parts every step shares (Type, Decision, Comments, Signoff) and picks the step's
-   own form from signoffForm(). */
+/* Which form a step's sign-off shows, and whether it has a Comments box. The sign-off panel draws
+   the parts every step shares (Type, Decision, Comments, Signoff) and picks the step's own form from
+   signoffForm(). */
 import { SignoffField, WorkflowStage } from './types';
 import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
-import { StepRef, hasStepActivation } from './step-field-config';
+import { COMMENTS_KEY, StepRef, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
 import { typeDefinition } from './signoff-types';
 import { lookupCatalogField } from './field-catalog';
 import { featureToggles } from '../feature-toggles';
@@ -58,9 +58,9 @@ export function drawnByOwnForm(step: StepRef, key: string): boolean {
 }
 
 /* fields a step's definition lists that the form leaves to another spot: References is the joint
-   page's panel */
+   page's panel, Type and Comments the sign-off panel's, above and below the form */
 export function drawnOutsideForm(key: string): boolean {
-  return key === 'references';
+  return key === 'references' || key === TYPE_KEY || key === COMMENTS_KEY;
 }
 
 /* steps whose fields are a grid of values to check off; a Required row must be checked */
@@ -69,12 +69,14 @@ export function isVerifyGrid(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): 
   return form === 'fitup-insp' || form === 'records-review';
 }
 
-/* Not listed on any step: the panel draws it, History and Correct add it (withComments). Saved in
-   the step's signoffInputs. */
-export const COMMENTS_FIELD: SignoffField = { key: 'comments', label: 'Comments', type: 'text', required: false, fullWidth: true };
+/* The panel draws it, History and Correct add it (withComments). Saved in the step's signoffInputs. */
+export const COMMENTS_FIELD: SignoffField = { key: COMMENTS_KEY, label: 'Comments', type: 'text', required: false, fullWidth: true };
 
-/* Engineering Hold has its own required Comments on its release form; nobody signs Sold */
+/* a step whose Signoff Type Definition lists Comments; a step with no definition (added in Admin >
+   Routing Settings) has one unless it's Engineering Hold (its own required Comments on its release
+   form) or Sold (nobody signs it) */
 export function hasCommentsBox(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
+  if (hasStepActivation(stage)) return definitionHas(stage, COMMENTS_KEY);
   const form = signoffForm(stage);
   return form !== 'engineering-hold' && form !== 'sold';
 }
