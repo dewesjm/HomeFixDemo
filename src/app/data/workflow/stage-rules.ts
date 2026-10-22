@@ -48,3 +48,14 @@ export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
 export function isRoutingLockedField(stageId: string, key: string): boolean {
   return (ROUTING_LOCKED_FIELD_KEYS[isRepairStageId(stageId) ? 'repair' : baseStepId(stageId)] ?? []).includes(key);
 }
+
+/* routing-read fields an admin may still take off a Signoff Type Definition, with what that does;
+   the stored value then stays at the one the step starts with */
+export const DEFINITION_REMOVAL_NOTES: Record<string, string> = {
+  releaseToWelding: 'Unticked: every joint is released to welding and Fit-Up Release never comes up.',
+};
+
+/* routing-read fields that can't be taken off a Signoff Type Definition */
+export function isDefinitionLockedField(stageId: string, key: string): boolean {
+  return isRoutingLockedField(stageId, key) && !(key in DEFINITION_REMOVAL_NOTES);
+}

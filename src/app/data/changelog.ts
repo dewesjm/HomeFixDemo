@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Admin → Signoff Type Definition: Release to welding can be unticked on Fit-Up Insp. The checkbox is then not shown, every joint is released to welding when Fit-Up Insp is signed, and Fit-Up Release never comes up.',
       'Admin → Signoff Type Definition: Fit signed as Weld Build-Up has its own definition, "Fit (Weld Build-Up)", with the welding fields and Affected Item, instead of borrowing Tack\'s fields. Unticking a field there (Affected Item included) takes it off the Weld Build-Up form.',
       'History and the Correct window list the same fields as the step\'s sign-off on the joint page: the fields its Signoff Type Definition has on, with their show rules. A sign-off field that is hidden on the joint (e.g. Backing Ring when the joint design has none) is no longer listed, and labels match the joint page.',
       'Admin → Signoff Type Definition: Weld Process and PH/IP Min/Max show "Filled from the WTN and locked" (typed by hand under an engineering override), and each Actual PH/IP shows "Filled from this step\'s requirement and locked when it is NC". A fill can now come from this step or the WTN as well as another step, so these rules can be changed or removed like any other.',

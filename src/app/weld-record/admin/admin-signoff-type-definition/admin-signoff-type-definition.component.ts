@@ -27,7 +27,7 @@ import {
   defaultRequiredIf, requiredIfToStore, requiredRuleText,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule, hasFixedRules,
   defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
-  getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
+  getSignoffTypeRows, isDefinitionLockedField, DEFINITION_REMOVAL_NOTES, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
 } from '../../../data/workflow';
 import type { ConditionClause, FieldCondition, FieldFill } from '../../../data/workflow';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
@@ -275,7 +275,12 @@ export class AdminSignoffTypeDefinitionComponent {
   /* fields the step's routing reads when it's signed (e.g. Repair Code) can't be removed */
   isLocked(key: string): boolean {
     const e = this.editing();
-    return !!e?.stepId && isRoutingLockedField(e.stepId, key) && this.hasField(key);
+    return !!e?.stepId && isDefinitionLockedField(e.stepId, key) && this.hasField(key);
+  }
+
+  /* what taking a routing-read field off this step does (e.g. Release to welding) */
+  removalNote(key: string): string {
+    return DEFINITION_REMOVAL_NOTES[key] ?? '';
   }
 
   toggleField(key: string) {
