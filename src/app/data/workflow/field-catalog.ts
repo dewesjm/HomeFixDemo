@@ -135,6 +135,12 @@ export const FIELD_CATALOG: CatalogField[] = [
       { label: 'Gray Powder', value: 'gray-powder' }, { label: 'Yellow Powder', value: 'yellow-powder' },
     ] },
 
+  /* ── Repair ── */
+  { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
+    options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
+  /* also only shown when the rejected phase has an RT/UT step (built-in rule, field-rules.ts) */
+  { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
+
   /* ── Fit-Up Insp ── */
   { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
   { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },

@@ -3,7 +3,7 @@ import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
-  ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
+  ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, hasStepActivation,
   effectiveShowIf, effectiveDisabledIf, effectiveRequired,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
@@ -71,6 +71,7 @@ export function resolveActivatedFields(
   return activation.fields
     .filter(act => {
       if (!lookupCatalogField(act.key)) return false;
+      if (act.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, formCtx.stages)) return false;
       const cond = effectiveShowIf(act, 'f');
       return !cond || evaluateCondition(cond, condCtx);
     })
@@ -96,24 +97,27 @@ export function resolveActivatedFields(
     });
 }
 
-/* Fields shown on the step. Catalog-managed steps (built-in welding routing) resolve from the
-   field catalog config via evaluateCondition(). Non-catalog steps (Repair, Excavation NDT,
-   custom added steps) and Fit as Weld Build-Up use the template's stage.fields directly. */
+/* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
+function allowableThicknessApplies(stage: WorkflowStage, stages: WorkflowStage[]): boolean {
+  return !!stepOnJoint(stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`);
+}
+
+/* Fields shown on the step. Steps with an Admin > Signoff Type Definition (the built-in routing,
+   Repair, Excavation NDT) resolve from the field catalog via evaluateCondition(). Custom added steps
+   without one, and Fit as Weld Build-Up, use the template's stage.fields directly. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
   const job = ctx.job;
   const isFitWeldBuildup = stage.id === 'fit' && stage.signoffType === 'weld-buildup';
-  if (!isFitWeldBuildup && DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === stage.id)) {
+  if (!isFitWeldBuildup && hasStepActivation(stage.id)) {
     const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
     return resolveActivatedFields(stage.id, condCtx, ctx, stage);
   }
-  /* non-catalog path: Repair, Excavation NDT, Fit as Weld Build-Up, custom added steps */
+  /* non-catalog path: Fit as Weld Build-Up, custom added steps */
   const rawFields = isFitWeldBuildup ? (job ? weldBuildupFields(job.trade) : WELD_OVERRIDE_FIELDS) : stage.fields;
   return rawFields
     .map(f => stageFieldOptions(f, stage, ctx))
     .filter(f => {
-      /* "exceeded" sends the joint to that phase's RT/UT, so it only shows when the joint has one */
-      if (f.key === 'allowableThicknessExceeded'
-          && !stepOnJoint(ctx.stages, `${stage.inputs['originPhase'] ?? ''}-ndt-utrt`)) return false;
+      if (f.key === 'allowableThicknessExceeded' && !allowableThicknessApplies(stage, ctx.stages)) return false;
       if (!showIfMet(stage, f) || !fieldAppliesToJob(f, job)) return false;
       /* Weld Position's row is only rendered when N Ind. is '1' (WELD_GROUPS in weld-stage-form.component.ts);
          kept in step so it isn't required when it can't be seen */

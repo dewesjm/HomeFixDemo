@@ -7,8 +7,13 @@ import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 export type FieldSection = 'f' | 'sf';
 
-/* Sign-off fields whose visibility is decided in code (fit-signoff.ts), not by a condition */
-const BUILT_IN_SHOW_TEXT: Record<string, string> = {
+/* Fields whose visibility is decided in code, not by a condition: Repair's "exceeded" checkbox
+   (stage-form.ts) and the insert/ring sign-off fields (fit-signoff.ts) */
+const BUILT_IN_FIELD_SHOW_TEXT: Record<string, string> = {
+  allowableThicknessExceeded: 'Shown when the rejected phase has an RT/UT step',
+};
+
+const BUILT_IN_SIGNOFF_SHOW_TEXT: Record<string, string> = {
   consumableInsertType: 'Shown when the joint design needs a consumable insert',
   consumableInsertSize: 'Shown when the joint design needs a consumable insert',
   consumableInsertId: 'Shown when the joint design needs a consumable insert',
@@ -77,14 +82,19 @@ export function conditionText(cond: FieldCondition): string {
 }
 
 /* e.g. "Shown when Has Probationary Inspector is checked" or "Always shown" */
+function builtInShowText(key: string, section: FieldSection): string | undefined {
+  return (section === 'f' ? BUILT_IN_FIELD_SHOW_TEXT : BUILT_IN_SIGNOFF_SHOW_TEXT)[key];
+}
+
 export function showRuleText(act: FieldActivation, section: FieldSection): string {
-  if (section === 'sf' && BUILT_IN_SHOW_TEXT[act.key]) return BUILT_IN_SHOW_TEXT[act.key];
+  const builtIn = builtInShowText(act.key, section);
+  if (builtIn) return builtIn;
   const cond = effectiveShowIf(act, section);
   return cond ? `Shown when ${conditionText(cond)}` : 'Always shown';
 }
 
 export function hasBuiltInShowRule(key: string, section: FieldSection): boolean {
-  return section === 'sf' && !!BUILT_IN_SHOW_TEXT[key];
+  return !!builtInShowText(key, section);
 }
 
 /* e.g. "Greyed out when PH Min is NC"; '' when the field is never greyed out */

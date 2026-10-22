@@ -84,9 +84,10 @@
             <div class="border-b border-base-200 last:border-0">
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
-                       [checked]="hasField(f.key)"
+                       [checked]="hasField(f.key)" [disabled]="isLocked(f.key)"
+                       [title]="isLocked(f.key) ? 'Routing reads this field when the step is signed, so it stays on' : ''"
                        (change)="toggleField(f.key)" />
-                <span class="text-sm flex-1">{{ f.label }}</span>
+                <span class="text-sm flex-1">{{ f.label }}@if (isLocked(f.key)) {<span class="text-xs"> (always on: routing reads it)</span>}</span>
                 @if (hasField(f.key)) {
                   <ng-container *ngTemplateOutlet="fieldRules; context: { key: f.key, section: 'f' }"></ng-container>
                 }
@@ -105,9 +106,10 @@
             <div class="border-b border-base-200 last:border-0">
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
-                       [checked]="hasSignoffField(sf.key)"
+                       [checked]="hasSignoffField(sf.key)" [disabled]="isLocked(sf.key)"
+                       [title]="isLocked(sf.key) ? 'Routing reads this field when the step is signed, so it stays on' : ''"
                        (change)="toggleSignoffField(sf.key)" />
-                <span class="text-sm flex-1">{{ sf.label }}</span>
+                <span class="text-sm flex-1">{{ sf.label }}@if (isLocked(sf.key)) {<span class="text-xs"> (always on: routing reads it)</span>}</span>
                 @if (hasSignoffField(sf.key)) {
                   <ng-container *ngTemplateOutlet="fieldRules; context: { key: sf.key, section: 'sf' }"></ng-container>
                 }

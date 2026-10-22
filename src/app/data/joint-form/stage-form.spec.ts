@@ -1,5 +1,5 @@
 import { JOBS, Job } from '../jobs';
-import { buildStages, stageFromTemplate, StageTemplate, WorkflowStage } from '../workflow';
+import { buildStages, stageFromTemplate, StageTemplate, WorkflowStage, nextRepairStage, excavationNdtStage, setStepFieldConfig, resetStepFieldConfig, DEFAULT_STEP_FIELD_ACTIVATIONS } from '../workflow';
 import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import {
   typedRequirementError, rtDegreeRequired, fitFieldsForType, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues, startsGroup,
@@ -33,6 +33,30 @@ describe('joint-form stage-form', () => {
     expect(buildup).toContain('overrideNote');
     expect(buildup[buildup.length - 1]).toBe('affectedItem');
     expect(fitFieldsForType('Welding', 'fit')).toEqual([]);
+  });
+
+  it('Repair and Excavation NDT rounds read their Signoff Type Definition', () => {
+    const j = job({ rtRoot: '360', ndtEach: 'VT' });
+    const stages = buildStages(j);
+    const ctx: StageFormContext = { job: j, stages, offListUnlocked: false };
+    const repair2 = stageFromTemplate(nextRepairStage([{ id: 'repair' }]), { originPhase: 'root' });
+    expect(repair2.id).toBe('repair-2');
+    expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType', 'allowableThicknessExceeded']);
+    /* "exceeded" only when the rejected phase has an RT/UT step */
+    expect(visibleStageFields({ ...repair2, inputs: { originPhase: 'layer' } }, ctx).map(f => f.key)).toEqual(['repairType']);
+
+    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate(excavationNdtStage(type)), inspectionType: type }, ctx).map(f => f.key);
+    expect(exc('rt')).toContain('degreeRt');
+    expect(exc('rt')).not.toContain('idAccessible');
+    expect(exc('mt')).toContain('idAccessible');
+    expect(exc('mt')).not.toContain('penetrantType');
+    expect(exc('pt')).toContain('penetrantType');
+
+    /* a saved definition applies to every round */
+    try {
+      setStepFieldConfig(DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => a.stepId === 'repair' ? { ...a, fields: [{ key: 'repairType' }] } : a));
+      expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType']);
+    } finally { resetStepFieldConfig(); }
   });
 
   it('Weld Position shows only for N Ind. 1; override fields stay hidden while switched off', () => {

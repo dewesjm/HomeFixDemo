@@ -1,5 +1,7 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
-   Each row is a routing step; editing picks any field from the catalog and sets its showIf condition.
+   Each row is a routing step, or Repair / Excavation NDT (one row shared by every round); editing
+   picks any field from the catalog and sets its showIf condition. Add's step list is the steps in
+   Admin > Signoff Type Availability; picking one that already has a definition edits it.
    Stored in welding:step-field-config:v2 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -21,6 +23,7 @@ import {
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   getTemplates, FieldSection, defaultShowIf, showIfToStore,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule,
+  getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
 } from '../../../data/workflow';
 import type { ConditionClause } from '../../../data/workflow';
 
@@ -73,7 +76,6 @@ export class AdminSignoffTypeDefinitionComponent {
   readonly allSignoffFields = SIGNOFF_FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
 
   private labelMap = this.buildLabelMap();
-  private allSteps = this.buildStepList();
 
   rows = signal<DefRow[]>([]);
   editing = signal<EditState | null>(null);
@@ -94,18 +96,9 @@ export class AdminSignoffTypeDefinitionComponent {
         m.set(s.id, s.displayName || s.label);
       }
     }
+    m.set(REPAIR_TYPE_ROW, 'Repair');
+    m.set(EXCAVATION_TYPE_ROW, 'Excavation NDT');
     return m;
-  }
-
-  private buildStepList(): { stepId: string; stepLabel: string }[] {
-    const templates = getTemplates();
-    const all: { stepId: string; stepLabel: string }[] = [];
-    for (const group of Object.values(templates)) {
-      for (const s of group as { id: string; label: string; displayName?: string }[]) {
-        all.push({ stepId: s.id, stepLabel: s.displayName || s.label });
-      }
-    }
-    return all;
   }
 
   private stepLabel(stepId: string): string {
@@ -145,10 +138,13 @@ export class AdminSignoffTypeDefinitionComponent {
     };
   }
 
-  /* steps that don't yet have a row in the table (for adding new definitions) */
+  /* the steps in Admin > Signoff Type Availability; ones that already have a definition say so */
   addableSteps = computed(() => {
     const used = new Set(this.rows().map(r => r.stepId));
-    return this.allSteps.filter(s => !used.has(s.stepId));
+    return getSignoffTypeRows().map(r => ({
+      stepId: r.stepId,
+      stepLabel: this.stepLabel(r.stepId) + (used.has(r.stepId) ? ' (has a definition)' : ''),
+    }));
   });
 
   /* ── Dialog: open / save / cancel ── */
@@ -199,7 +195,10 @@ export class AdminSignoffTypeDefinitionComponent {
     this.editing.set(null);
   }
 
+  /* a step that already has a definition opens it for editing instead of starting blank */
   setEditStep(stepId: string) {
+    const existing = this.rows().find(r => r.stepId === stepId);
+    if (existing) { this.openEdit(existing); return; }
     this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [], signoffFieldActivations: [] } : null);
   }
 
@@ -245,7 +244,14 @@ export class AdminSignoffTypeDefinitionComponent {
     return !!this.editing()?.signoffFieldActivations.some(f => f.key === key);
   }
 
+  /* fields the step's routing reads when it's signed (e.g. Repair Code) can't be removed */
+  isLocked(key: string): boolean {
+    const e = this.editing();
+    return !!e?.stepId && isRoutingLockedField(e.stepId, key) && (this.hasField(key) || this.hasSignoffField(key));
+  }
+
   toggleField(key: string) {
+    if (this.isLocked(key)) return;
     this.editing.update(e => {
       if (!e) return e;
       const acts = e.fieldActivations;
@@ -258,6 +264,7 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   toggleSignoffField(key: string) {
+    if (this.isLocked(key)) return;
     this.editing.update(e => {
       if (!e) return e;
       const acts = e.signoffFieldActivations;
@@ -313,17 +320,17 @@ export class AdminSignoffTypeDefinitionComponent {
     });
   }
 
+  /* "one of" values (anyOf) are edited as a comma-separated list, e.g. "mt, pt" */
   private clauseToWork(c: ConditionClause): WorkClause {
     if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
-    if (c.source === 'field') return { source: 'field', key: c.key, equals: c.equals ?? '' };
-    if (c.source === 'jointDetail') return { source: 'jointDetail', key: c.key, equals: c.equals ?? '' };
+    if (c.source === 'field' || c.source === 'jointDetail') return { source: c.source, key: c.key, equals: c.anyOf?.join(', ') ?? c.equals ?? '' };
     return { source: 'field', key: '', equals: '' };
   }
 
   private workToClause(w: WorkClause): ConditionClause {
     if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
-    if (w.source === 'field') return { source: 'field', key: w.key, equals: w.equals };
-    return { source: 'jointDetail', key: w.key, equals: w.equals };
+    const values = w.equals.split(',').map(v => v.trim()).filter(Boolean);
+    return values.length > 1 ? { source: w.source, key: w.key, anyOf: values } : { source: w.source, key: w.key, equals: w.equals };
   }
 
   private applyCondClauses(e: EditState) {

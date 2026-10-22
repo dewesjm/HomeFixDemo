@@ -4,6 +4,7 @@
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
 import { FILLER_KEYS } from './weld-fields';
+import { signoffTypeRowId } from './signoff-types';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -78,6 +79,16 @@ const NDT_VT5X_FIELDS: FieldActivation[] = [
   { key: 'weldColor', showIf: titaniumVt },
 ];
 
+/* Excavation NDT repeats whichever inspection rejected the joint, so it carries every NDT field and
+   each shows only for its own Type */
+const showIfMtPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', anyOf: ['mt', 'pt'] }] };
+const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
+  ...NDT_COMMON_FIELDS,
+  { key: 'degreeRt' }, { key: 'rtFileNumber' }, { key: 'defectCode' },
+  { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, { key: 'penetrantType' },
+  { key: 'weldColor', showIf: titaniumVt },
+];
+
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
   'verifyDrawing', 'verifyDrawingRev', 'verifyJoint', 'verifyJointDesign', 'verifyWeldType',
   'verifyPipeSize', 'verifyWallThickness', 'verifyMaterial1', 'verifyMaterial2',
@@ -131,6 +142,9 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   ...ndtNqcPair('final', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
+  /* every Repair / Excavation NDT round reads these rows (activationStepId) */
+  { stepId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }], signoffFields: [] },
+  { stepId: 'excavation-ndt', fields: EXCAVATION_NDT_FIELDS, signoffFields: [] },
   { stepId: 'review-o63', fields: RECORDS_REVIEW_FIELDS, signoffFields: [] },
   { stepId: 'review-o04', fields: RECORDS_REVIEW_FIELDS, signoffFields: [] },
   { stepId: 'sold', fields: [], signoffFields: [] },
@@ -161,8 +175,18 @@ export function resetStepFieldConfig(): void {
   localStorage.removeItem(STORAGE.stepFieldConfig);
 }
 
+/* the definition a step reads: its own, or the shared Repair / Excavation NDT one for any round */
+export const activationStepId = (stageId: string) => signoffTypeRowId(stageId);
+
+/* whether a step's fields come from its definition (otherwise from its template) */
+export function hasStepActivation(stageId: string): boolean {
+  const id = activationStepId(stageId);
+  return DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === id) || getStepFieldConfig().some(a => a.stepId === id);
+}
+
 /* Returns the activation for a step, falling back to defaults if not in the stored config */
-export function getActivationForStep(stepId: string): StepFieldActivation {
+export function getActivationForStep(stageId: string): StepFieldActivation {
+  const stepId = activationStepId(stageId);
   const config = getStepFieldConfig();
   return config.find(a => a.stepId === stepId)
     ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)
