@@ -42,6 +42,19 @@ describe('joint-form stage-form', () => {
     expect(keys(job()).some(k => k.startsWith('override'))).toBeFalse();
   });
 
+  it('Tack hides filler when a consumable insert is used or neither part requires traceability; Root keeps it', () => {
+    const FILLER = ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'];
+    const keys = (j: Job, id: string, fab: Record<string, string> = {}) =>
+      visibleStageFields(stageOf(j, id), { ...ctxFor(j), fab }).map(f => f.key);
+    const traced = job({ mcl1: 'MC-I', jointDesign: 'C-24' });
+    expect(FILLER.every(k => keys(traced, 'tack').includes(k))).toBeTrue();
+    expect(FILLER.every(k => keys(traced, 'deferred-tack').includes(k))).toBeTrue();
+    expect(FILLER.some(k => keys(job({ jointDesign: 'C-24' }), 'tack').includes(k))).toBeFalse();
+    expect(FILLER.some(k => keys(job({ mcl1: 'MC-I', jointDesign: 'C-18' }), 'tack').includes(k))).toBeFalse();
+    expect(FILLER.some(k => keys(traced, 'tack', { revisedJointDesign: 'c-18' }).includes(k))).toBeFalse();
+    expect(FILLER.every(k => keys(job({ jointDesign: 'C-18' }), 'root-weld').includes(k))).toBeTrue();
+  });
+
   it('Weld Color shows on VT, required, only when either Material Type is titanium', () => {
     const keys = (j: Job, type: string) =>
       visibleStageFields(stageOf(j, 'root-ndt-vt5x', { inspectionType: type }), ctxFor(j)).map(f => f.key);

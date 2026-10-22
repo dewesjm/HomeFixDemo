@@ -1,6 +1,7 @@
 import { JOBS, Job } from '../jobs';
 import { buildStages, WorkflowStage } from '../workflow';
-import { jointDesignRequiresInsert, jointDesignRequiresBackingRing, visibleSignoffFields, requiredSignoffFields } from './fit-signoff';
+import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../workflow';
+import { visibleSignoffFields, requiredSignoffFields } from './fit-signoff';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', jointDesign: 'C-24', ...over });
 const fitOf = (j: Job): WorkflowStage => buildStages(j).find(s => s.id === 'fit')!;

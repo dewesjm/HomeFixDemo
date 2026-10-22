@@ -260,7 +260,7 @@ export class JointPageComponent implements OnDestroy {
   });
 
   private formCtx(stage: WorkflowStage): StageFormContext {
-    return { job: this.job, stages: this.wf?.().stages ?? [], offListUnlocked: this.overrides.offListUnlocked(stage) };
+    return { job: this.job, stages: this.wf?.().stages ?? [], offListUnlocked: this.overrides.offListUnlocked(stage), fab: this.fab() };
   }
 
   visibleFields(stage: WorkflowStage): StageField[] {

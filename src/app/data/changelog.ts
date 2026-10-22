@@ -19,6 +19,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     fixed: [
       'Admin → Signoff Type Definition: fields that only show under a condition (e.g. Probationary and Oversight Inspector, Portion of Weld Inspected) no longer say "Always". Each field now says when it is shown, when it is greyed out, and whether it is required, and the condition editor opens with the current condition filled in. Removing every clause makes the field always shown.',
+      'Tack and Deferred Tack: Filler Metal Type, Size and MIC are hidden when the joint design (or Revised Joint Design) uses a consumable insert, and when neither part requires material traceability. Root\'s "Only Consumable Insert used as filler" checkbox is unchanged.',
     ],
   },
   {

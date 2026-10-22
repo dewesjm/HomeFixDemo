@@ -1,8 +1,9 @@
 /* Per-step field activation: which catalog fields are active on each step type and under what
    conditions. The defaults mirror the current hardcoded behavior. Live overrides are stored in
-   localStorage (welding:step-field-config:v1) and take effect immediately. */
+   localStorage (welding:step-field-config:v2) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { FieldCondition } from './field-conditions';
+import { FILLER_KEYS } from './weld-fields';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -28,6 +29,14 @@ const titaniumVt: FieldCondition = {
   ]
 };
 const rootWeldOnly: FieldCondition = { all: [{ source: 'stepId', matches: '^root-weld$' }] };
+/* Tack's filler is hidden when a consumable insert is used, and when neither part requires
+   material traceability (virtual keys in joint-facts.ts) */
+const tackFiller: FieldCondition = {
+  all: [
+    { source: 'jointDetail', key: 'consumableInsertRequired', equals: '' },
+    { source: 'jointDetail', key: 'materialTraceability', equals: 'yes' },
+  ]
+};
 
 /* Insert and ring fields: show when the joint design requires each (renderer interprets
    via jointDesignRequiresInsert / jointDesignRequiresBackingRing; catalog defaults have no showIf) */
@@ -90,6 +99,11 @@ function weldStep(id: string, extra: FieldActivation[] = []): StepFieldActivatio
   return { stepId: id, fields: [...WELD_FIELDS, ...extra], signoffFields: [] };
 }
 
+function tackStep(id: string): StepFieldActivation {
+  const fields = WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f);
+  return { stepId: id, fields, signoffFields: [] };
+}
+
 const FITUP_INSP_FIELDS: FieldActivation[] = [
   { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
@@ -100,11 +114,11 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
     signoffFields: [...INSERT_FIELDS, ...RING_FIELDS] },
   { stepId: 'fit', fields: [],
     signoffFields: [...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }] },
-  weldStep('tack'),
+  tackStep('tack'),
   { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
   { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, signoffFields: [{ key: 'releaseToWelding' }] },
   { stepId: 'fitup-release', fields: [], signoffFields: [] },
-  weldStep('deferred-tack'),
+  tackStep('deferred-tack'),
   weldStep('root-weld', [{ key: 'consumableInsertOnly', showIf: rootWeldOnly }]),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('root', 'mtpt', NDT_MTPT_FIELDS),

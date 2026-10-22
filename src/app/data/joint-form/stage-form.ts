@@ -3,10 +3,9 @@ import { Job } from '../jobs';
 import {
   StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, WELD_OVERRIDE_FIELDS, getTemplates, isFieldLocked,
   allowableThicknessAmount, showIfMet, fieldAppliesToJob, baseStepId, stepOnJoint,
-  ConditionContext, evaluateCondition, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
+  ConditionContext, evaluateCondition, buildConditionContext, lookupCatalogField, getActivationForStep, DEFAULT_STEP_FIELD_ACTIVATIONS,
   effectiveShowIf, effectiveDisabledIf, effectiveRequired,
 } from '../workflow';
-import { isTitaniumJoint } from '../material-classification';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment';
@@ -21,6 +20,8 @@ export interface StageFormContext {
   stages: WorkflowStage[];
   /* a Foreman Override on this step opens GWP and Filler Metal Type/Size to their full lists */
   offListUnlocked: boolean;
+  /* the joint's Fabrication values (Revised Joint Design decides whether an insert is needed) */
+  fab?: Record<string, string>;
 }
 
 /* PH/IP requirements: the keys the actuals follow */
@@ -56,29 +57,6 @@ export function fitFieldsForType(trade: Job['trade'], signoffType: string): Stag
     return [...weldBuildupFields(trade).map(f => ({ ...f })), { key: 'affectedItem', label: 'Affected Item', type: 'text', required: true }];
   }
   return (templates.find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
-}
-
-/* Builds the evaluation context the catalog condition system needs to resolve field visibility
-   and disabled state for a step. 'titanium' is a virtual jointDetail key for isTitaniumJoint().
-   'inspectionType' is merged into inputs so field-source conditions can reach it. */
-export function buildConditionContext(stage: WorkflowStage, job: Job | undefined, allStages: WorkflowStage[]): ConditionContext {
-  return {
-    stageId: stage.id,
-    inputs: { ...stage.inputs, inspectionType: stage.inspectionType },
-    jointDetail: (key: string): string => {
-      if (key === 'titanium') return job && isTitaniumJoint(job) ? 'yes' : '';
-      const v = (job as Record<string, unknown> | undefined)?.[key];
-      if (v === undefined || v === null) return '';
-      if (typeof v === 'boolean') return v ? 'yes' : '';
-      return String(v);
-    },
-    stageProperty: (key: string): string => {
-      if (key === 'engineeringEntry') return stage.engineeringEntry ? 'yes' : '';
-      return '';
-    },
-    priorInput: (stepId: string, fieldKey: string): string =>
-      allStages.find(s => s.id === stepId)?.inputs[fieldKey] ?? '',
-  };
 }
 
 /* Resolves visible StageField[] from the catalog activation for a step, evaluating all conditions
@@ -125,7 +103,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
   const job = ctx.job;
   const isFitWeldBuildup = stage.id === 'fit' && stage.signoffType === 'weld-buildup';
   if (!isFitWeldBuildup && DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === stage.id)) {
-    const condCtx = buildConditionContext(stage, job, ctx.stages);
+    const condCtx = buildConditionContext(stage, job, ctx.stages, ctx.fab);
     return resolveActivatedFields(stage.id, condCtx, ctx, stage);
   }
   /* non-catalog path: Repair, Excavation NDT, Fit as Weld Build-Up, custom added steps */

@@ -1,6 +1,6 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
    Each row is a routing step; editing picks any field from the catalog and sets its showIf condition.
-   Stored in welding:step-field-config:v1 (step-field-config.ts). */
+   Stored in welding:step-field-config:v2 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

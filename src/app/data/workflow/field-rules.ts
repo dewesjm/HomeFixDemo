@@ -3,6 +3,7 @@
 import { FieldCondition, ConditionClause } from './field-conditions';
 import { FieldActivation } from './step-field-config';
 import { lookupCatalogField, lookupCatalogSignoffField } from './field-catalog';
+import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 export type FieldSection = 'f' | 'sf';
 
@@ -62,7 +63,8 @@ function clauseText(c: ConditionClause): string {
   const isCheckbox = (lookupCatalogField(key) ?? lookupCatalogSignoffField(key))?.type === 'checkbox';
   const show = (v: string) => key === 'inspectionType' ? v.toUpperCase() : v;
   if (c.equals !== undefined) {
-    if (c.source === 'jointDetail' && key === 'titanium') return c.equals === 'yes' ? 'the joint is titanium' : 'the joint is not titanium';
+    const virtual = c.source === 'jointDetail' ? VIRTUAL_JOINT_DETAILS[key] : undefined;
+    if (virtual) return c.equals === 'yes' ? virtual.yesText : virtual.noText;
     if (c.equals === 'yes' && isCheckbox) return `${subject} is checked`;
     return `${subject} is ${show(c.equals)}`;
   }

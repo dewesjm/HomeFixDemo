@@ -28,3 +28,13 @@ describe('field rules', () => {
     expect(showRuleText({ key: 'backingRingType' }, 'sf')).toBe('Shown when the joint design needs a backing ring');
   });
 });
+
+describe('field rules: Tack filler wording', () => {
+  it('words the virtual joint facts', () => {
+    const text = showRuleText({ key: 'fillerMetalType', showIf: { all: [
+      { source: 'jointDetail', key: 'consumableInsertRequired', equals: '' },
+      { source: 'jointDetail', key: 'materialTraceability', equals: 'yes' },
+    ] } }, 'f');
+    expect(text).toBe('Shown when the joint design doesn\'t need a consumable insert and either part requires material traceability');
+  });
+});
