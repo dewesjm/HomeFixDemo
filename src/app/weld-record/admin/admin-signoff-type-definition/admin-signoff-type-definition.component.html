@@ -58,7 +58,7 @@
 <!-- Edit / Add dialog -->
 @if (editing(); as e) {
   <dialog class="modal modal-open" (close)="cancelEdit()">
-    <div class="modal-box max-w-2xl max-h-[90vh] flex flex-col">
+    <div class="modal-box w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
       <h3 class="text-lg font-semibold mb-4">
         @if (e.uid) { {{ e.stepLabel }} } @else { New Definition }
       </h3>
@@ -92,7 +92,7 @@
                   <ng-container *ngTemplateOutlet="fieldRules; context: { key: f.key, section: 'f' }"></ng-container>
                 }
               </div>
-              @if (isCondOpen(f.key, 'f')) {
+              @if (isAnyCondOpen(f.key, 'f')) {
                 <ng-container *ngTemplateOutlet="condEditor"></ng-container>
               }
             </div>
@@ -114,7 +114,7 @@
                   <ng-container *ngTemplateOutlet="fieldRules; context: { key: sf.key, section: 'sf' }"></ng-container>
                 }
               </div>
-              @if (isCondOpen(sf.key, 'sf')) {
+              @if (isAnyCondOpen(sf.key, 'sf')) {
                 <ng-container *ngTemplateOutlet="condEditor"></ng-container>
               }
             </div>
@@ -135,36 +135,52 @@
   </dialog>
 }
 
-<!-- A checked field's rules: when it shows (opens the condition editor), required, greyed out -->
+<!-- A checked field's rules: when it shows and when it's greyed out (each opens the condition
+     editor), and whether it's required -->
 <ng-template #fieldRules let-key="key" let-section="section">
-  <div class="flex flex-col items-end gap-0.5 text-right max-w-[60%]">
+  <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
     @if (isBuiltIn(key, section)) {
       <span class="text-xs px-2">{{ condLabel(key, section) }}</span>
     } @else {
-      <button type="button" class="btn btn-ghost btn-xs gap-1 h-auto min-h-6 py-0.5 text-right"
-              (click)="toggleCondEditor(key, section)">
-        @if (isCondOpen(key, section)) {
-          <svg lucideChevronDown class="size-3 shrink-0"></svg>
-        } @else {
-          <svg lucideChevronRight class="size-3 shrink-0"></svg>
-        }
-        <span class="text-xs font-normal">{{ condLabel(key, section) }}</span>
-      </button>
+      <ng-container *ngTemplateOutlet="condButton; context: { key, section, kind: 'show', text: condLabel(key, section) }"></ng-container>
     }
-    @if (disabledLabel(key, section); as d) {
-      <span class="text-xs px-2">{{ d }}</span>
-    }
-    @if (isRequired(key, section)) {
+    @if (section === 'f') {
+      @if (isReadOnly(key)) {
+        <span class="text-xs px-2">{{ disabledLabel(key, section) }}</span>
+      } @else {
+        <ng-container *ngTemplateOutlet="condButton; context: { key, section, kind: 'disabled', text: disabledLabel(key, section) || 'Never greyed out' }"></ng-container>
+      }
+      <label class="flex items-center gap-1 px-2 text-xs cursor-pointer">
+        <input type="checkbox" class="checkbox checkbox-xs" [checked]="isRequired(key, section)"
+               (change)="setRequired(key, section, $any($event.target).checked)" />
+        Required for sign-off
+      </label>
+    } @else if (isRequired(key, section)) {
       <span class="badge badge-sm badge-outline mx-2">Required</span>
     }
   </div>
+</ng-template>
+
+<ng-template #condButton let-key="key" let-section="section" let-kind="kind" let-text="text">
+  <button type="button" class="btn btn-ghost btn-xs gap-1 h-auto min-h-6 py-0.5 text-right"
+          (click)="toggleCondEditor(key, section, kind)">
+    @if (isCondOpen(key, section, kind)) {
+      <svg lucideChevronDown class="size-3 shrink-0"></svg>
+    } @else {
+      <svg lucideChevronRight class="size-3 shrink-0"></svg>
+    }
+    <span class="text-xs font-normal">{{ text }}</span>
+  </button>
 </ng-template>
 
 <!-- Condition editor (shared template used inline above) -->
 <ng-template #condEditor>
   @if (editing(); as e) {
     <div class="ml-5 mb-2 bg-base-200 rounded-box p-2 text-sm">
-      <div class="text-xs font-semibold mb-1 text-base-content/60">Show when (no clauses = always shown)</div>
+      <div class="text-xs font-semibold mb-1">
+        {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)' : 'Greyed out when (no clauses = never greyed out)' }}
+      </div>
+      <div class="text-xs mb-1">For "one of" several values, separate them with commas (e.g. mt, pt).</div>
       @for (c of e.condClauses; track $index; let i = $index) {
         @if (i > 0) { <div class="text-xs font-semibold my-1">and</div> }
         <div class="flex flex-wrap items-center gap-1 mb-1">

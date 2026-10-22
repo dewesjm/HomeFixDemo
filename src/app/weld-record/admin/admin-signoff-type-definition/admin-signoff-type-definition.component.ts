@@ -1,6 +1,6 @@
 /* Admin → Signoff Type Definition: table of per-step field configurations.
    Each row is a routing step, or Repair / Excavation NDT (one row shared by every round); editing
-   picks any field from the catalog and sets its showIf condition. Add's step list is the steps in
+   picks any field from the catalog and sets when it shows, when it's greyed out and whether it's required. Add's step list is the steps in
    Admin > Signoff Type Availability; picking one that already has a definition edits it.
    Stored in welding:step-field-config:v2 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -21,11 +21,11 @@ import {
   DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
   FIELD_CATALOG, SIGNOFF_FIELD_CATALOG,
   getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
-  getTemplates, FieldSection, defaultShowIf, showIfToStore,
+  getTemplates, FieldSection, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, requiredToStore, isAlwaysReadOnly,
   showRuleText, disabledRuleText, effectiveRequired, hasBuiltInShowRule,
   getSignoffTypeRows, isRoutingLockedField, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW,
 } from '../../../data/workflow';
-import type { ConditionClause } from '../../../data/workflow';
+import type { ConditionClause, FieldCondition } from '../../../data/workflow';
 
 interface DefRow {
   uid: string;
@@ -38,6 +38,8 @@ interface DefRow {
 }
 
 type ClauseSrc = 'field' | 'jointDetail' | 'stepId';
+/* which of a field's conditions the editor is changing */
+type CondKind = 'show' | 'disabled';
 
 interface WorkClause {
   source: ClauseSrc;
@@ -53,10 +55,15 @@ interface EditState {
   signoffFieldActivations: FieldActivation[];
   condKey: string | null;      /* field key whose condition editor is open */
   condSection: FieldSection;
+  condKind: CondKind;
   condClauses: WorkClause[];   /* working copy of the open field's condition */
 }
 
 let seq = 0;
+
+const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? { all: c.all.map(x => ({ ...x })) } : undefined;
+const copyActivation = (f: FieldActivation): FieldActivation =>
+  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf) });
 
 @Component({
   selector: 'app-admin-signoff-type-definition',
@@ -151,7 +158,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   addRow() {
     this.table.clearFilters();
-    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], signoffFieldActivations: [], condKey: null, condSection: 'f', condClauses: [] });
+    this.editing.set({ uid: null, stepId: '', stepLabel: '', fieldActivations: [], signoffFieldActivations: [], condKey: null, condSection: 'f', condKind: 'show', condClauses: [] });
   }
 
   openEdit(row: DefRow) {
@@ -159,10 +166,11 @@ export class AdminSignoffTypeDefinitionComponent {
       uid: row.uid,
       stepId: row.stepId,
       stepLabel: row.stepLabel,
-      fieldActivations: row.fieldActivations.map(f => ({ ...f, showIf: f.showIf ? { all: f.showIf.all.map(c => ({ ...c })) } : undefined })),
-      signoffFieldActivations: row.signoffFieldActivations.map(f => ({ ...f, showIf: f.showIf ? { all: f.showIf.all.map(c => ({ ...c })) } : undefined })),
+      fieldActivations: row.fieldActivations.map(copyActivation),
+      signoffFieldActivations: row.signoffFieldActivations.map(copyActivation),
       condKey: null,
       condSection: 'f',
+      condKind: 'show',
       condClauses: [],
     });
   }
@@ -298,15 +306,37 @@ export class AdminSignoffTypeDefinitionComponent {
     return hasBuiltInShowRule(key, section);
   }
 
-  isCondOpen(key: string, section: FieldSection): boolean {
+  isReadOnly(key: string): boolean {
+    return isAlwaysReadOnly(key);
+  }
+
+  setRequired(key: string, section: FieldSection, required: boolean) {
+    this.editing.update(e => {
+      if (!e) return e;
+      const set = (acts: FieldActivation[]) => acts.map(a => {
+        if (a.key !== key) return a;
+        const { required: _old, ...rest } = a;
+        const stored = requiredToStore(key, section, required);
+        return stored === undefined ? rest : { ...rest, required: stored };
+      });
+      return section === 'f' ? { ...e, fieldActivations: set(e.fieldActivations) } : { ...e, signoffFieldActivations: set(e.signoffFieldActivations) };
+    });
+  }
+
+  isCondOpen(key: string, section: FieldSection, kind: CondKind = 'show'): boolean {
+    const e = this.editing();
+    return !!e && e.condKey === key && e.condSection === section && e.condKind === kind;
+  }
+
+  isAnyCondOpen(key: string, section: FieldSection): boolean {
     const e = this.editing();
     return !!e && e.condKey === key && e.condSection === section;
   }
 
-  toggleCondEditor(key: string, section: FieldSection) {
+  toggleCondEditor(key: string, section: FieldSection, kind: CondKind = 'show') {
     this.editing.update(e => {
       if (!e) return e;
-      if (e.condKey === key && e.condSection === section) {
+      if (e.condKey === key && e.condSection === section && e.condKind === kind) {
         /* closing: apply the current clauses first */
         this.applyCondClauses(e);
         return { ...e, condKey: null };
@@ -315,8 +345,9 @@ export class AdminSignoffTypeDefinitionComponent {
       if (e.condKey) this.applyCondClauses(e);
       const acts = section === 'f' ? e.fieldActivations : e.signoffFieldActivations;
       const act = acts.find(a => a.key === key);
-      const clauses = (act?.showIf ?? defaultShowIf(key, section))?.all.map(c => this.clauseToWork(c)) ?? [];
-      return { ...e, condKey: key, condSection: section, condClauses: clauses };
+      const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key, section)) : (act?.disabledIf ?? defaultDisabledIf(key));
+      const clauses = current?.all.map(c => this.clauseToWork(c)) ?? [];
+      return { ...e, condKey: key, condSection: section, condKind: kind, condClauses: clauses };
     });
   }
 
@@ -336,13 +367,14 @@ export class AdminSignoffTypeDefinitionComponent {
   private applyCondClauses(e: EditState) {
     if (!e.condKey) return;
     const clauses = e.condClauses.filter(c => c.source === 'stepId' ? !!c.equals : !!c.key).map(c => this.workToClause(c));
-    const condition = showIfToStore(e.condKey, e.condSection, clauses);
+    const prop = e.condKind === 'show' ? 'showIf' : 'disabledIf';
+    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, e.condSection, clauses) : disabledIfToStore(e.condKey, clauses);
 
     const update = (acts: FieldActivation[]): FieldActivation[] =>
       acts.map(a => {
         if (a.key !== e.condKey) return a;
-        const { showIf: _old, ...rest } = a;
-        return condition ? { ...rest, showIf: condition } : rest;
+        const { [prop]: _old, ...rest } = a;
+        return condition ? { ...rest, [prop]: condition } : rest;
       });
 
     if (e.condSection === 'f') e.fieldActivations = update(e.fieldActivations);

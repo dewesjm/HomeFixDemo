@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     changed: [
       'Admin → Signoff Type Definition: Repair and Excavation NDT have their own definitions (one each, shared by every round), and Add definition lists the steps in Signoff Type Availability; picking one that already has a definition opens it. Fields the step\'s routing reads when signed (e.g. Repair Code) stay on.',
+      'Admin → Signoff Type Definition: each field\'s "greyed out when" rule can be edited like its "shown when" rule, and a Required for sign-off checkbox sets whether it must be filled in. The edit window is wider.',
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
     ],
     fixed: [

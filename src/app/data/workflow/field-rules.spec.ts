@@ -1,4 +1,4 @@
-import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired } from './field-rules';
+import { effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, effectiveDisabledIf, requiredToStore } from './field-rules';
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
@@ -22,6 +22,17 @@ describe('field rules', () => {
     expect(cleared).toEqual({ all: [] });
     expect(effectiveShowIf({ key: 'portionInspected', showIf: cleared }, 'f')).toBeUndefined();
     expect(showIfToStore('hasProbationary', 'f', [])).toBeUndefined();
+  });
+
+  it('greyed-out rule and required store only what differs from the catalog', () => {
+    const def = [{ source: 'field' as const, key: 'consumableInsertOnly', equals: 'yes' }];
+    expect(disabledIfToStore('fillerMetalMic', def)).toBeUndefined();
+    const cleared = disabledIfToStore('fillerMetalMic', []);
+    expect(cleared).toEqual({ all: [] });
+    expect(effectiveDisabledIf({ key: 'fillerMetalMic', disabledIf: cleared })).toBeUndefined();
+    expect(disabledRuleText({ key: 'fillerMetalMic', disabledIf: cleared }, 'f')).toBe('');
+    expect(requiredToStore('fillerMetalMic', 'f', true)).toBeUndefined();
+    expect(requiredToStore('fillerMetalMic', 'f', false)).toBeFalse();
   });
 
   it('describes joint-design sign-off fields as built-in rules', () => {

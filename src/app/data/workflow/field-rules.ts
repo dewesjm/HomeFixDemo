@@ -40,21 +40,44 @@ export function effectiveShowIf(act: FieldActivation, section: FieldSection): Fi
   return cond?.all.length ? cond : undefined;
 }
 
+export function defaultDisabledIf(key: string): FieldCondition | undefined {
+  return lookupCatalogField(key)?.defaultDisabledIf;
+}
+
+/* An empty disabledIf ({ all: [] }) is an explicit "never greyed out", overriding a catalog default */
 export function effectiveDisabledIf(act: FieldActivation): FieldCondition | undefined {
-  return act.disabledIf ?? lookupCatalogField(act.key)?.defaultDisabledIf;
+  const cond = act.disabledIf ?? defaultDisabledIf(act.key);
+  return cond?.all.length ? cond : undefined;
 }
 
 export function effectiveRequired(act: FieldActivation, section: FieldSection): boolean {
   return act.required ?? catalogEntry(act.key, section)?.defaultRequired ?? false;
 }
 
-/* The showIf to store for edited clauses: none when they match the default, an explicit empty
+/* The condition to store for edited clauses: none when they match the default, an explicit empty
    condition when cleared over a default, otherwise the clauses */
-export function showIfToStore(key: string, section: FieldSection, clauses: ConditionClause[]): FieldCondition | undefined {
-  const def = defaultShowIf(key, section);
+function conditionToStore(def: FieldCondition | undefined, clauses: ConditionClause[]): FieldCondition | undefined {
   if (def && JSON.stringify(def.all) === JSON.stringify(clauses)) return undefined;
   if (!clauses.length) return def ? { all: [] } : undefined;
   return { all: clauses };
+}
+
+export function showIfToStore(key: string, section: FieldSection, clauses: ConditionClause[]): FieldCondition | undefined {
+  return conditionToStore(defaultShowIf(key, section), clauses);
+}
+
+export function disabledIfToStore(key: string, clauses: ConditionClause[]): FieldCondition | undefined {
+  return conditionToStore(defaultDisabledIf(key), clauses);
+}
+
+/* the required flag to store: none when it matches the catalog default */
+export function requiredToStore(key: string, section: FieldSection, required: boolean): boolean | undefined {
+  return required === (catalogEntry(key, section)?.defaultRequired ?? false) ? undefined : required;
+}
+
+/* fields whose greyed-out rule can't be edited: always read-only ones */
+export function isAlwaysReadOnly(key: string): boolean {
+  return !!lookupCatalogField(key)?.disabled;
 }
 
 function labelOf(key: string): string {
