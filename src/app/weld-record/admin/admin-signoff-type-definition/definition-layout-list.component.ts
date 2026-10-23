@@ -8,7 +8,6 @@ import { LucideArrowDown, LucideArrowUp, LucidePlus, LucideX } from '@lucide/ang
 import { DECISION_KEY, FieldActivation, HEADING_KEY_PREFIX, isHeadingItem } from '../../signoff-definition/step-field-config';
 import { isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
 import { definitionFieldNote } from '../../signoff-definition/stage-rules';
-import { drawnOutsideForm } from '../../signoff-definition/signoff-parts';
 import { inLineOrder, nextLine } from '../../signoff-definition/definition-layout';
 
 let seq = 0;
@@ -30,15 +29,10 @@ export class DefinitionLayoutListComponent {
     return a.key === DECISION_KEY;
   }
 
-  /* Type, Comments and References keep their own spot outside the form, whatever their line */
-  isOutsideForm(a: FieldActivation): boolean {
-    return drawnOutsideForm(a.key);
-  }
-
   /* drawn as a block the width of the form: a verify-grid row (the grid goes where its first shown
-     row is) or Signoff History; no width, and always on a line of its own */
+     row is), Signoff History or References; no width, and always on a line of its own */
   isBlockItem(a: FieldActivation): boolean {
-    return isVerifyRow(a.key) || a.key === 'signoffHistory';
+    return isVerifyRow(a.key) || a.key === 'signoffHistory' || a.key === 'references';
   }
 
   fieldNote(a: FieldActivation): string {

@@ -1,10 +1,7 @@
 import { layoutSections, withNewField } from './definition-layout';
-import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep, numberLines } from './step-field-config';
-import { drawnOutsideForm } from './signoff-parts';
+import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep, numberLines, placeSignoffParts } from './step-field-config';
 
 const all = () => true;
-/* the form never draws Type, Comments or References itself */
-const inForm = (key: string) => !drawnOutsideForm(key);
 
 describe('layoutSections', () => {
   it('puts fields with the same line number side by side, lines in number order', () => {
@@ -54,21 +51,38 @@ describe('layoutSections', () => {
     expect(sections).toEqual([{ box: true, title: 'Box', parts: [{ kind: 'heading', text: 'Sub' }, { kind: 'line', keys: ['b'] }] }]);
   });
 
-  it('draws the default Root Weld in four boxes (the last its 5X question), the requirements on one line', () => {
-    const sections = layoutSections(getActivationForStep('root-weld').fields, inForm);
-    expect(sections.map(s => s.title)).toEqual(['', 'Preheat/Interpass', '', '']);
-    expect(sections[3].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
-    expect(sections[0].parts).toEqual([
+  it('draws the default Root Weld with Type first, then five boxes (its 5X question, then Comments, last), the requirements on one line', () => {
+    const sections = layoutSections(getActivationForStep('root-weld').fields, all);
+    expect(sections.map(s => s.title)).toEqual(['', '', 'Preheat/Interpass', '', '', '']);
+    expect(sections[0].parts).toEqual([{ kind: 'line', keys: ['type'] }]);
+    expect(sections[4].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
+    expect(sections[5].parts).toEqual([{ kind: 'line', keys: ['comments'] }]);
+    expect(sections[1].parts).toEqual([
       { kind: 'line', keys: ['weldProcedure', 'wtn', 'weldProcess'] }, { kind: 'line', keys: ['qualificationCheck'] },
       { kind: 'line', keys: ['consumableInsertOnly'] }, { kind: 'line', keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'] },
     ]);
-    expect(sections[1].parts[1]).toEqual({ kind: 'line', keys: ['phMin', 'phMax', 'ipMin', 'ipMax'] });
+    expect(sections[2].parts[1]).toEqual({ kind: 'line', keys: ['phMin', 'phMax', 'ipMin', 'ipMax'] });
   });
 
-  it('draws the default UT/RT NDT with Inspection Results just above Defect Code', () => {
-    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, inForm)
+  it('draws the default UT/RT NDT with Type first and Inspection Results just above Defect Code, References and Comments', () => {
+    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, all)
       .flatMap(s => s.parts.flatMap(p => p.kind === 'line' ? p.keys : []));
-    expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode']);
+    expect(keys[0]).toBe('type');
+    expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode', 'references', 'comments']);
+  });
+});
+
+describe('placeSignoffParts', () => {
+  it('moves Type to the first line and Comments to the last, in a box of its own when the form has boxes', () => {
+    const boxed = placeSignoffParts([
+      { key: HEADING_KEY_PREFIX + 'w', heading: '', newBox: true, line: 1 }, { key: 'a', line: 2 }, { key: 'type', line: 2 },
+      { key: 'comments', line: 1 }, { key: 'references', line: 3 },
+    ]);
+    expect(boxed.map(a => [a.key, a.line])).toEqual([
+      ['type', 1], [HEADING_KEY_PREFIX + 'w', 2], ['a', 3], ['references', 4], [HEADING_KEY_PREFIX + 'comments', 5], ['comments', 6],
+    ]);
+    expect(placeSignoffParts([{ key: 'comments', line: 1 }, { key: 'a', line: 2 }]).map(a => [a.key, a.line]))
+      .toEqual([['a', 2], ['comments', 3]]);
   });
 });
 

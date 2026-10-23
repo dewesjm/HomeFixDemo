@@ -1,5 +1,5 @@
-<section class="panel">
-  <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> References</h3>
+<section [class]="card() ? 'signoff-card' : 'panel'">
+  <h3 [class]="card() ? 'signoff-card-title flex items-center gap-1' : 'panel-title'"><svg lucidePaperclip class="size-4"></svg> References</h3>
   <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
 
   @if (references().length) {

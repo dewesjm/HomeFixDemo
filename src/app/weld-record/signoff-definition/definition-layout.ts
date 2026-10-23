@@ -1,6 +1,6 @@
 /* How a step's form is laid out from its Signoff Type Definition: the items in line-number order,
    fields with the same line number side by side, split by headings (a heading can start a box).
-   Inspection Results is laid out like a field. Fields on a line share its width. */
+   Type, Comments, References and Inspection Results are laid out like fields. Fields on a line share its width. */
 import type { FieldActivation } from './step-field-config';
 import { DECISION_KEY, isHeadingItem } from './step-field-config';
 import { isVerifyRow } from './field-catalog';
@@ -15,9 +15,9 @@ export interface LayoutSection {
 
 const isLine = (p: LayoutPart | undefined): p is { kind: 'line'; keys: string[] } => p?.kind === 'line';
 
-/* Inspection Results, a verify-grid row and Signoff History always get a line of their own */
+/* Inspection Results, a verify-grid row, Signoff History and References always get a line of their own */
 function drawnAlone(key: string): boolean {
-  return key === DECISION_KEY || isVerifyRow(key) || key === 'signoffHistory';
+  return key === DECISION_KEY || isVerifyRow(key) || key === 'signoffHistory' || key === 'references';
 }
 
 /* the items sorted by line number, keeping list order within a line */

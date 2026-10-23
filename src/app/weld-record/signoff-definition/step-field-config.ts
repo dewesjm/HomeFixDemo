@@ -1,7 +1,7 @@
 /* Per-step field activation: which catalog fields are active on each step type, under what
    conditions, and how the form lays them out (line numbers, widths, headings, where
    Inspection Results goes, see definition-layout.ts). Live overrides are stored in localStorage
-   (welding:step-field-config:v11) and take effect immediately. */
+   (welding:step-field-config:v12) and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from './field-catalog';
@@ -39,8 +39,8 @@ export function isHeadingItem(a: FieldActivation): boolean {
   return a.heading !== undefined;
 }
 
-/* the signoff section's fields, drawn by the sign-off panel: Type above the form, Inspection Results
-   (SAT/UNSAT) where the Layout list places it, Comments below the form */
+/* the signoff section's fields, placed in the form by the Layout list like any field: Type,
+   Inspection Results (SAT/UNSAT) and Comments */
 export const TYPE_KEY = 'type';
 export const DECISION_KEY = 'decision';
 export const COMMENTS_KEY = 'comments';
@@ -104,6 +104,8 @@ const QUAL_CHECK: FieldActivation = { key: 'qualificationCheck' };
 const TYPE: FieldActivation = { key: TYPE_KEY };
 const COMMENTS: FieldActivation = { key: COMMENTS_KEY };
 const SIGNOFF_HISTORY: FieldActivation = { key: 'signoffHistory' };
+/* Comments under forms that end in a box: a box of its own, so it isn't drawn inside the last one */
+const BOXED_COMMENTS: FieldActivation[] = [box('comments'), COMMENTS];
 
 /* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
@@ -181,7 +183,7 @@ function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): Ste
 
 /* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
 function weldStep(id: string, fields = WELD_FIELDS): StepFieldActivation {
-  return { stepId: id, fields: [TYPE, ...fields, COMMENTS] };
+  return { stepId: id, fields: [TYPE, ...fields, ...BOXED_COMMENTS] };
 }
 
 function tackStep(id: string): StepFieldActivation {
@@ -201,7 +203,7 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = ([
   { stepId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
   { stepId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
   /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
-  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, COMMENTS] },
+  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, ...BOXED_COMMENTS] },
   tackStep('tack'),
   { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
   { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
@@ -231,13 +233,39 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = ([
 
 let _cache: StepFieldActivation[] | null = null;
 
+/* A definition saved before Type, Comments and References were laid out in the form (v11), with
+   Type moved to the first line and Comments to the last (in a box of its own when the form has boxes),
+   where the sign-off panel used to draw them. References stays where it is listed. */
+export function placeSignoffParts(fields: FieldActivation[]): FieldActivation[] {
+  const type = fields.find(a => a.key === TYPE_KEY);
+  const comments = fields.find(a => a.key === COMMENTS_KEY);
+  const rest = fields.filter(a => a !== type && a !== comments).map(a => type ? { ...a, line: (a.line ?? 0) + 1 } : a);
+  const out = [...(type ? [{ ...type, line: 1 }] : []), ...rest];
+  if (comments) {
+    const last = Math.max(0, ...out.map(a => a.line ?? 0));
+    const commentsBox = HEADING_KEY_PREFIX + 'comments';
+    const boxed = rest.some(a => a.newBox) && !rest.some(a => a.key === commentsBox);
+    if (boxed) out.push({ key: commentsBox, heading: '', newBox: true, line: last + 1 });
+    out.push({ ...comments, line: last + (boxed ? 2 : 1) });
+  }
+  return out;
+}
+
+function readSaved(key: string): StepFieldActivation[] | null {
+  const saved = localStorage.getItem(key);
+  return saved ? (JSON.parse(saved) as StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) })) : null;
+}
+
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
-    const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved
-      ? (JSON.parse(saved) as StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) }))
-      : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const saved = readSaved(STORAGE.stepFieldConfig);
+    const old = saved ? null : readSaved(STORAGE.stepFieldConfigV11);
+    if (old) {
+      setStepFieldConfig(old.map(a => ({ ...a, fields: placeSignoffParts(a.fields) })));
+      localStorage.removeItem(STORAGE.stepFieldConfigV11);
+    }
+    _cache = saved ?? _cache ?? DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }

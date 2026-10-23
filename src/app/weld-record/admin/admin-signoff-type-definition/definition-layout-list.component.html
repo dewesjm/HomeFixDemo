@@ -8,14 +8,12 @@
       <button type="button" class="btn btn-ghost btn-xs" title="Move down within its line" [disabled]="!canMove(i, 1)" (click)="moveItem(i, 1)">
         <svg lucideArrowDown class="size-4"></svg>
       </button>
-      @if (!isOutsideForm(a)) {
-        <label class="flex items-center gap-1 text-sm">
-          Line
-          <input type="number" min="1" step="1" class="input input-bordered input-sm w-20"
-                 [attr.aria-label]="'Line of ' + (isHeading(a) ? 'heading' : itemLabel(a))"
-                 [value]="a.line ?? ''" (change)="setLine(i, $any($event.target))" />
-        </label>
-      }
+      <label class="flex items-center gap-1 text-sm">
+        Line
+        <input type="number" min="1" step="1" class="input input-bordered input-sm w-20"
+               [attr.aria-label]="'Line of ' + (isHeading(a) ? 'heading' : itemLabel(a))"
+               [value]="a.line ?? ''" (change)="setLine(i, $any($event.target))" />
+      </label>
       @if (isHeading(a)) {
         <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
                aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
@@ -29,8 +27,6 @@
         </button>
       } @else if (isDecision(a)) {
         <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">On its own line.</span></span>
-      } @else if (isOutsideForm(a)) {
-        <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ fieldNote(a) }}</span></span>
       } @else if (isBlockItem(a)) {
         <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ blockNote(a) }}</span></span>
       } @else {

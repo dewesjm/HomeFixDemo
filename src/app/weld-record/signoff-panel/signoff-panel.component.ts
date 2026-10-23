@@ -4,8 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
-import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-parts';
-import { hasDecision, showsType } from '../signoff-definition/stage-rules';
+import { hasDecision } from '../signoff-definition/stage-rules';
 import { isEngineeringHoldId } from '../routing/step-ids';
 import { closesJoint, inspectingLabel } from '../routing/built-in-step-rules';
 import { AppDateTimePipe } from '../../shared/date-format';
@@ -26,10 +25,7 @@ export class SignoffPanelComponent {
   stageIndex = input.required<number>();
 
   foremanOverrideEnabled = FOREMAN_OVERRIDE_ENABLED;
-  commentsField = COMMENTS_FIELD;
-  readonly hasCommentsBox = hasCommentsBox;
   readonly hasDecision = hasDecision;
-  readonly showsType = showsType;
   readonly closesJoint = closesJoint;
   readonly isEngineeringHold = isEngineeringHoldId;
   readonly inspectingLabel = inspectingLabel;

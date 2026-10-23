@@ -13,6 +13,8 @@ import { Reference } from '../model/workflow-types';
 export class ReferencesComponent {
   references = input.required<Reference[]>();
   disabled = input<boolean>(false);
+  /* drawn as a box inside the sign-off form rather than as a panel of its own */
+  card = input<boolean>(false);
   add = output<FileList>();
   remove = output<string>();
 }

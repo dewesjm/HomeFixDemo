@@ -1,7 +1,7 @@
 /* What the joint page hands the Signoff panel and its parts: the joint, its workflow, and the
    page's rules and actions for the current step */
 import { Job } from '../../data/jobs';
-import { WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
+import { Reference, WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
 import { HistoryRow } from '../work-history/history-rows';
 
 export interface SignoffContext {
@@ -9,6 +9,8 @@ export interface SignoffContext {
   wf: () => { stages: WorkflowStage[]; fabricationData: Record<string, string> };
   /* the joint's History, as the History screen shows it (Records Review) */
   history: () => HistoryRow[];
+  /* the joint's References (file names), drawn where a step's Layout list places References */
+  references: () => Reference[];
   selectedRouting: () => number;
   jobComplete: () => boolean;
   rejectedCount: () => number;
@@ -47,6 +49,8 @@ export interface SignoffContext {
   setType: (stage: WorkflowStage, value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;
+  addReferences: (files: FileList) => void;
+  removeReference: (id: string) => void;
   /* undo the joint's most recent sign-off (Records Review's Deprogress) */
   deprogress: (reason: string) => void;
 }

@@ -1,5 +1,5 @@
-<!-- The sign-off frame every step shares (Type, Comments, Signoff), with the step's form laid out
-     from its Signoff Type Definition in the middle -->
+<!-- The sign-off frame every step shares (holds, Signoff button, signed-by line), with the step's
+     form laid out from its Signoff Type Definition inside it -->
 <section class="panel signoff-panel">
   <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
@@ -21,28 +21,6 @@
   }
 
   @if (stage(); as st) {
-    <!-- Type dropdown: options from Signoff Type Availability, shown while the step's definition lists Type -->
-    @if (showsType(st)) {
-      <div class="mb-sm">
-        <label class="stage-field">
-          <span class="stage-field-label font-semibold">Type@if (ctx().inspectionTypeRequired(st)) { <span class="text-error">*</span> }</span>
-          <select class="select select-bordered" [class.select-error]="!!ctx().fieldError(st.id, '__inspectionType')"
-                  [ngModel]="st.inspectionType"
-                  (ngModelChange)="ctx().setType(st, $event)">
-            @if (ctx().inspectionTypeRequired(st)) {
-              <option [ngValue]="''">Select the inspection performed…</option>
-            }
-            @for (opt of st.typeOptions ?? []; track opt.value) {
-              <option [ngValue]="opt.value">{{ opt.label }}</option>
-            }
-          </select>
-        </label>
-        @if (ctx().fieldError(st.id, '__inspectionType'); as err) {
-          <div class="field-error">{{ err }}</div>
-        }
-      </div>
-    }
-
     <!-- Inspecting (NDT steps): the weld activity being inspected, fixed by the step -->
     @if (inspectingLabel(st.id); as layer) {
       <div class="mb-sm">
@@ -53,22 +31,12 @@
       </div>
     }
 
-    <!-- the step's form, Inspection Results included where its Layout list places it -->
+    <!-- the step's form, Type, Inspection Results, Comments and References included where its Layout list places them -->
     <div class="mb-3">
       <app-definition-form [ctx]="ctx()" [stage]="st" />
     </div>
 
     @if (st.required) {
-      <!-- Comments: while the step's definition lists it (hasCommentsBox), saved with the sign-off -->
-      @if (hasCommentsBox(st)) {
-        <div class="mb-sm">
-          <div class="meta">{{ commentsField.label }}</div>
-          <input class="input input-bordered w-full" type="text" [disabled]="!ctx().editable(st)"
-                 [ngModel]="st.signoffInputs[commentsField.key]"
-                 (blur)="ctx().blurSignoffField(st, commentsField, $any($event.target).value)" />
-        </div>
-      }
-
       <div class="signoff-actions">
         @if (closesJoint(st.id)) {
           <span class="badge badge-success">SOLD</span>

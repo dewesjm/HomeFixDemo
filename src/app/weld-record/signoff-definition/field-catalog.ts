@@ -205,15 +205,15 @@ export const FIELD_CATALOG: CatalogField[] = [
     defaultShowIf: { all: [{ source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' }] } },
 
   /* ── Joint page ── */
-  /* the References panel under the sign-off (Correct shows it on every step regardless) */
+  /* the joint's References (file names), the width of the form (Correct shows it on every step regardless) */
   { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
 
-  /* ── Signoff section ── (drawn by the sign-off panel on whichever step lists them) */
-  /* the Type droplist above the form; its options and default are on Admin > Signoff Type Availability */
+  /* ── Signoff section ── (placed in the form by the Layout list on whichever step lists them) */
+  /* the Type droplist; its options and default are on Admin > Signoff Type Availability */
   { key: 'type', label: 'Type', type: 'select', ownComponent: true },
   /* SAT/UNSAT, placed in the form by the Layout list; UNSAT needs a reject target to be signed */
   { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true },
-  /* the Comments box below the form, saved in the step's signoffInputs */
+  /* the Comments box, saved in the step's signoffInputs */
   { key: 'comments', label: 'Comments', type: 'text', ownComponent: true },
 
   /* ── Fit-Up Insp ── */

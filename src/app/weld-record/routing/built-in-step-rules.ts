@@ -85,6 +85,6 @@ export const closingRole = (hasO63Review: boolean) => hasO63Review ? 'O63 Record
 
 /* ── Engineering Hold ── */
 
-/* no Comments box below the form: Engineering Hold's release form has its own required Comments,
+/* no Comments box: Engineering Hold's release form has its own required Comments,
    and nobody signs Sold */
 export const noCommentsBox = (stageId: string) => isEngineeringHoldId(stageId) || closesJoint(stageId);

@@ -10,7 +10,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
-import { ReferencesComponent } from '../references/references.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
 import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
 import { SignoffContext } from '../signoff-panel/signoff-context';
@@ -47,7 +46,7 @@ import { snapshotInputs } from '../signoff-definition/stage-display';
 import { visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { definitionHas } from '../signoff-definition/step-field-config';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
-import { inspectionTypeRequired, showsReferences } from '../signoff-definition/stage-rules';
+import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
 import { closesJoint } from '../routing/built-in-step-rules';
@@ -64,7 +63,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, ReferencesComponent, FabricationComponent, SignoffPanelComponent,
+    CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, FabricationComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
   providers: [JointOverridesService, SignoffFormEditsService, SignoffFormErrorsService],
@@ -145,12 +144,6 @@ export class JointPageComponent implements OnDestroy {
 
   /* the joint's History rows, as the History screen shows them (Records Review) */
   history = computed<HistoryRow[]>(() => (this.wf ? historyRows(this.wf(), this.job) : []));
-
-  /* which steps show References: see showsReferences() in weld-record/signoff-definition/stage-rules.ts */
-  showReferences = computed(() => {
-    const st = this.wf?.().stages[this.selectedRouting()];
-    return !!st && showsReferences(st);
-  });
 
   /* first unsigned required stage, or last when done */
   private indexOfActive(): number {
@@ -241,6 +234,7 @@ export class JointPageComponent implements OnDestroy {
       job,
       wf: () => ({ stages: w.stages, fabricationData: w.fabricationData }),
       history: () => this.history(),
+      references: () => this.wf?.().references ?? [],
       selectedRouting: () => this.selectedRouting(),
       jobComplete: () => this.jobComplete(),
       rejectedCount: () => this.rejectedCount(),
@@ -275,6 +269,8 @@ export class JointPageComponent implements OnDestroy {
       setStageResult: (s, r) => edits.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
       deprogress: (reason) => this.deprogress(reason),
+      addReferences: (files) => this.addReferences(files),
+      removeReference: (id) => this.removeReference(id),
     };
   });
 

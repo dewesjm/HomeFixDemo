@@ -45,8 +45,8 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'typeOpt
   return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
-/* which steps show the References panel on the joint page: those whose Signoff Type Definition lists
-   References (by default RT/UT on Root, Layer and Final NDT, and Repair); Correct shows it on every step */
+/* which steps show References in their form: those whose Signoff Type Definition lists References
+   (by default RT/UT on Root, Layer and Final NDT, and Repair); Correct shows it on every step */
 export const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
@@ -85,12 +85,12 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
   affectedMicVerified2: 'Shown under Affected Item, beside the Join To Item while it is picked.',
 };
 
-/* fields the sign-off panel or joint page draws outside the form, and Inspection Results' routing */
+/* what the signoff section's fields and the joint's References show, and Inspection Results' routing */
 const OWN_SPOT_NOTES: Record<string, string> = {
-  type: 'Drawn above the form when Admin > Signoff Type Availability gives the step options. No default there means it must be picked.',
+  type: 'Shown when Admin > Signoff Type Availability gives the step options. No default there means it must be picked.',
   decision: 'UNSAT can be signed only on a step with a Reject routes to target (Admin > Routing Settings).',
-  comments: 'Drawn below the form.',
-  references: 'Drawn as the References panel under the sign-off.',
+  comments: 'Shown while the step needs a signoff.',
+  references: "The joint's References (attached file names), drawn the width of the form.",
   signoffHistory: "The joint's History table, where the Layout list places it.",
 };
 
