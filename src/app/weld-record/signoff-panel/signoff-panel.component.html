@@ -70,8 +70,8 @@
       }
 
       <div class="signoff-actions">
-        @if (isNeverSigned(st)) {
-          <span class="badge badge-success">{{ st.label | uppercase }}</span>
+        @if (isSold(st.id)) {
+          <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
         } @else if (!st.signed && isEngineeringHold(st.id)) {
           <div class="w-full"><app-engineering-release [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>

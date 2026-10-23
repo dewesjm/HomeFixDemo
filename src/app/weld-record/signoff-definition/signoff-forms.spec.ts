@@ -1,5 +1,4 @@
-import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, isNeverSigned, withComments } from './signoff-forms';
-import { updateStageTemplate } from '../routing/stage-templates';
+import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, withComments } from './signoff-forms';
 import { verifyAgainst } from './step-field-config';
 import { definitionStageFields } from './shown-fields';
 import { snapshotInputs } from './stage-display';
@@ -7,19 +6,6 @@ import { buildStages } from '../routing/build-stages';
 import { JOBS } from '../../data/jobs';
 
 const step = (id: string, signoffType = 'standard') => ({ id, signoffType });
-
-describe('Never signed', () => {
-  it('Sold is never signed; Admin > Routing Settings can set it on another step', () => {
-    expect(isNeverSigned({ id: 'sold' })).toBeTrue();
-    expect(isNeverSigned({ id: 'review-o63' })).toBeFalse();
-    updateStageTemplate('Welding', 'fitup-release', { neverSigned: true });
-    try {
-      expect(isNeverSigned({ id: 'fitup-release' })).toBeTrue();
-    } finally {
-      updateStageTemplate('Welding', 'fitup-release', { neverSigned: false });
-    }
-  });
-});
 
 describe('verifyAgainst', () => {
   it('Fit-Up Insp checks Fabrication values, Records Review the joint record', () => {

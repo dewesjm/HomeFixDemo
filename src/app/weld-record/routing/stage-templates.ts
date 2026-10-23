@@ -37,8 +37,6 @@ interface SerializedStage {
   rejectRules?: RejectRule[];
   rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
-  fabricationCompleteToSign?: boolean;
-  neverSigned?: boolean;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -53,20 +51,15 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectRules: t.rejectRules ?? [],
     rejectRulesEdited: t.rejectRulesEdited,
     fabricationEditable: t.fabricationEditable ?? false,
-    fabricationCompleteToSign: t.fabricationCompleteToSign ?? false,
-    neverSigned: t.neverSigned ?? false,
   };
 }
 
-/* saves from before step conditions / Fabrication editable / Fabrication complete to sign / Never signed
-   existed: keep the built-in values for those */
+/* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [], role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
-    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false,
-    fabricationCompleteToSign: s.fabricationCompleteToSign ?? builtIn?.fabricationCompleteToSign ?? false,
-    neverSigned: s.neverSigned ?? builtIn?.neverSigned ?? false };
+    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -175,10 +168,6 @@ export function templateHasRejectTarget(stepId: string): boolean {
   return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.rejectToStage));
 }
 
-/* whether any trade's step with this id is Never signed (Admin > Routing Settings), e.g. Sold */
-export function templateNeverSigned(stepId: string): boolean {
-  return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.neverSigned));
-}
 
 /* all unique stage ids across all trades (for the admin screen) */
 export function allStageIds(): { id: string; label: string }[] {

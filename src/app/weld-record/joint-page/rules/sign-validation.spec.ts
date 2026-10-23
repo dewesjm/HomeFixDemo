@@ -7,7 +7,6 @@ import {
   setStepFieldConfig,
   resetStepFieldConfig,
 } from '../../signoff-definition/step-field-config';
-import { updateStageTemplate } from '../../routing/stage-templates';
 import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../../signoff-definition/field-catalog';
@@ -34,26 +33,15 @@ describe('joint-form sign-validation', () => {
     expect(signProblems(fit, ctxFor(j, fit, FULL_FAB))).toEqual([]);
   });
 
-  it('Fit-Up Insp needs SAT/UNSAT, every value verified and Fabrication complete', () => {
+  it('Fit-Up Insp needs SAT/UNSAT, every value verified and no fabrication errors', () => {
     const j = job();
     const insp = stageOf(j, 'fitup-insp');
     expect(signProblems(insp, ctxFor(j, insp, FULL_FAB, { location: 'x' })))
-      .toEqual(['Choose SAT or UNSAT', 'Fix the fabrication errors', 'Verify every fitting value']);
+      .toEqual(['Choose SAT or UNSAT', 'Verify every fitting value', 'Fix the fabrication errors']);
     const verified = { ...insp, result: 'sat' as const, inputs: Object.fromEntries(insp.fields.map(f => [f.key, 'yes'])) };
     expect(signProblems(verified, ctxFor(j, verified, FULL_FAB))).toEqual([]);
-    expect(signProblems(verified, ctxFor(j, verified))).toEqual(['Fabrication: Location, Drawing Rev, Actual Thickness']);
-  });
-
-  it('Fabrication complete to sign follows Admin > Routing Settings', () => {
-    const j = job();
-    const tack = stageOf(j, 'tack');
-    expect(signProblems(tack, ctxFor(j, tack))).toEqual([]);
-    updateStageTemplate('Welding', 'tack', { fabricationCompleteToSign: true });
-    try {
-      expect(signProblems(tack, ctxFor(j, tack))).toEqual(['Fabrication: Location, Drawing Rev, Actual Thickness']);
-    } finally {
-      updateStageTemplate('Welding', 'tack', { fabricationCompleteToSign: false });
-    }
+    /* blank Fabrication values block Fit only */
+    expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
   });
 
   it('Fit-Up Insp shows MIC rows only for parts needing traceability, Revised Joint Design only when entered', () => {

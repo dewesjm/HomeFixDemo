@@ -54,10 +54,3 @@ export function fabricationEditable(trade: Job['trade'], stages: WorkflowStage[]
   const id = activeStageId(stages)?.replace(/-r\d+$/, '');
   return !!id && !!getTemplates()[trade]?.find(t => t.id === id)?.fabricationEditable;
 }
-
-/* whether a step can't be signed until Fabrication is complete (Admin > Routing Settings "Fabrication
-   complete to sign", read live; a Repeat copy uses its step's) */
-export function fabricationCompleteToSign(trade: Job['trade'], stageId: string): boolean {
-  const id = stageId.replace(/-r\d+$/, '');
-  return !!getTemplates()[trade]?.find(t => t.id === id)?.fabricationCompleteToSign;
-}

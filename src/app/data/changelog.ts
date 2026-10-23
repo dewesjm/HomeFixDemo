@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-10-23',
     changed: [
       'Every step\'s sign-off form is now drawn from its Signoff Type Definition (the Layout from Signoff Type Definition toggle is gone, and so are the old built-in layouts). Fit-Up Insp and Records Review draw their verify rows as one grid where the first row sits in the Layout list, with their other fields laid out around it.',
-      'Admin → Routing Settings: the "Form" column is replaced by "Never signed". A step with it ticked is never signed: the joint is closed once it gets there (ticked on Sold).',
+      'Admin → Routing Settings: the "Form" and "Fabrication complete to sign" columns are gone. Sold is still never signed, and Fit (blank required Fabrication values or Fabrication errors) and Fit-Up Insp (Fabrication errors) still can\'t be signed until Fabrication is in order, as built-in rules. Fit-Up Insp no longer checks for blank Fabrication values.',
       'Admin → Signoff Type Definition: a step with verify rows has a "Verify grid checks against" droplist: Fabrication values (Fit-Up Insp) or the joint\'s record (Records Review). Records Review\'s Signoff History table is now a field, "Signoff History", that can be moved in the Layout list or unticked.',
       'Qualification Check is drawn inside the form on every step, where its Layout list places it, and follows its Show when rule. Release to welding upon inspection is an ordinary field and is listed in History with the Fit-Up Insp signoff.',
       'Fit-Up Insp no longer shows a fixed, greyed-out Type droplist; it shows "Inspecting: Fit" like the NDT steps show what they inspect.',

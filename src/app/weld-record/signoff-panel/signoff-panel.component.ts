@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
-import { COMMENTS_FIELD, hasCommentsBox, isNeverSigned } from '../signoff-definition/signoff-forms';
+import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-forms';
 import { hasDecision, showsType } from '../signoff-definition/stage-rules';
-import { isEngineeringHoldId } from '../routing/step-ids';
+import { isEngineeringHoldId, isSoldId } from '../routing/step-ids';
 import { ndtLayerType } from '../routing/ndt';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
@@ -30,7 +30,7 @@ export class SignoffPanelComponent {
   readonly hasCommentsBox = hasCommentsBox;
   readonly hasDecision = hasDecision;
   readonly showsType = showsType;
-  readonly isNeverSigned = isNeverSigned;
+  readonly isSold = isSoldId;
   readonly isEngineeringHold = isEngineeringHoldId;
 
   layerType(st: WorkflowStage): string {

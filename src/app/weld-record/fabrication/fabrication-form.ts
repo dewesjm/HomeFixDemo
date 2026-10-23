@@ -67,15 +67,14 @@ export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean
   return !!f.showIf && !!f.required && fabricationFieldVisible(f, fab);
 }
 
-/* fabrication values that must be present before a step with Fabrication complete to sign (Admin >
-   Routing Settings) can be signed */
-const SIGN_REQUIRED_FABRICATION: Record<string, string> = {
+/* fabrication values that must be present before Fit can be signed */
+const FIT_REQUIRED_FABRICATION: Record<string, string> = {
   location: 'Location', id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
 };
 
-/* labels of the sign-required fabrication values still blank */
-export function missingSignFabrication(job: Job | undefined, fab: Fab): string[] {
-  return Object.entries(SIGN_REQUIRED_FABRICATION)
+/* labels of the Fit-required fabrication values still blank */
+export function missingFitFabrication(job: Job | undefined, fab: Fab): string[] {
+  return Object.entries(FIT_REQUIRED_FABRICATION)
     .filter(([k]) => (k !== 'id1' && k !== 'id2') || micApplies(job, k))
     .filter(([k]) => !fab[k]?.trim())
     .map(([, label]) => label);

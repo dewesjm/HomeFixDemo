@@ -52,7 +52,7 @@ import { inspectionTypeRequired, showsReferences } from '../signoff-definition/s
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
 import { fillChanges } from '../signoff-definition/field-fill';
-import { isNeverSigned } from '../signoff-definition/signoff-forms';
+import { isSoldId } from '../routing/step-ids';
 import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
@@ -140,7 +140,7 @@ export class JointPageComponent implements OnDestroy {
   currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
-  soldSigned = computed(() => !!this.wf?.().stages.some(s => isNeverSigned(s) && s.signed));
+  soldSigned = computed(() => !!this.wf?.().stages.some(s => isSoldId(s.id) && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
   fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.job.trade, this.wf().stages));
   /* id of stage awaiting sign-off, null when done */

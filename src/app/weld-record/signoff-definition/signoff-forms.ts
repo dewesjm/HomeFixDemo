@@ -2,10 +2,9 @@
    The sign-off panel draws the parts every step shares (Type, Comments, Signoff) around the form
    laid out from the step's Signoff Type Definition (definition-form). */
 import { SignoffField, WorkflowStage } from '../model/workflow-types';
-import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId } from '../routing/step-ids';
+import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId, isSoldId } from '../routing/step-ids';
 import { COMMENTS_KEY, StepRef, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
 import { lookupCatalogField } from './field-catalog';
-import { templateNeverSigned } from '../routing/stage-templates';
 
 /* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the
    step: Affected Item, References, Signoff History and the signoff section's fields on any step, and
@@ -25,20 +24,15 @@ export function drawnOutsideForm(key: string): boolean {
   return key === 'references' || key === TYPE_KEY || key === COMMENTS_KEY;
 }
 
-/* a step nobody signs: Admin > Routing Settings "Never signed" (Sold) */
-export function isNeverSigned(stage: Pick<WorkflowStage, 'id'>): boolean {
-  return templateNeverSigned(stage.id);
-}
-
 /* The panel draws it, History and Correct add it (withComments). Saved in the step's signoffInputs. */
 export const COMMENTS_FIELD: SignoffField = { key: COMMENTS_KEY, label: 'Comments', type: 'text', required: false, fullWidth: true };
 
 /* a step whose Signoff Type Definition lists Comments; a step with no definition (added in Admin >
    Routing Settings) has one unless it's Engineering Hold (its own required Comments on its release
-   form) or Never signed */
+   form) or Sold (nobody signs it) */
 export function hasCommentsBox(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
   if (hasStepActivation(stage)) return definitionHas(stage, COMMENTS_KEY);
-  return !isEngineeringHoldId(stage.id) && !isNeverSigned(stage);
+  return !isEngineeringHoldId(stage.id) && !isSoldId(stage.id);
 }
 
 /* a step's sign-off fields plus its Comments box */
