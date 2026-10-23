@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
     changed: [
+      'Records Review UNSAT now goes where Admin → Routing Settings\' "Reject routes to" says, like every other step. It starts set to Records Review itself, so an UNSAT is recorded and the joint stays in Records Review as before. Saved joints and most Admin lists go back to the sample data once to pick this up.',
       'Every step\'s sign-off form is now drawn from its Signoff Type Definition (the Layout from Signoff Type Definition toggle is gone, and so are the old built-in layouts). Fit-Up Insp and Records Review draw their verify rows as one grid where the first row sits in the Layout list, with their other fields laid out around it.',
       'Admin → Routing Settings: the "Form" and "Fabrication complete to sign" columns are gone. Sold is still never signed, and Fit (blank required Fabrication values or Fabrication errors) and Fit-Up Insp (Fabrication errors) still can\'t be signed until Fabrication is in order, as built-in rules. Fit-Up Insp no longer checks for blank Fabrication values.',
       'Admin → Signoff Type Definition: a step with verify rows has a "Verify grid checks against" droplist: Fabrication values (Fit-Up Insp) or the joint\'s record (Records Review). Records Review\'s Signoff History table is now a field, "Signoff History", that can be moved in the Layout list or unticked.',

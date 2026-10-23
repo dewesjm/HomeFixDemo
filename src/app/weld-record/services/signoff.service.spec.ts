@@ -413,7 +413,7 @@ describe('SignoffService', () => {
     });
   });
 
-  it('Records Review UNSAT is recorded but the joint stays in Records Review', () => {
+  it('Records Review UNSAT is recorded but the joint stays in Records Review (its Reject routes to is itself)', () => {
     const job = weldingJob();
     store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'review-o04' ? { ...s, result: 'unsat' } : s) }));
     service.signStage(job, 'review-o04');
@@ -421,6 +421,16 @@ describe('SignoffService', () => {
     expect(review.signed).toBeFalse();
     expect(signoffEntries(store.workflowFor(job)(), 'review-o04').at(-1)?.to).toBe('UNSAT');
     expect(store.workflowFor(job)().stages.find(s => s.id === 'final-ndt-vt5x')?.signed).toBeFalse();
+  });
+
+  it('Records Review UNSAT follows its Reject routes to when that is another step', () => {
+    const job = weldingJob();
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'review-o04'
+      ? { ...s, result: 'unsat', rejectToStage: 'final-ndt-vt5x' } : { ...s, signed: s.required, signedAt: s.required ? '2026-01-01T00:00:00Z' : null }) }));
+    service.signStage(job, 'review-o04');
+    const stages = store.workflowFor(job)().stages;
+    expect(activeStageId(stages)).toBe('final-ndt-vt5x');
+    expect(stages.find(s => s.id === 'review-o04')?.signed).toBeFalse();
   });
 
   describe('repeatable Types (Admin > Signoff Type Availability)', () => {

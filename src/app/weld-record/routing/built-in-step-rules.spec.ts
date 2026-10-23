@@ -2,7 +2,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import {
   blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel, isPhaseNdtId,
-  needsFabricationComplete, noCommentsBox, rtDegreeRequired, unsatAddsRepair, unsatStaysPut,
+  needsFabricationComplete, noCommentsBox, rtDegreeRequired, unsatAddsRepair,
 } from './built-in-step-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
@@ -46,12 +46,6 @@ describe('built-in step rules', () => {
     expect(inspectingLabel('fitup-insp')).toBe('Fit');
     expect(inspectingLabel('nqc-fitup-insp')).toBe('Fit');
     expect(inspectingLabel('root')).toBe('');
-  });
-
-  it('Records Review UNSAT stays put; SAT does not', () => {
-    expect(unsatStaysPut(st('review-o63', { result: 'unsat' }))).toBeTrue();
-    expect(unsatStaysPut(st('review-o04', { result: 'sat' }))).toBeFalse();
-    expect(unsatStaysPut(st('fit', { result: 'unsat' }))).toBeFalse();
   });
 
   it('Sold closes the joint and follows the Records Review; it and Engineering Hold have no Comments box', () => {

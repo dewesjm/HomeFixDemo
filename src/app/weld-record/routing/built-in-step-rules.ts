@@ -6,7 +6,7 @@
    hard-coded here or become a setting is to be decided once the list is in. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isFitupInspId, isRecordsReviewId } from './step-ids';
+import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
 
 /* ── Fit: owns the joint's Fabrication values ── */
 
@@ -73,12 +73,6 @@ export function inspectingLabel(stageId: string): string {
   const phase = /^(root|layer|final)-ndt-/.exec(baseStepId(stageId))?.[1];
   return phase ? `${phase[0].toUpperCase()}${phase.slice(1)}` : '';
 }
-
-/* ── Records Review ── */
-
-/* UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is recorded but
-   the step isn't signed, so the joint stays there */
-export const unsatStaysPut = (s: WorkflowStage) => isRecordsReviewId(s.id) && s.result === 'unsat';
 
 /* ── Sold ── */
 

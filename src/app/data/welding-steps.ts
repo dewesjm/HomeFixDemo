@@ -91,9 +91,9 @@ const BUILT_IN_STEPS: StageTemplate[] = [
   /* a joint gets exactly one Records Review: O63 when the job has any SFFF/DSS-AAA/SS data, O04
      otherwise (their Admin > Routing Settings conditions, see buildStages()) */
   { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', fields: recordsReviewFields(),
-    signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
+    signoffFields: [], rejectToStage: 'review-o63', decisionLabel: 'Inspection Results' },
   { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', fields: recordsReviewFields(),
-    signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
+    signoffFields: [], rejectToStage: 'review-o04', decisionLabel: 'Inspection Results' },
   { id: 'sold', label: 'Sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
 ];
 

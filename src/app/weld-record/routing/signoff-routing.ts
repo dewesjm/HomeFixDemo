@@ -1,4 +1,5 @@
-/* Where a signoff sends the joint: the step is signed (or stays current for a repeatable Type), then
+/* Where a signoff sends the joint: the step is signed (or stays current for a repeatable Type or an
+   UNSAT that rejects to the step itself), then
    signed-answer steps turn on or off, UNSAT routes back, adds a Repair or goes to Engineering Hold,
    Repair and Excavation NDT route by what they recorded, a repeatable step's NDT returns to it, and an
    accepted deviation adds Engineering Hold. No saving and no History: SignoffService does both. */
@@ -19,7 +20,7 @@ import {
 } from './step-ids';
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { getTemplates } from './stage-templates';
-import { CUT_RESTARTS_AT, unsatAddsRepair, unsatStaysPut } from './built-in-step-rules';
+import { CUT_RESTARTS_AT, unsatAddsRepair } from './built-in-step-rules';
 import { typeRepeatable } from '../signoff-definition/signoff-types';
 import { repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
@@ -41,7 +42,16 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
 const repeatable = (s: WorkflowStage) => typeRepeatable(s.id, s.signoffType);
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
-const staysPut = (s: WorkflowStage) => repeatable(s) || unsatStaysPut(s);
+/* Where an UNSAT goes: the first Admin > Routing Settings reject rule matching this step's answers /
+   Joint Details, if its step is earlier on this joint (or Engineering Hold, or Repair on an NDT step);
+   else the step's Reject routes to */
+function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string) {
+  const currentIdx = stages.findIndex(s => s.id === stageId);
+  const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
+  const usable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (unsatAddsRepair(stageId) && rule.to === 'repair')
+    || (() => { const i = stages.findIndex(s => s.id === stepOnJoint(stages, rule.to)?.id); return i >= 0 && i < currentIdx; })());
+  return usable ? { to: rule!.to, rule: rule! } : { to: st.rejectToStage ?? '', rule: null };
+}
 
 export interface SignoffRouting {
   stages: WorkflowStage[];
@@ -69,6 +79,11 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
   const now = new Date().toISOString();
+  /* an UNSAT whose reject target is this step (Records Review's default): the signoff is recorded, but
+     the step isn't signed, so the joint stays there */
+  const rejectsToItself = !asStepId && signing.result === 'unsat'
+    && stepOnJoint(wf.stages, rejectTarget(wf.stages, job, signing, stageId).to)?.id === stageId;
+  const staysPut = (s: WorkflowStage) => repeatable(s) || rejectsToItself;
   /* stages with no SAT/UNSAT choice are accepted by signing */
   let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now) : wf.stages.map(s => {
     if (s.id !== stageId) return s;
@@ -89,7 +104,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   if (asStepId) reasons.push(`${typeLabel(signing)} is ${st.label}'s signoff, so ${st.label} is signed`);
   else if (throughNdt) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label}'s NDT comes up and then the joint comes back to ${st.label}`);
   else if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
-  if (unsatStaysPut(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
+  if (rejectsToItself) reasons.push(`rejected (UNSAT), and ${st.label}'s reject goes to itself, so the joint stays on ${st.label}`);
 
   /* go back (never un-sign): the current routing is set back to the target and every stage from
      there on comes up blank (routeBack). One History entry names where it went. */
@@ -116,23 +131,18 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     });
   }
 
-  if (st.result === 'unsat' && st.rejectToStage && !unsatStaysPut(st)) {
+  if (st.result === 'unsat' && st.rejectToStage && !rejectsToItself) {
     const currentIdx = stages.findIndex(s => s.id === stageId);
-    /* Admin > Routing Settings reject rules: the first one matching this step's answers / Joint Details picks
-       the target, if that step is earlier on this joint (or Repair on an NDT step); else the normal target */
     const isNdtStage = unsatAddsRepair(stageId);
-    const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
-    const ruleUsable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (isNdtStage && rule.to === 'repair')
-      || (() => { const i = stages.findIndex(s => s.id === stepOnJoint(stages, rule.to)?.id); return i >= 0 && i < currentIdx; })());
-    const rejectTo = ruleUsable ? rule!.to : st.rejectToStage;
-    if (ruleUsable) reasons.push(`a reject rule matched (${describeConditions([rule!.when], stageConditionFields(st))})`);
+    const { to: rejectTo, rule } = rejectTarget(stages, job, st, stageId);
+    if (rule) reasons.push(`a reject rule matched (${describeConditions([rule.when], stageConditionFields(st))})`);
     /* NDT UNSAT adds a new Repair right after this stage, however many repairs the joint has had,
        unless a reject rule sends it elsewhere. Excavation NDT is left out: its UNSAT goes back to
        its own round's Repair. */
     if (rejectTo === ENGINEERING_HOLD_TARGET) {
       /* instead of a Repair or a route-back: the joint waits on Engineering Hold, which keeps why */
       reasons.push('so the joint goes to Engineering Hold instead');
-      stages = insertEngineeringHold(stages, stageId, rejectHoldReason(st, rule!));
+      stages = insertEngineeringHold(stages, stageId, rule ? rejectHoldReason(st, rule) : '');
     } else if (isNdtStage && rejectTo === 'repair') {
       reasons.push('the NDT was UNSAT, so a Repair is added');
       /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
