@@ -9,11 +9,11 @@ const FIELDS: StepConditionField[] = [
 ] as unknown as StepConditionField[];
 
 describe('condition-editing', () => {
-  it('groups fields into This step, Joint Details and Earlier steps, dropping empty groups', () => {
+  it('groups fields into This routing, Joint Details and Earlier routings, dropping empty groups', () => {
     expect(conditionFieldGroups(FIELDS).map(g => [g.label, g.fields.map(f => f.key)])).toEqual([
-      ['This step', ['self.result']],
+      ['This routing', ['self.result']],
       ['Joint Details', ['nInd', 'drawing']],
-      ['Earlier steps (once signed)', ['tack.wtn']],
+      ['Earlier routings (once signed)', ['tack.wtn']],
     ]);
     expect(conditionFieldGroups([FIELDS[1]]).map(g => g.label)).toEqual(['Joint Details']);
   });

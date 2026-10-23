@@ -47,7 +47,7 @@ export class AdminSignoffTypesComponent {
 
   readonly excavationId = EXCAVATION_TYPE_ROW;
   readonly excavationNote = EXCAVATION_NOTE;
-  /* every step a row can be for: the Routing Settings steps, then Repair and Excavation NDT */
+  /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
     { id: REPAIR_TYPE_ROW, label: 'Repair' },
@@ -74,7 +74,7 @@ export class AdminSignoffTypesComponent {
     return this.steps.find(s => s.id === stepId)?.label ?? `${stepId} (not in Routing Settings)`;
   }
 
-  /* steps without a row yet, plus the row's own step */
+  /* routings without a row yet, plus the row's own */
   stepChoices(row: TypeRow) {
     const used = new Set(this.rows().filter(r => r.uid !== row.uid).map(r => r.stepId));
     return this.steps.filter(s => !used.has(s.id));
@@ -91,7 +91,7 @@ export class AdminSignoffTypesComponent {
 
   exportCsv() {
     downloadCsv('signoff-type-availability', [
-      { header: 'Type', value: (r: TypeRow) => r.stepLabel },
+      { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
       { header: 'Options', value: (r: TypeRow) => r.stepId === EXCAVATION_TYPE_ROW ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },
     ], this.table.sorted());
@@ -126,7 +126,7 @@ export class AdminSignoffTypesComponent {
   saveEdit(row: TypeRow) {
     const current = this.rows().find(r => r.uid === row.uid);
     if (!current?.stepId) {
-      this.messages.add({ severity: 'warn', summary: 'Pick a type', life: 3000 });
+      this.messages.add({ severity: 'warn', summary: 'Pick a routing', life: 3000 });
       return;
     }
     this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, types: x.types.filter(t => t.type) } : x));

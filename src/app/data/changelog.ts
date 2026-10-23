@@ -18,7 +18,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     changed: [
-      'Picking a different Type on a step now clears its form and loads that Type\'s fields. An NDT step shows only its Type droplist until a Type is picked.',
+      'Wording: screens and messages say "routing" for the status a joint is in (Pre-Fit, Tack, Root NDT…) instead of "step", and Signoff Type Availability\'s first column is called Routing. Routing Signoff Types\' column is "Signs routing". A Type\'s form calls its own fields "This form\'s field" and "This signoff".',
+      'Picking a different Type on a routing now clears its form and loads that Type\'s fields. An NDT step shows only its Type droplist until a Type is picked.',
       'Admin → Signoff Type Availability: each option is picked from Routing Signoff Types. The Repeatable checkbox and Definition droplist are gone (Repeatable is now on Routing Signoff Types).',
       'Admin → Signoff Type Definition: fields no longer have "Type is RT/PT/VT" rules, since each sits only in its own Type\'s definition (Defect Code still shows only on UNSAT, Weld Color only on titanium joints). "Prepopulated from" lists the routing steps. Saved definitions, Type tables and joints go back to the sample data once to pick this up.',
       'Admin → Signoff Type Availability: the first column is called Type (it was Routing Step), and its add button is "Add type".',

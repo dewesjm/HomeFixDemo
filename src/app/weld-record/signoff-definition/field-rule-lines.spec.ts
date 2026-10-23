@@ -19,7 +19,7 @@ describe('field rule lines', () => {
     ]);
     expect(fieldRuleLines({ key: 'actualPhMin' }, label)).toEqual([
       { condition: 'Always', behaviors: ['Show', 'Required'] },
-      { condition: 'PH Min is NC', behaviors: ['Prepopulated from this step\'s PH Min', 'Disabled'] },
+      { condition: 'PH Min is NC', behaviors: ['Prepopulated from this signoff\'s PH Min', 'Disabled'] },
     ]);
   });
 
@@ -33,6 +33,6 @@ describe('field rule lines', () => {
     expect(fieldRuleLines({ key: 'affectedItem' }, label))
       .toEqual([{ condition: 'Always', behaviors: ['Show', 'Required (at least one must be picked)'] }]);
     expect(fieldRuleLines({ key: 'allowableThicknessExceeded' }, label)[0])
-      .toEqual({ condition: 'The rejected phase has an RT/UT step', behaviors: ['Show'] });
+      .toEqual({ condition: 'The rejected phase has an RT/UT routing', behaviors: ['Show'] });
   });
 });

@@ -26,10 +26,10 @@
         <select class="select select-bordered select-xs w-52" aria-label="Condition on"
                 [ngModel]="c.source"
                 (ngModelChange)="updateClause(i, { source: $event, key: '', equals: $event === 'rejectedUtrt' ? 'yes' : '' })">
-          <option value="field">This step field</option>
+          <option value="field">This form's field</option>
           @if (!stepOnly()) {
             <option value="jointDetail">Joint detail</option>
-            <option value="stepId">Step ID matches</option>
+            <option value="stepId">Routing ID matches</option>
             <option value="rejectedUtrt">Rejected phase has RT/UT</option>
           }
           <option value="engineering">Engineering override</option>
@@ -76,7 +76,7 @@
             </datalist>
           }
         } @else if (c.source === 'field') {
-          <select class="select select-bordered select-xs w-64" aria-label="Step field"
+          <select class="select select-bordered select-xs w-64" aria-label="Form field"
                   [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: '' })">
             <option value="" disabled>Select a field</option>
             @if (unlistedFieldKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }

@@ -70,7 +70,7 @@
           }
         }
       } @empty {
-        <tr><td colspan="6" class="empty">{{ table.hasRows() ? 'No steps match your search.' : 'No definitions yet.' }}</td></tr>
+        <tr><td colspan="6" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No definitions yet.' }}</td></tr>
       }
     </tbody>
   </table>
@@ -116,7 +116,7 @@
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
                        [checked]="hasField(f.key)" [disabled]="isLocked(f.key)"
-                       [title]="isLocked(f.key) ? 'Routing reads this field when the step is signed, so it stays on' : ''"
+                       [title]="isLocked(f.key) ? 'Routing reads this field when this Type is signed, so it stays on' : ''"
                        (change)="toggleField(f.key)" />
                 <span class="text-sm flex-1">{{ f.label }}@if (isLocked(f.key)) {<span class="text-xs"> (always on: routing reads it)</span>}@if (fieldNote(f.key)) {<span class="text-xs block">{{ fieldNote(f.key) }}</span>}</span>
                 @if (hasField(f.key)) {

@@ -17,7 +17,7 @@ export interface DeviationAcceptRequest { stageLabel: string; items: DeviationIt
           <h3 class="text-lg font-semibold">Accept deviations - {{ req.stageLabel }}</h3>
           <p class="py-2">
             These values are outside what the procedure allows. Signing records them as deviations and puts the
-            joint on hold: no later step can be signed until the deviation is dealt with.
+            joint on hold: no later routing can be signed until the deviation is dealt with.
           </p>
           <div class="overflow-x-auto">
             <table class="table">

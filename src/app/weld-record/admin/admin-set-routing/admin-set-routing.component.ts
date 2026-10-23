@@ -79,8 +79,8 @@ export class AdminSetRoutingComponent {
     this.confirm.confirm({
       header: 'Set routing?',
       message: back
-        ? `This sets the current routing of ${job.hull} back to "${label}". That step and every step after it come up blank and are signed again. Earlier signoffs are kept. Continue?`
-        : `This sets the current routing of ${job.hull} to "${label}". Nothing is signed; the steps before it stay as they are. Continue?`,
+        ? `This sets the current routing of ${job.hull} back to "${label}". That routing and every routing after it come up blank and are signed again. Earlier signoffs are kept. Continue?`
+        : `This sets the current routing of ${job.hull} to "${label}". Nothing is signed; the routings before it stay as they are. Continue?`,
       acceptLabel: 'Set routing',
       rejectLabel: 'Cancel',
       accept: () => {

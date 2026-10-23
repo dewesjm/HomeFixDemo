@@ -373,7 +373,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* what a field can be prepopulated from: this step, the WTN, and the routing steps */
   fillSteps = computed(() => [
-    { stepId: THIS_STEP, stepLabel: 'This step' },
+    { stepId: THIS_STEP, stepLabel: 'This signoff' },
     { stepId: WTN, stepLabel: 'The WTN' },
     ...this.routingSteps,
   ]);

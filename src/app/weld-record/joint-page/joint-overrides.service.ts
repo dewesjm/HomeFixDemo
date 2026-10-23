@@ -139,7 +139,7 @@ export class JointOverridesService {
   private askEngineeringReason(stage: WorkflowStage, accepted: () => void, rejected?: () => void) {
     this.confirm.confirm({
       header: `Engineering Override - ${stage.label}`,
-      message: 'Give the reason for this engineering override. It is recorded against every value set on this step.',
+      message: 'Give the reason for this engineering override. It is recorded against every value set on this signoff.',
       textInput: { label: 'Reason' },
       acceptLabel: 'Continue',
       accept: (text) => {

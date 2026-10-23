@@ -198,11 +198,11 @@ export class JointPageComponent implements OnDestroy {
     const d = this.openDeviations()[0];
     const hold = this.wf?.().stages.find(s => s.id === this.activeStage() && isEngineeringHoldId(s.id));
     if (!d && hold?.inputs['holdReason']) {
-      return `On Engineering Hold: ${hold.inputs['holdReason']}. No later step can be signed until Engineering sets the routing on the Engineering Hold step.`;
+      return `On Engineering Hold: ${hold.inputs['holdReason']}. No later routing can be signed until Engineering sets the routing on Engineering Hold.`;
     }
     if (!d) return '';
     const when = formatDate(d.when);
-    return `On Engineering Hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later step can be signed until Engineering sets the routing on the Engineering Hold step.`;
+    return `On Engineering Hold: a deviation was accepted at ${d.stageLabel} on ${when}. No later routing can be signed until Engineering sets the routing on Engineering Hold.`;
   });
   /* an open deviation holds every step except the one it was accepted on, which can still be re-signed after a deprogress */
   private heldAt(stage: WorkflowStage): boolean {

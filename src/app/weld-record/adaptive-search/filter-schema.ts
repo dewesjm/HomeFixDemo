@@ -84,7 +84,7 @@ const fabFields = (): SearchField[] => FABRICATION_FIELDS.map(f => ({
 }));
 
 /* "Root Weld: Weld Process" -> group "Step: Root Weld" */
-const stepGroup = (f: StepConditionField) => `Step: ${f.label.split(': ')[0]}`;
+const stepGroup = (f: StepConditionField) => `Routing: ${f.label.split(': ')[0]}`;
 
 /* every field Advanced Search offers, as filters and as columns. Built when the screen opens, since
    step fields come from the (admin-editable) Welding step templates. */

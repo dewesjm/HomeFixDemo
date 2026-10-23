@@ -30,8 +30,8 @@ export class AdminRoutingSignoffTypesComponent {
   private confirm = inject(ConfirmService);
   private seq = 0;
 
-  /* what Signs step can name: the Routing Settings steps */
-  readonly steps = (getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label }));
+  /* what Signs routing can name: the Routing Settings routings */
+  readonly routings = (getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label }));
 
   rows = signal<TypeRow[]>(getRoutingSignoffTypes().map(t => this.toRow(t)));
   editingUid = signal<string | null>(null);
@@ -48,14 +48,14 @@ export class AdminRoutingSignoffTypesComponent {
 
   signsStepLabel(row: TypeRow): string {
     if (!row.signsStep) return '';
-    return this.steps.find(s => s.id === row.signsStep)?.label ?? `${row.signsStep} (not in Routing Settings)`;
+    return this.routings.find(s => s.id === row.signsStep)?.label ?? `${row.signsStep} (not in Routing Settings)`;
   }
 
   exportCsv() {
     downloadCsv('routing-signoff-types', [
       { header: 'Type', value: (r: TypeRow) => r.label },
       { header: 'Repeatable', value: (r: TypeRow) => r.repeatable ? 'Yes' : '' },
-      { header: 'Signs step', value: (r: TypeRow) => this.signsStepLabel(r) },
+      { header: 'Signs routing', value: (r: TypeRow) => this.signsStepLabel(r) },
     ], this.table.sorted());
   }
 
@@ -99,7 +99,7 @@ export class AdminRoutingSignoffTypesComponent {
 
   /* a deleted Type drops out of every step that offered it */
   deleteRow(row: TypeRow) {
-    this.confirm.confirmDelete(`${row.label} (removed from every step that offers it)`, () => {
+    this.confirm.confirmDelete(`${row.label} (removed from every routing that offers it)`, () => {
       this.rows.update(r => r.filter(x => x.uid !== row.uid));
       this.persist();
       this.messages.add({ severity: 'info', summary: 'Deleted', detail: row.label, life: 3000 });

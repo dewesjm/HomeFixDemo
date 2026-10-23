@@ -2,8 +2,7 @@
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
    sign-off fields go where the Layout list places them too; Comments, Inspection Results and the
-   sign-off fields only while the step is required. A Type shown from the step's own definition while
-   its Type loads another one (Fit signed as Weld Build-Up) goes first. The verify-grid rows are drawn
+   sign-off fields only while the step is required. The verify-grid rows are drawn
    together as one grid where the first of them is listed. A step with no definition (added in Admin >
    Routing Settings) draws its fields one per line, then Inspection Results. */
 import { Component, input } from '@angular/core';

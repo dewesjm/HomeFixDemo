@@ -5,9 +5,9 @@ import { ConditionClause, StepConditionField, STEP_CONDITION_FIELDS } from '../.
 /* droplist sections: this step's answers (reject rules), Joint Details, earlier steps' answers */
 export function conditionFieldGroups(fields: StepConditionField[]): { label: string; fields: StepConditionField[] }[] {
   const groups = [
-    { label: 'This step', fields: fields.filter(f => f.key.startsWith('self.')) },
+    { label: 'This routing', fields: fields.filter(f => f.key.startsWith('self.')) },
     { label: 'Joint Details', fields: fields.filter(f => !f.key.startsWith('self.') && !f.stepAnswer) },
-    { label: 'Earlier steps (once signed)', fields: fields.filter(f => f.stepAnswer) },
+    { label: 'Earlier routings (once signed)', fields: fields.filter(f => f.stepAnswer) },
   ];
   return groups.filter(g => g.fields.length);
 }

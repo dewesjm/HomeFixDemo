@@ -66,7 +66,7 @@ function jointFields(): ConditionField[] {
 function signoffFields(): ConditionField[] {
   const steps = tradeSteps(TRADE);
   const out: ConditionField[] = [{
-    key: `${STEP_PREFIX}id`, label: 'Step', group: 'Sign-off',
+    key: `${STEP_PREFIX}id`, label: 'Routing', group: 'Sign-off',
     options: () => steps.map(t => ({ value: t.id, label: t.label })),
     get: s => s.step.id ?? '',
   }];

@@ -15,8 +15,8 @@ describe('field rules', () => {
     const label = (id: string) => id;
     expect(fillRuleText({ key: 'weldProcess' }, label))
       .toBe('Prepopulated from the WTN\'s Weld Process when Engineering override is off');
-    expect(fillRuleText({ key: 'actualPhMin' }, label)).toBe('Prepopulated from this step\'s PH Min when PH Min is NC');
-    expect(fillRuleText({ key: 'actualPhMax' }, label)).toBe('Prepopulated from this step\'s PH Max when PH Max is NC');
+    expect(fillRuleText({ key: 'actualPhMin' }, label)).toBe('Prepopulated from this signoff\'s PH Min when PH Min is NC');
+    expect(fillRuleText({ key: 'actualPhMax' }, label)).toBe('Prepopulated from this signoff\'s PH Max when PH Max is NC');
     expect(disabledRuleText({ key: 'weldProcess' })).toBe('Disabled when Engineering override is off');
     expect(disabledRuleText({ key: 'actualPhMin' })).toBe('Disabled when PH Min is NC');
     expect(disabledRuleText({ key: 'wtn' })).toBe('Never disabled');

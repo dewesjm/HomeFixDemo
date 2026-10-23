@@ -311,7 +311,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
   const add = (key: string, label: string, opts: { label: string; value: string }[]) => {
     if (out.some(f => f.key === `self.${key}`)) return;
     const labels = new Map(opts.map(o => [o.value, o.label]));
-    out.push({ key: `self.${key}`, label: `This step: ${label}`, values: opts.map(o => o.value),
+    out.push({ key: `self.${key}`, label: `This routing: ${label}`, values: opts.map(o => o.value),
       valueLabel: v => labels.get(v) ?? v, get: () => '' });
   };
   if (stage.typeOptions?.length) add('inspectionType', 'Type', stage.typeOptions);
@@ -334,9 +334,9 @@ function describeClause(c: ConditionClause, extra: StepConditionField[]): string
   return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${vals}`;
 }
 
-/* each clause in plain words, e.g. "Type is PT" (the rejected step's own fields lose their "This step: ") */
+/* each clause in plain words, e.g. "Type is PT" (the rejected routing's own fields lose their "This routing: ") */
 export function describeClauses(rule: ConditionRule, extra: StepConditionField[] = []): string[] {
-  return rule.map(c => describeClause(c, extra).replace(/^This step: /, ''));
+  return rule.map(c => describeClause(c, extra).replace(/^This routing: /, ''));
 }
 
 /* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes";

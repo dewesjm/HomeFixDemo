@@ -13,7 +13,7 @@
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="displayName" label="Display Name"></th>
       <th class="min-w-64">Included when</th>
       <th class="min-w-48">Reject routes to</th>
-      <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current step">Fabrication editable</th>
+      <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current routing">Fabrication editable</th>
       <th appSortHeader [table]="table" field="role" label="Persona" class="whitespace-nowrap"></th>
       <th class="w-px"></th>
     </tr>
@@ -57,11 +57,11 @@
         </td>
         <td>
           @if (row.id.includes(':new-')) {
-            Always (save the step to change this)
+            Always (save the routing to change this)
           } @else {
             <div class="flex items-start gap-1">
               <span class="flex-1">{{ row.includedWhen }}</span>
-              <button type="button" class="btn btn-outline btn-xs" appTooltip="Edit when this step is included"
+              <button type="button" class="btn btn-outline btn-xs" appTooltip="Edit when this routing is included"
                       (click)="openConditions(row)">
                 <svg lucideFilter class="size-4"></svg> Edit
               </button>
@@ -148,8 +148,8 @@
   <dialog class="modal modal-open" (close)="condRow.set(null)">
     <div class="modal-box max-w-3xl max-h-[85vh]">
       <h3 class="text-lg font-semibold mb-1">Included when: {{ row.routing }}</h3>
-      <p class="mb-1">A joint gets this step when any rule below matches. A rule matches when all of its conditions do. With no rules, the step is always included.</p>
-      <p class="mb-4">Joint Details conditions are checked when a joint's routing is built. An earlier step's answers are blank until that step is signed, and this step turns on or off as they are signed.</p>
+      <p class="mb-1">A joint gets this routing when any rule below matches. A rule matches when all of its conditions do. With no rules, the routing is always included.</p>
+      <p class="mb-4">Joint Details conditions are checked when a joint's routing is built. An earlier routing's answers are blank until that routing is signed, and this routing turns on or off as they are signed.</p>
 
       @for (rule of condRules(); track $index; let ri = $index) {
         @if (ri > 0) { <div class="font-semibold my-2">or</div> }
@@ -200,7 +200,7 @@
           </button>
         </div>
       } @empty {
-        <p class="font-semibold">No rules: this step is always included.</p>
+        <p class="font-semibold">No rules: this routing is always included.</p>
       }
 
       <div class="flex flex-wrap gap-2 mt-3">
@@ -230,8 +230,8 @@
   <dialog class="modal modal-open" (close)="rejRow.set(null)">
     <div class="modal-box max-w-3xl max-h-[85vh]">
       <h3 class="text-lg font-semibold mb-1">Reject rules: {{ row.routing }}</h3>
-      <p class="mb-1">When this step is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
-      <p class="mb-4">A rule's step must be earlier on the joint (or Engineering Hold, or Repair on an NDT step). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      <p class="mb-1">When this routing is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      <p class="mb-4">A rule's routing must be earlier on the joint (or Engineering Hold, or Repair on an NDT routing). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
 
       @for (rule of rejRules(); track $index; let ri = $index) {
         <div class="border border-base-300 rounded-box p-3 mb-3">

@@ -1,9 +1,9 @@
 <h2 class="section-title">Routing Signoff Types</h2>
-<p class="text-sm mb-sm">Every Type a step can be signed as. Add a Type here first, then offer it on steps in Signoff Type
+<p class="text-sm mb-sm">Every Type a routing can be signed as. Add a Type here first, then offer it on routings in Signoff Type
   Availability and give it its fields in Signoff Type Definition.</p>
-<p class="text-sm mb-sm">Repeatable: signing records the signoff and comes back to the same step for the next one.
-  Signs step: picked on an earlier step, the Type signs this step instead (Layer signed as Final Weld signs Final Weld).
-  Blank means it signs the step it is picked on.</p>
+<p class="text-sm mb-sm">Repeatable: signing records the signoff and comes back to the same routing for the next one.
+  Signs routing: picked on an earlier routing, the Type signs this routing instead (Layer signed as Final Weld signs Final Weld).
+  Blank means it signs the routing it is picked on.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search types…" addLabel="Add type"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -14,7 +14,7 @@
       <tr>
         <th appSortHeader [table]="table" field="label" label="Type" class="min-w-44"></th>
         <th>Repeatable</th>
-        <th>Signs step</th>
+        <th>Signs routing</th>
         <th class="min-w-11"></th>
       </tr>
     </thead>
@@ -40,10 +40,10 @@
           </td>
           <td>
             @if (editing) {
-              <select class="select select-sm select-bordered w-48" aria-label="Signs step"
+              <select class="select select-sm select-bordered w-48" aria-label="Signs routing"
                       [ngModel]="row.signsStep ?? ''" (ngModelChange)="setSignsStep(row, $event)">
-                <option value="">The step it's picked on</option>
-                @for (s of steps; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
+                <option value="">The routing it's picked on</option>
+                @for (s of routings; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
               </select>
             } @else {
               {{ signsStepLabel(row) }}

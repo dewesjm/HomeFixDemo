@@ -407,8 +407,8 @@ export class AdminRoutingComponent {
   /* where a rule can send an UNSAT: Engineering Hold, Repair on NDT steps, or this trade's steps */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
     const own = (getTemplates()[row.trade] ?? []).filter(t => t.id !== row.id.split(':')[1]).map(t => ({ id: t.id, label: t.label }));
-    const hold = { id: ENGINEERING_HOLD_TARGET, label: 'Engineering Hold (adds an Engineering Hold step)' };
-    return row.id.includes('-ndt-') ? [hold, { id: 'repair', label: 'Repair (adds a Repair step)' }, ...own] : [hold, ...own];
+    const hold = { id: ENGINEERING_HOLD_TARGET, label: 'Engineering Hold (adds an Engineering Hold routing)' };
+    return row.id.includes('-ndt-') ? [hold, { id: 'repair', label: 'Repair (adds a Repair routing)' }, ...own] : [hold, ...own];
   }
 
   openRejectRules(row: RoutingRow) {
