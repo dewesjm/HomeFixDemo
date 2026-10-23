@@ -6,7 +6,7 @@ import { getWeldPositions } from '../../data/weld-positions';
 
 export const WELD_STAGE_FIELDS: StageField[] = [
   /* GWP and WTN cascade from Weld Engineering's procedures data at render time (see
-     data/joint-form/stage-form.ts stageFieldOptions) -- a GWP groups several WPS documents, one
+     weld-record/joint-page/rules/stage-form.ts stageFieldOptions) -- a GWP groups several WPS documents, one
      per WTN. weldProcess is then filled from the matching Procedure's own weldProcess. */
   { key: 'weldProcedure', label: 'GWP', type: 'select', required: true },
   { key: 'wtn', label: 'WTN', type: 'select', required: true },
@@ -25,7 +25,7 @@ export const WELD_STAGE_FIELDS: StageField[] = [
   { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', required: true, minField: 'ipMin', maxField: 'ipMax' },
   { key: 'weldPosition', label: 'Weld Position', type: 'select', required: true,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
-  /* options cascade from the resolved GWP+WTN Procedure at render time (see data/joint-form/stage-form.ts
+  /* options cascade from the resolved GWP+WTN Procedure at render time (see weld-record/joint-page/rules/stage-form.ts
      stageFieldOptions), same pattern as weldProcedure/wtn above */
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', required: true },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', required: true },

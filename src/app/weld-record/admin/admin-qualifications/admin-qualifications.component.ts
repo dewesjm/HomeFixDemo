@@ -1,7 +1,7 @@
 /* Admin > Qualifications: the conditions that make a step require quals, each an AND/OR group of
    clauses requiring an AND/OR group of quals, and
-   the User rows that say which quals a person holds (data/qual-conditions.ts). SELF is the testing
-   entry the Qualification Check runs as (data/qualifications.ts). Each row is edited and saved on its own. */
+   the User rows that say which quals a person holds (weld-record/qualifications/qual-conditions.ts). SELF is the testing
+   entry the Qualification Check runs as (weld-record/qualifications/qualifications.ts). Each row is edited and saved on its own. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

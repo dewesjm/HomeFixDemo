@@ -1,5 +1,5 @@
 /* One sortable, searchable table for a stage of the load (Converted, Processed, Weld Joints, Load Runs,
-   Error Log). Columns are described by the caller; rows are flat objects from data/external-loads/table-rows.ts. */
+   Error Log). Columns are described by the caller; rows are flat objects from weld-planning/external-loads/table-rows.ts. */
 import { Component, computed, effect, input, output } from '@angular/core';
 import { LucideSearch } from '@lucide/angular';
 

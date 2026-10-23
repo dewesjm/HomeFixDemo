@@ -5,7 +5,7 @@
    Layout: Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position, 4. Filler Metal,
    5. Welder Qualifications, 6. Preheat & Interpass Temperatures, 7. Equipment, 8. Gas, 9. Heat Input,
    10. Parameters, 11. Heat Treatment, then any sections added in Admin > Procedure Sections (12 on,
-   data/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
+   weld-engineering/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';

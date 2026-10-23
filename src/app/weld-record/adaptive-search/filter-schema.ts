@@ -1,5 +1,5 @@
 /* Weld Record's Advanced Search: every searchable field, the rows it searches, and saved variants
-   (localStorage). Matching itself is data/filter-engine.ts. */
+   (localStorage). Matching itself is shared/filter-engine.ts. */
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { FABRICATION_FIELDS, fabricationFieldVisible } from '../fabrication/fabrication-fields';

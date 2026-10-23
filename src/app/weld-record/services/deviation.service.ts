@@ -1,4 +1,4 @@
-/* Deviations accepted at sign-off (see data/deviations.ts for what counts as one). The sign-off puts
+/* Deviations accepted at sign-off (see weld-record/joint-page/rules/deviations.ts for what counts as one). The sign-off puts
    the joint on Engineering Hold (SignoffService adds the step); while a deviation is open no later
    step can be signed. Engineering releases it on the hold step (Pipe Welding's Engineering role lists them): comments plus
    the step the routing goes to, and the joint carries on from there. Nothing is deleted: the

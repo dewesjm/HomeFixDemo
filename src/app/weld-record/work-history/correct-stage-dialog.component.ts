@@ -16,7 +16,7 @@ import { ReferenceService } from '../services/reference.service';
 import { ReferencesComponent } from '../references/references.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
-/* fields the live signoff panel already gives a person-search assist to (see data/workflow/ndt.ts's
+/* fields the live signoff panel already gives a person-search assist to (see weld-record/routing/ndt.ts's
    NDT_COMMON_FIELDS) -- Correct should offer the same help, not just a plain text box */
 const PERSON_SEARCH_FIELDS = new Set(['probationaryInspector', 'oversightInspector']);
 

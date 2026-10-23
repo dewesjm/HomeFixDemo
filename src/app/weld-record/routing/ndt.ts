@@ -11,7 +11,7 @@ export type NdtPhase = 'root' | 'layer' | 'final';
 export type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
 
 export const NDT_COMMON_FIELDS: StageField[] = [
-  /* options narrow to the step's Type from Admin > Inspection Procedures at render time (data/joint-form/stage-form.ts stageFieldOptions) */
+  /* options narrow to the step's Type from Admin > Inspection Procedures at render time (weld-record/joint-page/rules/stage-form.ts stageFieldOptions) */
   { key: 'procedureUsed', label: 'Procedure Used for Inspection', type: 'select', required: true,
     options: inspectionProcedureOptions() },
   { key: 'hasProbationary', label: 'Has Probationary Inspector', type: 'checkbox' },
@@ -23,7 +23,7 @@ export const NDT_COMMON_FIELDS: StageField[] = [
 
 /* Degree of RT required/performed: NA, or a number of degrees, in number order. Shared by the
    Degree of RT Performed signoff field and Job.rtRoot/rtFinal (the performed degree must be at least the
-   required one before its RT NDT stage can be signed off -- see signProblems() in data/joint-form/sign-validation.ts). */
+   required one before its RT NDT stage can be signed off -- see signProblems() in weld-record/joint-page/rules/sign-validation.ts). */
 export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
   ['NA', '10', '60', '75', '100', '360'].map(v => ({ label: v, value: v }));
 
@@ -39,7 +39,7 @@ export const NDT_KINDS: Record<NdtKind, { label: string; fields: StageField[]; o
     options: [{ label: 'RT', value: 'rt' }, { label: 'UT', value: 'ut' }],
     fields: [
       /* must be at least the job's required degree (rtRoot/rtFinal) before this stage can be signed off
-         -- see signProblems() in data/joint-form/sign-validation.ts -- so it's a droplist (blank or the value), not a
+         -- see signProblems() in weld-record/joint-page/rules/sign-validation.ts -- so it's a droplist (blank or the value), not a
          fixed radio choice */
       { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', required: true, showIf: { key: 'inspectionType', equals: 'rt' },
         options: RT_DEGREE_OPTIONS },

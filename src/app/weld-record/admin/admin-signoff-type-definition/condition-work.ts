@@ -1,5 +1,5 @@
 /* The condition editor's working copy of a field condition: AND/OR groups of clauses as the admin
-   edits them, and the conversion to and from the stored FieldCondition (data/workflow/field-conditions.ts) */
+   edits them, and the conversion to and from the stored FieldCondition (weld-record/signoff-definition/field-conditions.ts) */
 import {
   ConditionClause,
   ConditionTerm,

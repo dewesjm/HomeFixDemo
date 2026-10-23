@@ -102,7 +102,7 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
    6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
    Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
    metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
-   procedures.ts gwpOptionsForMaterials, data/joint-form/stage-form.ts). */
+   procedures.ts gwpOptionsForMaterials, weld-record/joint-page/rules/stage-form.ts). */
 export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
   '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
@@ -127,10 +127,10 @@ export const N_IND_MEANINGS: Record<string, string> = {
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
-   data/workflow/ndt.ts). Blank and NA aren't valid. */
+   weld-record/routing/ndt.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
-   data/workflow/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
+   weld-record/routing/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
    Job from this file); the Degree of RT Performed signoff field must be at least this to sign off.
    Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */

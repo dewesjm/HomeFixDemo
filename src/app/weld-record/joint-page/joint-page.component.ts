@@ -1,7 +1,7 @@
 //This is the job details page
 
 /* The joint page: page state, wiring to the sign-off panel, and the actions that save through the
-   weld-record services. The form rules live in data/joint-form/, the override state in
+   weld-record services. The form rules live in rules/, the override state in
    JointOverridesService. */
 import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -129,7 +129,7 @@ export class JointPageComponent implements OnDestroy {
 
   /* ── Page state ── */
 
-  /* the routing bar's steps (data/workflow/routing-bar.ts) */
+  /* the routing bar's steps (weld-record/routing/routing-bar.ts) */
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() =>
     this.wf ? routingBarSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
   /* which stage's sign-off shows; defaults to active */
@@ -151,7 +151,7 @@ export class JointPageComponent implements OnDestroy {
   /* the joint's History rows, as the History screen shows them (Records Review) */
   history = computed<HistoryRow[]>(() => (this.wf ? historyRows(this.wf(), this.job) : []));
 
-  /* which steps show References: see showsReferences() in data/workflow/stage-rules.ts */
+  /* which steps show References: see showsReferences() in weld-record/signoff-definition/stage-rules.ts */
   showReferences = computed(() => {
     const st = this.wf?.().stages[this.selectedRouting()];
     return !!st && showsReferences(st);

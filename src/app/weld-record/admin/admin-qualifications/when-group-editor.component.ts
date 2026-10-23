@@ -1,4 +1,4 @@
-/* Edits one AND/OR group of a qual condition's When (data/qual-when.ts). Items are "field is value"
+/* Edits one AND/OR group of a qual condition's When (weld-record/qualifications/qual-when.ts). Items are "field is value"
    clauses or nested groups, which render this same editor. User is offered only on the top group's
    single clause: picking it makes the row a User row, which has just that clause. Edits are emitted
    as a new group. */

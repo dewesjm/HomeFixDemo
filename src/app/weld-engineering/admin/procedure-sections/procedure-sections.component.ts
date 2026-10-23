@@ -1,5 +1,5 @@
 /* Weld Engineering Admin - Procedure Sections: add sections after the built-in 1-11, and fields to
-   them. Definitions and rules are in data/procedure-sections.ts. */
+   them. Definitions and rules are in weld-engineering/procedure-sections.ts. */
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

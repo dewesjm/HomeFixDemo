@@ -1,5 +1,5 @@
 /* Admin → Signoff Type Availability: the seeded table of routing steps that have a Type droplist and
-   their options (data/workflow/signoff-types.ts); rows are added and removed here */
+   their options (weld-record/signoff-definition/signoff-types.ts); rows are added and removed here */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

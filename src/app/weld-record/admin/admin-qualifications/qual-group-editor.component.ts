@@ -1,4 +1,4 @@
-/* Edits one AND/OR group of a qual condition's requirement (data/qual-requirements.ts). Items are
+/* Edits one AND/OR group of a qual condition's requirement (weld-record/qualifications/qual-requirements.ts). Items are
    quals or nested groups, which render this same editor. On a User row (holds) it's a plain list of
    the quals that person holds: no AND/OR and no groups. Edits are emitted as a new group. */
 import { Component, input, output } from '@angular/core';

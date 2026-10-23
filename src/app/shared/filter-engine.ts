@@ -1,4 +1,4 @@
-/* The filter engine both Advanced Searches use (Weld Record's data/filter-schema.ts and Weld Planning's
+/* The filter engine both Advanced Searches use (Weld Record's weld-record/adaptive-search/filter-schema.ts and Weld Planning's
    weld-planning-filter-schema.ts): stacked conditions per field, how they match a cell, and chip text.
    A field's conditions combine like this: the "include" ones (contains, is, starts with, is blank,
    between, greater/less than) are OR'd, the "exclude" ones (does not contain, is not, is not blank)

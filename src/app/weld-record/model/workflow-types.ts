@@ -105,7 +105,7 @@ export interface HistoryEntry {
   reason?: string;       /* 'corrected' entries only */
 }
 
-/* one out-of-spec value accepted at sign-off (see data/deviations.ts) */
+/* one out-of-spec value accepted at sign-off (see weld-record/joint-page/rules/deviations.ts) */
 export interface DeviationItem {
   kind: 'out-of-range' | 'qual' | 'off-list' | 'reported';
   label: string;
