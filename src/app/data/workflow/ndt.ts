@@ -132,5 +132,6 @@ export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     signoffFields: [],
     rejectToStage: 'repair',
     decisionLabel: 'Inspection Results',
+    form: 'ndt',
   };
 }

@@ -2,7 +2,7 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, fabricationCompleteToSign, ACTUAL_MIN_MAX, actualOrderError, hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
+import { StageField, WorkflowStage, signoffForm, isVerifyGrid, fabricationCompleteToSign, ACTUAL_MIN_MAX, actualOrderError, hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
 import { missingSignFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
 import { rtDegreeRequired, typedRequirementError } from './stage-form';
@@ -52,7 +52,7 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
     if (Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   }
   if (isVerifyGrid(stage) && unverifiedRows(stage, ctx).length) {
-    reasons.push(isFitupInspId(stage.id) ? 'Verify every fitting value' : 'Verify every required record field');
+    reasons.push(signoffForm(stage) === 'fitup-insp' ? 'Verify every fitting value' : 'Verify every required record field');
   }
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) reasons.push(rt);

@@ -1,4 +1,4 @@
-import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields, withRoot5x } from './step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields, withRoot5x, withInspectionQualCheck } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -125,5 +125,18 @@ describe('withRoot5x (definitions saved before Root\'s 5X question was a field)'
     expect(withRoot5x(tack)).toEqual(tack);
     const root = { stepId: 'root-weld', fields: [{ key: 'performed5x' }] };
     expect(withRoot5x(root)).toEqual(root);
+  });
+});
+
+describe("withInspectionQualCheck (definitions saved before an inspection step's Qualification Check was a field)", () => {
+  it('adds it after Type on inspection steps only, once', () => {
+    expect(withInspectionQualCheck({ stepId: 'nqc-root-ndt-vt5x', fields: [{ key: TYPE_KEY }, { key: 'weldColor' }] }).fields.map(f => f.key))
+      .toEqual([TYPE_KEY, 'qualificationCheck', 'weldColor']);
+    expect(withInspectionQualCheck({ stepId: 'pre-fit', fields: [{ key: COMMENTS_KEY }] }).fields.map(f => f.key))
+      .toEqual(['qualificationCheck', COMMENTS_KEY]);
+    const tack = { stepId: 'tack', fields: [{ key: 'wtn' }] };
+    expect(withInspectionQualCheck(tack)).toEqual(tack);
+    const listed = { stepId: 'fitup-insp', fields: [{ key: 'qualificationCheck' }] };
+    expect(withInspectionQualCheck(listed)).toEqual(listed);
   });
 });

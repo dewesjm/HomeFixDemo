@@ -10,8 +10,8 @@
    Every other step runs the real sign-off as a dry run (the `preview` callback, SignoffService.previewSignoff). */
 import { Job } from '../jobs';
 import {
-  WorkflowStage, excavationNdtStage, getTemplates, hasDecision, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId,
-  repairIdForExcavation,
+  WorkflowStage, excavationNdtStage, getTemplates, hasDecision, isExcavationNdtStageId, isRepairStageId,
+  repairIdForExcavation, signoffForm,
 } from '../workflow';
 import { isNonFerrousOrAustenitic } from '../material-classification';
 
@@ -28,7 +28,7 @@ function routeLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, act
     const templates = getTemplates()[job.trade] ?? [];
     return repairRouteLabel(job, stages, stage, id => { const t = templates.find(t => t.id === id); return t?.displayName || t?.label || id; });
   }
-  if (stage.signed || stage.id === 'sold' || stage.id !== activeId || isEngineeringHoldId(stage.id)) return '';
+  if (stage.signed || stage.id !== activeId || ['sold', 'engineering-hold'].includes(signoffForm(stage))) return '';
   const from = stages.findIndex(s => s.id === stage.id);
   const phrase = (when: string, result?: WorkflowStage['result']) => {
     const { target, reasons } = preview(result);

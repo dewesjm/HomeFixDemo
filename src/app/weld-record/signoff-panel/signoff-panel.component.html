@@ -55,7 +55,7 @@
       </div>
     }
 
-    <!-- Qualification Check on inspection steps (joint condition quals only; welding steps have it as a field) -->
+    <!-- Qualification Check when the definition lists it and the form isn't the weld form (which draws it among its fields) -->
     @if (inspectionQualCheck(st); as qc) {
       <div class="mb-sm">
         <div class="stage-field">

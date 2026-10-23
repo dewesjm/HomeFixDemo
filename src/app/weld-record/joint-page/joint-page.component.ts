@@ -31,7 +31,7 @@ import {
   activeStageId, routingBarSteps, allRequiredSigned, FabricationField, snapshotInputs, SignoffInput,
   visibleSignoffFields, definitionHas,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
-  fillChanges,
+  fillChanges, signoffForm,
 } from '../../data/workflow';
 import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -120,7 +120,7 @@ export class JointPageComponent implements OnDestroy {
   currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
-  soldSigned = computed(() => !!this.wf?.().stages.some(s => s.id === 'sold' && s.signed));
+  soldSigned = computed(() => !!this.wf?.().stages.some(s => signoffForm(s) === 'sold' && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
   fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.job.trade, this.wf().stages));
   /* id of stage awaiting sign-off, null when done */

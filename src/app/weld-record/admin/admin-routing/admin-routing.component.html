@@ -13,6 +13,7 @@
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="displayName" label="Display Name"></th>
       <th class="min-w-64">Included when</th>
       <th class="min-w-48">Reject routes to</th>
+      <th class="whitespace-nowrap" appTooltip="Which sign-off form the step shows; its fields come from Admin > Signoff Type Definition">Form</th>
       <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current step">Fabrication editable</th>
       <th class="whitespace-nowrap" appTooltip="The step can't be signed while a required Fabrication value is blank or a Fabrication value has an error">Fabrication complete to sign</th>
       <th appSortHeader [table]="table" field="role" label="Persona" class="whitespace-nowrap"></th>
@@ -99,6 +100,16 @@
         </td>
         <td>
           @if (editingId() === row.id) {
+            <select class="select select-sm select-bordered w-full min-w-0" aria-label="Form"
+                    [ngModel]="row.form" (ngModelChange)="updateForm(row, $event)">
+              @for (o of formOptions; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+            </select>
+          } @else {
+            <span class="whitespace-nowrap">{{ formLabel(row.form) }}</span>
+          }
+        </td>
+        <td>
+          @if (editingId() === row.id) {
             <input type="checkbox" class="checkbox checkbox-sm" aria-label="Fabrication editable"
                    [ngModel]="row.fabricationEditable" (ngModelChange)="updateFabricationEditable(row, $event)" />
           } @else {
@@ -146,7 +157,7 @@
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="9" class="empty">{{ table.hasRows() ? 'No routing match your search.' : 'No routing yet.' }}</td></tr>
+      <tr><td colspan="10" class="empty">{{ table.hasRows() ? 'No routing match your search.' : 'No routing yet.' }}</td></tr>
     }
   </tbody>
 </table>

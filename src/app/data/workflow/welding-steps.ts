@@ -55,13 +55,13 @@ function recordsReviewFields(): StageField[] {
 const BUILT_IN_STEPS: StageTemplate[] = [
   /* Pre-Fit has no Defer Tack: there's no Tack yet to defer. As signoffFields (not fields) so it
      renders through the same signoff-fit-row layout as Fit. */
-  { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: insertAndBackingRingFields() },
-  { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fabricationCompleteToSign: true, fields: [], signoffFields: [
+  { id: 'pre-fit', label: 'Pre-Fit', form: 'fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: insertAndBackingRingFields() },
+  { id: 'fit', label: 'Fit', form: 'fit', required: true, role: 'Fitting', fabricationCompleteToSign: true, fields: [], signoffFields: [
     ...insertAndBackingRingFields(),
     { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
   ] },
-  { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
-  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fabricationCompleteToSign: true, fields: [
+  { id: 'tack', label: 'Tack', displayName: 'Tack', form: 'weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'fitup-insp', label: 'Fit-Up Insp', form: 'fitup-insp', required: true, role: 'Foreman|Inspector', fabricationCompleteToSign: true, fields: [
     { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
     { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
     { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
@@ -71,30 +71,30 @@ const BUILT_IN_STEPS: StageTemplate[] = [
     signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
   /* same form as Tack; only its position differs (after Fit-Up Insp) */
-  { id: 'deferred-tack', label: 'Deferred Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
-  { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
+  { id: 'deferred-tack', label: 'Deferred Tack', form: 'weld', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'root-weld', label: 'Root', form: 'weld', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
       { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
     ], signoffFields: [] },
   ndtStage('root', 'vt5x'),
   ndtStage('root', 'mtpt'),
   ndtStage('root', 'utrt'),
-  { id: 'root-layer', label: 'Layer', required: true, role: 'Welding',
+  { id: 'root-layer', label: 'Layer', form: 'weld', required: true, role: 'Welding',
     fields: WELD_STAGE_FIELDS,
     signoffFields: [] },
   ndtStage('layer', 'vt5x'),
   ndtStage('layer', 'mtpt'),
   ndtStage('layer', 'utrt'),
-  { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'final-weld', label: 'Final Weld', form: 'weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   ndtStage('final', 'vt5x'),
   ndtStage('final', 'mtpt'),
   ndtStage('final', 'utrt'),
   /* a joint gets exactly one Records Review: O63 when the job has any SFFF/DSS-AAA/SS data, O04
      otherwise (their Admin > Routing Settings conditions, see buildStages()) */
-  { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', fields: recordsReviewFields(),
+  { id: 'review-o63', label: 'O63 Records Review', form: 'records-review', required: true, role: 'O63 Records', fields: recordsReviewFields(),
     signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
-  { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', fields: recordsReviewFields(),
+  { id: 'review-o04', label: 'O04 Records Review', form: 'records-review', required: true, role: 'O04 Records', fields: recordsReviewFields(),
     signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
-  { id: 'sold', label: 'Sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
+  { id: 'sold', label: 'Sold', form: 'sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
 ];
 
 /* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown

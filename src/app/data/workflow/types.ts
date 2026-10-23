@@ -169,6 +169,17 @@ export interface StageOption {
   definition?: string;
 }
 
+/* which form a step's sign-off shows (Admin > Routing Settings "Form", signoff-forms.ts) */
+export type SignoffForm =
+  | 'fit'             /* Consumable Insert / Backing Ring and Defer Tack as sign-off fields (Pre-Fit, Fit) */
+  | 'fitup-insp'      /* a grid of fitting values to verify, Release to welding (Fit-Up Insp) */
+  | 'weld'            /* the welding form (Tack, Deferred Tack, Root, Layer, Final Weld, Fit as Weld Build-Up) */
+  | 'ndt'             /* the inspection form (every NDT step and Excavation NDT) */
+  | 'records-review'  /* a grid of record values to verify (O63 / O04 Records Review) */
+  | 'engineering-hold'/* Engineering's release form instead of Signoff */
+  | 'sold'            /* closed, never signed by hand */
+  | 'generic';        /* the step's fields one after another (Repair, Fit-Up Release, steps added in Admin > Routing Settings) */
+
 /* the definition a joint's step is built from (stage-templates.ts) */
 export interface StageTemplate {
   id: string;
@@ -198,4 +209,6 @@ export interface StageTemplate {
   /* Admin > Routing Settings "Fabrication complete to sign": this step can't be signed while a required
      Fabrication value is blank or a Fabrication value has an error */
   fabricationCompleteToSign?: boolean;
+  /* Admin > Routing Settings "Form"; none = 'generic' */
+  form?: SignoffForm;
 }

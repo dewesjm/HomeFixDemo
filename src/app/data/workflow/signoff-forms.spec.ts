@@ -1,4 +1,5 @@
-import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, signoffForm, withComments } from './signoff-forms';
+import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, panelDrawsQualCheck, signoffForm, withComments } from './signoff-forms';
+import { getTemplates, updateStageTemplate } from './stage-templates';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from './build-stages';
 import { JOBS } from '../jobs';
@@ -19,6 +20,29 @@ describe('signoffForm', () => {
     expect(signoffForm(step('repair-2'))).toBe('generic');
     expect(signoffForm(step('fitup-release'))).toBe('generic');
     expect(signoffForm(step('custom-123'))).toBe('generic');
+  });
+
+  it('follows the Form set on Admin > Routing Settings', () => {
+    updateStageTemplate('Welding', 'fitup-release', { form: 'ndt' });
+    try {
+      expect(getTemplates()['Welding'].find(t => t.id === 'fitup-release')?.form).toBe('ndt');
+      expect(signoffForm(step('fitup-release'))).toBe('ndt');
+    } finally {
+      updateStageTemplate('Welding', 'fitup-release', { form: 'generic' });
+    }
+  });
+});
+
+describe('Qualification Check', () => {
+  it('the panel draws it on inspection steps, whose definitions list it; the weld form draws its own', () => {
+    for (const id of ['pre-fit', 'fitup-insp', 'nqc-fitup-insp', 'root-ndt-vt5x', 'nqc-final-ndt-utrt', 'excavation-ndt']) {
+      expect(panelDrawsQualCheck(step(id))).withContext(id).toBeTrue();
+    }
+    for (const id of ['fit', 'tack', 'root-weld', 'repair', 'review-o63']) {
+      expect(panelDrawsQualCheck(step(id))).withContext(id).toBeFalse();
+    }
+    expect(drawnByOwnForm('root-ndt-vt5x', 'qualificationCheck')).toBeTrue();
+    expect(drawnByOwnForm('tack', 'qualificationCheck')).toBeFalse();
   });
 });
 

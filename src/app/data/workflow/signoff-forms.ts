@@ -1,39 +1,42 @@
 /* Which form a step's sign-off shows, and whether it has a Comments box. The sign-off panel draws
-   the parts every step shares (Type, Decision, Comments, Signoff) and picks the step's own form from
-   signoffForm(). */
-import { SignoffField, WorkflowStage } from './types';
-import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId, isExcavationNdtStageId } from './step-ids';
+   the parts every step shares (Type, Decision, Qualification Check off the weld form, Comments,
+   Signoff) and picks the step's own form from signoffForm(). */
+import { SignoffField, SignoffForm, WorkflowStage } from './types';
+import { WELD_BUILDUP_DEFINITION, baseStepId } from './step-ids';
 import { COMMENTS_KEY, StepRef, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
 import { typeDefinition } from './signoff-types';
 import { lookupCatalogField } from './field-catalog';
+import { templateForm } from './stage-templates';
+import { addedStepForm } from './added-steps';
 import { featureToggles } from '../feature-toggles';
 
-export type SignoffForm =
-  | 'fit'             /* Pre-Fit, Fit: Consumable Insert / Backing Ring, Defer Tack */
-  | 'fitup-insp'      /* verify the fitting values, Release to welding */
-  | 'weld'            /* Tack, Deferred Tack, Root, Layer, Final Weld, Fit as Weld Build-Up */
-  | 'ndt'             /* every NDT step and Excavation NDT */
-  | 'records-review'  /* O63 / O04 Records Review */
-  | 'engineering-hold'/* Engineering's release form instead of Signoff */
-  | 'sold'            /* closed, never signed by hand */
-  | 'generic';        /* Repair, Fit-Up Release, steps added in Admin > Routing Settings */
+export type { SignoffForm };
 
-const WELD_STEP_IDS = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'];
+/* the forms Admin > Routing Settings offers for a routing step (Engineering Hold's is only for the
+   hold a joint gets while it's worked) */
+export const FORM_OPTIONS: { value: SignoffForm; label: string }[] = [
+  { value: 'generic', label: 'Plain' },
+  { value: 'fit', label: 'Fit (insert, ring, Defer Tack)' },
+  { value: 'fitup-insp', label: 'Fit-Up verify grid' },
+  { value: 'weld', label: 'Weld' },
+  { value: 'ndt', label: 'NDT' },
+  { value: 'records-review', label: 'Records verify grid' },
+  { value: 'sold', label: 'Sold (never signed)' },
+];
 
+export function formLabel(form: SignoffForm | undefined): string {
+  return FORM_OPTIONS.find(o => o.value === (form ?? 'generic'))?.label ?? 'Engineering Hold';
+}
+
+/* A step's form: its Form on Admin > Routing Settings, or for a step added while the joint is worked
+   (Repair, Excavation NDT, Engineering Hold) its template's. A Type that loads another definition
+   gets that definition's form: a routing step's own, and the weld form for Weld Build-Up's, which
+   isn't a routing step. Read live, so a change applies to joints in progress. */
 export function signoffForm(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): SignoffForm {
-  /* a Type that loads another definition gets that definition's form (Weld Build-Up's is the weld form) */
   const loaded = typeDefinition(stage.id, stage.signoffType);
-  if (loaded) return loaded === WELD_BUILDUP_DEFINITION ? 'weld' : signoffForm({ id: loaded, signoffType: '' });
-  const id = baseStepId(stage.id);
-  if (id === 'fit') return 'fit';
-  if (id === 'pre-fit') return 'fit';
-  if (id === 'fitup-insp') return 'fitup-insp';
-  if (WELD_STEP_IDS.includes(id)) return 'weld';
-  if (/^(root|layer|final)-ndt-/.test(id) || isExcavationNdtStageId(id)) return 'ndt';
-  if (id === 'review-o63' || id === 'review-o04') return 'records-review';
-  if (isEngineeringHoldId(id)) return 'engineering-hold';
-  if (id === 'sold') return 'sold';
-  return 'generic';
+  if (loaded) return signoffForm({ id: loaded, signoffType: '' });
+  if (stage.id === WELD_BUILDUP_DEFINITION) return 'weld';
+  return addedStepForm(stage.id) ?? templateForm(stage.id) ?? 'generic';
 }
 
 /* While the Layout from Signoff Type Definition toggle is on, these forms are drawn from the step's
@@ -46,15 +49,31 @@ export function drawsFromDefinition(stage: Pick<WorkflowStage, 'id' | 'signoffTy
 }
 
 /* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the
-   step: Affected Item and References on any step, Pre-Fit/Fit's insert, ring and Defer Tack (sign-off
-   fields, also on Fit signed as Weld Build-Up) and Fit-Up Insp's Release to welding on those steps.
+   step: Affected Item and References on any step, Qualification Check off the weld form, Pre-Fit/Fit's
+   insert, ring and Defer Tack (sign-off fields, also on Fit signed as Weld Build-Up) and Fit-Up Insp's
+   Release to welding on those steps.
    Anywhere else those last ones are ordinary fields, saved with the step's own values. */
 export function drawnByOwnForm(step: StepRef, key: string): boolean {
   const cat = lookupCatalogField(key);
   if (!cat) return false;
+  if (key === QUAL_CHECK_KEY) return qualCheckAboveForm(step);
   const id = typeof step === 'string' ? step : step.id;
   const home = id === WELD_BUILDUP_DEFINITION ? 'fit' : baseStepId(id);
   return !!cat.ownComponent || !!cat.ownFormSteps?.includes(home);
+}
+
+/* Qualification Check: the weld form draws it among its fields; on any other form the sign-off panel
+   draws it above the form (inspection steps check the joint's condition quals, Admin > Qualifications) */
+export const QUAL_CHECK_KEY = 'qualificationCheck';
+
+function qualCheckAboveForm(step: StepRef): boolean {
+  return signoffForm(typeof step === 'string' ? { id: step, signoffType: '' } : step) !== 'weld';
+}
+
+/* whether the sign-off panel draws the step's Qualification Check: its definition lists it and its
+   form isn't the weld form */
+export function panelDrawsQualCheck(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
+  return definitionHas(stage, QUAL_CHECK_KEY) && qualCheckAboveForm(stage);
 }
 
 /* fields a step's definition lists that the form leaves to another spot: References is the joint

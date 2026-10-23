@@ -1,6 +1,7 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from './types';
-import { WELD_BUILDUP_DEFINITION, baseStepId, isFitupInspId, isRepairStageId } from './step-ids';
+import { WELD_BUILDUP_DEFINITION, baseStepId, isRepairStageId } from './step-ids';
+import { QUAL_CHECK_KEY, drawnByOwnForm } from './signoff-forms';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
@@ -22,12 +23,6 @@ export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | '
 export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
   if (!stage.typeOptions?.length) return false;
   return !hasStepActivation(stage.id) || definitionHas(stage.id, TYPE_KEY);
-}
-
-/* inspection steps (Pre-Fit, Fit-Up Insp, every NDT incl. Excavation NDT) run the Qualification
-   Check on the joint's condition quals, like welding steps do with their Qualification Check field */
-export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
-  return stage.id === 'pre-fit' || isFitupInspId(stage.id) || /-ndt(-|$)/.test(stage.id);
 }
 
 /* a shown Type whose options have no default (Admin > Signoff Type Availability) starts blank
@@ -105,6 +100,7 @@ const OWN_SPOT_NOTES: Record<string, string> = {
 export function definitionFieldNote(stageId: string, key: string): string {
   if (key === TYPE_KEY && stageId === WELD_BUILDUP_DEFINITION) return "Not used here: Fit's own definition decides whether Fit shows Type, also when signed as Weld Build-Up.";
   if (key in OWN_SPOT_NOTES) return OWN_SPOT_NOTES[key];
+  if (key === QUAL_CHECK_KEY && drawnByOwnForm(stageId, key)) return "Drawn above the form: the signer's quals checked against the joint's condition quals (Admin > Qualifications).";
   if (key in AFFECTED_ITEM_PART_NOTES) return AFFECTED_ITEM_PART_NOTES[key];
   if (stageId === WELD_BUILDUP_DEFINITION) return '';
   if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';

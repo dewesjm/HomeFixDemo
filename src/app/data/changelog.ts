@@ -18,6 +18,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Admin → Routing Settings: new column "Form" picks which sign-off form a step shows: Plain, Fit (insert, ring, Defer Tack), Fit-Up verify grid, Weld, NDT, Records verify grid, or Sold (never signed). The built-in steps start on the form they had.',
+      'Admin → Signoff Type Definition: Qualification Check is now a field on Pre-Fit, Fit-Up Insp, every NDT step and Excavation NDT, where it was shown before. Unticking it removes the check from that step. On any form but the Weld form it shows above the form.',
       'Admin → Routing Settings: new column "Fabrication complete to sign". A step with it ticked can\'t be signed while a required Fabrication value (Location, Drawing Rev, Actual Thickness, MIC 1/2 where needed) is blank or a Fabrication value has an error. Ticked on Fit and Fit-Up Insp; Fit-Up Insp now also checks for blank values, not only errors.',
       'Admin → Signoff Type Definition: Root\'s "Did you perform 5X inspection and was it successful?" is now a field on Root\'s definition, shown when NDT Root is 5X; its rule can be changed there.',
       'A step\'s Type works the same way on every step. Fit\'s Type now starts blank and must be picked if its Signoff Type Availability row has no default, like every other step.',

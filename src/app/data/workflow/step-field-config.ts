@@ -3,7 +3,7 @@
    Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v9) and take effect immediately. */
+   (welding:step-field-config:v10) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { ConditionClause, FieldCondition, andConditions, conditionClauses, hasClauses } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
@@ -12,7 +12,7 @@ import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
 import type { WorkflowStage } from './types';
 import { FILLER_KEYS } from './weld-fields';
 import { hasSignoffTypeRow, signoffTypeRowId, typeDefinition } from './signoff-types';
-import { WELD_BUILDUP_DEFINITION, isExcavationNdtStageId } from './step-ids';
+import { WELD_BUILDUP_DEFINITION, isExcavationNdtStageId, isFitupInspId } from './step-ids';
 import { templateHasRejectTarget } from './stage-templates';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
@@ -79,6 +79,8 @@ const same = (key: string, width?: number): FieldActivation => ({ key, sameLine:
 const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
 const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
 const DECISION: FieldActivation = { key: DECISION_KEY };
+/* inspection steps' Qualification Check, drawn by the sign-off panel above the form */
+const QUAL_CHECK: FieldActivation = { key: 'qualificationCheck' };
 const TYPE: FieldActivation = { key: TYPE_KEY };
 const COMMENTS: FieldActivation = { key: COMMENTS_KEY };
 
@@ -151,8 +153,8 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
    field activation as the base step */
 function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): StepFieldActivation[] {
   return [
-    { stepId: `${phase}-ndt-${kind}`, fields: [TYPE, ...fields, COMMENTS] },
-    { stepId: `nqc-${phase}-ndt-${kind}`, fields: [TYPE, ...fields, COMMENTS] },
+    { stepId: `${phase}-ndt-${kind}`, fields: [TYPE, QUAL_CHECK, ...fields, COMMENTS] },
+    { stepId: `nqc-${phase}-ndt-${kind}`, fields: [TYPE, QUAL_CHECK, ...fields, COMMENTS] },
   ];
 }
 
@@ -166,7 +168,7 @@ function tackStep(id: string): StepFieldActivation {
 }
 
 const FITUP_INSP_FIELDS: FieldActivation[] = [
-  { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
+  QUAL_CHECK, { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
   { key: 'releaseToWelding' }, DECISION, COMMENTS,
 ];
@@ -175,7 +177,7 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
 const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
 
 export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
-  { stepId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
+  { stepId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
   { stepId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
   /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
   { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, COMMENTS] },
@@ -198,7 +200,7 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
   /* every Repair / Excavation NDT round reads these rows (activationStepId) */
   { stepId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
-  { stepId: 'excavation-ndt', fields: [TYPE, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
+  { stepId: 'excavation-ndt', fields: [TYPE, QUAL_CHECK, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
   { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
   { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
   { stepId: 'sold', fields: [] },
@@ -322,14 +324,28 @@ export function withRoot5x(a: StepFieldActivation): StepFieldActivation {
   return { ...a, fields: comments < 0 ? [...fields, ...end] : [...fields.slice(0, comments), ...end, ...fields.slice(comments)] };
 }
 
+/* definitions saved before an inspection step's Qualification Check was a field (v9) get it on the
+   steps that ran the check (Pre-Fit, Fit-Up Insp, every NDT, Excavation NDT), after Type */
+const PRE_QUAL_CHECK_KEY = 'welding:step-field-config:v9';
+export function withInspectionQualCheck(a: StepFieldActivation): StepFieldActivation {
+  const inspection = a.stepId === 'pre-fit' || isFitupInspId(a.stepId) || /-ndt(-|$)/.test(a.stepId);
+  if (!inspection || a.fields.some(f => f.key === QUAL_CHECK.key)) return a;
+  const at = a.fields[0]?.key === TYPE_KEY ? 1 : 0;
+  return { ...a, fields: [...a.fields.slice(0, at), QUAL_CHECK, ...a.fields.slice(at)] };
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preRoot5x = saved ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
-    _cache = saved ? parse(saved) : preRoot5x ? parse(preRoot5x).map(withRoot5x) : savedBeforeV8()?.map(withRoot5x) ?? DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const preQualCheck = saved ? null : localStorage.getItem(PRE_QUAL_CHECK_KEY);
+    const preRoot5x = saved || preQualCheck ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
+    const old = preQualCheck ? parse(preQualCheck)
+      : preRoot5x ? parse(preRoot5x).map(withRoot5x)
+      : savedBeforeV8()?.map(withRoot5x);
+    _cache = saved ? parse(saved) : old ? old.map(withInspectionQualCheck) : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -362,6 +378,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_QUAL_CHECK_KEY);
   localStorage.removeItem(PRE_ROOT_5X_KEY);
   localStorage.removeItem(PRE_SIGNOFF_SECTION_KEY);
   localStorage.removeItem(PRE_AFFECTED_MIC_KEY);

@@ -3,7 +3,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, visibleSignoffFields, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments, repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep, typeDefinition } from '../../data/workflow';
+import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, visibleSignoffFields, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments, repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep, typeDefinition, signoffForm } from '../../data/workflow';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
@@ -34,7 +34,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
    recorded but the stage isn't signed, so the joint stays there */
-const isRecordsReviewUnsat = (s: WorkflowStage) => (s.id === 'review-o63' || s.id === 'review-o04') && s.result === 'unsat';
+const isRecordsReviewUnsat = (s: WorkflowStage) => signoffForm(s) === 'records-review' && s.result === 'unsat';
 const staysPut = (s: WorkflowStage) => repeatable(s) || isRecordsReviewUnsat(s);
 
 @Injectable({ providedIn: 'root' })

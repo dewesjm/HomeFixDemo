@@ -9,8 +9,6 @@ import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from './seed-fabrication';
 import { baseStepId, isFitupInspId } from './step-ids';
 
-const WELD_STEP_IDS = ['tack', 'deferred-tack', 'root-weld', 'root-layer', 'final-weld'];
-
 export function buildStages(job: Job): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
   const tradeStages = getTemplates()['Welding'] ?? [];
@@ -27,8 +25,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* Sold follows whichever Records track reviewed the job */
     const role = t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     let fields = [...t.fields];
-    /* Weld stages get override fields */
-    if (WELD_STEP_IDS.includes(t.id)) {
+    /* steps with the weld form get the override fields */
+    if (t.form === 'weld') {
       fields = [...fields, ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f }))];
     }
     return {

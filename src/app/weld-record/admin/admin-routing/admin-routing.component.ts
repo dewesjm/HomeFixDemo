@@ -18,7 +18,7 @@ import { downloadCsv } from '../../../data/export-csv';
 import { Job } from '../../../data/jobs';
 import {
   addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
-  allStageIds, getTemplates, ROLES, type Role
+  allStageIds, getTemplates, ROLES, type Role, FORM_OPTIONS, formLabel, type SignoffForm
 } from '../../../data/workflow';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
@@ -41,6 +41,7 @@ interface RoutingRow {
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
   fabricationCompleteToSign: boolean;
+  form: SignoffForm;
 }
 
 @Component({
@@ -71,6 +72,8 @@ export class AdminRoutingComponent {
     return [...used].sort();
   });
   stageOptions = signal(allStageIds());
+  readonly formOptions = FORM_OPTIONS;
+  readonly formLabel = formLabel;
 
   rows = signal<RoutingRow[]>(this.buildInitialRows());
   table = new TableState<RoutingRow>(['sequence', 'routing', 'displayName', 'includedWhen']);
@@ -111,6 +114,7 @@ export class AdminRoutingComponent {
           rejectRules: [],
           fabricationEditable: !!t.fabricationEditable,
           fabricationCompleteToSign: !!t.fabricationCompleteToSign,
+          form: t.form ?? 'generic',
         });
       });
     }
@@ -124,7 +128,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false, fabricationCompleteToSign: false };
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false, fabricationCompleteToSign: false, form: 'generic' };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -166,6 +170,7 @@ export class AdminRoutingComponent {
         fields: [], signoffFields: [], rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
         fabricationCompleteToSign: row.fabricationCompleteToSign,
+        form: row.form,
       });
       const newFullId = `${row.trade}:${newId}`;
       /* saved at the end, same as addStageTemplate() */
@@ -179,6 +184,7 @@ export class AdminRoutingComponent {
         role: row.role,
         fabricationEditable: row.fabricationEditable,
         fabricationCompleteToSign: row.fabricationCompleteToSign,
+        form: row.form,
       });
     }
 
@@ -203,6 +209,10 @@ export class AdminRoutingComponent {
 
   updateFabricationEditable(row: RoutingRow, value: boolean) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, fabricationEditable: value } : x));
+  }
+
+  updateForm(row: RoutingRow, value: SignoffForm) {
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, form: value } : x));
   }
 
   updateFabricationCompleteToSign(row: RoutingRow, value: boolean) {
@@ -478,6 +488,7 @@ export class AdminRoutingComponent {
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
+      { header: 'Form', value: (r: RoutingRow) => formLabel(r.form) },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
       { header: 'Fabrication complete to sign', value: (r: RoutingRow) => r.fabricationCompleteToSign ? 'Yes' : 'No' },
       { header: 'Persona', value: (r: RoutingRow) => r.role }
