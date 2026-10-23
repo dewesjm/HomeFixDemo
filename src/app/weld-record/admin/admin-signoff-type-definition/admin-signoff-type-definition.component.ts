@@ -5,15 +5,16 @@
    this step or the WTN), when it's disabled, and when it's required (Never / Always / When). The
    dialog's Layout list sets the order, which fields share a line, their widths, headings, and where
    Inspection Results goes, and a step with verify-grid rows says what they're checked against.
-   Conditions are AND/OR groups (condition-group-editor). Add's step list is the steps in Admin >
+   Conditions are AND/OR groups (field-condition-editor, condition-group-editor; their edits are
+   written back by definition-edits.ts); the Layout list is definition-layout-list. Add's step list is the steps in Admin >
    Signoff Type Availability; picking one that already has a definition edits it.
    Stored in welding:step-field-config:v11 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
-  LucideChevronDown, LucideChevronRight, LucideArrowUp, LucideArrowDown,
+  LucidePencil, LucideCheck, LucideTrash2,
+  LucideChevronDown, LucideChevronRight,
 } from '@lucide/angular';
 
 import { ToastService } from '../../../shared/toast.service';
@@ -30,23 +31,18 @@ import {
   setStepFieldConfig,
   resetStepFieldConfig,
   getActivationForStep,
-  HEADING_KEY_PREFIX,
   DECISION_KEY,
   TYPE_KEY,
   definitionFields,
-  isHeadingItem,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
 import { FIELD_CATALOG, isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,
-  showIfToStore,
   defaultDisabledIf,
-  disabledIfToStore,
   isAlwaysReadOnly,
   defaultRequiredIf,
-  requiredIfToStore,
   requiredRuleText,
   requiredMode,
   withRequiredMode,
@@ -56,7 +52,6 @@ import {
   hasFixedRules,
   defaultFill,
   effectiveFill,
-  fillToStore,
   fillRuleText,
 } from '../../signoff-definition/field-rules';
 import {
@@ -66,16 +61,17 @@ import {
   signoffTypeOptions,
 } from '../../signoff-definition/signoff-types';
 import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
-import { drawnByOwnForm, drawnOutsideForm } from '../../signoff-definition/signoff-parts';
+import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
-import type { FieldCondition } from '../../signoff-definition/field-conditions';
-import type { FieldFill } from '../../signoff-definition/field-catalog';
 import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
 import type { RequiredMode } from '../../signoff-definition/field-rules';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
-import { WorkGroup, conditionToWork, workToCondition } from './condition-work';
-import { ConditionGroupEditorComponent, StepFieldChoice } from './condition-group-editor.component';
+import { WorkGroup, conditionToWork } from './condition-work';
+import { StepFieldChoice } from './condition-group-editor.component';
+import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillSourceId } from './definition-edits';
+import { FieldConditionEditorComponent } from './field-condition-editor.component';
+import { DefinitionLayoutListComponent } from './definition-layout-list.component';
 
 interface DefRow {
   uid: string;
@@ -87,48 +83,24 @@ interface DefRow {
   verifyAgainst?: VerifyAgainst;
 }
 
-/* which of a field's conditions the editor is changing */
-type CondKind = 'show' | 'disabled' | 'fill' | 'required';
-
-/* the fill source picker's entries for this same step and the WTN, beside the other steps' ids */
-const THIS_STEP = '@this-step';
-const WTN = '@wtn';
-
-interface EditState {
+/* the dialog's working copy of a definition, with the condition editor open on at most one field */
+interface EditState extends OpenCondition {
   uid: string | null;   /* null = new row */
   stepId: string;
   stepLabel: string;
   fieldActivations: FieldActivation[];
   verifyAgainst?: VerifyAgainst;
-  condKey: string | null;      /* field key whose condition editor is open */
-  condKind: CondKind;
-  condGroup: WorkGroup;        /* working copy of the open field's condition */
-  fillStepId: string;          /* the open Prepopulated from rule's source (a step id, THIS_STEP or WTN) and field ('' = not prepopulated) */
-  fillFieldKey: string;
 }
 
 let seq = 0;
-
-const copyCondition = (c?: FieldCondition): FieldCondition | undefined => c ? structuredClone(c) : undefined;
-const copyFill = (f: FieldFill | null | undefined) => f ? { ...f, when: copyCondition(f.when)! } : f;
-const copyActivation = (f: FieldActivation): FieldActivation =>
-  ({ ...f, showIf: copyCondition(f.showIf), disabledIf: copyCondition(f.disabledIf), requiredIf: copyCondition(f.requiredIf), fill: copyFill(f.fill) });
-
-/* a fill's source as the picker's value, and back */
-const fillSourceId = (f: FieldFill | undefined) => !f ? '' : f.from === 'wtn' ? WTN : f.from === 'thisStep' ? THIS_STEP : f.stepId;
-function fillFromSource(sourceId: string, fieldKey: string, when: FieldCondition): FieldFill {
-  if (sourceId === WTN) return { from: 'wtn', fieldKey, when };
-  if (sourceId === THIS_STEP) return { from: 'thisStep', fieldKey, when };
-  return { stepId: sourceId, fieldKey, when };
-}
 
 @Component({
   selector: 'app-admin-signoff-type-definition',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, ConditionGroupEditorComponent,
-    LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2,
-    LucideChevronDown, LucideChevronRight, LucideArrowUp, LucideArrowDown,
+    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    FieldConditionEditorComponent, DefinitionLayoutListComponent,
+    LucidePencil, LucideCheck, LucideTrash2, LucideChevronDown, LucideChevronRight,
   ],
   templateUrl: './admin-signoff-type-definition.component.html',
 })
@@ -261,9 +233,9 @@ export class AdminSignoffTypeDefinitionComponent {
     }
 
     /* commit any open condition editor first */
-    if (e.condKey) this.applyCondClauses(e);
+    const fieldActivations = applyOpenCondition(e.fieldActivations, e);
 
-    const updated = this.toRow(e.stepId, e.fieldActivations, this.hasVerifyRows(e) ? e.verifyAgainst ?? 'record' : undefined);
+    const updated = this.toRow(e.stepId, fieldActivations, this.hasVerifyRows(e) ? e.verifyAgainst ?? 'record' : undefined);
 
     if (e.uid) {
       this.rows.update(r => r.map(x => x.uid === e.uid ? { ...updated, uid: e.uid } : x));
@@ -431,8 +403,8 @@ export class AdminSignoffTypeDefinitionComponent {
       const editingRequired = e.condKey === key && e.condKind === 'required';
       if (mode === 'when' && editingRequired) return e;
       /* opening: apply the clauses of the editor that was open first */
-      if (mode === 'when' && e.condKey) this.applyCondClauses(e);
-      const fieldActivations = e.fieldActivations.map(a => a.key === key ? withRequiredMode(a, mode) : a);
+      const current = mode === 'when' ? applyOpenCondition(e.fieldActivations, e) : e.fieldActivations;
+      const fieldActivations = current.map(a => a.key === key ? withRequiredMode(a, mode) : a);
       if (mode !== 'when') return { ...e, fieldActivations, condKey: editingRequired ? null : e.condKey };
       const act = fieldActivations.find(a => a.key === key);
       const cond = act?.requiredIf ?? defaultRequiredIf(key);
@@ -452,48 +424,15 @@ export class AdminSignoffTypeDefinitionComponent {
   toggleCondEditor(key: string, kind: CondKind = 'show') {
     this.editing.update(e => {
       if (!e) return e;
-      if (e.condKey === key && e.condKind === kind) {
-        /* closing: apply the current clauses first */
-        this.applyCondClauses(e);
-        return { ...e, condKey: null };
-      }
-      /* opening: save pending clauses for previously open field, then load new */
-      if (e.condKey) this.applyCondClauses(e);
-      const act = e.fieldActivations.find(a => a.key === key);
+      /* closing, or opening another: apply the open editor's clauses first */
+      const fieldActivations = applyOpenCondition(e.fieldActivations, e);
+      if (e.condKey === key && e.condKind === kind) return { ...e, fieldActivations, condKey: null };
+      const act = fieldActivations.find(a => a.key === key);
       const fill = act ? effectiveFill(act) : defaultFill(key);
       const current = kind === 'show' ? (act?.showIf ?? defaultShowIf(key))
         : kind === 'disabled' ? (act?.disabledIf ?? defaultDisabledIf(key))
         : kind === 'required' ? (act?.requiredIf ?? defaultRequiredIf(key)) : fill?.when;
-      return { ...e, condKey: key, condKind: kind, condGroup: conditionToWork(current), fillStepId: fillSourceId(fill), fillFieldKey: fill?.fieldKey ?? '' };
-    });
-  }
-
-  private applyCondClauses(e: EditState) {
-    if (!e.condKey) return;
-    const cond = workToCondition(e.condGroup);
-    if (e.condKind === 'fill') { this.applyFill(e, cond); return; }
-    const prop = e.condKind === 'show' ? 'showIf' : e.condKind === 'disabled' ? 'disabledIf' : 'requiredIf';
-    const condition = e.condKind === 'show' ? showIfToStore(e.condKey, cond)
-      : e.condKind === 'disabled' ? disabledIfToStore(e.condKey, cond) : requiredIfToStore(e.condKey, cond);
-
-    const update = (acts: FieldActivation[]): FieldActivation[] =>
-      acts.map(a => {
-        if (a.key !== e.condKey) return a;
-        const { [prop]: _old, ...rest } = a;
-        return condition ? { ...rest, [prop]: condition } : rest;
-      });
-
-    e.fieldActivations = update(e.fieldActivations);
-  }
-
-  /* no source or field = not prepopulated */
-  private applyFill(e: EditState, when: FieldCondition) {
-    const fill = e.fillStepId && e.fillFieldKey ? fillFromSource(e.fillStepId, e.fillFieldKey, when) : undefined;
-    const stored = fillToStore(e.condKey!, fill);
-    e.fieldActivations = e.fieldActivations.map(a => {
-      if (a.key !== e.condKey) return a;
-      const { fill: _old, ...rest } = a;
-      return stored === undefined ? rest : { ...rest, fill: stored };
+      return { ...e, fieldActivations, condKey: key, condKind: kind, condGroup: conditionToWork(current), fillStepId: fillSourceId(fill), fillFieldKey: fill?.fieldKey ?? '' };
     });
   }
 
@@ -535,62 +474,8 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* ── Layout ── */
 
-  readonly isHeading = isHeadingItem;
-
-  isDecision(a: FieldActivation): boolean {
-    return a.key === DECISION_KEY;
-  }
-
-  /* Type, Comments and References keep their own spot outside the form, whatever the order */
-  isOutsideForm(a: FieldActivation): boolean {
-    return drawnOutsideForm(a.key);
-  }
-
-  /* drawn as a block the width of the form: a verify-grid row (the grid goes where its first shown
-     row is) or Signoff History; no width or same line */
-  isBlockItem(a: FieldActivation): boolean {
-    return isVerifyRow(a.key) || a.key === 'signoffHistory';
-  }
-
-  blockNote(a: FieldActivation): string {
-    return isVerifyRow(a.key) ? 'A row of the verify grid, which is drawn where its first shown row is.' : this.fieldNote(a.key);
-  }
-
-  itemLabel(a: FieldActivation): string {
-    return lookupCatalogField(a.key)?.label ?? a.key;
-  }
-
-  private updateItems(change: (items: FieldActivation[]) => FieldActivation[]) {
-    this.editing.update(e => e ? { ...e, fieldActivations: change([...e.fieldActivations]) } : e);
-  }
-
-  moveItem(i: number, by: -1 | 1) {
-    this.updateItems(items => {
-      const j = i + by;
-      if (j < 0 || j >= items.length) return items;
-      [items[i], items[j]] = [items[j], items[i]];
-      return items;
-    });
-  }
-
-  /* unticked layout settings and blank widths are left off the saved definition */
-  setItem(i: number, partial: Partial<FieldActivation>) {
-    this.updateItems(items => items.map((a, idx) => {
-      if (idx !== i) return a;
-      const next = { ...a, ...partial };
-      if (!next.sameLine) delete next.sameLine;
-      if (!next.newBox) delete next.newBox;
-      if (!next.width || next.width <= 0) delete next.width;
-      return next;
-    }));
-  }
-
-  addHeading() {
-    this.updateItems(items => [...items, { key: `${HEADING_KEY_PREFIX}${Date.now()}-${++seq}`, heading: '' }]);
-  }
-
-  removeHeading(i: number) {
-    this.updateItems(items => items.filter((_, idx) => idx !== i));
+  setLayout(fieldActivations: FieldActivation[]) {
+    this.editing.update(e => e ? { ...e, fieldActivations } : e);
   }
 
   /* ── Persist + Export ── */

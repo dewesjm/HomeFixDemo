@@ -179,7 +179,10 @@ src/app/
       admin-signoff-types/ Admin → Signoff Type Availability (seeded table: which routing steps have a Type droplist, and its options)
       admin-signoff-type-definition/  Admin → Signoff Type Definition (/admin/signoff-fields): configure which
                              catalog fields are active on each step type; live configuration stored in
-                             welding:step-field-config (key in data/storage-keys.ts); its Layout list (toggle below) sets order, same line, widths, headings, Inspection Results
+                             welding:step-field-config (key in data/storage-keys.ts). Parts: definition-layout-list
+                             (order, same line, widths, headings, Inspection Results), field-condition-editor
+                             (a rule's condition and Prepopulated from source) over condition-group-editor /
+                             condition-work, definition-edits (writes the open condition back to its field)
       admin-characteristics/ Admin → Attribute codes
       admin-material-traceability/, admin-material-classification/, admin-penetrant/, admin-locations/, admin-ship-locations/,
       admin-weld-positions/, admin-joint-designs/, admin-banner/, admin-groups/, admin-quick-links/,

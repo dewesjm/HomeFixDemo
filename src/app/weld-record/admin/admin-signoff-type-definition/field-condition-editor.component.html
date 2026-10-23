@@ -1,0 +1,31 @@
+<div class="ml-5 mb-2 bg-base-200 rounded-box p-2 text-sm">
+  @if (kind() === 'fill') {
+    <div class="text-xs font-semibold mb-1">Prepopulated from (no field = not prepopulated)</div>
+    <div class="flex flex-wrap items-center gap-1 mb-2">
+      <select class="select select-bordered select-xs w-44" aria-label="Prepopulated from"
+              [ngModel]="fillStepId()" (ngModelChange)="fillSourceChange.emit({ fillStepId: $event })">
+        <option value="">Nothing</option>
+        @for (s of fillSteps(); track s.stepId) {
+          <option [value]="s.stepId">{{ s.stepLabel }}</option>
+        }
+      </select>
+      <select class="select select-bordered select-xs w-56" aria-label="Field to prepopulate from"
+              [ngModel]="fillFieldKey()" (ngModelChange)="fillSourceChange.emit({ fillFieldKey: $event })" [disabled]="!fillStepId()">
+        <option value="">No field</option>
+        @for (f of fillSourceFields(); track f.key) {
+          <option [value]="f.key">{{ f.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="text-xs font-semibold mb-1">when this step's fields match (no clauses = always)</div>
+  } @else {
+    <div class="text-xs font-semibold mb-1">
+      {{ kind() === 'show' ? 'Show when (no clauses = always shown)'
+         : kind() === 'required' ? 'Required when (no clauses = always required)'
+         : 'Disabled when (no clauses = never disabled)' }}
+    </div>
+  }
+  <div class="text-xs mb-1">For "one of" several values, separate them with commas (e.g. mt, pt).</div>
+  <app-condition-group-editor [group]="group()" [stepOnly]="kind() === 'fill'" [stepFields]="stepFields()"
+                              (changed)="groupChange.emit($event)" />
+</div>

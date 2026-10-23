@@ -113,7 +113,10 @@
                 }
               </div>
               @if (isAnyCondOpen(f.key)) {
-                <ng-container *ngTemplateOutlet="condEditor"></ng-container>
+                <app-field-condition-editor [kind]="e.condKind" [group]="e.condGroup" [stepFields]="condStepFields()"
+                                            [fillStepId]="e.fillStepId" [fillFieldKey]="e.fillFieldKey"
+                                            [fillSteps]="fillSteps()" [fillSourceFields]="fillSourceFields()"
+                                            (groupChange)="setCondGroup($event)" (fillSourceChange)="setFillSource($event)" />
               }
             </div>
           }
@@ -130,7 +133,7 @@
           </label>
         }
 
-        <ng-container *ngTemplateOutlet="layoutList"></ng-container>
+        <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
       </div>
 
       <div class="modal-action">
@@ -191,96 +194,4 @@
     }
     <span class="text-xs font-normal">{{ text }}</span>
   </button>
-</ng-template>
-
-<!-- Condition editor (shared template used inline above) -->
-<ng-template #condEditor>
-  @if (editing(); as e) {
-    <div class="ml-5 mb-2 bg-base-200 rounded-box p-2 text-sm">
-      @if (e.condKind === 'fill') {
-        <div class="text-xs font-semibold mb-1">Prepopulated from (no field = not prepopulated)</div>
-        <div class="flex flex-wrap items-center gap-1 mb-2">
-          <select class="select select-bordered select-xs w-44" aria-label="Prepopulated from"
-                  [ngModel]="e.fillStepId" (ngModelChange)="setFillSource({ fillStepId: $event })">
-            <option value="">Nothing</option>
-            @for (s of fillSteps(); track s.stepId) {
-              <option [value]="s.stepId">{{ s.stepLabel }}</option>
-            }
-          </select>
-          <select class="select select-bordered select-xs w-56" aria-label="Field to prepopulate from"
-                  [ngModel]="e.fillFieldKey" (ngModelChange)="setFillSource({ fillFieldKey: $event })" [disabled]="!e.fillStepId">
-            <option value="">No field</option>
-            @for (f of fillSourceFields(); track f.key) {
-              <option [value]="f.key">{{ f.label }}</option>
-            }
-          </select>
-        </div>
-        <div class="text-xs font-semibold mb-1">when this step's fields match (no clauses = always)</div>
-      } @else {
-        <div class="text-xs font-semibold mb-1">
-          {{ e.condKind === 'show' ? 'Show when (no clauses = always shown)'
-             : e.condKind === 'required' ? 'Required when (no clauses = always required)'
-             : 'Disabled when (no clauses = never disabled)' }}
-        </div>
-      }
-      <div class="text-xs mb-1">For "one of" several values, separate them with commas (e.g. mt, pt).</div>
-      <app-condition-group-editor [group]="e.condGroup" [stepOnly]="e.condKind === 'fill'" [stepFields]="condStepFields()"
-                                  (changed)="setCondGroup($event)" />
-    </div>
-  }
-</ng-template>
-
-<!-- Layout: the order the form draws the ticked fields in, which share a line, their widths, headings,
-     and where Inspection Results goes -->
-<ng-template #layoutList>
-  @if (editing(); as e) {
-    <h4 class="font-semibold mb-1">Layout</h4>
-    <p class="text-sm mb-2">The form draws the fields in this order, each on a new line unless "Same line" is ticked, which puts it on the line of the field above. Fields on a line share its width; a Width (in pixels) is the most that field is drawn wide, and narrow screens still shrink it. A heading can start a box around the fields under it.</p>
-    <div class="mb-2">
-      @for (a of e.fieldActivations; track a.key; let i = $index, first = $first, last = $last) {
-        <div class="flex items-center gap-2 py-1 border-b border-base-300 last:border-0">
-          <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
-            <svg lucideArrowUp class="size-4"></svg>
-          </button>
-          <button type="button" class="btn btn-ghost btn-xs" title="Move down" [disabled]="last" (click)="moveItem(i, 1)">
-            <svg lucideArrowDown class="size-4"></svg>
-          </button>
-          @if (isHeading(a)) {
-            <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
-                   aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
-            <label class="flex items-center gap-1 text-sm cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.newBox"
-                     (change)="setItem(i, { newBox: $any($event.target).checked })" />
-              Starts a box
-            </label>
-            <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove heading" (click)="removeHeading(i)">
-              <svg lucideX class="size-4"></svg>
-            </button>
-          } @else if (isDecision(a)) {
-            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">On its own line.</span></span>
-          } @else if (isOutsideForm(a)) {
-            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ fieldNote(a.key) }}</span></span>
-          } @else if (isBlockItem(a)) {
-            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ blockNote(a) }}</span></span>
-          } @else {
-            <span class="text-sm flex-1">{{ itemLabel(a) }}</span>
-            <label class="flex items-center gap-1 text-sm">
-              Width
-              <input type="number" min="1" step="1" class="input input-bordered input-sm w-24" placeholder="Share"
-                     [attr.aria-label]="'Width of ' + itemLabel(a) + ' in pixels'"
-                     [ngModel]="a.width" (ngModelChange)="setItem(i, { width: $event })" />
-            </label>
-            <label class="flex items-center gap-1 text-sm cursor-pointer">
-              <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.sameLine"
-                     (change)="setItem(i, { sameLine: $any($event.target).checked })" />
-              Same line
-            </label>
-          }
-        </div>
-      }
-    </div>
-    <button type="button" class="btn btn-ghost btn-sm" (click)="addHeading()">
-      <svg lucidePlus class="size-4"></svg> Add heading
-    </button>
-  }
 </ng-template>
