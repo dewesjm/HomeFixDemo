@@ -4,14 +4,14 @@
 <p class="text-sm mb-sm">No default: the Type starts blank and must be picked before the step can be signed, even when
   there is only one option. Whether a step shows Type at all is set on its Signoff Type Definition.</p>
 
-<app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" addLabel="Add routing step"
+<app-table-toolbar [table]="table" searchPlaceholder="Search signoff types…" addLabel="Add type"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
 
 <div class="overflow-x-auto">
   <table class="table table-sm">
     <thead>
       <tr>
-        <th appSortHeader [table]="table" field="stepLabel" label="Routing Step" class="min-w-44"></th>
+        <th appSortHeader [table]="table" field="stepLabel" label="Type" class="min-w-44"></th>
         <th>Options</th>
         <th class="min-w-11"></th>
       </tr>
@@ -23,7 +23,7 @@
             @if (editingUid() === row.uid) {
               <select class="select select-sm select-bordered w-full min-w-0"
                       [ngModel]="row.stepId" (ngModelChange)="setStep(row, $event)">
-                <option value="" disabled>Select a routing step</option>
+                <option value="" disabled>Select a type</option>
                 @for (s of stepChoices(row); track s.id) { <option [value]="s.id">{{ s.label }}</option> }
               </select>
             } @else {
@@ -115,7 +115,7 @@
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No routing steps match your search.' : 'No routing steps yet.' }}</td></tr>
+        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No types yet.' }}</td></tr>
       }
     </tbody>
   </table>

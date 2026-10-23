@@ -113,7 +113,7 @@ export class AdminSignoffTypesComponent {
 
   exportCsv() {
     downloadCsv('signoff-type-availability', [
-      { header: 'Routing Step', value: (r: TypeRow) => r.stepLabel },
+      { header: 'Type', value: (r: TypeRow) => r.stepLabel },
       { header: 'Options', value: (r: TypeRow) => r.stepId === EXCAVATION_TYPE_ROW ? EXCAVATION_NOTE
           : r.options.map(o => this.optionText(o)).join('; ') },
     ], this.table.sorted());
@@ -148,7 +148,7 @@ export class AdminSignoffTypesComponent {
   saveEdit(row: TypeRow) {
     const current = this.rows().find(r => r.uid === row.uid);
     if (!current?.stepId) {
-      this.messages.add({ severity: 'warn', summary: 'Pick a routing step', life: 3000 });
+      this.messages.add({ severity: 'warn', summary: 'Pick a type', life: 3000 });
       return;
     }
     this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, options: x.options.filter(o => o.label.trim()) } : x));

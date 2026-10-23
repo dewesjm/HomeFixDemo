@@ -16,6 +16,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     changed: [
+      'Admin → Signoff Type Availability: the first column is called Type (it was Routing Step), and its add button is "Add type".',
       'Type, Comments and References are now part of the step\'s form and go where its Layout list puts them (Admin → Signoff Type Definition), with a Line number like any field. Type starts on the first line and Comments on the last, in a box of its own on forms that use boxes. References is drawn the width of the form inside the Signoff panel instead of as its own panel below it.',
       'Admin → Signoff Type Definition: each of a field\'s rules (Show when, Prepopulated from, Disabled when, Required) sits in its own bordered box, so it\'s clear where one ends and the next begins.',
       'Records Review UNSAT now goes where Admin → Routing Settings\' "Reject routes to" says, like every other step. It starts set to Records Review itself, so an UNSAT is recorded and the joint stays in Records Review as before. Saved joints and most Admin lists go back to the sample data once to pick this up.',
