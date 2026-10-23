@@ -145,8 +145,9 @@ src/app/
                            Records Review also shows for one joint
     my-assignments/        My Assignments — assignment list with keyword search
     makeup/                Makeup — acting-foreman grants, flat grid (see Signoff panel section); grants in makeup-grants.ts; `noMike` toggle, see Demo toggles
-    joint-page/            Job detail — page state and wiring; joint-overrides.service.ts holds the visit's
-                           Foreman/engineering override state
+    joint-page/            Job detail — page state, wiring and signing; joint-overrides.service.ts holds the visit's
+                           Foreman/engineering override state; signoff-form-edits.service.ts = what happens when a
+                           value changes on the sign-off form; signoff-form-errors.service.ts = its red field messages
       rules/               The joint page's form rules, plain functions: fit-signoff (the sign-off fields
                            Pre-Fit/Fit/Fit-Up Insp draw), stage-form (which step fields show, their options),
                            weld-cascade (what a GWP/WTN/requirement change clears; the fill rules do the rest),

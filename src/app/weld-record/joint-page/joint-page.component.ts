@@ -1,8 +1,8 @@
 //This is the job details page
 
-/* The joint page: page state, wiring to the sign-off panel, and the actions that save through the
-   weld-record services. The form rules live in rules/, the override state in
-   JointOverridesService. */
+/* The joint page: page state, wiring to the sign-off panel, and signing. A value changing on the
+   sign-off form is SignoffFormEditsService, its red field messages SignoffFormErrorsService, the
+   override state JointOverridesService; the form rules live in rules/. */
 import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,8 @@ import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component'
 import { SignoffContext } from '../signoff-panel/signoff-context';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
 import { JointOverridesService } from './joint-overrides.service';
+import { SignoffFormEditsService } from './signoff-form-edits.service';
+import { SignoffFormErrorsService } from './signoff-form-errors.service';
 
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
@@ -24,13 +26,11 @@ import { ReferenceService } from '../services/reference.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
-import { isAssignedStage } from '../../data/weld-assignment';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage,
   StageField,
   SignoffField,
-  StageResult,
   STAGE_RESULT_OPTIONS,
   SignoffInput,
 } from '../model/workflow-types';
@@ -43,28 +43,21 @@ import {
 } from '../routing/current-routing';
 import { routingBarSteps } from '../routing/routing-bar';
 import { FabricationField } from '../fabrication/fabrication-fields';
-import { snapshotInputs, show } from '../signoff-definition/stage-display';
+import { snapshotInputs } from '../signoff-definition/stage-display';
 import { visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { definitionHas } from '../signoff-definition/step-field-config';
-import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired, showsReferences } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
-import { fillChanges } from '../signoff-definition/field-fill';
 import { closesJoint } from '../routing/built-in-step-rules';
 import { featureToggles } from '../../data/feature-toggles';
-import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
-import {
-  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, visibleStageFields,
-} from './rules/stage-form';
-import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
-import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from './rules/sign-validation';
+import { StageFormContext, visibleStageFields } from './rules/stage-form';
+import { SignContext, signProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
 import { routePreviewLabel } from '../routing/route-preview';
-import { typeChange } from './rules/type-change';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 
 @Component({
@@ -74,7 +67,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
     CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, ReferencesComponent, FabricationComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
-  providers: [JointOverridesService],
+  providers: [JointOverridesService, SignoffFormEditsService, SignoffFormErrorsService],
   templateUrl: './joint-page.component.html'
 })
 export class JointPageComponent implements OnDestroy {
@@ -89,6 +82,8 @@ export class JointPageComponent implements OnDestroy {
   private weldAssignment = inject(WeldAssignmentService);
   private confirm = inject(ConfirmService);
   private overrides = inject(JointOverridesService);
+  private formEdits = inject(SignoffFormEditsService);
+  private formErrors = inject(SignoffFormErrorsService);
 
   job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
   wf = this.job ? this.store.workflowFor(this.job) : null;
@@ -101,6 +96,8 @@ export class JointPageComponent implements OnDestroy {
     if (this.job && this.wf && this.loadSnapshot) {
       const wf = this.wf;
       this.overrides.init({ job: this.job, wf: () => wf(), loaded: this.loadSnapshot, visibleFields: s => this.visibleFields(s) });
+      this.formEdits.init({ job: this.job, wf });
+      this.formErrors.init({ job: this.job, wf: () => wf() });
     }
   }
 
@@ -134,8 +131,6 @@ export class JointPageComponent implements OnDestroy {
     this.wf ? routingBarSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
   /* which stage's sign-off shows; defaults to active */
   selectedRouting = signal<number>(this.indexOfActive());
-  /* inline field validation errors: key = `${stageId}:${fieldKey}` */
-  fieldErrors = signal<Record<string, string>>({});
 
   currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
@@ -240,6 +235,8 @@ export class JointPageComponent implements OnDestroy {
     const w = this.wf();
     const job = this.job;
     const ov = this.overrides;
+    const edits = this.formEdits;
+    const errors = this.formErrors;
     return {
       job,
       wf: () => ({ stages: w.stages, fabricationData: w.fabricationData }),
@@ -252,8 +249,8 @@ export class JointPageComponent implements OnDestroy {
       inputsEditable: (s, i) => this.inputsEditable(s, i),
       visibleFields: (s) => this.visibleFields(s),
       visibleSignoffFields: (s) => this.visibleSignoffFields(s),
-      fieldError: (sid, fk) => this.fieldError(sid, fk),
-      clearFieldError: (sid, fk) => this.clearFieldError(sid, fk),
+      fieldError: (sid, fk) => errors.fieldError(sid, fk),
+      clearFieldError: (sid, fk) => errors.clearFieldError(sid, fk),
       getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
       getReviewValue: (k) => reviewVerifyValue(k, job),
       inspectionTypeRequired: (s) => inspectionTypeRequired(s),
@@ -267,15 +264,15 @@ export class JointPageComponent implements OnDestroy {
       engineeringOverride: (s) => ov.engineeringOverrideClick(s),
       removeForemanOverride: (s, i) => ov.removeForemanOverride(s, i),
       assignedLocked: (s, k) => ov.assignedLocked(s, k),
-      stageInputBlur: (s, f, v) => this.stageInputBlur(s, f, v),
-      stageSelectChange: (s, f, v) => this.stageSelectChange(s, f, v),
-      blurSignoffField: (s, f, v) => this.setSignoffInput(s, f, v),
-      signoffSelectChange: (s, f, v) => this.setSignoffInput(s, f, v ?? ''),
-      signoffCheckboxChange: (s, f, c) => this.setSignoffInput(s, f, c ? 'yes' : '', false),
-      toggleAffectedItem: (s, item, e) => this.toggleAffectedItem(s, item, e),
-      onConsumableInsertChange: (s, v) => this.onConsumableInsertChange(s, v),
-      setType: (s, v) => this.setType(s, v),
-      setStageResult: (s, r) => this.setStageResult(s, r),
+      stageInputBlur: (s, f, v) => edits.stageInputBlur(s, f, v),
+      stageSelectChange: (s, f, v) => edits.stageSelectChange(s, f, v),
+      blurSignoffField: (s, f, v) => edits.setSignoffInput(s, f, v),
+      signoffSelectChange: (s, f, v) => edits.setSignoffInput(s, f, v ?? ''),
+      signoffCheckboxChange: (s, f, c) => edits.setSignoffInput(s, f, c ? 'yes' : '', false),
+      toggleAffectedItem: (s, item, e) => edits.toggleAffectedItem(s, item, e),
+      onConsumableInsertChange: (s, v) => edits.onConsumableInsertChange(s, v),
+      setType: (s, v) => edits.setType(s, v),
+      setStageResult: (s, r) => edits.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
       deprogress: (reason) => this.deprogress(reason),
     };
@@ -306,145 +303,6 @@ export class JointPageComponent implements OnDestroy {
       result => this.signoffService.previewSignoff(wf, job, stage.id, result, hold()));
   }
 
-  /* ── Step inputs ── */
-
-  private setInput(stage: WorkflowStage, key: string, value: string) {
-    const field = stage.fields.find(f => f.key === key);
-    if (this.job && field) this.wfService.setStageInput(this.job, stage.id, field, value);
-  }
-
-  /* blank any dependent field whose trigger no longer matches */
-  private clearHidden(stage: WorkflowStage) {
-    if (!this.job) return;
-    const hidden = hiddenFieldsWithValues(stage);
-    if (hidden.length) this.wfService.setStageInputs(this.job, stage.id, hidden.map(field => ({ field, value: '' })));
-  }
-
-  stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
-    if (stage.engineeringEntry && REQUIREMENT_KEYS.has(field.key)) {
-      this.typedRequirementBlur(stage, field, value);
-      return;
-    }
-    if (this.job && value !== (stage.inputs[field.key] ?? '')) {
-      const job = this.job;
-      this.overrides.engineeringEdit(stage, field, value, () => {
-        this.wfService.setStageInput(job, stage.id, field, value);
-        this.clearHidden(stage);
-        this.applyFills(stage);
-      });
-    }
-    this.onFieldBlur(stage, field);
-    /* clear required error if now filled */
-    if (field.required && value && this.fieldErrors()[`${stage.id}:${field.key}`]?.endsWith('is required')) {
-      this.clearFieldError(stage.id, field.key);
-    }
-  }
-
-  /* a typed PH/IP requirement (engineering override); see typedRequirementChanges */
-  private typedRequirementBlur(stage: WorkflowStage, field: StageField, raw: string) {
-    if (!this.job) return;
-    const changes = typedRequirementChanges(stage, field, raw);
-    if (changes.length) {
-      const job = this.job;
-      this.overrides.engineeringEdit(stage, field, changes[0].value, () => {
-        this.wfService.setStageInputs(job, stage.id, changes);
-        this.applyFills(stage);
-      });
-    }
-    this.onFieldBlur(stage, field);
-  }
-
-  /* select fields commit on change, clear maps to '' */
-  stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
-    const v = value ?? '';
-    if (this.job && v !== (stage.inputs[field.key] ?? '')) {
-      const { changes, matchedProc } = selectChangeCascade(stage, field, v, this.overrides.offListUnlocked(stage));
-      const job = this.job;
-      this.overrides.engineeringEdit(stage, field, v, () => {
-        this.wfService.setStageInputs(job, stage.id, changes);
-        this.applyFills(stage);
-      });
-      this.clearHidden(stage);
-      /* the WTN filled in Weld Process */
-      if (field.key === 'wtn' && matchedProc) this.clearFieldError(stage.id, 'weldProcess');
-    }
-    const live = this.wf?.().stages.find(s => s.id === stage.id);
-    this.fieldErrors.set(errorsAfterSelect(this.fieldErrors(), live, this.job, stage.id, field.key));
-  }
-
-  toggleAffectedItem(stage: WorkflowStage, item: string, event: Event) {
-    const checked = (event.target as HTMLInputElement).checked;
-    const raw = stage.inputs['affectedItems'] ?? '';
-    const current = raw ? raw.split(',') : [];
-    const next = checked ? [...current, item] : current.filter(i => i !== item);
-    if (next.length) this.clearFieldError(stage.id, 'affectedItem');
-    this.wfService.setStageInput(this.job!, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
-  }
-
-  /* "Only Consumable Insert used as filler": the filler fields' fill rule follows it (applyFills) */
-  onConsumableInsertChange(stage: WorkflowStage, value: string) {
-    this.setInput(stage, 'consumableInsertOnly', value);
-    this.applyFills(stage);
-  }
-
-  /* Fields prepopulated from another value (Admin > Signoff Type Definition, field-fill.ts) after a
-     change on the step: copied in when their rule starts holding or its source changes, blanked when
-     it stops. Blanked ones get the external system's values back, unless a Foreman Override or
-     engineering override has the step. */
-  private applyFills(before: WorkflowStage) {
-    if (!this.job || !this.wf) return;
-    const stages = this.wf().stages;
-    const after = stages.find(s => s.id === before.id);
-    if (!after) return;
-    const { values, released } = fillChanges(before, after, stages);
-    const changes = Object.entries(values).flatMap(([key, value]) => {
-      const field = after.fields.find(f => f.key === key);
-      return field ? [{ field, value }] : [];
-    });
-    if (changes.length) this.wfService.setStageInputs(this.job, after.id, changes);
-    if (released.length && isAssignedStage(after) && !this.overrides.offListUnlocked(after) && !after.engineeringEntry) {
-      this.weldAssignment.apply(this.job, after.id);
-    }
-  }
-
-  /* Type: both stored values change; a Type that loads another definition swaps the step's fields
-     (typeChange), is recorded in History, and a welding form gets its assignment. A procedure not
-     designated for the new Type is cleared. */
-  setType(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    if (value) this.clearFieldError(stage.id, '__inspectionType');
-    const { patch, swapsDefinition } = typeChange(this.job.trade, stage, value);
-    if (swapsDefinition) {
-      this.signoffService.updateStageSignoff(this.job, stage.id, patch, { action: `${stage.label} - Type changed to ${value}` });
-      if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(this.job, stage.id);
-    } else {
-      this.wf.update(wf => ({ ...wf, stages: wf.stages.map(s => s.id === stage.id ? { ...s, ...patch } : s) }));
-    }
-    const proc = stage.inputs['procedureUsed'] ?? '';
-    if (proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) this.setInput(stage, 'procedureUsed', '');
-  }
-
-  /* ── Sign-off fields ── */
-
-  setStageResult(stage: WorkflowStage, result: StageResult) {
-    if (!this.job || result === stage.result) return;
-    this.clearFieldError(stage.id, '__decision');
-    const old = stage.result;
-    this.signoffService.updateStageSignoff(this.job, stage.id, { result },
-      { action: `${stage.label} - ${stage.decisionLabel || 'Decision'}`, from: old ? old.toUpperCase() : '-', to: result.toUpperCase() });
-  }
-
-  /* a sign-off field's new value (text blur, select or checkbox); a value clears that field's error */
-  private setSignoffInput(stage: WorkflowStage, field: SignoffField, value: string, clearsError = true) {
-    if (!this.job) return;
-    if (clearsError && value) this.clearFieldError(stage.id, field.key);
-    const prev = stage.signoffInputs[field.key] ?? '';
-    if (value === prev) return;
-    this.signoffService.updateStageSignoff(this.job, stage.id,
-      { signoffInputs: { ...stage.signoffInputs, [field.key]: value } },
-      { action: `${stage.label} - ${field.label}`, from: show(prev), to: show(value) });
-  }
-
   /* ── Validation ── */
 
   private signCtx(stage: WorkflowStage): SignContext {
@@ -460,41 +318,6 @@ export class JointPageComponent implements OnDestroy {
 
   canSignStage(stage: WorkflowStage): boolean {
     return this.signBlockers(stage).length === 0;
-  }
-
-  /* Called on blur of a single field: validates required + Actual Min/Max order. Reads the live
-     stage, since the stage param may be stale. */
-  onFieldBlur(stage: WorkflowStage, field: StageField) {
-    const live = this.wf?.().stages.find(s => s.id === stage.id);
-    this.fieldErrors.set(errorsAfterBlur(this.fieldErrors(), live, stage.id, field));
-  }
-
-  fieldError(stageId: string, fieldKey: string): string | undefined {
-    /* an actual set to NC by its requirement has nothing to check; drops an error left from an
-       earlier Signoff attempt, before the WTN made it NC */
-    if (fieldKey in ACTUAL_REQUIREMENT && this.wf?.().stages.find(s => s.id === stageId)?.inputs[fieldKey] === 'NC') return undefined;
-    return this.fieldErrors()[`${stageId}:${fieldKey}`];
-  }
-
-  /* clears one field's error the moment its value changes, so a red highlight from a failed
-     signoff attempt (e.g. Fit-Up Insp's unchecked verification boxes) doesn't linger after it's fixed */
-  clearFieldError(stageId: string, fieldKey: string) {
-    const key = `${stageId}:${fieldKey}`;
-    const prev = this.fieldErrors();
-    if (!prev[key]) return;
-    const next = { ...prev };
-    delete next[key];
-    this.fieldErrors.set(next);
-  }
-
-  /* after a failed sign attempt: bring the first validation error into view and focus its field */
-  private focusFirstError() {
-    setTimeout(() => {
-      const err = document.querySelector('.signoff-panel .field-error');
-      if (!err) return;
-      err.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });
-    });
   }
 
   /* ── Signing ── */
@@ -514,9 +337,7 @@ export class JointPageComponent implements OnDestroy {
   signStage(stage: WorkflowStage) {
     if (!this.job || this.heldAt(stage)) return;
     /* validate required fields + range constraints */
-    const errors = stageFieldErrors(stage, this.signCtx(stage));
-    this.fieldErrors.set(errors);
-    if (Object.keys(errors).length > 0) { this.focusFirstError(); return; }
+    if (this.formErrors.showSigningErrors(stageFieldErrors(stage, this.signCtx(stage)))) return;
     if (!this.canSignStage(stage)) return;
     /* a repeatable Type (Interim Layer, Weld Build-Up) goes through the same signoff; SignoffService keeps the routing where it is */
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
