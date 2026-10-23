@@ -1,7 +1,7 @@
 import { ConditionContext, FieldCondition, evaluateCondition } from './field-conditions';
 import { conditionText, effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
   defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf,
-  requiredMode, withRequiredMode } from './field-rules';
+  requiredMode, withRequiredMode, withRequiredMessage, standardRequiredMessage } from './field-rules';
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
@@ -67,6 +67,16 @@ describe('field rules', () => {
     expect(requiredRuleText(never)).toBe('Never required');
     expect(withRequiredMode({ key: 'hasProbationary' }, 'always')).toEqual({ key: 'hasProbationary', required: true });
     expect(withRequiredMode({ key: 'hasProbationary', required: true }, 'never')).toEqual({ key: 'hasProbationary' });
+  });
+
+  it('Required error message: trimmed, blank removes it, dropped when set to Never', () => {
+    expect(withRequiredMessage({ key: 'hasProbationary', required: true }, '  Pick one  '))
+      .toEqual({ key: 'hasProbationary', required: true, requiredMessage: 'Pick one' });
+    expect(withRequiredMessage({ key: 'hasProbationary', requiredMessage: 'Pick one' }, ' ')).toEqual({ key: 'hasProbationary' });
+    expect(withRequiredMode({ key: 'hasProbationary', required: true, requiredMessage: 'Pick one' }, 'never')).toEqual({ key: 'hasProbationary' });
+    expect(withRequiredMode({ key: 'consumableInsertId', requiredMessage: 'Pick one' }, 'always'))
+      .toEqual({ key: 'consumableInsertId', requiredIf: { all: [] }, requiredMessage: 'Pick one' });
+    expect(standardRequiredMessage('oversightInspector', 'Oversight Inspector')).toBe('Oversight Inspector is required');
   });
 
   it('prepopulate rule: catalog default for the filler, stored only when it differs, null when cleared', () => {

@@ -2,13 +2,14 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../../../data/jobs';
-import { StageField, WorkflowStage } from '../../model/workflow-types';
+import { SignoffField, StageField, WorkflowStage } from '../../model/workflow-types';
 import { blocksOnFabricationErrors, needsFabricationComplete, rtDegreeRequired } from '../../routing/built-in-step-rules';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
 import { definitionHas, verifyAgainst } from '../../signoff-definition/step-field-config';
 import { isVerifyRow } from '../../signoff-definition/field-catalog';
+import { standardRequiredMessage } from '../../signoff-definition/field-rules';
 import { affectedMicRule } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { missingFitFabrication } from '../../fabrication/fabrication-form';
@@ -33,6 +34,12 @@ function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
   const required = rtDegreeRequired(job, stage);
   return required && rtDegrees(stage.inputs['degreeRt']) < rtDegrees(required)
     ? `Degree of RT Performed must be at least ${required}` : '';
+}
+
+/* the error for a required field left empty (a verify-grid row left unchecked): its definition's
+   message, or the standard wording */
+export function requiredError(f: StageField | SignoffField): string {
+  return f.requiredMessage || standardRequiredMessage(f.key, f.label);
 }
 
 /* a verify grid's shown rows that are required and not checked */
@@ -75,7 +82,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
   for (const f of ctx.visibleFields) {
     const val = stage.inputs?.[f.key];
-    if (f.required && (val === undefined || val === null || val === '')) errors[key(f.key)] = `${f.label} is required`;
+    if (f.required && (val === undefined || val === null || val === '')) errors[key(f.key)] = requiredError(f);
     const typed = typedRequirementError(stage, f);
     if (typed) errors[key(f.key)] = typed;
     /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
@@ -85,7 +92,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     if (err && !errors[key(pair.max)]) errors[key(pair.max)] = err;
   }
   /* each unchecked required verify-grid row gets its own error (the blockers give one summary reason) */
-  for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = `${f.label} must be verified`;
+  for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = requiredError(f);
   /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and each picked
      member's MIC verified row checked while its rule makes it required (affectedMicRule) */
   if (definitionHas(stage, 'affectedItem')) {
@@ -94,11 +101,13 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     const job = ctx.job;
     const condCtx = buildConditionContext(stage, job, ctx.stages ?? [], ctx.fab);
     if (!items.length) errors[key('affectedItem')] = 'Select at least one Affected Item';
-    if (items.includes('joiningItem') && affectedMicRule(stage, condCtx, 'affectedMicVerified1').required && stage.inputs?.['micVerified1'] !== 'yes') {
-      errors[key('affectedItem')] = 'Please verify MIC for ' + (job?.joiningItem || 'item');
+    const mic1 = affectedMicRule(stage, condCtx, 'affectedMicVerified1');
+    if (items.includes('joiningItem') && mic1.required && stage.inputs?.['micVerified1'] !== 'yes') {
+      errors[key('affectedItem')] = mic1.requiredMessage || 'Please verify MIC for ' + (job?.joiningItem || 'item');
     }
-    if (items.includes('joinToItem') && affectedMicRule(stage, condCtx, 'affectedMicVerified2').required && stage.inputs?.['micVerified2'] !== 'yes') {
-      errors[key('affectedItem')] = 'Please verify MIC for ' + (job?.joinToItem || 'item');
+    const mic2 = affectedMicRule(stage, condCtx, 'affectedMicVerified2');
+    if (items.includes('joinToItem') && mic2.required && stage.inputs?.['micVerified2'] !== 'yes') {
+      errors[key('affectedItem')] = mic2.requiredMessage || 'Please verify MIC for ' + (job?.joinToItem || 'item');
     }
   }
   if (hasDecision(stage) && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
@@ -106,7 +115,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
   /* the fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
   if (needsFabricationComplete(stage.id) && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
-  for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = `${f.label} is required`;
+  for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = requiredError(f);
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) errors[key('degreeRt')] = rt;
   return errors;
@@ -131,7 +140,7 @@ export function errorsAfterBlur(errors: Record<string, string>, stage: WorkflowS
   const val = stage?.inputs?.[field.key];
   const next = { ...errors };
   delete next[key];
-  if (field.required && (val === undefined || val === null || val === '')) next[key] = `${field.label} is required`;
+  if (field.required && (val === undefined || val === null || val === '')) next[key] = requiredError(field);
   if (stage && typedRequirementError(stage, field)) next[key] = typedRequirementError(stage, field);
   const pair = ACTUAL_MIN_MAX.find(p => p.min === field.key || p.max === field.key);
   if (pair) {

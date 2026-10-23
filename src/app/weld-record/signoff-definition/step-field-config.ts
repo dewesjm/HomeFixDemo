@@ -20,6 +20,8 @@ export interface FieldActivation {
   required?: boolean;
   /* required only while this holds; an empty condition = always, overriding a catalog default */
   requiredIf?: FieldCondition;
+  /* the error shown when it's required and left empty (or unchecked); unset = the standard wording */
+  requiredMessage?: string;
   /* the form line it's drawn on: items with the same number sit side by side, in list order. The
      list is kept sorted by it (one count for the whole form, headings included) */
   line?: number;

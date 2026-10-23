@@ -14,6 +14,7 @@ import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { show } from '../signoff-definition/stage-display';
 import { fillChanges } from '../signoff-definition/field-fill';
 import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './rules/stage-form';
+import { requiredError } from './rules/sign-validation';
 import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
 import { typeChange } from './rules/type-change';
 import { JointOverridesService } from './joint-overrides.service';
@@ -67,7 +68,7 @@ export class SignoffFormEditsService {
     }
     this.errors.afterBlur(stage, field);
     /* clear required error if now filled */
-    if (field.required && value && this.errors.fieldError(stage.id, field.key)?.endsWith('is required')) {
+    if (field.required && value && this.errors.fieldError(stage.id, field.key) === requiredError(field)) {
       this.errors.clearFieldError(stage.id, field.key);
     }
   }

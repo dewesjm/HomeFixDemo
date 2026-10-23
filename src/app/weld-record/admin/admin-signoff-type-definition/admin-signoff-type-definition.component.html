@@ -166,13 +166,14 @@
   </button>
 </ng-template>
 
-<!-- A checked field's rules: when it shows, when it's prepopulated, when it's disabled, and when
-     it's required (Never / Always / When; each rule opens the condition editor). Defer Tack and
-     Release to welding and Affected Item have fixed rules (hasFixedRules). -->
+<!-- A checked field's rules, each in its own bordered box: when it shows, when it's prepopulated,
+     when it's disabled, and when it's required (Never / Always / When, with its error message;
+     each rule opens the condition editor). Defer Tack and Release to welding and Affected Item
+     have fixed rules (hasFixedRules). -->
 <ng-template #fieldRules let-key="key">
-  <div class="flex flex-col items-end gap-0.5 text-right max-w-[65%]">
+  <div class="flex flex-col items-stretch gap-1 text-right max-w-[65%]">
     @if (isBuiltIn(key)) {
-      <span class="text-xs px-2">{{ condLabel(key) }}</span>
+      <span class="text-xs px-2 py-1 border border-base-300 rounded-box">{{ condLabel(key) }}</span>
     } @else {
       <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'show', text: condLabel(key) }"></ng-container>
     }
@@ -181,28 +182,41 @@
     }
     @if (!isFixed(key)) {
       @if (isReadOnly(key)) {
-        <span class="text-xs px-2">{{ disabledLabel(key) }}</span>
+        <span class="text-xs px-2 py-1 border border-base-300 rounded-box">{{ disabledLabel(key) }}</span>
       } @else {
         <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'disabled', text: disabledLabel(key) }"></ng-container>
       }
-      <label class="flex items-center gap-1 px-2 text-xs">
-        Required
-        <select class="select select-bordered select-xs w-24"
-                [ngModel]="requiredModeOf(key)" (ngModelChange)="setRequiredMode(key, $event)">
-          <option value="never">Never</option>
-          <option value="always">Always</option>
-          <option value="when">When…</option>
-        </select>
-      </label>
-      @if (requiredModeOf(key) === 'when') {
-        <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'required', text: requiredLabel(key) }"></ng-container>
-      }
+      <div class="flex flex-col items-end gap-1 px-2 py-1 border border-base-300 rounded-box">
+        <label class="flex items-center gap-1 text-xs">
+          Required
+          <select class="select select-bordered select-xs w-24"
+                  [ngModel]="requiredModeOf(key)" (ngModelChange)="setRequiredMode(key, $event)">
+            <option value="never">Never</option>
+            <option value="always">Always</option>
+            <option value="when">When…</option>
+          </select>
+        </label>
+        @if (requiredModeOf(key) === 'when') {
+          <ng-container *ngTemplateOutlet="condButton; context: { key, kind: 'required', text: requiredLabel(key), inBox: true }"></ng-container>
+        }
+        @if (requiredModeOf(key) !== 'never') {
+          <!-- blank = the standard wording, shown as the placeholder -->
+          <label class="flex items-center gap-1 text-xs w-full">
+            <span class="shrink-0">Error message</span>
+            <input type="text" class="input input-bordered input-xs flex-1 min-w-0"
+                   [placeholder]="requiredMessagePlaceholder(key)" [ngModel]="requiredMessageOf(key)"
+                   (blur)="setRequiredMessage(key, $any($event.target).value)" />
+          </label>
+        }
+      </div>
     }
   </div>
 </ng-template>
 
-<ng-template #condButton let-key="key" let-kind="kind" let-text="text">
-  <button type="button" class="btn btn-ghost btn-xs gap-1 h-auto min-h-6 py-0.5 text-right"
+<!-- a rule that opens its condition editor; bordered unless it sits inside Required's box -->
+<ng-template #condButton let-key="key" let-kind="kind" let-text="text" let-inBox="inBox">
+  <button type="button" class="btn btn-ghost btn-xs gap-1 h-auto min-h-6 py-1 justify-end text-right"
+          [class]="inBox ? '' : '!border-base-300 rounded-box'"
           (click)="toggleCondEditor(key, kind)">
     @if (isCondOpen(key, kind)) {
       <svg lucideChevronDown class="size-3 shrink-0"></svg>

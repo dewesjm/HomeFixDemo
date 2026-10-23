@@ -111,6 +111,16 @@ describe('joint-form sign-validation', () => {
     expect(stageFieldErrors(insp, ctxFor(j, insp))['fitup-insp:__decision']).toBe('Choose SAT or UNSAT');
   });
 
+  it('a required field with its own error message shows that message, empty or on blur', () => {
+    const j = job();
+    const tack = stageOf(j, 'tack');
+    const ctx = ctxFor(j, tack);
+    ctx.visibleFields = ctx.visibleFields.map(f => f.key === 'weldProcedure' ? { ...f, requiredMessage: 'Pick the GWP first' } : f);
+    expect(stageFieldErrors(tack, ctx)['tack:weldProcedure']).toBe('Pick the GWP first');
+    const gwp = ctx.visibleFields.find(f => f.key === 'weldProcedure')!;
+    expect(errorsAfterBlur({}, tack, 'tack', gwp)['tack:weldProcedure']).toBe('Pick the GWP first');
+  });
+
   it('Weld Build-Up needs an Affected Item, with its MIC verified when traceability applies', () => {
     const j = job({ mcl1: 'MC-I', joiningItem: 'Pipe A' });
     const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup' });

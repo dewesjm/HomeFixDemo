@@ -3,7 +3,7 @@
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
 import { jointDetailField } from '../routing/step-conditions';
 import { FieldActivation } from './step-field-config';
-import { FieldFill, lookupCatalogField } from './field-catalog';
+import { FieldFill, isVerifyRow, lookupCatalogField } from './field-catalog';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
 import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
@@ -123,7 +123,7 @@ export function requiredMode(act: FieldActivation): RequiredMode {
 /* the activation with Required set to a mode; When keeps the current condition, or the catalog
    default when there is none, and the condition editor sets the rest */
 export function withRequiredMode(act: FieldActivation, mode: RequiredMode): FieldActivation {
-  const { required: _r, requiredIf: _ri, ...rest } = act;
+  const { required: _r, requiredIf: _ri, requiredMessage, ...rest } = act;
   const required = requiredToStore(act.key, mode !== 'never');
   const requiredIf = mode === 'always' ? requiredIfToStore(act.key, { all: [] })
     : mode === 'when' && effectiveRequiredIf(act) ? act.requiredIf : undefined;
@@ -131,7 +131,25 @@ export function withRequiredMode(act: FieldActivation, mode: RequiredMode): Fiel
     ...rest,
     ...(required === undefined ? {} : { required }),
     ...(requiredIf === undefined ? {} : { requiredIf }),
+    ...(mode === 'never' || !requiredMessage ? {} : { requiredMessage }),
   };
+}
+
+/* the activation with its required error message set; blank = the standard wording */
+export function withRequiredMessage(act: FieldActivation, message: string): FieldActivation {
+  const { requiredMessage: _m, ...rest } = act;
+  const text = message.trim();
+  return text ? { ...rest, requiredMessage: text } : rest;
+}
+
+/* the error a required field left empty shows when its definition sets no message of its own */
+export function standardRequiredMessage(key: string, label: string): string {
+  return isVerifyRow(key) ? `${label} must be verified` : `${label} is required`;
+}
+
+/* the runtime field's own required error, when its definition sets one */
+export function requiredMessageProp(act: FieldActivation): { requiredMessage?: string } {
+  return act.requiredMessage ? { requiredMessage: act.requiredMessage } : {};
 }
 
 /* fields whose Disabled when rule can't be edited: always read-only ones */

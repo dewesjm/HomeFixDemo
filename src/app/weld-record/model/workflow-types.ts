@@ -27,6 +27,7 @@ export interface StageField {
   showIf?: { key: string; equals?: string; anyOf?: string[]; and?: { key: string; equals: string }[] };   // ← declarative dependency, serializable
   fullWidth?: boolean;   /* spans full grid width */
   required?: boolean;    /* must be filled before signoff */
+  requiredMessage?: string; /* runtime only: the definition's error for a required field left empty */
   disabled?: boolean;    /* read-only / information only */
   minField?: string;     /* cross-field: value must be >= this field's value */
   maxField?: string;     /* cross-field: value must be <= this field's value */
@@ -44,6 +45,7 @@ export interface SignoffField {
   showIf?: { key: string; equals?: string; anyOf?: string[] };
   fullWidth?: boolean;   // spans full grid width (3 columns)
   disabled?: boolean;    /* runtime only: disabled by its Signoff Type Definition rule */
+  requiredMessage?: string; /* runtime only: the definition's error for a required field left empty */
 }
 
 export interface WorkflowStage {

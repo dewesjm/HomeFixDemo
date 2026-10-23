@@ -7,6 +7,11 @@ describe('field rule lines', () => {
     expect(fieldRuleLines({ key: 'hasProbationary' }, label)).toEqual([{ condition: 'Always', behaviors: ['Show'] }]);
   });
 
+  it('quotes the error message a Required rule sets', () => {
+    expect(fieldRuleLines({ key: 'hasProbationary', required: true, requiredMessage: 'Pick one' }, label))
+      .toEqual([{ condition: 'Always', behaviors: ['Show', 'Required: "Pick one"'] }]);
+  });
+
   it('stacks rules that share a condition on one line', () => {
     expect(fieldRuleLines({ key: 'oversightInspector' }, label)).toEqual([
       { condition: 'Has Probationary Inspector is checked', behaviors: ['Show'] },

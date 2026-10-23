@@ -46,6 +46,8 @@ import {
   requiredRuleText,
   requiredMode,
   withRequiredMode,
+  withRequiredMessage,
+  standardRequiredMessage,
   showRuleText,
   disabledRuleText,
   hasBuiltInShowRule,
@@ -340,6 +342,20 @@ export class AdminSignoffTypeDefinitionComponent {
   /* While its condition editor is open the droplist stays on When, even before a clause is added */
   requiredModeOf(key: string): RequiredMode {
     return this.isCondOpen(key, 'required') ? 'when' : requiredMode(this.activation(key));
+  }
+
+  requiredMessageOf(key: string): string {
+    return this.activation(key).requiredMessage ?? '';
+  }
+
+  /* the standard wording, shown in the empty Error message box */
+  requiredMessagePlaceholder(key: string): string {
+    const label = lookupCatalogField(key)?.label ?? key;
+    return key.startsWith('affectedMicVerified') ? 'Please verify MIC for <item>' : standardRequiredMessage(key, label);
+  }
+
+  setRequiredMessage(key: string, message: string) {
+    this.editing.update(e => e && { ...e, fieldActivations: e.fieldActivations.map(a => a.key === key ? withRequiredMessage(a, message) : a) });
   }
 
   requiredLabel(key: string): string {

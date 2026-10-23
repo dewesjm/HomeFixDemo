@@ -8,7 +8,7 @@ import { CatalogField, lookupCatalogField } from './field-catalog';
 import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
-import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rules';
+import { effectiveDisabledIf, effectiveShowIf, isRequiredNow, requiredMessageProp } from './field-rules';
 import { showIfMet } from './stage-display';
 import { drawnByOwnForm } from './signoff-parts';
 
@@ -41,12 +41,12 @@ export function definitionStageFields(step: StepRef): StageField[] {
 /* one of Affected Item's MIC verified rows (affected-item component, sign-validation): shown when the
    step's definition lists it and its Show when holds (its joint member must also be picked), and
    whether it must be checked */
-export function affectedMicRule(stage: WorkflowStage, condCtx: ConditionContext, key: 'affectedMicVerified1' | 'affectedMicVerified2'): { shown: boolean; required: boolean } {
+export function affectedMicRule(stage: WorkflowStage, condCtx: ConditionContext, key: 'affectedMicVerified1' | 'affectedMicVerified2'): { shown: boolean; required: boolean; requiredMessage?: string } {
   const act = getActivationForStep(stage).fields.find(a => a.key === key);
   if (!act) return { shown: false, required: false };
   const show = effectiveShowIf(act);
   const shown = !show || evaluateCondition(show, condCtx);
-  return { shown, required: shown && isRequiredNow(act, condCtx) };
+  return { shown, required: shown && isRequiredNow(act, condCtx), ...requiredMessageProp(act) };
 }
 
 /* The definition's fields whose Show when holds, each required and disabled as its rules say right now */
@@ -58,7 +58,7 @@ export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): 
     if (show && !evaluateCondition(show, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
     const disabled = !!disabledCond && evaluateCondition(disabledCond, condCtx);
-    return [{ ...toStageField(cat), required: isRequiredNow(act, condCtx), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
+    return [{ ...toStageField(cat), required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
   });
 }
 
@@ -89,6 +89,6 @@ export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined,
     const cond = effectiveShowIf(act);
     if (cond && !evaluateCondition(cond, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
-    return [{ ...f, required: isRequiredNow(act, condCtx), ...(disabledCond && evaluateCondition(disabledCond, condCtx) ? { disabled: true } : {}) }];
+    return [{ ...f, required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(disabledCond && evaluateCondition(disabledCond, condCtx) ? { disabled: true } : {}) }];
   });
 }

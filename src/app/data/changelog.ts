@@ -11,7 +11,11 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
+    added: [
+      'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
+    ],
     changed: [
+      'Admin → Signoff Type Definition: each of a field\'s rules (Show when, Prepopulated from, Disabled when, Required) sits in its own bordered box, so it\'s clear where one ends and the next begins.',
       'Records Review UNSAT now goes where Admin → Routing Settings\' "Reject routes to" says, like every other step. It starts set to Records Review itself, so an UNSAT is recorded and the joint stays in Records Review as before. Saved joints and most Admin lists go back to the sample data once to pick this up.',
       'Every step\'s sign-off form is now drawn from its Signoff Type Definition (the Layout from Signoff Type Definition toggle is gone, and so are the old built-in layouts). Fit-Up Insp and Records Review draw their verify rows as one grid where the first row sits in the Layout list, with their other fields laid out around it.',
       'Admin → Routing Settings: the "Form" and "Fabrication complete to sign" columns are gone. Sold is still never signed, and Fit (blank required Fabrication values or Fabrication errors) and Fit-Up Insp (Fabrication errors) still can\'t be signed until Fabrication is in order, as built-in rules. Fit-Up Insp no longer checks for blank Fabrication values.',
