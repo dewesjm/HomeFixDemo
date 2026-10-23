@@ -98,13 +98,17 @@
       }
 
       <div class="overflow-y-auto flex-1 min-h-0">
-        <!-- Layout first: the ticked fields' order and widths, above the long list of every field -->
-        <div class="mb-6">
-          <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
-        </div>
+        <!-- Layout first: the ticked fields' order and widths, above the long list of every field.
+             Both sections collapse from their headings. -->
+        <ng-container *ngTemplateOutlet="sectionHeading; context: { label: 'Layout', open: layoutOpen() }"></ng-container>
+        @if (layoutOpen()) {
+          <div class="mb-6">
+            <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
+          </div>
+        }
 
-        <h4 class="font-semibold mb-2">Fields</h4>
-        <div class="mb-4">
+        <ng-container *ngTemplateOutlet="sectionHeading; context: { label: 'Fields', open: fieldsOpen() }"></ng-container>
+        <div class="mb-4" [hidden]="!fieldsOpen()">
           @for (f of fieldChoices; track f.key) {
             <div class="border-b border-base-300 last:border-0 py-1">
               <div class="flex items-center gap-2 py-1">
@@ -152,6 +156,15 @@
     </form>
   </dialog>
 }
+
+<!-- a collapsible section heading in the edit window (Layout, Fields) -->
+<ng-template #sectionHeading let-label="label" let-open="open">
+  <button type="button" class="flex items-center gap-1 font-semibold mb-2" [attr.aria-expanded]="open"
+          (click)="toggleSection(label)">
+    @if (open) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
+    {{ label }}
+  </button>
+</ng-template>
 
 <!-- A checked field's rules: when it shows, when it's prepopulated, when it's disabled, and when
      it's required (Never / Always / When; each rule opens the condition editor). Defer Tack and

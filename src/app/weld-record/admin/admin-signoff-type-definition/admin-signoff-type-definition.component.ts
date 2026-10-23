@@ -472,6 +472,17 @@ export class AdminSignoffTypeDefinitionComponent {
     this.editing.update(e => e ? { ...e, verifyAgainst: value } : e);
   }
 
+  /* ── Edit window sections ── */
+
+  /* Layout and Fields each collapse from their heading; both start open */
+  layoutOpen = signal(true);
+  fieldsOpen = signal(true);
+
+  toggleSection(label: string) {
+    const open = label === 'Layout' ? this.layoutOpen : this.fieldsOpen;
+    open.set(!open());
+  }
+
   /* ── Layout ── */
 
   setLayout(fieldActivations: FieldActivation[]) {
