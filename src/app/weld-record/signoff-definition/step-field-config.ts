@@ -183,6 +183,9 @@ function weldType(typeId: string, fields = WELD_FIELDS): TypeDefinition {
   return { typeId, fields: [TYPE, ...fields, ...BOXED_COMMENTS] };
 }
 
+/* Tack and Deferred Tack: the same fields, the filler hidden as tackFiller says */
+const TACK_FIELDS = WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f);
+
 const FITUP_INSP_FIELDS: FieldActivation[] = [
   QUAL_CHECK, { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
@@ -196,7 +199,8 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
   { typeId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
   { typeId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
   weldType(WELD_BUILDUP_TYPE, [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS]),
-  weldType('tack', WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f)),
+  weldType('tack', TACK_FIELDS),
+  weldType('deferred-tack', TACK_FIELDS),
   { typeId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
   { typeId: 'fitup-release', fields: [COMMENTS] },
   weldType('root', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),

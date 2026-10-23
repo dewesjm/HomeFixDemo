@@ -70,8 +70,9 @@ const BUILT_IN_STEPS: StageTemplate[] = [
   ],
     signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
-  /* same fields as Tack; only its position differs (after Fit-Up Insp) */
-  { id: 'deferred-tack', label: 'Deferred Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  /* same fields as Tack; only its position differs (after Fit-Up Insp). Shown as Tack; its Type,
+     Deferred Tack, records that it was deferred */
+  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
   { id: 'root-weld', label: 'Root', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
       { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
     ], signoffFields: [] },

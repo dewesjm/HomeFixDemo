@@ -37,7 +37,7 @@ Last updated 2026-10-23.
 | 3 | Tack | Welding | Unless Defer Tack was checked at Fit | Moves on to Fit-Up Insp |
 | 4 | Fit-Up Insp | Foreman or Inspector; NQC Inspector on its NQC row | Always (NQC row when Nuclear Indicator is 1 or 2, regular row otherwise) | **SAT**: moves on. **UNSAT**: back to Fit (Fit, Tack and Fit-Up Insp come up blank, and so does the fit-up data). If **Release to welding** is unchecked, Fit-Up Release becomes required |
 | 5 | Fit-Up Release | Foreman | Only when Fit-Up Insp didn't release to welding | Moves on |
-| 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Same fields as Tack |
+| 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Shown as **Tack** on the joint and its routing bar (its Display Name); its Type is **Deferred Tack**, so the record shows the Tack was deferred. Its own Signoff Type Definition, seeded with Tack's fields |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
 | 8 | Root NDT | Inspector; NQC Inspector on its NQC rows | Always (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2) | See "When an NDT routing fails" |
 | 9 | Layer | Welding | Always | Type is **Interim Layer** or **Final Weld**. **Interim Layer** is repeatable: recorded, then Layer NDT; when Layer NDT passes the joint comes back to Layer, blank, for the next layer. With no Layer NDT the joint just stays on Layer. **Final Weld** shows the Final Weld fields and is the Final Weld signoff: Final Weld is signed and the joint moves on to Final NDT. Layer then shows signed if it had an Interim Layer, otherwise it drops off the routing bar |

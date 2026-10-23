@@ -18,6 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     changed: [
+      'Deferred Tack has its own Signoff Type (Deferred Tack) and its own Signoff Type Definition, starting with Tack's fields. On the joint and its routing bar it shows as Tack (its Display Name in Routing Settings); its Type shows it was deferred. It still comes up only when Defer Tack is checked at Fit.',
       'Wording: screens and messages say "routing" for the status a joint is in (Pre-Fit, Tack, Root NDT…) instead of "step", and Signoff Type Availability\'s first column is called Routing. Routing Signoff Types\' column is "Signs routing". A Type\'s form calls its own fields "This form\'s field" and "This signoff".',
       'Picking a different Type on a routing now clears its form and loads that Type\'s fields. An NDT step shows only its Type droplist until a Type is picked.',
       'Admin → Signoff Type Availability: each option is picked from Routing Signoff Types. The Repeatable checkbox and Definition droplist are gone (Repeatable is now on Routing Signoff Types).',

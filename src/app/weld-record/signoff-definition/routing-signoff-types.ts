@@ -25,6 +25,7 @@ const SEED_TYPES: RoutingSignoffType[] = [
   type('Fit', 'fit'),
   type('Weld Build-Up', WELD_BUILDUP_TYPE, { repeatable: true }),
   type('Tack', 'tack'),
+  type('Deferred Tack', 'deferred-tack'),
   type('Fit-Up Insp', 'fitup-insp'),
   type('Fit-Up Release', 'fitup-release'),
   type('Root', 'root'),

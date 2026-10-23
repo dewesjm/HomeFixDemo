@@ -38,7 +38,7 @@ const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'fitup-insp', types: only('fitup-insp') },
   { stepId: nqcStepId('fitup-insp'), types: only('fitup-insp') },
   { stepId: 'fitup-release', types: only('fitup-release') },
-  { stepId: 'deferred-tack', types: only('tack') },
+  { stepId: 'deferred-tack', types: only('deferred-tack') },
   { stepId: 'root-weld', types: only('root') },
   ...ndtRows('root'),
   { stepId: 'root-layer', types: [{ type: 'interim', default: true }, { type: 'final-weld' }] },

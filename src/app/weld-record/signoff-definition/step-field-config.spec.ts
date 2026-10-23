@@ -19,7 +19,7 @@ describe('signoff section fields (Type, Inspection Results, Comments)', () => {
 describe('definition lookup by Type', () => {
   it('every step offering a Type reads its one definition; NQC rows and phases share it', () => {
     for (const id of ['root-ndt-vt5x', 'nqc-layer-ndt-vt5x', 'final-ndt-vt5x']) expect(definitionId({ id, signoffType: 'vt' })).withContext(id).toBe('vt');
-    expect(definitionId({ id: 'deferred-tack', signoffType: 'tack' })).toBe('tack');
+    expect(definitionId({ id: 'deferred-tack', signoffType: 'deferred-tack' })).toBe('deferred-tack');
     expect(definitionId({ id: 'repair-3', signoffType: 'repair' })).toBe('repair');
   });
 
