@@ -34,7 +34,7 @@ import {
   definitionFields,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
-import { FIELD_CATALOG, FIELD_TYPE_LABELS, isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
+import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,
@@ -105,7 +105,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private confirm = inject(ConfirmService);
 
   /* every catalog field can be on any step */
-  fieldChoices = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label, typeLabel: FIELD_TYPE_LABELS[f.type] }));
+  fieldChoices = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label, typeLabel: catalogFieldTypeLabel(f) }));
   /* the Fields list's search box: fields whose name contains it, any case */
   fieldSearch = signal('');
   shownFieldChoices = computed(() => {
@@ -155,7 +155,7 @@ export class AdminSignoffTypeDefinitionComponent {
     const fieldRules = definitionFields(fields).map(f => ({
       key: f.key,
       label: lookupCatalogField(f.key)?.label ?? f.key,
-      typeLabel: FIELD_TYPE_LABELS[lookupCatalogField(f.key)?.type ?? 'text'],
+      typeLabel: catalogFieldTypeLabel(lookupCatalogField(f.key) ?? { type: 'text' }),
       lines: fieldRuleLines(f, id => this.stepLabel(id)),
     }));
     return {

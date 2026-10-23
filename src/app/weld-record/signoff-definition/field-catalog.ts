@@ -25,6 +25,8 @@ export interface CatalogField {
   key: string;
   label: string;
   type: FieldType;
+  /* Numeric values may also hold the procedure's NC (no control) value. */
+  allowsNc?: boolean;
   unit?: string;
   placeholder?: string;
   options?: { label: string; value: string; detail?: string }[];
@@ -54,6 +56,11 @@ export interface CatalogField {
 export interface FormField extends CatalogField {
   required?: boolean;
   requiredMessage?: string;
+}
+
+/* Admin describes the allowed value as well as the numeric control. */
+export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allowsNc'>): string {
+  return field.type === 'number' && field.allowsNc ? 'Number or NC' : FIELD_TYPE_LABELS[field.type];
 }
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
@@ -99,21 +106,21 @@ export const FIELD_CATALOG: CatalogField[] = [
     options: [{ label: 'SMAW', value: 'smaw' }, { label: 'GMAW', value: 'gmaw' },
       { label: 'GTAW', value: 'gtaw' }, { label: 'FCAW', value: 'fcaw' }] },
   { key: 'qualificationCheck', label: 'Qualification Check', type: 'text' },
-  { key: 'phMin', label: 'PH Min', type: 'number', defaultFill: fillFromWtn('phMin'),
+  { key: 'phMin', label: 'PH Min', type: 'number', allowsNc: true, defaultFill: fillFromWtn('phMin'),
     defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
-  { key: 'phMax', label: 'PH Max', type: 'number', defaultFill: fillFromWtn('phMax'),
+  { key: 'phMax', label: 'PH Max', type: 'number', allowsNc: true, defaultFill: fillFromWtn('phMax'),
     defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
-  { key: 'ipMin', label: 'IP Min', type: 'number', defaultFill: fillFromWtn('ipMin'),
+  { key: 'ipMin', label: 'IP Min', type: 'number', allowsNc: true, defaultFill: fillFromWtn('ipMin'),
     defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
-  { key: 'ipMax', label: 'IP Max', type: 'number', defaultFill: fillFromWtn('ipMax'),
+  { key: 'ipMax', label: 'IP Max', type: 'number', allowsNc: true, defaultFill: fillFromWtn('ipMax'),
     defaultDisabledIf: ENGINEERING_OVERRIDE_OFF },
-  { key: 'actualPhMin', label: 'Actual PH Min', type: 'number', defaultRequired: true,
+  { key: 'actualPhMin', label: 'Actual PH Min', type: 'number', allowsNc: true, defaultRequired: true,
     minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMin'), defaultDisabledIf: ifNc('phMin') },
-  { key: 'actualPhMax', label: 'Actual PH Max', type: 'number', defaultRequired: true,
+  { key: 'actualPhMax', label: 'Actual PH Max', type: 'number', allowsNc: true, defaultRequired: true,
     minField: 'phMin', maxField: 'phMax', defaultFill: ncFrom('phMax'), defaultDisabledIf: ifNc('phMax') },
-  { key: 'actualIpMin', label: 'Actual IP Min', type: 'number', defaultRequired: true,
+  { key: 'actualIpMin', label: 'Actual IP Min', type: 'number', allowsNc: true, defaultRequired: true,
     minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMin'), defaultDisabledIf: ifNc('ipMin') },
-  { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', defaultRequired: true,
+  { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', allowsNc: true, defaultRequired: true,
     minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMax'), defaultDisabledIf: ifNc('ipMax') },
   { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true, defaultShowIf: showIfNuclear,
     options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
@@ -128,10 +135,10 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select',
     options: [{ label: "No I didn't perform 5X", value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] },
   /* SWITCHED OFF: weld override fields. Kept in catalog so they can be re-enabled without a rewrite. */
-  { key: 'overridePhMin', label: 'Override PH Min', type: 'number' },
-  { key: 'overridePhMax', label: 'Override PH Max', type: 'number' },
-  { key: 'overrideIpMin', label: 'Override IP Min', type: 'number' },
-  { key: 'overrideIpMax', label: 'Override IP Max', type: 'number' },
+  { key: 'overridePhMin', label: 'Override PH Min', type: 'number', allowsNc: true },
+  { key: 'overridePhMax', label: 'Override PH Max', type: 'number', allowsNc: true },
+  { key: 'overrideIpMin', label: 'Override IP Min', type: 'number', allowsNc: true },
+  { key: 'overrideIpMax', label: 'Override IP Max', type: 'number', allowsNc: true },
   { key: 'overrideNote', label: 'Override Note', type: 'text' },
 
   /* ── NDT (common) ── */
