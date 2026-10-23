@@ -48,6 +48,27 @@ Both parts are decided. Part 1 is built first; Part 2 builds on it.
 - ROUTING.md, the Change Log, and the Routing Settings / Signoff Types page blurbs.
 - Storage versions bumped; saved Routing Settings and Signoff Types reset to the new seeds.
 
+### Handoff for the Part 2 session
+
+- Part 1 is committed as `4859ed9` (Replace repeatable signoff Types with Then go to routing rules).
+  Validation: all 368 unit tests passed, `ng build` passed with the existing stylesheet warnings,
+  and TypeScript checks passed. Nothing has been browser-checked.
+- Confirmed Layer behavior: `ndtEach` selects one Layer NDT routing, with no extra VT for MT, PT,
+  MT/PT or UT. Root and Final requirements are unchanged. Keep this when implementing relative targets.
+- Accepted-signoff rules are `StageTemplate.thenRules`; seeds and `matchingThenRule()` are in
+  `weld-record/routing/step-conditions.ts`. `stage-templates.ts` persists them, `routeSignoff()` applies
+  them, and Routing Settings shares its condition editor with Reject rules (`ruleMode`).
+- Repeatable and its helper functions are removed. `type-routing.ts` retains Signs routing;
+  `repeats` counts self returns only. The preview uses the actual signoff rules without saving.
+- Storage is at workflow version `2.10.49`: workflows, Routing Settings and Signoff Types By Routing
+  use v3 keys; Signoff Types uses v2. Bump the relevant keys and workflow version for Part 2's data changes.
+- Repair, Excavation NDT and Engineering Hold behavior remains in code. Part 2 below is not built.
+  The field definitions work is separately queued; it has not been implemented as part of Part 1.
+- Commit at logical points, with a plain-language Change Log entry for each user-facing change.
+  Run unit tests and `ng build` from the repo root before each commit. Never push or deploy.
+  Keep rules in feature folders, use “routing” and “signoff Type” in UI text, and ask about any
+  behavior not specified by the plan. Report touched files, behavior changes and unverified work.
+
 ## Part 2: Repair, Excavation NDT and Engineering Hold in the tables
 
 ### Today

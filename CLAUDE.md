@@ -3,10 +3,10 @@
 Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
-1. ROUTING-RULES-PLAN.md Part 1: "Then go to" rules replace Repeatable (in progress).
+1. ROUTING-RULES-PLAN.md Part 2: Repair, Excavation NDT and Engineering Hold into the tables.
+   Part 1 is built and committed as `4859ed9`; read the handoff in ROUTING-RULES-PLAN.md first.
 2. FIELD-DEFINITIONS-PLAN.md: the field catalog + Signoff Type Forms become the only field
    definitions; remove the old per-routing field lists (fixes Defer Tack showing as text on Fit).
-3. ROUTING-RULES-PLAN.md Part 2: Repair, Excavation NDT and Engineering Hold into the tables.
 
 Remove an item here once it's built and committed.
 
