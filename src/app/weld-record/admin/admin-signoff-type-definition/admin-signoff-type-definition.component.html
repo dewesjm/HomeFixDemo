@@ -98,6 +98,11 @@
       }
 
       <div class="overflow-y-auto flex-1 min-h-0">
+        <!-- Layout first: the ticked fields' order and widths, above the long list of every field -->
+        <div class="mb-6">
+          <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
+        </div>
+
         <h4 class="font-semibold mb-2">Fields</h4>
         <div class="mb-4">
           @for (f of fieldChoices; track f.key) {
@@ -133,7 +138,6 @@
           </label>
         }
 
-        <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
       </div>
 
       <div class="modal-action">

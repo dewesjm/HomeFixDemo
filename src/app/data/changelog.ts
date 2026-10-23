@@ -17,6 +17,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: a step with verify rows has a "Verify grid checks against" droplist: Fabrication values (Fit-Up Insp) or the joint\'s record (Records Review). Records Review\'s Signoff History table is now a field, "Signoff History", that can be moved in the Layout list or unticked.',
       'Qualification Check is drawn inside the form on every step, where its Layout list places it, and follows its Show when rule. Release to welding upon inspection is an ordinary field and is listed in History with the Fit-Up Insp signoff.',
       'Fit-Up Insp no longer shows a fixed, greyed-out Type droplist; it shows "Inspecting: Fit" like the NDT steps show what they inspect.',
+      'Admin → Signoff Type Definition: the Layout list (order, Same line, Width, headings) is now at the top of the edit window, above the field list, instead of at the very bottom.',
       'Advanced Search: the "Estimated Cost" and "Scheduled For" filters and columns are gone (left over from an earlier demo, not welding data). A saved view that used them opens without them.',
     ],
   },
