@@ -2,7 +2,7 @@
 import { SignoffField, SignoffInput, StageField, WorkflowStage } from '../model/workflow-types';
 import { isUserEditable } from './field-locks';
 import { hasDecision, showsType } from './stage-rules';
-import { withComments } from './signoff-forms';
+import { withComments } from './signoff-parts';
 import { lookupCatalogField } from './field-catalog';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {

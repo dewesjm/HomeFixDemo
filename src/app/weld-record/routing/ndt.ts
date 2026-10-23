@@ -5,7 +5,6 @@ import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
 import { StageField, StageOption, StageTemplate } from '../model/workflow-types';
-import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
 
 export type NdtPhase = 'root' | 'layer' | 'final';
 export type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
@@ -111,15 +110,6 @@ export function jobNdtSteps(job: Job): Record<NdtPhase, NdtStep[]> {
 /* every Type option a kind of NDT stage can offer, before any Joint Details lock */
 export function ndtKindOptions(kind: NdtKind): StageOption[] {
   return NDT_KINDS[kind].options.map(o => ({ ...o }));
-}
-
-/* Inspecting on an inspection step: what's being inspected (Fit on Fit-Up Insp; Root, Layer, Final,
-   or the Excavation of a Weld Repair on NDT); '' for any other step */
-export function ndtLayerType(stageId: string): string {
-  if (isFitupInspId(stageId)) return 'Fit';
-  if (isExcavationNdtStageId(stageId)) return 'Excavation';
-  const phase = /^(root|layer|final)-ndt-/.exec(baseStepId(stageId))?.[1];
-  return phase ? `${phase[0].toUpperCase()}${phase.slice(1)}` : '';
 }
 
 export function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {

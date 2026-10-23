@@ -1,6 +1,6 @@
 import { layoutSections } from './definition-layout';
 import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep } from './step-field-config';
-import { drawnOutsideForm } from './signoff-forms';
+import { drawnOutsideForm } from './signoff-parts';
 
 const all = () => true;
 /* the form never draws Type, Comments or References itself */

@@ -1,4 +1,4 @@
-import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, withComments } from './signoff-forms';
+import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, withComments } from './signoff-parts';
 import { verifyAgainst } from './step-field-config';
 import { definitionStageFields } from './shown-fields';
 import { snapshotInputs } from './stage-display';

@@ -66,7 +66,7 @@ import {
   signoffTypeOptions,
 } from '../../signoff-definition/signoff-types';
 import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
-import { drawnByOwnForm, drawnOutsideForm } from '../../signoff-definition/signoff-forms';
+import { drawnByOwnForm, drawnOutsideForm } from '../../signoff-definition/signoff-parts';
 import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
 import type { FieldCondition } from '../../signoff-definition/field-conditions';

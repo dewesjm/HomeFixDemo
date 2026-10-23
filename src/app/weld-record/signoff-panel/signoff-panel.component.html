@@ -44,7 +44,7 @@
     }
 
     <!-- Inspecting (NDT steps): the weld activity being inspected, fixed by the step -->
-    @if (layerType(st); as layer) {
+    @if (inspectingLabel(st.id); as layer) {
       <div class="mb-sm">
         <div class="stage-field">
           <span class="stage-field-label font-semibold">Inspecting</span>

@@ -8,7 +8,7 @@ import { Component, input } from '@angular/core';
 import { DECISION_KEY, FieldActivation, definitionHas, getActivationForStep, hasStepActivation } from '../signoff-definition/step-field-config';
 import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';
 import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
-import { drawnOutsideForm } from '../signoff-definition/signoff-forms';
+import { drawnOutsideForm } from '../signoff-definition/signoff-parts';
 import { isVerifyRow } from '../signoff-definition/field-catalog';
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { AffectedItemComponent } from './affected-item.component';

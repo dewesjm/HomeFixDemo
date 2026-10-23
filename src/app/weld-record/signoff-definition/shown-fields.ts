@@ -10,7 +10,7 @@ import { buildConditionContext } from './condition-context';
 import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow } from './field-rules';
 import { showIfMet } from './stage-display';
-import { drawnByOwnForm } from './signoff-forms';
+import { drawnByOwnForm } from './signoff-parts';
 
 type Fab = Record<string, string>;
 

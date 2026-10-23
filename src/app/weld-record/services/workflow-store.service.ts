@@ -15,7 +15,7 @@ import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { REPAIR_STAGE } from '../routing/added-steps';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
-import { withComments } from '../signoff-definition/signoff-forms';
+import { withComments } from '../signoff-definition/signoff-parts';
 import { typeDefinition } from '../signoff-definition/signoff-types';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */

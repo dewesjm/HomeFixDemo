@@ -13,7 +13,7 @@ import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/st
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { typeDefinition } from '../signoff-definition/signoff-types';
-import { withComments } from '../signoff-definition/signoff-forms';
+import { withComments } from '../signoff-definition/signoff-parts';
 import { WorkflowStore } from './workflow-store.service';
 
 /* History names a signoff whose Type loads another definition (Weld Build-Up) and Layer's Interim

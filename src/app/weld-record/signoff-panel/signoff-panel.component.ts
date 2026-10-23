@@ -4,10 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
-import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-forms';
+import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-parts';
 import { hasDecision, showsType } from '../signoff-definition/stage-rules';
 import { isEngineeringHoldId, isSoldId } from '../routing/step-ids';
-import { ndtLayerType } from '../routing/ndt';
+import { inspectingLabel } from '../routing/built-in-step-rules';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
@@ -32,10 +32,7 @@ export class SignoffPanelComponent {
   readonly showsType = showsType;
   readonly isSold = isSoldId;
   readonly isEngineeringHold = isEngineeringHoldId;
-
-  layerType(st: WorkflowStage): string {
-    return ndtLayerType(st.id);
-  }
+  readonly inspectingLabel = inspectingLabel;
 
   /* a step that records a WTN: the Foreman Override button (switched off) shows there */
   recordsWtn(st: WorkflowStage): boolean {
