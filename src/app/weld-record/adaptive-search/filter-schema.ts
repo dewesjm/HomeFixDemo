@@ -9,7 +9,7 @@ import { shopOptions } from '../../data/shops';
 import { jointDesignOptions } from '../../data/joint-designs';
 import { StepConditionField, allStepAnswerFields } from '../routing/step-conditions';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
-import { Condition, FieldKind, FilterValues, MatchField, isoDay } from '../../shared/filter-engine';
+import { Condition, FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import { NDT_LABELS } from '../../data/ndt-labels';
 
 export interface SearchField extends MatchField {
@@ -74,9 +74,7 @@ const JOB_FIELDS: SearchField[] = [
   job('attributeCode2', 'Attribute Code 2', 'Additional'),
   job('attributeCode3', 'Attribute Code 3', 'Additional'),
   job('attributeCode4', 'Attribute Code 4', 'Additional'),
-  job('estimatedCost', 'Estimated Cost', 'Additional', 'number'),
   job('estimatedHours', 'Estimated Hours', 'Additional', 'number'),
-  job('scheduledFor', 'Scheduled For', 'Additional', 'date'),
 ];
 
 const FAB_KEY = 'fab.';
@@ -174,11 +172,8 @@ function migrateOldValues(old: Record<string, any>): FilterValues {
     }
     else if (Array.isArray(v) && v.length) {
       if (typeof v[0] === 'number') {
-        if (key === 'estimatedCost' && v[0] === 0 && v[1] === 100000) continue;
         if (key === 'estimatedHours' && v[0] === 0 && v[1] === 500) continue;
         out[key] = [cond({ op: 'between', value: String(v[0]), to: String(v[1]) })];
-      } else if (key === 'scheduledFor') {
-        if (v[0] || v[1]) out[key] = [cond({ op: 'between', value: isoDay(v[0]), to: isoDay(v[1]) })];
       } else out[key] = [cond({ op: 'is', values: v.map(String) })];
     }
   }

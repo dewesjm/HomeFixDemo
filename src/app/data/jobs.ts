@@ -58,9 +58,7 @@ export interface Job {
   attributeCode2: string;
   attributeCode3: string;
   attributeCode4: string;
-  estimatedCost: number;
   estimatedHours: number;    /* labor hours */
-  scheduledFor: Date;
   _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }
 
@@ -195,12 +193,9 @@ function generateJobs(count = 480): Job[] {
   for (let i = 0; i < count; i++) {
     const trade = 'Welding';
     const technician = TECHNICIAN_NAMES[Math.floor(rand() * TECHNICIAN_NAMES.length)];
-    const estimatedCost = Math.round((75 + rand() * 1925) * 100) / 100;
+    rand();   /* a draw no field uses, kept so every seeded joint keeps its values */
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
-
-    // schedule spread from ~6 months ago to ~6 months ahead
-    const dayOffset = Math.floor(rand() * 360) - 180;
-    const scheduledFor = new Date(Date.now() + dayOffset * 24 * 60 * 60 * 1000);
+    rand();   /* likewise */
 
     const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
     const pickWeighted = (weights: [string, number][]): string => {
@@ -280,9 +275,7 @@ function generateJobs(count = 480): Job[] {
       attributeCode2: i % 2 === 0 ? pick(ATTR_CODES) : '',
       attributeCode3: i % 3 === 0 ? pick(ATTR_CODES) : '',
       attributeCode4: i % 4 === 0 ? pick(ATTR_CODES) : '',
-      estimatedCost,
       estimatedHours,
-      scheduledFor
     });
   }
   return out;
@@ -346,9 +339,7 @@ export function addTestJob(): Job {
     attributeCode2: '',
     attributeCode3: '',
     attributeCode4: '',
-    estimatedCost: 0,
     estimatedHours: 0,
-    scheduledFor: new Date(),
     _fresh: true,
   };
   JOBS.push(job);
