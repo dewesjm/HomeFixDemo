@@ -1,5 +1,5 @@
 /* Per-step field activation: which catalog fields are active on each step type, under what
-   conditions, and how the form lays them out (order, fields sharing a line, widths, headings, where
+   conditions, and how the form lays them out (line numbers, widths, headings, where
    Inspection Results goes, see definition-layout.ts). Live overrides are stored in localStorage
    (welding:step-field-config:v11) and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
@@ -20,8 +20,9 @@ export interface FieldActivation {
   required?: boolean;
   /* required only while this holds; an empty condition = always, overriding a catalog default */
   requiredIf?: FieldCondition;
-  /* drawn on the same line as the field before it */
-  sameLine?: boolean;
+  /* the form line it's drawn on: items with the same number sit side by side, in list order. The
+     list is kept sorted by it (one count for the whole form, headings included) */
+  line?: number;
   /* the most it's drawn wide, in pixels (narrow screens shrink it); unset = it shares its line's width */
   width?: number;
   /* a heading item, not a field: its text (may be blank for a box), and whether it starts a new box */
@@ -74,9 +75,25 @@ const tackFiller: FieldCondition = {
   ]
 };
 
+/* an item that shares the line of the item before it; written by the seed shorthand `same` below and
+   by saves from before line numbers, and turned into line numbers by numberLines() */
+type SameLineItem = FieldActivation & { sameLine?: boolean };
+
+/* every item without a line number gets one: the line of the item before when it's marked to share
+   it, else the next number */
+export function numberLines(items: SameLineItem[]): FieldActivation[] {
+  let last = 0, max = 0;
+  return items.map(({ sameLine, ...a }) => {
+    const line = a.line ?? (sameLine && last ? last : max + 1);
+    last = line;
+    max = Math.max(max, line);
+    return { ...a, line };
+  });
+}
+
 /* layout shorthands: a field on the same line as the one before (and its width), a heading, a heading
    that starts a box, Inspection Results */
-const same = (key: string, width?: number): FieldActivation => ({ key, sameLine: true, ...(width ? { width } : {}) });
+const same = (key: string, width?: number): SameLineItem => ({ key, sameLine: true, ...(width ? { width } : {}) });
 const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
 const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
 const DECISION: FieldActivation = { key: DECISION_KEY };
@@ -178,7 +195,7 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
 /* Affected Item and its two MIC verified rows, drawn together by the affected-item component */
 const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
 
-export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
+export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = ([
   { stepId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
   { stepId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
   /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
@@ -206,7 +223,7 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { stepId: 'sold', fields: [] },
-];
+] satisfies StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) }));
 
 /* ── Storage ── */
 
@@ -216,7 +233,9 @@ export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? JSON.parse(saved) as StepFieldActivation[] : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    _cache = saved
+      ? (JSON.parse(saved) as StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) }))
+      : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }

@@ -1,13 +1,21 @@
-<p class="text-sm mb-2">The form draws the fields in this order, each on a new line unless "Same line" is ticked, which puts it on the line of the field above. Fields on a line share its width; a Width (in pixels) is the most that field is drawn wide, and narrow screens still shrink it. A heading can start a box around the fields under it.</p>
+<p class="text-sm mb-2">The form draws the fields and headings by Line number, top to bottom. Fields with the same Line number sit side by side, in the order listed here; the arrows change that order within a line. Changing a Line number moves the item to that line. Fields on a line share its width; a Width (in pixels) is the most that field is drawn wide, and narrow screens still shrink it. A heading can start a box around the fields under it.</p>
 <div class="mb-2">
-  @for (a of items(); track a.key; let i = $index, first = $first, last = $last) {
+  @for (a of items(); track a.key; let i = $index) {
     <div class="flex items-center gap-2 py-1 border-b border-base-300 last:border-0">
-      <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
+      <button type="button" class="btn btn-ghost btn-xs" title="Move up within its line" [disabled]="!canMove(i, -1)" (click)="moveItem(i, -1)">
         <svg lucideArrowUp class="size-4"></svg>
       </button>
-      <button type="button" class="btn btn-ghost btn-xs" title="Move down" [disabled]="last" (click)="moveItem(i, 1)">
+      <button type="button" class="btn btn-ghost btn-xs" title="Move down within its line" [disabled]="!canMove(i, 1)" (click)="moveItem(i, 1)">
         <svg lucideArrowDown class="size-4"></svg>
       </button>
+      @if (!isOutsideForm(a)) {
+        <label class="flex items-center gap-1 text-sm">
+          Line
+          <input type="number" min="1" step="1" class="input input-bordered input-sm w-20"
+                 [attr.aria-label]="'Line of ' + (isHeading(a) ? 'heading' : itemLabel(a))"
+                 [value]="a.line ?? ''" (change)="setLine(i, $any($event.target))" />
+        </label>
+      }
       @if (isHeading(a)) {
         <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
                aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
@@ -32,11 +40,6 @@
           <input type="number" min="1" step="1" class="input input-bordered input-sm w-24" placeholder="Share"
                  [attr.aria-label]="'Width of ' + itemLabel(a) + ' in pixels'"
                  [ngModel]="a.width" (ngModelChange)="setItem(i, { width: $event })" />
-        </label>
-        <label class="flex items-center gap-1 text-sm cursor-pointer">
-          <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.sameLine"
-                 (change)="setItem(i, { sameLine: $any($event.target).checked })" />
-          Same line
         </label>
       }
     </div>

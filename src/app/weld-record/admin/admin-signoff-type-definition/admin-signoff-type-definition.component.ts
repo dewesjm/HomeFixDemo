@@ -3,8 +3,8 @@
    as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
    this step or the WTN), when it's disabled, and when it's required (Never / Always / When). The
-   dialog's Layout list sets the order, which fields share a line, their widths, headings, and where
-   Inspection Results goes, and a step with verify-grid rows says what they're checked against.
+   dialog's Layout list sets each field's and heading's line number (which also places Inspection
+   Results) and the fields' widths, and a step with verify-grid rows says what they're checked against.
    Conditions are AND/OR groups (field-condition-editor, condition-group-editor; their edits are
    written back by definition-edits.ts); the Layout list is definition-layout-list. Add's step list is the steps in Admin >
    Signoff Type Availability; picking one that already has a definition edits it.
@@ -72,6 +72,7 @@ import { StepFieldChoice } from './condition-group-editor.component';
 import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillSourceId } from './definition-edits';
 import { FieldConditionEditorComponent } from './field-condition-editor.component';
 import { DefinitionLayoutListComponent } from './definition-layout-list.component';
+import { withNewField } from '../../signoff-definition/definition-layout';
 
 interface DefRow {
   uid: string;
@@ -315,10 +316,7 @@ export class AdminSignoffTypeDefinitionComponent {
       if (!e) return e;
       const acts = e.fieldActivations;
       const idx = acts.findIndex(f => f.key === key);
-      /* a new field goes after the others, before Inspection Results when that's last */
-      const decisionLast = acts[acts.length - 1]?.key === DECISION_KEY;
-      const next = idx >= 0 ? acts.filter(f => f.key !== key)
-        : decisionLast ? [...acts.slice(0, -1), { key }, acts[acts.length - 1]] : [...acts, { key }];
+      const next = idx >= 0 ? acts.filter(f => f.key !== key) : withNewField(acts, key);
       /* close condition editor if the field was just removed */
       const condKey = (idx >= 0 && e.condKey === key) ? null : e.condKey;
       return { ...e, fieldActivations: next, condKey };

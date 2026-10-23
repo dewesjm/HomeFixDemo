@@ -1,6 +1,7 @@
-/* Admin > Signoff Type Definition's Layout list: the order the form draws a definition's ticked
-   fields in, which share a line, their widths, headings (optionally starting a box), and where
-   Inspection Results goes. Edits are emitted as the new list. */
+/* Admin > Signoff Type Definition's Layout list: the line number of each of a definition's ticked
+   fields and headings (optionally starting a box), which also places Inspection Results, and the
+   fields' widths. The list is kept sorted by line number; the arrows reorder within a line. Edits are
+   emitted as the new list. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideArrowDown, LucideArrowUp, LucidePlus, LucideX } from '@lucide/angular';
@@ -8,6 +9,7 @@ import { DECISION_KEY, FieldActivation, HEADING_KEY_PREFIX, isHeadingItem } from
 import { isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
 import { definitionFieldNote } from '../../signoff-definition/stage-rules';
 import { drawnOutsideForm } from '../../signoff-definition/signoff-parts';
+import { inLineOrder, nextLine } from '../../signoff-definition/definition-layout';
 
 let seq = 0;
 
@@ -28,13 +30,13 @@ export class DefinitionLayoutListComponent {
     return a.key === DECISION_KEY;
   }
 
-  /* Type, Comments and References keep their own spot outside the form, whatever the order */
+  /* Type, Comments and References keep their own spot outside the form, whatever their line */
   isOutsideForm(a: FieldActivation): boolean {
     return drawnOutsideForm(a.key);
   }
 
   /* drawn as a block the width of the form: a verify-grid row (the grid goes where its first shown
-     row is) or Signoff History; no width or same line */
+     row is) or Signoff History; no width, and always on a line of its own */
   isBlockItem(a: FieldActivation): boolean {
     return isVerifyRow(a.key) || a.key === 'signoffHistory';
   }
@@ -55,12 +57,32 @@ export class DefinitionLayoutListComponent {
     this.itemsChange.emit(change([...this.items()]));
   }
 
+  /* the arrows only swap items on the same line */
+  canMove(i: number, by: -1 | 1): boolean {
+    const items = this.items();
+    return items[i + by] !== undefined && items[i + by].line === items[i].line;
+  }
+
   moveItem(i: number, by: -1 | 1) {
+    if (!this.canMove(i, by)) return;
     this.update(items => {
       const j = i + by;
-      if (j < 0 || j >= items.length) return items;
       [items[i], items[j]] = [items[j], items[i]];
       return items;
+    });
+  }
+
+  /* a whole number from 1 moves the item to that line, after what's already on it; anything else puts
+     the box back to the item's line */
+  setLine(i: number, box: HTMLInputElement) {
+    const line = box.valueAsNumber;
+    if (!Number.isInteger(line) || line < 1) {
+      box.value = String(this.items()[i].line ?? '');
+      return;
+    }
+    this.update(items => {
+      const moved = { ...items[i], line };
+      return inLineOrder([...items.filter((_, idx) => idx !== i), moved]);
     });
   }
 
@@ -69,7 +91,6 @@ export class DefinitionLayoutListComponent {
     this.update(items => items.map((a, idx) => {
       if (idx !== i) return a;
       const next = { ...a, ...partial };
-      if (!next.sameLine) delete next.sameLine;
       if (!next.newBox) delete next.newBox;
       if (!next.width || next.width <= 0) delete next.width;
       return next;
@@ -77,7 +98,7 @@ export class DefinitionLayoutListComponent {
   }
 
   addHeading() {
-    this.update(items => [...items, { key: `${HEADING_KEY_PREFIX}${Date.now()}-${++seq}`, heading: '' }]);
+    this.update(items => [...items, { key: `${HEADING_KEY_PREFIX}${Date.now()}-${++seq}`, heading: '', line: nextLine(items) }]);
   }
 
   removeHeading(i: number) {

@@ -193,7 +193,7 @@ src/app/
       admin-signoff-type-definition/  Admin → Signoff Type Definition (/admin/signoff-fields): configure which
                              catalog fields are active on each step type; live configuration stored in
                              welding:step-field-config (key in data/storage-keys.ts). Parts: definition-layout-list
-                             (order, same line, widths, headings, Inspection Results), field-condition-editor
+                             (line numbers, widths, headings, Inspection Results), field-condition-editor
                              (a rule's condition and Prepopulated from source) over condition-group-editor /
                              condition-work, definition-edits (writes the open condition back to its field)
       admin-characteristics/ Admin → Attribute codes
@@ -470,7 +470,9 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - Fit only, below that: **Defer Tack** checkbox. Pre-Fit has no Defer Tack (no Tack exists yet to defer). These are `signoffFields`; Pre-Fit's and Fit's `fields` are empty.
 - A step with no definition (added in Admin > Routing Settings) draws its template's fields one per line, then Inspection Results when it has a reject target; `showIf` / `requiredWhen` drive conditional fields.
 - **Layout from the definition**: a definition's `fields` list is also its layout.
-  - Order = list order; `sameLine` puts a field on the line of the one before; heading items (`heading` text, key prefixed `heading:`, `newBox` = starts a box) sit in the list and are skipped everywhere else (`definitionFields()` drops them).
+  - Each item has a `line` number (one count for the whole form, headings included); items with the same number sit side by side in list order, and the list is kept sorted by it (`inLineOrder()`; the Layout list's arrows only reorder within a line).
+  - Inspection Results, verify-grid rows and Signoff History always get a line of their own. The seeds' `same()` shorthand and saves from before line numbers (`sameLine`) are numbered by `numberLines()` (step-field-config.ts) on load, so nothing moves. A newly ticked field gets a new line at the end (`withNewField()`).
+  - Heading items (`heading` text, key prefixed `heading:`, `newBox` = starts a box) sit in the list and are skipped everywhere else (`definitionFields()` drops them).
   - Inspection Results (`DECISION_KEY` 'decision') is a field the admin ticks: the step's SAT/UNSAT (`stage-decision` component), drawn where the list places it on a required step.
   - `width` (pixels) is the most a field is drawn wide; it narrows to min(width, 160px) before its line wraps; unset = shares the line.
   - `layoutSections()` (`weld-record/signoff-definition/definition-layout.ts`) turns the list plus "is this key shown" into boxes / headings / lines, dropping headings and boxes with nothing shown under them.
@@ -506,7 +508,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 - **Decision** — SAT/UNSAT (or "Inspection Results" on NDT); signoff dialog needs certification + password.
 - **Defect Code** (RT, UNSAT only) renders in its own row right after Decision, since it only applies once UNSAT is chosen.
 - **Gotcha**: the app's `.stage-field input { width: 100% }` rule doesn't cover `<select>`; give selects `w-full` or they shrink to their selected option's width.
-- **MT/PT's two penetrant fields are Penetrant Manufacturer + Penetrant Type** Both cascade from the admin-managed Penetrant table (`getPenetrants()`/`PenetrantEntry`, Admin > Penetrant): `penetrantManufacturerOptions()`/`penetrantTypeOptions()` in `data/penetrants.ts` return the distinct manufacturers and distinct types across all entries, so Type reads as a designation (e.g. "Type I - Fluorescent"). The NDT definitions put them on one line (Penetrant Type is Same line), Manufacturer first.
+- **MT/PT's two penetrant fields are Penetrant Manufacturer + Penetrant Type** Both cascade from the admin-managed Penetrant table (`getPenetrants()`/`PenetrantEntry`, Admin > Penetrant): `penetrantManufacturerOptions()`/`penetrantTypeOptions()` in `data/penetrants.ts` return the distinct manufacturers and distinct types across all entries, so Type reads as a designation (e.g. "Type I - Fluorescent"). The NDT definitions put them on one line (Penetrant Type has Manufacturer's Line number), Manufacturer first.
 - **Procedure Used for Inspection** (every NDT step, `NDT_COMMON_FIELDS`) comes from Admin > Inspection Procedures (`data/inspection-procedures.ts`, `STORAGE.inspectionProcedures`, cleared with the other stale caches on a version bump): Type (RT/UT/MT/PT/5X/VT, `INSPECTION_TYPES`) + procedure rows.
   - `stageFieldOptions()` lists only the step's Type's procedures (`inspectionProcedureOptions(stage.inspectionType)`, all when no Type yet; an unlisted current value is kept as an option); `setInspectionType()` clears one not designated for the new Type; seeds pick one designated for the seeded Type.
   - Values are the procedure names. Seed rows: each Type has its own procedures, MT/PT share "AWS D1.1 MT/PT", 5X/VT share "ASME Sec V Art. 9", RT and UT share none; seed names are placeholders.
