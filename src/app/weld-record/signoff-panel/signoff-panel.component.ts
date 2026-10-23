@@ -6,8 +6,8 @@ import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
 import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-parts';
 import { hasDecision, showsType } from '../signoff-definition/stage-rules';
-import { isEngineeringHoldId, isSoldId } from '../routing/step-ids';
-import { inspectingLabel } from '../routing/built-in-step-rules';
+import { isEngineeringHoldId } from '../routing/step-ids';
+import { closesJoint, inspectingLabel } from '../routing/built-in-step-rules';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
@@ -30,7 +30,7 @@ export class SignoffPanelComponent {
   readonly hasCommentsBox = hasCommentsBox;
   readonly hasDecision = hasDecision;
   readonly showsType = showsType;
-  readonly isSold = isSoldId;
+  readonly closesJoint = closesJoint;
   readonly isEngineeringHold = isEngineeringHoldId;
   readonly inspectingLabel = inspectingLabel;
 

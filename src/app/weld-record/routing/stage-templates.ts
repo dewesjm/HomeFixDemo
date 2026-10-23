@@ -7,11 +7,11 @@ import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRul
 import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';
-import { isFitupInspId } from './step-ids';
+import { lastFabricationEditStep } from './built-in-step-rules';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
-  const fitupAt = list.reduce((at, s, i) => isFitupInspId(s.id) ? i : at, -1);
+  const fitupAt = list.reduce((at, s, i) => lastFabricationEditStep(s.id) ? i : at, -1);
   return list.map((s, i) => ({ ...s, fabricationEditable: fitupAt < 0 || i <= fitupAt }));
 }
 

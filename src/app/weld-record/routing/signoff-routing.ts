@@ -15,11 +15,11 @@ import {
   repairIdForExcavation,
   excavationIdForRepair,
   baseStepId,
-  isRecordsReviewId,
   stepOnJoint,
 } from './step-ids';
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { getTemplates } from './stage-templates';
+import { CUT_RESTARTS_AT, unsatAddsRepair, unsatStaysPut } from './built-in-step-rules';
 import { typeRepeatable } from '../signoff-definition/signoff-types';
 import { repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
@@ -41,10 +41,7 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
 const repeatable = (s: WorkflowStage) => typeRepeatable(s.id, s.signoffType);
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
-/* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
-   recorded but the stage isn't signed, so the joint stays there */
-const isRecordsReviewUnsat = (s: WorkflowStage) => isRecordsReviewId(s.id) && s.result === 'unsat';
-const staysPut = (s: WorkflowStage) => repeatable(s) || isRecordsReviewUnsat(s);
+const staysPut = (s: WorkflowStage) => repeatable(s) || unsatStaysPut(s);
 
 export interface SignoffRouting {
   stages: WorkflowStage[];
@@ -92,7 +89,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   if (asStepId) reasons.push(`${typeLabel(signing)} is ${st.label}'s signoff, so ${st.label} is signed`);
   else if (throughNdt) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label}'s NDT comes up and then the joint comes back to ${st.label}`);
   else if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
-  if (isRecordsReviewUnsat(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
+  if (unsatStaysPut(st)) reasons.push('Records Review UNSAT does not route anywhere yet');
 
   /* go back (never un-sign): the current routing is set back to the target and every stage from
      there on comes up blank (routeBack). One History entry names where it went. */
@@ -119,11 +116,11 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     });
   }
 
-  if (st.result === 'unsat' && st.rejectToStage && !isRecordsReviewUnsat(st)) {
+  if (st.result === 'unsat' && st.rejectToStage && !unsatStaysPut(st)) {
     const currentIdx = stages.findIndex(s => s.id === stageId);
     /* Admin > Routing Settings reject rules: the first one matching this step's answers / Joint Details picks
        the target, if that step is earlier on this joint (or Repair on an NDT step); else the normal target */
-    const isNdtStage = stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
+    const isNdtStage = unsatAddsRepair(stageId);
     const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
     const ruleUsable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (isNdtStage && rule.to === 'repair')
       || (() => { const i = stages.findIndex(s => s.id === stepOnJoint(stages, rule.to)?.id); return i >= 0 && i < currentIdx; })());
@@ -184,8 +181,8 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       routeBackTo(st.inputs['originStageId'] ?? '');
     } else if (repairType === 'cut') {
       /* the joint starts over from Fit; the Refit History entry below says so (no Routing entry) */
-      if (stages.some(s => s.id === 'fit')) {
-        const r = routeBack({ ...wf, stages }, job, 'fit');
+      if (stages.some(s => s.id === CUT_RESTARTS_AT)) {
+        const r = routeBack({ ...wf, stages }, job, CUT_RESTARTS_AT);
         stages = r.wf.stages;
         fabricationData = r.wf.fabricationData;
         refitNumber = String(Number(job.refitNumber || '0') + 1).padStart(2, '0');

@@ -2,7 +2,8 @@
    The sign-off panel draws the parts every step shares (Type, Comments, Signoff) around the form
    laid out from the step's Signoff Type Definition (definition-form). */
 import { SignoffField, WorkflowStage } from '../model/workflow-types';
-import { WELD_BUILDUP_DEFINITION, baseStepId, isEngineeringHoldId, isSoldId } from '../routing/step-ids';
+import { WELD_BUILDUP_DEFINITION, baseStepId } from '../routing/step-ids';
+import { noCommentsBox } from '../routing/built-in-step-rules';
 import { COMMENTS_KEY, StepRef, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
 import { lookupCatalogField } from './field-catalog';
 
@@ -28,11 +29,10 @@ export function drawnOutsideForm(key: string): boolean {
 export const COMMENTS_FIELD: SignoffField = { key: COMMENTS_KEY, label: 'Comments', type: 'text', required: false, fullWidth: true };
 
 /* a step whose Signoff Type Definition lists Comments; a step with no definition (added in Admin >
-   Routing Settings) has one unless it's Engineering Hold (its own required Comments on its release
-   form) or Sold (nobody signs it) */
+   Routing Settings) has one unless noCommentsBox() says otherwise */
 export function hasCommentsBox(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
   if (hasStepActivation(stage)) return definitionHas(stage, COMMENTS_KEY);
-  return !isEngineeringHoldId(stage.id) && !isSoldId(stage.id);
+  return !noCommentsBox(stage.id);
 }
 
 /* a step's sign-off fields plus its Comments box */

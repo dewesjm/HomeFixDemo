@@ -3,7 +3,7 @@
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../../../data/jobs';
 import { StageField, WorkflowStage } from '../../model/workflow-types';
-import { isFitupInspId } from '../../routing/step-ids';
+import { blocksOnFabricationErrors, needsFabricationComplete, rtDegreeRequired } from '../../routing/built-in-step-rules';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
@@ -13,7 +13,7 @@ import { affectedMicRule } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { missingFitFabrication } from '../../fabrication/fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
-import { rtDegreeRequired, typedRequirementError } from './stage-form';
+import { typedRequirementError } from './stage-form';
 
 export interface SignContext {
   job: Job | undefined;
@@ -52,14 +52,14 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
   /* Fit needs the required Fabrication values; Fit-Up Insp needs Fabrication free of errors (below) */
-  if (stage.id === 'fit') {
+  if (needsFabricationComplete(stage.id)) {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
   }
   if (unverifiedRows(stage, ctx).length) {
     reasons.push(verifyAgainst(stage) === 'fabrication' ? 'Verify every fitting value' : 'Verify every required record field');
   }
-  if (isFitupInspId(stage.id) && Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
+  if (blocksOnFabricationErrors(stage.id) && Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) reasons.push(rt);
   const missingSignoff = missingSignoffFields(stage, ctx).map(f => f.label);
@@ -105,7 +105,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
   /* the fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
-  if (stage.id === 'fit' && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
+  if (needsFabricationComplete(stage.id) && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
   for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = `${f.label} is required`;
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) errors[key('degreeRt')] = rt;

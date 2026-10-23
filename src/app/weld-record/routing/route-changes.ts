@@ -8,6 +8,7 @@ import { buildStages } from './build-stages';
 import { blankFabricationData } from '../fabrication/fabrication-fields';
 import { excavationIdForRepair, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
+import { fabricationSigned, goesBackPastFabrication } from './built-in-step-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
@@ -36,12 +37,6 @@ export function applySignedFlags(stages: WorkflowStage[], job: Job): WorkflowSta
   });
 }
 
-/* fit-up (fabrication) data belongs to Fit: it's blanked whenever the joint goes back to Fit or earlier */
-function goesBackPastFit(stages: WorkflowStage[], idx: number): boolean {
-  const fitIdx = stages.findIndex(s => s.id === 'fit');
-  return fitIdx >= 0 && idx <= fitIdx;
-}
-
 /* Set the current routing back to `targetId`: every stage from there on comes up as on a new joint
    and is signed again. Earlier signoffs are untouched. Other Repair /
    Excavation NDT rounds stay as records (unsigned ones stop being required); the target's own round
@@ -60,7 +55,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
     const f = fresh.get(s.id);
     return f ?? blankStage(s);
   });
-  const fabReset = goesBackPastFit(wf.stages, targetIdx);
+  const fabReset = goesBackPastFabrication(wf.stages, targetIdx);
   const fabricationData = fabReset ? blankFabricationData() : wf.fabricationData;
   return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId), job), fabricationData }, fabReset };
 }
@@ -124,7 +119,7 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
   const stage = (top ? wf.stages.find(s => s.id === stageId) : undefined) ?? stages[idx];
   const fresh = new Map(buildStages(job).map(s => [s.id, s]));
   stages = stages.map((s, i) => (i === idx || (i > idx && !s.signed) ? blankStage(s, fresh.get(s.id)) : s));
-  const fabricationData = goesBackPastFit(stages, idx)
+  const fabricationData = goesBackPastFabrication(stages, idx)
     ? blankFabricationData() : rest.fabricationData ?? wf.fabricationData;
   /* deprogressing the sign-off that accepted a deviation takes its Engineering Hold away: the
      deviation stays on record as withdrawn */
@@ -140,8 +135,7 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
 export function discardUnsignedEdits(
   wf: JobWorkflow, snapshot: { fabricationData: Record<string, string>; stages: Record<string, WorkflowStage> }
 ): JobWorkflow {
-  const fitSigned = wf.stages.find(s => s.id === 'fit')?.signed ?? false;
-  const fabricationData = fitSigned ? wf.fabricationData : { ...snapshot.fabricationData };
+  const fabricationData = fabricationSigned(wf.stages) ? wf.fabricationData : { ...snapshot.fabricationData };
   const stages = wf.stages.map(s => {
     const snap = snapshot.stages[s.id];
     if (s.signed || !snap || snap.signed) return s;

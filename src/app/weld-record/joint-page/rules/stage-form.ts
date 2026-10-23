@@ -5,7 +5,7 @@ import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definitio
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { allowableThicknessAmount } from '../../routing/added-steps';
 import { showIfMet } from '../../signoff-definition/stage-display';
-import { baseStepId } from '../../routing/step-ids';
+import { rtDegreeRequired } from '../../routing/built-in-step-rules';
 import { evaluateCondition } from '../../signoff-definition/field-conditions';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { hasStepActivation, fieldActivation } from '../../signoff-definition/step-field-config';
@@ -37,14 +37,6 @@ export function typedRequirementError(stage: WorkflowStage, f: { key: string; la
   const v = stage.inputs[f.key] ?? '';
   if (!stage.engineeringEntry || !REQUIREMENT_KEYS.has(f.key) || !v || v === 'NC' || !isNaN(Number(v))) return '';
   return `${f.label} must be a number or NC`;
-}
-
-/* Root's RT requirement is job.rtRoot, Final Weld's is job.rtFinal; Layer's RT NDT has no
-   matching requirement field on Job, so nothing is enforced there. */
-export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): string {
-  if (baseStepId(stage.id) === 'root-ndt-utrt') return job?.rtRoot ?? '';
-  if (baseStepId(stage.id) === 'final-ndt-utrt') return job?.rtFinal ?? '';
-  return '';
 }
 
 /* Fields shown on the step, with their runtime options. Steps with an Admin > Signoff Type

@@ -70,7 +70,7 @@
       }
 
       <div class="signoff-actions">
-        @if (isSold(st.id)) {
+        @if (closesJoint(st.id)) {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
         } @else if (!st.signed && isEngineeringHold(st.id)) {

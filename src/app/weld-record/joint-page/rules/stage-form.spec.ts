@@ -9,7 +9,7 @@ import {
 } from '../../signoff-definition/step-field-config';
 import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import {
-  typedRequirementError, rtDegreeRequired, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
+  typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
 } from './stage-form';
 import { typeChange } from './type-change';
@@ -26,13 +26,6 @@ describe('joint-form stage-form', () => {
     expect(typedRequirementError(tack, field(tack, 'phMax'))).toBe('');
     expect(typedRequirementError(tack, field(tack, 'ipMin'))).toBe('');
     expect(typedRequirementError({ ...tack, engineeringEntry: false }, field(tack, 'phMin'))).toBe('');
-  });
-
-  it('RT degree required: Root from rtRoot, Final from rtFinal, Layer none', () => {
-    const j = job({ rtRoot: '360', rtFinal: '60' });
-    expect(rtDegreeRequired(j, { id: 'root-ndt-utrt' } as WorkflowStage)).toBe('360');
-    expect(rtDegreeRequired(j, { id: 'final-ndt-utrt' } as WorkflowStage)).toBe('60');
-    expect(rtDegreeRequired(j, { id: 'layer-ndt-utrt' } as WorkflowStage)).toBe('');
   });
 
   it('a Type that loads another definition swaps in its fields (Affected Item is drawn by its form); switching back restores the step\'s own', () => {

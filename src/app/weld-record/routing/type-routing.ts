@@ -4,11 +4,11 @@
 import { WorkflowStage } from '../model/workflow-types';
 import { typeDefinition, typeRepeatable } from '../signoff-definition/signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
+import { isPhaseNdtId } from './built-in-step-rules';
 import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 
-const isNdtId = (id: string) => /^(root|layer|final)-ndt-/.test(baseStepId(id));
 /* the NDT steps inspecting a step, with any Repair, Excavation NDT or Engineering Hold they added */
-const inspects = (s: WorkflowStage) => isNdtId(s.id) || isRepairStageId(s.id) || isExcavationNdtStageId(s.id) || isEngineeringHoldId(s.id);
+const inspects = (s: WorkflowStage) => isPhaseNdtId(s.id) || isRepairStageId(s.id) || isExcavationNdtStageId(s.id) || isEngineeringHoldId(s.id);
 
 /* the stages right after the one at `idx` that inspect it */
 function inspectionsOf(stages: WorkflowStage[], idx: number): WorkflowStage[] {
@@ -22,7 +22,7 @@ function inspectionsOf(stages: WorkflowStage[], idx: number): WorkflowStage[] {
    current. */
 export function repeatsThroughNdt(stages: WorkflowStage[], stageId: string): boolean {
   const idx = stages.findIndex(s => s.id === stageId);
-  return idx >= 0 && inspectionsOf(stages, idx).some(s => s.required && isNdtId(s.id));
+  return idx >= 0 && inspectionsOf(stages, idx).some(s => s.required && isPhaseNdtId(s.id));
 }
 
 /* after a signoff on an inspecting stage: the step the joint goes back to now that everything

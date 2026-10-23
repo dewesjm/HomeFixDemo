@@ -14,12 +14,13 @@ import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-f
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { typeDefinition } from '../signoff-definition/signoff-types';
 import { withComments } from '../signoff-definition/signoff-parts';
+import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
 import { WorkflowStore } from './workflow-store.service';
 
 /* History names a signoff whose Type loads another definition (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
-  const named = !!typeDefinition(st.id, st.signoffType) || st.id === 'root-layer';
+  const named = !!typeDefinition(st.id, st.signoffType) || namedAfterType(st.id);
   if (!named) return st.label;
   return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
 }
@@ -154,9 +155,9 @@ export class SignoffService {
   /* Release a job past the Fit-Up Release stage */
   releaseFitUp(job: Job) {
     this.store.update(job, wf => {
-      const undo = signoffUndo(wf, job, 'fitup-release');
+      const undo = signoffUndo(wf, job, FITUP_RELEASE);
       const stages = wf.stages.map(s =>
-        s.id === 'fitup-release' ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
+        s.id === FITUP_RELEASE ? { ...s, signed: true, signedAt: new Date().toISOString() } : s);
       const next = this.store.withHistory(wf, { ...wf, stages }, {
         section: 'Release',
         who: wf.technician,

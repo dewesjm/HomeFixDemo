@@ -1,6 +1,7 @@
 /* What the joint page loaded with, and whether anything typed since then would be lost by leaving
    (the leave-page guard). Signing commits; leaving discards (discardUnsignedEdits). */
 import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
+import { fabricationSigned } from '../../routing/built-in-step-rules';
 
 export interface LoadedJoint {
   fabricationData: Record<string, string>;
@@ -39,8 +40,7 @@ export function rebaselineAfterSignoff(loaded: LoadedJoint, before: JobWorkflow,
 /* true when Fab or step data was entered on an unsigned stage and not yet signed. `kept` gives the
    values on a stage that survive leaving anyway (an engineering override's), so they don't count. */
 export function hasUnsavedEdits(wf: JobWorkflow, loaded: LoadedJoint, kept: (stage: WorkflowStage) => Record<string, string>): boolean {
-  const fitSigned = wf.stages.find(s => s.id === 'fit')?.signed ?? false;
-  if (!fitSigned && !recordEquals(wf.fabricationData, loaded.fabricationData)) return true;
+  if (!fabricationSigned(wf.stages) && !recordEquals(wf.fabricationData, loaded.fabricationData)) return true;
   for (const s of wf.stages) {
     if (s.signed) continue;
     const snap = loaded.stages[s.id];
