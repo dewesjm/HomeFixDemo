@@ -12,19 +12,16 @@ describe('joint-form route-preview', () => {
   const stages = buildStages(j);
   const repair = (inputs: Record<string, string>) => stageFromTemplate(nextRepairStage(stages), { originPhase: 'root', originStageId: 'root-ndt-vt5x', ...inputs });
 
-  it('Repair: says where each Repair Code routes, Allowable thickness exceeded first', () => {
-    expect(routePreviewLabel(j, stages, repair({ repairType: 'grind' }), null, noPreview)).toContain('Why: Repair Code is Grind Only.');
-    expect(routePreviewLabel(j, stages, repair({ repairType: 'cut' }), null, noPreview)).toContain('Refit # goes up to 03');
-    expect(routePreviewLabel(j, stages, repair({ repairType: 'weld-repair' }), null, noPreview)).toContain('Excavation NDT');
-    expect(routePreviewLabel(j, stages, repair({ repairType: 'grind', allowableThicknessExceeded: 'yes' }), null, noPreview))
-      .toContain('Allowable thickness exceeded is checked');
-    expect(routePreviewLabel(j, stages, repair({}), null, noPreview)).toBe('');
-  });
-
-  it('Excavation NDT routes back to the original inspection', () => {
-    const rep = repair({ repairType: 'weld-repair', originInspectionType: 'vt' });
+  it('Repair and Excavation use the actual dry run and its rule explanation', () => {
+    const rep = repair({ repairType: 'grind' });
     const exc = stageFromTemplate(excavationNdtStage('vt', rep.id));
-    expect(routePreviewLabel(j, [...stages, rep, exc], exc, null, noPreview)).toContain('On SAT, this routes back to');
+    for (const st of [rep, exc]) {
+      const preview: SignoffPreview = () => ({ target: stages.find(s => s.id === 'fit'), reasons: ['edited table rule'] });
+      const label = routePreviewLabel(j, [...stages, rep, exc], st, st.id, preview);
+      expect(label).toContain('Fit');
+      expect(label).toContain('edited table rule');
+      expect(routePreviewLabel(j, [...stages, rep, exc], st, 'tack', preview)).toBe('');
+    }
   });
 
   it('other steps: nothing unless it is the current step; otherwise the dry run\'s target and reasons', () => {

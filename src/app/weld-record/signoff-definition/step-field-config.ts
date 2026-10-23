@@ -1,9 +1,8 @@
 /* Signoff Type Forms: one per Type (Admin > Signoff Types), matched by the Type's value.
    Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
-   out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A step
-   reads the definition of the Type it's being signed as; Excavation NDT, whose Type is whichever
-   inspection rejected the joint, keeps one definition of its own. Live overrides are stored in
-   localStorage (welding:step-field-config:v13) and take effect immediately. */
+   out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A routing
+   reads the definition of the Type it is being signed as, including Excavation NDT. Live overrides are stored in
+   localStorage and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from './field-catalog';
@@ -63,15 +62,14 @@ export function definitionFields(items: FieldActivation[]): FieldActivation[] {
 export type VerifyAgainst = 'fabrication' | 'record';
 
 export interface TypeDefinition {
-  /* the Type's value (Signoff Types), or EXCAVATION_DEFINITION */
+  /* the Type's value (Signoff Types),  */
   typeId: string;
   fields: FieldActivation[];
   /* unset = the default definition's, else the record */
   verifyAgainst?: VerifyAgainst;
 }
 
-/* Excavation NDT's own definition, shared by every round */
-export const EXCAVATION_DEFINITION = 'excavation-ndt';
+
 
 /* ── Condition shorthands ── */
 const ndtRoot5x: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
@@ -158,19 +156,6 @@ const NDT_TYPES: TypeDefinition[] = [
   ndtType('rt', [{ key: 'degreeRt' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' }]),
 ];
 
-/* Excavation NDT repeats whichever inspection rejected the joint, so it carries every NDT field and
-   each shows only for its own Type */
-const typeIs = (...types: string[]) => ({ source: 'field' as const, key: 'inspectionType', anyOf: types });
-const showIfType = (...types: string[]): FieldCondition => ({ all: [typeIs(...types)] });
-const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
-  ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt', showIf: showIfType('rt') }, { ...same('rtFileNumber'), showIf: showIfType('rt') },
-  { key: 'idAccessible', showIf: showIfType('mt', 'pt') },
-  { key: 'penetrantManufacturer', showIf: showIfType('pt') }, { ...same('penetrantType'), showIf: showIfType('pt') },
-  { key: 'weldColor', showIf: { all: [typeIs('vt'), { source: 'jointDetail', key: 'titanium', equals: 'yes' }] } },
-  DECISION, { key: 'defectCode', width: 320, showIf: { all: [typeIs('rt'), { source: 'field', key: 'result', equals: 'unsat' }] } },
-];
-
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
   'verifyDrawing', 'verifyDrawingRev', 'verifyJoint', 'verifyJointDesign', 'verifyWeldType',
   'verifyPipeSize', 'verifyWallThickness', 'verifyMaterial1', 'verifyMaterial2',
@@ -208,7 +193,6 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
   weldType('interim'),
   weldType('final-weld'),
   { typeId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
-  { typeId: EXCAVATION_DEFINITION, fields: [TYPE, QUAL_CHECK, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
   { typeId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { typeId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { typeId: 'sold', fields: [] },
@@ -245,12 +229,12 @@ export function resetStepFieldConfig(): void {
 /* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
 export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 
-/* the definition a step reads: its Type's (the shared Excavation NDT one for any round); '' while
+/* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
    step added in Admin > Routing Settings without a Signoff Types By Routing row), which uses its template */
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
-  if (isExcavationNdtStageId(step.id)) return EXCAVATION_DEFINITION;
+  if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
   const options = signoffTypeOptions(step.id);
   if (!options) return undefined;
   return options.some(o => o.value === step.signoffType) ? step.signoffType : '';

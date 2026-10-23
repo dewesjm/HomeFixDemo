@@ -24,7 +24,6 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
   DEFAULT_TYPE_DEFINITIONS,
-  EXCAVATION_DEFINITION,
   TypeDefinition,
   FieldActivation,
   getStepFieldConfig,
@@ -57,7 +56,6 @@ import {
 } from '../../signoff-definition/field-rules';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
-import { NDT_KINDS } from '../../routing/ndt';
 import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
 import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
@@ -115,11 +113,10 @@ export class AdminSignoffTypeDefinitionComponent {
     return text ? this.fieldChoices.filter(f => f.label.toLowerCase().includes(text)) : this.fieldChoices;
   });
 
-  /* the routing steps (Prepopulated from's sources), and the Types plus Excavation NDT (the rows) */
+  /* Routing sources for Prepopulated from, and the Types whose forms can be edited. */
   private readonly routingSteps = (getTemplates()['Welding'] ?? []).map(s => ({ stepId: s.id, stepLabel: s.label }));
   private readonly types = [
     ...getRoutingSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
-    { typeId: EXCAVATION_DEFINITION, typeLabel: 'Excavation NDT' },
   ];
 
   rows = signal<DefRow[]>([]);
@@ -455,12 +452,9 @@ export class AdminSignoffTypeDefinitionComponent {
         const values = cat.type === 'checkbox' ? [{ value: 'yes', label: 'Checked' }] : (cat.options ?? []).map(o => ({ value: o.value, label: o.label }));
         return [{ key: a.key, label: cat.label, values }];
       });
-    const ndtKinds = Object.values(NDT_KINDS).flatMap(k => k.options);
-    const type = e.typeId === EXCAVATION_DEFINITION
-      ? [{ key: 'inspectionType', label: 'Type', values: ndtKinds.map(o => ({ value: o.value, label: o.label })) }] : [];
     const result = e.fieldActivations.some(a => a.key === DECISION_KEY)
       ? [{ key: 'result', label: 'Inspection Results (SAT/UNSAT)', values: [{ value: 'sat', label: 'SAT' }, { value: 'unsat', label: 'UNSAT' }] }] : [];
-    return [...type, ...result, ...own];
+    return [...result, ...own];
   });
 
   /* ── Verify grid ── */

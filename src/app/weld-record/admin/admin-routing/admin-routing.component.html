@@ -5,6 +5,9 @@
 <app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
 
+@for (added of [false, true]; track added) {
+<h3 class="text-lg font-semibold mt-4">{{ added ? 'Added routings' : 'Numbered routings' }}</h3>
+@if (added) { <p class="text-sm">Inserted by routing rules or accepted deviations. Engineering chooses the release destination on Engineering Hold.</p> }
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
@@ -21,13 +24,14 @@
     </tr>
   </thead>
   <tbody>
-    @for (row of visibleRows(); track row.id) {
-      <tr [class.row-highlight]="newRowId() === row.id" [attr.draggable]="editingId() !== row.id"
+    @for (row of sectionRows(added); track row.id) {
+      <tr [class.row-highlight]="newRowId() === row.id" [attr.draggable]="!added && editingId() !== row.id"
           [class.opacity-50]="dragId() === row.id"
           [class.drop-above]="dropSide(row) === 'above'" [class.drop-below]="dropSide(row) === 'below'"
           (dragstart)="onDragStart($event, row)" (dragover)="onDragOver($event, row)"
           (drop)="onDrop($event, row)" (dragend)="clearDrag()">
         <td>
+          @if (!added) {
           <div class="flex items-center gap-1">
             <svg lucideGripVertical class="size-4 cursor-grab" aria-hidden="true"></svg>
             <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
@@ -40,6 +44,7 @@
               <svg lucideArrowDown class="size-3"></svg>
             </button>
           </div>
+          } @else { Added }
         </td>
         <td>
           @if (editingId() === row.id) {
@@ -58,7 +63,7 @@
           }
         </td>
         <td>
-          @if (row.id.includes(':new-')) {
+          @if (added) { Added by a rule or deviation } @else if (row.id.includes(':new-')) {
             Always (save the routing to change this)
           } @else {
             <div class="flex items-start gap-1">
@@ -88,11 +93,11 @@
             <select class="select select-sm select-bordered w-full min-w-0"
                     [ngModel]="row.rejectToStage" (ngModelChange)="updateRejectTo(row, $event)">
               <option value="">None (no routing)</option>
-              @for (s of stageOptions(); track s.id) {
+              @for (s of rejectTargets(row); track s.id) {
                 <option [value]="s.id">{{ s.label }}</option>
               }
             </select>
-          } @else if (!row.rejectToStage || row.id.includes(':new-')) {
+          } @else if (row.id.includes(':new-')) {
             {{ getRejectLabel(row.rejectToStage) }}
           } @else {
             <div class="flex items-start gap-1">
@@ -137,7 +142,7 @@
               <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
               </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="added" (click)="deleteRow(row)">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             } @else {
@@ -157,6 +162,8 @@
   </tbody>
 </table>
 </div>
+
+}
 
 <!-- Included when (step conditions) dialog -->
 @if (condRow(); as row) {
@@ -253,6 +260,7 @@
 
       }
 
+      <p class="text-sm mb-3">Add targets insert a routing immediately after this one. Relative targets use this repair round’s rejecting inspection and phase. A rule with no conditions always matches.</p>
       @for (rule of rejRules(); track $index; let ri = $index) {
         <div class="border border-base-300 rounded-box p-3 mb-3">
           <div class="flex items-center justify-between mb-2">

@@ -76,7 +76,7 @@ describe('joint-form stage-form', () => {
     /* "exceeded" only when the rejected phase has an RT/UT step */
     expect(visibleStageFields({ ...repair2, inputs: { originPhase: 'layer' } }, ctx).map(f => f.key)).toEqual(['repairType']);
 
-    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate(excavationNdtStage(type)), inspectionType: type }, ctx).map(f => f.key);
+    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate(excavationNdtStage(type)), inspectionType: type, signoffType: type }, ctx).map(f => f.key);
     expect(exc('rt')).toContain('degreeRt');
     expect(exc('rt')).not.toContain('idAccessible');
     expect(exc('mt')).toContain('idAccessible');

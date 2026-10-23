@@ -2,7 +2,7 @@
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { getTemplates } from './stage-templates';
+import { isAddedTemplateId, getTemplates } from './stage-templates';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { WELD_OVERRIDE_FIELDS } from '../signoff-definition/weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
@@ -12,7 +12,7 @@ import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-st
 
 export function buildStages(job: Job): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
-  const tradeStages = getTemplates()['Welding'] ?? [];
+  const tradeStages = (getTemplates()['Welding'] ?? []).filter(t => !isAddedTemplateId(t.id));
   /* Admin > Routing Settings step conditions: Joint Details rules decide here whether the joint gets the step;
      a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
   const included = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);

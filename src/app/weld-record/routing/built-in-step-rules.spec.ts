@@ -2,7 +2,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import {
   blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel, isPhaseNdtId,
-  needsFabricationComplete, noCommentsBox, rtDegreeRequired, unsatAddsRepair,
+  needsFabricationComplete, noCommentsBox, rtDegreeRequired,
 } from './built-in-step-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
@@ -34,8 +34,6 @@ describe('built-in step rules', () => {
   it('NDT steps: phase NDT ids, and UNSAT adds a Repair except on Excavation NDT', () => {
     expect(isPhaseNdtId('nqc-root-ndt-vt5x')).toBeTrue();
     expect(isPhaseNdtId('excavation-ndt')).toBeFalse();
-    expect(unsatAddsRepair('final-ndt-utrt')).toBeTrue();
-    expect(unsatAddsRepair('excavation-ndt-2')).toBeFalse();
   });
 
   it('names what an inspection step inspects', () => {

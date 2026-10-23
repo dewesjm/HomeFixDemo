@@ -1,9 +1,9 @@
 /* Every localStorage key the app uses, in one place. */
 export const STORAGE = {
   appVersion: 'welding:app-version',
-  workflows: 'welding:workflows:v3',
-  stageTemplates: 'welding:stage-templates:v3',
-  signoffTypes: 'welding:signoff-types:v3',
+  workflows: 'welding:workflows:v4',
+  stageTemplates: 'welding:stage-templates:v4',
+  signoffTypes: 'welding:signoff-types:v4',
   routingSignoffTypes: 'welding:routing-signoff-types:v2',
   penetrants: 'welding:penetrants:v1',
   inspectionProcedures: 'welding:inspection-procedures:v1',
@@ -30,7 +30,7 @@ export const STORAGE = {
   makeup: 'welding:makeup:v3',
   qualConditions: 'welding:qual-conditions:v5',
   featureToggles: 'welding:feature-toggles:v1',
-  stepFieldConfig: 'welding:step-field-config:v13',
+  stepFieldConfig: 'welding:step-field-config:v14',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).

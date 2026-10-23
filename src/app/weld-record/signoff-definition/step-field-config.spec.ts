@@ -23,9 +23,9 @@ describe('definition lookup by Type', () => {
     expect(definitionId({ id: 'repair-3', signoffType: 'repair' })).toBe('repair');
   });
 
-  it('a step whose Type is not picked yet shows only Type; Excavation NDT keeps its own; a step with no Types has none', () => {
+  it('a step whose Type is not picked yet shows only Type; Excavation NDT shares its inspection Type; a step with no Types has none', () => {
     expect(getActivationForStep({ id: 'root-ndt-utrt', signoffType: 'standard' }).fields.map(f => f.key)).toEqual([TYPE_KEY]);
-    expect(definitionId({ id: 'excavation-ndt-2', signoffType: 'rt' })).toBe('excavation-ndt');
+    expect(definitionId({ id: 'excavation-ndt-2', signoffType: 'rt' })).toBe('rt');
     expect(definitionId({ id: 'engineering-hold', signoffType: 'standard' })).toBeUndefined();
     expect(hasStepActivation({ id: 'engineering-hold', signoffType: 'standard' })).toBeFalse();
   });

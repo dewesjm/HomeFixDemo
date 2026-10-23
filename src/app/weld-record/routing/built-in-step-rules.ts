@@ -53,10 +53,6 @@ export const namedAfterType = (stageId: string) => stageId === 'root-layer';
 /* a Root / Layer / Final NDT step (either row) */
 export const isPhaseNdtId = (stageId: string) => /^(root|layer|final)-ndt-/.test(baseStepId(stageId));
 
-/* UNSAT adds a new Repair right after the step. Excavation NDT's UNSAT goes back to its own
-   round's Repair instead. */
-export const unsatAddsRepair = (stageId: string) => stageId.includes('ndt') && !isExcavationNdtStageId(stageId);
-
 /* the Degree of RT the joint requires on an RT/UT step: Root's is Joint Details RT Root, Final's is
    RT Final; Layer has no requirement, so nothing is enforced there */
 export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): string {

@@ -13,15 +13,15 @@ describe('Routing Settings rules editor', () => {
   });
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
-  it('offers self, earlier and later routings for Then go to, without add targets', () => {
+  it('offers self, earlier and later routings for Then go to, with add targets', () => {
     const row = component.rows().find(r => r.id === 'Welding:fit')!;
     component.openThenRules(row);
     const ids = component.rejectTargets(row).map(t => t.id);
     expect(ids).toContain('fit');
     expect(ids).toContain('pre-fit');
     expect(ids).toContain('sold');
-    expect(ids).not.toContain('repair');
-    expect(ids).not.toContain('engineering-hold');
+    expect(ids).toContain('repair');
+    expect(ids).toContain('engineering-hold');
     expect(component.rejFields().some(f => f.key === 'self.inspectionType')).toBeTrue();
     expect(component.rejFields().find(f => f.key === 'ndtEach')!.values).toContain('');
   });
@@ -46,6 +46,20 @@ describe('Routing Settings rules editor', () => {
     component.removeRejectRule(0);
     component.saveRejectRules();
     expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules).toEqual([]);
+  });
+
+  it('separates added routings and edits the unconditional Excavation fallback', () => {
+    expect(component.rows().filter(r => component.isAdded(r)).map(r => r.id)).toEqual([
+      'Welding:repair', 'Welding:excavation-ndt', 'Welding:engineering-hold',
+    ]);
+    const row = component.rows().find(r => r.id === 'Welding:excavation-ndt')!;
+    component.openThenRules(row);
+    expect(component.rejRules().at(-1)?.when).toEqual([]);
+    expect(component.rejectRulesValid()).toBeTrue();
+    component.removeRejectClause(0, 0);
+    expect(component.rejRules()[0].when).toEqual([]);
+    component.saveRejectRules();
+    expect(getTemplates()['Welding'].find(t => t.id === 'excavation-ndt')!.thenRules![0].when).toEqual([]);
   });
 
   it('keeps the Reject editor on its existing rules and targets', () => {

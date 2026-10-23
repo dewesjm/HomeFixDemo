@@ -1,6 +1,8 @@
 /* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
    saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
    Type options come from Admin > Signoff Types By Routing (signoff-types.ts). */
+import { ADDED_STAGE_TEMPLATES, isAddedTemplateId } from './added-stage-templates';
+import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
@@ -20,7 +22,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
   Welding: withFabricationEditable(WELDING_STEPS
     .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
     .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
-    .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)),
+    .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)).concat(ADDED_STAGE_TEMPLATES),
 };
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
@@ -109,7 +111,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    _merged[trade] = _merged[trade].map(s => ({ ...s, typeOptions: signoffTypeOptions(s.id) }));
+    _merged[trade] = _merged[trade].map(s => ({ ...s, typeOptions: s.id === 'excavation-ndt' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
   }
   return _merged;
 }
@@ -176,3 +178,12 @@ export function allStageIds(): { id: string; label: string }[] {
   }
   return [...seen.entries()].map(([id, label]) => ({ id, label }));
 }
+
+/* A numbered round reads the settings of its shared added-routing row. */
+export function routingTemplateId(id: string): string {
+  return /^(repair|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
+}
+export function getAddedTemplate(id: string): StageTemplate {
+  return getTemplates()['Welding'].find(t => t.id === routingTemplateId(id))!;
+}
+export { isAddedTemplateId };

@@ -1,8 +1,7 @@
-/* Admin > Signoff Types By Routing: which Types (Admin > Signoff Types) each routing step
-   offers in its Type droplist, and which is its default. The table is seeded below and the admin adds
-   and removes rows; a step with no row has no Type. Every Repair round uses the Repair row. Excavation
-   NDT's row has no options of its own: its Type is the inspection that rejected the joint
-   (excavationNdtStage), the row only decides whether it has a Type at all. Stored in localStorage. */
+/* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
+   the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
+import { Job } from '../../data/jobs';
+import { materialClassification, MaterialFlag } from '../../data/material-classification';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
 import { NDT_KINDS } from '../routing/ndt';
@@ -18,6 +17,8 @@ export interface AvailableType {
 export interface SignoffTypeRow {
   stepId: string;
   types: AvailableType[];
+  typeSource?: 'rejecting-inspection';
+  typeExceptions?: { from: string; to: string; materialFlag: MaterialFlag | '' }[];
 }
 
 export const REPAIR_TYPE_ROW = 'repair';
@@ -49,7 +50,8 @@ const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'review-o04', types: only('review-o04') },
   { stepId: 'sold', types: only('sold') },
   { stepId: REPAIR_TYPE_ROW, types: only('repair') },
-  { stepId: EXCAVATION_TYPE_ROW, types: [] },
+  { stepId: EXCAVATION_TYPE_ROW, types: [], typeSource: 'rejecting-inspection',
+    typeExceptions: [{ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }] },
 ];
 
 /* bumped on every save of this table or of Signoff Types, so getTemplates() knows its cached
@@ -110,4 +112,15 @@ export function isOwnType(stageId: string, type: string): boolean {
   const options = signoffTypeOptions(stageId);
   const def = options?.find(o => o.default);
   return !def || def.value === type;
+}
+
+/* The routing's configured Type source and first matching material exception. */
+export function excavationTypeOptions(job: Job, rejectingType: string): StageOption[] | undefined {
+  const row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
+  if (!row) return undefined;
+  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(EXCAVATION_TYPE_ROW);
+  const exception = row.typeExceptions?.find(r => r.from === rejectingType && (!r.materialFlag ||
+    [job.materialType1, job.materialType2].some(code => materialClassification().some(m => m.code === code && m[r.materialFlag as MaterialFlag]))));
+  const type = getRoutingSignoffTypes().find(t => t.value === (exception?.to ?? rejectingType));
+  return type ? [{ value: type.value, label: type.label }] : undefined;
 }

@@ -15,7 +15,7 @@ describe('showsReferences', () => {
     for (const id of ['vt', '5x', 'mt', 'pt', 'excavation-ndt', 'pre-fit', 'fit', 'fitup-insp', 'root', '']) {
       expect(showsReferences(id)).withContext(id).toBeFalse();
     }
-    expect(showsReferences({ id: 'excavation-ndt-2', signoffType: 'rt' })).toBeFalse();
+    expect(showsReferences({ id: 'excavation-ndt-2', signoffType: 'rt' })).toBeTrue();
   });
 
   it('follows the definition when References is ticked or unticked', () => {

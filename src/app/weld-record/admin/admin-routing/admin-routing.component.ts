@@ -1,6 +1,8 @@
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
+import { isAddedTemplateId } from '../../routing/added-stage-templates';
+import { RULE_TARGETS, availableRuleTargets } from '../../routing/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +30,7 @@ import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
-  describeConditions, stageConditionFields, stepAnswerFieldsBefore, ENGINEERING_HOLD_TARGET
+  describeConditions, stageConditionFields, stepAnswerFieldsBefore
 } from '../../routing/step-conditions';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
@@ -75,7 +77,7 @@ export class AdminRoutingComponent {
     for (const r of ROLES) used.add(r);
     return [...used].sort();
   });
-  stageOptions = signal(allStageIds());
+  stageOptions = signal(this.targetOptions());
 
   rows = signal<RoutingRow[]>(this.buildInitialRows());
   table = new TableState<RoutingRow>(['sequence', 'routing', 'displayName', 'includedWhen']);
@@ -98,6 +100,12 @@ export class AdminRoutingComponent {
     /* shown in Order unless another heading is clicked, so a drag or arrow move shows right away */
     this.table.sortField.set('sequence');
     effect(() => this.table.setRows(this.rows()));
+  }
+
+  isAdded(row: RoutingRow): boolean { return isAddedTemplateId(row.id.split(':')[1]); }
+  sectionRows(added: boolean) { return this.visibleRows().filter(r => this.isAdded(r) === added); }
+  private targetOptions() {
+    return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS];
   }
 
   private buildInitialRows(): RoutingRow[] {
@@ -301,8 +309,8 @@ export class AdminRoutingComponent {
 
   getRejectLabel(rejectToStage: string): string {
     if (!rejectToStage) return '-';
-    if (rejectToStage === 'repair') return 'Repair';
-    if (rejectToStage === ENGINEERING_HOLD_TARGET) return 'Engineering Hold';
+    const special = RULE_TARGETS.find(t => t.id === rejectToStage);
+    if (special) return special.label;
     const match = this.stageOptions().find(s => s.id === rejectToStage);
     return match?.label ?? rejectToStage;
   }
@@ -319,7 +327,7 @@ export class AdminRoutingComponent {
   private refreshStageOptions() {
     // force recomputation — signal won't change if underlying data has same ids,
     // but the allStageIds() call will re-read from localStorage
-    this.stageOptions.set(allStageIds());
+    this.stageOptions.set(this.targetOptions());
   }
 
   /* ── Included when (step conditions) dialog ── */
@@ -408,10 +416,7 @@ export class AdminRoutingComponent {
 
   /* Then go to offers numbered routings; Reject also offers added targets. */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
-    if (this.ruleMode() === 'then') return (getTemplates()[row.trade] ?? []).map(t => ({ id: t.id, label: t.label }));
-    const own = (getTemplates()[row.trade] ?? []).filter(t => t.id !== row.id.split(':')[1]).map(t => ({ id: t.id, label: t.label }));
-    const hold = { id: ENGINEERING_HOLD_TARGET, label: 'Engineering Hold (adds an Engineering Hold routing)' };
-    return row.id.includes('-ndt-') ? [hold, { id: 'repair', label: 'Repair (adds a Repair routing)' }, ...own] : [hold, ...own];
+    return [...(getTemplates()[row.trade] ?? []).filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id.split(':')[1])];
   }
 
   openRejectRules(row: RoutingRow) {
@@ -457,8 +462,8 @@ export class AdminRoutingComponent {
     this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: [...x.when, { field: this.rejFields()[0]?.key ?? '', op: 'is' as const, values: [] }] } : x));
   }
   removeRejectClause(ri: number, ci: number) {
-    /* Removing the last condition removes the rule. */
-    this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: x.when.filter((_, j) => j !== ci) } : x).filter(x => x.when.length));
+    /* A rule without conditions is the table's unconditional fallback. */
+    this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: x.when.filter((_, j) => j !== ci) } : x));
   }
   setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
     this.rejRules.update(r => r.map((x, i) => i !== ri ? x : { ...x, when: x.when.map((c, j) => {

@@ -314,11 +314,12 @@ export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, st
 
 /* the first reject rule matching the rejected step `self`, if any */
 export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers): RejectRule | undefined {
-  return rules?.find(r => r.when.length > 0 && r.when.every(c => clauseMatches(c, job, stages, self)));
+  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self)));
 }
 
 /* the shape of a stage template stageConditionFields() reads */
 export interface StageShape {
+  id?: string;
   fields: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   signoffFields?: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   typeOptions?: { label: string; value: string }[];
@@ -338,6 +339,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */
   }
+  if (/^excavation-ndt(-\d+)?$/.test(stage.id ?? '')) add('typeChangedFromPtTo5x', 'Type was changed to 5X from PT', [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
   return out;
 }
 
@@ -362,5 +364,5 @@ export function describeClauses(rule: ConditionRule, extra: StepConditionField[]
    `extra` is the step's own fields (stageConditionFields) for reject rules */
 export function describeConditions(rules: ConditionRule[] | undefined, extra: StepConditionField[] = []): string {
   if (!rules?.length) return 'Always';
-  return rules.map(rule => rule.map(c => describeClause(c, extra)).join(' and ')).join('; or ');
+  return rules.map(rule => rule.length ? rule.map(c => describeClause(c, extra)).join(' and ') : 'Always').join('; or ');
 }

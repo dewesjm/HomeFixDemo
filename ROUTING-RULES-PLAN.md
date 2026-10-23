@@ -1,6 +1,6 @@
 # Routing rules plan
 
-Part 1 is built. Part 2 remains planned, pending review. ROUTING.md describes current behavior.
+Parts 1 and 2 are built. Part 2 is ready for review. ROUTING.md describes current behavior.
 Both parts are decided. Part 1 is built first; Part 2 builds on it.
 
 ## Part 1: "Then go to" rules replace Repeatable (built)
@@ -69,11 +69,11 @@ Both parts are decided. Part 1 is built first; Part 2 builds on it.
   Keep rules in feature folders, use “routing” and “signoff Type” in UI text, and ask about any
   behavior not specified by the plan. Report touched files, behavior changes and unverified work.
 
-## Part 2: Repair, Excavation NDT and Engineering Hold in the tables
+## Part 2: Repair, Excavation NDT and Engineering Hold in the tables (built)
 
-### Today
+### Behavior before Part 2
 
-All coded in routing/signoff-routing.ts:
+The starting behavior was coded in routing/signoff-routing.ts:
 
 - An NDT UNSAT adds a numbered Repair round after the NDT. The Repair remembers the phase, the NDT
   routing that rejected it and the inspection.
@@ -125,3 +125,13 @@ first so it wins over the Repair Type, as today.
 
 Engineering Hold is added by a Reject rule or an accepted deviation, and Engineering sets where the
 joint goes; it moves into the Added routings section but its behavior doesn't change.
+
+### Part 2 implementation handoff
+
+- Added routings share Routing Settings persistence, with a separate table section. `added-stage-templates.ts` seeds their routing rules; `rule-targets.ts` resolves round-relative destinations, including NQC twins.
+- The routing executor applies table rules for Repair and Excavation NDT, including insertion targets. Repair #, Cut/Refit #, blanking, History and Engineering release remain code-owned bookkeeping.
+- Excavation Type source and ordered material exceptions live on its Signoff Types By Routing row. The visible seeded PT to 5X exception applies to either member classified non-ferrous/austenitic; attribute-code exceptions remain deferred until the attribute list is supplied.
+- Excavation uses the selected inspection's shared form. The combined Excavation form is removed. Its creation-time PT to 5X outcome survives Type selection, reload and route-back blanking. The preview runs the actual routing logic for these routings too.
+- Workflow version is `2.10.50`; workflow, routing-template and Type-availability storage keys are v4, and Signoff Type Forms is v14. These caches reset to the new definitions.
+- Validation: all 391 unit tests passed. Production build and unused-code TypeScript checks passed. The screens have not been manually browser-checked.
+- Field definitions consolidation remains separately queued. Stop here for review; do not start FIELD-DEFINITIONS-PLAN.md.

@@ -251,7 +251,7 @@ describe('SignoffService', () => {
       signRepair(job, 'repair-2', 'weld-repair');
 
       const exc = stage(job, 'excavation-ndt-2');
-      expect(exc.rejectToStage).toBe('repair-2');
+      expect(exc.rejectToStage).toBe('own-repair');
       expect(ids(job).indexOf('excavation-ndt-2')).toBe(ids(job).indexOf('repair-2') + 1);
 
       failNdt(job, 'excavation-ndt-2');

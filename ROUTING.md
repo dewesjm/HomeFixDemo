@@ -80,6 +80,14 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root 5X question:** when NDT Root is 5X (its Show when on Admin > Signoff Type Forms, Root), the Root routing asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X routing automatically when Root itself is signed.
 
+## Added routings and relative rule targets
+
+Admin > Routing Settings separates numbered routings from **Added routings**: Repair, Excavation NDT and Engineering Hold. Added routings are inserted during work, rather than included in every new joint. Their Reject rules and Then go to rules use the same editor as numbered routings. The first matching rule wins; a rule with no conditions always matches.
+
+Targets include **Add Repair**, **Add Excavation NDT** (on Repair), and **Add Engineering Hold**, plus destinations relative to a repair round: **Rejecting NDT**, **Rejecting phase’s UT/RT**, **Rejecting phase’s VT/5X**, and **Own Repair**. These resolve to the joint’s own regular or NQC routing and the correct repair round. Repair # and Cut’s Refit # remain automatic bookkeeping.
+
+The tables below describe the starting rules. Editing those rules changes the destinations, including the routing preview. Engineering Hold keeps its Engineering release form: Engineering chooses the destination there.
+
 ## When an NDT routing fails
 
 **Any NDT routing that comes back UNSAT adds a new Repair routing right after it.** There is no limit on the number of repairs.
@@ -103,7 +111,8 @@ When the Repair routing is signed, where the joint goes depends on what was chos
 ### Excavation NDT (after a Weld Repair)
 
 - It requires **the same inspection that failed**. For example, if PT failed, Excavation NDT offers only PT.
-- **Exception:** if PT failed and Material Type 1 or 2 is non-ferrous or austenitic (Admin > Material Classification), Excavation NDT is **5X instead of PT**.
+- **Type exception (editable on Admin > Signoff Types By Routing):** if PT failed and Material Type 1 or 2 is non-ferrous or austenitic (Admin > Material Classification), Excavation NDT is **5X instead of PT**.
+- **Form:** after Type is picked, Excavation NDT loads that inspection Type’s shared Signoff Type Form (PT, 5X, MT, VT, UT or RT). There is no separate Excavation NDT form. RT and UT include their shared References field.
 - **UNSAT:** back to its own Repair routing, which comes up blank. No new Repair is added. The same Excavation NDT comes back when the Repair is signed as Weld Repair again.
 - **SAT:** back to the NDT routing that originally failed. With the PT exception above, it goes to that phase's 5X/VT routing instead, with **5X allowed** (normally that routing offers only VT).
 

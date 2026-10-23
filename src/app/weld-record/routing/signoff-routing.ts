@@ -9,40 +9,28 @@ import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngine
 import {
   isRepairStageId,
   isExcavationNdtStageId,
-  repairIdForExcavation,
   excavationIdForRepair,
   baseStepId,
   stepOnJoint,
 } from './step-ids';
 import { hasDecision } from '../signoff-definition/stage-rules';
-import { getTemplates } from './stage-templates';
-import { CUT_RESTARTS_AT, unsatAddsRepair } from './built-in-step-rules';
+import { getTemplates, routingTemplateId } from './stage-templates';
+import { CUT_RESTARTS_AT } from './built-in-step-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
-import { isNonFerrousOrAustenitic } from '../../data/material-classification';
-
-/* Excavation NDT "requires the same inspection that was noted as reject" -- same method as
-   whatever originally rejected the joint, UNLESS that was PT on non-ferrous/austenitic material
-   (Material Type 1 or 2, Admin > Material Classification), which requires 5X instead of PT. Single
-   source of truth for this decision -- used both when Excavation NDT is created (to build its
-   fields/Type) and when its own SAT decides which stage to route back to. */
-function resolveExcavationInspectionType(originInspectionType: string, phase: string, job: Job): string {
-  const needs5xInstead = originInspectionType === 'pt' && phase
-    && (isNonFerrousOrAustenitic(job.materialType1) || isNonFerrousOrAustenitic(job.materialType2));
-  return needs5xInstead ? '5x' : originInspectionType;
-}
+import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
+import { excavationTypeOptions } from '../signoff-definition/signoff-types';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
-/* Where an UNSAT goes: the first Admin > Routing Settings reject rule matching this step's answers /
-   Joint Details, if its step is earlier on this joint (or Engineering Hold, or Repair on an NDT step);
-   else the step's Reject routes to */
+/* The first matching reject rule wins; otherwise use the routing's reject destination. */
 function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string) {
-  const currentIdx = stages.findIndex(s => s.id === stageId);
-  const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.rejectRules, job, stages, st);
-  const usable = !!rule && (rule.to === ENGINEERING_HOLD_TARGET || (unsatAddsRepair(stageId) && rule.to === 'repair')
-    || (() => { const i = stages.findIndex(s => s.id === stepOnJoint(stages, rule.to)?.id); return i >= 0 && i < currentIdx; })());
-  return usable ? { to: rule!.to, rule: rule! } : { to: st.rejectToStage ?? '', rule: null };
+  const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId))?.rejectRules, job, stages, st);
+  const at = stages.findIndex(s => s.id === stageId);
+  const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
+  const targetAt = stages.findIndex(s => s.id === stepOnJoint(stages, targetId)?.id);
+  const usable = rule && (isAddTarget(rule.to) || (targetAt >= 0 && targetAt <= at));
+  return { to: usable ? rule.to : st.rejectToStage ?? '', rule: usable ? rule : null };
 }
 
 export interface SignoffRouting {
@@ -72,7 +60,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   /* an UNSAT whose reject target is this step (Records Review's default): the signoff is recorded, but
      the step isn't signed, so the joint stays there */
   const rejectsToItself = !asStepId && signing.result === 'unsat'
-    && stepOnJoint(wf.stages, rejectTarget(wf.stages, job, signing, stageId).to)?.id === stageId;
+    && stepOnJoint(wf.stages, resolveRuleTarget(wf.stages, signing, rejectTarget(wf.stages, job, signing, stageId).to))?.id === stageId;
   /* stages with no SAT/UNSAT choice are accepted by signing */
   let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now, wf.history.some(h => h.stageId === stageId && h.section === 'Sign-off')) : wf.stages.map(s => {
     if (s.id !== stageId) return s;
@@ -114,127 +102,75 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     });
   }
 
-  if (st.result === 'unsat' && st.rejectToStage && !rejectsToItself) {
+  /* Table targets share one executor for accepted and rejected signoffs. Counters and
+     insertion bookkeeping belong here; the choice of destination belongs to the tables. */
+  const executeTarget = (destination: string, reason = '') => {
     const currentIdx = stages.findIndex(s => s.id === stageId);
-    const isNdtStage = unsatAddsRepair(stageId);
-    const { to: rejectTo, rule } = rejectTarget(stages, job, st, stageId);
-    if (rule) reasons.push(`a reject rule matched (${describeConditions([rule.when], stageConditionFields(st))})`);
-    /* NDT UNSAT adds a new Repair right after this stage, however many repairs the joint has had,
-       unless a reject rule sends it elsewhere. Excavation NDT is left out: its UNSAT goes back to
-       its own round's Repair. */
-    if (rejectTo === ENGINEERING_HOLD_TARGET) {
-      /* instead of a Repair or a route-back: the joint waits on Engineering Hold, which keeps why */
-      reasons.push('so the joint goes to Engineering Hold instead');
-      stages = insertEngineeringHold(stages, stageId, rule ? rejectHoldReason(st, rule) : '');
-    } else if (isNdtStage && rejectTo === 'repair') {
-      reasons.push('the NDT was UNSAT, so a Repair is added');
-      /* which phase (root/layer/final) this NDT stage belongs to, its own stage id, and which
-         method it was checked under (ut/rt/mt/pt/5x/vt) -- Repair's own routing on signoff, and
-         Excavation NDT's routing back to "the original joint inspection" after a Weld Repair,
-         both need this (see further down). Not real StageFields, just internal bookkeeping on
-         stage.inputs. */
-      const originPhase = baseStepId(stageId).split('-ndt-')[0];
+    if (destination === ENGINEERING_HOLD_TARGET) {
+      stages = insertEngineeringHold(stages, stageId, reason);
+      reasons.push('an Engineering Hold is added');
+      return;
+    }
+    if (destination === 'repair') {
       const repairStage = stageFromTemplate(nextRepairStage(stages), {
-        originPhase,
-        originStageId: stageId,
-        originInspectionType: st.inspectionType,
+        originPhase: st.inputs['originPhase'] || baseStepId(stageId).split('-ndt-')[0],
+        originStageId: st.inputs['originStageId'] || stageId,
+        originInspectionType: st.inputs['originInspectionType'] || st.inspectionType,
       });
-      /* anything after the rejected NDT comes up blank so repair becomes the current routing;
-         earlier repair rounds stay signed as a record */
       const next = stages.slice(currentIdx + 1).find(s => !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id));
       if (next) stages = routeBack({ ...wf, stages }, job, next.id).wf.stages;
       stages = setRoutingFrom([...stages.slice(0, currentIdx + 1), repairStage, ...stages.slice(currentIdx + 1)], repairStage.id);
       repairNumber = String(Number(job.repairNumber || '0') + 1).padStart(2, '0');
-    } else {
-      /* back to the reject target (Fit-Up Insp -> Fit, Excavation NDT -> its own Repair, or a reject rule's) */
-      const targetIdx = stages.findIndex(s => s.id === stepOnJoint(stages, rejectTo)?.id);
-      if (targetIdx >= 0 && targetIdx < currentIdx) {
-        routeBackTo(rejectTo);
-        reasons.push('rejected (UNSAT)');
-      }
+      reasons.push('a Repair is added');
+      return;
     }
-  }
-
-  /* Repair's own routing on signoff: Allowable thickness exceeded takes priority and sends the
-     joint back to that phase's NDT RT/UT stage; otherwise Grind Only sends it back to the NDT
-     stage that rejected it; Weld Repair inserts
-     Excavation NDT right after Repair, built to require the same inspection method that
-     originally rejected the joint (see excavationNdtStage()/resolveExcavationInspectionType()
-     above -- its own SAT/UNSAT routing is handled further down). Cut means the joint is redone:
-     the current routing goes back to Fit and the path starts over (past records are kept), and
-     Refit # goes up by one. No repair code chosen: no special routing. Each repair round is its own stage (isRepairStageId). */
-  if (isRepairStageId(stageId)) {
-    const phase = st.inputs['originPhase'] ?? '';
-    const exceeded = st.inputs['allowableThicknessExceeded'] === 'yes';
-    const repairType = st.inputs['repairType'] ?? '';
-    if (exceeded && phase) {
-      routeBackTo(`${phase}-ndt-utrt`);
-    } else if (repairType === 'grind' && phase) {
-      /* each phase has only the one NDT stage its Joint Details value asks for, so it goes back to the one that failed */
-      routeBackTo(st.inputs['originStageId'] ?? '');
-    } else if (repairType === 'cut') {
-      /* the joint starts over from Fit; the Refit History entry below says so (no Routing entry) */
-      if (stages.some(s => s.id === CUT_RESTARTS_AT)) {
-        const r = routeBack({ ...wf, stages }, job, CUT_RESTARTS_AT);
-        stages = r.wf.stages;
-        fabricationData = r.wf.fabricationData;
+    if (destination === 'add-excavation-ndt') {
+      if (!isRepairStageId(stageId)) return;
+      const id = excavationIdForRepair(stageId);
+      const options = excavationTypeOptions(job, st.inputs['originInspectionType'] ?? '');
+      const resolved = options?.[0]?.value ?? '';
+      const excavation = excavationNdtStageFor(job, resolved, stageId);
+      excavation.inputs['typeChangedFromPtTo5x'] = st.inputs['originInspectionType'] === 'pt' && resolved === '5x' ? 'yes' : '';
+      excavation.typeOptions = options;
+      if (stages.some(s => s.id === id)) stages = stages.map(s => s.id === id ? excavation : s);
+      else stages = [...stages.slice(0, currentIdx + 1), excavation, ...stages.slice(currentIdx + 1)];
+      stages = setRoutingFrom(stages, id);
+      reasons.push('Excavation NDT is added with the rejecting inspection’s Type and its Type exceptions');
+      return;
+    }
+    const target = stepOnJoint(stages, resolveRuleTarget(stages, st, destination));
+    if (!target) return;
+    const to = stages.findIndex(s => s.id === target.id);
+    const cut = isRepairStageId(stageId) && st.inputs['repairType'] === 'cut' && target.id === CUT_RESTARTS_AT;
+    if (to <= currentIdx) {
+      routeBackTo(target.id);
+      stages = stages.map(s => s.id === target.id ? { ...s, repeats: to === currentIdx ? (signing.repeats ?? 0) + 1 : target.repeats } : s);
+      if (cut) {
         refitNumber = String(Number(job.refitNumber || '0') + 1).padStart(2, '0');
+        routedBack = null;
       }
-    } else if (repairType === 'weld-repair') {
-      const repairIdx = stages.findIndex(s => s.id === stageId);
-      const excavationId = excavationIdForRepair(stageId);
-      const hasExcavationAlready = stages.some(s => s.id === excavationId);
-      /* its Excavation NDT UNSAT sent the joint back to this Repair: that Excavation NDT is required again */
-      if (hasExcavationAlready) stages = stages.map(s => s.id === excavationId ? { ...s, required: true } : s);
-      if (repairIdx >= 0 && !hasExcavationAlready) {
-        const originInspectionType = st.inputs['originInspectionType'] ?? '';
-        const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
-        const excavationStage = excavationNdtStageFor(job, resolvedType, stageId);
-        stages = [...stages.slice(0, repairIdx + 1), excavationStage, ...stages.slice(repairIdx + 1)];
-      }
+    } else {
+      const moved = moveRouting({ ...wf, stages, fabricationData }, job, target.id);
+      stages = moved.wf.stages;
+      fabricationData = moved.wf.fabricationData;
+    }
+    if (destination === 'rejecting-vt5x' && st.inputs['typeChangedFromPtTo5x'] === 'yes') {
+      stages = stages.map(s => s.id === target.id ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
+    }
+  };
+
+  if (st.result === 'unsat' && !rejectsToItself) {
+    const { to, rule } = rejectTarget(stages, job, st, stageId);
+    if (to) {
+      reasons.push(rule ? `Reject rule ${describeConditions([rule.when], stageConditionFields(st))} -> ${to}` : `Rejected (UNSAT) -> ${to}`);
+      executeTarget(to, rule ? rejectHoldReason(st, rule) : `${st.label} was UNSAT`);
     }
   }
-
-  /* Excavation NDT SAT: "all weld repairs require the original joint inspection
-     unless otherwise stated" -- goes back to the exact NDT stage that originally rejected the joint
-     (read off the still-present Repair stage's own inputs), UNLESS the same PT/material
-     override applied when Excavation NDT was created (resolveExcavationInspectionType), in
-     which case it goes back to that phase's 5X/VT stage instead. Excavation NDT's own UNSAT is
-     handled generically above via its rejectToStage (its own round's Repair). */
-  if (isExcavationNdtStageId(stageId) && st.result === 'sat') {
-    const repair = stages.find(s => s.id === repairIdForExcavation(stageId));
-    const phase = repair?.inputs['originPhase'] ?? '';
-    const originStageId = repair?.inputs['originStageId'] ?? '';
-    const originInspectionType = repair?.inputs['originInspectionType'] ?? '';
-    const resolvedType = resolveExcavationInspectionType(originInspectionType, phase, job);
-    if (resolvedType !== originInspectionType && phase) {
-      /* the 5X/VT stage normally offers only VT; here it also offers the 5X that replaces PT (Type still blank until picked) */
-      const vtId = stepOnJoint(stages, `${phase}-ndt-vt5x`)?.id ?? '';
-      routeBackTo(vtId);
-      stages = stages.map(s => s.id === vtId ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
-    } else if (originStageId) {
-      routeBackTo(originStageId);
-    }
-  }
-
-  /* Accepted signoffs use the first matching Then go to rule. */
   if (st.result !== 'unsat') {
-    const rule = matchingThenRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.thenRules, job, stages, signing);
-    const target = rule && stepOnJoint(stages, rule.to);
-    if (rule && target) {
-      const from = stages.findIndex(s => s.id === stageId);
-      const to = stages.findIndex(s => s.id === target.id);
-      const count = signing.repeats ?? 0;
-      if (to <= from) {
-        routeBackTo(target.id);
-        stages = stages.map(s => s.id === target.id
-          ? { ...s, repeats: to === from ? count + 1 : (target.repeats ?? 0) } : s);
-      } else {
-        const moved = moveRouting({ ...wf, stages, fabricationData }, job, target.id);
-        stages = moved.wf.stages;
-        fabricationData = moved.wf.fabricationData;
-      }
-      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${target.label}`);
+    const rule = matchingThenRule(getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId))?.thenRules, job, stages, signing);
+    if (rule && (isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
+      executeTarget(rule.to);
+      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
     }
   }
 

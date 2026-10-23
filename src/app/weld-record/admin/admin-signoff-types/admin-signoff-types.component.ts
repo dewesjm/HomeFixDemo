@@ -1,6 +1,7 @@
 /* Admin → Signoff Types By Routing: the seeded table of routing steps that have a Type droplist and
    which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
+import { ExcavationTypeRulesComponent } from './excavation-type-rules.component';
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,15 +15,15 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
   AvailableType,
+  SignoffTypeRow,
   EXCAVATION_TYPE_ROW,
-  REPAIR_TYPE_ROW,
   getSignoffTypeRows,
   setSignoffTypeRows,
 } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes, typeLabel } from '../../signoff-definition/routing-signoff-types';
 import { getTemplates } from '../../routing/stage-templates';
 
-interface TypeRow {
+interface TypeRow extends SignoffTypeRow {
   uid: string;
   stepId: string;
   stepLabel: string;
@@ -35,7 +36,7 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
   selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    ExcavationTypeRulesComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './admin-signoff-types.component.html'
@@ -50,13 +51,11 @@ export class AdminSignoffTypesComponent {
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
-    { id: REPAIR_TYPE_ROW, label: 'Repair' },
-    { id: EXCAVATION_TYPE_ROW, label: 'Excavation NDT' },
   ];
   /* what an option can be: the Types in Admin > Signoff Types */
   readonly typeChoices = getRoutingSignoffTypes();
 
-  rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => this.toRow(r.stepId, r.types)));
+  rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['stepLabel']);
@@ -169,12 +168,18 @@ export class AdminSignoffTypesComponent {
     row.types.forEach((t, i) => { if (i === idx) t.default = true; else delete t.default; });
   }
 
+  reloadTypeRules() {
+    const row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
+    this.rows.update(rows => rows.map(r => r.stepId === EXCAVATION_TYPE_ROW
+      ? { ...r, typeSource: row?.typeSource, typeExceptions: row?.typeExceptions } : r));
+  }
+
   private persist() {
     const editing = this.editingUid();
     setSignoffTypeRows(this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
-      return saved?.stepId ? [{ stepId: saved.stepId, types: saved.types }] : [];
+      return saved?.stepId ? [{ stepId: saved.stepId, types: saved.types, typeSource: saved.typeSource, typeExceptions: saved.typeExceptions }] : [];
     }));
   }
 }

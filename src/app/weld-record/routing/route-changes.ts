@@ -12,12 +12,12 @@ import { fabricationSigned, goesBackPastFabrication } from './built-in-step-rule
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
-const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];
+const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType', 'typeChangedFromPtTo5x'];
 
 /* a stage with nothing entered and not signed; `fresh` is its buildStages() copy, when it has one */
 export function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   const inputs = fresh ? { ...fresh.inputs }
-    : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => isRepairStageId(s.id) && s.inputs[k]).map(k => [k, s.inputs[k]]));
+    : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => (isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) && s.inputs[k]).map(k => [k, s.inputs[k]]));
   return {
     ...s, inputs, signoffInputs: {}, result: null, signed: false, signedAt: null,
     ...(fresh ? { signoffType: fresh.signoffType, inspectionType: fresh.inspectionType } : typeValues(initialInspectionType(s))),
