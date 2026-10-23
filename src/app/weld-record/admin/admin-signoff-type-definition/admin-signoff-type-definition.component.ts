@@ -113,6 +113,12 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* every catalog field can be on any step */
   fieldChoices = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label }));
+  /* the Fields list's search box: fields whose name contains it, any case */
+  fieldSearch = signal('');
+  shownFieldChoices = computed(() => {
+    const text = this.fieldSearch().trim().toLowerCase();
+    return text ? this.fieldChoices.filter(f => f.label.toLowerCase().includes(text)) : this.fieldChoices;
+  });
 
   private labelMap = this.buildLabelMap();
 
@@ -206,6 +212,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   addRow() {
     this.table.clearFilters();
+    this.fieldSearch.set('');
     this.editing.set({
       uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condGroup: conditionToWork(undefined),
       fillStepId: '', fillFieldKey: '',
@@ -213,6 +220,7 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   openEdit(row: DefRow) {
+    this.fieldSearch.set('');
     this.editing.set({
       uid: row.uid,
       stepId: row.stepId,

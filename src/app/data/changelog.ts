@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
     added: [
+      'Admin → Signoff Type Definition: the Fields list in the edit window has a search box that narrows it to the fields whose name contains what you type.',
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     changed: [

@@ -109,7 +109,9 @@
 
         <ng-container *ngTemplateOutlet="sectionHeading; context: { label: 'Fields', open: fieldsOpen() }"></ng-container>
         <div class="mb-4" [hidden]="!fieldsOpen()">
-          @for (f of fieldChoices; track f.key) {
+          <input type="search" class="input input-bordered input-sm w-full max-w-xs mb-2" placeholder="Search fields"
+                 aria-label="Search fields" [ngModel]="fieldSearch()" (ngModelChange)="fieldSearch.set($event)" />
+          @for (f of shownFieldChoices(); track f.key) {
             <div class="border-b border-base-300 last:border-0 py-1">
               <div class="flex items-center gap-2 py-1">
                 <input type="checkbox" class="checkbox checkbox-sm"
@@ -128,6 +130,8 @@
                                             (groupChange)="setCondGroup($event)" (fillSourceChange)="setFillSource($event)" />
               }
             </div>
+          } @empty {
+            <div class="text-sm py-1">No fields match "{{ fieldSearch().trim() }}".</div>
           }
         </div>
 
