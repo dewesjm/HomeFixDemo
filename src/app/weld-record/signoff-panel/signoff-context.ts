@@ -19,13 +19,11 @@ export interface SignoffContext {
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
   visibleFields: (stage: WorkflowStage) => StageField[];
   visibleSignoffFields: (stage: WorkflowStage) => SignoffField[];
-  startsGroup: (stage: WorkflowStage, field: StageField) => boolean;
   fieldError: (stageId: string, fieldKey: string) => string | undefined;
   clearFieldError: (stageId: string, fieldKey: string) => void;
   getFabValue: (fieldKey: string) => string;
   getReviewValue: (fieldKey: string) => string;
   inspectionTypeRequired: (stage: WorkflowStage) => boolean;
-  hasOverrideFields: (stage: WorkflowStage) => boolean;
   routePreviewLabel: (stage: WorkflowStage) => string;
   holdNote: () => string;
   /* back to the list the joint was opened from, as after any signoff */

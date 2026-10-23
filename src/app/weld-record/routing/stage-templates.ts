@@ -4,7 +4,7 @@
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
-import { SignoffForm, StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';
 import { isFitupInspId } from './step-ids';
@@ -38,7 +38,7 @@ interface SerializedStage {
   rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
   fabricationCompleteToSign?: boolean;
-  form?: SignoffForm;
+  neverSigned?: boolean;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -54,19 +54,19 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectRulesEdited: t.rejectRulesEdited,
     fabricationEditable: t.fabricationEditable ?? false,
     fabricationCompleteToSign: t.fabricationCompleteToSign ?? false,
-    form: t.form ?? 'generic',
+    neverSigned: t.neverSigned ?? false,
   };
 }
 
-/* saves from before step conditions / Fabrication editable / Fabrication complete to sign / Form existed:
-   keep the built-in values for those */
+/* saves from before step conditions / Fabrication editable / Fabrication complete to sign / Never signed
+   existed: keep the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [], role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false,
     fabricationCompleteToSign: s.fabricationCompleteToSign ?? builtIn?.fabricationCompleteToSign ?? false,
-    form: s.form ?? builtIn?.form ?? 'generic' };
+    neverSigned: s.neverSigned ?? builtIn?.neverSigned ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -175,13 +175,9 @@ export function templateHasRejectTarget(stepId: string): boolean {
   return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.rejectToStage));
 }
 
-/* a routing step's Form (Admin > Routing Settings), or undefined when no trade has the step */
-export function templateForm(stepId: string): SignoffForm | undefined {
-  for (const list of Object.values(getTemplates())) {
-    const t = list.find(s => s.id === stepId);
-    if (t) return t.form ?? 'generic';
-  }
-  return undefined;
+/* whether any trade's step with this id is Never signed (Admin > Routing Settings), e.g. Sold */
+export function templateNeverSigned(stepId: string): boolean {
+  return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.neverSigned));
 }
 
 /* all unique stage ids across all trades (for the admin screen) */

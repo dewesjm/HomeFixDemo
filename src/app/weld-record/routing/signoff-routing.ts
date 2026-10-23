@@ -15,12 +15,12 @@ import {
   repairIdForExcavation,
   excavationIdForRepair,
   baseStepId,
+  isRecordsReviewId,
   stepOnJoint,
 } from './step-ids';
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { getTemplates } from './stage-templates';
 import { typeRepeatable } from '../signoff-definition/signoff-types';
-import { signoffForm } from '../signoff-definition/signoff-forms';
 import { repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
@@ -43,7 +43,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* Records Review UNSAT doesn't route anywhere yet (where it should go is undecided): the signoff is
    recorded but the stage isn't signed, so the joint stays there */
-const isRecordsReviewUnsat = (s: WorkflowStage) => signoffForm(s) === 'records-review' && s.result === 'unsat';
+const isRecordsReviewUnsat = (s: WorkflowStage) => isRecordsReviewId(s.id) && s.result === 'unsat';
 const staysPut = (s: WorkflowStage) => repeatable(s) || isRecordsReviewUnsat(s);
 
 export interface SignoffRouting {

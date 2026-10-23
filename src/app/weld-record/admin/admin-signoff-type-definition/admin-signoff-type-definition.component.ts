@@ -2,12 +2,12 @@
    A step's row expands to one line per field, its rules stacked as Conditions | Behaviors. Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
    as Weld Build-Up; editing
    picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
-   this step or the WTN), when it's disabled, and when it's required (Never / Always / When). While the
-   Layout from Signoff Type Definition toggle is on, the dialog's Layout list also sets the order,
-   which fields share a line, their widths, headings, and where Inspection Results goes. Conditions are
-   AND/OR groups (condition-group-editor). Add's step list is the steps in Admin > Signoff Type
-   Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v8 (step-field-config.ts). */
+   this step or the WTN), when it's disabled, and when it's required (Never / Always / When). The
+   dialog's Layout list sets the order, which fields share a line, their widths, headings, and where
+   Inspection Results goes, and a step with verify-grid rows says what they're checked against.
+   Conditions are AND/OR groups (condition-group-editor). Add's step list is the steps in Admin >
+   Signoff Type Availability; picking one that already has a definition edits it.
+   Stored in welding:step-field-config:v11 (step-field-config.ts). */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +22,6 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { featureToggles } from '../../../data/feature-toggles';
 import {
   DEFAULT_STEP_FIELD_ACTIVATIONS,
   StepFieldActivation,
@@ -36,8 +35,9 @@ import {
   TYPE_KEY,
   definitionFields,
   isHeadingItem,
+  type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
-import { FIELD_CATALOG, lookupCatalogField } from '../../signoff-definition/field-catalog';
+import { FIELD_CATALOG, isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,
@@ -66,7 +66,7 @@ import {
   signoffTypeOptions,
 } from '../../signoff-definition/signoff-types';
 import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
-import { drawnByOwnForm, isVerifyGrid, drawnOutsideForm } from '../../signoff-definition/signoff-forms';
+import { drawnByOwnForm, drawnOutsideForm } from '../../signoff-definition/signoff-forms';
 import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
 import type { FieldCondition } from '../../signoff-definition/field-conditions';
@@ -84,6 +84,7 @@ interface DefRow {
   fieldLabels: string;          // flat text used for table search
   fieldActivations: FieldActivation[];
   fieldRules: { key: string; label: string; lines: FieldRuleLine[] }[];
+  verifyAgainst?: VerifyAgainst;
 }
 
 /* which of a field's conditions the editor is changing */
@@ -98,6 +99,7 @@ interface EditState {
   stepId: string;
   stepLabel: string;
   fieldActivations: FieldActivation[];
+  verifyAgainst?: VerifyAgainst;
   condKey: string | null;      /* field key whose condition editor is open */
   condKind: CondKind;
   condGroup: WorkGroup;        /* working copy of the open field's condition */
@@ -175,20 +177,20 @@ export class AdminSignoffTypeDefinitionComponent {
     /* all default steps */
     const rows: DefRow[] = DEFAULT_STEP_FIELD_ACTIVATIONS.map(def => {
       const act = stored.find(a => a.stepId === def.stepId) ?? def;
-      return this.toRow(def.stepId, act.fields);
+      return this.toRow(def.stepId, act.fields, act.verifyAgainst ?? def.verifyAgainst);
     });
 
     /* any custom stored steps not in the defaults */
     for (const act of stored) {
       if (!DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === act.stepId)) {
-        rows.push(this.toRow(act.stepId, act.fields));
+        rows.push(this.toRow(act.stepId, act.fields, act.verifyAgainst));
       }
     }
 
     return rows;
   }
 
-  private toRow(stepId: string, fields: FieldActivation[]): DefRow {
+  private toRow(stepId: string, fields: FieldActivation[], verifyAgainst?: VerifyAgainst): DefRow {
     const fieldRules = definitionFields(fields).map(f => ({
       key: f.key,
       label: lookupCatalogField(f.key)?.label ?? f.key,
@@ -201,6 +203,7 @@ export class AdminSignoffTypeDefinitionComponent {
       fieldLabels: fieldRules.map(f => f.label).join(', '),
       fieldActivations: fields.map(f => ({ ...f })),
       fieldRules,
+      ...(verifyAgainst && { verifyAgainst }),
     };
   }
 
@@ -240,6 +243,7 @@ export class AdminSignoffTypeDefinitionComponent {
       stepId: row.stepId,
       stepLabel: row.stepLabel,
       fieldActivations: row.fieldActivations.map(copyActivation),
+      verifyAgainst: row.verifyAgainst,
       condKey: null,
       condKind: 'show',
       condGroup: conditionToWork(undefined),
@@ -259,7 +263,7 @@ export class AdminSignoffTypeDefinitionComponent {
     /* commit any open condition editor first */
     if (e.condKey) this.applyCondClauses(e);
 
-    const updated = this.toRow(e.stepId, e.fieldActivations);
+    const updated = this.toRow(e.stepId, e.fieldActivations, this.hasVerifyRows(e) ? e.verifyAgainst ?? 'record' : undefined);
 
     if (e.uid) {
       this.rows.update(r => r.map(x => x.uid === e.uid ? { ...updated, uid: e.uid } : x));
@@ -303,7 +307,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   private toRowFromDefaults(stepId: string, uid: string): DefRow {
     const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId);
-    const row = this.toRow(stepId, def?.fields ?? []);
+    const row = this.toRow(stepId, def?.fields ?? [], def?.verifyAgainst);
     return { ...row, uid };
   }
 
@@ -519,15 +523,17 @@ export class AdminSignoffTypeDefinitionComponent {
     return [...type, ...result, ...own];
   });
 
-  /* ── Layout (Layout from Signoff Type Definition toggle) ── */
+  /* ── Verify grid ── */
 
-  layoutOn = computed(() => featureToggles().definitionLayout);
+  hasVerifyRows(e: EditState): boolean {
+    return e.fieldActivations.some(a => isVerifyRow(a.key));
+  }
 
-  /* the Fit-Up Insp and Records Review grids use only the order */
-  orderOnly = computed(() => {
-    const stepId = this.editing()?.stepId;
-    return !!stepId && isVerifyGrid({ id: stepId, signoffType: '' });
-  });
+  setVerifyAgainst(value: VerifyAgainst) {
+    this.editing.update(e => e ? { ...e, verifyAgainst: value } : e);
+  }
+
+  /* ── Layout ── */
 
   readonly isHeading = isHeadingItem;
 
@@ -538,6 +544,16 @@ export class AdminSignoffTypeDefinitionComponent {
   /* Type, Comments and References keep their own spot outside the form, whatever the order */
   isOutsideForm(a: FieldActivation): boolean {
     return drawnOutsideForm(a.key);
+  }
+
+  /* drawn as a block the width of the form: a verify-grid row (the grid goes where its first shown
+     row is) or Signoff History; no width or same line */
+  isBlockItem(a: FieldActivation): boolean {
+    return isVerifyRow(a.key) || a.key === 'signoffHistory';
+  }
+
+  blockNote(a: FieldActivation): string {
+    return isVerifyRow(a.key) ? 'A row of the verify grid, which is drawn where its first shown row is.' : this.fieldNote(a.key);
   }
 
   itemLabel(a: FieldActivation): string {
@@ -581,7 +597,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   private persist() {
     const config: StepFieldActivation[] = this.rows()
-      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations }));
+      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations, ...(r.verifyAgainst && { verifyAgainst: r.verifyAgainst }) }));
     setStepFieldConfig(config);
   }
 

@@ -4,30 +4,20 @@ import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
 import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
-import {
-  COMMENTS_FIELD,
-  drawsFromDefinition,
-  hasCommentsBox,
-  panelDrawsQualCheck,
-  signoffForm,
-} from '../signoff-definition/signoff-forms';
+import { COMMENTS_FIELD, hasCommentsBox, isNeverSigned } from '../signoff-definition/signoff-forms';
 import { hasDecision, showsType } from '../signoff-definition/stage-rules';
+import { isEngineeringHoldId } from '../routing/step-ids';
 import { ndtLayerType } from '../routing/ndt';
-import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
-import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
-import { CatalogStageFormComponent } from './catalog-stage-form.component';
+import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
-import { FitSignoffFormComponent } from './fit-signoff-form.component';
-import { NdtDefectCodeComponent } from './ndt-defect-code.component';
 import { SignoffContext } from './signoff-context';
-import { StageDecisionComponent } from './stage-decision.component';
 
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX,
-    CatalogStageFormComponent, EngineeringReleaseComponent, FitSignoffFormComponent, NdtDefectCodeComponent, StageDecisionComponent],
+    DefinitionFormComponent, EngineeringReleaseComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {
@@ -37,18 +27,18 @@ export class SignoffPanelComponent {
 
   foremanOverrideEnabled = FOREMAN_OVERRIDE_ENABLED;
   commentsField = COMMENTS_FIELD;
-  readonly signoffForm = signoffForm;
-  readonly drawsFromDefinition = drawsFromDefinition;
   readonly hasCommentsBox = hasCommentsBox;
   readonly hasDecision = hasDecision;
   readonly showsType = showsType;
-
-  /* inspection steps have no Qualification Check field; they check the conditions the joint and step match */
-  inspectionQualCheck(st: WorkflowStage): QualCheckResult | null {
-    return panelDrawsQualCheck(st) ? qualCheck(heldQuals(), conditionRequirements(this.ctx().job, st)) : null;
-  }
+  readonly isNeverSigned = isNeverSigned;
+  readonly isEngineeringHold = isEngineeringHoldId;
 
   layerType(st: WorkflowStage): string {
     return ndtLayerType(st.id);
+  }
+
+  /* a step that records a WTN: the Foreman Override button (switched off) shows there */
+  recordsWtn(st: WorkflowStage): boolean {
+    return this.ctx().visibleFields(st).some(f => f.key === 'wtn');
   }
 }

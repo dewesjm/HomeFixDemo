@@ -3,12 +3,11 @@
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../../../data/jobs';
 import { StageField, WorkflowStage } from '../../model/workflow-types';
-import { signoffForm, isVerifyGrid } from '../../signoff-definition/signoff-forms';
 import { fabricationCompleteToSign } from '../../routing/current-routing';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
-import { definitionHas } from '../../signoff-definition/step-field-config';
+import { definitionHas, verifyAgainst } from '../../signoff-definition/step-field-config';
 import { isVerifyRow } from '../../signoff-definition/field-catalog';
 import { affectedMicRule } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
@@ -60,8 +59,8 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
     if (Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   }
-  if (isVerifyGrid(stage) && unverifiedRows(stage, ctx).length) {
-    reasons.push(signoffForm(stage) === 'fitup-insp' ? 'Verify every fitting value' : 'Verify every required record field');
+  if (unverifiedRows(stage, ctx).length) {
+    reasons.push(verifyAgainst(stage) === 'fabrication' ? 'Verify every fitting value' : 'Verify every required record field');
   }
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) reasons.push(rt);
@@ -87,10 +86,8 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
     if (err && !errors[key(pair.max)]) errors[key(pair.max)] = err;
   }
-  /* Fit-Up Insp, Records Review: each unchecked required row gets its own error (the blockers give one summary reason) */
-  if (isVerifyGrid(stage)) {
-    for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = `${f.label} must be verified`;
-  }
+  /* each unchecked required verify-grid row gets its own error (the blockers give one summary reason) */
+  for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = `${f.label} must be verified`;
   /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and each picked
      member's MIC verified row checked while its rule makes it required (affectedMicRule) */
   if (definitionHas(stage, 'affectedItem')) {

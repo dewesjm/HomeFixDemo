@@ -9,6 +9,8 @@ export const WELD_BUILDUP_DEFINITION = 'fit-weld-buildup';
 export const nqcStepId = (id: string) => `${NQC_PREFIX}${id}`;
 export const baseStepId = (id: string) => id.startsWith(NQC_PREFIX) ? id.slice(NQC_PREFIX.length) : id;
 export const isFitupInspId = (id: string) => baseStepId(id) === 'fitup-insp';
+/* the O63 and O04 Records Review steps */
+export const isRecordsReviewId = (id: string) => /^review-/.test(id);
 /* the joint's own step for a built-in id: that step, or its NQC / regular twin */
 export function stepOnJoint<T extends { id: string }>(stages: T[], id: string): T | undefined {
   return stages.find(s => s.id === id) ?? stages.find(s => baseStepId(s.id) === baseStepId(id));

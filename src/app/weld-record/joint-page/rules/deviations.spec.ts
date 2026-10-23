@@ -75,14 +75,16 @@ describe('deviations', () => {
     expect(detectDeviations(stage, new Set(), [])).toEqual([]);
   });
 
-  it('checks condition quals on a welding step with no WPS picked and on an inspection step', () => {
+  it('checks condition quals on a welding step with no WPS picked and on an inspection step showing the check', () => {
     const job = { ...addTestJob(), nInd: '3' };
     const tack = buildStages(job).find(s => s.id === 'tack')!;
     const req = [{ op: 'all' as const, items: ['CNTRLMTL1'] }];
     expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, req))
       .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1', required: 'CNTRLMTL1' })]);
     const insp = buildStages(job).find(s => s.id === 'fitup-insp')!;
-    expect(detectDeviations(insp, new Set(), [], undefined, req).map(i => i.kind)).toEqual(['qual']);
-    expect(detectDeviations(insp, new Set(), ['CNTRLMTL1'], undefined, req)).toEqual([]);
+    const qualShown = new Set(['qualificationCheck']);
+    expect(detectDeviations(insp, qualShown, [], undefined, req).map(i => i.kind)).toEqual(['qual']);
+    expect(detectDeviations(insp, qualShown, ['CNTRLMTL1'], undefined, req)).toEqual([]);
+    expect(detectDeviations(insp, new Set(), [], undefined, req)).toEqual([]);
   });
 });

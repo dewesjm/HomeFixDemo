@@ -52,13 +52,13 @@ import { inspectionTypeRequired, showsReferences } from '../signoff-definition/s
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
 import { fillChanges } from '../signoff-definition/field-fill';
-import { signoffForm } from '../signoff-definition/signoff-forms';
+import { isNeverSigned } from '../signoff-definition/signoff-forms';
 import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
 import {
-  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields,
+  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, visibleStageFields,
 } from './rules/stage-form';
 import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
 import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from './rules/sign-validation';
@@ -140,7 +140,7 @@ export class JointPageComponent implements OnDestroy {
   currentRouting = computed(() => (this.wf ? currentRoutingLabel(this.wf().stages) : ''));
   /* done when all required stages signed */
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
-  soldSigned = computed(() => !!this.wf?.().stages.some(s => signoffForm(s) === 'sold' && s.signed));
+  soldSigned = computed(() => !!this.wf?.().stages.some(s => isNeverSigned(s) && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
   fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.job.trade, this.wf().stages));
   /* id of stage awaiting sign-off, null when done */
@@ -252,13 +252,11 @@ export class JointPageComponent implements OnDestroy {
       inputsEditable: (s, i) => this.inputsEditable(s, i),
       visibleFields: (s) => this.visibleFields(s),
       visibleSignoffFields: (s) => this.visibleSignoffFields(s),
-      startsGroup: (s, f) => startsGroup(s, f),
       fieldError: (sid, fk) => this.fieldError(sid, fk),
       clearFieldError: (sid, fk) => this.clearFieldError(sid, fk),
       getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
       getReviewValue: (k) => reviewVerifyValue(k, job),
       inspectionTypeRequired: (s) => inspectionTypeRequired(s),
-      hasOverrideFields: (s) => this.visibleFields(s).some(f => f.key.startsWith('override')),
       routePreviewLabel: (s) => this.routePreviewLabel(s),
       holdNote: () => this.holdNote(),
       leaveAfterSignoff: () => this.router.navigate([this.backDestination()]),

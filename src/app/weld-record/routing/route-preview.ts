@@ -13,8 +13,8 @@ import { WorkflowStage } from '../model/workflow-types';
 import { excavationNdtStage } from './added-steps';
 import { getTemplates } from './stage-templates';
 import { hasDecision } from '../signoff-definition/stage-rules';
-import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
-import { signoffForm } from '../signoff-definition/signoff-forms';
+import { isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
+import { isNeverSigned } from '../signoff-definition/signoff-forms';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 
 export type SignoffPreview = (result?: WorkflowStage['result']) => { target: WorkflowStage | undefined; reasons: string[] };
@@ -30,7 +30,7 @@ function routeLabel(job: Job, stages: WorkflowStage[], stage: WorkflowStage, act
     const templates = getTemplates()[job.trade] ?? [];
     return repairRouteLabel(job, stages, stage, id => { const t = templates.find(t => t.id === id); return t?.displayName || t?.label || id; });
   }
-  if (stage.signed || stage.id !== activeId || ['sold', 'engineering-hold'].includes(signoffForm(stage))) return '';
+  if (stage.signed || stage.id !== activeId || isNeverSigned(stage) || isEngineeringHoldId(stage.id)) return '';
   const from = stages.findIndex(s => s.id === stage.id);
   const phrase = (when: string, result?: WorkflowStage['result']) => {
     const { target, reasons } = preview(result);

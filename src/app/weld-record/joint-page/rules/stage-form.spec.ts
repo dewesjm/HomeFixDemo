@@ -9,7 +9,7 @@ import {
 } from '../../signoff-definition/step-field-config';
 import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import {
-  typedRequirementError, rtDegreeRequired, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues, startsGroup,
+  typedRequirementError, rtDegreeRequired, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
 } from './stage-form';
 import { typeChange } from './type-change';
@@ -160,7 +160,7 @@ describe('joint-form stage-form', () => {
     expect(stageFieldOptions(field(tack, 'phMin'), tack, ctxFor(j)).type).toBe('text');
   });
 
-  it('finds dependent fields left holding a value after their trigger changed, and the trigger fields', () => {
+  it('finds dependent fields left holding a value after their trigger changed', () => {
     const tpl: StageTemplate = { id: 'x', label: 'X', required: true, signoffFields: [], fields: [
       { key: 'kind', label: 'Kind', type: 'select' },
       { key: 'detail', label: 'Detail', type: 'text', showIf: { key: 'kind', equals: 'a' } },
@@ -168,7 +168,5 @@ describe('joint-form stage-form', () => {
     const stage = stageFromTemplate(tpl, { kind: 'b', detail: 'left over' });
     expect(hiddenFieldsWithValues(stage).map(f => f.key)).toEqual(['detail']);
     expect(hiddenFieldsWithValues({ ...stage, inputs: { kind: 'a', detail: 'shown' } })).toEqual([]);
-    expect(startsGroup(stage, stage.fields[0])).toBeTrue();
-    expect(startsGroup(stage, stage.fields[1])).toBeFalse();
   });
 });

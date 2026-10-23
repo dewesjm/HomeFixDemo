@@ -99,10 +99,6 @@
 
       <div class="overflow-y-auto flex-1 min-h-0">
         <h4 class="font-semibold mb-2">Fields</h4>
-        <!-- the built-in Weld and Fit layouts draw only their own fields -->
-        @if (!layoutOn()) {
-          <p class="text-sm mb-2">A field added to a welding step or Pre-Fit/Fit shows on the joint page only while Admin &gt; Feature Toggles &gt; Layout from Signoff Type Definition is on.</p>
-        }
         <div class="mb-4">
           @for (f of fieldChoices; track f.key) {
             <div class="border-b border-base-300 last:border-0 py-1">
@@ -123,9 +119,18 @@
           }
         </div>
 
-        @if (layoutOn()) {
-          <ng-container *ngTemplateOutlet="layoutList"></ng-container>
+        <!-- the verify grid's Value column: Fabrication (Fit-Up Insp) or the joint's record (Records Review) -->
+        @if (hasVerifyRows(e)) {
+          <label class="flex items-center gap-2 mb-4 text-sm">
+            <span class="font-semibold">Verify grid checks against</span>
+            <select class="select select-bordered select-sm w-auto" [ngModel]="e.verifyAgainst ?? 'record'" (ngModelChange)="setVerifyAgainst($event)">
+              <option value="fabrication">Fabrication values</option>
+              <option value="record">The joint's record</option>
+            </select>
+          </label>
         }
+
+        <ng-container *ngTemplateOutlet="layoutList"></ng-container>
       </div>
 
       <div class="modal-action">
@@ -226,64 +231,56 @@
 </ng-template>
 
 <!-- Layout: the order the form draws the ticked fields in, which share a line, their widths, headings,
-     and where Inspection Results goes (Layout from Signoff Type Definition toggle) -->
+     and where Inspection Results goes -->
 <ng-template #layoutList>
   @if (editing(); as e) {
     <h4 class="font-semibold mb-1">Layout</h4>
-    @if (orderOnly()) {
-      <p class="text-sm mb-2">This step's fields are a grid of values to check off, drawn in this order.</p>
-    } @else {
-      <p class="text-sm mb-2">The form draws the fields in this order, each on a new line unless "Same line" is ticked, which puts it on the line of the field above. Fields on a line share its width; a Width (in pixels) is the most that field is drawn wide, and narrow screens still shrink it. A heading can start a box around the fields under it.</p>
-    }
+    <p class="text-sm mb-2">The form draws the fields in this order, each on a new line unless "Same line" is ticked, which puts it on the line of the field above. Fields on a line share its width; a Width (in pixels) is the most that field is drawn wide, and narrow screens still shrink it. A heading can start a box around the fields under it.</p>
     <div class="mb-2">
       @for (a of e.fieldActivations; track a.key; let i = $index, first = $first, last = $last) {
-        @if (!isHeading(a) || !orderOnly()) {
-          <div class="flex items-center gap-2 py-1 border-b border-base-300 last:border-0">
-            <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
-              <svg lucideArrowUp class="size-4"></svg>
+        <div class="flex items-center gap-2 py-1 border-b border-base-300 last:border-0">
+          <button type="button" class="btn btn-ghost btn-xs" title="Move up" [disabled]="first" (click)="moveItem(i, -1)">
+            <svg lucideArrowUp class="size-4"></svg>
+          </button>
+          <button type="button" class="btn btn-ghost btn-xs" title="Move down" [disabled]="last" (click)="moveItem(i, 1)">
+            <svg lucideArrowDown class="size-4"></svg>
+          </button>
+          @if (isHeading(a)) {
+            <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
+                   aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
+            <label class="flex items-center gap-1 text-sm cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.newBox"
+                     (change)="setItem(i, { newBox: $any($event.target).checked })" />
+              Starts a box
+            </label>
+            <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove heading" (click)="removeHeading(i)">
+              <svg lucideX class="size-4"></svg>
             </button>
-            <button type="button" class="btn btn-ghost btn-xs" title="Move down" [disabled]="last" (click)="moveItem(i, 1)">
-              <svg lucideArrowDown class="size-4"></svg>
-            </button>
-            @if (isHeading(a)) {
-              <input type="text" class="input input-bordered input-sm flex-1" placeholder="Heading text (blank for a box with no title)"
-                     aria-label="Heading text" [ngModel]="a.heading" (ngModelChange)="setItem(i, { heading: $event })" />
-              <label class="flex items-center gap-1 text-sm cursor-pointer">
-                <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.newBox"
-                       (change)="setItem(i, { newBox: $any($event.target).checked })" />
-                Starts a box
-              </label>
-              <button type="button" class="btn btn-ghost btn-xs text-error" title="Remove heading" (click)="removeHeading(i)">
-                <svg lucideX class="size-4"></svg>
-              </button>
-            } @else if (isDecision(a)) {
-              <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">On its own line.</span></span>
-            } @else if (isOutsideForm(a) && !orderOnly()) {
-              <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ fieldNote(a.key) }}</span></span>
-            } @else {
-              <span class="text-sm flex-1">{{ itemLabel(a) }}</span>
-              @if (!orderOnly()) {
-                <label class="flex items-center gap-1 text-sm">
-                  Width
-                  <input type="number" min="1" step="1" class="input input-bordered input-sm w-24" placeholder="Share"
-                         [attr.aria-label]="'Width of ' + itemLabel(a) + ' in pixels'"
-                         [ngModel]="a.width" (ngModelChange)="setItem(i, { width: $event })" />
-                </label>
-                <label class="flex items-center gap-1 text-sm cursor-pointer">
-                  <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.sameLine"
-                         (change)="setItem(i, { sameLine: $any($event.target).checked })" />
-                  Same line
-                </label>
-              }
-            }
-          </div>
-        }
+          } @else if (isDecision(a)) {
+            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">On its own line.</span></span>
+          } @else if (isOutsideForm(a)) {
+            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ fieldNote(a.key) }}</span></span>
+          } @else if (isBlockItem(a)) {
+            <span class="text-sm flex-1">{{ itemLabel(a) }}<span class="text-xs block">{{ blockNote(a) }}</span></span>
+          } @else {
+            <span class="text-sm flex-1">{{ itemLabel(a) }}</span>
+            <label class="flex items-center gap-1 text-sm">
+              Width
+              <input type="number" min="1" step="1" class="input input-bordered input-sm w-24" placeholder="Share"
+                     [attr.aria-label]="'Width of ' + itemLabel(a) + ' in pixels'"
+                     [ngModel]="a.width" (ngModelChange)="setItem(i, { width: $event })" />
+            </label>
+            <label class="flex items-center gap-1 text-sm cursor-pointer">
+              <input type="checkbox" class="checkbox checkbox-sm" [checked]="!!a.sameLine"
+                     (change)="setItem(i, { sameLine: $any($event.target).checked })" />
+              Same line
+            </label>
+          }
+        </div>
       }
     </div>
-    @if (!orderOnly()) {
-      <button type="button" class="btn btn-ghost btn-sm" (click)="addHeading()">
-        <svg lucidePlus class="size-4"></svg> Add heading
-      </button>
-    }
+    <button type="button" class="btn btn-ghost btn-sm" (click)="addHeading()">
+      <svg lucidePlus class="size-4"></svg> Add heading
+    </button>
   }
 </ng-template>

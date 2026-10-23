@@ -25,8 +25,8 @@ export function buildStages(job: Job): WorkflowStage[] {
     /* Sold follows whichever Records track reviewed the job */
     const role = t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
     let fields = [...t.fields];
-    /* steps with the weld form get the override fields */
-    if (t.form === 'weld') {
+    /* steps that record a WTN get the override fields (shown for matching WTNs) */
+    if (fields.some(f => f.key === 'wtn')) {
       fields = [...fields, ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f }))];
     }
     return {

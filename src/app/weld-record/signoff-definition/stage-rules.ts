@@ -1,7 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from '../model/workflow-types';
 import { WELD_BUILDUP_DEFINITION, baseStepId, isRepairStageId } from '../routing/step-ids';
-import { QUAL_CHECK_KEY, drawnByOwnForm } from './signoff-forms';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } from './step-field-config';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
@@ -92,6 +91,7 @@ const OWN_SPOT_NOTES: Record<string, string> = {
   decision: 'UNSAT can be signed only on a step with a Reject routes to target (Admin > Routing Settings).',
   comments: 'Drawn below the form.',
   references: 'Drawn as the References panel under the sign-off.',
+  signoffHistory: "The joint's History table, where the Layout list places it.",
 };
 
 /* what a field means on a step's definition: where the panel draws it, or for a routing-read field,
@@ -100,7 +100,6 @@ const OWN_SPOT_NOTES: Record<string, string> = {
 export function definitionFieldNote(stageId: string, key: string): string {
   if (key === TYPE_KEY && stageId === WELD_BUILDUP_DEFINITION) return "Not used here: Fit's own definition decides whether Fit shows Type, also when signed as Weld Build-Up.";
   if (key in OWN_SPOT_NOTES) return OWN_SPOT_NOTES[key];
-  if (key === QUAL_CHECK_KEY && drawnByOwnForm(stageId, key)) return "Drawn above the form: the signer's quals checked against the joint's condition quals (Admin > Qualifications).";
   if (key in AFFECTED_ITEM_PART_NOTES) return AFFECTED_ITEM_PART_NOTES[key];
   if (stageId === WELD_BUILDUP_DEFINITION) return '';
   if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';

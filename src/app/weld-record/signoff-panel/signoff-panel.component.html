@@ -1,5 +1,5 @@
-<!-- The sign-off frame every step shares (Type, Inspection Results, Comments, Signoff), with the
-     step's own form from signoffForm() in the middle -->
+<!-- The sign-off frame every step shares (Type, Comments, Signoff), with the step's form laid out
+     from its Signoff Type Definition in the middle -->
 <section class="panel signoff-panel">
   <h3 class="panel-title"><svg lucideBadgeCheck class="size-4"></svg> Signoff</h3>
 
@@ -21,8 +21,6 @@
   }
 
   @if (stage(); as st) {
-    @let form = signoffForm(st);
-
     <!-- Type dropdown: options from Signoff Type Availability, shown while the step's definition lists Type -->
     @if (showsType(st)) {
       <div class="mb-sm">
@@ -55,38 +53,12 @@
       </div>
     }
 
-    <!-- Qualification Check when the definition lists it and the form isn't the weld form (which draws it among its fields) -->
-    @if (inspectionQualCheck(st); as qc) {
-      <div class="mb-sm">
-        <div class="stage-field">
-          <span class="stage-field-label">Qualification Check</span>
-          <div class="stage-readonly-value" [class.text-error]="qc.status === 'failed'" [class.font-semibold]="qc.status === 'failed'">{{ qc.message }}</div>
-        </div>
-      </div>
-    }
-
-    <!-- the step's own form; Fit's sits below with the sign-off, since it's all sign-off fields -->
+    <!-- the step's form, Inspection Results included where its Layout list places it -->
     <div class="mb-3">
-      <app-catalog-stage-form [ctx]="ctx()" [stage]="st" />
+      <app-definition-form [ctx]="ctx()" [stage]="st" />
     </div>
 
     @if (st.required) {
-      <!-- drawn among the step's fields instead while its form comes from its definition -->
-      @if (form === 'fit' && !drawsFromDefinition(st)) {
-        <app-fit-signoff-form [ctx]="ctx()" [stage]="st" />
-      }
-
-      <!-- Decision (SAT/UNSAT) on its own line, and an NDT step's Defect Code below it; a form drawn
-           from its definition places both itself -->
-      @if (!drawsFromDefinition(st)) {
-        @if (hasDecision(st)) {
-          <app-stage-decision class="mb-sm" [ctx]="ctx()" [stage]="st" />
-        }
-        @if (form === 'ndt') {
-          <app-ndt-defect-code [ctx]="ctx()" [stage]="st" />
-        }
-      }
-
       <!-- Comments: while the step's definition lists it (hasCommentsBox), saved with the sign-off -->
       @if (hasCommentsBox(st)) {
         <div class="mb-sm">
@@ -98,10 +70,10 @@
       }
 
       <div class="signoff-actions">
-        @if (form === 'sold') {
-          <span class="badge badge-success">SOLD</span>
+        @if (isNeverSigned(st)) {
+          <span class="badge badge-success">{{ st.label | uppercase }}</span>
           <span class="meta">Job closed - deprogress to reverse</span>
-        } @else if (!st.signed && form === 'engineering-hold') {
+        } @else if (!st.signed && isEngineeringHold(st.id)) {
           <div class="w-full"><app-engineering-release [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
@@ -116,7 +88,7 @@
               <svg lucideTriangleAlert class="size-4"></svg> Engineering Override
             </button>
           }
-          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || form === 'weld')) {
+          @if (foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || recordsWtn(st))) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->
             <span class="spacer"></span>
             <button type="button" class="btn btn-outline" (click)="ctx().foremanOverride(st)">

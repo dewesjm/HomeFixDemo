@@ -39,8 +39,8 @@ export interface CatalogField {
   maxField?: string;
   fullWidth?: boolean;
   description?: string;
-  /* the steps whose own form draws it its own way (Pre-Fit/Fit's sign-off fields, Fit-Up Insp's
-     Release to welding); on any other step it's an ordinary field of that step */
+  /* the steps where it's a sign-off field, saved with the sign-off (Pre-Fit/Fit's insert, ring and
+     Defer Tack); on any other step it's an ordinary field of that step */
   ownFormSteps?: string[];
   /* drawn by its own component on whichever step lists it, never as an ordinary field */
   ownComponent?: boolean;
@@ -217,9 +217,8 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'comments', label: 'Comments', type: 'text', ownComponent: true },
 
   /* ── Fit-Up Insp ── */
-  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox', ownFormSteps: ['fitup-insp'] },
-  /* verify-grid rows (keys start with "verify", isVerifyRow): shown when the Fabrication value they
-     check applies; Required = must be checked */
+  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },
+  /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
   { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
   { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
   { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox', defaultRequired: true },
@@ -228,6 +227,8 @@ export const FIELD_CATALOG: CatalogField[] = [
     defaultShowIf: ifRevisedJointDesign },
 
   /* ── Records Review ── (verify-grid rows; none required by default) */
+  /* the joint's History table, so the reviewer can check the signoffs alongside the record */
+  { key: 'signoffHistory', label: 'Signoff History', type: 'checkbox', ownComponent: true },
   { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
   { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
   { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },
@@ -250,7 +251,8 @@ export function lookupCatalogField(key: string): CatalogField | undefined {
   return FIELD_CATALOG.find(f => f.key === key);
 }
 
-/* a row of the Fit-Up Insp / Records Review verify grid: checked against a Fabrication or record value */
+/* a verify-grid row (keys start with "verify"): a checkbox ticked against a value its step's
+   definition says where to read (verifyAgainst); a step's rows are drawn together as one grid */
 export function isVerifyRow(key: string): boolean {
   return key.startsWith('verify');
 }

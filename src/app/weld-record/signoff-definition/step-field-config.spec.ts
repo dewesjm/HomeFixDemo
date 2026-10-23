@@ -1,4 +1,4 @@
-import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields, withRoot5x, withInspectionQualCheck } from './step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields, withRoot5x, withInspectionQualCheck, withSignoffHistory } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -138,5 +138,16 @@ describe("withInspectionQualCheck (definitions saved before an inspection step's
     expect(withInspectionQualCheck(tack)).toEqual(tack);
     const listed = { stepId: 'fitup-insp', fields: [{ key: 'qualificationCheck' }] };
     expect(withInspectionQualCheck(listed)).toEqual(listed);
+  });
+});
+
+describe('withSignoffHistory (Records Review definitions saved before its History was a field)', () => {
+  it('adds it after the verify rows on Records Review only, once', () => {
+    expect(withSignoffHistory({ stepId: 'review-o04', fields: [{ key: 'verifyDrawing' }, { key: 'verifyJoint' }, { key: DECISION_KEY }] }).fields.map(f => f.key))
+      .toEqual(['verifyDrawing', 'verifyJoint', 'signoffHistory', DECISION_KEY]);
+    const fitup = { stepId: 'fitup-insp', fields: [{ key: 'verifyMic1' }] };
+    expect(withSignoffHistory(fitup)).toEqual(fitup);
+    const listed = { stepId: 'review-o63', fields: [{ key: 'signoffHistory' }, { key: 'verifyDrawing' }] };
+    expect(withSignoffHistory(listed)).toEqual(listed);
   });
 });

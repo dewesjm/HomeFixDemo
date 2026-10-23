@@ -134,9 +134,3 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
 export function hiddenFieldsWithValues(stage: WorkflowStage): StageField[] {
   return stage.fields.filter(f => f.showIf && !showIfMet(stage, f) && stage.inputs[f.key]);
 }
-
-/* a trigger field that other fields declare a showIf against: always breaks onto its own row (even
-   before a selection) so its dependent fields can flow to the right of it once they appear */
-export function startsGroup(stage: WorkflowStage, field: StageField): boolean {
-  return stage.fields.some(f => f.showIf?.key === field.key);
-}

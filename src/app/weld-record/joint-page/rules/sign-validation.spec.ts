@@ -10,6 +10,7 @@ import {
 import { updateStageTemplate } from '../../routing/stage-templates';
 import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
+import { isVerifyRow } from '../../signoff-definition/field-catalog';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
@@ -57,7 +58,7 @@ describe('joint-form sign-validation', () => {
 
   it('Fit-Up Insp shows MIC rows only for parts needing traceability, Revised Joint Design only when entered', () => {
     const rows = (j: Job, fab: Record<string, string> = {}) =>
-      visibleStageFields(stageOf(j, 'fitup-insp'), { job: j, stages: buildStages(j), offListUnlocked: false, fab }).map(f => f.key);
+      visibleStageFields(stageOf(j, 'fitup-insp'), { job: j, stages: buildStages(j), offListUnlocked: false, fab }).map(f => f.key).filter(isVerifyRow);
     expect(rows(job())).toEqual(['verifyDrawingRev', 'verifyActualThickness']);
     expect(rows(job({ mcl1: 'MC-I' }), { revisedJointDesign: 'C-24' }))
       .toEqual(['verifyMic1', 'verifyDrawingRev', 'verifyActualThickness', 'verifyRevisedJointDesign']);

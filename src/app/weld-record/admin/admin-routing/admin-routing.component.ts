@@ -24,8 +24,7 @@ import {
   allStageIds,
   getTemplates,
 } from '../../routing/stage-templates';
-import { ROLES, type Role, type SignoffForm } from '../../model/workflow-types';
-import { FORM_OPTIONS, formLabel } from '../../signoff-definition/signoff-forms';
+import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
@@ -47,7 +46,7 @@ interface RoutingRow {
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
   fabricationCompleteToSign: boolean;
-  form: SignoffForm;
+  neverSigned: boolean;
 }
 
 @Component({
@@ -78,8 +77,6 @@ export class AdminRoutingComponent {
     return [...used].sort();
   });
   stageOptions = signal(allStageIds());
-  readonly formOptions = FORM_OPTIONS;
-  readonly formLabel = formLabel;
 
   rows = signal<RoutingRow[]>(this.buildInitialRows());
   table = new TableState<RoutingRow>(['sequence', 'routing', 'displayName', 'includedWhen']);
@@ -120,7 +117,7 @@ export class AdminRoutingComponent {
           rejectRules: [],
           fabricationEditable: !!t.fabricationEditable,
           fabricationCompleteToSign: !!t.fabricationCompleteToSign,
-          form: t.form ?? 'generic',
+          neverSigned: !!t.neverSigned,
         });
       });
     }
@@ -134,7 +131,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false, fabricationCompleteToSign: false, form: 'generic' };
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false, fabricationCompleteToSign: false, neverSigned: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -176,7 +173,7 @@ export class AdminRoutingComponent {
         fields: [], signoffFields: [], rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
         fabricationCompleteToSign: row.fabricationCompleteToSign,
-        form: row.form,
+        neverSigned: row.neverSigned,
       });
       const newFullId = `${row.trade}:${newId}`;
       /* saved at the end, same as addStageTemplate() */
@@ -190,7 +187,7 @@ export class AdminRoutingComponent {
         role: row.role,
         fabricationEditable: row.fabricationEditable,
         fabricationCompleteToSign: row.fabricationCompleteToSign,
-        form: row.form,
+        neverSigned: row.neverSigned,
       });
     }
 
@@ -217,8 +214,8 @@ export class AdminRoutingComponent {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, fabricationEditable: value } : x));
   }
 
-  updateForm(row: RoutingRow, value: SignoffForm) {
-    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, form: value } : x));
+  updateNeverSigned(row: RoutingRow, value: boolean) {
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, neverSigned: value } : x));
   }
 
   updateFabricationCompleteToSign(row: RoutingRow, value: boolean) {
@@ -494,7 +491,7 @@ export class AdminRoutingComponent {
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
-      { header: 'Form', value: (r: RoutingRow) => formLabel(r.form) },
+      { header: 'Never signed', value: (r: RoutingRow) => r.neverSigned ? 'Yes' : 'No' },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
       { header: 'Fabrication complete to sign', value: (r: RoutingRow) => r.fabricationCompleteToSign ? 'Yes' : 'No' },
       { header: 'Persona', value: (r: RoutingRow) => r.role }

@@ -1,9 +1,7 @@
 /* Per-step field activation: which catalog fields are active on each step type, under what
    conditions, and how the form lays them out (order, fields sharing a line, widths, headings, where
-   Inspection Results goes; used while the
-   Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
-   the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v10) and take effect immediately. */
+   Inspection Results goes, see definition-layout.ts). Live overrides are stored in localStorage
+   (welding:step-field-config:v11) and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
 import { ConditionClause, FieldCondition, andConditions, conditionClauses, hasClauses } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
@@ -57,9 +55,15 @@ export function definitionFields(items: FieldActivation[]): FieldActivation[] {
   return items.filter(a => !isLayoutOnlyItem(a));
 }
 
+/* what a step's verify-grid rows are checked against: the joint's Fabrication values (Fit-Up Insp)
+   or its record (Records Review) */
+export type VerifyAgainst = 'fabrication' | 'record';
+
 export interface StepFieldActivation {
   stepId: string;
   fields: FieldActivation[];
+  /* unset = the default definition's, else the record */
+  verifyAgainst?: VerifyAgainst;
 }
 
 /* ── Condition shorthands ── */
@@ -79,10 +83,11 @@ const same = (key: string, width?: number): FieldActivation => ({ key, sameLine:
 const heading = (id: string, text: string): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text });
 const box = (id: string, text = ''): FieldActivation => ({ key: HEADING_KEY_PREFIX + id, heading: text, newBox: true });
 const DECISION: FieldActivation = { key: DECISION_KEY };
-/* inspection steps' Qualification Check, drawn by the sign-off panel above the form */
+/* the signer's quals checked against the joint's condition quals (Admin > Qualifications) */
 const QUAL_CHECK: FieldActivation = { key: 'qualificationCheck' };
 const TYPE: FieldActivation = { key: TYPE_KEY };
 const COMMENTS: FieldActivation = { key: COMMENTS_KEY };
+const SIGNOFF_HISTORY: FieldActivation = { key: 'signoffHistory' };
 
 /* Insert and ring fields: shown when the joint design requires each (catalog defaults) */
 const INSERT_FIELDS: FieldActivation[] = [
@@ -92,7 +97,7 @@ const RING_FIELDS: FieldActivation[] = [
   { key: 'backingRingType' }, same('backingRingId'),
 ];
 
-/* the welding steps' boxes as the weld form draws them; Root's Only Consumable Insert goes between
+/* the welding steps' boxes; Root's Only Consumable Insert goes between
    Qualification Check and the filler, its 5X question at the end */
 function weldFields(beforeFiller: FieldActivation[] = [], atEnd: FieldActivation[] = []): FieldActivation[] {
   return [
@@ -182,8 +187,8 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
   { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, COMMENTS] },
   tackStep('tack'),
-  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS },
-  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS },
+  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
+  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
   { stepId: 'fitup-release', fields: [COMMENTS] },
   tackStep('deferred-tack'),
   weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),
@@ -201,8 +206,8 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   /* every Repair / Excavation NDT round reads these rows (activationStepId) */
   { stepId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
   { stepId: 'excavation-ndt', fields: [TYPE, QUAL_CHECK, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
-  { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
-  { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, DECISION, COMMENTS] },
+  { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
+  { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { stepId: 'sold', fields: [] },
 ];
 
@@ -334,18 +339,29 @@ export function withInspectionQualCheck(a: StepFieldActivation): StepFieldActiva
   return { ...a, fields: [...a.fields.slice(0, at), QUAL_CHECK, ...a.fields.slice(at)] };
 }
 
+/* Records Review definitions saved before the joint's History was a field (v10), when the Records
+   Review form always drew it, get it after their verify rows */
+const PRE_HISTORY_KEY = 'welding:step-field-config:v10';
+export function withSignoffHistory(a: StepFieldActivation): StepFieldActivation {
+  if (!/^review-/.test(a.stepId) || a.fields.some(f => f.key === SIGNOFF_HISTORY.key)) return a;
+  const at = a.fields.reduce((last, f, i) => f.key.startsWith('verify') ? i + 1 : last, 0);
+  return { ...a, fields: [...a.fields.slice(0, at), SIGNOFF_HISTORY, ...a.fields.slice(at)] };
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preQualCheck = saved ? null : localStorage.getItem(PRE_QUAL_CHECK_KEY);
-    const preRoot5x = saved || preQualCheck ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
-    const old = preQualCheck ? parse(preQualCheck)
-      : preRoot5x ? parse(preRoot5x).map(withRoot5x)
-      : savedBeforeV8()?.map(withRoot5x);
-    _cache = saved ? parse(saved) : old ? old.map(withInspectionQualCheck) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const preHistory = saved ? null : localStorage.getItem(PRE_HISTORY_KEY);
+    const preQualCheck = saved || preHistory ? null : localStorage.getItem(PRE_QUAL_CHECK_KEY);
+    const preRoot5x = saved || preHistory || preQualCheck ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
+    const old = preHistory ? parse(preHistory)
+      : preQualCheck ? parse(preQualCheck).map(withInspectionQualCheck)
+      : preRoot5x ? parse(preRoot5x).map(withRoot5x).map(withInspectionQualCheck)
+      : savedBeforeV8()?.map(withRoot5x).map(withInspectionQualCheck);
+    _cache = saved ? parse(saved) : old ? old.map(withSignoffHistory) : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
@@ -378,6 +394,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_HISTORY_KEY);
   localStorage.removeItem(PRE_QUAL_CHECK_KEY);
   localStorage.removeItem(PRE_ROOT_5X_KEY);
   localStorage.removeItem(PRE_SIGNOFF_SECTION_KEY);
@@ -428,4 +445,11 @@ export function getActivationForStep(step: StepRef): StepFieldActivation {
   return config.find(a => a.stepId === stepId)
     ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)
     ?? { stepId, fields: [] };
+}
+
+/* what the step's verify-grid rows are checked against */
+export function verifyAgainst(step: StepRef): VerifyAgainst {
+  const stepId = activationStepId(step);
+  return getActivationForStep(step).verifyAgainst
+    ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)?.verifyAgainst ?? 'record';
 }

@@ -3,9 +3,9 @@
    reject rule). Ids and round numbers are in step-ids.ts. */
 import { Job } from '../../data/jobs';
 import { RejectRule, describeClauses, stageConditionFields } from './step-conditions';
-import { SignoffForm, StageTemplate, WorkflowStage } from '../model/workflow-types';
+import { StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
-import { excavationIdForRepair, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId, roundLabel } from './step-ids';
+import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { EXCAVATION_TYPE_ROW, hasSignoffTypeRow, signoffTypeOptions } from '../signoff-definition/signoff-types';
@@ -31,7 +31,7 @@ export const REPAIR_STAGE: StageTemplate = {
       options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
     { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox' },
   ], signoffFields: [],
-  decisionLabel: 'Inspection Results', form: 'generic',
+  decisionLabel: 'Inspection Results',
 };
 
 /* every NDT UNSAT adds a new Repair round, with no limit */
@@ -64,7 +64,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
     id: excavationIdForRepair(repairId), label: roundLabel(EXCAVATION_NDT_LABEL, repairId), required: true, role: 'Inspector',
     fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
     signoffFields: [],
-    rejectToStage: repairId, decisionLabel: 'Inspection Results', form: 'ndt',
+    rejectToStage: repairId, decisionLabel: 'Inspection Results',
     typeOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
   };
 }
@@ -85,7 +85,6 @@ export function excavationNdtStageFor(job: Job, inspectionType: string, repairId
    Signoff button never shows. */
 const ENGINEERING_HOLD_STAGE: StageTemplate = {
   id: 'engineering-hold', label: 'Engineering Hold', required: true, role: 'Engineering', fields: [], signoffFields: [],
-  form: 'engineering-hold',
 };
 
 export function nextEngineeringHoldId(stages: { id: string }[]): string {
@@ -136,10 +135,3 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
   };
 }
 
-/* the form of a step added while a joint is worked (its template's), or undefined for any other id */
-export function addedStepForm(id: string): SignoffForm | undefined {
-  if (isRepairStageId(id)) return REPAIR_STAGE.form;
-  if (isExcavationNdtStageId(id)) return excavationNdtStage('').form;
-  if (isEngineeringHoldId(id)) return ENGINEERING_HOLD_STAGE.form;
-  return undefined;
-}

@@ -8,7 +8,6 @@ import { WorkflowStage, DeviationItem } from '../../model/workflow-types';
 import { ACTUAL_REQUIREMENT } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { labelFor } from '../../signoff-definition/stage-display';
-import { panelDrawsQualCheck } from '../../signoff-definition/signoff-forms';
 import { QualGroup, missingText, requirementText } from '../../qualifications/qual-requirements';
 import {
   getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
@@ -67,9 +66,8 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     }
   }
   const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
-  /* the check runs when the step shows it: among the weld form's fields, or above any other form */
-  const checksQuals = visibleKeys.has('qualificationCheck') || panelDrawsQualCheck(stage);
-  if (checksQuals) {
+  /* the check runs when the step shows it */
+  if (visibleKeys.has('qualificationCheck')) {
     const missing = requiredQuals.map(g => missingText(g, heldQuals)).filter(Boolean);
     if (missing.length) {
       const required = requiredQuals.map(g => requirementText(g, requiredQuals.length > 1)).filter(Boolean);
