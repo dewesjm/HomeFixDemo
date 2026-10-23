@@ -1,4 +1,4 @@
-import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields } from './step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, DEFAULT_STEP_FIELD_ACTIVATIONS, HEADING_KEY_PREFIX, TYPE_KEY, definitionFields, withDefaultLayout, withDefaultWidths, withSplitFill, withAffectedItemMics, withSignoffSectionFields, withRoot5x } from './step-field-config';
 
 describe('withDefaultLayout (definitions saved before the layout settings)', () => {
   it('puts the default fields in default order with their lines, widths and headings, other fields after them', () => {
@@ -104,5 +104,26 @@ describe('withAffectedItemMics (definitions saved before the MIC verified rows w
     expect(withAffectedItemMics({ stepId: 'fit-weld-buildup', fields: [{ key: 'affectedItem' }, { key: 'wtn' }] }).fields.map(f => f.key))
       .toEqual(['affectedItem', 'affectedMicVerified1', 'affectedMicVerified2', 'wtn']);
     expect(withAffectedItemMics({ stepId: 'tack', fields: [{ key: 'wtn' }] }).fields.map(f => f.key)).toEqual(['wtn']);
+  });
+});
+
+describe('withRoot5x (definitions saved before Root\'s 5X question was a field)', () => {
+  it('adds the 5X question to Root before Comments, shown when NDT Root is 5X, and drops the step-id rule', () => {
+    const out = withRoot5x({ stepId: 'root-weld', fields: [
+      { key: 'consumableInsertOnly', showIf: { all: [{ source: 'stepId', matches: '^root-weld$' }] } }, { key: COMMENTS_KEY },
+    ] });
+    expect(out.fields).toEqual([
+      { key: 'consumableInsertOnly' },
+      { key: HEADING_KEY_PREFIX + 'performed5x', heading: '', newBox: true },
+      { key: 'performed5x', showIf: { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] }, width: 400 },
+      { key: COMMENTS_KEY },
+    ]);
+  });
+
+  it('leaves other steps, and a Root that already has it, as saved', () => {
+    const tack = { stepId: 'tack', fields: [{ key: 'wtn' }] };
+    expect(withRoot5x(tack)).toEqual(tack);
+    const root = { stepId: 'root-weld', fields: [{ key: 'performed5x' }] };
+    expect(withRoot5x(root)).toEqual(root);
   });
 });

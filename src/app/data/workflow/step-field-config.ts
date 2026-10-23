@@ -3,7 +3,7 @@
    Inspection Results goes; used while the
    Layout from Signoff Type Definition toggle is on, see definition-layout.ts). The defaults mirror
    the current hardcoded behavior. Live overrides are stored in localStorage
-   (welding:step-field-config:v8) and take effect immediately. */
+   (welding:step-field-config:v9) and take effect immediately. */
 import { STORAGE } from '../storage-keys';
 import { ConditionClause, FieldCondition, andConditions, conditionClauses, hasClauses } from './field-conditions';
 import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
@@ -63,7 +63,7 @@ export interface StepFieldActivation {
 }
 
 /* ── Condition shorthands ── */
-const rootWeldOnly: FieldCondition = { all: [{ source: 'stepId', matches: '^root-weld$' }] };
+const ndtRoot5x: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
 /* Tack's filler is hidden when a consumable insert is used, and when neither part requires
    material traceability (virtual keys in joint-facts.ts) */
 const tackFiller: FieldCondition = {
@@ -91,8 +91,8 @@ const RING_FIELDS: FieldActivation[] = [
 ];
 
 /* the welding steps' boxes as the weld form draws them; Root's Only Consumable Insert goes between
-   Qualification Check and the filler */
-function weldFields(beforeFiller: FieldActivation[] = []): FieldActivation[] {
+   Qualification Check and the filler, its 5X question at the end */
+function weldFields(beforeFiller: FieldActivation[] = [], atEnd: FieldActivation[] = []): FieldActivation[] {
   return [
     box('weld'), { key: 'weldProcedure', width: 320 }, same('wtn', 320), same('weldProcess', 200),
     { key: 'qualificationCheck' },
@@ -102,6 +102,7 @@ function weldFields(beforeFiller: FieldActivation[] = []): FieldActivation[] {
     heading('requirements', 'Requirements'), { key: 'phMin', width: 150 }, same('phMax', 150), same('ipMin', 150), same('ipMax', 150),
     heading('actuals', 'Actuals'), { key: 'actualPhMin', width: 150 }, same('actualPhMax', 150), same('actualIpMin', 150), same('actualIpMax', 150),
     box('position'), { key: 'weldPosition', width: 200 },
+    ...atEnd,
   ];
 }
 const WELD_FIELDS = weldFields();
@@ -183,7 +184,7 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
   { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS },
   { stepId: 'fitup-release', fields: [COMMENTS] },
   tackStep('deferred-tack'),
-  weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly', showIf: rootWeldOnly }])),
+  weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),
   ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
   ...ndtNqcPair('root', 'mtpt', NDT_MTPT_FIELDS),
   ...ndtNqcPair('root', 'utrt', NDT_UTRT_FIELDS),
@@ -306,30 +307,51 @@ export function withSignoffSectionFields(a: StepFieldActivation): StepFieldActiv
   return { ...a, fields };
 }
 
+/* Root's definition saved before its 5X question was a field (v8) gets it at the end, shown when NDT
+   Root is 5X, and its Only Consumable Insert loses the "step is Root" rule it no longer needs */
+const PRE_ROOT_5X_KEY = 'welding:step-field-config:v8';
+export function withRoot5x(a: StepFieldActivation): StepFieldActivation {
+  if (a.stepId !== 'root-weld') return a;
+  const fields = a.fields.map(f => f.key === 'consumableInsertOnly' && conditionClauses(f.showIf ?? { all: [] }).some(c => c.source === 'stepId')
+    ? (({ showIf, ...rest }) => rest)(f) : f);
+  if (fields.some(f => f.key === 'performed5x')) return { ...a, fields };
+  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === 'root-weld')!.fields;
+  const at = def.findIndex(f => f.key === 'performed5x');
+  const end = def.slice(at - 1, at + 1);
+  const comments = fields.findIndex(f => f.key === COMMENTS_KEY);
+  return { ...a, fields: comments < 0 ? [...fields, ...end] : [...fields.slice(0, comments), ...end, ...fields.slice(comments)] };
+}
+
 const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
 
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preSection = saved ? null : localStorage.getItem(PRE_SIGNOFF_SECTION_KEY);
-    const preMic = saved || preSection ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
-    const preSplit = saved || preSection || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
-    const preWidth = saved || preSection || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
-    const preLayout = saved || preSection || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-    const preReferences = saved || preSection || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
-    const old = preSection ? parse(preSection)
-      : preMic ? parse(preMic).map(withAffectedItemMics)
-      : preSplit ? parse(preSplit).map(withSplitFill).map(withAffectedItemMics)
-      : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill).map(withAffectedItemMics)
-      : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
-      : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
-      : null;
-    _cache = saved ? parse(saved) : old ? old.map(withSignoffSectionFields) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const preRoot5x = saved ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
+    _cache = saved ? parse(saved) : preRoot5x ? parse(preRoot5x).map(withRoot5x) : savedBeforeV8()?.map(withRoot5x) ?? DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
   return _cache!;
+}
+
+/* definitions saved under a key before v8, brought up to v8; null when there are none */
+function savedBeforeV8(): StepFieldActivation[] | null {
+  const preSection = localStorage.getItem(PRE_SIGNOFF_SECTION_KEY);
+  const preMic = preSection ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
+  const preSplit = preSection || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
+  const preWidth = preSection || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
+  const preLayout = preSection || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
+  const preReferences = preSection || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
+  const old = preSection ? parse(preSection)
+    : preMic ? parse(preMic).map(withAffectedItemMics)
+    : preSplit ? parse(preSplit).map(withSplitFill).map(withAffectedItemMics)
+    : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill).map(withAffectedItemMics)
+    : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
+    : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
+    : null;
+  return old ? old.map(withSignoffSectionFields) : null;
 }
 
 export function setStepFieldConfig(config: StepFieldActivation[]): void {
@@ -340,6 +362,7 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
+  localStorage.removeItem(PRE_ROOT_5X_KEY);
   localStorage.removeItem(PRE_SIGNOFF_SECTION_KEY);
   localStorage.removeItem(PRE_AFFECTED_MIC_KEY);
   localStorage.removeItem(PRE_SPLIT_KEY);

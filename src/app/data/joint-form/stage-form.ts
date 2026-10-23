@@ -1,10 +1,10 @@
 /* A step's fields on the joint page: which show, and the options each offers */
 import { Job } from '../jobs';
 import {
-  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, getTemplates, isFilledByRule,
+  StageField, WorkflowStage, ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES, isFilledByRule,
   allowableThicknessAmount, showIfMet, baseStepId,
   evaluateCondition, buildConditionContext, hasStepActivation, effectiveShowIf, fieldActivation,
-  definedFields, definitionStageFields,
+  definedFields,
 } from '../workflow';
 import { inspectionProcedureOptions } from '../inspection-procedures';
 import { defectCodeOptions } from '../defect-codes';
@@ -40,12 +40,6 @@ export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): st
   if (baseStepId(stage.id) === 'root-ndt-utrt') return job?.rtRoot ?? '';
   if (baseStepId(stage.id) === 'final-ndt-utrt') return job?.rtFinal ?? '';
   return '';
-}
-
-/* Fit's fields for its Type: Weld Build-Up's are its own Signoff Type Definition's, Fit keeps its template's */
-export function fitFieldsForType(trade: Job['trade'], signoffType: string): StageField[] {
-  if (signoffType === 'weld-buildup') return definitionStageFields({ id: 'fit', signoffType });
-  return ((getTemplates()[trade] ?? []).find(t => t.id === 'fit')?.fields ?? []).map(f => ({ ...f }));
 }
 
 /* Fields shown on the step, with their runtime options. Steps with an Admin > Signoff Type

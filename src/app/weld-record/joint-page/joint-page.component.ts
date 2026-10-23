@@ -28,7 +28,7 @@ import { isAssignedStage } from '../../data/weld-assignment';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
   WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
-  activeStageId, routingBarSteps, allRequiredSigned, getTemplates, FabricationField, snapshotInputs, SignoffInput,
+  activeStageId, routingBarSteps, allRequiredSigned, FabricationField, snapshotInputs, SignoffInput,
   visibleSignoffFields, definitionHas,
   ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
   fillChanges,
@@ -38,12 +38,13 @@ import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
 import {
-  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields, fitFieldsForType,
+  REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields,
 } from '../../data/joint-form/stage-form';
 import { selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
 import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
 import { routePreviewLabel } from '../../data/joint-form/route-preview';
+import { typeChange } from '../../data/joint-form/type-change';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from '../../data/joint-form/unsaved-edits';
 
 @Component({
@@ -255,9 +256,7 @@ export class JointPageComponent implements OnDestroy {
       signoffCheckboxChange: (s, f, c) => this.setSignoffInput(s, f, c ? 'yes' : '', false),
       toggleAffectedItem: (s, item, e) => this.toggleAffectedItem(s, item, e),
       onConsumableInsertChange: (s, v) => this.onConsumableInsertChange(s, v),
-      on5xChange: (s, v) => this.setInput(s, 'performed5x', v),
-      updateSignoffType: (s, v) => this.updateSignoffType(s, v),
-      setInspectionType: (v) => this.setInspectionType(v),
+      setType: (s, v) => this.setType(s, v),
       setStageResult: (s, r) => this.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
       deprogress: (reason) => this.deprogress(reason),
@@ -390,40 +389,21 @@ export class JointPageComponent implements OnDestroy {
     }
   }
 
-  /* Type / inspection type handlers */
-  setInspectionType(value: string) {
+  /* Type: both stored values change; a Type that loads another definition swaps the step's fields
+     (typeChange), is recorded in History, and a welding form gets its assignment. A procedure not
+     designated for the new Type is cleared. */
+  setType(stage: WorkflowStage, value: string) {
     if (!this.job || !this.wf) return;
-    const idx = this.selectedRouting();
-    const stage = this.wf().stages[idx];
-    if (!stage) return;
     if (value) this.clearFieldError(stage.id, '__inspectionType');
-    this.wf.update(wf => ({
-      ...wf,
-      stages: wf.stages.map((s, i) => i === idx ? { ...s, inspectionType: value } : s)
-    }));
-    /* a procedure not designated for the new Type is cleared */
+    const { patch, swapsDefinition } = typeChange(this.job.trade, stage, value);
+    if (swapsDefinition) {
+      this.signoffService.updateStageSignoff(this.job, stage.id, patch, { action: `${stage.label} - Type changed to ${value}` });
+      if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(this.job, stage.id);
+    } else {
+      this.wf.update(wf => ({ ...wf, stages: wf.stages.map(s => s.id === stage.id ? { ...s, ...patch } : s) }));
+    }
     const proc = stage.inputs['procedureUsed'] ?? '';
     if (proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) this.setInput(stage, 'procedureUsed', '');
-  }
-
-  updateSignoffType(stage: WorkflowStage, value: string) {
-    if (!this.job || !this.wf) return;
-    if (value) this.clearFieldError(stage.id, '__signoffType');
-    const change = { action: `${stage.label} - Type changed to ${value}` };
-    if (stage.id !== 'fit') {
-      this.signoffService.updateStageSignoff(this.job, stage.id, { signoffType: value }, change);
-      return;
-    }
-    /* Fit: Weld Build-Up swaps in Tack's fields and drops the sign-off fields; Fit puts its own back */
-    const fitTpl = (getTemplates()[this.job.trade] ?? []).find(t => t.id === 'fit');
-    const buildup = value === 'weld-buildup';
-    this.signoffService.updateStageSignoff(this.job, stage.id, {
-      signoffType: value,
-      fields: fitFieldsForType(this.job.trade, value),
-      signoffInputs: {},
-      signoffFields: buildup ? [] : (fitTpl?.signoffFields ?? []).map(f => ({ ...f })),
-    }, change);
-    if (buildup) this.weldAssignment.apply(this.job, stage.id);
   }
 
   /* ── Sign-off fields ── */

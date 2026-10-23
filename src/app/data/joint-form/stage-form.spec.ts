@@ -2,9 +2,10 @@ import { JOBS, Job } from '../jobs';
 import { buildStages, stageFromTemplate, StageTemplate, WorkflowStage, nextRepairStage, excavationNdtStage, setStepFieldConfig, resetStepFieldConfig, DEFAULT_STEP_FIELD_ACTIVATIONS } from '../workflow';
 import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../procedures';
 import {
-  typedRequirementError, rtDegreeRequired, fitFieldsForType, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues, startsGroup,
+  typedRequirementError, rtDegreeRequired, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues, startsGroup,
   StageFormContext,
 } from './stage-form';
+import { typeChange } from './type-change';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
@@ -27,17 +28,34 @@ describe('joint-form stage-form', () => {
     expect(rtDegreeRequired(j, { id: 'layer-ndt-utrt' } as WorkflowStage)).toBe('');
   });
 
-  it('Fit under Weld Build-Up gets its definition\'s welding fields (Affected Item is drawn by its form); plain Fit keeps its own', () => {
-    const buildup = fitFieldsForType('Welding', 'weld-buildup').map(f => f.key);
+  it('a Type that loads another definition swaps in its fields (Affected Item is drawn by its form); switching back restores the step\'s own', () => {
+    const fit = stageOf(job(), 'fit');
+    const toBuildup = typeChange('Welding', fit, 'weld-buildup');
+    expect(toBuildup.swapsDefinition).toBe(true);
+    expect(toBuildup.patch).toEqual(jasmine.objectContaining({ inspectionType: 'weld-buildup', signoffType: 'weld-buildup', signoffFields: [] }));
+    const buildup = toBuildup.patch.fields!.map(f => f.key);
     expect(buildup).toContain('weldProcedure');
     expect(buildup).toContain('fillerMetalMic');
     expect(buildup).not.toContain('affectedItem');
-    expect(fitFieldsForType('Welding', 'fit')).toEqual([]);
+    const back = typeChange('Welding', { ...fit, ...toBuildup.patch }, 'fit');
+    expect(back.swapsDefinition).toBe(true);
+    expect(back.patch.fields).toEqual([]);
+    expect(back.patch.signoffFields!.map(f => f.key)).toContain('deferTack');
+  });
+
+  it('Layer\'s Final Weld Type loads Final Weld\'s definition; an NDT Type only changes the Type', () => {
+    const j = job();
+    const layer = typeChange('Welding', stageOf(j, 'root-layer'), 'final-weld');
+    expect(layer.swapsDefinition).toBe(true);
+    expect(layer.patch.signoffType).toBe('final-weld');
+    const ndt = buildStages(j).find(s => /-ndt-/.test(s.id) && !!s.typeOptions?.length)!;
+    const v = ndt.typeOptions![0].value;
+    expect(typeChange('Welding', ndt, v)).toEqual({ patch: { inspectionType: v, signoffType: v }, swapsDefinition: false });
   });
 
   it('Fit as Weld Build-Up shows the fields its own Signoff Type Definition lists', () => {
     const j = job({ nInd: '1' });
-    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: fitFieldsForType('Welding', 'weld-buildup') });
+    const fit = { ...stageOf(j, 'fit'), ...typeChange('Welding', stageOf(j, 'fit'), 'weld-buildup').patch };
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
     const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'fit-weld-buildup')!;
     setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);

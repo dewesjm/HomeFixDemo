@@ -40,6 +40,7 @@ interface RoutingRow {
   includedWhen: string;   /* describeConditions() of the step's rules */
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
+  fabricationCompleteToSign: boolean;
 }
 
 @Component({
@@ -109,6 +110,7 @@ export class AdminRoutingComponent {
           includedWhen: describeConditions(t.includeWhen),
           rejectRules: [],
           fabricationEditable: !!t.fabricationEditable,
+          fabricationCompleteToSign: !!t.fabricationCompleteToSign,
         });
       });
     }
@@ -122,7 +124,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false, fabricationCompleteToSign: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -163,6 +165,7 @@ export class AdminRoutingComponent {
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
         fields: [], signoffFields: [], rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
+        fabricationCompleteToSign: row.fabricationCompleteToSign,
       });
       const newFullId = `${row.trade}:${newId}`;
       /* saved at the end, same as addStageTemplate() */
@@ -175,6 +178,7 @@ export class AdminRoutingComponent {
         rejectToStage: row.rejectToStage,
         role: row.role,
         fabricationEditable: row.fabricationEditable,
+        fabricationCompleteToSign: row.fabricationCompleteToSign,
       });
     }
 
@@ -199,6 +203,10 @@ export class AdminRoutingComponent {
 
   updateFabricationEditable(row: RoutingRow, value: boolean) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, fabricationEditable: value } : x));
+  }
+
+  updateFabricationCompleteToSign(row: RoutingRow, value: boolean) {
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, fabricationCompleteToSign: value } : x));
   }
 
   updateRejectTo(row: RoutingRow, value: string) {
@@ -471,6 +479,7 @@ export class AdminRoutingComponent {
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
+      { header: 'Fabrication complete to sign', value: (r: RoutingRow) => r.fabricationCompleteToSign ? 'Yes' : 'No' },
       { header: 'Persona', value: (r: RoutingRow) => r.role }
     ], this.visibleRows());
   }

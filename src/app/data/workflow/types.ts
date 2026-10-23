@@ -195,4 +195,7 @@ export interface StageTemplate {
   rejectRulesEdited?: boolean;
   /* Admin > Routing Settings "Fabrication editable": the Fabrication fields can be changed while this is the current step */
   fabricationEditable?: boolean;
+  /* Admin > Routing Settings "Fabrication complete to sign": this step can't be signed while a required
+     Fabrication value is blank or a Fabrication value has an error */
+  fabricationCompleteToSign?: boolean;
 }

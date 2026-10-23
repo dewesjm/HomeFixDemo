@@ -2,8 +2,8 @@
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../jobs';
-import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, ACTUAL_MIN_MAX, actualOrderError, hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
-import { missingFitFabrication } from './fabrication-form';
+import { StageField, WorkflowStage, isFitupInspId, isVerifyGrid, fabricationCompleteToSign, ACTUAL_MIN_MAX, actualOrderError, hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired, rtDegrees, definitionHas, isVerifyRow, affectedMicRule, buildConditionContext } from '../workflow';
+import { missingSignFabrication } from './fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
 import { rtDegreeRequired, typedRequirementError } from './stage-form';
 
@@ -32,6 +32,9 @@ function unverifiedRows(stage: WorkflowStage, ctx: SignContext): StageField[] {
   return ctx.visibleFields.filter(f => isVerifyRow(f.key) && f.required && stage.inputs?.[f.key] !== 'yes');
 }
 
+/* Admin > Routing Settings "Fabrication complete to sign" (by default Fit and Fit-Up Insp) */
+const needsFabrication = (stage: WorkflowStage, ctx: SignContext) => !!ctx.job && fabricationCompleteToSign(ctx.job.trade, stage.id);
+
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
   return requiredSignoffFields(stage, ctx.job, ctx.fab).filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0);
 }
@@ -43,14 +46,14 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
-  if (stage.id === 'fit') {
-    const missing = missingFitFabrication(ctx.job, ctx.fab);
+  if (needsFabrication(stage, ctx)) {
+    const missing = missingSignFabrication(ctx.job, ctx.fab);
     if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
+    if (Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   }
   if (isVerifyGrid(stage) && unverifiedRows(stage, ctx).length) {
     reasons.push(isFitupInspId(stage.id) ? 'Verify every fitting value' : 'Verify every required record field');
   }
-  if (isFitupInspId(stage.id) && Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) reasons.push(rt);
   const missingSignoff = missingSignoffFields(stage, ctx).map(f => f.label);
@@ -97,8 +100,8 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   if (hasDecision(stage) && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
-  /* Fit's fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
-  if (stage.id === 'fit' && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
+  /* the fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
+  if (needsFabrication(stage, ctx) && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
   for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = `${f.label} is required`;
   const rt = rtDegreeError(ctx.job, stage);
   if (rt) errors[key('degreeRt')] = rt;

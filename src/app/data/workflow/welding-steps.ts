@@ -56,12 +56,12 @@ const BUILT_IN_STEPS: StageTemplate[] = [
   /* Pre-Fit has no Defer Tack: there's no Tack yet to defer. As signoffFields (not fields) so it
      renders through the same signoff-fit-row layout as Fit. */
   { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: insertAndBackingRingFields() },
-  { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fields: [], signoffFields: [
+  { id: 'fit', label: 'Fit', required: true, role: 'Fitting', fabricationCompleteToSign: true, fields: [], signoffFields: [
     ...insertAndBackingRingFields(),
     { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
   ] },
   { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
-  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fields: [
+  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', fabricationCompleteToSign: true, fields: [
     { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
     { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
     { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },

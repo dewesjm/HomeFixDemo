@@ -3,6 +3,7 @@
    a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff. */
 import { WorkflowStage } from './types';
 import { typeDefinition, typeRepeatable } from './signoff-types';
+import { typeValues } from './stage-rules';
 import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 
 const isNdtId = (id: string) => /^(root|layer|final)-ndt-/.test(baseStepId(id));
@@ -50,11 +51,11 @@ export function signAsStep(stages: WorkflowStage[], stageId: string, targetId: s
   const from = stages.findIndex(s => s.id === stageId);
   const to = stages.findIndex(s => s.id === targetId);
   const st = stages[from];
-  const ownDefault = st.typeOptions?.find(o => o.default)?.value ?? st.signoffType;
+  const ownDefault = typeValues(st.typeOptions?.find(o => o.default)?.value ?? st.inspectionType);
   return stages.map((s, i) => {
     if (i === from) return st.repeats
-      ? { ...s, inputs: {}, signoffInputs: {}, signoffType: ownDefault, result: s.result ?? 'sat', signed: true, signedAt }
-      : { ...s, inputs: {}, signoffInputs: {}, signoffType: ownDefault, required: false };
+      ? { ...s, inputs: {}, signoffInputs: {}, ...ownDefault, result: s.result ?? 'sat', signed: true, signedAt }
+      : { ...s, inputs: {}, signoffInputs: {}, ...ownDefault, required: false };
     if (i > from && i < to) return s.signed ? s : { ...s, required: false };
     if (i === to) return { ...s, inputs: { ...st.inputs }, signoffInputs: { ...st.signoffInputs }, engineeringEntry: st.engineeringEntry, result: 'sat', signed: true, signedAt };
     return s;

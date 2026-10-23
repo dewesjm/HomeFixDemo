@@ -7,7 +7,7 @@ import { StageTemplate, WorkflowStage } from './types';
 import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
-import { initialInspectionType } from './stage-rules';
+import { initialInspectionType, typeValues } from './stage-rules';
 import { EXCAVATION_TYPE_ROW, hasSignoffTypeRow, signoffTypeOptions } from './signoff-types';
 
 /* ── Repair ── */
@@ -126,9 +126,8 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     signoffInputs: {},
     result: null,
     rejectToStage: t.rejectToStage ?? '',
-    signoffType: 'standard',
+    ...typeValues(initialInspectionType(t)),
     swapStageId: '',
-    inspectionType: initialInspectionType(t),
     typeOptions: t.typeOptions ?? [],
     signed: false,
     signedAt: null,

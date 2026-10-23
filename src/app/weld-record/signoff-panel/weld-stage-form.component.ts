@@ -24,7 +24,7 @@ const WELD_GROUPS: WeldGroup[] = [
   { sections: [
     { rows: [{ keys: ['weldProcedure', 'wtn', 'weldProcess'], width: 200, widths: { weldProcedure: 320, wtn: 320 } }] },
     { rows: [{ keys: ['qualificationCheck'], width: 1200 }] },
-    { kind: 'checkbox', when: st => st.id === 'root-weld', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
+    { kind: 'checkbox', rows: [{ keys: ['consumableInsertOnly'], width: null }] },
     { rows: [{ keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'], width: 160, widths: { fillerMetalMic: 240 } }] },
   ] },
   { title: 'Preheat/Interpass', sections: [
@@ -39,7 +39,7 @@ const WELD_GROUPS: WeldGroup[] = [
     { rows: [{ keys: ['weldPosition'], width: 200 }] },
   ] },
   { sections: [
-    { when: st => st.id === 'root-weld', rows: [{ keys: ['performed5x'], width: 400 }] },
+    { rows: [{ keys: ['performed5x'], width: 400 }] },
   ] },
 ];
 
@@ -113,7 +113,6 @@ export class WeldStageFormComponent {
   }
 
   onSelect(f: StageField, value: string | null) {
-    if (f.key === 'performed5x') this.ctx().on5xChange(this.stage(), value ?? '');
-    else this.ctx().stageSelectChange(this.stage(), f, value);
+    this.ctx().stageSelectChange(this.stage(), f, value);
   }
 }

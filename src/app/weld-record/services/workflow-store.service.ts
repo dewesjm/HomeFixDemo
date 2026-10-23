@@ -8,7 +8,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import {
   JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId, withComments
+  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId, withComments, typeDefinition
 } from '../../data/workflow';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
@@ -17,7 +17,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.44';
+const CURRENT_VERSION = '2.10.45';
 
 /* a step's saved values after its fields are refreshed: a value for a field the step no longer has
    is dropped; values that were never fields (Release to welding, Repair's origin, Affected Items...)
@@ -152,13 +152,13 @@ export class WorkflowStore {
           s.role ??= '';
 
           /* auto-backfill: refresh each step's field definitions from what a new joint gets
-             (buildStages, so fields it adds such as Root's 5X question are kept), so future schema
+             (buildStages, so fields it adds such as the weld override fields are kept), so future schema
              changes propagate without hand-written migrations */
           if (job) {
             const tpl = (getTemplates()[job.trade] ?? []).find(t => t.id === s.id);
-            /* Fit signed as Weld Build-Up carries the weld fields instead of Fit's own; left as saved */
-            const buildup = s.id === 'fit' && s.signoffType === 'weld-buildup';
-            const def = buildup ? undefined : fresh.get(s.id) ?? tpl;
+            /* a step whose Type loads another definition (Fit as Weld Build-Up) carries that one's fields; left as saved */
+            const loaded = !!typeDefinition(s.id, s.signoffType);
+            const def = loaded ? undefined : fresh.get(s.id) ?? tpl;
             if (def) {
               if (def.fields.length) {
                 const oldKeys = s.fields.map(f => f.key);

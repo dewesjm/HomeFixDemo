@@ -37,6 +37,7 @@ interface SerializedStage {
   rejectRules?: RejectRule[];
   rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
+  fabricationCompleteToSign?: boolean;
 }
 
 function serializeStage(t: StageTemplate): SerializedStage {
@@ -51,15 +52,18 @@ function serializeStage(t: StageTemplate): SerializedStage {
     rejectRules: t.rejectRules ?? [],
     rejectRulesEdited: t.rejectRulesEdited,
     fabricationEditable: t.fabricationEditable ?? false,
+    fabricationCompleteToSign: t.fabricationCompleteToSign ?? false,
   };
 }
 
-/* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
+/* saves from before step conditions / Fabrication editable / Fabrication complete to sign existed: keep
+   the built-in values for those */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return { ...s, fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [], role: s.role ?? '',
     includeWhen: s.includeWhen ?? builtIn?.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
-    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
+    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false,
+    fabricationCompleteToSign: s.fabricationCompleteToSign ?? builtIn?.fabricationCompleteToSign ?? false };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {

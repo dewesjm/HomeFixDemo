@@ -42,9 +42,10 @@ describe('layoutSections', () => {
     expect(sections).toEqual([{ box: true, title: 'Box', parts: [{ kind: 'heading', text: 'Sub' }, { kind: 'line', keys: ['b'] }] }]);
   });
 
-  it('draws the default Root Weld as the weld form does: three boxes, the requirements on one line', () => {
+  it('draws the default Root Weld as the weld form does: four boxes (the last its 5X question), the requirements on one line', () => {
     const sections = layoutSections(getActivationForStep('root-weld').fields, inForm);
-    expect(sections.map(s => s.title)).toEqual(['', 'Preheat/Interpass', '']);
+    expect(sections.map(s => s.title)).toEqual(['', 'Preheat/Interpass', '', '']);
+    expect(sections[3].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
     expect(sections[0].parts).toEqual([
       { kind: 'line', keys: ['weldProcedure', 'wtn', 'weldProcess'] }, { kind: 'line', keys: ['qualificationCheck'] },
       { kind: 'line', keys: ['consumableInsertOnly'] }, { kind: 'line', keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'] },

@@ -1,7 +1,7 @@
 import { JOBS, Job } from '../jobs';
 import { FABRICATION_FIELDS } from '../workflow';
 import {
-  micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired, missingFitFabrication,
+  micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired, missingSignFabrication,
 } from './fabrication-form';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', ...over });
@@ -55,9 +55,9 @@ describe('joint-form fabrication-form', () => {
   });
 
   it('lists the Fit-required fabrication values still blank', () => {
-    expect(missingFitFabrication(job(), {})).toEqual(['Location', 'Drawing Rev', 'Actual Thickness']);
-    expect(missingFitFabrication(job({ mcl1: 'MC-I', mcl2: 'MC-I' }), { location: 'ship', drawingRev: 'A' }))
+    expect(missingSignFabrication(job(), {})).toEqual(['Location', 'Drawing Rev', 'Actual Thickness']);
+    expect(missingSignFabrication(job({ mcl1: 'MC-I', mcl2: 'MC-I' }), { location: 'ship', drawingRev: 'A' }))
       .toEqual(['MIC 1', 'MIC 2', 'Actual Thickness']);
-    expect(missingFitFabrication(job(), { location: 'ship', drawingRev: 'A', actualThickness: ' 0.2 ' })).toEqual([]);
+    expect(missingSignFabrication(job(), { location: 'ship', drawingRev: 'A', actualThickness: ' 0.2 ' })).toEqual([]);
   });
 });

@@ -95,7 +95,8 @@ export class SignoffService {
     let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now) : wf.stages.map(s => {
       if (s.id !== stageId) return s;
       const repeats = repeatable(s) ? { repeats: (s.repeats ?? 0) + 1 } : {};
-      if (repeatable(s) && !throughNdt) return { ...blankStage(s), ...repeats };
+      /* a repeatable signoff comes up blank with its Type still picked */
+      if (repeatable(s) && !throughNdt) return { ...blankStage(s), signoffType: s.signoffType, inspectionType: s.inspectionType, ...repeats };
       return {
         ...s,
         ...repeats,

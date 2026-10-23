@@ -21,6 +21,11 @@ describe('shown-fields', () => {
     expect(fieldsShown(fit, j).map(f => f.key)).toContain('weldPosition');
   });
 
+  it("shows Root's 5X question only when NDT Root is 5X", () => {
+    expect(fieldsShown(stageOf(job({ ndtRoot: '5X' }), 'root-weld'), job({ ndtRoot: '5X' })).map(f => f.key)).toContain('performed5x');
+    expect(fieldsShown(stageOf(job({ ndtRoot: 'PT' }), 'root-weld'), job({ ndtRoot: 'PT' })).map(f => f.key)).not.toContain('performed5x');
+  });
+
   it('shows an NDT step’s Defect Code only on RT and UNSAT', () => {
     const j = JOBS.find(x => x.trade === 'Welding' && buildStages(x).some(s => s.id.endsWith('-ndt-utrt')))!;
     const id = buildStages(j).find(s => s.id.endsWith('-ndt-utrt'))!.id;

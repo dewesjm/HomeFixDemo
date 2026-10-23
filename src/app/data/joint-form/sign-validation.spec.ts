@@ -1,5 +1,5 @@
 import { JOBS, Job } from '../jobs';
-import { buildStages, inspectionTypeRequired, WorkflowStage, DEFAULT_STEP_FIELD_ACTIVATIONS, setStepFieldConfig, resetStepFieldConfig } from '../workflow';
+import { buildStages, inspectionTypeRequired, WorkflowStage, DEFAULT_STEP_FIELD_ACTIVATIONS, setStepFieldConfig, resetStepFieldConfig, updateStageTemplate } from '../workflow';
 import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 
@@ -10,7 +10,7 @@ const ctxFor = (j: Job, stage: WorkflowStage, fab: Record<string, string> = {}, 
 const FULL_FAB = { location: 'ship', drawingRev: 'A', actualThickness: '0.2' };
 
 describe('joint-form sign-validation', () => {
-  it('inspection steps with a Type list need the inspection chosen; Fit never does', () => {
+  it('inspection steps with a Type list need the inspection chosen; Fit (whose Type has a default) does not', () => {
     const j = job();
     const ndt = buildStages(j).find(s => s.id.includes('-ndt-') && !!s.typeOptions?.length)!;
     expect(inspectionTypeRequired(ndt)).toBeTrue();
@@ -25,13 +25,26 @@ describe('joint-form sign-validation', () => {
     expect(signProblems(fit, ctxFor(j, fit, FULL_FAB))).toEqual([]);
   });
 
-  it('Fit-Up Insp needs SAT/UNSAT, every value verified and no fabrication errors', () => {
+  it('Fit-Up Insp needs SAT/UNSAT, every value verified and Fabrication complete', () => {
     const j = job();
     const insp = stageOf(j, 'fitup-insp');
-    expect(signProblems(insp, ctxFor(j, insp, {}, { location: 'x' })))
-      .toEqual(['Choose SAT or UNSAT', 'Verify every fitting value', 'Fix the fabrication errors']);
+    expect(signProblems(insp, ctxFor(j, insp, FULL_FAB, { location: 'x' })))
+      .toEqual(['Choose SAT or UNSAT', 'Fix the fabrication errors', 'Verify every fitting value']);
     const verified = { ...insp, result: 'sat' as const, inputs: Object.fromEntries(insp.fields.map(f => [f.key, 'yes'])) };
-    expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
+    expect(signProblems(verified, ctxFor(j, verified, FULL_FAB))).toEqual([]);
+    expect(signProblems(verified, ctxFor(j, verified))).toEqual(['Fabrication: Location, Drawing Rev, Actual Thickness']);
+  });
+
+  it('Fabrication complete to sign follows Admin > Routing Settings', () => {
+    const j = job();
+    const tack = stageOf(j, 'tack');
+    expect(signProblems(tack, ctxFor(j, tack))).toEqual([]);
+    updateStageTemplate('Welding', 'tack', { fabricationCompleteToSign: true });
+    try {
+      expect(signProblems(tack, ctxFor(j, tack))).toEqual(['Fabrication: Location, Drawing Rev, Actual Thickness']);
+    } finally {
+      updateStageTemplate('Welding', 'tack', { fabricationCompleteToSign: false });
+    }
   });
 
   it('Fit-Up Insp shows MIC rows only for parts needing traceability, Revised Joint Design only when entered', () => {
@@ -45,7 +58,7 @@ describe('joint-form sign-validation', () => {
   it('a verify grid needs only its shown, required rows checked', () => {
     const j = job();
     const insp = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
-    expect(signProblems(insp, ctxFor(j, insp))).toEqual([]);
+    expect(signProblems(insp, ctxFor(j, insp, FULL_FAB))).toEqual([]);
     const review = stageOf(j, 'review-o63');
     expect(signProblems(review, ctxFor(j, review))).not.toContain('Verify every required record field');
   });
@@ -61,7 +74,7 @@ describe('joint-form sign-validation', () => {
     const t = stageOf(j, 'tack');
     expect(stageFieldErrors(t, ctxFor(j, t))['tack:repairType']).toBe('Repair Code is required');
     const i = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
-    expect(signProblems(i, ctxFor(j, i))).toEqual([]);
+    expect(signProblems(i, ctxFor(j, i, FULL_FAB))).toEqual([]);
     expect(stageFieldErrors(i, ctxFor(j, i))['fitup-insp:repairType']).toBe('Repair Code is required');
     resetStepFieldConfig();
   });

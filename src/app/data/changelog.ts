@@ -18,6 +18,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: configure which fields appear on each step\'s sign-off form. Changes are saved immediately and take effect without a deploy.',
     ],
     changed: [
+      'Admin → Routing Settings: new column "Fabrication complete to sign". A step with it ticked can\'t be signed while a required Fabrication value (Location, Drawing Rev, Actual Thickness, MIC 1/2 where needed) is blank or a Fabrication value has an error. Ticked on Fit and Fit-Up Insp; Fit-Up Insp now also checks for blank values, not only errors.',
+      'Admin → Signoff Type Definition: Root\'s "Did you perform 5X inspection and was it successful?" is now a field on Root\'s definition, shown when NDT Root is 5X; its rule can be changed there.',
+      'A step\'s Type works the same way on every step. Fit\'s Type now starts blank and must be picked if its Signoff Type Availability row has no default, like every other step.',
       'Admin → Signoff Type Definition: conditions can now use OR. Each group has an "All of (AND)" / "Any of (OR)" droplist, and "Add group" puts a group inside it, for example Type is VT and (Weld Color is Straw or Weld Color is Light Blue). "This step field" is now a droplist of Type, Inspection Results and the step\'s own fields, with suggested values, instead of a typed key.',
       'Admin → Signoff Type Definition: Type, Inspection Results (SAT/UNSAT) and Comments are now fields you tick on each step, ticked wherever they showed before. Unticking Type hides the droplist (the step keeps its default Type, or its first option when it has no default); unticking Comments removes the Comments box. Inspection Results no longer comes from having a reject target: a step shows SAT/UNSAT when its definition lists it, and signing UNSAT on a step with no Reject routes to target gives the error "UNSAT needs a Reject routes to target in Admin > Routing Settings".',
       'Weld Color\'s "titanium joints only" rule is now an ordinary Show when (Type is VT and the joint is titanium) that can be changed on Admin → Signoff Type Definition; steps added in Routing Settings without a definition follow the same rule.',
@@ -45,6 +48,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: redesigned as a table (like Routing Settings) — all step definitions visible at once, search, Add definition button, and per-field visibility condition editor.',
     ],
     fixed: [
+      'Layer: picking the Final Weld Type now loads Final Weld\'s fields and signs Final Weld. Before, the pick changed only the droplist.',
       'NDT steps: Defect Code shows again when the Type is RT and Inspection Results is UNSAT.',
       'Signing now checks the fields a step actually shows, as its Signoff Type Definition sets them: a required field added to a step must be filled in, and one set not required no longer blocks signing.',
       'Fit-Up Insp can be signed when a verify row has been taken off its Signoff Type Definition (it used to ask for the hidden row to be checked).',

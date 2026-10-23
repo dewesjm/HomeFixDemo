@@ -45,9 +45,7 @@ export interface SignoffContext {
   signoffCheckboxChange: (stage: WorkflowStage, field: SignoffField, checked: boolean) => void;
   toggleAffectedItem: (stage: WorkflowStage, item: string, event: Event) => void;
   onConsumableInsertChange: (stage: WorkflowStage, value: string) => void;
-  on5xChange: (stage: WorkflowStage, value: string) => void;
-  updateSignoffType: (stage: WorkflowStage, value: string) => void;
-  setInspectionType: (value: string) => void;
+  setType: (stage: WorkflowStage, value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;
   /* undo the joint's most recent sign-off (Records Review's Deprogress) */

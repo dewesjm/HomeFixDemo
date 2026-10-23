@@ -32,9 +32,16 @@ export function isInspectionStage(stage: Pick<WorkflowStage, 'id'>): boolean {
 
 /* a shown Type whose options have no default (Admin > Signoff Type Availability) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
-   only one option. Fit is the exception: its Type is signoffType and starts on its first option. */
+   only one option */
 export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
-  return stage.id !== 'fit' && showsType(stage) && !stage.typeOptions!.some(o => o.default);
+  return showsType(stage) && !stage.typeOptions!.some(o => o.default);
+}
+
+/* a step's Type is stored twice: inspectionType (what the joint page shows and NDT rules read) and
+   signoffType (what a repeatable Type or a Type that loads another definition is looked up by,
+   'standard' when blank); both always hold the same pick */
+export function typeValues(value: string): Pick<WorkflowStage, 'inspectionType' | 'signoffType'> {
+  return { inspectionType: value, signoffType: value || 'standard' };
 }
 
 /* the Type a step starts with and keeps until someone changes it: its default option, or blank when

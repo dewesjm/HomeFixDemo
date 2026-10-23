@@ -42,8 +42,7 @@ export function snapshotInputs(stage: WorkflowStage, fields: StageField[], signo
   const out: SignoffInput[] = [];
   const typeOpts = stage.typeOptions ?? [];
   if (showsType(stage)) {
-    const cur = stage.id === 'fit' ? stage.signoffType : stage.inspectionType;
-    out.push({ label: 'Type', value: typeOpts.find(o => o.value === cur)?.label ?? '' });
+    out.push({ label: 'Type', value: typeOpts.find(o => o.value === stage.inspectionType)?.label ?? '' });
   }
   for (const f of fields) {
     if (isUserEditable(stage, f)) out.push({ label: f.label, value: displayValue(f, stage.inputs[f.key]) });

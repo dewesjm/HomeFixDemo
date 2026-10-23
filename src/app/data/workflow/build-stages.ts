@@ -3,7 +3,7 @@ import { Job } from '../jobs';
 import { conditionsMatch, usesStepAnswers } from '../step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from './types';
 import { getTemplates } from './stage-templates';
-import { initialInspectionType } from './stage-rules';
+import { initialInspectionType, typeValues } from './stage-rules';
 import { WELD_OVERRIDE_FIELDS } from './weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from './seed-fabrication';
@@ -26,12 +26,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};
     /* Sold follows whichever Records track reviewed the job */
     const role = t.id === 'sold' ? (hasO63Data ? 'O63 Records' : 'O04 Records') : (t.role ?? '');
-    /* Only Root (not Final Weld) gets the 5X inspection field, and only when NDT Root allows 5X --
-       answering yes auto-signs the Root 5X/VT stage */
-    let fields = (t.id === 'root-weld' && (job.ndtRoot || '').trim().toUpperCase() === '5X')
-      ? [...t.fields, { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select' as const,
-          options: [{ label: 'No I didn\'t perform 5X', value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] }]
-      : [...t.fields];
+    let fields = [...t.fields];
     /* Weld stages get override fields */
     if (WELD_STEP_IDS.includes(t.id)) {
       fields = [...fields, ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f }))];
@@ -48,9 +43,8 @@ export function buildStages(job: Job): WorkflowStage[] {
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',
-      signoffType: t.typeOptions?.find(o => o.default)?.value ?? t.typeOptions?.[0]?.value ?? 'standard',
+      ...typeValues(initialInspectionType(t)),
       swapStageId: '',
-      inspectionType: initialInspectionType(t),
       decisionLabel: t.decisionLabel ?? '',
       typeOptions: t.typeOptions,
       signed: false,
@@ -70,7 +64,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     if (!step) return s;
     /* only the method(s) the Joint Details values allow; a default that isn't one of them leaves Type blank */
     const typeOptions = s.typeOptions?.filter(o => step.methods.includes(o.value));
-    return { ...s, typeOptions, inspectionType: initialInspectionType({ id: s.id, typeOptions }) };
+    return { ...s, typeOptions, ...typeValues(initialInspectionType({ id: s.id, typeOptions })) };
   });
 }
 
