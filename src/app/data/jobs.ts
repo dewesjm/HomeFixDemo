@@ -224,6 +224,8 @@ function generateJobs(count = 480): Job[] {
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
     const rtRoot = ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS);
     const rtFinal = ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS);
+    /* half the joints have no NDT Each Layer, so they have no layer NDT steps */
+    const ndtEachBlank = i % 4 === 1 || i % 4 === 2;
     const engineeringNotes = i % 3 === 0
       ? Array.from({ length: 2 + Math.floor(rand() * 2) }, () => `SEE NOTE ${1000 + Math.floor(rand() * 9000)}`).join(', ')
       : '';
@@ -257,7 +259,7 @@ function generateJobs(count = 480): Job[] {
       rtRoot,
       rtFinal,
       ndtRoot,
-      ndtEach: pick(NDT_REQUIREMENT_VALUES),
+      ndtEach: ((v: string) => ndtEachBlank ? '' : v)(pick(NDT_REQUIREMENT_VALUES)),   /* always picks, so later seeded values don't shift */
       ndtFinal,
       ut: pick(NDT_RESULTS),
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,

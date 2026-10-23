@@ -98,7 +98,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
   const repairPhase = /^(root|layer|final)-ndt-(vt5x|utrt)$/.exec(baseStepId(wf.stages[lastSigned]?.id ?? ''))?.[1];
   const repairAt = !awaitingRelease && holdAt < 0 && ptHoldAt < 0 && repairPhase
     && idHash % SEEDED_REPAIR_EVERY === SEEDED_REPAIR_AT ? lastSigned : -1;
-  const repairSigned = repairAt >= 0 && job.id.charCodeAt(4) % 3 === 0;
+  const repairSigned = repairAt >= 0 && job.id.charCodeAt(4) % 2 === 0;
 
   /* one seeded sign-off: History entry plus the signed stage */
   const sign: SignFn = (s, inputs, signoffInputs, inspectionType, result, who) => {
