@@ -19,6 +19,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     ],
     fixed: ['Defer Tack on Fit is a checkbox again. Required checkboxes must be checked to sign.'],
     changed: [
+      'Signoff Type Forms: removed the descriptions beneath field names in the Fields list.',
       'Signoff Type Forms labels PH/IP requirements, actuals and overrides as Number or NC so their supported values are clear.',
       'Signoff Types: Signs routing now shows Current Routing for the default, including in the edit droplist and CSV export.',
       'Signoff Type Forms now shows each field’s type (Text, Number, Droplist, Checkbox or Radio), read-only. Forms, routing conditions, qualifications, History and overrides all use the same catalog definitions; old per-routing field lists are removed. Saved joints and form settings reset once for the new structure.',

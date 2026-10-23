@@ -118,7 +118,7 @@
                        [checked]="hasField(f.key)" [disabled]="isLocked(f.key)"
                        [title]="isLocked(f.key) ? 'Routing reads this field when this Type is signed, so it stays on' : ''"
                        (change)="toggleField(f.key)" />
-                <span class="text-sm flex-1">{{ f.label }} <span class="badge badge-sm badge-ghost">{{ f.typeLabel }}</span>@if (isLocked(f.key)) {<span class="text-xs"> (always on: routing reads it)</span>}@if (fieldNote(f.key)) {<span class="text-xs block">{{ fieldNote(f.key) }}</span>}</span>
+                <span class="text-sm flex-1">{{ f.label }} <span class="badge badge-sm badge-ghost">{{ f.typeLabel }}</span>@if (isLocked(f.key)) {<span class="text-xs"> (always on: routing reads it)</span>}</span>
                 @if (hasField(f.key)) {
                   <ng-container *ngTemplateOutlet="fieldRules; context: { key: f.key }"></ng-container>
                 }

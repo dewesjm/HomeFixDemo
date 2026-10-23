@@ -56,7 +56,7 @@ import {
 } from '../../signoff-definition/field-rules';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
-import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
+import { isDefinitionLockedField } from '../../signoff-definition/stage-rules';
 import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
 import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
@@ -294,9 +294,7 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* what taking a routing-read field off this step does (e.g. Release to welding), or that routing
      ignores it on this step */
-  fieldNote(key: string): string {
-    return definitionFieldNote(this.editing()?.typeId ?? '', key);
-  }
+
 
   toggleField(key: string) {
     if (this.isLocked(key)) return;
