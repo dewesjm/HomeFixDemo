@@ -49,8 +49,8 @@ export abstract class BulkImport<R extends ImportRowState> {
       const rows = (await this.parseFile(file)).map(raw => this.fromRaw(raw));
       this.setRows(rows);
       this.toast.add({ severity: 'info', summary: 'Loaded', detail: `${rows.length} rows loaded from file` });
-    } catch (e: any) {
-      this.toast.add({ severity: 'error', summary: 'Parse error', detail: e.message || 'Could not read file' });
+    } catch (e) {
+      this.toast.add({ severity: 'error', summary: 'Parse error', detail: (e instanceof Error && e.message) || 'Could not read file' });
     } finally {
       this.loading.set(false);
       input.value = '';

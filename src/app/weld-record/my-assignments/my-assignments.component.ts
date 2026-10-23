@@ -59,7 +59,7 @@ export class MyAssignmentsComponent {
   /* search box covers the same fields it always did; WICC Date filters on the formatted text the column shows */
   table = new TableState<AssignmentRow>(
     ['hull', 'drawing', 'routing', 'joint', 'location'],
-    { expirationDate: (v, f) => formatDate(v).toLowerCase().includes(String(f).toLowerCase().trim()) }
+    { expirationDate: (v, f) => formatDate(v as string).toLowerCase().includes(String(f).toLowerCase().trim()) }
   );
 
   constructor() {

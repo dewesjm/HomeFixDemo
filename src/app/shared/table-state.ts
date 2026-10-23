@@ -4,7 +4,11 @@
 import { computed, signal } from '@angular/core';
 
 type SortOrder = 1 | -1;
-export type FilterPredicate<T> = (rowValue: any, filterValue: any, row: T) => boolean;
+/* a column filter is typed text, or the values picked in a multiselect */
+export type ColumnFilterValue = string | string[];
+export type FilterPredicate<T> = (rowValue: unknown, filterValue: ColumnFilterValue, row: T) => boolean;
+
+const cell = (row: unknown, field: string) => (row as Record<string, unknown>)[field];
 
 export class TableState<T> {
   private allRows = signal<T[]>([]);
@@ -15,7 +19,7 @@ export class TableState<T> {
   sortField = signal<string | null>(null);
   sortOrder = signal<SortOrder>(1);
   globalFilter = signal('');
-  columnFilters = signal<Record<string, any>>({});
+  columnFilters = signal<Record<string, ColumnFilterValue>>({});
 
   constructor(
     private globalFilterFields: (keyof T & string)[] = [],
@@ -35,7 +39,7 @@ export class TableState<T> {
     }
   }
 
-  setColumnFilter(field: string, value: any) {
+  setColumnFilter(field: string, value: ColumnFilterValue) {
     this.columnFilters.update(f => ({ ...f, [field]: value }));
     this.page.set(0);
   }
@@ -55,7 +59,7 @@ export class TableState<T> {
     const q = this.globalFilter().trim().toLowerCase();
     if (!q) return true;
     return this.globalFilterFields.some(f => {
-      const v = (row as any)[f];
+      const v = cell(row, f);
       if (Array.isArray(v)) return v.join(' ').toLowerCase().includes(q);
       return String(v ?? '').toLowerCase().includes(q);
     });
@@ -66,7 +70,7 @@ export class TableState<T> {
     return Object.entries(filters).every(([field, val]) => {
       if (val == null || val === '' || (Array.isArray(val) && val.length === 0)) return true;
       const predicate = this.filterPredicates[field];
-      const rowValue = (row as any)[field];
+      const rowValue = cell(row, field);
       if (predicate) return predicate(rowValue, val, row);
       return String(rowValue ?? '').toLowerCase().includes(String(val).toLowerCase());
     });
@@ -82,8 +86,8 @@ export class TableState<T> {
     if (!field) return rows;
     const order = this.sortOrder();
     return [...rows].sort((a, b) => {
-      const av = (a as any)[field];
-      const bv = (b as any)[field];
+      const av = cell(a, field) as string | number | null | undefined;
+      const bv = cell(b, field) as string | number | null | undefined;
       if (av == null && bv == null) return 0;
       if (av == null) return -1 * order;
       if (bv == null) return 1 * order;
@@ -113,4 +117,4 @@ export class TableState<T> {
 }
 
 // --- reusable column filter predicates ---
-export const inArray: FilterPredicate<any> = (rowValue, filterValue: any[]) => filterValue.includes(rowValue);
+export const inArray: FilterPredicate<unknown> = (rowValue, filterValue) => (filterValue as readonly unknown[]).includes(rowValue);

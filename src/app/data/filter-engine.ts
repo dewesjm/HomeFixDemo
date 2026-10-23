@@ -77,9 +77,9 @@ export function isoDay(d: unknown): string {
 const day = (iso: string) => (iso ? new Date(iso + 'T00:00:00').getTime() : NaN);
 const DAY_MS = 24 * 3600 * 1000;
 
-function matches(c: Condition, kind: FieldKind, cell: any): boolean {
+function matches(c: Condition, kind: FieldKind, cell: unknown): boolean {
   if (kind === 'number' || kind === 'date') {
-    const v = kind === 'date' ? (cell ? new Date(cell).getTime() : NaN) : Number(cell);
+    const v = kind === 'date' ? (cell ? new Date(cell as string | number).getTime() : NaN) : Number(cell);
     const n = (s: string) => (kind === 'date' ? day(s) : Number(s));
     if (Number.isNaN(v)) return false;
     switch (c.op) {
@@ -109,7 +109,7 @@ function matches(c: Condition, kind: FieldKind, cell: any): boolean {
   }
 }
 
-export function fieldMatches(field: MatchField, conds: Condition[] | undefined, cell: any): boolean {
+export function fieldMatches(field: MatchField, conds: Condition[] | undefined, cell: unknown): boolean {
   const active = activeConditions(field, conds);
   if (!active.length) return true;
   const includes = active.filter(c => !isExclude(c.op));

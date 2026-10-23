@@ -35,9 +35,9 @@ import { TableState } from './table-state';
             <svg lucideListFilter class="size-3 opacity-60 shrink-0"></svg>
             <!-- size="1": without it the box's default ~20-character width sets the column's minimum width -->
             <input type="text" class="grow min-w-0" size="1"
-                   [ngModel]="table().columnFilters()[field()] ?? ''"
+                   [ngModel]="textFilter()"
                    (ngModelChange)="table().setColumnFilter(field(), $event)" />
-            @if (table().columnFilters()[field()]) {
+            @if (textFilter()) {
               <button type="button" class="btn btn-ghost btn-xs p-0 shrink-0"
                       (click)="table().setColumnFilter(field(), '')">
                 <svg lucideX class="size-3 opacity-60"></svg>
@@ -46,7 +46,7 @@ import { TableState } from './table-state';
           </label>
         } @else {
           <app-multiselect-dropdown class="block w-full min-w-0" [options]="options()"
-            [selected]="table().columnFilters()[field()] ?? []"
+            [selected]="listFilter()"
             (selectedChange)="table().setColumnFilter(field(), $event)" />
         }
       </div>
@@ -66,6 +66,15 @@ export class SortHeaderComponent {
   active = computed(() => {
     const v = this.table().columnFilters()[this.field()];
     return Array.isArray(v) ? v.length > 0 : !!v;
+  });
+
+  textFilter = computed(() => {
+    const v = this.table().columnFilters()[this.field()];
+    return typeof v === 'string' ? v : '';
+  });
+  listFilter = computed(() => {
+    const v = this.table().columnFilters()[this.field()];
+    return Array.isArray(v) ? v : [];
   });
 
   arrow() {

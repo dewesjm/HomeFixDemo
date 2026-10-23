@@ -11,8 +11,8 @@ export class HistoryTableState extends TableState<HistoryRow> {
       ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
       {
         /* match the formatted date shown in the column, not the raw ISO timestamp */
-        when: (rowValue: string, val: string) =>
-          formatDateTime(rowValue).toLowerCase().includes(String(val).toLowerCase()),
+        when: (rowValue, val) =>
+          formatDateTime(rowValue as string).toLowerCase().includes(String(val).toLowerCase()),
         routing: inArray,
       }
     );

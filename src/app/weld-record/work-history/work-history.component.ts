@@ -3,6 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
 import { TablePagerComponent } from '../../shared/table-pager.component';
@@ -48,7 +49,7 @@ export class WorkHistoryComponent {
   constructor() {
     this.table.setPageSize(15);
     /* seed filters from url for deep links (person by name or identifier) */
-    this.route.queryParamMap.subscribe(pm => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(pm => {
       this.jobQuery.set(pm.get('job') ?? '');
       const p = pm.get('person');
       this.person.set(p ? PEOPLE.find(x => x.id === p || fullName(x) === p) ?? null : null);

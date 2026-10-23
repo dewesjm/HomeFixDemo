@@ -11,7 +11,7 @@ import {
   LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
 } from '@lucide/angular';
 
-import { TableState, inArray, FilterPredicate } from '../../shared/table-state';
+import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { MultiselectDropdownComponent } from '../../shared/multiselect-dropdown.component';
@@ -69,7 +69,7 @@ export class AdaptiveSearchComponent {
   /* column header filters: list columns get a multiselect, so they need the in-list predicate */
   table = new TableState<SearchRow>(
     ['xrefid', 'hull', 'drawing', 'joint', 'order', 'sequenceNumber'],
-    Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, inArray as FilterPredicate<SearchRow>]))
+    Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, inArray]))
   );
 
   selectedRole = signal<Role>('View');
