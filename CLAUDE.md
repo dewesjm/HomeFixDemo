@@ -2,6 +2,14 @@
 
 Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
+## Queued work (do in this order, one at a time; stop for review after each)
+1. ROUTING-RULES-PLAN.md Part 1: "Then go to" rules replace Repeatable (in progress).
+2. FIELD-DEFINITIONS-PLAN.md: the field catalog + Signoff Type Forms become the only field
+   definitions; remove the old per-routing field lists (fixes Defer Tack showing as text on Fit).
+3. ROUTING-RULES-PLAN.md Part 2: Repair, Excavation NDT and Engineering Hold into the tables.
+
+Remove an item here once it's built and committed.
+
 ## Keep code organized for a human reader
 - One concern per file. A new feature's logic goes in the file or service that owns that concern, not in
   whatever file is already open. If nothing owns it, make a new file.
