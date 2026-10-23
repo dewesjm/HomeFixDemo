@@ -8,8 +8,8 @@ import { Job } from '../../data/jobs';
 import { StageField, SignoffField, fieldsShown, visibleSignoffFields, isUserEditable, isRoutingLockedField, withComments } from '../../data/workflow';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
-import { AttachmentService } from '../services/attachment.service';
-import { AttachmentsComponent } from '../attachments/attachments.component';
+import { ReferenceService } from '../services/reference.service';
+import { ReferencesComponent } from '../references/references.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 /* fields the live signoff panel already gives a person-search assist to (see data/workflow/ndt.ts's
@@ -21,13 +21,13 @@ export interface CorrectTarget { job: Job; stageId: string }
 @Component({
   selector: 'app-correct-stage-dialog',
   standalone: true,
-  imports: [FormsModule, AttachmentsComponent, PersonSearchInputComponent],
+  imports: [FormsModule, ReferencesComponent, PersonSearchInputComponent],
   templateUrl: './correct-stage-dialog.component.html'
 })
 export class CorrectStageDialogComponent {
   private store = inject(WorkflowStore);
   private signoffSvc = inject(SignoffService);
-  private attachmentSvc = inject(AttachmentService);
+  private referenceSvc = inject(ReferenceService);
 
   target = input<CorrectTarget | null>(null);
   closed = output<void>();
@@ -39,7 +39,7 @@ export class CorrectStageDialogComponent {
     return t ? this.store.workflowFor(t.job)() : null;
   });
   stage = computed(() => this.wf()?.stages.find(s => s.id === this.target()?.stageId) ?? null);
-  attachments = computed(() => this.wf()?.attachments ?? []);
+  references = computed(() => this.wf()?.references ?? []);
 
   fields = computed<StageField[]>(() => {
     const st = this.stage();
@@ -124,15 +124,15 @@ export class CorrectStageDialogComponent {
     this.close();
   }
 
-  addAttachments(files: FileList) {
+  addReferences(files: FileList) {
     const t = this.target();
     if (!t) return;
-    for (const f of Array.from(files)) this.attachmentSvc.addAttachment(t.job, f.name);
+    for (const f of Array.from(files)) this.referenceSvc.addReference(t.job, f.name);
   }
 
-  removeAttachment(id: string) {
+  removeReference(id: string) {
     const t = this.target();
-    if (t) this.attachmentSvc.removeAttachment(t.job, id);
+    if (t) this.referenceSvc.removeReference(t.job, id);
   }
 
   close() {

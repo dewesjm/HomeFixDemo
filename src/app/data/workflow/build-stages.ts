@@ -80,7 +80,7 @@ export function newWorkflow(job: Job): JobWorkflow {
     jobId: job.id,
     technician: job.technician,
     stages: buildStages(job),
-    attachments: [],
+    references: [],
     conditionCode: '',
     conditionCount: 0,
     history: [],

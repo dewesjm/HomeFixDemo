@@ -10,7 +10,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
 import { JointDetailsComponent } from '../joint-details/joint-details.component';
-import { AttachmentsComponent } from '../attachments/attachments.component';
+import { ReferencesComponent } from '../references/references.component';
 import { FabricationComponent } from '../fabrication/fabrication.component';
 import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
 import { SignoffContext } from '../signoff-panel/signoff-context';
@@ -20,7 +20,7 @@ import { JointOverridesService } from './joint-overrides.service';
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
-import { AttachmentService } from '../services/attachment.service';
+import { ReferenceService } from '../services/reference.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
@@ -50,7 +50,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, AttachmentsComponent, FabricationComponent, SignoffPanelComponent,
+    CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, ReferencesComponent, FabricationComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
   providers: [JointOverridesService],
@@ -62,7 +62,7 @@ export class JointPageComponent implements OnDestroy {
   private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private signoffService = inject(SignoffService);
-  private attachmentService = inject(AttachmentService);
+  private referenceService = inject(ReferenceService);
   private fabricationService = inject(FabricationDataService);
   private deviationService = inject(DeviationService);
   private weldAssignment = inject(WeldAssignmentService);
@@ -572,12 +572,12 @@ export class JointPageComponent implements OnDestroy {
 
   /* ── References and navigation ── */
 
-  addAttachments(files: FileList) {
+  addReferences(files: FileList) {
     if (!this.job) return;
-    for (const f of Array.from(files)) this.attachmentService.addAttachment(this.job, f.name);
+    for (const f of Array.from(files)) this.referenceService.addReference(this.job, f.name);
   }
-  removeAttachment(id: string) {
-    if (this.job) this.attachmentService.removeAttachment(this.job, id);
+  removeReference(id: string) {
+    if (this.job) this.referenceService.removeReference(this.job, id);
   }
 
   /* where "Back"/post-signoff navigation returns to, based on how this screen was opened */

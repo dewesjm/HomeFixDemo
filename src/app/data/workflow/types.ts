@@ -78,7 +78,7 @@ export interface WorkflowStage {
   engineeringEntry?: boolean;
 }
 
-export interface Attachment {
+export interface Reference {
   id: string;
   name: string;           /* filename, files not actually uploaded here */
   addedBy: string;
@@ -134,7 +134,7 @@ export interface JobWorkflow {
   jobId: string;
   technician: string;
   stages: WorkflowStage[];
-  attachments: Attachment[];
+  references: Reference[];
   conditionCode: string;     /* see conditions.ts, '' if none */
   conditionCount: number;    /* pairs with conditionCode */
   history: HistoryEntry[];

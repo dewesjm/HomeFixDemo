@@ -31,6 +31,15 @@ describe('WorkflowStore', () => {
     expect(reloaded.inputs['verifyMic1']).toBe('yes');
   });
 
+  it('a saved workflow from before References were named references keeps them', () => {
+    const saved = { ...store.workflowFor(job)(), references: undefined, attachments: [{ id: 'a1', name: 'photo.jpg', addedBy: 'T', addedAt: '2026-01-01T00:00:00Z' }] };
+    localStorage.setItem(STORAGE.workflows, JSON.stringify({ [job.id]: saved }));
+    TestBed.resetTestingModule();
+    const reloaded = TestBed.inject(WorkflowStore).workflowFor(job)();
+    expect(reloaded.references.map(r => r.name)).toEqual(['photo.jpg']);
+    expect('attachments' in reloaded).toBeFalse();
+  });
+
   it('returns the same signal instance for repeated calls on the same job', () => {
     expect(store.workflowFor(job)).toBe(store.workflowFor(job));
   });

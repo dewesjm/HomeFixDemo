@@ -2,12 +2,12 @@
   <h3 class="panel-title"><svg lucidePaperclip class="size-4"></svg> References</h3>
   <p class="section-sub">Photos or documents for this job. (Filenames are recorded; files aren't uploaded in this demo.)</p>
 
-  @if (attachments().length) {
+  @if (references().length) {
     <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead><tr><th>File</th><th>Added by</th><th>When</th><th class="w-3r"></th></tr></thead>
       <tbody>
-        @for (a of attachments(); track a.id) {
+        @for (a of references(); track a.id) {
           <tr>
             <td><svg lucideFile class="size-4 mr-xs inline"></svg>{{ a.name }}</td>
             <td>{{ a.addedBy }}</td>

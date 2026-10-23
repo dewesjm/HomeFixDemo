@@ -2,22 +2,16 @@ import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucidePaperclip, LucideFile, LucideTrash2 } from '@lucide/angular';
 import { AppDateTimePipe } from '../../shared/date-format';
-
-export interface Attachment {
-  id: string;
-  name: string;
-  addedBy: string;
-  addedAt: string;
-}
+import { Reference } from '../../data/workflow';
 
 @Component({
-  selector: 'app-attachments',
+  selector: 'app-references',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, LucidePaperclip, LucideFile, LucideTrash2],
-  templateUrl: './attachments.component.html'
+  templateUrl: './references.component.html'
 })
-export class AttachmentsComponent {
-  attachments = input.required<Attachment[]>();
+export class ReferencesComponent {
+  references = input.required<Reference[]>();
   disabled = input<boolean>(false);
   add = output<FileList>();
   remove = output<string>();

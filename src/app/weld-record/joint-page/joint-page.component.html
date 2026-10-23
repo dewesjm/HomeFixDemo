@@ -24,7 +24,7 @@
 
   <!-- 3.5 ───────── References (see showsReferences: the step's definition) ───────── -->
   @if (showReferences()) {
-    <app-attachments [attachments]="w.attachments" [disabled]="jobComplete()" (add)="addAttachments($event)" (remove)="removeAttachment($event)" />
+    <app-references [references]="w.references" [disabled]="jobComplete()" (add)="addReferences($event)" (remove)="removeReference($event)" />
   }
 
 } @else {

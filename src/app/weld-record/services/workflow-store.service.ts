@@ -1,5 +1,5 @@
 /* per-job workflow state: signals, localStorage persistence, migration, and history stamping.
-   Domain services (RoutingService, SignoffService, AttachmentService, FabricationDataService) build
+   Domain services (RoutingService, SignoffService, ReferenceService, FabricationDataService) build
    their mutations on top of this — it owns no domain logic of its own. */
 import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
@@ -120,7 +120,10 @@ export class WorkflowStore {
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       /* backfill old/partial records so reads don't throw */
       for (const wf of Object.values(parsed)) {
-        wf.attachments ??= [];
+        /* saved before the field was named references */
+        const saved = wf as JobWorkflow & { attachments?: JobWorkflow['references'] };
+        wf.references ??= saved.attachments ?? [];
+        delete saved.attachments;
         wf.history ??= [];
         wf.fabricationData ??= {};
         wf.stages ??= [];
