@@ -16,7 +16,7 @@ import { currentRoutingLabel } from '../routing/current-routing';
 import { REPAIR_STAGE } from '../routing/added-steps';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
 import { withComments } from '../signoff-definition/signoff-parts';
-import { typeDefinition } from '../signoff-definition/signoff-types';
+import { isOwnType } from '../signoff-definition/signoff-types';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = STORAGE.workflows;
@@ -24,7 +24,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.46';
+const CURRENT_VERSION = '2.10.47';
 
 /* a step's saved values after its fields are refreshed: a value for a field the step no longer has
    is dropped; values that were never fields (Release to welding, Repair's origin, Affected Items...)
@@ -163,9 +163,8 @@ export class WorkflowStore {
              changes propagate without hand-written migrations */
           if (job) {
             const tpl = (getTemplates()[job.trade] ?? []).find(t => t.id === s.id);
-            /* a step whose Type loads another definition (Fit as Weld Build-Up) carries that one's fields; left as saved */
-            const loaded = !!typeDefinition(s.id, s.signoffType);
-            const def = loaded ? undefined : fresh.get(s.id) ?? tpl;
+            /* a step on a Type other than its own (Fit as Weld Build-Up) carries that Type's fields; left as saved */
+            const def = isOwnType(s.id, s.signoffType) ? fresh.get(s.id) ?? tpl : undefined;
             if (def) {
               if (def.fields.length) {
                 const oldKeys = s.fields.map(f => f.key);

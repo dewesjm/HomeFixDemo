@@ -125,8 +125,7 @@ export class DefinitionFormComponent {
   }
 
   sections(cells: Map<string, Cell>): LayoutSection[] {
-    const listed = hasStepActivation(this.stage()) ? this.items() : this.withoutDefinition(cells);
-    const items = cells.has(TYPE_KEY) && !listed.some(a => a.key === TYPE_KEY) ? [{ key: TYPE_KEY, line: 0 }, ...listed] : listed;
+    const items = hasStepActivation(this.stage()) ? this.items() : this.withoutDefinition(cells);
     return layoutSections(items, key => cells.has(key));
   }
 

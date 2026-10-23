@@ -1,6 +1,5 @@
 <h2 class="section-title">Signoff Type Availability</h2>
-<p class="text-sm mb-sm">Definition: the Signoff Type Definition whose fields the Type shows. When it is a later routing
-  step's, signing with the Type is that step's signoff (Layer signed as Final Weld signs Final Weld).</p>
+<p class="text-sm mb-sm">Each step offers Types from Admin &gt; Routing Signoff Types, which is where a new Type is added first.</p>
 <p class="text-sm mb-sm">No default: the Type starts blank and must be picked before the step can be signed, even when
   there is only one option. Whether a step shows Type at all is set on its Signoff Type Definition.</p>
 
@@ -35,40 +34,29 @@
               <span class="text-sm">{{ excavationNote }}</span>
             } @else if (editingUid() === row.uid) {
               <div class="flex flex-col gap-1">
-                @for (opt of row.options; track $index; let i = $index) {
+                @for (opt of row.types; track $index; let i = $index) {
                   <div class="flex items-center gap-1">
                     <button type="button" class="btn btn-ghost btn-xs" (click)="moveUp(row, i)" [disabled]="i === 0">
                       <svg lucideChevronUp class="size-3"></svg>
                     </button>
-                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(row, i)" [disabled]="i === row.options.length - 1">
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="moveDown(row, i)" [disabled]="i === row.types.length - 1">
                       <svg lucideChevronDown class="size-3"></svg>
                     </button>
-                    <input class="input input-sm input-bordered w-40" placeholder="Name"
-                           [ngModel]="opt.label" (ngModelChange)="opt.label = $event" />
+                    <select class="select select-sm select-bordered w-48" [ngModel]="opt.type" (ngModelChange)="opt.type = $event">
+                      <option value="" disabled>Select a type</option>
+                      @for (t of typeChoices; track t.value) { <option [value]="t.value">{{ t.label }}</option> }
+                    </select>
                     <label class="flex items-center gap-1 text-xs cursor-pointer">
                       <input type="radio" class="radio radio-xs" [name]="'default-' + row.uid"
                              [checked]="opt.default" (change)="setDefault(row, i)" />
                       Default
-                    </label>
-                    <label class="flex items-center gap-1 text-xs cursor-pointer ml-2 pl-3 border-l border-base-300">
-                      <input type="checkbox" class="checkbox checkbox-xs"
-                             [checked]="!!opt.repeatable" (change)="setRepeatable(opt, $any($event.target).checked)" />
-                      Repeatable
-                    </label>
-                    <label class="flex items-center gap-1 text-xs ml-2 pl-3 border-l border-base-300">
-                      Definition
-                      <select class="select select-xs select-bordered w-44"
-                              [ngModel]="opt.definition ?? ''" (ngModelChange)="setDefinition(opt, $event)">
-                        <option value="">This step's own</option>
-                        @for (d of definitions; track d.id) { <option [value]="d.id">{{ d.label }}</option> }
-                      </select>
                     </label>
                     <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeOption(row, i)">
                       <svg lucideTrash2 class="size-3"></svg>
                     </button>
                   </div>
                 }
-                @if (row.options.length > 0) {
+                @if (row.types.length > 0) {
                   <label class="flex items-center gap-1 text-xs cursor-pointer">
                     <input type="radio" class="radio radio-xs" [name]="'default-' + row.uid"
                            [checked]="!hasDefault(row)" (change)="setDefault(row, -1)" />
@@ -80,10 +68,10 @@
                 </button>
               </div>
             } @else {
-              @if (row.options.length === 0) {
+              @if (row.types.length === 0) {
                 <span class="text-sm">No options</span>
               } @else {
-                @for (opt of row.options; track $index) {
+                @for (opt of row.types; track $index) {
                   <span class="badge badge-sm me-1">{{ optionText(opt) }}</span>
                 }
                 @if (!hasDefault(row)) {

@@ -1,8 +1,9 @@
 /* Where a signoff goes because of its Type (Admin > Signoff Type Availability): a repeatable Type
    on a step its NDT follows (Interim Layer) brings up that NDT and then comes back to the step, and
-   a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff. */
+   a Type whose Signs step is a later step (Layer's Final Weld, Admin > Routing Signoff Types) is that
+   step's signoff. */
 import { WorkflowStage } from '../model/workflow-types';
-import { typeDefinition, typeRepeatable } from '../signoff-definition/signoff-types';
+import { typeRepeatable, typeSignsStep } from '../signoff-definition/signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
 import { isPhaseNdtId } from './built-in-step-rules';
 import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
@@ -36,12 +37,12 @@ export function repeatReturnStep(stages: WorkflowStage[], signedId: string): str
   return inspectionsOf(stages, owner).some(s => s.required && !s.signed) ? '' : step.id;
 }
 
-/* the later step a stage's Type signs (its Type loads that step's definition), or '' */
+/* the later step a stage's Type signs (the Type's Signs step), or '' */
 export function signedAsStep(stages: WorkflowStage[], stage: WorkflowStage): string {
-  const loaded = typeDefinition(stage.id, stage.signoffType);
-  if (!loaded) return '';
+  const target = typeSignsStep(stage.id, stage.signoffType);
+  if (!target) return '';
   const idx = stages.findIndex(s => s.id === stage.id);
-  return stages.find((s, i) => i > idx && baseStepId(s.id) === loaded)?.id ?? '';
+  return stages.find((s, i) => i > idx && baseStepId(s.id) === target)?.id ?? '';
 }
 
 /* sign `stageId` as the later step `targetId`: the target takes the values and is signed, and the

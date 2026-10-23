@@ -1,9 +1,10 @@
 import { JOBS, Job } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { WorkflowStage } from '../model/workflow-types';
-import { WELD_BUILDUP_DEFINITION } from '../routing/step-ids';
-import { DEFAULT_STEP_FIELD_ACTIVATIONS, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
+import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
+import { DEFAULT_TYPE_DEFINITIONS, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
 import { definitionStageFields, fieldsShown } from './shown-fields';
+import { typeValues } from './stage-rules';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '1', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage =>
@@ -30,14 +31,14 @@ describe('shown-fields', () => {
     const j = JOBS.find(x => x.trade === 'Welding' && buildStages(x).some(s => s.id.endsWith('-ndt-utrt')))!;
     const id = buildStages(j).find(s => s.id.endsWith('-ndt-utrt'))!.id;
     const keys = (change: Partial<WorkflowStage>) => fieldsShown(stageOf(j, id, change), j).map(f => f.key);
-    expect(keys({ inspectionType: 'rt', result: 'unsat' })).toContain('defectCode');
-    expect(keys({ inspectionType: 'rt', result: 'sat' })).not.toContain('defectCode');
-    expect(keys({ inspectionType: 'ut', result: 'unsat' })).not.toContain('defectCode');
+    expect(keys({ ...typeValues('rt'), result: 'unsat' })).toContain('defectCode');
+    expect(keys({ ...typeValues('rt'), result: 'sat' })).not.toContain('defectCode');
+    expect(keys({ ...typeValues('ut'), result: 'unsat' })).not.toContain('defectCode');
   });
 
     it('History and Correct leave out a field taken off the definition', () => {
     const j = job();
-    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === WELD_BUILDUP_DEFINITION)!;
+    const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === WELD_BUILDUP_TYPE)!;
     setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition' && f.key !== 'affectedItem') }]);
     const fit = buildupOf(j);
     expect(fieldsShown(fit, j).map(f => f.key)).not.toContain('weldPosition');
@@ -46,7 +47,7 @@ describe('shown-fields', () => {
 
   it('a field drawn by another step form is an ordinary field elsewhere (Consumable Insert and Defer Tack on Tack)', () => {
     const j = job();
-    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'tack')!;
+    const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'tack')!;
     setStepFieldConfig([{ ...def, fields: [...def.fields, { key: 'consumableInsertType', showIf: { all: [] } }, { key: 'deferTack' }, { key: 'affectedItem' }] }]);
     const keys = fieldsShown(stageOf(j, 'tack'), j).map(f => f.key);
     expect(keys).toContain('consumableInsertType');

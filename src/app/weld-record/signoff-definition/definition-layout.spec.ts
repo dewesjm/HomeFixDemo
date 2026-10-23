@@ -1,5 +1,5 @@
 import { layoutSections, withNewField } from './definition-layout';
-import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep, numberLines, placeSignoffParts } from './step-field-config';
+import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep, numberLines } from './step-field-config';
 
 const all = () => true;
 
@@ -52,7 +52,7 @@ describe('layoutSections', () => {
   });
 
   it('draws the default Root Weld with Type first, then five boxes (its 5X question, then Comments, last), the requirements on one line', () => {
-    const sections = layoutSections(getActivationForStep('root-weld').fields, all);
+    const sections = layoutSections(getActivationForStep('root').fields, all);
     expect(sections.map(s => s.title)).toEqual(['', '', 'Preheat/Interpass', '', '', '']);
     expect(sections[0].parts).toEqual([{ kind: 'line', keys: ['type'] }]);
     expect(sections[4].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
@@ -65,24 +65,10 @@ describe('layoutSections', () => {
   });
 
   it('draws the default UT/RT NDT with Type first and Inspection Results just above Defect Code, References and Comments', () => {
-    const keys = layoutSections(getActivationForStep('root-ndt-utrt').fields, all)
+    const keys = layoutSections(getActivationForStep('rt').fields, all)
       .flatMap(s => s.parts.flatMap(p => p.kind === 'line' ? p.keys : []));
     expect(keys[0]).toBe('type');
     expect(keys.slice(keys.indexOf(DECISION_KEY))).toEqual([DECISION_KEY, 'defectCode', 'references', 'comments']);
-  });
-});
-
-describe('placeSignoffParts', () => {
-  it('moves Type to the first line and Comments to the last, in a box of its own when the form has boxes', () => {
-    const boxed = placeSignoffParts([
-      { key: HEADING_KEY_PREFIX + 'w', heading: '', newBox: true, line: 1 }, { key: 'a', line: 2 }, { key: 'type', line: 2 },
-      { key: 'comments', line: 1 }, { key: 'references', line: 3 },
-    ]);
-    expect(boxed.map(a => [a.key, a.line])).toEqual([
-      ['type', 1], [HEADING_KEY_PREFIX + 'w', 2], ['a', 3], ['references', 4], [HEADING_KEY_PREFIX + 'comments', 5], ['comments', 6],
-    ]);
-    expect(placeSignoffParts([{ key: 'comments', line: 1 }, { key: 'a', line: 2 }]).map(a => [a.key, a.line]))
-      .toEqual([['a', 2], ['comments', 3]]);
   });
 });
 

@@ -44,6 +44,12 @@ export class SignoffFormErrorsService {
     this.errors.set(next);
   }
 
+  /* every message on a step, when its form clears (a new Type) */
+  clearStageErrors(stageId: string) {
+    const prefix = `${stageId}:`;
+    this.errors.set(Object.fromEntries(Object.entries(this.errors()).filter(([k]) => !k.startsWith(prefix))));
+  }
+
   /* a field lost focus: checks required + Actual Min/Max order on the live stage, since the stage a
      handler holds may be stale */
   afterBlur(stage: WorkflowStage, field: StageField) {

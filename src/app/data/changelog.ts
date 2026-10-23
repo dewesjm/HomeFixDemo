@@ -12,10 +12,15 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
     added: [
+      'Admin → Routing Signoff Types (new): every Type a step can be signed as, with Repeatable and Signs step. A Type is added here first, then offered on steps in Signoff Type Availability and given its fields in Signoff Type Definition. Signs step is the routing step the Type signs when it is picked on an earlier one (Final Weld picked on Layer signs Final Weld); blank means the step it is picked on.',
+      'Admin → Signoff Type Definition: every Type has its own definition. VT, 5X, MT, PT, UT and RT each have one (shared by Root, Layer and Final NDT), as do Interim Layer, Weld Build-Up, Tack, Root and the others. Steps that had no Type droplist (Pre-Fit, Fit-Up Insp, Fit-Up Release, the Records Reviews, Sold) each have one Type named after them; their forms don\'t show it. Excavation NDT keeps one definition of its own for now.',
       'Admin → Signoff Type Definition: the Fields list in the edit window has a search box that narrows it to the fields whose name contains what you type.',
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     changed: [
+      'Picking a different Type on a step now clears its form and loads that Type\'s fields. An NDT step shows only its Type droplist until a Type is picked.',
+      'Admin → Signoff Type Availability: each option is picked from Routing Signoff Types. The Repeatable checkbox and Definition droplist are gone (Repeatable is now on Routing Signoff Types).',
+      'Admin → Signoff Type Definition: fields no longer have "Type is RT/PT/VT" rules, since each sits only in its own Type\'s definition (Defect Code still shows only on UNSAT, Weld Color only on titanium joints). "Prepopulated from" lists the routing steps. Saved definitions, Type tables and joints go back to the sample data once to pick this up.',
       'Admin → Signoff Type Availability: the first column is called Type (it was Routing Step), and its add button is "Add type".',
       'Type, Comments and References are now part of the step\'s form and go where its Layout list puts them (Admin → Signoff Type Definition), with a Line number like any field. Type starts on the first line and Comments on the last, in a box of its own on forms that use boxes. References is drawn the width of the form inside the Signoff panel instead of as its own panel below it.',
       'Admin → Signoff Type Definition: each of a field\'s rules (Show when, Prepopulated from, Disabled when, Required) sits in its own bordered box, so it\'s clear where one ends and the next begins.',

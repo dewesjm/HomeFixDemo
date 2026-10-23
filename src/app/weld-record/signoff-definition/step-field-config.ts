@@ -1,14 +1,17 @@
-/* Per-step field activation: which catalog fields are active on each step type, under what
-   conditions, and how the form lays them out (line numbers, widths, headings, where
-   Inspection Results goes, see definition-layout.ts). Live overrides are stored in localStorage
-   (welding:step-field-config:v12) and take effect immediately. */
+/* Signoff Type Definitions: one per Type (Admin > Routing Signoff Types), matched by the Type's value.
+   Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
+   out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A step
+   reads the definition of the Type it's being signed as; Excavation NDT, whose Type is whichever
+   inspection rejected the joint, keeps one definition of its own. Live overrides are stored in
+   localStorage (welding:step-field-config:v13) and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from './field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
 import { FILLER_KEYS } from './weld-fields';
-import { signoffTypeRowId, typeDefinition } from './signoff-types';
-import { WELD_BUILDUP_DEFINITION } from '../routing/step-ids';
+import { signoffTypeOptions } from './signoff-types';
+import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
+import { isExcavationNdtStageId } from '../routing/step-ids';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -59,12 +62,16 @@ export function definitionFields(items: FieldActivation[]): FieldActivation[] {
    or its record (Records Review) */
 export type VerifyAgainst = 'fabrication' | 'record';
 
-export interface StepFieldActivation {
-  stepId: string;
+export interface TypeDefinition {
+  /* the Type's value (Routing Signoff Types), or EXCAVATION_DEFINITION */
+  typeId: string;
   fields: FieldActivation[];
   /* unset = the default definition's, else the record */
   verifyAgainst?: VerifyAgainst;
 }
+
+/* Excavation NDT's own definition, shared by every round */
+export const EXCAVATION_DEFINITION = 'excavation-ndt';
 
 /* ── Condition shorthands ── */
 const ndtRoot5x: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
@@ -138,30 +145,30 @@ const NDT_COMMON_FIELDS: FieldActivation[] = [
   { key: 'partial' }, same('portionInspected'),
 ];
 
-const NDT_UTRT_FIELDS: FieldActivation[] = [
-  ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' },
-];
-
-const NDT_MTPT_FIELDS: FieldActivation[] = [
-  ...NDT_COMMON_FIELDS,
-  { key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'), DECISION,
-];
-
-const NDT_VT5X_FIELDS: FieldActivation[] = [
-  ...NDT_COMMON_FIELDS,
-  { key: 'weldColor' }, DECISION,
+/* the NDT Types' fields; Root, Layer and Final NDT (and their NQC rows) share each one */
+function ndtType(typeId: string, fields: FieldActivation[]): TypeDefinition {
+  return { typeId, fields: [TYPE, QUAL_CHECK, ...NDT_COMMON_FIELDS, ...fields, COMMENTS] };
+}
+const NDT_TYPES: TypeDefinition[] = [
+  ndtType('vt', [{ key: 'weldColor' }, DECISION]),
+  ndtType('5x', [DECISION]),
+  ndtType('mt', [{ key: 'idAccessible' }, DECISION]),
+  ndtType('pt', [{ key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'), DECISION]),
+  ndtType('ut', [DECISION, { key: 'references' }]),
+  ndtType('rt', [{ key: 'degreeRt' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' }]),
 ];
 
 /* Excavation NDT repeats whichever inspection rejected the joint, so it carries every NDT field and
    each shows only for its own Type */
-const showIfMtPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', anyOf: ['mt', 'pt'] }] };
+const typeIs = (...types: string[]) => ({ source: 'field' as const, key: 'inspectionType', anyOf: types });
+const showIfType = (...types: string[]): FieldCondition => ({ all: [typeIs(...types)] });
 const EXCAVATION_NDT_FIELDS: FieldActivation[] = [
   ...NDT_COMMON_FIELDS,
-  { key: 'degreeRt' }, same('rtFileNumber'),
-  { key: 'idAccessible', showIf: showIfMtPt }, { key: 'penetrantManufacturer' }, same('penetrantType'),
-  { key: 'weldColor' },
-  DECISION, { key: 'defectCode', width: 320 },
+  { key: 'degreeRt', showIf: showIfType('rt') }, { ...same('rtFileNumber'), showIf: showIfType('rt') },
+  { key: 'idAccessible', showIf: showIfType('mt', 'pt') },
+  { key: 'penetrantManufacturer', showIf: showIfType('pt') }, { ...same('penetrantType'), showIf: showIfType('pt') },
+  { key: 'weldColor', showIf: { all: [typeIs('vt'), { source: 'jointDetail', key: 'titanium', equals: 'yes' }] } },
+  DECISION, { key: 'defectCode', width: 320, showIf: { all: [typeIs('rt'), { source: 'field', key: 'result', equals: 'unsat' }] } },
 ];
 
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
@@ -172,22 +179,8 @@ const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
 /* Drawing Rev is also a Fit-Up Insp row, required there; here no row is required */
 ].map(key => key === 'verifyDrawingRev' ? { key, required: false } : { key });
 
-/* NQC copies of NDT steps (nqc- prefix, matching nqcStepId() in step-ids.ts) share the same
-   field activation as the base step */
-function ndtNqcPair(phase: string, kind: string, fields: FieldActivation[]): StepFieldActivation[] {
-  return [
-    { stepId: `${phase}-ndt-${kind}`, fields: [TYPE, QUAL_CHECK, ...fields, COMMENTS] },
-    { stepId: `nqc-${phase}-ndt-${kind}`, fields: [TYPE, QUAL_CHECK, ...fields, COMMENTS] },
-  ];
-}
-
-/* Welding steps are not NQC-split (only fitup-insp and NDT steps are), so each gets one entry */
-function weldStep(id: string, fields = WELD_FIELDS): StepFieldActivation {
-  return { stepId: id, fields: [TYPE, ...fields, ...BOXED_COMMENTS] };
-}
-
-function tackStep(id: string): StepFieldActivation {
-  return weldStep(id, WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f));
+function weldType(typeId: string, fields = WELD_FIELDS): TypeDefinition {
+  return { typeId, fields: [TYPE, ...fields, ...BOXED_COMMENTS] };
 }
 
 const FITUP_INSP_FIELDS: FieldActivation[] = [
@@ -199,80 +192,43 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
 /* Affected Item and its two MIC verified rows, drawn together by the affected-item component */
 const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
 
-export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = ([
-  { stepId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
-  { stepId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
-  /* Fit signed as Weld Build-Up shows Type as Fit's own definition says, so it isn't listed here */
-  { stepId: WELD_BUILDUP_DEFINITION, fields: [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS, ...BOXED_COMMENTS] },
-  tackStep('tack'),
-  { stepId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
-  { stepId: 'nqc-fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
-  { stepId: 'fitup-release', fields: [COMMENTS] },
-  tackStep('deferred-tack'),
-  weldStep('root-weld', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),
-  ...ndtNqcPair('root', 'vt5x', NDT_VT5X_FIELDS),
-  ...ndtNqcPair('root', 'mtpt', NDT_MTPT_FIELDS),
-  ...ndtNqcPair('root', 'utrt', NDT_UTRT_FIELDS),
-  weldStep('root-layer'),
-  ...ndtNqcPair('layer', 'vt5x', NDT_VT5X_FIELDS),
-  ...ndtNqcPair('layer', 'mtpt', NDT_MTPT_FIELDS),
-  ...ndtNqcPair('layer', 'utrt', NDT_UTRT_FIELDS),
-  weldStep('final-weld'),
-  ...ndtNqcPair('final', 'vt5x', NDT_VT5X_FIELDS),
-  ...ndtNqcPair('final', 'mtpt', NDT_MTPT_FIELDS),
-  ...ndtNqcPair('final', 'utrt', NDT_UTRT_FIELDS),
-  /* every Repair / Excavation NDT round reads these rows (activationStepId) */
-  { stepId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
-  { stepId: 'excavation-ndt', fields: [TYPE, QUAL_CHECK, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
-  { stepId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
-  { stepId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
-  { stepId: 'sold', fields: [] },
-] satisfies StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) }));
+export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
+  { typeId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
+  { typeId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
+  weldType(WELD_BUILDUP_TYPE, [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS]),
+  weldType('tack', WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f)),
+  { typeId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
+  { typeId: 'fitup-release', fields: [COMMENTS] },
+  weldType('root', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),
+  ...NDT_TYPES,
+  weldType('interim'),
+  weldType('final-weld'),
+  { typeId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
+  { typeId: EXCAVATION_DEFINITION, fields: [TYPE, QUAL_CHECK, ...EXCAVATION_NDT_FIELDS, COMMENTS] },
+  { typeId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
+  { typeId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
+  { typeId: 'sold', fields: [] },
+] satisfies TypeDefinition[]).map(a => ({ ...a, fields: numberLines(a.fields) }));
+
+/* what a step whose Type hasn't been picked yet shows: only the Type droplist */
+const TYPE_ONLY: TypeDefinition = { typeId: '', fields: [{ ...TYPE, line: 1 }] };
 
 /* ── Storage ── */
 
-let _cache: StepFieldActivation[] | null = null;
+let _cache: TypeDefinition[] | null = null;
 
-/* A definition saved before Type, Comments and References were laid out in the form (v11), with
-   Type moved to the first line and Comments to the last (in a box of its own when the form has boxes),
-   where the sign-off panel used to draw them. References stays where it is listed. */
-export function placeSignoffParts(fields: FieldActivation[]): FieldActivation[] {
-  const type = fields.find(a => a.key === TYPE_KEY);
-  const comments = fields.find(a => a.key === COMMENTS_KEY);
-  const rest = fields.filter(a => a !== type && a !== comments).map(a => type ? { ...a, line: (a.line ?? 0) + 1 } : a);
-  const out = [...(type ? [{ ...type, line: 1 }] : []), ...rest];
-  if (comments) {
-    const last = Math.max(0, ...out.map(a => a.line ?? 0));
-    const commentsBox = HEADING_KEY_PREFIX + 'comments';
-    const boxed = rest.some(a => a.newBox) && !rest.some(a => a.key === commentsBox);
-    if (boxed) out.push({ key: commentsBox, heading: '', newBox: true, line: last + 1 });
-    out.push({ ...comments, line: last + (boxed ? 2 : 1) });
-  }
-  return out;
-}
-
-function readSaved(key: string): StepFieldActivation[] | null {
-  const saved = localStorage.getItem(key);
-  return saved ? (JSON.parse(saved) as StepFieldActivation[]).map(a => ({ ...a, fields: numberLines(a.fields) })) : null;
-}
-
-export function getStepFieldConfig(): StepFieldActivation[] {
+export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
-    const saved = readSaved(STORAGE.stepFieldConfig);
-    const old = saved ? null : readSaved(STORAGE.stepFieldConfigV11);
-    if (old) {
-      setStepFieldConfig(old.map(a => ({ ...a, fields: placeSignoffParts(a.fields) })));
-      localStorage.removeItem(STORAGE.stepFieldConfigV11);
-    }
-    _cache = saved ?? _cache ?? DEFAULT_STEP_FIELD_ACTIVATIONS;
+    const saved = localStorage.getItem(STORAGE.stepFieldConfig);
+    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(a => ({ ...a, fields: numberLines(a.fields) })) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
-    _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
+    _cache = DEFAULT_TYPE_DEFINITIONS;
   }
   return _cache!;
 }
 
-export function setStepFieldConfig(config: StepFieldActivation[]): void {
+export function setStepFieldConfig(config: TypeDefinition[]): void {
   _cache = config;
   localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify(config));
 }
@@ -282,51 +238,52 @@ export function resetStepFieldConfig(): void {
   localStorage.removeItem(STORAGE.stepFieldConfig);
 }
 
-/* a step by id, or the step itself, whose Type can pick a different definition */
+/* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
 export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 
-/* the definition a step reads: the one its Type loads (Admin > Signoff Type Availability, e.g. Weld
-   Build-Up's for Fit signed as Weld Build-Up, Final Weld's for Layer signed as Final Weld), the shared
-   Repair / Excavation NDT one for any round, otherwise its own */
-export function activationStepId(step: StepRef): string {
-  if (typeof step !== 'string') {
-    const loaded = typeDefinition(step.id, step.signoffType);
-    if (loaded) return loaded;
-  }
-  return signoffTypeRowId(typeof step === 'string' ? step : step.id);
+/* the definition a step reads: its Type's (the shared Excavation NDT one for any round); '' while
+   the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
+   step added in Admin > Routing Settings without a Signoff Type Availability row), which uses its template */
+export function definitionId(step: StepRef): string | undefined {
+  if (typeof step === 'string') return step;
+  if (isExcavationNdtStageId(step.id)) return EXCAVATION_DEFINITION;
+  const options = signoffTypeOptions(step.id);
+  if (!options) return undefined;
+  return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
 }
 
-/* whether a step's fields come from its definition (otherwise from its template) */
+function findDefinition(step: StepRef): TypeDefinition | undefined {
+  const id = definitionId(step);
+  if (id === undefined) return undefined;
+  if (!id) return TYPE_ONLY;
+  return getStepFieldConfig().find(a => a.typeId === id) ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id);
+}
+
+/* whether a step's fields come from a definition (otherwise from its template): its Type has one */
 export function hasStepActivation(step: StepRef): boolean {
-  const id = activationStepId(step);
-  return DEFAULT_STEP_FIELD_ACTIVATIONS.some(a => a.stepId === id) || getStepFieldConfig().some(a => a.stepId === id);
+  return !!findDefinition(step);
 }
 
 /* a field's settings on a step: its definition's entry, else the catalog defaults (a step with no
    definition, or a field its definition doesn't list) */
 export function fieldActivation(step: StepRef, key: string): FieldActivation {
-  const listed = hasStepActivation(step) ? getActivationForStep(step).fields.find(a => a.key === key) : undefined;
-  return listed ?? { key };
+  return findDefinition(step)?.fields.find(a => a.key === key) ?? { key };
 }
 
 /* whether the step's definition lists the field; used for fields its own form draws (Release to
    welding, Affected Item), which show only when listed */
 export function definitionHas(step: StepRef, key: string): boolean {
-  return hasStepActivation(step) && getActivationForStep(step).fields.some(a => a.key === key);
+  return !!findDefinition(step)?.fields.some(a => a.key === key);
 }
 
-/* Returns the activation for a step, falling back to defaults if not in the stored config */
-export function getActivationForStep(step: StepRef): StepFieldActivation {
-  const stepId = activationStepId(step);
-  const config = getStepFieldConfig();
-  return config.find(a => a.stepId === stepId)
-    ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)
-    ?? { stepId, fields: [] };
+/* the definition a step reads, or an empty one when it has none */
+export function getActivationForStep(step: StepRef): TypeDefinition {
+  return findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
 }
 
 /* what the step's verify-grid rows are checked against */
 export function verifyAgainst(step: StepRef): VerifyAgainst {
-  const stepId = activationStepId(step);
+  const id = definitionId(step);
   return getActivationForStep(step).verifyAgainst
-    ?? DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === stepId)?.verifyAgainst ?? 'record';
+    ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id)?.verifyAgainst ?? 'record';
 }

@@ -50,21 +50,9 @@ export interface CatalogField {
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
 const showIfPartial: FieldCondition = { all: [{ source: 'field', key: 'partial', equals: 'yes' }] };
-const showIfRt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', equals: 'rt' }] };
-const showIfPt: FieldCondition = { all: [{ source: 'field', key: 'inspectionType', equals: 'pt' }] };
 /* 'titanium' is a virtual Joint Details key (joint-facts.ts) */
-const showIfTitaniumVt: FieldCondition = {
-  all: [
-    { source: 'field', key: 'inspectionType', equals: 'vt' },
-    { source: 'jointDetail', key: 'titanium', equals: 'yes' },
-  ]
-};
-const showIfRtUnsat: FieldCondition = {
-  all: [
-    { source: 'field', key: 'inspectionType', equals: 'rt' },
-    { source: 'field', key: 'result', equals: 'unsat' },
-  ]
-};
+const showIfTitanium: FieldCondition = { all: [{ source: 'jointDetail', key: 'titanium', equals: 'yes' }] };
+const showIfUnsat: FieldCondition = { all: [{ source: 'field', key: 'result', equals: 'unsat' }] };
 /* Root's filler follows Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked
    (the checkbox is only on Root, so the rule never holds on other steps) */
 const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
@@ -152,22 +140,22 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── NDT RT/UT ── */
   { key: 'degreeRt', label: 'Degree of RT Performed', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfRt, options: RT_DEGREE_OPTIONS },
-  { key: 'rtFileNumber', label: 'RT File Number', type: 'text', defaultShowIf: showIfRt },
+    options: RT_DEGREE_OPTIONS },
+  { key: 'rtFileNumber', label: 'RT File Number', type: 'text' },
   { key: 'defectCode', label: 'Defect Code', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfRtUnsat, options: defectCodeOptions() },
+    defaultShowIf: showIfUnsat, options: defectCodeOptions() },
 
   /* ── NDT MT/PT ── */
   { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',
     options: [{ label: 'Yes', value: 'yes' }, { label: 'No', value: 'no' }] },
   { key: 'penetrantManufacturer', label: 'Penetrant Manufacturer', type: 'select',
-    defaultShowIf: showIfPt, options: penetrantManufacturerOptions() },
+    options: penetrantManufacturerOptions() },
   { key: 'penetrantType', label: 'Penetrant Type', type: 'select',
-    defaultShowIf: showIfPt, options: penetrantTypeOptions() },
+    options: penetrantTypeOptions() },
 
   /* ── NDT 5X/VT ── */
   { key: 'weldColor', label: 'Weld Color', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfTitaniumVt,
+    defaultShowIf: showIfTitanium,
     options: [
       { label: 'Shiny Silver', value: 'shiny-silver' }, { label: 'Straw', value: 'straw' },
       { label: 'Light Blue', value: 'light-blue' }, { label: 'Dark Blue', value: 'dark-blue' },

@@ -12,15 +12,15 @@ import { hasDecision, isRoutingLockedField } from '../signoff-definition/stage-r
 import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/stage-display';
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
-import { typeDefinition } from '../signoff-definition/signoff-types';
+import { isOwnType } from '../signoff-definition/signoff-types';
 import { withComments } from '../signoff-definition/signoff-parts';
 import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
 import { WorkflowStore } from './workflow-store.service';
 
-/* History names a signoff whose Type loads another definition (Weld Build-Up) and Layer's Interim
+/* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
-  const named = !!typeDefinition(st.id, st.signoffType) || namedAfterType(st.id);
+  const named = !isOwnType(st.id, st.signoffType) || namedAfterType(st.id);
   if (!named) return st.label;
   return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
 }

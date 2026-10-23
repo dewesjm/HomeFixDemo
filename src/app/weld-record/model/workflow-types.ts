@@ -158,7 +158,8 @@ export interface SignoffUndo {
   repairNumber: string;
 }
 
-/* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT) */
+/* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT), with its Admin > Routing Signoff
+   Types name and settings */
 export interface StageOption {
   label: string;
   value: string;
@@ -166,9 +167,8 @@ export interface StageOption {
   /* signing with this Type records the signoff, leaves the routing where it is and blanks the step
      for the next signoff. Unset = signing completes the step. */
   repeatable?: boolean;
-  /* the Signoff Type Definition this Type's form loads instead of the step's own. When it's a later
-     routing step's definition, signing with this Type is that step's signoff (type-routing.ts). */
-  definition?: string;
+  /* the routing step this Type signs when picked on an earlier step (Layer's Final Weld); unset = this step */
+  signsStep?: string;
 }
 
 /* the definition a joint's step is built from (stage-templates.ts) */

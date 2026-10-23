@@ -3,7 +3,8 @@ export const STORAGE = {
   appVersion: 'welding:app-version',
   workflows: 'welding:workflows:v2',
   stageTemplates: 'welding:stage-templates:v2',
-  signoffTypes: 'welding:signoff-types:v1',
+  signoffTypes: 'welding:signoff-types:v2',
+  routingSignoffTypes: 'welding:routing-signoff-types:v1',
   penetrants: 'welding:penetrants:v1',
   inspectionProcedures: 'welding:inspection-procedures:v1',
   defectCodes: 'welding:defect-codes:v1',
@@ -29,16 +30,14 @@ export const STORAGE = {
   makeup: 'welding:makeup:v3',
   qualConditions: 'welding:qual-conditions:v5',
   featureToggles: 'welding:feature-toggles:v1',
-  stepFieldConfig: 'welding:step-field-config:v12',
-  /* read once and moved to v12 by placeSignoffParts() (step-field-config.ts) */
-  stepFieldConfigV11: 'welding:step-field-config:v11',
+  stepFieldConfig: 'welding:step-field-config:v13',
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).
    procedures is included because its seeded GWP/WPS rows are generated from MATERIAL_TYPES
    (jobs.ts) -- a change to those codes without a matching cache clear leaves the GWP/WTN cascade
    silently blank (see storage-keys history, and the v4->v5 bump this line was added for). */
-const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.defectCodes, STORAGE.signoffTypes, STORAGE.shipLocations, STORAGE.weldPositions, STORAGE.procedures];
+const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.defectCodes, STORAGE.signoffTypes, STORAGE.routingSignoffTypes, STORAGE.shipLocations, STORAGE.weldPositions, STORAGE.procedures];
 
 export function clearStaleCaches() {
   STALE_ON_UPDATE.forEach(k => localStorage.removeItem(k));

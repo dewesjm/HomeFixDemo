@@ -10,7 +10,6 @@ import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { isAssignedStage } from '../../data/weld-assignment';
-import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { show } from '../signoff-definition/stage-display';
 import { fillChanges } from '../signoff-definition/field-fill';
 import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './rules/stage-form';
@@ -143,22 +142,16 @@ export class SignoffFormEditsService {
 
   /* ── Type, SAT/UNSAT and the sign-off fields ── */
 
-  /* Type: both stored values change; a Type that loads another definition swaps the step's fields
-     (typeChange), is recorded in History, and a welding form gets its assignment. A procedure not
-     designated for the new Type is cleared. */
+  /* Type: the form clears and loads the new Type's definition (typeChange), the change is recorded
+     in History, and a welding form gets its assignment */
   setType(stage: WorkflowStage, value: string) {
-    if (!this.src) return;
-    const { job, wf } = this.src;
-    if (value) this.errors.clearFieldError(stage.id, '__inspectionType');
-    const { patch, swapsDefinition } = typeChange(job.trade, stage, value);
-    if (swapsDefinition) {
-      this.signoffService.updateStageSignoff(job, stage.id, patch, { action: `${stage.label} - Type changed to ${value}` });
-      if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(job, stage.id);
-    } else {
-      wf.update(w => ({ ...w, stages: w.stages.map(s => s.id === stage.id ? { ...s, ...patch } : s) }));
-    }
-    const proc = stage.inputs['procedureUsed'] ?? '';
-    if (proc && !inspectionProcedureOptions(value).some(o => o.value === proc)) this.setInput(stage, 'procedureUsed', '');
+    if (!this.src || value === stage.signoffType) return;
+    const { job } = this.src;
+    this.errors.clearStageErrors(stage.id);
+    const patch = typeChange(job.trade, stage, value);
+    const name = stage.typeOptions?.find(o => o.value === value)?.label ?? value;
+    this.signoffService.updateStageSignoff(job, stage.id, patch, { action: `${stage.label} - Type changed to ${name}` });
+    if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(job, stage.id);
   }
 
   setStageResult(stage: WorkflowStage, result: StageResult) {

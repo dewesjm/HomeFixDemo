@@ -1,14 +1,13 @@
-/* Admin → Signoff Type Definition: table of per-step field configurations.
-   A step's row expands to one line per field, its rules stacked as Conditions | Behaviors. Each row is a routing step, Repair / Excavation NDT (one row shared by every round), or Fit signed
-   as Weld Build-Up; editing
-   picks any field from the catalog and sets when it shows, when it's prepopulated (from another step,
-   this step or the WTN), when it's disabled, and when it's required (Never / Always / When). The
-   dialog's Layout list sets each field's and heading's line number (which also places Inspection
-   Results) and the fields' widths, and a step with verify-grid rows says what they're checked against.
-   Conditions are AND/OR groups (field-condition-editor, condition-group-editor; their edits are
-   written back by definition-edits.ts); the Layout list is definition-layout-list. Add's step list is the steps in Admin >
-   Signoff Type Availability; picking one that already has a definition edits it.
-   Stored in welding:step-field-config:v11 (step-field-config.ts). */
+/* Admin → Signoff Type Definition: one definition per Type (Admin > Routing Signoff Types), plus
+   Excavation NDT's own (one shared by every round). A row expands to one line per field, its rules
+   stacked as Conditions | Behaviors; editing picks any field from the catalog and sets when it shows,
+   when it's prepopulated (from a routing step, this step or the WTN), when it's disabled, and when it's
+   required (Never / Always / When). The dialog's Layout list sets each field's and heading's line
+   number (which also places Inspection Results) and the fields' widths, and a definition with
+   verify-grid rows says what they're checked against. Conditions are AND/OR groups
+   (field-condition-editor, condition-group-editor; their edits are written back by
+   definition-edits.ts); the Layout list is definition-layout-list. Add's list is the Types; picking
+   one that already has a definition edits it. Stored by step-field-config.ts. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -24,15 +23,15 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
-  DEFAULT_STEP_FIELD_ACTIVATIONS,
-  StepFieldActivation,
+  DEFAULT_TYPE_DEFINITIONS,
+  EXCAVATION_DEFINITION,
+  TypeDefinition,
   FieldActivation,
   getStepFieldConfig,
   setStepFieldConfig,
   resetStepFieldConfig,
   getActivationForStep,
   DECISION_KEY,
-  TYPE_KEY,
   definitionFields,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
@@ -56,15 +55,11 @@ import {
   effectiveFill,
   fillRuleText,
 } from '../../signoff-definition/field-rules';
-import {
-  getSignoffTypeRows,
-  REPAIR_TYPE_ROW,
-  EXCAVATION_TYPE_ROW,
-  signoffTypeOptions,
-} from '../../signoff-definition/signoff-types';
+import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
+import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { NDT_KINDS } from '../../routing/ndt';
 import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
 import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
-import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
 import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
 import type { RequiredMode } from '../../signoff-definition/field-rules';
@@ -78,8 +73,8 @@ import { withNewField } from '../../signoff-definition/definition-layout';
 
 interface DefRow {
   uid: string;
-  stepId: string;
-  stepLabel: string;
+  typeId: string;
+  typeLabel: string;
   fieldLabels: string;          // flat text used for table search
   fieldActivations: FieldActivation[];
   fieldRules: { key: string; label: string; lines: FieldRuleLine[] }[];
@@ -89,8 +84,8 @@ interface DefRow {
 /* the dialog's working copy of a definition, with the condition editor open on at most one field */
 interface EditState extends OpenCondition {
   uid: string | null;   /* null = new row */
-  stepId: string;
-  stepLabel: string;
+  typeId: string;
+  typeLabel: string;
   fieldActivations: FieldActivation[];
   verifyAgainst?: VerifyAgainst;
 }
@@ -120,11 +115,16 @@ export class AdminSignoffTypeDefinitionComponent {
     return text ? this.fieldChoices.filter(f => f.label.toLowerCase().includes(text)) : this.fieldChoices;
   });
 
-  private labelMap = this.buildLabelMap();
+  /* the routing steps (Prepopulated from's sources), and the Types plus Excavation NDT (the rows) */
+  private readonly routingSteps = (getTemplates()['Welding'] ?? []).map(s => ({ stepId: s.id, stepLabel: s.label }));
+  private readonly types = [
+    ...getRoutingSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
+    { typeId: EXCAVATION_DEFINITION, typeLabel: 'Excavation NDT' },
+  ];
 
   rows = signal<DefRow[]>([]);
   editing = signal<EditState | null>(null);
-  table = new TableState<DefRow>(['stepLabel', 'fieldLabels']);
+  table = new TableState<DefRow>(['typeLabel', 'fieldLabels']);
 
   constructor() {
     this.rows.set(this.buildRows());
@@ -133,45 +133,28 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* ── Table rows ── */
 
-  private buildLabelMap(): Map<string, string> {
-    const m = new Map<string, string>();
-    const templates = getTemplates();
-    for (const group of Object.values(templates)) {
-      for (const s of group as { id: string; label: string; displayName?: string }[]) {
-        m.set(s.id, s.displayName || s.label);
-      }
-    }
-    m.set(REPAIR_TYPE_ROW, 'Repair');
-    m.set(EXCAVATION_TYPE_ROW, 'Excavation NDT');
-    m.set(WELD_BUILDUP_DEFINITION, 'Fit (Weld Build-Up)');
-    return m;
-  }
-
   private stepLabel(stepId: string): string {
-    return this.labelMap.get(stepId) ?? stepId;
+    return this.routingSteps.find(s => s.stepId === stepId)?.stepLabel ?? stepId;
   }
 
+  private typeLabel(typeId: string): string {
+    return this.types.find(t => t.typeId === typeId)?.typeLabel ?? `${typeId} (not in Routing Signoff Types)`;
+  }
+
+  /* every Type with a seeded definition, merged with any stored overrides, then any other stored ones */
   private buildRows(): DefRow[] {
-    /* show every step that has a default activation, merged with any stored overrides */
     const stored = getStepFieldConfig();
-
-    /* all default steps */
-    const rows: DefRow[] = DEFAULT_STEP_FIELD_ACTIVATIONS.map(def => {
-      const act = stored.find(a => a.stepId === def.stepId) ?? def;
-      return this.toRow(def.stepId, act.fields, act.verifyAgainst ?? def.verifyAgainst);
+    const rows: DefRow[] = DEFAULT_TYPE_DEFINITIONS.map(def => {
+      const act = stored.find(a => a.typeId === def.typeId) ?? def;
+      return this.toRow(def.typeId, act.fields, act.verifyAgainst ?? def.verifyAgainst);
     });
-
-    /* any custom stored steps not in the defaults */
     for (const act of stored) {
-      if (!DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === act.stepId)) {
-        rows.push(this.toRow(act.stepId, act.fields, act.verifyAgainst));
-      }
+      if (!DEFAULT_TYPE_DEFINITIONS.some(d => d.typeId === act.typeId)) rows.push(this.toRow(act.typeId, act.fields, act.verifyAgainst));
     }
-
     return rows;
   }
 
-  private toRow(stepId: string, fields: FieldActivation[], verifyAgainst?: VerifyAgainst): DefRow {
+  private toRow(typeId: string, fields: FieldActivation[], verifyAgainst?: VerifyAgainst): DefRow {
     const fieldRules = definitionFields(fields).map(f => ({
       key: f.key,
       label: lookupCatalogField(f.key)?.label ?? f.key,
@@ -179,8 +162,8 @@ export class AdminSignoffTypeDefinitionComponent {
     }));
     return {
       uid: `sfd-${++seq}`,
-      stepId,
-      stepLabel: this.stepLabel(stepId),
+      typeId,
+      typeLabel: this.typeLabel(typeId),
       fieldLabels: fieldRules.map(f => f.label).join(', '),
       fieldActivations: fields.map(f => ({ ...f })),
       fieldRules,
@@ -188,24 +171,21 @@ export class AdminSignoffTypeDefinitionComponent {
     };
   }
 
-  /* steps whose rows are expanded to their fields' rules, by step id (kept across saves) */
+  /* rows expanded to their fields' rules, by Type (kept across saves) */
   expanded = signal(new Set<string>());
 
-  toggleExpanded(stepId: string) {
+  toggleExpanded(typeId: string) {
     this.expanded.update(s => {
       const next = new Set(s);
-      if (!next.delete(stepId)) next.add(stepId);
+      if (!next.delete(typeId)) next.add(typeId);
       return next;
     });
   }
 
-  /* the steps in Admin > Signoff Type Availability; ones that already have a definition say so */
-  addableSteps = computed(() => {
-    const used = new Set(this.rows().map(r => r.stepId));
-    return getSignoffTypeRows().map(r => ({
-      stepId: r.stepId,
-      stepLabel: this.stepLabel(r.stepId) + (used.has(r.stepId) ? ' (has a definition)' : ''),
-    }));
+  /* the Types (and Excavation NDT); ones that already have a definition say so */
+  addableTypes = computed(() => {
+    const used = new Set(this.rows().map(r => r.typeId));
+    return this.types.map(t => ({ typeId: t.typeId, typeLabel: t.typeLabel + (used.has(t.typeId) ? ' (has a definition)' : '') }));
   });
 
   /* ── Dialog: open / save / cancel ── */
@@ -214,7 +194,7 @@ export class AdminSignoffTypeDefinitionComponent {
     this.table.clearFilters();
     this.fieldSearch.set('');
     this.editing.set({
-      uid: null, stepId: '', stepLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condGroup: conditionToWork(undefined),
+      uid: null, typeId: '', typeLabel: '', fieldActivations: [], condKey: null, condKind: 'show', condGroup: conditionToWork(undefined),
       fillStepId: '', fillFieldKey: '',
     });
   }
@@ -223,8 +203,8 @@ export class AdminSignoffTypeDefinitionComponent {
     this.fieldSearch.set('');
     this.editing.set({
       uid: row.uid,
-      stepId: row.stepId,
-      stepLabel: row.stepLabel,
+      typeId: row.typeId,
+      typeLabel: row.typeLabel,
       fieldActivations: row.fieldActivations.map(copyActivation),
       verifyAgainst: row.verifyAgainst,
       condKey: null,
@@ -238,15 +218,15 @@ export class AdminSignoffTypeDefinitionComponent {
   saveEdit() {
     const e = this.editing();
     if (!e) return;
-    if (!e.stepId) {
-      this.toast.add({ severity: 'warn', summary: 'Pick a step', life: 3000 });
+    if (!e.typeId) {
+      this.toast.add({ severity: 'warn', summary: 'Pick a type', life: 3000 });
       return;
     }
 
     /* commit any open condition editor first */
     const fieldActivations = applyOpenCondition(e.fieldActivations, e);
 
-    const updated = this.toRow(e.stepId, fieldActivations, this.hasVerifyRows(e) ? e.verifyAgainst ?? 'record' : undefined);
+    const updated = this.toRow(e.typeId, fieldActivations, this.hasVerifyRows(e) ? e.verifyAgainst ?? 'record' : undefined);
 
     if (e.uid) {
       this.rows.update(r => r.map(x => x.uid === e.uid ? { ...updated, uid: e.uid } : x));
@@ -256,41 +236,41 @@ export class AdminSignoffTypeDefinitionComponent {
 
     this.persist();
     this.editing.set(null);
-    this.toast.add({ severity: 'success', summary: 'Saved', detail: e.stepLabel, life: 3000 });
+    this.toast.add({ severity: 'success', summary: 'Saved', detail: e.typeLabel, life: 3000 });
   }
 
   cancelEdit() {
     this.editing.set(null);
   }
 
-  /* a step that already has a definition opens it for editing instead of starting blank */
-  setEditStep(stepId: string) {
-    const existing = this.rows().find(r => r.stepId === stepId);
+  /* a Type that already has a definition opens it for editing instead of starting blank */
+  setEditType(typeId: string) {
+    const existing = this.rows().find(r => r.typeId === typeId);
     if (existing) { this.openEdit(existing); return; }
-    this.editing.update(e => e ? { ...e, stepId, stepLabel: this.stepLabel(stepId), fieldActivations: [] } : null);
+    this.editing.update(e => e ? { ...e, typeId, typeLabel: this.typeLabel(typeId), fieldActivations: [] } : null);
   }
 
   /* ── Delete / Reset ── */
 
   deleteRow(row: DefRow) {
-    if (DEFAULT_STEP_FIELD_ACTIVATIONS.some(d => d.stepId === row.stepId)) {
-      this.confirm.confirmDelete(`${row.stepLabel} (resets to defaults)`, () => {
-        this.rows.update(r => r.map(x => x.uid === row.uid ? this.toRowFromDefaults(row.stepId, x.uid) : x));
+    if (DEFAULT_TYPE_DEFINITIONS.some(d => d.typeId === row.typeId)) {
+      this.confirm.confirmDelete(`${row.typeLabel} (resets to defaults)`, () => {
+        this.rows.update(r => r.map(x => x.uid === row.uid ? this.toRowFromDefaults(row.typeId, x.uid) : x));
         this.persist();
-        this.toast.add({ severity: 'info', summary: 'Reset to defaults', detail: row.stepLabel, life: 3000 });
+        this.toast.add({ severity: 'info', summary: 'Reset to defaults', detail: row.typeLabel, life: 3000 });
       });
     } else {
-      this.confirm.confirmDelete(row.stepLabel, () => {
+      this.confirm.confirmDelete(row.typeLabel, () => {
         this.rows.update(r => r.filter(x => x.uid !== row.uid));
         this.persist();
-        this.toast.add({ severity: 'info', summary: 'Deleted', detail: row.stepLabel, life: 3000 });
+        this.toast.add({ severity: 'info', summary: 'Deleted', detail: row.typeLabel, life: 3000 });
       });
     }
   }
 
-  private toRowFromDefaults(stepId: string, uid: string): DefRow {
-    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === stepId);
-    const row = this.toRow(stepId, def?.fields ?? [], def?.verifyAgainst);
+  private toRowFromDefaults(typeId: string, uid: string): DefRow {
+    const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === typeId);
+    const row = this.toRow(typeId, def?.fields ?? [], def?.verifyAgainst);
     return { ...row, uid };
   }
 
@@ -311,13 +291,13 @@ export class AdminSignoffTypeDefinitionComponent {
   /* fields the step's routing reads when it's signed (e.g. Repair Code) can't be removed */
   isLocked(key: string): boolean {
     const e = this.editing();
-    return !!e?.stepId && isDefinitionLockedField(e.stepId, key) && this.hasField(key);
+    return !!e?.typeId && isDefinitionLockedField(e.typeId, key) && this.hasField(key);
   }
 
   /* what taking a routing-read field off this step does (e.g. Release to welding), or that routing
      ignores it on this step */
   fieldNote(key: string): string {
-    return definitionFieldNote(this.editing()?.stepId ?? '', key);
+    return definitionFieldNote(this.editing()?.typeId ?? '', key);
   }
 
   toggleField(key: string) {
@@ -384,33 +364,31 @@ export class AdminSignoffTypeDefinitionComponent {
 
   /* a Prepopulated from rule needs a field the person could otherwise type into, drawn as an ordinary field of the step */
   canFill(key: string): boolean {
-    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm(this.editing()?.stepId ?? '', key);
+    return !hasFixedRules(key) && !isAlwaysReadOnly(key) && !drawnByOwnForm(this.editing()?.typeId ?? '', key);
   }
 
   fillLabel(key: string): string {
     return fillRuleText(this.activation(key), id => this.stepLabel(id));
   }
 
-  /* what a field can be prepopulated from: this step, the WTN, and every other step with a definition (Weld
-     Build-Up's is Fit's, so Fit is the step to copy from) */
-  fillSteps = computed(() => {
-    const own = this.editing()?.stepId;
-    return [
-      { stepId: THIS_STEP, stepLabel: 'This step' },
-      { stepId: WTN, stepLabel: 'The WTN' },
-      ...this.rows().filter(r => r.stepId !== own && r.stepId !== WELD_BUILDUP_DEFINITION).map(r => ({ stepId: r.stepId, stepLabel: r.stepLabel })),
-    ];
-  });
+  /* what a field can be prepopulated from: this step, the WTN, and the routing steps */
+  fillSteps = computed(() => [
+    { stepId: THIS_STEP, stepLabel: 'This step' },
+    { stepId: WTN, stepLabel: 'The WTN' },
+    ...this.routingSteps,
+  ]);
 
-  /* the chosen source's fields: the WTN's WPS values, this step's other fields, or that step's fields */
+  /* the chosen source's fields: the WTN's WPS values, this step's other fields, or the fields of
+     every Type that step offers */
   fillSourceFields = computed(() => {
     const e = this.editing();
     const sourceId = e?.fillStepId;
     if (!e || !sourceId) return [];
     if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
     const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)
-      : this.rows().find(r => r.stepId === sourceId)?.fieldActivations ?? getActivationForStep(sourceId).fields;
-    return definitionFields(acts).map(a => ({ key: a.key, label: lookupCatalogField(a.key)?.label ?? a.key }));
+      : (signoffTypeOptions(sourceId) ?? []).flatMap(o => this.rows().find(r => r.typeId === o.value)?.fieldActivations ?? getActivationForStep(o.value).fields);
+    const keys = [...new Set(definitionFields(acts).map(a => a.key))];
+    return keys.map(key => ({ key, label: lookupCatalogField(key)?.label ?? key }));
   });
 
   /* picking another step clears the field picked from the old one */
@@ -462,23 +440,24 @@ export class AdminSignoffTypeDefinitionComponent {
     this.editing.update(e => e ? { ...e, condGroup: group } : e);
   }
 
-  /* what a condition's "This step field" can test: Type and Inspection Results (stored on the step
-     itself), then the step's own fields other than the one being edited; fields drawn their own way
-     aren't in the step's values, so they're left out */
+  /* what a condition's "This step field" can test: Inspection Results (stored on the step itself),
+     then the definition's own fields other than the one being edited; fields drawn their own way
+     aren't in the step's values, so they're left out. Type is offered only on Excavation NDT, whose one
+     definition serves every inspection kind. */
   condStepFields = computed((): StepFieldChoice[] => {
     const e = this.editing();
     if (!e) return [];
     const own = definitionFields(e.fieldActivations)
-      .filter(a => a.key !== e.condKey && !drawnByOwnForm(e.stepId, a.key))
+      .filter(a => a.key !== e.condKey && !drawnByOwnForm(e.typeId, a.key))
       .flatMap(a => {
         const cat = lookupCatalogField(a.key);
         if (!cat) return [];
         const values = cat.type === 'checkbox' ? [{ value: 'yes', label: 'Checked' }] : (cat.options ?? []).map(o => ({ value: o.value, label: o.label }));
         return [{ key: a.key, label: cat.label, values }];
       });
-    const typeOptions = signoffTypeOptions(e.stepId) ?? [];
-    const type = typeOptions.length || e.fieldActivations.some(a => a.key === TYPE_KEY)
-      ? [{ key: 'inspectionType', label: 'Type', values: typeOptions.map(o => ({ value: o.value, label: o.label })) }] : [];
+    const ndtKinds = Object.values(NDT_KINDS).flatMap(k => k.options);
+    const type = e.typeId === EXCAVATION_DEFINITION
+      ? [{ key: 'inspectionType', label: 'Type', values: ndtKinds.map(o => ({ value: o.value, label: o.label })) }] : [];
     const result = e.fieldActivations.some(a => a.key === DECISION_KEY)
       ? [{ key: 'result', label: 'Inspection Results (SAT/UNSAT)', values: [{ value: 'sat', label: 'SAT' }, { value: 'unsat', label: 'UNSAT' }] }] : [];
     return [...type, ...result, ...own];
@@ -514,14 +493,14 @@ export class AdminSignoffTypeDefinitionComponent {
   /* ── Persist + Export ── */
 
   private persist() {
-    const config: StepFieldActivation[] = this.rows()
-      .map(r => ({ stepId: r.stepId, fields: r.fieldActivations, ...(r.verifyAgainst && { verifyAgainst: r.verifyAgainst }) }));
+    const config: TypeDefinition[] = this.rows()
+      .map(r => ({ typeId: r.typeId, fields: r.fieldActivations, ...(r.verifyAgainst && { verifyAgainst: r.verifyAgainst }) }));
     setStepFieldConfig(config);
   }
 
   exportCsv() {
     downloadCsv('signoff-type-definition', [
-      { header: 'Type', value: (r: DefRow) => r.stepLabel },
+      { header: 'Type', value: (r: DefRow) => r.typeLabel },
       { header: 'Fields', value: (r: DefRow) => r.fieldLabels },
     ], this.table.sorted());
   }

@@ -4,7 +4,7 @@ import { WorkflowStage } from '../../model/workflow-types';
 import {
   setStepFieldConfig,
   resetStepFieldConfig,
-  DEFAULT_STEP_FIELD_ACTIVATIONS,
+  DEFAULT_TYPE_DEFINITIONS,
   FieldActivation,
 } from '../../signoff-definition/step-field-config';
 import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../../signoff-definition/joint-facts';
@@ -43,7 +43,7 @@ describe('joint-form fit-signoff', () => {
   it('follows the Fit definition: an unticked field is gone, Required and greyed-out apply', () => {
     const both = job({ jointDesign: 'C-65' });
     const fitFields = (fields: FieldActivation[]) =>
-      DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => a.stepId === 'fit' ? { ...a, fields } : a);
+      DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'fit' ? { ...a, fields } : a);
     try {
       setStepFieldConfig(fitFields([
         { key: 'consumableInsertType', required: false },

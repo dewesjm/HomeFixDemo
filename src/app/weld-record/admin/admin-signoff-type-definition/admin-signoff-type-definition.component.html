@@ -1,6 +1,6 @@
 <h2 class="section-title">Signoff Type Definition</h2>
 
-<app-table-toolbar [table]="table" searchPlaceholder="Search steps or fields…" addLabel="Add definition"
+<app-table-toolbar [table]="table" searchPlaceholder="Search types or fields…" addLabel="Add definition"
                    (exportCsv)="exportCsv()" (add)="addRow()">
   <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">Reset all to defaults</button>
 </app-table-toolbar>
@@ -11,7 +11,7 @@
     <thead>
       <tr>
         <th class="w-px"></th>
-        <th appSortHeader [table]="table" field="stepLabel" label="Type" class="min-w-44"></th>
+        <th appSortHeader [table]="table" field="typeLabel" label="Type" class="min-w-44"></th>
         <th>Fields</th>
         <th>Conditions</th>
         <th>Behaviors</th>
@@ -20,15 +20,15 @@
     </thead>
     <tbody>
       @for (row of table.sorted(); track row.uid) {
-        @let open = expanded().has(row.stepId);
-        <tr class="hover:bg-base-200 cursor-pointer" (click)="toggleExpanded(row.stepId)">
+        @let open = expanded().has(row.typeId);
+        <tr class="hover:bg-base-200 cursor-pointer" (click)="toggleExpanded(row.typeId)">
           <td>
             <button type="button" class="btn btn-ghost btn-xs" [attr.aria-expanded]="open"
-                    [attr.aria-label]="(open ? 'Collapse ' : 'Expand ') + row.stepLabel">
+                    [attr.aria-label]="(open ? 'Collapse ' : 'Expand ') + row.typeLabel">
               @if (open) { <svg lucideChevronDown class="size-4"></svg> } @else { <svg lucideChevronRight class="size-4"></svg> }
             </button>
           </td>
-          <td class="font-semibold">{{ row.stepLabel }}</td>
+          <td class="font-semibold">{{ row.typeLabel }}</td>
           <td colspan="3" class="text-sm">
             @if (!row.fieldRules.length) {
               <span class="text-base-content/40">—</span>
@@ -81,17 +81,17 @@
   <dialog class="modal modal-open" (close)="cancelEdit()">
     <div class="modal-box w-11/12 max-w-5xl max-h-[90vh] flex flex-col">
       <h3 class="text-lg font-semibold mb-4">
-        @if (e.uid) { {{ e.stepLabel }} } @else { New Definition }
+        @if (e.uid) { {{ e.typeLabel }} } @else { New Definition }
       </h3>
 
       @if (!e.uid) {
         <div class="mb-4">
-          <label class="label" for="step-pick"><span class="label-text">Step</span></label>
-          <select id="step-pick" class="select select-bordered select-sm w-full"
-                  [ngModel]="e.stepId" (ngModelChange)="setEditStep($event)">
-            <option value="">Select a step…</option>
-            @for (s of addableSteps(); track s.stepId) {
-              <option [value]="s.stepId">{{ s.stepLabel }}</option>
+          <label class="label" for="type-pick"><span class="label-text">Type</span></label>
+          <select id="type-pick" class="select select-bordered select-sm w-full"
+                  [ngModel]="e.typeId" (ngModelChange)="setEditType($event)">
+            <option value="">Select a type…</option>
+            @for (t of addableTypes(); track t.typeId) {
+              <option [value]="t.typeId">{{ t.typeLabel }}</option>
             }
           </select>
         </div>
@@ -103,7 +103,7 @@
         <ng-container *ngTemplateOutlet="sectionHeading; context: { label: 'Layout', open: layoutOpen() }"></ng-container>
         @if (layoutOpen()) {
           <div class="mb-6">
-            <app-definition-layout-list [items]="e.fieldActivations" [stepId]="e.stepId" (itemsChange)="setLayout($event)" />
+            <app-definition-layout-list [items]="e.fieldActivations" [typeId]="e.typeId" (itemsChange)="setLayout($event)" />
           </div>
         }
 

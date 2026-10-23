@@ -7,7 +7,7 @@ describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
     expect(showRuleText({ key: 'probationaryInspector' })).toBe('Shown when Has Probationary Inspector is checked');
     expect(showRuleText({ key: 'portionInspected' })).toBe('Shown when Partial is checked');
-    expect(showRuleText({ key: 'defectCode' })).toBe('Shown when Type is RT and Result is unsat');
+    expect(showRuleText({ key: 'defectCode' })).toBe('Shown when Result is unsat');
     expect(showRuleText({ key: 'hasProbationary' })).toBe('Always shown');
   });
 

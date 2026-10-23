@@ -20,7 +20,7 @@ let seq = 0;
 })
 export class DefinitionLayoutListComponent {
   items = input.required<FieldActivation[]>();
-  stepId = input.required<string>();
+  typeId = input.required<string>();
   itemsChange = output<FieldActivation[]>();
 
   readonly isHeading = isHeadingItem;
@@ -36,7 +36,7 @@ export class DefinitionLayoutListComponent {
   }
 
   fieldNote(a: FieldActivation): string {
-    return definitionFieldNote(this.stepId(), a.key);
+    return definitionFieldNote(this.typeId(), a.key);
   }
 
   blockNote(a: FieldActivation): string {

@@ -1,7 +1,8 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from '../model/workflow-types';
-import { WELD_BUILDUP_DEFINITION, baseStepId, isRepairStageId } from '../routing/step-ids';
+import { baseStepId, isRepairStageId } from '../routing/step-ids';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } from './step-field-config';
+import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
    condition): its Signoff Type Definition lists Inspection Results, or, for a step with no definition
@@ -17,36 +18,36 @@ export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | '
 }
 
 /* whether the Type droplist shows: the step has Type options (Admin > Signoff Type Availability) and
-   its own Signoff Type Definition lists Type (a step with no definition always shows it). A Type that
-   loads another definition doesn't change this, so Fit signed as Weld Build-Up can still switch back. */
-export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
+   the definition of the Type it's on lists Type (a step with no definition, or whose Type isn't picked
+   yet, always shows it) */
+export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'signoffType'>): boolean {
   if (!stage.typeOptions?.length) return false;
-  return !hasStepActivation(stage.id) || definitionHas(stage.id, TYPE_KEY);
+  return !hasStepActivation(stage) || definitionHas(stage, TYPE_KEY);
 }
 
-/* a shown Type whose options have no default (Admin > Signoff Type Availability) starts blank
+/* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
    only one option */
-export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): boolean {
-  return showsType(stage) && !stage.typeOptions!.some(o => o.default);
+export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'typeOptions'>): boolean {
+  return !!stage.typeOptions?.length && !stage.typeOptions.some(o => o.default);
 }
 
 /* a step's Type is stored twice: inspectionType (what the joint page shows and NDT rules read) and
-   signoffType (what a repeatable Type or a Type that loads another definition is looked up by,
-   'standard' when blank); both always hold the same pick */
+   signoffType (what the step's definition and its Type's settings are looked up by, 'standard' when
+   blank); both always hold the same pick */
 export function typeValues(value: string): Pick<WorkflowStage, 'inspectionType' | 'signoffType'> {
   return { inspectionType: value, signoffType: value || 'standard' };
 }
 
 /* the Type a step starts with and keeps until someone changes it: its default option, or blank when
    it has none. The stored value is what the joint page shows and what History records. */
-export function initialInspectionType(stage: Pick<WorkflowStage, 'id' | 'typeOptions'>): string {
+export function initialInspectionType(stage: Pick<WorkflowStage, 'typeOptions'>): string {
   if (inspectionTypeRequired(stage)) return '';
   return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
 /* which steps show References in their form: those whose Signoff Type Definition lists References
-   (by default RT/UT on Root, Layer and Final NDT, and Repair); Correct shows it on every step */
+   (by default RT, UT and Repair); Correct shows it on every step */
 export const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
@@ -87,26 +88,26 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
 
 /* what the signoff section's fields and the joint's References show, and Inspection Results' routing */
 const OWN_SPOT_NOTES: Record<string, string> = {
-  type: 'Shown when Admin > Signoff Type Availability gives the step options. No default there means it must be picked.',
+  type: "Shown when Admin > Signoff Type Availability gives the step options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
   decision: 'UNSAT can be signed only on a step with a Reject routes to target (Admin > Routing Settings).',
   comments: 'Shown while the step needs a signoff.',
   references: "The joint's References (attached file names), drawn the width of the form.",
   signoffHistory: "The joint's History table, where the Layout list places it.",
 };
 
-/* what a field means on a step's definition: where the panel draws it, or for a routing-read field,
-   what taking it off does on its home step or that routing ignores it on any other step. Fit signed as
-   Weld Build-Up is still the Fit step, so routing reads a Defer Tack there too: no note. */
-export function definitionFieldNote(stageId: string, key: string): string {
-  if (key === TYPE_KEY && stageId === WELD_BUILDUP_DEFINITION) return "Not used here: Fit's own definition decides whether Fit shows Type, also when signed as Weld Build-Up.";
+/* what a field means on a Type's definition: where the panel draws it, or for a routing-read field,
+   what taking it off does on its home step's Type or that routing ignores it on any other Type. The
+   Types named after a step have that step's id as their value. Weld Build-Up is signed on the Fit
+   step, so routing reads a Defer Tack there too: no note. */
+export function definitionFieldNote(typeId: string, key: string): string {
   if (key in OWN_SPOT_NOTES) return OWN_SPOT_NOTES[key];
   if (key in AFFECTED_ITEM_PART_NOTES) return AFFECTED_ITEM_PART_NOTES[key];
-  if (stageId === WELD_BUILDUP_DEFINITION) return '';
-  if (isRoutingLockedField(stageId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';
+  if (typeId === WELD_BUILDUP_TYPE) return '';
+  if (isRoutingLockedField(typeId, key)) return DEFINITION_REMOVAL_NOTES[key] ?? '';
   return OTHER_STEP_NOTES[key] ?? '';
 }
 
-/* routing-read fields that can't be taken off a Signoff Type Definition */
-export function isDefinitionLockedField(stageId: string, key: string): boolean {
-  return isRoutingLockedField(stageId, key) && !(key in DEFINITION_REMOVAL_NOTES);
+/* routing-read fields that can't be taken off a Type's definition */
+export function isDefinitionLockedField(typeId: string, key: string): boolean {
+  return isRoutingLockedField(typeId, key) && !(key in DEFINITION_REMOVAL_NOTES);
 }

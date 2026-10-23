@@ -6,7 +6,7 @@ import { WorkflowStore } from './workflow-store.service';
 import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
 import { activeStageId } from '../routing/current-routing';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { routingBarSteps } from '../routing/routing-bar';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/stage-templates';
@@ -524,7 +524,7 @@ describe('SignoffService', () => {
     });
 
     it('a Type that is not repeatable completes the step', () => {
-      setSignoffTypeRows(getSignoffTypeRows().map(r => ({ ...r, options: r.options.map(({ repeatable: _, ...o }) => o) })));
+      setRoutingSignoffTypes(getRoutingSignoffTypes().map(({ repeatable: _, ...t }) => t));
       const job = weldingJob();
       setStage(job, 'fit', { ...typeValues('weld-buildup') });
       service.signStage(job, 'fit');

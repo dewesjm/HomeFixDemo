@@ -3,7 +3,7 @@ import { buildStages } from '../../routing/build-stages';
 import { inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { WorkflowStage } from '../../model/workflow-types';
 import {
-  DEFAULT_STEP_FIELD_ACTIVATIONS,
+  DEFAULT_TYPE_DEFINITIONS,
   setStepFieldConfig,
   resetStepFieldConfig,
 } from '../../signoff-definition/step-field-config';
@@ -62,8 +62,8 @@ describe('joint-form sign-validation', () => {
 
   it('a required field the definition adds to a step is checked on signing; other fields on a verify grid are not verify rows', () => {
     const j = job();
-    const tack = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'tack')!;
-    const insp = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'fitup-insp')!;
+    const tack = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'tack')!;
+    const insp = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'fitup-insp')!;
     setStepFieldConfig([
       { ...tack, fields: [...tack.fields, { key: 'repairType' }] },
       { ...insp, fields: [...insp.fields, { key: 'repairType' }] },
@@ -133,7 +133,7 @@ describe('joint-form sign-validation', () => {
 
   it('Weld Build-Up: an Affected Item MIC verified row taken off the definition is no longer required', () => {
     const j = job({ mcl1: 'MC-I', joiningItem: 'Pipe A' });
-    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => a.stepId === 'fit-weld-buildup'
+    const def = DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'weld-buildup'
       ? { ...a, fields: a.fields.filter(f => f.key !== 'affectedMicVerified1') } : a);
     setStepFieldConfig(def);
     const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', inputs: { affectedItems: 'joiningItem' } });

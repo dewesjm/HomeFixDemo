@@ -62,7 +62,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     if (!step) return s;
     /* only the method(s) the Joint Details values allow; a default that isn't one of them leaves Type blank */
     const typeOptions = s.typeOptions?.filter(o => step.methods.includes(o.value));
-    return { ...s, typeOptions, ...typeValues(initialInspectionType({ id: s.id, typeOptions })) };
+    return { ...s, typeOptions, ...typeValues(initialInspectionType({ typeOptions })) };
   });
 }
 

@@ -1,5 +1,6 @@
 /* Admin → Signoff Type Availability: the seeded table of routing steps that have a Type droplist and
-   their options (weld-record/signoff-definition/signoff-types.ts); rows are added and removed here */
+   which Types (Admin > Routing Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
+   rows are added and removed here */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,22 +12,21 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { DEFAULT_STEP_FIELD_ACTIVATIONS } from '../../signoff-definition/step-field-config';
 import {
+  AvailableType,
   EXCAVATION_TYPE_ROW,
   REPAIR_TYPE_ROW,
   getSignoffTypeRows,
   setSignoffTypeRows,
 } from '../../signoff-definition/signoff-types';
-import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
+import { getRoutingSignoffTypes, typeLabel } from '../../signoff-definition/routing-signoff-types';
 import { getTemplates } from '../../routing/stage-templates';
-import { type StageOption } from '../../model/workflow-types';
 
 interface TypeRow {
   uid: string;
   stepId: string;
   stepLabel: string;
-  options: StageOption[];
+  types: AvailableType[];
 }
 
 const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
@@ -53,13 +53,10 @@ export class AdminSignoffTypesComponent {
     { id: REPAIR_TYPE_ROW, label: 'Repair' },
     { id: EXCAVATION_TYPE_ROW, label: 'Excavation NDT' },
   ];
+  /* what an option can be: the Types in Admin > Routing Signoff Types */
+  readonly typeChoices = getRoutingSignoffTypes();
 
-  /* the Signoff Type Definitions a Type can load (StageOption.definition) */
-  readonly definitions = DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => ({
-    id: a.stepId, label: a.stepId === WELD_BUILDUP_DEFINITION ? 'Fit (Weld Build-Up)' : this.stepLabel(a.stepId),
-  }));
-
-  rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => this.toRow(r.stepId, r.options)));
+  rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => this.toRow(r.stepId, r.types)));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['stepLabel']);
@@ -68,8 +65,8 @@ export class AdminSignoffTypesComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  private toRow(stepId: string, options: StageOption[]): TypeRow {
-    return { uid: `st-${++this.seq}`, stepId, stepLabel: this.stepLabel(stepId), options: options.map(o => ({ ...o })) };
+  private toRow(stepId: string, types: AvailableType[]): TypeRow {
+    return { uid: `st-${++this.seq}`, stepId, stepLabel: this.stepLabel(stepId), types: types.map(t => ({ ...t })) };
   }
 
   private stepLabel(stepId: string): string {
@@ -84,43 +81,24 @@ export class AdminSignoffTypesComponent {
   }
 
   hasDefault(row: TypeRow): boolean {
-    return row.options.some(o => o.default);
+    return row.types.some(t => t.default);
   }
 
-  /* e.g. "Interim Layer (default, repeatable)", "Final Weld (Final Weld fields)" */
-  optionText(o: StageOption): string {
-    const notes = [
-      ...(o.default ? ['default'] : []),
-      ...(o.repeatable ? ['repeatable'] : []),
-      ...(o.definition ? [`${this.definitionLabel(o.definition)} fields`] : []),
-    ];
-    return notes.length ? `${o.label} (${notes.join(', ')})` : o.label;
-  }
-
-  /* a repeatable Type records the signoff but leaves the routing where it is (StageOption.repeatable) */
-  setRepeatable(o: StageOption, on: boolean) {
-    if (on) o.repeatable = true; else delete o.repeatable;
-  }
-
-  definitionLabel(id: string): string {
-    return this.definitions.find(d => d.id === id)?.label ?? id;
-  }
-
-  /* '' = the step's own definition */
-  setDefinition(o: StageOption, id: string) {
-    if (id) o.definition = id; else delete o.definition;
+  /* e.g. "Interim Layer (default)" */
+  optionText(t: AvailableType): string {
+    return typeLabel(t.type) + (t.default ? ' (default)' : '');
   }
 
   exportCsv() {
     downloadCsv('signoff-type-availability', [
       { header: 'Type', value: (r: TypeRow) => r.stepLabel },
       { header: 'Options', value: (r: TypeRow) => r.stepId === EXCAVATION_TYPE_ROW ? EXCAVATION_NOTE
-          : r.options.map(o => this.optionText(o)).join('; ') },
+          : r.types.map(t => this.optionText(t)).join('; ') },
     ], this.table.sorted());
   }
 
   addRow() {
-    const row: TypeRow = { uid: `st-${++this.seq}`, stepId: '', stepLabel: '', options: [] };
+    const row: TypeRow = { uid: `st-${++this.seq}`, stepId: '', stepLabel: '', types: [] };
     this.table.clearFilters();
     this.rows.update(r => [row, ...r]);
     this.editingUid.set(row.uid);
@@ -128,7 +106,7 @@ export class AdminSignoffTypesComponent {
 
   setStep(row: TypeRow, stepId: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid
-      ? { ...x, stepId, stepLabel: this.stepLabel(stepId), options: stepId === EXCAVATION_TYPE_ROW ? [] : x.options }
+      ? { ...x, stepId, stepLabel: this.stepLabel(stepId), types: stepId === EXCAVATION_TYPE_ROW ? [] : x.types }
       : x));
   }
 
@@ -141,7 +119,7 @@ export class AdminSignoffTypesComponent {
   }
 
   startEdit(row: TypeRow) {
-    this.cloned[row.uid] = { ...row, options: row.options.map(o => ({ ...o })) };
+    this.cloned[row.uid] = { ...row, types: row.types.map(t => ({ ...t })) };
     this.editingUid.set(row.uid);
   }
 
@@ -151,7 +129,7 @@ export class AdminSignoffTypesComponent {
       this.messages.add({ severity: 'warn', summary: 'Pick a type', life: 3000 });
       return;
     }
-    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, options: x.options.filter(o => o.label.trim()) } : x));
+    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, types: x.types.filter(t => t.type) } : x));
     delete this.cloned[row.uid];
     this.editingUid.set(null);
     this.persist();
@@ -166,29 +144,29 @@ export class AdminSignoffTypesComponent {
   }
 
   addOption(row: TypeRow) {
-    row.options.push({ label: '', value: '' });
+    row.types.push({ type: '' });
   }
 
   /* removing the default option leaves the step with no default */
   removeOption(row: TypeRow, idx: number) {
-    row.options.splice(idx, 1);
+    row.types.splice(idx, 1);
   }
 
   moveUp(row: TypeRow, idx: number) {
     if (idx <= 0) return;
-    const opts = row.options;
+    const opts = row.types;
     [opts[idx - 1], opts[idx]] = [opts[idx], opts[idx - 1]];
   }
 
   moveDown(row: TypeRow, idx: number) {
-    const opts = row.options;
+    const opts = row.types;
     if (idx >= opts.length - 1) return;
     [opts[idx], opts[idx + 1]] = [opts[idx + 1], opts[idx]];
   }
 
   /* idx -1 = No default */
   setDefault(row: TypeRow, idx: number) {
-    row.options.forEach((o, i) => { if (i === idx) o.default = true; else delete o.default; });
+    row.types.forEach((t, i) => { if (i === idx) t.default = true; else delete t.default; });
   }
 
   private persist() {
@@ -196,7 +174,7 @@ export class AdminSignoffTypesComponent {
     setSignoffTypeRows(this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
-      return saved?.stepId ? [{ stepId: saved.stepId, options: saved.options }] : [];
+      return saved?.stepId ? [{ stepId: saved.stepId, types: saved.types }] : [];
     }));
   }
 }
