@@ -72,8 +72,7 @@ export interface WorkflowStage {
   /* the current routing was set to this stage (a route-back, or Admin > Routing Override): the joint
      proceeds from here, and unsigned stages before it no longer hold it. At most one stage has it. */
   routingFrom?: boolean;
-  /* how many signoffs with a repeatable Type (Interim Layer, Weld Build-Up) this step has had since
-     its routing last came up fresh (type-routing.ts) */
+  /* Count of this routing's own rule returning it to itself. */
   repeats?: number;
   /* the external system sent no GWP/WTN/filler/PH/IP for this welding step, so they're typed in
      by hand (engineering override, ENGINEERING_ENTRY_KEYS). Set by WeldAssignmentService. */
@@ -164,9 +163,6 @@ export interface StageOption {
   label: string;
   value: string;
   default?: boolean;
-  /* signing with this Type records the signoff, leaves the routing where it is and blanks the step
-     for the next signoff. Unset = signing completes the step. */
-  repeatable?: boolean;
   /* the routing step this Type signs when picked on an earlier step (Layer's Final Weld); unset = this step */
   signsStep?: string;
 }
@@ -193,6 +189,8 @@ export interface StageTemplate {
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (step-conditions.ts) */
   rejectRules?: RejectRule[];
+  /* On accepted signoff, the first matching rule selects the next routing. */
+  thenRules?: RejectRule[];
   /* set once Admin > Routing Settings saves this step's reject rules; until then the built-in ones apply */
   rejectRulesEdited?: boolean;
   /* Admin > Routing Settings "Fabrication editable": the Fabrication fields can be changed while this is the current step */

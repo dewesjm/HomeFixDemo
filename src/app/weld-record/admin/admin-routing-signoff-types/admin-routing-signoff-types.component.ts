@@ -1,6 +1,4 @@
-/* Admin → Signoff Types: every Type a step can be signed as, with whether it's repeatable and
-   which step it signs (weld-record/signoff-definition/routing-signoff-types.ts). A Type is added here
-   first, then offered on steps (Signoff Types By Routing) and given fields (Signoff Type Form). */
+/* Admin > Signoff Types: names and which routing each Type signs. */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -54,7 +52,6 @@ export class AdminRoutingSignoffTypesComponent {
   exportCsv() {
     downloadCsv('routing-signoff-types', [
       { header: 'Type', value: (r: TypeRow) => r.label },
-      { header: 'Repeatable', value: (r: TypeRow) => r.repeatable ? 'Yes' : '' },
       { header: 'Signs routing', value: (r: TypeRow) => this.signsStepLabel(r) },
     ], this.table.sorted());
   }
@@ -106,10 +103,6 @@ export class AdminRoutingSignoffTypesComponent {
     });
   }
 
-  setRepeatable(row: TypeRow, on: boolean) {
-    this.rows.update(r => r.map(x => x.uid === row.uid ? withFlag(x, 'repeatable', on || undefined) : x));
-  }
-
   /* '' = the step it's picked on */
   setSignsStep(row: TypeRow, stepId: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid ? withFlag(x, 'signsStep', stepId || undefined) : x));
@@ -129,7 +122,7 @@ export class AdminRoutingSignoffTypesComponent {
 }
 
 /* the Type with the setting on, or left off when unset */
-function withFlag(row: TypeRow, key: 'repeatable' | 'signsStep', value: boolean | string | undefined): TypeRow {
+function withFlag(row: TypeRow, key: 'signsStep', value: string | undefined): TypeRow {
   const copy: TypeRow = { ...row };
   if (value === undefined) delete copy[key]; else Object.assign(copy, { [key]: value });
   return copy;

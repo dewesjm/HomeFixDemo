@@ -43,6 +43,7 @@ interface RoutingRow {
   rejectToStage: string;
   role: Role;
   includedWhen: string;   /* describeConditions() of the step's rules */
+  thenRules: string[];
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
   fabricationEditable: boolean;
 }
@@ -112,12 +113,12 @@ export class AdminRoutingComponent {
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) || 'View',
           includedWhen: describeConditions(t.includeWhen),
-          rejectRules: [],
+          rejectRules: [], thenRules: [],
           fabricationEditable: !!t.fabricationEditable,
         });
       });
     }
-    return rows.map(r => ({ ...r, rejectRules: this.rejectRuleLines(r) }));
+    return rows.map(r => ({ ...r, rejectRules: this.rejectRuleLines(r), thenRules: this.thenRuleLines(r) }));
   }
 
   /* ── Row CRUD ── */
@@ -127,7 +128,7 @@ export class AdminRoutingComponent {
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], fabricationEditable: false };
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -384,6 +385,7 @@ export class AdminRoutingComponent {
   }
 
   /* ── Reject rules dialog ── */
+  ruleMode = signal<'reject' | 'then'>('reject');
   rejRow = signal<RoutingRow | null>(null);
   rejRules = signal<RejectRule[]>([]);
   rejFields = signal<StepConditionField[]>([]);
@@ -404,22 +406,36 @@ export class AdminRoutingComponent {
       .map(r => `${describeConditions([r.when], fields)} → ${this.getRejectLabel(r.to)}`);
   }
 
-  /* where a rule can send an UNSAT: Engineering Hold, Repair on NDT steps, or this trade's steps */
+  /* Then go to offers numbered routings; Reject also offers added targets. */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
+    if (this.ruleMode() === 'then') return (getTemplates()[row.trade] ?? []).map(t => ({ id: t.id, label: t.label }));
     const own = (getTemplates()[row.trade] ?? []).filter(t => t.id !== row.id.split(':')[1]).map(t => ({ id: t.id, label: t.label }));
     const hold = { id: ENGINEERING_HOLD_TARGET, label: 'Engineering Hold (adds an Engineering Hold routing)' };
     return row.id.includes('-ndt-') ? [hold, { id: 'repair', label: 'Repair (adds a Repair routing)' }, ...own] : [hold, ...own];
   }
 
   openRejectRules(row: RoutingRow) {
+    this.ruleMode.set('reject');
     this.rejFields.set(this.rejectFieldsFor(row));
     this.rejRules.set((this.templateFor(row)?.rejectRules ?? []).map(r => ({ to: r.to, when: r.when.map(c => ({ ...c, values: [...c.values] })) })));
     this.rejRow.set(row);
   }
 
+  private thenRuleLines(row: RoutingRow): string[] {
+    return (this.templateFor(row)?.thenRules ?? [])
+      .map(r => `${describeConditions([r.when], this.rejectFieldsFor(row))} → ${this.getRejectLabel(r.to)}`);
+  }
+
+  openThenRules(row: RoutingRow) {
+    this.ruleMode.set('then');
+    this.rejFields.set(this.rejectFieldsFor(row));
+    this.rejRules.set((this.templateFor(row)?.thenRules ?? []).map(r => ({ to: r.to, when: r.when.map(c => ({ ...c, values: [...c.values] })) })));
+    this.rejRow.set(row);
+  }
+
   addRejectRule() {
     const row = this.rejRow();
-    const to = row?.rejectToStage || this.rejectTargets(row!)[0]?.id || '';
+    const to = (this.ruleMode() === 'then' ? row?.id.split(':')[1] : row?.rejectToStage) || this.rejectTargets(row!)[0]?.id || '';
     this.rejRules.update(r => [...r, { when: [{ field: this.rejFields()[0]?.key ?? '', op: 'is', values: [] }], to }]);
   }
   removeRejectRule(ri: number) {
@@ -441,7 +457,7 @@ export class AdminRoutingComponent {
     this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: [...x.when, { field: this.rejFields()[0]?.key ?? '', op: 'is' as const, values: [] }] } : x));
   }
   removeRejectClause(ri: number, ci: number) {
-    /* a rule left with no conditions would never match, so it goes too */
+    /* Removing the last condition removes the rule. */
     this.rejRules.update(r => r.map((x, i) => i === ri ? { ...x, when: x.when.filter((_, j) => j !== ci) } : x).filter(x => x.when.length));
   }
   setRejectClause(ri: number, ci: number, patch: Partial<ConditionClause>) {
@@ -459,6 +475,13 @@ export class AdminRoutingComponent {
   saveRejectRules() {
     const row = this.rejRow();
     if (!row) return;
+    if (this.ruleMode() === 'then') {
+      updateStageTemplate(row.trade, row.id.split(':')[1], { thenRules: this.rejRules() });
+      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, thenRules: this.thenRuleLines(row) } : x));
+      this.rejRow.set(null);
+      this.messages.add({ severity: 'success', summary: 'Then go to rules saved', detail: row.routing, life: 3000 });
+      return;
+    }
     updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules(), rejectRulesEdited: true });
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
@@ -474,6 +497,7 @@ export class AdminRoutingComponent {
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
+      { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
       { header: 'Persona', value: (r: RoutingRow) => r.role }

@@ -3,7 +3,7 @@
    Type options come from Admin > Signoff Types By Routing (signoff-types.ts). */
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
-import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
 import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';
@@ -19,6 +19,7 @@ function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
 const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
   Welding: withFabricationEditable(WELDING_STEPS
     .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
+    .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
     .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)),
 };
 
@@ -35,6 +36,7 @@ interface SerializedStage {
   role?: string;
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
+  thenRules?: RejectRule[];
   rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
 }
@@ -49,6 +51,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
     role: t.role ?? '',
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
+    thenRules: t.thenRules ?? [],
     rejectRulesEdited: t.rejectRulesEdited,
     fabricationEditable: t.fabricationEditable ?? false,
   };
@@ -61,6 +64,7 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
     role: s.role ?? '', includeWhen: s.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
+    thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,
     fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [],
   };

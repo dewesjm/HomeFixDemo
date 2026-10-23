@@ -1,5 +1,6 @@
 <!-- Admin → Routing Settings maintenance table with sequence ordering and field config. -->
 <h2 class="section-title">Routing Settings</h2>
+<p class="text-sm mb-sm">Manage which routings apply and where accepted or rejected signoffs send the joint.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -12,6 +13,7 @@
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="routing" label="Routing"></th>
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="displayName" label="Display Name"></th>
       <th class="min-w-64">Included when</th>
+      <th class="min-w-48">Then go to</th>
       <th class="min-w-48">Reject routes to</th>
       <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current routing">Fabrication editable</th>
       <th appSortHeader [table]="table" field="role" label="Persona" class="whitespace-nowrap"></th>
@@ -67,6 +69,19 @@
               </button>
             </div>
           }
+        </td>
+        <td>
+          <div class="flex items-start gap-1">
+            <div class="flex-1">
+              @for (line of row.thenRules; track $index) { <div>{{ line }}</div> }
+              <div>Otherwise: in order</div>
+            </div>
+            @if (!row.id.includes(':new-')) {
+              <button type="button" class="btn btn-outline btn-xs" (click)="openThenRules(row)" aria-label="Edit Then go to rules">
+                <svg lucideGitBranch class="size-4"></svg> Edit
+              </button>
+            }
+          </div>
         </td>
         <td>
           @if (editingId() === row.id) {
@@ -229,9 +244,14 @@
 @if (rejRow(); as row) {
   <dialog class="modal modal-open" (close)="rejRow.set(null)">
     <div class="modal-box max-w-3xl max-h-[85vh]">
-      <h3 class="text-lg font-semibold mb-1">Reject rules: {{ row.routing }}</h3>
+      <h3 class="text-lg font-semibold mb-1">{{ ruleMode() === 'then' ? 'Then go to' : 'Reject rules' }}: {{ row.routing }}</h3>
+      @if (ruleMode() === 'then') {
+        <p class="mb-4">After an accepted signoff, the first matching rule picks where the joint goes. Otherwise it continues in order. The same or an earlier routing starts fresh; a later routing passes those in between.</p>
+      } @else {
       <p class="mb-1">When this routing is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
       <p class="mb-4">A rule's routing must be earlier on the joint (or Engineering Hold, or Repair on an NDT routing). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+
+      }
 
       @for (rule of rejRules(); track $index; let ri = $index) {
         <div class="border border-base-300 rounded-box p-3 mb-3">
@@ -295,7 +315,9 @@
           </div>
         </div>
       } @empty {
+        @if (ruleMode() === 'then') { <p class="font-semibold">No rules: continue in order.</p> } @else {
         <p class="font-semibold">No reject rules: an UNSAT always goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+        }
       }
 
       <button type="button" class="btn btn-sm btn-outline mt-1" (click)="addRejectRule()">
@@ -305,7 +327,7 @@
       <div class="modal-action">
         <button type="button" class="btn btn-ghost" (click)="rejRow.set(null)">Cancel</button>
         <button type="button" class="btn btn-primary" [disabled]="!rejectRulesValid()" (click)="saveRejectRules()">
-          <svg lucideCheck class="size-4"></svg> Save reject rules
+          <svg lucideCheck class="size-4"></svg> Save {{ ruleMode() === 'then' ? 'Then go to rules' : 'reject rules' }}
         </button>
       </div>
     </div>

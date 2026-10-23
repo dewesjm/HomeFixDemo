@@ -17,7 +17,7 @@ import { fabricationSnapshot } from '../weld-record/fabrication/fabrication-fiel
 import { seeded, seededMic } from './seed-fabrication';
 
 /* which jobs get each seeded situation: a job id hash modulo EVERY equal to AT */
-const SEEDED_REPAIR_EVERY = 23;
+const SEEDED_REPAIR_EVERY = 19;
 const SEEDED_REPAIR_AT = 11;
 const SEEDED_PT_HOLD_EVERY = 8;
 const SEEDED_PT_HOLD_AT = 6;

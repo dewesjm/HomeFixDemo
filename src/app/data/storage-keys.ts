@@ -1,10 +1,10 @@
 /* Every localStorage key the app uses, in one place. */
 export const STORAGE = {
   appVersion: 'welding:app-version',
-  workflows: 'welding:workflows:v2',
-  stageTemplates: 'welding:stage-templates:v2',
-  signoffTypes: 'welding:signoff-types:v2',
-  routingSignoffTypes: 'welding:routing-signoff-types:v1',
+  workflows: 'welding:workflows:v3',
+  stageTemplates: 'welding:stage-templates:v3',
+  signoffTypes: 'welding:signoff-types:v3',
+  routingSignoffTypes: 'welding:routing-signoff-types:v2',
   penetrants: 'welding:penetrants:v1',
   inspectionProcedures: 'welding:inspection-procedures:v1',
   defectCodes: 'welding:defect-codes:v1',

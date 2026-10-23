@@ -335,7 +335,6 @@ export class JointPageComponent implements OnDestroy {
     /* validate required fields + range constraints */
     if (this.formErrors.showSigningErrors(stageFieldErrors(stage, this.signCtx(stage)))) return;
     if (!this.canSignStage(stage)) return;
-    /* a repeatable Type (Interim Layer, Weld Build-Up) goes through the same signoff; SignoffService keeps the routing where it is */
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const deviations = this.overrides.stageDeviations(st);
     if (deviations.length) {

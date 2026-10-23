@@ -102,7 +102,8 @@ export function jobNdtSteps(job: Job): Record<NdtPhase, NdtStep[]> {
   return {
     root: phaseNdtSteps(job.ndtRoot, job.rtRoot),
     /* Layer NDT only when NDT Each is set */
-    layer: (job.ndtEach || '').trim() ? phaseNdtSteps(job.ndtEach) : [],
+    layer: (job.ndtEach || '').trim() ? phaseNdtSteps(job.ndtEach).filter(s =>
+      ['VT', '5X'].includes(job.ndtEach.trim().toUpperCase()) || s.kind !== 'vt5x') : [],
     final: phaseNdtSteps(job.ndtFinal, job.rtFinal),
   };
 }

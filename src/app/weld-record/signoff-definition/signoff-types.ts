@@ -90,7 +90,6 @@ export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
     return t ? [{
       label: t.label, value: t.value,
       ...(a.default ? { default: true } : {}),
-      ...(t.repeatable ? { repeatable: true } : {}),
       ...(t.signsStep ? { signsStep: t.signsStep } : {}),
     }] : [];
   });
@@ -98,11 +97,6 @@ export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
 }
 
 const option = (stageId: string, type: string) => signoffTypeOptions(stageId)?.find(o => o.value === type);
-
-/* whether signing `stageId` with Type `type` leaves the routing where it is (see StageOption.repeatable) */
-export function typeRepeatable(stageId: string, type: string): boolean {
-  return !!option(stageId, type)?.repeatable;
-}
 
 /* the routing step signing `stageId` with Type `type` signs (StageOption.signsStep); '' = itself */
 export function typeSignsStep(stageId: string, type: string): string {

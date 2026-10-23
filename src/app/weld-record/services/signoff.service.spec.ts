@@ -6,10 +6,10 @@ import { WorkflowStore } from './workflow-store.service';
 import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
 import { activeStageId } from '../routing/current-routing';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { routingBarSteps } from '../routing/routing-bar';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/stage-templates';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
@@ -32,12 +32,13 @@ describe('SignoffService', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    setRoutingSignoffTypes(getRoutingSignoffTypes());
     TestBed.configureTestingModule({});
     service = TestBed.inject(SignoffService);
     store = TestBed.inject(WorkflowStore);
   });
 
-  afterEach(() => localStorage.clear());
+  afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
   it('locks the stage, timestamps it, and records a signoff entry', () => {
     const job = weldingJob();
@@ -386,10 +387,10 @@ describe('SignoffService', () => {
       expect(st.inspectionType).toBe('');
     });
 
-    it('MT adds the MT/PT step offering only MT, after VT', () => {
+    it('Layer MT requires only the MT/PT routing offering MT', () => {
       const job = weldingJob({ ndtEach: 'MT' });
-      expect(summary(job, 'layer')).toEqual(['layer-ndt-vt5x:vt', 'layer-ndt-mtpt:mt']);
-      expect(ndtStages(job, 'layer')[1].inspectionType).toBe('');
+      expect(summary(job, 'layer')).toEqual(['layer-ndt-mtpt:mt']);
+      expect(ndtStages(job, 'layer')[0].inspectionType).toBe('');
     });
 
     it('MT/PT leaves the inspector to choose', () => {
@@ -433,7 +434,7 @@ describe('SignoffService', () => {
     expect(stages.find(s => s.id === 'review-o04')?.signed).toBeFalse();
   });
 
-  describe('repeatable Types (Admin > Signoff Types By Routing)', () => {
+  describe('Then go to rules', () => {
     const setStage = (job: Job, id: string, patch: object) =>
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) }));
     const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;
@@ -467,7 +468,7 @@ describe('SignoffService', () => {
       const wf = store.workflowFor(job)();
       expect(activeStageId(wf.stages)).toBe('root-layer');
       expect(stage(job, 'root-layer').inputs['actualPhMin']).toBeUndefined();
-      expect(stage(job, 'root-layer').repeats).toBe(1);
+      expect(stage(job, 'root-layer').repeats ?? 0).toBe(0);
       expect(stage(job, 'layer-ndt-vt5x').signed).toBeFalse();
       expect(signoffEntries(wf, 'root-layer').at(-1)?.action).toBe('Interim Layer - Signed off');
     });
@@ -512,7 +513,7 @@ describe('SignoffService', () => {
       const wf = store.workflowFor(job)();
       expect(stage(job, 'fit').signed).toBeFalse();
       expect(stage(job, 'fit').inputs['affectedItems']).toBeUndefined();
-      expect(stage(job, 'fit').signoffType).toBe('weld-buildup');
+      expect(stage(job, 'fit').signoffType).toBe('fit');
       expect(activeStageId(wf.stages)).toBe('fit');
       expect(wf.stages.filter(s => s.id === 'fit').length).toBe(1);
       expect(signoffEntries(wf, 'fit').at(-1)?.action).toBe('Weld Build-Up - Signed off');
@@ -523,8 +524,35 @@ describe('SignoffService', () => {
       expect(activeStageId(store.workflowFor(job)().stages)).toBe('tack');
     });
 
-    it('a Type that is not repeatable completes the step', () => {
-      setRoutingSignoffTypes(getRoutingSignoffTypes().map(({ repeatable: _, ...t }) => t));
+    it('Deprogress undoes a self return and restores its count while Fit stays fresh', () => {
+      const job = weldingJob();
+      service.signStage(job, 'pre-fit');
+      setStage(job, 'fit', { ...typeValues('weld-buildup') });
+      store.update(job, wf => ({ ...wf, fabricationData: { ...wf.fabricationData, specificLocation: 'Bay 3' } }));
+      service.signStage(job, 'fit');
+      expect(stage(job, 'fit').repeats).toBe(1);
+      expect(store.workflowFor(job)().history.some(h => h.section === 'Routing' && h.to === 'Fit')).toBeTrue();
+      TestBed.inject(RoutingService).deprogress(job, 'wrong signoff');
+      expect(stage(job, 'fit').repeats ?? 0).toBe(0);
+      expect(stage(job, 'fit').signed).toBeFalse();
+      expect(store.workflowFor(job)().fabricationData['specificLocation']).toBe('');
+    });
+
+    it('the preview names the matching Then go to rule and saves nothing', () => {
+      const job = weldingJob();
+      service.signStage(job, 'pre-fit');
+      setStage(job, 'fit', { ...typeValues('weld-buildup') });
+      const wf = store.workflowFor(job)();
+      const before = JSON.stringify(wf);
+      const preview = service.previewSignoff(wf, job, 'fit');
+      expect(preview.target?.id).toBe('fit');
+      expect(preview.reasons.join(' ')).toContain('Then go to rule');
+      expect(preview.reasons.join(' ')).toContain('Weld Build-Up');
+      expect(JSON.stringify(store.workflowFor(job)())).toBe(before);
+    });
+
+    it('removing the self-return rule completes the routing', () => {
+      updateStageTemplate('Welding', 'fit', { thenRules: [] });
       const job = weldingJob();
       setStage(job, 'fit', { ...typeValues('weld-buildup') });
       service.signStage(job, 'fit');

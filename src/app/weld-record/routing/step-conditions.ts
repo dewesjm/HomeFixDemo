@@ -97,7 +97,7 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
   { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
   { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
   { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },
-  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtEach) },
+  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: ['', ...NDT_REQUIREMENT_VALUES], valueLabel: v => v || 'Blank', get: j => upper(j.ndtEach) },
   { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
   { key: 'rtFinal', label: NDT_LABELS.rtFinal, values: RT_DEGREES, get: j => j.rtFinal },
   ...JOINT_DETAILS_TEXT,
@@ -206,7 +206,7 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'root-ndt-mtpt': mtptRule('ndtRoot'),
   'root-ndt-utrt': utrtRule('ndtRoot', 'rtRoot'),
   /* Layer NDT comes up only when NDT Each is set */
-  'layer-ndt-vt5x': [[{ field: 'ndtEach', op: 'is', values: NDT_REQUIREMENT_VALUES }]],
+  'layer-ndt-vt5x': [[{ field: 'ndtEach', op: 'is', values: ['VT', '5X'] }]],
   'layer-ndt-mtpt': mtptRule('ndtEach'),
   'layer-ndt-utrt': utrtRule('ndtEach'),
   'final-ndt-mtpt': mtptRule('ndtFinal'),
@@ -262,6 +262,25 @@ export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
   ...BUILT_IN_REJECT_RULES,
   ...Object.fromEntries(Object.entries(BUILT_IN_REJECT_RULES).map(([id, rules]) => [nqcStepId(id), rules])),
 };
+
+/* Starting accepted-signoff rules, editable in Routing Settings. */
+export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
+  fit: [{ when: [{ field: 'self.inspectionType', op: 'is', values: ['weld-buildup'] }], to: 'fit' }],
+  'root-layer': [{ when: [
+    { field: 'self.inspectionType', op: 'is', values: ['interim'] },
+    { field: 'ndtEach', op: 'is', values: [''] },
+  ], to: 'root-layer' }],
+  ...Object.fromEntries(['vt5x', 'mtpt', 'utrt'].flatMap(kind => {
+    const id = `layer-ndt-${kind}`;
+    const rules: RejectRule[] = [{ when: [{ field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] }], to: 'root-layer' }];
+    return [[id, rules], [nqcStepId(id), rules]];
+  })),
+};
+
+/* The first accepted-signoff rule whose conditions match. */
+export function matchingThenRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers): RejectRule | undefined {
+  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self)));
+}
 
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */
 function selfValue(self: StageAnswers | undefined, key: string): string {

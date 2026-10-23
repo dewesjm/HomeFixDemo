@@ -1,9 +1,5 @@
 <h2 class="section-title">Signoff Types</h2>
-<p class="text-sm mb-sm">Every Type a routing can be signed as. Add a Type here first, then offer it on routings in Signoff Types By
-  Routing and give it its fields in Signoff Type Forms.</p>
-<p class="text-sm mb-sm">Repeatable: signing records the signoff and comes back to the same routing for the next one.
-  Signs routing: picked on an earlier routing, the Type signs this routing instead (Layer signed as Final Weld signs Final Weld).
-  Blank means it signs the routing it is picked on.</p>
+<p class="text-sm mb-sm">Manage signoff Types and which routing each Type signs; offer them in Signoff Types By Routing.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search types…" addLabel="Add type"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -13,7 +9,6 @@
     <thead>
       <tr>
         <th appSortHeader [table]="table" field="label" label="Type" class="min-w-44"></th>
-        <th>Repeatable</th>
         <th>Signs routing</th>
         <th class="min-w-11"></th>
       </tr>
@@ -28,14 +23,6 @@
                      [ngModel]="row.label" (ngModelChange)="row.label = $event" />
             } @else {
               {{ row.label }}
-            }
-          </td>
-          <td>
-            @if (editing) {
-              <input type="checkbox" class="checkbox checkbox-sm" aria-label="Repeatable"
-                     [checked]="!!row.repeatable" (change)="setRepeatable(row, $any($event.target).checked)" />
-            } @else {
-              {{ row.repeatable ? 'Yes' : '' }}
             }
           </td>
           <td>
@@ -70,7 +57,7 @@
           </td>
         </tr>
       } @empty {
-        <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No types yet.' }}</td></tr>
+        <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No types yet.' }}</td></tr>
       }
     </tbody>
   </table>

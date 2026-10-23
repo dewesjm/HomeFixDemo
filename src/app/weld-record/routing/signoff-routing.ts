@@ -1,12 +1,8 @@
-/* Where a signoff sends the joint: the step is signed (or stays current for a repeatable Type or an
-   UNSAT that rejects to the step itself), then
-   signed-answer steps turn on or off, UNSAT routes back, adds a Repair or goes to Engineering Hold,
-   Repair and Excavation NDT route by what they recorded, a repeatable step's NDT returns to it, and an
-   accepted deviation adds Engineering Hold. No saving and no History: SignoffService does both. */
+/* Signoff routing decisions; SignoffService owns saving and History. */
 import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { setRoutingFrom } from './current-routing';
-import { applySignedFlags, routeBack, blankStage } from './route-changes';
+import { applySignedFlags, routeBack, moveRouting } from './route-changes';
 import { ndtKindOptions } from './ndt';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from './added-steps';
@@ -21,9 +17,8 @@ import {
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { getTemplates } from './stage-templates';
 import { CUT_RESTARTS_AT, unsatAddsRepair } from './built-in-step-rules';
-import { typeRepeatable } from '../signoff-definition/signoff-types';
-import { repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep } from './type-routing';
-import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
+import { signedAsStep, signAsStep } from './type-routing';
+import { describeConditions, matchingRejectRule, matchingThenRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 
 /* Excavation NDT "requires the same inspection that was noted as reject" -- same method as
@@ -37,9 +32,6 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
   return needs5xInstead ? '5x' : originInspectionType;
 }
 
-/* a repeatable Type (Admin > Signoff Types By Routing, e.g. Interim Layer, Weld Build-Up): the signoff
-   is recorded, but the step stays unsigned and the routing stays where it is */
-const repeatable = (s: WorkflowStage) => typeRepeatable(s.id, s.signoffType);
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
 /* Where an UNSAT goes: the first Admin > Routing Settings reject rule matching this step's answers /
@@ -74,8 +66,6 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   let repairNumber = '';
   const reasons: string[] = [];
   const signing = wf.stages.find(s => s.id === stageId)!;
-  /* a repeatable Type with NDT after the step completes it so the NDT comes up (type-routing.ts) */
-  const throughNdt = repeatable(signing) && repeatsThroughNdt(wf.stages, stageId);
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
   const now = new Date().toISOString();
@@ -83,27 +73,20 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
      the step isn't signed, so the joint stays there */
   const rejectsToItself = !asStepId && signing.result === 'unsat'
     && stepOnJoint(wf.stages, rejectTarget(wf.stages, job, signing, stageId).to)?.id === stageId;
-  const staysPut = (s: WorkflowStage) => repeatable(s) || rejectsToItself;
   /* stages with no SAT/UNSAT choice are accepted by signing */
-  let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now) : wf.stages.map(s => {
+  let stages: WorkflowStage[] = asStepId ? signAsStep(wf.stages, stageId, asStepId, now, wf.history.some(h => h.stageId === stageId && h.section === 'Sign-off')) : wf.stages.map(s => {
     if (s.id !== stageId) return s;
-    const repeats = repeatable(s) ? { repeats: (s.repeats ?? 0) + 1 } : {};
-    /* a repeatable signoff comes up blank with its Type still picked */
-    if (repeatable(s) && !throughNdt) return { ...blankStage(s), signoffType: s.signoffType, inspectionType: s.inspectionType, ...repeats };
     return {
       ...s,
-      ...repeats,
       result: hasDecision(s) ? s.result : (s.result ?? 'sat'),
-      signed: !staysPut(s) || throughNdt,
-      signedAt: staysPut(s) && !throughNdt ? null : now,
+      signed: !rejectsToItself,
+      signedAt: rejectsToItself ? null : now,
     };
   });
   /* the History entry and the stage this signoff is recorded on */
   const recordedId = asStepId || stageId;
   const st = stages.find(s => s.id === recordedId)!;
   if (asStepId) reasons.push(`${typeLabel(signing)} is ${st.label}'s signoff, so ${st.label} is signed`);
-  else if (throughNdt) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label}'s NDT comes up and then the joint comes back to ${st.label}`);
-  else if (repeatable(st)) reasons.push(`${typeLabel(st)} is repeatable, so ${st.label} stays the current routing until it is signed with another Type`);
   if (rejectsToItself) reasons.push(`rejected (UNSAT), and ${st.label}'s reject goes to itself, so the joint stays on ${st.label}`);
 
   /* go back (never un-sign): the current routing is set back to the target and every stage from
@@ -234,14 +217,25 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
   }
 
-  /* everything inspecting a repeatable signoff (Interim Layer's NDT) is signed: the joint comes back
-     to that step for the next one, which starts blank */
-  const returnTo = repeatReturnStep(stages, stageId);
-  if (returnTo) {
-    const step = stages.find(s => s.id === returnTo)!;
-    stages = routeBack({ ...wf, stages, fabricationData }, job, returnTo).wf.stages
-      .map(s => s.id === returnTo ? { ...s, repeats: step.repeats } : s);
-    reasons.push(`${step.label} was signed as ${typeLabel(step)}, so the joint goes back to ${step.label} for the next one`);
+  /* Accepted signoffs use the first matching Then go to rule. */
+  if (st.result !== 'unsat') {
+    const rule = matchingThenRule(getTemplates()[job.trade]?.find(t => t.id === stageId)?.thenRules, job, stages, signing);
+    const target = rule && stepOnJoint(stages, rule.to);
+    if (rule && target) {
+      const from = stages.findIndex(s => s.id === stageId);
+      const to = stages.findIndex(s => s.id === target.id);
+      const count = signing.repeats ?? 0;
+      if (to <= from) {
+        routeBackTo(target.id);
+        stages = stages.map(s => s.id === target.id
+          ? { ...s, repeats: to === from ? count + 1 : (target.repeats ?? 0) } : s);
+      } else {
+        const moved = moveRouting({ ...wf, stages, fabricationData }, job, target.id);
+        stages = moved.wf.stages;
+        fabricationData = moved.wf.fabricationData;
+      }
+      reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${target.label}`);
+    }
   }
 
   /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */

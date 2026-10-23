@@ -1,9 +1,9 @@
 # Routing rules plan
 
-Planned, not built. ROUTING.md describes how routing works today; this is the change agreed for it.
+Part 1 is built. Part 2 remains planned, pending review. ROUTING.md describes current behavior.
 Both parts are decided. Part 1 is built first; Part 2 builds on it.
 
-## Part 1: "Then go to" rules replace Repeatable
+## Part 1: "Then go to" rules replace Repeatable (built)
 
 ### How it works
 
@@ -31,7 +31,7 @@ Both parts are decided. Part 1 is built first; Part 2 builds on it.
 | Each Layer NDT routing | Layer's Type is Interim Layer | Layer |
 
 - When NDT Each Layer has a value, Layer's own rule doesn't match, so the Layer NDT routing comes up next
-  and its rule brings the joint back to Layer. Only one Layer NDT routing is on any joint.
+  and its rule brings the joint back to Layer. Only one Layer NDT routing is on any joint: NDT Each Layer selects its method(s), with no extra VT for MT, PT, MT/PT or UT. Root and Final NDT keep their existing requirements.
 - A Repair after a Layer NDT reject returns to that NDT; when the NDT passes, its rule fires.
 - Final Weld on Layer matches no rule, so the joint goes on in order. Signs step still makes it
   Final Weld's signoff.

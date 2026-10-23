@@ -47,7 +47,7 @@ describe('Signoff Types By Routing', () => {
 
   it('options carry their Signoff Types name and settings; a deleted Type drops out', () => {
     expect(signoffTypeOptions('root-layer')).toEqual([
-      { label: 'Interim Layer', value: 'interim', default: true, repeatable: true },
+      { label: 'Interim Layer', value: 'interim', default: true },
       { label: 'Final Weld', value: 'final-weld', signsStep: 'final-weld' },
     ]);
     setRoutingSignoffTypes(getRoutingSignoffTypes().map(t => t.value === 'interim' ? { ...t, label: 'Layer Pass' } : t).filter(t => t.value !== 'final-weld'));

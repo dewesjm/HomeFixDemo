@@ -7,9 +7,6 @@ export interface RoutingSignoffType {
   label: string;
   /* the stored value: what a step's signoffType holds and what its definition is keyed by */
   value: string;
-  /* signing with this Type records the signoff, leaves the routing where it is and blanks the step
-     for the next signoff. Unset = signing completes the step. */
-  repeatable?: boolean;
   /* the routing step this Type signs when it's picked on an earlier step (Layer signed as Final Weld
      signs Final Weld, type-routing.ts); unset = the step it's picked on */
   signsStep?: string;
@@ -23,7 +20,7 @@ const type = (label: string, value: string, more: Partial<RoutingSignoffType> = 
 const SEED_TYPES: RoutingSignoffType[] = [
   type('Pre-Fit', 'pre-fit'),
   type('Fit', 'fit'),
-  type('Weld Build-Up', WELD_BUILDUP_TYPE, { repeatable: true }),
+  type('Weld Build-Up', WELD_BUILDUP_TYPE),
   type('Tack', 'tack'),
   type('Deferred Tack', 'deferred-tack'),
   type('Fit-Up Insp', 'fitup-insp'),
@@ -35,7 +32,7 @@ const SEED_TYPES: RoutingSignoffType[] = [
   type('PT', 'pt'),
   type('UT', 'ut'),
   type('RT', 'rt'),
-  type('Interim Layer', 'interim', { repeatable: true }),
+  type('Interim Layer', 'interim'),
   type('Final Weld', 'final-weld', { signsStep: 'final-weld' }),
   type('Repair', 'repair'),
   type('O63 Records Review', 'review-o63'),
