@@ -8,9 +8,10 @@ import { LucideArrowLeft } from '@lucide/angular';
 import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
 import {
-  addProcedure, updateProcedure, getProcedure, parseProcedureCsvImport, parseProcedureXlsxImport,
-  downloadProcedureXlsxTemplate, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus
+  addProcedure, updateProcedure, getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus
 } from '../../../data/procedures';
+import { parseCsvRows, parseXlsxRows } from '../../../shared/spreadsheet-import';
+import { downloadProcedureXlsxTemplate } from '../../procedure-files';
 
 type EditableRow = {
   _existing: boolean;
@@ -55,8 +56,8 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
     return file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
-      ? parseProcedureXlsxImport(file)
-      : file.text().then(parseProcedureCsvImport);
+      ? parseXlsxRows(file)
+      : file.text().then(parseCsvRows);
   }
 
   protected fromRaw(raw: Record<string, string>): EditableRow {

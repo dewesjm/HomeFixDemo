@@ -9,7 +9,7 @@ import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
 import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS } from '../../../data/jobs';
-import { parseCsvImport, parseXlsxImport } from '../../../data/weld-planning';
+import { parseCsvRows, parseXlsxRows } from '../../../shared/spreadsheet-import';
 import { downloadCsv } from '../../../shared/export-csv';
 
 type ImportRow = ShipLocationEntry & { _errors: string[]; _saved: boolean };
@@ -29,7 +29,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   psclOptions = PSCL_OPTIONS;
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
-    return file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? parseXlsxImport(file) : file.text().then(parseCsvImport);
+    return file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? parseXlsxRows(file) : file.text().then(parseCsvRows);
   }
 
   protected fromRaw(raw: Record<string, string>): ImportRow {

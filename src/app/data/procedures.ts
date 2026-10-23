@@ -8,10 +8,9 @@
    data/joint-form/stage-form.ts) -- see ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
-import { CsvColumn } from '../shared/export-csv';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { extraValueText, type ExtraFields, type ProcedureSection } from '../weld-engineering/procedure-sections';
+import { type ExtraFields } from '../weld-engineering/procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -457,103 +456,4 @@ export function fillerMetalSizeOptionsForProcedure(p: Procedure | undefined): { 
 /* every distinct WTN across all GWPs -- for demo data (assignments.ts) that just needs a plausible WTN */
 export function allWtns(): string[] {
   return Array.from(new Set(procedures().map(p => p.wtn)));
-}
-
-/* ── CSV Export columns (Admin > Manage Procedures) ── */
-const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
-  { header: 'WPS', value: r => r.id },
-  { header: 'WPS Rev', value: r => r.wpsRev },
-  { header: 'Effective Date', value: r => r.effectiveDate },
-  { header: 'GWP', value: r => r.gwp },
-  { header: 'Title', value: r => r.title },
-  { header: 'Status', value: r => r.status },
-  { header: 'WTN', value: r => r.wtn },
-  { header: 'Weld Process', value: r => r.weldProcess },
-  { header: 'Process Type', value: r => r.processType },
-  { header: 'Application', value: r => r.application },
-  { header: 'Base Metal 1 Type', value: r => r.baseMetal1Type },
-  { header: 'Base Metal 2 Type', value: r => r.baseMetal2Type },
-  { header: 'Base Metal Thickness Min', value: r => r.baseMetalThicknessMin },
-  { header: 'Base Metal Thickness Max', value: r => r.baseMetalThicknessMax },
-  { header: 'Joint Type', value: r => r.jointType },
-  { header: 'Groove Angle', value: r => r.grooveAngle },
-  { header: 'Root Opening', value: r => r.rootOpening },
-  { header: 'Backing', value: r => r.backing },
-  { header: 'Weld Position', value: r => r.weldPosition },
-  { header: 'Weld Progression', value: r => r.weldProgression },
-  { header: 'Filler Metal Types', value: r => r.fillerMetalTypes.join('; ') },
-  { header: 'Filler Metal Classification', value: r => r.fillerMetalClassification },
-  { header: 'Filler Metal Sizes', value: r => r.fillerMetalSizes.join('; ') },
-  { header: 'PH Min', value: r => r.phMin },
-  { header: 'PH Max', value: r => r.phMax },
-  { header: 'IP Min', value: r => r.ipMin },
-  { header: 'IP Max', value: r => r.ipMax },
-  { header: 'Current Type', value: r => r.currentType },
-  { header: 'Power Source', value: r => r.powerSource },
-  { header: 'Shielding Gas', value: r => r.shieldingGas },
-  { header: 'Gas Flow Rate', value: r => r.gasFlowRate },
-  { header: 'Backing Gas', value: r => r.backingGas },
-  { header: 'Heat Input Min', value: r => r.heatInputMin },
-  { header: 'Heat Input Max', value: r => r.heatInputMax },
-  { header: 'Amperage Range', value: r => r.amperageRange },
-  { header: 'Voltage Range', value: r => r.voltageRange },
-  { header: 'Travel Speed Range', value: r => r.travelSpeedRange },
-  { header: 'PWHT Temp', value: r => r.pwhtTemp },
-  { header: 'PWHT Time', value: r => r.pwhtTime },
-  { header: 'Rules', value: r => r.rules.join('; ') },
-  { header: 'Conditions', value: r => r.conditions.join('; ') },
-  { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
-];
-
-/* the columns above, then one per added-section field */
-export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Procedure>[] {
-  return [
-    ...PROCEDURE_CSV_COLUMNS,
-    ...sections.flatMap(s => s.fields.map(f => ({
-      header: `${s.name}: ${f.label}`, value: (r: Procedure) => extraValueText(r.extraFields[f.key]),
-    }))),
-  ];
-}
-
-/* ── CSV/XLSX Import (Admin > Load Procedures) ── */
-export function parseProcedureCsvImport(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
-  return lines.slice(1).map(line => {
-    const cells = line.split(',').map(c => c.trim().replace(/['"]/g, ''));
-    const row: Record<string, string> = {};
-    headers.forEach((h, i) => { if (cells[i]) row[h] = cells[i]; });
-    return row;
-  });
-}
-
-export async function parseProcedureXlsxImport(file: File): Promise<Record<string, string>[]> {
-  const XLSX = await import('xlsx');
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data, { type: 'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  return XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
-}
-
-export async function downloadProcedureXlsxTemplate(): Promise<void> {
-  const XLSX = await import('xlsx');
-  const headers = [
-    'id', 'title', 'status', 'wtn', 'weldProcess', 'gwp', 'wpsRev', 'effectiveDate', 'processType', 'application',
-    'baseMetal1Type', 'baseMetal2Type', 'baseMetalThicknessMin', 'baseMetalThicknessMax',
-    'jointType', 'grooveAngle', 'rootOpening', 'backing',
-    'weldPosition', 'weldProgression',
-    'fillerMetalTypes', 'fillerMetalClassification', 'fillerMetalSizes',
-    'phMin', 'phMax', 'ipMin', 'ipMax',
-    'currentType', 'powerSource',
-    'shieldingGas', 'gasFlowRate', 'backingGas',
-    'heatInputMin', 'heatInputMax',
-    'amperageRange', 'voltageRange', 'travelSpeedRange',
-    'pwhtTemp', 'pwhtTime',
-    'rules', 'conditions'
-  ];
-  const ws = XLSX.utils.aoa_to_sheet([headers]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Import Template');
-  XLSX.writeFile(wb, 'procedures-import-template.xlsx');
 }

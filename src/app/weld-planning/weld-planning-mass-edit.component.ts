@@ -6,10 +6,12 @@ import { LucideArrowLeft } from '@lucide/angular';
 import { BulkImport } from '../shared/bulk-import';
 import { ImportGridComponent } from '../shared/import-grid.component';
 import {
-  addWeldJoint, updateWeldJoint, weldJoints, parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
+  addWeldJoint, updateWeldJoint, weldJoints,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, JOINT_EXTRA_FIELDS, blankJointExtras, shipForHull,
   type WeldJoint, type JointExtraKey, type JointStatus, type JointType
 } from '../data/weld-planning';
+import { parseCsvRows, parseXlsxRows } from '../shared/spreadsheet-import';
+import { downloadWeldJointXlsxTemplate } from './weld-joint-files';
 
 type EditableRow = {
   _id: string;
@@ -178,8 +180,8 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
     return file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
-      ? parseXlsxImport(file)
-      : file.text().then(parseCsvImport);
+      ? parseXlsxRows(file)
+      : file.text().then(parseCsvRows);
   }
 
   protected fromRaw(raw: Record<string, string>): EditableRow {
@@ -245,7 +247,7 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
   }
 
   async downloadTemplate() {
-    await downloadXlsxTemplate();
+    await downloadWeldJointXlsxTemplate();
     this.toast.add({ severity: 'info', summary: 'Downloaded', detail: 'Template file saved' });
   }
 

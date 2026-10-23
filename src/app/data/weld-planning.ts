@@ -11,7 +11,6 @@ import {
 import { CHARACTERISTIC_CODES } from './characteristics';
 import { RT_DEGREE_OPTIONS } from '../weld-record/routing/ndt';
 import { signal } from '@angular/core';
-import { CsvColumn } from '../shared/export-csv';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';
 
@@ -332,64 +331,4 @@ function loadAdminDesigns(): AdminJointDesign[] {
 export function persistAdminJointDesigns(designs: AdminJointDesign[]) {
   adminJointDesigns.set(designs);
   try { localStorage.setItem(ADMIN_DESIGNS_KEY, JSON.stringify(designs)); } catch { /* */ }
-}
-
-/* ── CSV Export columns ── */
-export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
-  { header: 'XREFID', value: r => r.id },
-  { header: 'Hull', value: r => r.hull },
-  { header: 'Joint', value: r => r.joint },
-  { header: 'Type', value: r => r.jointType },
-  { header: 'Status', value: r => r.status },
-  { header: 'Priority', value: r => r.priority },
-  { header: 'Drawing', value: r => r.drawing },
-  { header: 'Drawing Rev', value: r => r.drawingRev },
-  { header: 'Joint Design', value: r => r.jointDesign },
-  { header: 'Weld Type', value: r => r.weldType },
-  { header: 'Pipe Size', value: r => r.pipeSize },
-  { header: 'Wall Thickness', value: r => r.wallThickness },
-  { header: 'Material 1', value: r => r.materialType1 },
-  { header: 'Material 2', value: r => r.materialType2 },
-  ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
-  ...JOINT_EXTRA_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
-  { header: 'Notes', value: r => r.notes },
-];
-
-/* ── CSV Import: parse CSV text into row objects ── */
-export function parseCsvImport(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/['"]/g, ''));
-  return lines.slice(1).map(line => {
-    const cells = line.split(',').map(c => c.trim().replace(/['"]/g, ''));
-    const row: Record<string, string> = {};
-    headers.forEach((h, i) => { if (cells[i]) row[h] = cells[i]; });
-    return row;
-  });
-}
-
-/* ── XLSX Import ── */
-export async function parseXlsxImport(file: File): Promise<Record<string, string>[]> {
-  const XLSX = await import('xlsx');
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data, { type: 'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  return XLSX.utils.sheet_to_json<Record<string, string>>(sheet, { defval: '' });
-}
-
-/* ── XLSX Template Download ── */
-export async function downloadXlsxTemplate(): Promise<void> {
-  const XLSX = await import('xlsx');
-  const headers = [
-    'hull', 'joint', 'description',
-    'status', 'priority', 'jointType', 'drawing', 'drawingRev',
-    'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
-    'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),
-    ...JOINT_EXTRA_FIELDS.filter(f => !f.readonly).map(f => f.key),
-    'notes'
-  ];
-  const ws = XLSX.utils.aoa_to_sheet([headers]);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Import Template');
-  XLSX.writeFile(wb, 'weld-planning-import-template.xlsx');
 }

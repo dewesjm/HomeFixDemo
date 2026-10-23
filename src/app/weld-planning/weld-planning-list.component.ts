@@ -12,9 +12,9 @@ import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
 import {
   weldJoints, deleteWeldJoint,
-  JOINT_STATUS_OPTIONS,
-  WELD_JOINT_CSV_COLUMNS, type WeldJoint
+  JOINT_STATUS_OPTIONS, type WeldJoint
 } from '../data/weld-planning';
+import { WELD_JOINT_CSV_COLUMNS } from './weld-joint-files';
 import { BannerPillComponent } from '../shared/banner-pill.component';
 
 type Row = WeldJoint;

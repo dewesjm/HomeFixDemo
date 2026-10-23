@@ -11,8 +11,9 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { ToastService } from '../../../shared/toast.service';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
-  procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, procedureCsvColumns, type Procedure
+  procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, type Procedure
 } from '../../../data/procedures';
+import { procedureCsvColumns } from '../../procedure-files';
 import { procedureSections } from '../../procedure-sections';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 
