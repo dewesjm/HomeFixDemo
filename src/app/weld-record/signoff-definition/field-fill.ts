@@ -1,3 +1,4 @@
+import { formInputFields } from './form-fields';
 /* Fields prepopulated from another value (a field's "Prepopulated from" rule, Admin > Signoff Type
    Forms): Weld Process and PH/IP from the WTN, an actual set to NC by its requirement, Root's
    filler from Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked.
@@ -13,7 +14,7 @@ import { wtnFillValue } from '../../data/procedures';
 
 /* the field's fill rule when it holds right now on this step */
 export function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {
-  if (!stage.fields.some(f => f.key === key)) return undefined;
+  if (!formInputFields(stage).some(f => f.key === key)) return undefined;
   const fill = effectiveFill(fieldActivation(stage, key));
   return fill && evaluateCondition(fill.when, stepOnlyContext(stage)) ? fill : undefined;
 }
@@ -24,7 +25,7 @@ export function isFilledByRule(stage: WorkflowStage, key: string): boolean {
 }
 
 function filledKeys(stage: WorkflowStage): string[] {
-  return stage.fields.map(f => f.key).filter(k => isFilledByRule(stage, k));
+  return formInputFields(stage).map(f => f.key).filter(k => isFilledByRule(stage, k));
 }
 
 /* the value a fill brings in; undefined leaves the field alone (a step or field with nothing

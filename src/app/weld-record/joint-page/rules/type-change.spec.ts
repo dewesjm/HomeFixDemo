@@ -1,3 +1,4 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
 import { typeChange } from './type-change';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/added-steps';
 
@@ -14,7 +15,7 @@ describe('Repair round Type changes', () => {
     const change = typeChange('Welding', excavation, '5x');
     expect(change.inputs).toEqual({ typeChangedFromPtTo5x: 'yes' });
     expect(change.signoffType).toBe('5x');
-    expect(change.fields?.map(f => f.key)).toContain('procedureUsed');
-    expect(change.fields?.map(f => f.key)).not.toContain('typeChangedFromPtTo5x');
+    expect(formInputFields({ ...excavation, ...change }).map(f => f.key)).toContain('procedureUsed');
+    expect(formInputFields({ ...excavation, ...change }).map(f => f.key)).not.toContain('typeChangedFromPtTo5x');
   });
 });

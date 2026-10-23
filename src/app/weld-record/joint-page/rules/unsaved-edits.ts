@@ -11,7 +11,7 @@ export interface LoadedJoint {
 export function captureLoaded(wf: JobWorkflow): LoadedJoint {
   const stages: Record<string, WorkflowStage> = {};
   for (const s of wf.stages) {
-    stages[s.id] = { ...s, inputs: { ...s.inputs }, signoffInputs: { ...s.signoffInputs }, fields: [...s.fields], signoffFields: [...s.signoffFields] };
+    stages[s.id] = { ...s, inputs: { ...s.inputs }, signoffInputs: { ...s.signoffInputs } };
   }
   return { fabricationData: { ...wf.fabricationData }, stages };
 }

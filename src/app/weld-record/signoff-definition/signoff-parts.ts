@@ -1,10 +1,10 @@
+import { FormField } from './field-catalog';
 /* What a step's sign-off form draws besides its ordinary fields, and whether it has a Comments box.
    The form (definition-form) places Type, Comments and References where the Layout list says. */
-import { SignoffField, WorkflowStage } from '../model/workflow-types';
+import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
-import { noCommentsBox } from '../routing/built-in-step-rules';
-import { COMMENTS_KEY, StepRef, definitionHas, hasStepActivation } from './step-field-config';
+import { COMMENTS_KEY, StepRef, definitionHas } from './step-field-config';
 import { lookupCatalogField } from './field-catalog';
 
 /* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the
@@ -21,16 +21,14 @@ export function drawnByOwnForm(step: StepRef, key: string): boolean {
 }
 
 /* The panel draws it, History and Correct add it (withComments). Saved in the step's signoffInputs. */
-export const COMMENTS_FIELD: SignoffField = { key: COMMENTS_KEY, label: 'Comments', type: 'text', required: false, fullWidth: true };
+export const COMMENTS_FIELD: FormField = { ...lookupCatalogField(COMMENTS_KEY)!, required: false };
 
-/* a step whose Signoff Type Form lists Comments; a step with no definition (added in Admin >
-   Routing Settings) has one unless noCommentsBox() says otherwise */
+/* Comments appear only when the selected Type form lists them. */
 export function hasCommentsBox(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
-  if (hasStepActivation(stage)) return definitionHas(stage, COMMENTS_KEY);
-  return !noCommentsBox(stage.id);
+  return definitionHas(stage, COMMENTS_KEY);
 }
 
 /* a step's sign-off fields plus its Comments box */
-export function withComments(stage: Pick<WorkflowStage, 'id' | 'signoffType'>, fields: SignoffField[]): SignoffField[] {
+export function withComments(stage: Pick<WorkflowStage, 'id' | 'signoffType'>, fields: FormField[]): FormField[] {
   return hasCommentsBox(stage) && !fields.some(f => f.key === COMMENTS_FIELD.key) ? [...fields, COMMENTS_FIELD] : fields;
 }

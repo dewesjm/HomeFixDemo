@@ -6,7 +6,7 @@
    hard-coded here or become a setting is to be decided once the list is in. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isEngineeringHoldId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
+import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
 
 /* ── Fit: owns the joint's Fabrication values ── */
 
@@ -78,9 +78,3 @@ export const closesJoint = (stageId: string) => stageId === 'sold';
 
 /* its role follows whichever Records Review the joint got */
 export const closingRole = (hasO63Review: boolean) => hasO63Review ? 'O63 Records' : 'O04 Records';
-
-/* ── Engineering Hold ── */
-
-/* no Comments box: Engineering Hold's release form has its own required Comments,
-   and nobody signs Sold */
-export const noCommentsBox = (stageId: string) => isEngineeringHoldId(stageId) || closesJoint(stageId);

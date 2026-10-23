@@ -1,9 +1,10 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* The sign-off form's red field messages on the joint page: set when a field loses focus, a droplist
    changes or Signoff is pressed, and cleared the moment the field is fixed. What counts as an error
    is rules/sign-validation.ts. Provided by JointPageComponent, so the messages last as long as the page. */
 import { Injectable, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, WorkflowStage } from '../model/workflow-types';
+import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
 import { errorsAfterBlur, errorsAfterSelect } from './rules/sign-validation';
 
@@ -52,7 +53,7 @@ export class SignoffFormErrorsService {
 
   /* a field lost focus: checks required + Actual Min/Max order on the live stage, since the stage a
      handler holds may be stale */
-  afterBlur(stage: WorkflowStage, field: StageField) {
+  afterBlur(stage: WorkflowStage, field: FormField) {
     this.errors.set(errorsAfterBlur(this.errors(), this.liveStage(stage.id), stage.id, field));
   }
 

@@ -4,7 +4,6 @@ import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { isAddedTemplateId, getTemplates } from './stage-templates';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
-import { WELD_OVERRIDE_FIELDS } from '../signoff-definition/weld-fields';
 import { NdtPhase, jobNdtSteps } from './ndt';
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { baseStepId } from './step-ids';
@@ -24,25 +23,17 @@ export function buildStages(job: Job): WorkflowStage[] {
       : typeof t.required === 'function' ? t.required(job) : t.required;
     const inputs: Record<string, string> = startsReleasedToWelding(t.id) ? { releaseToWelding: 'yes' } : {};
     const role = closesJoint(t.id) ? closingRole(hasO63Data) : (t.role ?? '');
-    let fields = [...t.fields];
-    /* steps that record a WTN get the override fields (shown for matching WTNs) */
-    if (fields.some(f => f.key === 'wtn')) {
-      fields = [...fields, ...WELD_OVERRIDE_FIELDS.map(f => ({ ...f }))];
-    }
     return {
       id: t.id,
       /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */
       label: t.displayName || t.label,
       required,
       role,
-      fields,
       inputs,
-      signoffFields: (t.signoffFields ?? []).map(f => ({ ...f })),
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',
       ...typeValues(initialInspectionType(t)),
-      swapStageId: '',
       decisionLabel: t.decisionLabel ?? '',
       typeOptions: t.typeOptions,
       signed: false,

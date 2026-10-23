@@ -1,7 +1,8 @@
+import { formInputFields, formSignoffFields } from '../../signoff-definition/form-fields';
 import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/added-steps';
-import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
 import {
   setStepFieldConfig,
   resetStepFieldConfig,
@@ -18,7 +19,7 @@ import { typeValues } from '../../signoff-definition/stage-rules';
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
-const field = (s: WorkflowStage, key: string) => s.fields.find(f => f.key === key)!;
+const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 
 describe('joint-form stage-form', () => {
   it('a typed PH/IP requirement on an engineering override must be a number or NC', () => {
@@ -32,14 +33,14 @@ describe('joint-form stage-form', () => {
   it('another Type carries its definition\'s fields (Affected Item is drawn by its form); switching back restores the step\'s own', () => {
     const fit = stageOf(job(), 'fit');
     const buildup = typeChange('Welding', fit, 'weld-buildup');
-    expect(buildup).toEqual(jasmine.objectContaining({ inspectionType: 'weld-buildup', signoffType: 'weld-buildup', signoffFields: [] }));
-    const keys = buildup.fields!.map(f => f.key);
+    expect(buildup).toEqual(jasmine.objectContaining({ inspectionType: 'weld-buildup', signoffType: 'weld-buildup' }));
+    const keys = formInputFields({ ...fit, ...buildup }).map(f => f.key);
     expect(keys).toContain('weldProcedure');
     expect(keys).toContain('fillerMetalMic');
     expect(keys).not.toContain('affectedItem');
     const back = typeChange('Welding', { ...fit, ...buildup }, 'fit');
-    expect(back.fields).toEqual([]);
-    expect(back.signoffFields!.map(f => f.key)).toContain('deferTack');
+    expect(formInputFields({ ...fit, ...back })).toEqual([]);
+    expect(formSignoffFields({ ...fit, ...back }).map(f => f.key)).toContain('deferTack');
   });
 
   it('picking a Type clears the form: Layer\'s Final Weld and an NDT Type both blank what was typed', () => {
@@ -50,7 +51,7 @@ describe('joint-form stage-form', () => {
     const v = ndt.typeOptions![0].value;
     const change = typeChange('Welding', { ...ndt, inputs: { procedureUsed: 'p' } }, v);
     expect(change).toEqual(jasmine.objectContaining({ inspectionType: v, signoffType: v, inputs: {} }));
-    expect(change.fields!.map(f => f.key)).toEqual(ndt.fields.map(f => f.key));
+    expect(formInputFields({ ...ndt, ...change }).map(f => f.key)).toContain('procedureUsed');
   });
 
   it('Fit as Weld Build-Up shows the fields its own Signoff Type Form lists', () => {
@@ -117,12 +118,12 @@ describe('joint-form stage-form', () => {
     expect(keys(job({ materialType1: '02-CS', materialType2: '60-TICP' }), 'vt')).toContain('weldColor');
     expect(keys(job({ materialType1: '02-CS', materialType2: '12-SS304' }), 'vt')).not.toContain('weldColor');
     expect(keys(job({ materialType1: '61-TI64', materialType2: '61-TI64' }), '5x')).not.toContain('weldColor');
-    expect(field(stageOf(job(), 'root-ndt-vt5x'), 'weldColor').required).toBeTrue();
+    expect(field(stageOf(job(), 'root-ndt-vt5x', typeValues('vt')), 'weldColor').required).toBeTrue();
   });
 
   it('Fit under Weld Build-Up shows Tack\'s fields even before its own fields are swapped', () => {
     const j = job();
-    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: [] });
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup' });
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('wtn');
   });
 
@@ -154,12 +155,13 @@ describe('joint-form stage-form', () => {
   });
 
   it('finds dependent fields left holding a value after their trigger changed', () => {
-    const tpl: StageTemplate = { id: 'x', label: 'X', required: true, signoffFields: [], fields: [
-      { key: 'kind', label: 'Kind', type: 'select' },
-      { key: 'detail', label: 'Detail', type: 'text', showIf: { key: 'kind', equals: 'a' } },
-    ] };
-    const stage = stageFromTemplate(tpl, { kind: 'b', detail: 'left over' });
-    expect(hiddenFieldsWithValues(stage).map(f => f.key)).toEqual(['detail']);
-    expect(hiddenFieldsWithValues({ ...stage, inputs: { kind: 'a', detail: 'shown' } })).toEqual([]);
+    const stage = stageOf(job(), 'tack', { inputs: { phMin: 'NC', actualPhMin: 'NC' } });
+    const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === 'tack')!;
+    setStepFieldConfig([{ ...def, fields: [...def.fields, { key: 'portionInspected' }] }]);
+    try {
+      const current = { ...stage, inputs: { partial: '', portionInspected: 'left over' } };
+      expect(hiddenFieldsWithValues(current).map(f => f.key)).toContain('portionInspected');
+      expect(hiddenFieldsWithValues({ ...current, inputs: { partial: 'yes', portionInspected: 'shown' } })).toEqual([]);
+    } finally { resetStepFieldConfig(); }
   });
 });

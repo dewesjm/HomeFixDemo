@@ -1,7 +1,7 @@
 # Field definitions plan
 
-Planned, not built. Do this after Part 1 of ROUTING-RULES-PLAN.md is committed and reviewed. Both
-touch the condition pickers in `weld-record/routing/step-conditions.ts`.
+Built and ready for review. This follows the two committed parts of ROUTING-RULES-PLAN.md.
+The sections below describe the implemented scope and the duplicate definitions removed.
 
 ## The problem
 
@@ -100,3 +100,15 @@ saved on joints.
 - ARCHITECTURE.md updated where it describes stage fields.
 - Unit tests: Defer Tack renders and validates as a checkbox; the condition pickers list a Type's
   form fields; nothing reads `fields` / `signoffFields` (they no longer exist).
+
+## Implementation handoff
+
+- The catalog owns field types, labels and options. A catalog-derived `FormField` carries evaluated runtime rules; the former StageField/SignoffField models and per-routing lists are removed.
+- `form-fields.ts` derives ordinary inputs and signoff-stored values from the selected Type form. Build, Type changes, undo and unsaved-edit snapshots carry no copied field definitions. The store strips old lists on load, including any undo snapshots, while preserving recorded values and History.
+- Routing, Reject, Then go to and qualification condition pickers union the offered Types' catalog fields. Their caches refresh when Type forms are edited.
+- Defer Tack renders as a checkbox and saves yes/blank. Required checkboxes must be checked; a nonempty text value cannot satisfy them. Signoff Type Forms shows field types read-only.
+- The temporarily disabled welding overrides retain catalog definitions, form activations and working rule code under their existing flag.
+- Workflow version is `2.10.51`, workflow and routing-template keys are v5, and Signoff Type Forms is v15.
+- Browser review belongs to the user. Do not push or deploy.
+
+- Validation: all 401 unit tests passed, including DOM rendering of Defer Tack, condition-picker refresh, and legacy saved/undo field removal. Production build and TypeScript unused-code checks passed.

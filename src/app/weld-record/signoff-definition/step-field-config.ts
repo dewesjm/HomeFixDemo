@@ -132,6 +132,7 @@ function weldFields(beforeFiller: FieldActivation[] = [], atEnd: FieldActivation
     heading('requirements', 'Requirements'), { key: 'phMin', width: 150 }, same('phMax', 150), same('ipMin', 150), same('ipMax', 150),
     heading('actuals', 'Actuals'), { key: 'actualPhMin', width: 150 }, same('actualPhMax', 150), same('actualIpMin', 150), same('actualIpMax', 150),
     box('position'), { key: 'weldPosition', width: 200 },
+    ...['overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax', 'overrideNote'].map(key => ({ key })),
     ...atEnd,
   ];
 }
@@ -203,6 +204,9 @@ const TYPE_ONLY: TypeDefinition = { typeId: '', fields: [{ ...TYPE, line: 1 }] }
 
 /* ── Storage ── */
 
+let version = 0;
+export const stepFieldConfigVersion = () => version;
+
 let _cache: TypeDefinition[] | null = null;
 
 export function getStepFieldConfig(): TypeDefinition[] {
@@ -217,11 +221,13 @@ export function getStepFieldConfig(): TypeDefinition[] {
 }
 
 export function setStepFieldConfig(config: TypeDefinition[]): void {
+  version++;
   _cache = config;
   localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify(config));
 }
 
 export function resetStepFieldConfig(): void {
+  version++;
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
 }
@@ -231,7 +237,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
-   step added in Admin > Routing Settings without a Signoff Types By Routing row), which uses its template */
+   routing without a Signoff Types By Routing row), which has no form */
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;

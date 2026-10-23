@@ -1,9 +1,10 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
    routing (Admin > Routing Override, Deprogress). Sign-off decisions live in SignoffService. */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField } from '../model/workflow-types';
+import { JobWorkflow } from '../model/workflow-types';
 import { show } from '../signoff-definition/stage-display';
 import { deprogressWorkflow, moveRouting } from '../routing/route-changes';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
@@ -14,17 +15,17 @@ export class RoutingService {
   private store = inject(WorkflowStore);
   private messages = inject(ToastService);
 
-  setStageInput(job: Job, stageId: string, field: StageField, value: string) {
+  setStageInput(job: Job, stageId: string, field: FormField, value: string) {
     this.setStageInputs(job, stageId, [{ field, value }]);
   }
 
   /* several field edits on one stage as a single update and a single save; each changed field is logged */
-  setStageInputs(job: Job, stageId: string, changes: { field: StageField; value: string }[]) {
+  setStageInputs(job: Job, stageId: string, changes: { field: FormField; value: string }[]) {
     this.store.update(job, wf =>
       changes.reduce((acc, c) => this.applyStageInput(acc, stageId, c.field, c.value), wf));
   }
 
-  private applyStageInput(wf: JobWorkflow, stageId: string, field: StageField, value: string): JobWorkflow {
+  private applyStageInput(wf: JobWorkflow, stageId: string, field: FormField, value: string): JobWorkflow {
     const prev = wf.stages.find(s => s.id === stageId)?.inputs[field.key] ?? '';
     if (prev === value) return wf;
     const stages = wf.stages.map(s =>

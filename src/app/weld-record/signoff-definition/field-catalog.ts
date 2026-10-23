@@ -9,6 +9,8 @@ import { defectCodeOptions } from '../../data/defect-codes';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
 import { RT_DEGREE_OPTIONS } from '../routing/ndt';
 
+export const FIELD_TYPE_LABELS = { text: 'Text', number: 'Number', select: 'Droplist', checkbox: 'Checkbox', radio: 'Radio' } as const;
+
 export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
 /* "Prepopulated from ... when": when `when` starts holding (checked against this step's own fields
@@ -46,6 +48,12 @@ export interface CatalogField {
   ownComponent?: boolean;
   /* typed with the person search (a name from People) */
   personSearch?: boolean;
+}
+
+/* A catalog field with the form's rules evaluated for this signoff. Never stored on a routing. */
+export interface FormField extends CatalogField {
+  required?: boolean;
+  requiredMessage?: string;
 }
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };

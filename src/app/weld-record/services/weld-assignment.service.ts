@@ -1,3 +1,4 @@
+import { formInputFields } from '../signoff-definition/form-fields';
 /* Writes the external system's GWP/WTN/filler assignment (data/weld-assignment.ts) onto a joint's
    unsigned welding steps. It's the system's value, not the person's edit, so no History entry.
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
@@ -40,7 +41,7 @@ export class WeldAssignmentService {
   private withEngineeringEntry(wf: JobWorkflow, stage: WorkflowStage): JobWorkflow {
     const entry = { ...stage, engineeringEntry: true };
     const inputs = { ...stage.inputs };
-    for (const f of stage.fields) {
+    for (const f of formInputFields(stage)) {
       if (ENGINEERING_ENTRY_KEYS.has(f.key) && !isFilledByRule(entry, f.key)) inputs[f.key] = '';
     }
     const blanked = withFills(stage, { ...entry, inputs }, wf.stages);

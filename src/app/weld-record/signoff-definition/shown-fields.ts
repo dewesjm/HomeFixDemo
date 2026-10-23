@@ -1,42 +1,17 @@
-/* The fields a step shows: from its Admin > Signoff Type Forms when it has one (the built-in
-   routing, Repair, Excavation NDT, Fit as Weld Build-Up), otherwise from its template (steps added
-   in Admin > Routing Settings). The joint page adds runtime options on top (joint-form/stage-form.ts);
+import { formSignoffFields } from './form-fields';
+import { FormField } from './field-catalog';
+/* Fields shown by the selected Type form, resolved from the catalog at read time. The joint page adds runtime options on top (joint-form/stage-form.ts);
    History and Correct use these as they are, so all three list the same fields. */
 import { Job } from '../../data/jobs';
-import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
-import { CatalogField, lookupCatalogField } from './field-catalog';
+import { WorkflowStage } from '../model/workflow-types';
+import { lookupCatalogField } from './field-catalog';
 import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
-import { StepRef, fieldActivation, getActivationForStep, hasStepActivation } from './step-field-config';
+import { getActivationForStep } from './step-field-config';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow, requiredMessageProp } from './field-rules';
-import { showIfMet } from './stage-display';
 import { drawnByOwnForm } from './signoff-parts';
 
 type Fab = Record<string, string>;
-
-function toStageField(cat: CatalogField): StageField {
-  return {
-    key: cat.key,
-    label: cat.label,
-    type: cat.type,
-    ...(cat.unit !== undefined && { unit: cat.unit }),
-    ...(cat.placeholder !== undefined && { placeholder: cat.placeholder }),
-    ...(cat.options !== undefined && { options: cat.options }),
-    ...(cat.minField !== undefined && { minField: cat.minField }),
-    ...(cat.maxField !== undefined && { maxField: cat.maxField }),
-    ...(cat.fullWidth !== undefined && { fullWidth: cat.fullWidth }),
-    ...(cat.description !== undefined && { description: cat.description }),
-  };
-}
-
-/* the fields a step's definition lists, as the step's own field list; fields drawn its own way
-   (drawnByOwnForm) are left to that */
-export function definitionStageFields(step: StepRef): StageField[] {
-  return getActivationForStep(step).fields.flatMap(act => {
-    const cat = lookupCatalogField(act.key);
-    return cat && !drawnByOwnForm(step, act.key) ? [{ ...toStageField(cat), required: !!cat.defaultRequired, ...(cat.disabled && { disabled: true }) }] : [];
-  });
-}
 
 /* one of Affected Item's MIC verified rows (affected-item component, sign-validation): shown when the
    step's definition lists it and its Show when holds (its joint member must also be picked), and
@@ -50,7 +25,7 @@ export function affectedMicRule(stage: WorkflowStage, condCtx: ConditionContext,
 }
 
 /* The definition's fields whose Show when holds, each required and disabled as its rules say right now */
-export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): StageField[] {
+export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): FormField[] {
   return getActivationForStep(stage).fields.flatMap(act => {
     const cat = lookupCatalogField(act.key);
     if (!cat || drawnByOwnForm(stage, act.key)) return [];
@@ -58,32 +33,24 @@ export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): 
     if (show && !evaluateCondition(show, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
     const disabled = !!disabledCond && evaluateCondition(disabledCond, condCtx);
-    return [{ ...toStageField(cat), required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
+    return [{ ...cat, required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
   });
 }
 
 /* The step's fields as the joint page shows them, without runtime options; History and Correct
-   list these. A step without a definition uses its template's fields, each following its own
-   showIf and its catalog Show when rule. */
-export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStage[] = [], fab: Fab = {}): StageField[] {
+   list these. A routing without a Type form has no fields. */
+export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStage[] = [], fab: Fab = {}): FormField[] {
   const ctx = buildConditionContext(stage, job, stages, fab);
-  if (hasStepActivation(stage)) return definedFields(stage, ctx);
-  return stage.fields.filter(f => {
-    if (!showIfMet(stage, f)) return false;
-    const cond = effectiveShowIf(fieldActivation(stage, f.key));
-    return !cond || evaluateCondition(cond, ctx);
-  });
+  return definedFields(stage, ctx);
 }
 
 /* Pre-Fit and Fit's Consumable Insert / Backing Ring / Defer Tack sign-off fields: the ones the
    step's definition lists, each shown when its condition is met (the insert and ring fields when
    the joint design needs them), with whether it's required and disabled right now */
-export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): SignoffField[] {
-  const activation = hasStepActivation(stage) ? getActivationForStep(stage) : undefined;
+export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): FormField[] {
+  const activation = getActivationForStep(stage);
   const condCtx = buildConditionContext(stage, job, [], fab);
-  return stage.signoffFields.flatMap(f => {
-    if (f.showIf && stage.signoffInputs[f.showIf.key] !== f.showIf.equals) return [];
-    if (!activation) return [f];
+  return formSignoffFields(stage).flatMap(f => {
     const act = activation.fields.find(a => a.key === f.key);
     if (!act) return [];
     const cond = effectiveShowIf(act);

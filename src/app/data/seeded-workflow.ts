@@ -1,3 +1,5 @@
+import { formInputFields, formSignoffFields } from '../weld-record/signoff-definition/form-fields';
+import { FormField } from '../weld-record/signoff-definition/field-catalog';
 /* Demo data: each job's workflow with a deterministic run of steps already signed, so joints sit at
    different points in their routing. A few are seeded on Fit-Up Release, Engineering Hold or Repair.
    Saved (real) workflows always replace this. */
@@ -5,8 +7,8 @@ import { Job } from './jobs';
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { inspectionProcedureOptions } from './inspection-procedures';
 import { DEFAULT_REJECT_RULES } from '../weld-record/routing/step-conditions';
-import { DeviationItem, JobWorkflow, StageField, StageResult, WorkflowStage } from '../weld-record/model/workflow-types';
-import { hasDecision } from '../weld-record/signoff-definition/stage-rules';
+import { DeviationItem, JobWorkflow, StageResult, WorkflowStage } from '../weld-record/model/workflow-types';
+import { hasDecision, typeValues } from '../weld-record/signoff-definition/stage-rules';
 import { labelFor, snapshotInputs } from '../weld-record/signoff-definition/stage-display';
 import { fieldsShown, visibleSignoffFields } from '../weld-record/signoff-definition/shown-fields';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing/added-steps';
@@ -40,7 +42,7 @@ function signedStageCount(job: Job, total: number): number {
 }
 
 /* plausible recorded value for a seeded, already-signed stage field */
-function seededFieldValue(f: StageField, rand: () => number): string {
+function seededFieldValue(f: FormField, rand: () => number): string {
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   if (f.type === 'select' && f.options?.length) {
     return f.options[Math.floor(rand() * f.options.length)].value;
@@ -102,7 +104,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
 
   /* one seeded sign-off: History entry plus the signed stage */
   const sign: SignFn = (s, inputs, signoffInputs, inspectionType, result, who) => {
-    const signedView = { ...s, inspectionType, inputs, signoffInputs, result };
+    const signedView = { ...s, ...typeValues(inspectionType), inputs, signoffInputs, result };
     wf.history.push({
       when: new Date(t).toISOString(),
       who,
@@ -118,7 +120,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
     });
     return {
       ...s,
-      inspectionType,
+      ...typeValues(inspectionType),
       inputs,
       signoffInputs,
       result,
@@ -132,8 +134,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
     /* steps the joint skipped (Fit-Up Release, Deferred Tack) aren't signed */
     if (!s.required) return s;
     t += (20 + Math.floor(rand() * 180)) * MIN;
+    const opts = s.typeOptions ?? [];
+    const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
+    s = { ...s, ...typeValues(inspectionType) };
     const inputs = { ...s.inputs };
-    for (const f of s.fields) inputs[f.key] = seededFieldValue(f, rand);
+    for (const f of formInputFields(s)) inputs[f.key] = seededFieldValue(f, rand);
     if (awaitingRelease && isFitupInspId(s.id)) inputs['releaseToWelding'] = '';
     if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
     if (i === holdAt) {
@@ -141,7 +146,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       Object.assign(inputs, { phMin: String(lo), phMax: String(hi), actualPhMin: String(lo), actualPhMax: String(hi + 15) });
     }
     const signoffInputs: Record<string, string> = {};
-    for (const f of s.signoffFields) {
+    for (const f of formSignoffFields(s)) {
       if (f.key === 'inspectorName') signoffInputs[f.key] = job.technician;
       else if (f.key === 'licenseNo') signoffInputs[f.key] = `LIC-${1000 + Math.floor(rand() * 9000)}`;
       else signoffInputs[f.key] = seededFieldValue(f, rand);
@@ -149,8 +154,6 @@ export function seededWorkflow(job: Job): JobWorkflow {
     /* seeded joints didn't defer their Tack */
     if (s.id === 'fit') signoffInputs['deferTack'] = '';
     const who = signoffInputs['inspectorName'] || names[Math.floor(rand() * names.length)];
-    const opts = s.typeOptions ?? [];
-    const inspectionType = i === ptHoldAt ? 'pt' : s.inspectionType || (opts.length ? opts[job.id.charCodeAt(2) % opts.length].value : '');
     /* a procedure designated for the step's Type (picked without rand, so other seeds don't shift) */
     if ('procedureUsed' in inputs) {
       const procs = inspectionProcedureOptions(inspectionType);

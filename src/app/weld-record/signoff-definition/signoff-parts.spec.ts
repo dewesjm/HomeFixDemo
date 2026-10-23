@@ -1,6 +1,6 @@
+import { formInputFields, formSignoffFields } from './form-fields';
 import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, withComments } from './signoff-parts';
 import { verifyAgainst } from './step-field-config';
-import { definitionStageFields } from './shown-fields';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from '../routing/build-stages';
 import { JOBS } from '../../data/jobs';
@@ -25,7 +25,7 @@ describe('Qualification Check', () => {
   it('is an ordinary field of every step whose definition lists it', () => {
     for (const s of [step('pre-fit'), step('fitup-insp'), step('nqc-fitup-insp'), step('root-ndt-vt5x', 'vt'), step('nqc-final-ndt-utrt', 'rt'), step('excavation-ndt', 'mt'), step('tack')]) {
       expect(drawnByOwnForm(s, 'qualificationCheck')).withContext(s.id).toBeFalse();
-      expect(definitionStageFields(s).some(f => f.key === 'qualificationCheck')).withContext(s.id).toBeTrue();
+      expect(formInputFields(s).some(f => f.key === 'qualificationCheck')).withContext(s.id).toBeTrue();
     }
   });
 });
@@ -40,8 +40,8 @@ describe('Comments box', () => {
 
   it('no step lists Comments itself, so it is added exactly once', () => {
     for (const s of buildStages(JOBS[0]).map(onType)) {
-      expect([...s.fields, ...s.signoffFields].some(f => f.key === 'comments')).withContext(s.id).toBeFalse();
-      expect(withComments(s, withComments(s, s.signoffFields)).filter(f => f === COMMENTS_FIELD).length)
+      expect([...formInputFields(s), ...formSignoffFields(s)].some(f => f.key === 'comments')).withContext(s.id).toBeFalse();
+      expect(withComments(s, withComments(s, formSignoffFields(s))).filter(f => f === COMMENTS_FIELD).length)
         .withContext(s.id).toBe(s.id === 'sold' ? 0 : 1);
     }
   });
@@ -49,7 +49,7 @@ describe('Comments box', () => {
   it('History records the comment with the sign-off', () => {
     const stage = { ...buildStages(JOBS[0]).find(s => s.id === 'fitup-insp' || s.id === 'nqc-fitup-insp')! };
     stage.signoffInputs = { comments: 'gap checked twice' };
-    expect(snapshotInputs(stage, [], stage.signoffFields)).toContain({ label: 'Comments', value: 'gap checked twice' });
+    expect(snapshotInputs(stage, [], formSignoffFields(stage))).toContain({ label: 'Comments', value: 'gap checked twice' });
   });
 });
 

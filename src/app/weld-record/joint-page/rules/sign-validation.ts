@@ -1,8 +1,9 @@
+import { FormField } from '../../signoff-definition/field-catalog';
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../../../data/jobs';
-import { SignoffField, StageField, WorkflowStage } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
 import { blocksOnFabricationErrors, needsFabricationComplete, rtDegreeRequired } from '../../routing/built-in-step-rules';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
@@ -20,7 +21,7 @@ export interface SignContext {
   job: Job | undefined;
   fab: Record<string, string>;
   fabErrors: Record<string, string>;
-  visibleFields: StageField[];
+  visibleFields: FormField[];
   /* the joint's steps, for conditions that read another step */
   stages?: WorkflowStage[];
 }
@@ -38,17 +39,17 @@ function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
 
 /* the error for a required field left empty (a verify-grid row left unchecked): its definition's
    message, or the standard wording */
-export function requiredError(f: StageField | SignoffField): string {
+export function requiredError(f: FormField): string {
   return f.requiredMessage || standardRequiredMessage(f.key, f.label);
 }
 
 /* a verify grid's shown rows that are required and not checked */
-function unverifiedRows(stage: WorkflowStage, ctx: SignContext): StageField[] {
+function unverifiedRows(stage: WorkflowStage, ctx: SignContext): FormField[] {
   return ctx.visibleFields.filter(f => isVerifyRow(f.key) && f.required && stage.inputs?.[f.key] !== 'yes');
 }
 
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
-  return requiredSignoffFields(stage, ctx.job, ctx.fab).filter(f => (stage.signoffInputs[f.key] ?? '').trim().length === 0);
+  return requiredSignoffFields(stage, ctx.job, ctx.fab).filter(f => f.type === 'checkbox' ? stage.signoffInputs[f.key] !== 'yes' : (stage.signoffInputs[f.key] ?? '').trim().length === 0);
 }
 
 /* Everything on the step itself preventing it from being signed, in reader-friendly wording (holds
@@ -82,7 +83,7 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
   for (const f of ctx.visibleFields) {
     const val = stage.inputs?.[f.key];
-    if (f.required && (val === undefined || val === null || val === '')) errors[key(f.key)] = requiredError(f);
+    if (f.required && (f.type === 'checkbox' ? val !== 'yes' : val === undefined || val === null || val === '')) errors[key(f.key)] = requiredError(f);
     const typed = typedRequirementError(stage, f);
     if (typed) errors[key(f.key)] = typed;
     /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
@@ -135,7 +136,7 @@ export function errorsAfterSelect(errors: Record<string, string>, stage: Workflo
 /* `errors` after one field loses focus: its required / typed-requirement check is redone, and an
    Actual Min above Max is flagged on the Max field (rechecked when either one changes). `stage` is
    the live stage, not a possibly stale copy from the click handler. */
-export function errorsAfterBlur(errors: Record<string, string>, stage: WorkflowStage | undefined, stageId: string, field: StageField): Record<string, string> {
+export function errorsAfterBlur(errors: Record<string, string>, stage: WorkflowStage | undefined, stageId: string, field: FormField): Record<string, string> {
   const key = `${stageId}:${field.key}`;
   const val = stage?.inputs?.[field.key];
   const next = { ...errors };

@@ -1,7 +1,8 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* What the joint page hands the Signoff panel and its parts: the joint, its workflow, and the
    page's rules and actions for the current step */
 import { Job } from '../../data/jobs';
-import { Reference, WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
+import { Reference, WorkflowStage, StageResult, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
 import { HistoryRow } from '../work-history/history-rows';
 
 export interface SignoffContext {
@@ -19,8 +20,8 @@ export interface SignoffContext {
   // Methods
   editable: (stage: WorkflowStage) => boolean;
   inputsEditable: (stage: WorkflowStage, idx: number) => boolean;
-  visibleFields: (stage: WorkflowStage) => StageField[];
-  visibleSignoffFields: (stage: WorkflowStage) => SignoffField[];
+  visibleFields: (stage: WorkflowStage) => FormField[];
+  visibleSignoffFields: (stage: WorkflowStage) => FormField[];
   fieldError: (stageId: string, fieldKey: string) => string | undefined;
   clearFieldError: (stageId: string, fieldKey: string) => void;
   getFabValue: (fieldKey: string) => string;
@@ -39,11 +40,11 @@ export interface SignoffContext {
   assignedLocked: (stage: WorkflowStage, fieldKey: string) => boolean;
 
   // Actions
-  stageInputBlur: (stage: WorkflowStage, field: StageField, value: string) => void;
-  stageSelectChange: (stage: WorkflowStage, field: StageField, value: string | null) => void;
-  blurSignoffField: (stage: WorkflowStage, field: SignoffField, value: string) => void;
-  signoffSelectChange: (stage: WorkflowStage, field: SignoffField, value: string | null) => void;
-  signoffCheckboxChange: (stage: WorkflowStage, field: SignoffField, checked: boolean) => void;
+  stageInputBlur: (stage: WorkflowStage, field: FormField, value: string) => void;
+  stageSelectChange: (stage: WorkflowStage, field: FormField, value: string | null) => void;
+  blurSignoffField: (stage: WorkflowStage, field: FormField, value: string) => void;
+  signoffSelectChange: (stage: WorkflowStage, field: FormField, value: string | null) => void;
+  signoffCheckboxChange: (stage: WorkflowStage, field: FormField, checked: boolean) => void;
   toggleAffectedItem: (stage: WorkflowStage, item: string, event: Event) => void;
   onConsumableInsertChange: (stage: WorkflowStage, value: string) => void;
   setType: (stage: WorkflowStage, value: string) => void;

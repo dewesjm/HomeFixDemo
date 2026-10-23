@@ -79,7 +79,7 @@ export function signoffUndo(wf: JobWorkflow, job: Job, stageId: string): Signoff
   return {
     stageId,
     historyWhen: '',
-    stages: wf.stages.map(({ fields: _f, signoffFields: _sf, ...rest }) => rest),
+    stages: wf.stages.map(s => ({ ...s, inputs: { ...s.inputs }, signoffInputs: { ...s.signoffInputs } })),
     fabricationData: { ...wf.fabricationData },
     refitNumber: job.refitNumber ?? '',
     repairNumber: job.repairNumber ?? '',
@@ -96,13 +96,11 @@ export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow
   let rest: Partial<JobWorkflow> = {};
   if (top) {
     const current = new Map(wf.stages.map(s => [s.id, s]));
-    const fresh = new Map(buildStages(job).map(s => [s.id, s]));
     stages = top.stages.map(snap => {
       const cur = current.get(snap.id);
       /* a signoff this one didn't touch stays as it is now (keeps any Correct made since) */
       if (cur?.signed && snap.signed && cur.signedAt === snap.signedAt) return cur;
-      const defs = cur ?? fresh.get(snap.id);
-      return { ...snap, fields: defs?.fields ?? [], signoffFields: defs?.signoffFields ?? [] };
+      return { ...snap };
     });
     const from = top.stages.find(s => s.routingFrom);
     stages = from ? setRoutingFrom(stages, from.id) : stages.map(({ routingFrom: _r, ...s }) => s as WorkflowStage);
@@ -142,8 +140,7 @@ export function discardUnsignedEdits(
     return {
       ...s,
       inputs: { ...snap.inputs }, signoffInputs: { ...snap.signoffInputs },
-      fields: [...snap.fields], signoffFields: [...snap.signoffFields],
-      signoffType: snap.signoffType, result: snap.result, inspectionType: snap.inspectionType, swapStageId: snap.swapStageId,
+      signoffType: snap.signoffType, result: snap.result, inspectionType: snap.inspectionType,
     };
   });
   return { ...wf, fabricationData, stages };

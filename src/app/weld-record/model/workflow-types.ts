@@ -15,55 +15,19 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
   { label: 'UNSAT', value: 'unsat' }
 ];
 
-/* one field a tech records on a stage */
-export interface StageField {
-  key: string;
-  label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
-  unit?: string;          /* shown by the label, e.g. PSI */
-  placeholder?: string;
-  /* detail: extra text shown only in the open droplist, never in the closed field (GWP/WTN descriptions) */
-  options?: { label: string; value: string; detail?: string }[];
-  showIf?: { key: string; equals?: string; anyOf?: string[]; and?: { key: string; equals: string }[] };   // ← declarative dependency, serializable
-  fullWidth?: boolean;   /* spans full grid width */
-  required?: boolean;    /* must be filled before signoff */
-  requiredMessage?: string; /* runtime only: the definition's error for a required field left empty */
-  disabled?: boolean;    /* read-only / information only */
-  minField?: string;     /* cross-field: value must be >= this field's value */
-  maxField?: string;     /* cross-field: value must be <= this field's value */
-  description?: string;  /* runtime only: plain text shown under the control, e.g. the selected GWP/WTN's description */
-}
-
-/* configurable field on the per-stage sign-off panel */
-export interface SignoffField {
-  key: string;
-  label: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'radio';
-  required: boolean;
-  placeholder?: string;
-  options?: { label: string; value: string }[];
-  showIf?: { key: string; equals?: string; anyOf?: string[] };
-  fullWidth?: boolean;   // spans full grid width (3 columns)
-  disabled?: boolean;    /* runtime only: disabled by its Signoff Type Form rule */
-  requiredMessage?: string; /* runtime only: the definition's error for a required field left empty */
-}
-
 export interface WorkflowStage {
   id: string;
   label: string;
   displayName?: string;  /* override label shown on routing table */
   decisionLabel?: string; /* override 'Decision' label */
   required: boolean;
-  fields: StageField[];           /* input defs copied from template */
-  inputs: Record<string, string>; /* recorded values, keyed by StageField.key */
-  /* configurable sign-off fields (inspector, license, notes, etc.) */
-  signoffFields: SignoffField[];
+  inputs: Record<string, string>; /* recorded values, keyed by catalog field key */
+  /* Values recorded by fields stored with the signoff, including Comments. */
   signoffInputs: Record<string, string>;
   // --- per-stage sign-off ---
   result: StageResult | null;     /* required before signing, kept special */
   rejectToStage: string;          /* stage id to route back to on reject (empty = no routing) */
   signoffType: string;            /* the Type picked at signoff (a typeOptions value), 'standard' when the step has none */
-  swapStageId: string;            /* which stage template to use for fields (empty = own) */
   inspectionType: string;         /* admin-managed sub-type (e.g. MT/PT on NDT MT/PT stage) */
   typeOptions?: StageOption[];    /* admin-managed options for this stage */
   signed: boolean;
@@ -151,7 +115,7 @@ export interface JobWorkflow {
 export interface SignoffUndo {
   stageId: string;
   historyWhen: string;       /* the sign-off's History entry, so Work History knows which row it is */
-  stages: Omit<WorkflowStage, 'fields' | 'signoffFields'>[];
+  stages: WorkflowStage[];
   fabricationData: Record<string, string>;
   refitNumber: string;
   repairNumber: string;
@@ -175,10 +139,6 @@ export interface StageTemplate {
   decisionLabel?: string; /* override 'Decision' label (e.g. 'Inspection Results') */
   /* bool or predicate keyed off the job */
   required: boolean | ((job: Job) => boolean);
-  /* fields a tech records on this stage */
-  fields: StageField[];
-  /* configurable sign-off fields for this stage */
-  signoffFields?: SignoffField[];
   /* stage id to route back to when this stage is rejected (empty = no routing) */
   rejectToStage?: string;
   /* role that this stage routes to */

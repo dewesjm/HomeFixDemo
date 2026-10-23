@@ -16,7 +16,7 @@ Last updated 2026-10-23.
 - A joint's routing is an ordered list of routings. The **current routing** is the first required routing that isn't signed off yet.
 - Routings are signed in order. A routing can't be signed until every required routing before it is signed.
 - Each routing is signed by one role (Fitting, Welding, Foreman, Inspector and so on), its **Persona** in Admin > Routing Settings.
-- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT isn't a Routing Settings row: it goes to the NQC Inspector on N Ind 1 or 2 joints in code.
+- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Added routings and remaps Inspector to NQC Inspector on N Ind 1 or 2 joints.
 - **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on routings the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed routing and every routing after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
@@ -126,6 +126,8 @@ A Cut means the joint is redone from scratch:
 - Fit-up (fabrication) data is reset to blank. The Refit row in Work History keeps what it was ("Fabrication before the Cut").
 
 ## What's required to sign each routing
+
+Each field’s label, type and options come from the field catalog. Its Signoff Type Form selects the fields and their rules; routings carry only recorded values. Defer Tack on Fit is a checkbox. A custom routing needs an offered Type and Type form to show fields.
 
 Required fields are marked with a red `*`. Signoff is always clickable: a failed attempt highlights everything still missing.
 

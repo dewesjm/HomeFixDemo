@@ -116,6 +116,13 @@ export const jointDetailField = (key: string) => JOINT_DETAIL_FIELDS.find(f => f
 /* the part of a stage template these read (structural, so the workflow files aren't imported here) */
 export interface StepTemplateShape extends StageShape { id: string; label: string }
 
+/* Registered with templates to keep condition evaluation independent of form initialization. */
+interface RoutingField { key: string; label: string; type: string; options?: { label: string; value: string }[]; ownFormSteps?: string[]; }
+let routingFields: (stageId: string, options?: StageShape['typeOptions']) => RoutingField[] = () => [];
+let fieldsVersion: () => number = () => 0;
+export function registerRoutingFields(fn: typeof routingFields, version: () => number) { routingFields = fn; fieldsVersion = version; }
+export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
+
 /* workflow/stage-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
 let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
 export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
@@ -144,8 +151,7 @@ function answersOf(t: StepTemplateShape): StepConditionField[] {
     });
   };
   if ((t.typeOptions?.length ?? 0) > 1) add('inspectionType', 'Type', 'select', t.typeOptions);
-  for (const f of t.fields) add(f.key, f.label, f.type, f.type === 'checkbox' ? undefined : f.options);
-  for (const f of t.signoffFields ?? []) add(f.key, f.label, f.type, f.type === 'checkbox' ? undefined : f.options, true);
+  for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, f.options, !!f.ownFormSteps?.includes(t.id));
   return out;
 }
 
@@ -172,13 +178,13 @@ export function allStepAnswerFields(trade: string): StepConditionField[] {
 const FIXED_KEY: Record<string, string> = { fitDeferTack: 'deferTack', inspReleaseToWelding: 'releaseToWelding' };
 
 /* every trade's step answers, for looking a saved clause's field up by key */
-let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, StepConditionField> } | null = null;
+let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, StepConditionField>; version: number } | null = null;
 function stepAnswerField(key: string): StepConditionField | undefined {
   const src = stepTemplates();
-  if (cache?.src !== src) {
+  if (cache?.src !== src || cache?.version !== fieldsVersion()) {
     const fields = new Map<string, StepConditionField>();
     for (const f of Object.values(src).flat().flatMap(answersOf)) if (!fields.has(f.key)) fields.set(f.key, f);
-    cache = { src, fields };
+    cache = { src, fields, version: fieldsVersion() };
   }
   return cache.fields.get(key);
 }
@@ -320,8 +326,6 @@ export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, st
 /* the shape of a stage template stageConditionFields() reads */
 export interface StageShape {
   id?: string;
-  fields: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
-  signoffFields?: { key: string; label: string; type: string; options?: { label: string; value: string }[] }[];
   typeOptions?: { label: string; value: string }[];
 }
 
@@ -335,7 +339,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
       valueLabel: v => labels.get(v) ?? v, get: () => '' });
   };
   if (stage.typeOptions?.length) add('inspectionType', 'Type', stage.typeOptions);
-  for (const f of [...stage.fields, ...(stage.signoffFields ?? [])]) {
+  for (const f of routingAnswerFields(stage)) {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */
   }

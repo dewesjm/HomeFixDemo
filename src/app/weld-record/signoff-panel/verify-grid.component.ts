@@ -1,8 +1,9 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* A step's verify-grid rows (Fit-Up Insp's fitting values, Records Review's record fields) as one
    table: each row's value beside a Verified checkbox. Its definition says what the values are
    checked against (verifyAgainst). */
 import { Component, input } from '@angular/core';
-import { StageField, WorkflowStage } from '../model/workflow-types';
+import { WorkflowStage } from '../model/workflow-types';
 import { verifyAgainst } from '../signoff-definition/step-field-config';
 import { SignoffContext } from './signoff-context';
 
@@ -45,13 +46,13 @@ import { SignoffContext } from './signoff-context';
 export class VerifyGridComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
-  rows = input.required<StageField[]>();
+  rows = input.required<FormField[]>();
 
   againstFabrication(): boolean {
     return verifyAgainst(this.stage()) === 'fabrication';
   }
 
-  check(f: StageField, checked: boolean) {
+  check(f: FormField, checked: boolean) {
     const st = this.stage();
     st.inputs[f.key] = checked ? 'yes' : '';
     if (checked) this.ctx().clearFieldError(st.id, f.key);

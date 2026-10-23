@@ -1,23 +1,25 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
+import { FormField } from '../../signoff-definition/field-catalog';
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, and a
    WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
    their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right
    now is left alone here. */
-import { StageField, WorkflowStage } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import {
   getProcedureByGwpWtn, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
 } from '../../../data/procedures';
 
-export interface FieldChange { field: StageField; value: string }
+export interface FieldChange { field: FormField; value: string }
 
 /* A select's new value plus everything it drives. `matchedProc` is true when a WTN pick resolved
    to a procedure (its Weld Process is then filled in). */
-export function selectChangeCascade(stage: WorkflowStage, field: StageField, value: string, offListUnlocked: boolean):
+export function selectChangeCascade(stage: WorkflowStage, field: FormField, value: string, offListUnlocked: boolean):
     { changes: FieldChange[]; matchedProc: boolean } {
   const changes: FieldChange[] = [{ field, value }];
   const setIfPresent = (key: string, val: string) => {
-    const f = stage.fields.find(ff => ff.key === key);
+    const f = formInputFields(stage).find(ff => ff.key === key);
     if (f && !isFilledByRule(stage, key)) changes.push({ field: f, value: val });
   };
   let matchedProc = false;
@@ -56,7 +58,7 @@ export function selectChangeCascade(stage: WorkflowStage, field: StageField, val
 
 /* A typed PH/IP requirement (engineering override), NC normalized; its actuals follow by their fill
    rule. Empty when unchanged. */
-export function typedRequirementChanges(stage: WorkflowStage, field: StageField, raw: string): FieldChange[] {
+export function typedRequirementChanges(stage: WorkflowStage, field: FormField, raw: string): FieldChange[] {
   const value = raw.trim().toUpperCase() === 'NC' ? 'NC' : raw.trim();
   return value === (stage.inputs[field.key] ?? '') ? [] : [{ field, value }];
 }

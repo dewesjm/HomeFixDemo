@@ -1,3 +1,4 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
 /* Deviations: out-of-spec values a person can accept at sign-off instead of being blocked.
    Accepted kinds: Actual PH/IP out of range, a failed Qualification
    Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
@@ -25,7 +26,7 @@ function limit(raw: string | undefined): number {
 /* true when an Actual PH/IP value falls outside its requirement pair (NC = no limit) */
 export function isActualOutOfRange(stage: WorkflowStage, key: string): boolean {
   if (!(key in ACTUAL_REQUIREMENT)) return false;
-  const f = stage.fields.find(ff => ff.key === key);
+  const f = formInputFields(stage).find(ff => ff.key === key);
   const raw = stage.inputs[key];
   if (!f || !raw || raw === 'NC') return false;
   const num = Number(raw);
@@ -35,7 +36,7 @@ export function isActualOutOfRange(stage: WorkflowStage, key: string): boolean {
 }
 
 function rangeText(stage: WorkflowStage, key: string): string {
-  const f = stage.fields.find(ff => ff.key === key);
+  const f = formInputFields(stage).find(ff => ff.key === key);
   const lo = limit(f?.minField ? stage.inputs[f.minField] : undefined);
   const hi = limit(f?.maxField ? stage.inputs[f.maxField] : undefined);
   if (!isNaN(lo) && !isNaN(hi)) return `${lo} to ${hi}`;
@@ -55,7 +56,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     }
   }
   const gwp = stage.inputs['weldProcedure'] ?? '';
-  const gwpField = stage.fields.find(ff => ff.key === 'weldProcedure');
+  const gwpField = formInputFields(stage).find(ff => ff.key === 'weldProcedure');
   if (gwp && gwpField && baseMetals && visibleKeys.has('weldProcedure') && !stage.engineeringEntry) {
     const allowed = gwpOptionsForMaterials(baseMetals.type1, baseMetals.type2);
     if (!allowed.some(o => o.value === gwp)) {
@@ -77,7 +78,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
   if (!proc || stage.engineeringEntry) return items;
   for (const key of FILLER_KEYS) {
     const value = stage.inputs[key] ?? '';
-    const f = stage.fields.find(ff => ff.key === key);
+    const f = formInputFields(stage).find(ff => ff.key === key);
     if (!value || !f || !visibleKeys.has(key) || isFilledByRule(stage, key)) continue;
     const allowed = key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc);
     if (allowed.some(o => o.value === value)) continue;

@@ -1,3 +1,5 @@
+import { routingFormFields } from '../signoff-definition/form-fields';
+import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
    saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
    Type options come from Admin > Signoff Types By Routing (signoff-types.ts). */
@@ -5,7 +7,7 @@ import { ADDED_STAGE_TEMPLATES, isAddedTemplateId } from './added-stage-template
 import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
-import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule, registerStepTemplates, registerRoutingFields } from './step-conditions';
 import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';
@@ -27,8 +29,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
 
-/* serialized form — required is always a plain boolean (no functions). A step's fields aren't saved:
-   they always come from the built-in step definitions (a step added here has none). */
+/* serialized form — required is always a plain boolean (no functions). Fields belong to Type forms and the catalog, not to routing templates. */
 interface SerializedStage {
   id: string;
   label: string;
@@ -68,7 +69,6 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,
-    fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [],
   };
 }
 
@@ -118,6 +118,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
 
 /* step-answer conditions (any step's own fields) read the live templates */
 registerStepTemplates(() => getTemplates());
+registerRoutingFields(routingFormFields, stepFieldConfigVersion);
 
 /* invalidate the merged cache so next read re-loads from localStorage */
 function invalidateTemplateCache() { _merged = null; }

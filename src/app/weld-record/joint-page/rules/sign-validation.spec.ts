@@ -1,3 +1,4 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
 import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
 import { inspectionTypeRequired } from '../../signoff-definition/stage-rules';
@@ -38,7 +39,7 @@ describe('joint-form sign-validation', () => {
     const insp = stageOf(j, 'fitup-insp');
     expect(signProblems(insp, ctxFor(j, insp, FULL_FAB, { location: 'x' })))
       .toEqual(['Choose SAT or UNSAT', 'Verify every fitting value', 'Fix the fabrication errors']);
-    const verified = { ...insp, result: 'sat' as const, inputs: Object.fromEntries(insp.fields.map(f => [f.key, 'yes'])) };
+    const verified = { ...insp, result: 'sat' as const, inputs: Object.fromEntries(formInputFields(insp).map(f => [f.key, 'yes'])) };
     expect(signProblems(verified, ctxFor(j, verified, FULL_FAB))).toEqual([]);
     /* blank Fabrication values block Fit only */
     expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
@@ -144,8 +145,8 @@ describe('joint-form sign-validation', () => {
   it('on blur: a filled field loses its error and a fixed Min/Max order clears the Max error', () => {
     const j = job();
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: 'W-101', actualPhMin: '100', actualPhMax: '200' } });
-    const gwp = tack.fields.find(f => f.key === 'weldProcedure')!;
-    const min = tack.fields.find(f => f.key === 'actualPhMin')!;
+    const gwp = formInputFields(tack).find(f => f.key === 'weldProcedure')!;
+    const min = formInputFields(tack).find(f => f.key === 'actualPhMin')!;
     const before = { 'tack:weldProcedure': 'GWP is required', 'tack:actualPhMax': 'Actual PH Max is below Actual PH Min' };
     expect(errorsAfterBlur(before, tack, 'tack', gwp)['tack:weldProcedure']).toBeUndefined();
     expect(errorsAfterBlur(before, tack, 'tack', min)['tack:actualPhMax']).toBeUndefined();

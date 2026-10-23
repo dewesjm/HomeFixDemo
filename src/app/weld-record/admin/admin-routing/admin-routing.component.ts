@@ -175,7 +175,7 @@ export class AdminRoutingComponent {
       const newId = `custom-${Date.now()}`;
       addStageTemplate(row.trade, {
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
-        fields: [], signoffFields: [], rejectToStage: row.rejectToStage,
+        rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
       const newFullId = `${row.trade}:${newId}`;

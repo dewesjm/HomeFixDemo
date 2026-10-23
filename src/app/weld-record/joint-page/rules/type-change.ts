@@ -1,23 +1,15 @@
-/* What picking a Type on the joint page does to the step: both stored Type values change, the form
-   clears and the step loads that Type's Signoff Type Form. The step's own Types keep its
-   template's field list; another Type (Fit's Weld Build-Up, Layer's Final Weld) carries its
-   definition's. */
+/* Picking a Type updates both stored Type values and clears the form's entered values.
+   Repair-round origin and inspection exception bookkeeping survives the change. */
 import { isRepairStageId, isExcavationNdtStageId } from '../../routing/step-ids';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
-import { getTemplates } from '../../routing/stage-templates';
-import { isOwnType } from '../../signoff-definition/signoff-types';
 import { typeValues } from '../../signoff-definition/stage-rules';
-import { definitionStageFields } from '../../signoff-definition/shown-fields';
 
-export function typeChange(trade: Job['trade'], stage: WorkflowStage, value: string): Partial<WorkflowStage> {
-  const own = !isExcavationNdtStageId(stage.id) && isOwnType(stage.id, value) ? (getTemplates()[trade] ?? []).find(t => t.id === stage.id) : undefined;
+export function typeChange(_trade: Job['trade'], stage: WorkflowStage, value: string): Partial<WorkflowStage> {
   return {
     ...typeValues(value),
     inputs: isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)
       ? Object.fromEntries(['originPhase', 'originStageId', 'originInspectionType', 'typeChangedFromPtTo5x'].filter(k => k in stage.inputs).map(k => [k, stage.inputs[k]])) : {},
     signoffInputs: {},
-    fields: own ? own.fields.map(f => ({ ...f })) : definitionStageFields({ id: stage.id, signoffType: value }),
-    signoffFields: own ? (own.signoffFields ?? []).map(f => ({ ...f })) : [],
   };
 }

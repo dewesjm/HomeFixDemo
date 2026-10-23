@@ -4,12 +4,9 @@ import { baseStepId, isRepairStageId } from '../routing/step-ids';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } from './step-field-config';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 
-/* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
-   condition): its Signoff Type Form lists Inspection Results, or, for a step with no definition
-   (added in Admin > Routing Settings), it has a reject target. Other stages are accepted on signoff
-   with no choice, so their SAT isn't shown or recorded. */
+/* SAT/UNSAT is offered only when the selected Type form lists Inspection Results. */
 export function hasDecision(stage: Pick<WorkflowStage, 'id' | 'signoffType' | 'rejectToStage'>): boolean {
-  return hasStepActivation(stage) ? definitionHas(stage, DECISION_KEY) : !!stage.rejectToStage;
+  return definitionHas(stage, DECISION_KEY);
 }
 
 /* UNSAT has nowhere to go on a step with no reject target, so it can't be signed */

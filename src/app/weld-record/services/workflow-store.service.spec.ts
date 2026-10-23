@@ -41,6 +41,25 @@ describe('WorkflowStore', () => {
     expect('attachments' in reloaded).toBeFalse();
   });
 
+  it('drops legacy field lists on load while preserving values and History snapshots', () => {
+    const wf = store.workflowFor(job)();
+    const fit = wf.stages.find(s => s.id === 'fit')!;
+    const saved = { ...wf, stages: wf.stages.map(s => s.id === fit.id ? { ...s,
+      fields: [{ key: 'old', type: 'text' }], signoffFields: [{ key: 'deferTack', type: 'text' }],
+      signoffInputs: { deferTack: 'yes' },
+    } : s), history: [{ when: '2026-01-01', who: 'Tester', section: 'Sign-off', action: 'Fit', routing: 'Fit', inputs: [{ label: 'Defer Tack', value: 'Yes' }] }] };
+    const undo = { stageId: fit.id, historyWhen: '', stages: saved.stages, fabricationData: {}, refitNumber: '', repairNumber: '' };
+    localStorage.setItem(STORAGE.workflows, JSON.stringify({ [job.id]: { ...saved, undo: [undo] } }));
+    TestBed.resetTestingModule();
+    const reloaded = TestBed.inject(WorkflowStore).workflowFor(job)();
+    expect(reloaded.undo?.[0].stages.every(s => !('fields' in s) && !('signoffFields' in s))).toBeTrue();
+    const current = reloaded.stages.find(s => s.id === fit.id)!;
+    expect('fields' in current).toBeFalse();
+    expect('signoffFields' in current).toBeFalse();
+    expect(current.signoffInputs['deferTack']).toBe('yes');
+    expect(reloaded.history[0].inputs).toEqual(saved.history[0].inputs);
+  });
+
   it('returns the same signal instance for repeated calls on the same job', () => {
     expect(store.workflowFor(job)).toBe(store.workflowFor(job));
   });

@@ -17,7 +17,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: the Fields list in the edit window has a search box that narrows it to the fields whose name contains what you type.',
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
+    fixed: ['Defer Tack on Fit is a checkbox again. Required checkboxes must be checked to sign.'],
     changed: [
+      'Signoff Type Forms now shows each field’s type (Text, Number, Droplist, Checkbox or Radio), read-only. Forms, routing conditions, qualifications, History and overrides all use the same catalog definitions; old per-routing field lists are removed. Saved joints and form settings reset once for the new structure.',
       'Routing Settings now has Added routings for Repair, Excavation NDT and Engineering Hold. Repair and Excavation destinations are editable rules, with Add targets and destinations relative to the rejecting inspection. The routing preview follows those rules.',
       'Excavation NDT now shares its inspection Type form. Signoff Types By Routing shows its rejecting-inspection Type source and editable material exceptions, starting with PT changed to 5X for non-ferrous or austenitic material on either member. Saved joints, routing settings, Type availability and forms reset once for these definitions.',
       'Routing Settings now has Then go to rules for accepted signoffs, replacing Repeatable on Signoff Types. The first matching rule sends the joint to the same, an earlier or a later routing; the routing preview explains which rule matched. Returning to Fit also clears fabrication data. Saved Routing Settings, Signoff Types and joints reset once to load the new rules.',

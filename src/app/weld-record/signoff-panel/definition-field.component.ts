@@ -1,3 +1,4 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* One field on a form laid out from its Signoff Type Form (definition-form): the control its
    type calls for, its error or warning, and the description under it. A step field saves to the
    step's inputs; a sign-off field (Pre-Fit/Fit's insert, backing ring and Defer Tack) to its
@@ -5,7 +6,7 @@
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
-import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
+import { WorkflowStage } from '../model/workflow-types';
 import { isFieldLocked, isReadonlyLimit } from '../signoff-definition/field-locks';
 import { isPersonField } from '../signoff-definition/field-catalog';
 import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
@@ -22,12 +23,12 @@ import { SignoffContext } from './signoff-context';
 export class DefinitionFieldComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
-  field = input.required<StageField | SignoffField>();
+  field = input.required<FormField>();
   /* a sign-off field rather than a step field */
   signoff = input(false);
 
-  stageField(): StageField { return this.field() as StageField; }
-  signoffField(): SignoffField { return this.field() as SignoffField; }
+  stageField(): FormField { return this.field() as FormField; }
+  signoffField(): FormField { return this.field() as FormField; }
 
   error(): string | undefined {
     return this.ctx().fieldError(this.stage().id, this.field().key);

@@ -1,3 +1,4 @@
+import { formInputFields } from '../weld-record/signoff-definition/form-fields';
 /* Stand-in for the external system that sets a welding step's GWP, WTN and Filler Metal Type/Size
    after doing its own validity checks. The person can't change them. Some joints get nothing from
    it: those need an engineering override, where the values are typed in by hand (see
@@ -17,7 +18,7 @@ export const ASSIGNED_KEYS = new Set(['weldProcedure', 'wtn', 'fillerMetalType',
 
 /* welding steps (and Fit as a Weld Build-Up) are the ones with a GWP field */
 export function isAssignedStage(stage: WorkflowStage): boolean {
-  return stage.fields.some(f => f.key === 'weldProcedure');
+  return formInputFields(stage).some(f => f.key === 'weldProcedure');
 }
 
 function hash(s: string): number {
@@ -54,7 +55,7 @@ function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): Proc
 export function assignedInputs(job: Job, stage: WorkflowStage, heldQuals: string[]): Record<string, string> {
   const proc = assignedProcedure(job, stage.id, heldQuals);
   if (!proc) return {};
-  const has = (k: string) => stage.fields.some(f => f.key === k);
+  const has = (k: string) => formInputFields(stage).some(f => f.key === k);
   const out: Record<string, string> = { weldProcedure: proc.gwp, wtn: proc.wtn };
   const hasOv = SHOW_WELD_OVERRIDES && procedureHasOverride(proc);
   out['overridePhMin'] = hasOv ? proc.overridePhMin : '';

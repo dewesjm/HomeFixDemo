@@ -1,3 +1,4 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
 import { JOBS } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
 import { WorkflowStage } from '../../model/workflow-types';
@@ -13,7 +14,7 @@ import { selectChangeCascade, typedRequirementChanges, FieldChange } from './wel
 
 const job = JOBS.find(j => j.trade === 'Welding')!;
 const stageOf = (id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(job).find(s => s.id === id)!, ...change });
-const field = (s: WorkflowStage, key: string) => s.fields.find(f => f.key === key)!;
+const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 const asRecord = (changes: FieldChange[]) => Object.fromEntries(changes.map(c => [c.field.key, c.value]));
 
 describe('joint-form weld-cascade', () => {

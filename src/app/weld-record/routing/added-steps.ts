@@ -5,7 +5,7 @@ import { getAddedTemplate } from './stage-templates';
 import { Job } from '../../data/jobs';
 import { RejectRule, describeClauses, stageConditionFields } from './step-conditions';
 import { StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { NDT_COMMON_FIELDS, NDT_KINDS, NdtKind } from './ndt';
+import { NDT_KINDS, NdtKind } from './ndt';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
@@ -44,8 +44,6 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
   return {
     ...getAddedTemplate('excavation-ndt'),
     id: excavationIdForRepair(repairId), label: roundLabel(getAddedTemplate('excavation-ndt').displayName || getAddedTemplate('excavation-ndt').label, repairId), required: true,
-    fields: [...NDT_COMMON_FIELDS, ...k.fields].map(f => ({ ...f })),
-    signoffFields: [],
     rejectToStage: getAddedTemplate('excavation-ndt').rejectToStage, decisionLabel: 'Inspection Results',
     typeOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
   };
@@ -99,14 +97,11 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     label: t.label,
     required: true,
     role: t.role ?? '',
-    fields: t.fields.map(f => ({ ...f })),
     inputs,
-    signoffFields: (t.signoffFields ?? []).map(f => ({ ...f })),
     signoffInputs: {},
     result: null,
     rejectToStage: t.rejectToStage ?? '',
     ...typeValues(initialInspectionType(t)),
-    swapStageId: '',
     typeOptions: t.typeOptions ?? [],
     signed: false,
     signedAt: null,

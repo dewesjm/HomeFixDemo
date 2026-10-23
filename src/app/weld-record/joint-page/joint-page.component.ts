@@ -1,3 +1,4 @@
+import { FormField } from '../signoff-definition/field-catalog';
 //This is the job details page
 
 /* The joint page: page state, wiring to the sign-off panel, and signing. A value changing on the
@@ -26,13 +27,7 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import {
-  WorkflowStage,
-  StageField,
-  SignoffField,
-  STAGE_RESULT_OPTIONS,
-  SignoffInput,
-} from '../model/workflow-types';
+import { WorkflowStage, STAGE_RESULT_OPTIONS, SignoffInput,  } from '../model/workflow-types';
 import {
   isStageLocked,
   currentRoutingLabel,
@@ -278,11 +273,11 @@ export class JointPageComponent implements OnDestroy {
     return { job: this.job, stages: this.wf?.().stages ?? [], offListUnlocked: this.overrides.offListUnlocked(stage), fab: this.fab() };
   }
 
-  visibleFields(stage: WorkflowStage): StageField[] {
+  visibleFields(stage: WorkflowStage): FormField[] {
     return visibleStageFields(stage, this.formCtx(stage));
   }
 
-  visibleSignoffFields(stage: WorkflowStage): SignoffField[] {
+  visibleSignoffFields(stage: WorkflowStage): FormField[] {
     return visibleSignoffFields(stage, this.job, this.fab());
   }
 

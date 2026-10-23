@@ -1,3 +1,4 @@
+import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
    - "when <clauses>, require <group>": the clauses are an AND/OR group of "field is value"
      (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts). Joint Details fields are checked on every step with a Qualification
@@ -12,7 +13,7 @@ import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
 import { isTitaniumJoint } from '../../data/material-classification';
-import { STEP_CONDITION_FIELDS, tradeSteps } from '../routing/step-conditions';
+import { STEP_CONDITION_FIELDS, tradeSteps, routingAnswerFields } from '../routing/step-conditions';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
 
@@ -78,7 +79,7 @@ function signoffFields(): ConditionField[] {
   };
   for (const t of steps) {
     if (t.typeOptions?.length) add('inspectionType', 'Type', 'select', t.typeOptions);
-    for (const f of [...t.fields, ...(t.signoffFields ?? [])]) add(f.key, f.label, f.type, f.options);
+    for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, f.options);
   }
   for (const [key, e] of byKey) {
     out.push({
@@ -101,10 +102,10 @@ const userField: ConditionField = {
 };
 
 /* rebuilt whenever the (admin-editable) step templates change, since sign-off fields come from them */
-let cache: { steps: unknown; fields: ConditionField[] } | null = null;
+let cache: { steps: unknown; version: number; fields: ConditionField[] } | null = null;
 export function conditionFields(): ConditionField[] {
   const steps = tradeSteps(TRADE);
-  if (cache?.steps !== steps) cache = { steps, fields: [...jointFields(), ...signoffFields(), userField] };
+  if (cache?.steps !== steps || cache?.version !== stepFieldConfigVersion()) cache = { steps, version: stepFieldConfigVersion(), fields: [...jointFields(), ...signoffFields(), userField] };
   return cache.fields;
 }
 

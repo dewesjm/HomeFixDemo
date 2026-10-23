@@ -13,10 +13,7 @@ import { getTemplates } from '../routing/stage-templates';
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
-import { REPAIR_STAGE } from '../routing/added-stage-templates';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
-import { withComments } from '../signoff-definition/signoff-parts';
-import { isOwnType } from '../signoff-definition/signoff-types';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = STORAGE.workflows;
@@ -24,14 +21,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.50';
-
-/* a step's saved values after its fields are refreshed: a value for a field the step no longer has
-   is dropped; values that were never fields (Release to welding, Repair's origin, Affected Items...)
-   are kept */
-function keptValues(values: Record<string, string>, oldFieldKeys: string[], newFieldKeys: string[]): Record<string, string> {
-  return Object.fromEntries(Object.entries(values).filter(([k]) => newFieldKeys.includes(k) || !oldFieldKeys.includes(k)));
-}
+const CURRENT_VERSION = '2.10.51';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -143,11 +133,14 @@ export class WorkflowStore {
           wf.fabricationData = seedFabricationData(job);
         }
 
-        const fresh = new Map(job ? buildStages(job).map(st => [st.id, st]) : []);
+        for (const stage of [...wf.stages, ...(wf.undo ?? []).flatMap(u => u.stages)]) {
+          const legacy = stage as typeof stage & { fields?: unknown; signoffFields?: unknown; swapStageId?: unknown };
+          delete legacy.fields;
+          delete legacy.signoffFields;
+          delete legacy.swapStageId;
+        }
         wf.stages.forEach(s => {
           s.inputs ??= {};
-          s.fields ??= [];
-          s.signoffFields ??= [];
           s.signoffInputs ??= {};
           s.result ??= null;
           s.rejectToStage ??= '';
@@ -155,34 +148,7 @@ export class WorkflowStore {
           s.signedAt ??= null;
           delete (s as unknown as { status?: unknown }).status;
           s.signoffType ??= 'standard';
-          s.swapStageId ??= '';
           s.role ??= '';
-
-          /* auto-backfill: refresh each step's field definitions from what a new joint gets
-             (buildStages, so fields it adds such as the weld override fields are kept), so future schema
-             changes propagate without hand-written migrations */
-          if (job) {
-            const tpl = (getTemplates()[job.trade] ?? []).find(t => t.id === s.id);
-            /* a step on a Type other than its own (Fit as Weld Build-Up) carries that Type's fields; left as saved */
-            const def = !isExcavationNdtStageId(s.id) && isOwnType(s.id, s.signoffType) ? fresh.get(s.id) ?? tpl : undefined;
-            if (def) {
-              if (def.fields.length) {
-                const oldKeys = s.fields.map(f => f.key);
-                s.fields = def.fields.map(f => ({ ...f }));
-                s.inputs = keptValues(s.inputs, oldKeys, s.fields.map(f => f.key));
-              }
-              if (def.signoffFields?.length) {
-                const oldKeys = withComments(s, s.signoffFields).map(f => f.key);
-                s.signoffFields = def.signoffFields.map(f => ({ ...f }));
-                s.signoffInputs = keptValues(s.signoffInputs, oldKeys, withComments(s, s.signoffFields).map(f => f.key));
-              }
-              if (!s.role) s.role = tpl?.role ?? '';
-            }
-            /* Later Repair rounds share the Repair template's fields; keep their origin bookkeeping. */
-            else if (isRepairStageId(s.id)) {
-              s.fields = REPAIR_STAGE.fields.map(f => ({ ...f }));
-            }
-          }
         });
         /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
         if (job) {

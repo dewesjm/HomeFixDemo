@@ -1,14 +1,15 @@
+import { formInputFields } from '../../signoff-definition/form-fields';
+import { FormField } from '../../signoff-definition/field-catalog';
 /* A step's fields on the joint page: which show, and the options each offers */
 import { Job } from '../../../data/jobs';
-import { StageField, WorkflowStage } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
 import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { allowableThicknessAmount } from '../../routing/added-steps';
-import { showIfMet } from '../../signoff-definition/stage-display';
 import { rtDegreeRequired } from '../../routing/built-in-step-rules';
-import { evaluateCondition } from '../../signoff-definition/field-conditions';
+import { evaluateCondition, conditionClauses } from '../../signoff-definition/field-conditions';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
-import { hasStepActivation, fieldActivation } from '../../signoff-definition/step-field-config';
+import { fieldActivation } from '../../signoff-definition/step-field-config';
 import { effectiveShowIf } from '../../signoff-definition/field-rules';
 import { definedFields } from '../../signoff-definition/shown-fields';
 import { inspectionProcedureOptions } from '../../../data/inspection-procedures';
@@ -39,33 +40,20 @@ export function typedRequirementError(stage: WorkflowStage, f: { key: string; la
   return `${f.label} must be a number or NC`;
 }
 
-/* Fields shown on the step, with their runtime options. Steps with an Admin > Signoff Type
-   Forms (the built-in routing, Repair, Excavation NDT, Fit as Weld Build-Up) list its fields
-   (definedFields); steps added in Admin > Routing Settings use their template's fields. */
-export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
+/* Fields listed by the selected Type form, with evaluated rules and runtime option lists. */
+export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): FormField[] {
   const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);
-  if (hasStepActivation(stage)) return definedFields(stage, condCtx).map(f => stageFieldOptions(f, stage, ctx));
-  /* each template field follows its catalog show rule (e.g. Weld Position only when N Ind. is 1) */
-  return stage.fields
-    .map(f => stageFieldOptions(f, stage, ctx))
-    .filter(f => {
-      if (!showIfMet(stage, f)) return false;
-      const cond = effectiveShowIf(fieldActivation(stage, f.key));
-      if (cond && !evaluateCondition(cond, condCtx)) return false;
-      /* override fields only when the selected GWP+WTN's WPS has override values set */
-      if (f.key.startsWith('override')) {
-        if (!SHOW_WELD_OVERRIDES) return false;
-        const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
-        if (!proc || !procedureHasOverride(proc)) return false;
-      }
-      return true;
-    });
+  return definedFields(stage, condCtx).map(f => stageFieldOptions(f, stage, ctx)).filter(f => {
+    if (!f.key.startsWith('override')) return true;
+    const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
+    return SHOW_WELD_OVERRIDES && !!proc && procedureHasOverride(proc);
+  });
 }
 
 /* A field with its runtime options and label. GWP is filtered to the GWPs qualified for this job's
    base metal pair (Material Type 1/2), WTN to the selected GWP, and Filler Metal Type/Size to the
    Procedure that GWP+WTN resolves to. */
-export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: StageFormContext): StageField {
+export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
   if (f.key === 'procedureUsed') {
     /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
@@ -123,6 +111,9 @@ export function stageFieldOptions(f: StageField, stage: WorkflowStage, ctx: Stag
 
 /* dependent fields whose trigger no longer matches but still hold a value: blanked so hidden
    fields don't keep stale values */
-export function hiddenFieldsWithValues(stage: WorkflowStage): StageField[] {
-  return stage.fields.filter(f => f.showIf && !showIfMet(stage, f) && stage.inputs[f.key]);
+export function hiddenFieldsWithValues(stage: WorkflowStage): FormField[] {
+  return formInputFields(stage).filter(f => {
+    const show = effectiveShowIf(fieldActivation(stage, f.key));
+    return !!show && conditionClauses(show).every(c => c.source === 'field') && !evaluateCondition(show, buildConditionContext(stage, undefined, [])) && !!stage.inputs[f.key];
+  });
 }

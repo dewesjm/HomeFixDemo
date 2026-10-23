@@ -1,3 +1,4 @@
+import { formInputFields } from '../signoff-definition/form-fields';
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { gwpOptionsForMaterials, getProcedureByGwpWtn } from '../../data/procedures';
@@ -22,7 +23,7 @@ describe('WeldAssignmentService', () => {
     const job = JOBS.find(j => !isEngineeringEntryJoint(j) && gwpOptionsForMaterials(j.materialType1 ?? '', j.materialType2 ?? '').length)!;
     service.applyAll(job);
     const wf = store.workflowFor(job)();
-    const stage = wf.stages.find(s => !s.signed && s.fields.some(f => f.key === 'weldProcedure'))!;
+    const stage = wf.stages.find(s => !s.signed && formInputFields(s).some(f => f.key === 'weldProcedure'))!;
     const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'], stage.inputs['wtn'])!;
     expect(proc).toBeTruthy();
     expect(gwpOptionsForMaterials(job.materialType1!, job.materialType2!).some(o => o.value === proc.gwp)).toBeTrue();
@@ -40,9 +41,9 @@ describe('WeldAssignmentService', () => {
   });
 
   it('leaves an engineering override joint blank and keeps what is typed, with nothing off-list', () => {
-    const job = JOBS.find(j => isEngineeringEntryJoint(j) && store.workflowFor(j)().stages.some(s => !s.signed && s.fields.some(f => f.key === 'weldProcedure')))!;
+    const job = JOBS.find(j => isEngineeringEntryJoint(j) && store.workflowFor(j)().stages.some(s => !s.signed && formInputFields(s).some(f => f.key === 'weldProcedure')))!;
     service.applyAll(job);
-    const stage = store.workflowFor(job)().stages.find(s => !s.signed && s.fields.some(f => f.key === 'weldProcedure'))!;
+    const stage = store.workflowFor(job)().stages.find(s => !s.signed && formInputFields(s).some(f => f.key === 'weldProcedure'))!;
     expect(stage.engineeringEntry).toBeTrue();
     expect(stage.inputs['weldProcedure']).toBe('');
     expect(stage.inputs['phMin']).toBe('');
@@ -51,7 +52,7 @@ describe('WeldAssignmentService', () => {
     service.applyAll(job);
     const after = store.workflowFor(job)().stages.find(s => s.id === stage.id)!;
     expect(after.inputs['weldProcedure']).toBe('TYPED-1');
-    const keys = new Set(after.fields.map(f => f.key));
+    const keys = new Set(formInputFields(after).map(f => f.key));
     expect(detectDeviations(after, keys, [], { type1: job.materialType1 ?? '', type2: job.materialType2 ?? '' })
       .filter(d => d.kind === 'off-list')).toEqual([]);
   });

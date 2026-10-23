@@ -1,3 +1,5 @@
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../signoff-definition/field-catalog';
 /* What happens when a value changes on the joint page's sign-off form, before Signoff is pressed: the
    value is saved to the step, fields it hides are blanked, fill rules and the WPS cascade run, and the
    field's red message is updated (SignoffFormErrorsService). Covers the step's fields, its sign-off
@@ -5,7 +7,7 @@
    signoff-definition/. Provided by JointPageComponent, one per joint page. */
 import { Injectable, WritableSignal, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, SignoffField, StageField, StageResult, WorkflowStage } from '../model/workflow-types';
+import { JobWorkflow, StageResult, WorkflowStage } from '../model/workflow-types';
 import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
@@ -40,7 +42,7 @@ export class SignoffFormEditsService {
   /* ── The step's fields ── */
 
   private setInput(stage: WorkflowStage, key: string, value: string) {
-    const field = stage.fields.find(f => f.key === key);
+    const field = formInputFields(stage).find(f => f.key === key);
     if (this.src && field) this.wfService.setStageInput(this.src.job, stage.id, field, value);
   }
 
@@ -52,7 +54,7 @@ export class SignoffFormEditsService {
   }
 
   /* a typed field lost focus */
-  stageInputBlur(stage: WorkflowStage, field: StageField, value: string) {
+  stageInputBlur(stage: WorkflowStage, field: FormField, value: string) {
     if (stage.engineeringEntry && REQUIREMENT_KEYS.has(field.key)) {
       this.typedRequirementBlur(stage, field, value);
       return;
@@ -73,7 +75,7 @@ export class SignoffFormEditsService {
   }
 
   /* a typed PH/IP requirement (engineering override); see typedRequirementChanges */
-  private typedRequirementBlur(stage: WorkflowStage, field: StageField, raw: string) {
+  private typedRequirementBlur(stage: WorkflowStage, field: FormField, raw: string) {
     if (!this.src) return;
     const changes = typedRequirementChanges(stage, field, raw);
     if (changes.length) {
@@ -87,7 +89,7 @@ export class SignoffFormEditsService {
   }
 
   /* select fields commit on change, clear maps to '' */
-  stageSelectChange(stage: WorkflowStage, field: StageField, value: string | null) {
+  stageSelectChange(stage: WorkflowStage, field: FormField, value: string | null) {
     const v = value ?? '';
     if (this.src && v !== (stage.inputs[field.key] ?? '')) {
       const { changes, matchedProc } = selectChangeCascade(stage, field, v, this.overrides.offListUnlocked(stage));
@@ -110,7 +112,7 @@ export class SignoffFormEditsService {
     const current = raw ? raw.split(',') : [];
     const next = checked ? [...current, item] : current.filter(i => i !== item);
     if (next.length) this.errors.clearFieldError(stage.id, 'affectedItem');
-    this.wfService.setStageInput(this.src.job, stage.id, { key: 'affectedItems', type: 'text' } as StageField, next.join(','));
+    this.wfService.setStageInput(this.src.job, stage.id, { key: 'affectedItems', type: 'text' } as FormField, next.join(','));
   }
 
   /* "Only Consumable Insert used as filler": the filler fields' fill rule follows it (applyFills) */
@@ -131,7 +133,7 @@ export class SignoffFormEditsService {
     if (!after) return;
     const { values, released } = fillChanges(before, after, stages);
     const changes = Object.entries(values).flatMap(([key, value]) => {
-      const field = after.fields.find(f => f.key === key);
+      const field = formInputFields(after).find(f => f.key === key);
       return field ? [{ field, value }] : [];
     });
     if (changes.length) this.wfService.setStageInputs(job, after.id, changes);
@@ -163,7 +165,7 @@ export class SignoffFormEditsService {
   }
 
   /* a sign-off field's new value (text blur, select or checkbox); a value clears that field's error */
-  setSignoffInput(stage: WorkflowStage, field: SignoffField, value: string, clearsError = true) {
+  setSignoffInput(stage: WorkflowStage, field: FormField, value: string, clearsError = true) {
     if (!this.src) return;
     if (clearsError && value) this.errors.clearFieldError(stage.id, field.key);
     const prev = stage.signoffInputs[field.key] ?? '';

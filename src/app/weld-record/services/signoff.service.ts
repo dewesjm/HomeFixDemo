@@ -1,3 +1,4 @@
+import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
 /* per-stage sign-off: signing a step (where it routes is routing/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
 import { Injectable, inject } from '@angular/core';
@@ -134,7 +135,7 @@ export class SignoffService {
       const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated, job, stages, wf.fabricationData).filter(f => isUserEditable(updated, f)), visibleSignoffFields(updated, job, wf.fabricationData));
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
          convention -- Work History reads this to show exactly what changed, not just the reason */
-      const fieldDefFor = (key: string) => updated.fields.find(f => f.key === key) ?? withComments(updated, updated.signoffFields).find(f => f.key === key);
+      const fieldDefFor = (key: string) => formInputFields(updated).find(f => f.key === key) ?? withComments(updated, formSignoffFields(updated)).find(f => f.key === key);
       const historyChanges = changes.map(c => {
         const fd = fieldDefFor(c.key);
         return fd ? { ...c, from: displayValue(fd, c.from), to: displayValue(fd, c.to) } : c;

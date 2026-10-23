@@ -24,11 +24,11 @@ describe('signoff section rules', () => {
   const ndtTypes = [{ label: 'UT', value: 'ut' }, { label: 'RT', value: 'rt' }];
   afterEach(() => resetStepFieldConfig());
 
-  it('Inspection Results follows the definition; a step with no definition follows its reject target', () => {
+  it('Inspection Results comes only from the Type form', () => {
     expect(hasDecision({ id: 'root-ndt-utrt', signoffType: 'rt', rejectToStage: 'repair' })).toBe(true);
     expect(hasDecision({ id: 'root-ndt-utrt', signoffType: 'standard', rejectToStage: 'repair' })).toBe(false);
     expect(hasDecision({ id: 'root-weld', signoffType: 'root', rejectToStage: 'fit' })).toBe(false);
-    expect(hasDecision({ id: 'added-step', signoffType: '', rejectToStage: 'fit' })).toBe(true);
+    expect(hasDecision({ id: 'added-step', signoffType: '', rejectToStage: 'fit' })).toBe(false);
     expect(hasDecision({ id: 'added-step', signoffType: '', rejectToStage: '' })).toBe(false);
   });
 

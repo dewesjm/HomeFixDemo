@@ -1,3 +1,4 @@
+import { formInputFields } from './form-fields';
 /* Which fields on a step the user can't type into: a field whose Disabled when rule holds, such as
    Weld Process and PH/IP (prepopulated from the WTN) unless an engineering override has the step, or
    an actual while its requirement is NC */
@@ -15,7 +16,7 @@ const readsStepOnly = (c: ConditionClause) => c.source === 'field' || c.source =
    that reads the joint or another step is checked where the fields are built (definedFields sets
    the field's `disabled`). */
 export function isDisabledByOwnRule(stage: WorkflowStage, key: string): boolean {
-  if (!stage.fields.some(f => f.key === key)) return false;
+  if (!formInputFields(stage).some(f => f.key === key)) return false;
   const cond = effectiveDisabledIf(fieldActivation(stage, key));
   return !!cond && conditionClauses(cond).every(readsStepOnly) && evaluateCondition(cond, stepOnlyContext(stage));
 }

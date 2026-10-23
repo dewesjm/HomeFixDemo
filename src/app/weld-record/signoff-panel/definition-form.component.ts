@@ -1,14 +1,14 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* A step's form, drawn from its Signoff Type Form: its fields in definition order, on the lines
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
    sign-off fields go where the Layout list places them too; Comments, Inspection Results and the
    sign-off fields only while the step is required. The verify-grid rows are drawn
-   together as one grid where the first of them is listed. A step with no definition (added in Admin >
-   Routing Settings) draws its fields one per line, then Inspection Results. */
+   together as one grid where the first of them is listed. A routing without a Type form has no fields. */
 import { Component, input } from '@angular/core';
-import { COMMENTS_KEY, DECISION_KEY, FieldActivation, TYPE_KEY, definitionHas, getActivationForStep, hasStepActivation } from '../signoff-definition/step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, FieldActivation, TYPE_KEY, definitionHas, getActivationForStep } from '../signoff-definition/step-field-config';
 import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';
-import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
+import { WorkflowStage } from '../model/workflow-types';
 import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-parts';
 import { isVerifyRow } from '../signoff-definition/field-catalog';
 import { hasDecision, showsReferences, showsType } from '../signoff-definition/stage-rules';
@@ -24,8 +24,8 @@ import { VerifyGridComponent } from './verify-grid.component';
 /* what a key on the form draws: a step field, a sign-off field (Comments is one), Weld Build-Up's
    Affected Item, Inspection Results, the verify grid's rows, the joint's Signoff History, Type, or the
    joint's References */
-type Cell = { kind: 'stage'; field: StageField } | { kind: 'signoff'; field: SignoffField } | { kind: 'affectedItem' }
-  | { kind: 'decision' } | { kind: 'verifyGrid'; rows: StageField[] } | { kind: 'history' } | { kind: 'type' }
+type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: FormField } | { kind: 'affectedItem' }
+  | { kind: 'decision' } | { kind: 'verifyGrid'; rows: FormField[] } | { kind: 'history' } | { kind: 'type' }
   | { kind: 'references' };
 
 @Component({
@@ -124,15 +124,8 @@ export class DefinitionFormComponent {
   }
 
   sections(cells: Map<string, Cell>): LayoutSection[] {
-    const items = hasStepActivation(this.stage()) ? this.items() : this.withoutDefinition(cells);
+    const items = this.items();
     return layoutSections(items, key => cells.has(key));
-  }
-
-  /* a step with no definition: Type first, then its fields one per line, References and Comments last */
-  private withoutDefinition(cells: Map<string, Cell>): FieldActivation[] {
-    const ends = new Set([TYPE_KEY, 'references', COMMENTS_KEY]);
-    const keys = [TYPE_KEY, ...[...cells.keys()].filter(k => !ends.has(k)), 'references', COMMENTS_KEY];
-    return keys.filter(k => cells.has(k)).map(key => ({ key }));
   }
 
   private items(): FieldActivation[] {

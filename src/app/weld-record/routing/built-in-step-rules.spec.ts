@@ -2,7 +2,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import {
   blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel, isPhaseNdtId,
-  needsFabricationComplete, noCommentsBox, rtDegreeRequired,
+  needsFabricationComplete, rtDegreeRequired,
 } from './built-in-step-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
@@ -50,8 +50,5 @@ describe('built-in step rules', () => {
     expect(closesJoint('sold')).toBeTrue();
     expect(closingRole(true)).toBe('O63 Records');
     expect(closingRole(false)).toBe('O04 Records');
-    expect(noCommentsBox('sold')).toBeTrue();
-    expect(noCommentsBox('engineering-hold-2')).toBeTrue();
-    expect(noCommentsBox('fit')).toBeFalse();
   });
 });

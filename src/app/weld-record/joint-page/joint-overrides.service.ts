@@ -1,9 +1,11 @@
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../signoff-definition/field-catalog';
 /* The joint page's overrides for one visit: Foreman Override entries, the engineering override
    reason given on a step, and the deviations a sign-off would accept. Provided by JointPageComponent,
    so this state lives exactly as long as the page. */
 import { Injectable, inject, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, WorkflowStage, DeviationItem } from '../model/workflow-types';
+import { JobWorkflow, WorkflowStage, DeviationItem } from '../model/workflow-types';
 import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
 import { displayValue } from '../signoff-definition/stage-display';
 import { ASSIGNED_KEYS } from '../../data/weld-assignment';
@@ -20,7 +22,7 @@ interface JointOverridesSource {
   job: Job;
   wf: () => JobWorkflow;
   loaded: { stages: Record<string, WorkflowStage> };
-  visibleFields: (stage: WorkflowStage) => StageField[];
+  visibleFields: (stage: WorkflowStage) => FormField[];
 }
 
 @Injectable()
@@ -102,7 +104,7 @@ export class JointOverridesService {
   }
 
   private isOffList(stage: WorkflowStage, key: string): boolean {
-    const f = stage.fields.find(ff => ff.key === key);
+    const f = formInputFields(stage).find(ff => ff.key === key);
     return !!f && this.detect(stage, new Set([key])).some(d => d.kind === 'off-list' && d.label === f.label);
   }
 
@@ -133,7 +135,7 @@ export class JointOverridesService {
   /* the Engineering Override button: only while something saved is locked */
   engineeringOverrideAvailable(stage: WorkflowStage): boolean {
     return !!stage.engineeringEntry && !this.engineeringReason()[stage.id]
-      && stage.fields.some(f => this.engineeringLocked(stage, f.key));
+      && formInputFields(stage).some(f => this.engineeringLocked(stage, f.key));
   }
 
   private askEngineeringReason(stage: WorkflowStage, accepted: () => void, rejected?: () => void) {
@@ -158,7 +160,7 @@ export class JointOverridesService {
 
   /* an engineering value changed with no reason yet: the value goes in, then the reason is asked;
      cancelling puts the old values back */
-  engineeringEdit(stage: WorkflowStage, field: StageField, value: string, apply: () => void) {
+  engineeringEdit(stage: WorkflowStage, field: FormField, value: string, apply: () => void) {
     const needsReason = !!stage.engineeringEntry && ENGINEERING_ENTRY_KEYS.has(field.key)
       && !this.engineeringReason()[stage.id] && value !== (stage.inputs[field.key] ?? '');
     if (!needsReason) { apply(); return; }
@@ -168,7 +170,7 @@ export class JointOverridesService {
       const src = this.src;
       const cur = src?.wf().stages.find(s => s.id === stage.id);
       if (!src || !cur) return;
-      const changes = cur.fields.filter(f => (cur.inputs[f.key] ?? '') !== (before[f.key] ?? ''))
+      const changes = formInputFields(cur).filter(f => (cur.inputs[f.key] ?? '') !== (before[f.key] ?? ''))
         .map(f => ({ field: f, value: before[f.key] ?? '' }));
       this.wfService.setStageInputs(src.job, stage.id, changes);
     });
@@ -179,7 +181,7 @@ export class JointOverridesService {
     const snap = this.src?.loaded.stages[stage.id];
     if (!stage.engineeringEntry || !snap || !this.engineeringReason()[stage.id]) return {};
     const out: Record<string, string> = {};
-    for (const f of stage.fields) {
+    for (const f of formInputFields(stage)) {
       const v = stage.inputs[f.key] ?? '', was = snap.inputs[f.key] ?? '';
       if (v === was) continue;
       if (ENGINEERING_ENTRY_KEYS.has(f.key)) out[f.key] = v;
@@ -193,7 +195,7 @@ export class JointOverridesService {
     const reason = this.engineeringReason()[stage.id];
     if (!this.src || !reason) return;
     const vis = this.src.visibleFields(stage);
-    const shown = stage.fields.filter(f => ENGINEERING_ENTRY_KEYS.has(f.key) && f.key in values).map(f => {
+    const shown = formInputFields(stage).filter(f => ENGINEERING_ENTRY_KEYS.has(f.key) && f.key in values).map(f => {
       const live = vis.find(v => v.key === f.key) ?? f;
       return { label: f.label, value: displayValue(live, values[f.key]) || '(left blank)' };
     });

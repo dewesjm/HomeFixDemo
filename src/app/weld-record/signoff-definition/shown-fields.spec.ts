@@ -3,13 +3,13 @@ import { buildStages } from '../routing/build-stages';
 import { WorkflowStage } from '../model/workflow-types';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 import { DEFAULT_TYPE_DEFINITIONS, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
-import { definitionStageFields, fieldsShown } from './shown-fields';
+import { fieldsShown } from './shown-fields';
 import { typeValues } from './stage-rules';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '1', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage =>
   ({ ...buildStages(j).find(s => s.id === id)!, ...change });
-const buildupOf = (j: Job) => stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: definitionStageFields({ id: 'fit', signoffType: 'weld-buildup' }) });
+const buildupOf = (j: Job) => stageOf(j, 'fit', { signoffType: 'weld-buildup' });
 
 describe('shown-fields', () => {
   afterEach(() => resetStepFieldConfig());

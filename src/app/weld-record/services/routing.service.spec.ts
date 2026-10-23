@@ -1,6 +1,7 @@
+import { FormField } from '../signoff-definition/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
-import { StageField } from '../model/workflow-types';
+
 import { activeStageId } from '../routing/current-routing';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
@@ -21,7 +22,7 @@ describe('RoutingService', () => {
   afterEach(() => localStorage.clear());
 
   describe('setStageInput / setStageInputs', () => {
-    const ppeField: StageField = { key: 'ppe', label: 'PPE / safety', type: 'text' };
+    const ppeField: FormField = { key: 'ppe', label: 'PPE / safety', type: 'text' };
 
     it('records a value on the named stage and logs the change', () => {
       service.setStageInput(job, 'pre-fit', ppeField, 'gloves, eyewear');
@@ -40,7 +41,7 @@ describe('RoutingService', () => {
     });
 
     it('appends the field unit to the logged value when present', () => {
-      const psi: StageField = { key: 'pressure', label: 'Pressure', type: 'number', unit: 'PSI' };
+      const psi: FormField = { key: 'pressure', label: 'Pressure', type: 'number', unit: 'PSI' };
       service.setStageInput(job, 'pre-fit', psi, '150');
       const entry = store.workflowFor(job)().history.find(h => h.action.includes('Pressure'));
       expect(entry?.to).toBe('150 PSI');

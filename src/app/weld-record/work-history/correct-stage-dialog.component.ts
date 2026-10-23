@@ -1,3 +1,4 @@
+import { FormField } from '../signoff-definition/field-catalog';
 /* Work History — "Correct" a signed stage's already-recorded field values in place, with a
    required reason, instead of deprogressing it (see SignoffService.correctStage()). Fields that fed a
    routing decision at the original signoff are shown disabled with an explanation, never editable
@@ -5,7 +6,7 @@
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
-import { StageField, SignoffField } from '../model/workflow-types';
+
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { isRoutingLockedField } from '../signoff-definition/stage-rules';
@@ -17,7 +18,7 @@ import { ReferencesComponent } from '../references/references.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 /* fields the live signoff panel already gives a person-search assist to (see weld-record/routing/ndt.ts's
-   NDT_COMMON_FIELDS) -- Correct should offer the same help, not just a plain text box */
+   the field catalog) -- Correct should offer the same help, not just a plain text box */
 const PERSON_SEARCH_FIELDS = new Set(['probationaryInspector', 'oversightInspector']);
 
 export interface CorrectTarget { job: Job; stageId: string }
@@ -45,13 +46,13 @@ export class CorrectStageDialogComponent {
   stage = computed(() => this.wf()?.stages.find(s => s.id === this.target()?.stageId) ?? null);
   references = computed(() => this.wf()?.references ?? []);
 
-  fields = computed<StageField[]>(() => {
+  fields = computed<FormField[]>(() => {
     const st = this.stage();
     const t = this.target();
     return st && t ? fieldsShown(st, t.job, this.wf()?.stages ?? [], this.wf()?.fabricationData ?? {}).filter(f => isUserEditable(st, f)) : [];
   });
   /* the sign-off fields the step's definition shows on this joint, less disabled ones, plus Comments */
-  signoffFields = computed<SignoffField[]>(() => {
+  signoffFields = computed<FormField[]>(() => {
     const st = this.stage();
     const t = this.target();
     return st && t ? withComments(st, visibleSignoffFields(st, t.job, this.wf()?.fabricationData ?? {}).filter(f => !f.disabled)) : [];
@@ -103,7 +104,7 @@ export class CorrectStageDialogComponent {
     const e = this.edits();
     return [...this.fields(), ...this.signoffFields()].some(f => {
       if (!(f.key in e)) return false;
-      const isSignoff = this.signoffFields().includes(f as SignoffField);
+      const isSignoff = this.signoffFields().includes(f as FormField);
       const current = (isSignoff ? st.signoffInputs[f.key] : st.inputs[f.key]) ?? '';
       return e[f.key] !== current;
     });
