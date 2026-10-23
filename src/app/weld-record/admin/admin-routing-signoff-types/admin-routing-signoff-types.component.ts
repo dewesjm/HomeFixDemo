@@ -45,7 +45,7 @@ export class AdminRoutingSignoffTypesComponent {
   }
 
   signsStepLabel(row: TypeRow): string {
-    if (!row.signsStep) return '';
+    if (!row.signsStep) return 'Current Routing';
     return this.routings.find(s => s.id === row.signsStep)?.label ?? `${row.signsStep} (not in Routing Settings)`;
   }
 

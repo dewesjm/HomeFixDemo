@@ -29,7 +29,7 @@
             @if (editing) {
               <select class="select select-sm select-bordered w-48" aria-label="Signs routing"
                       [ngModel]="row.signsStep ?? ''" (ngModelChange)="setSignsStep(row, $event)">
-                <option value="">The routing it's picked on</option>
+                <option value="">Current Routing</option>
                 @for (s of routings; track s.id) { <option [value]="s.id">{{ s.label }}</option> }
               </select>
             } @else {
