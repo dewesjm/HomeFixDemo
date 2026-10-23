@@ -54,12 +54,16 @@ function serializeStage(t: StageTemplate): SerializedStage {
   };
 }
 
-/* saves from before step conditions / Fabrication editable existed: keep the built-in values for those */
+/* Only the settings above are read back, so a setting no longer offered drops out of an older save.
+   Reject rules never edited here follow the built-in ones. */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
-  return { ...s, fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [], role: s.role ?? '',
-    includeWhen: s.includeWhen ?? builtIn?.includeWhen,
+  return {
+    id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
+    role: s.role ?? '', includeWhen: s.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
-    fabricationEditable: s.fabricationEditable ?? builtIn?.fabricationEditable ?? false };
+    rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,
+    fields: builtIn?.fields ?? [], signoffFields: builtIn?.signoffFields ?? [],
+  };
 }
 
 function loadSavedOverrides(): Record<string, SerializedStage[]> {
@@ -102,12 +106,6 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
       _merged[trade] = statics;
     }
     _merged[trade] = _merged[trade].map(s => ({ ...s, typeOptions: signoffTypeOptions(s.id) }));
-  }
-  /* not routing steps: Fabrication is a cross-stage data section, and Prep/Handover are generic
-     steps from before this was a Welding-only app (older saves still have them; trades other than
-     Welding in older saves are ignored) */
-  for (const trade of Object.keys(_merged) as Job['trade'][]) {
-    _merged[trade] = _merged[trade].filter(s => !['fabrication', 'prep', 'handover'].includes(s.id));
   }
   return _merged;
 }
@@ -161,11 +159,6 @@ function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
   }
   saveOverrides(serialized);
   invalidateTemplateCache();
-}
-
-/* whether any trade's step with this id has a Reject routes to target (Admin > Routing Settings) */
-export function templateHasRejectTarget(stepId: string): boolean {
-  return Object.values(getTemplates()).some(list => list.some(t => t.id === stepId && !!t.rejectToStage));
 }
 
 

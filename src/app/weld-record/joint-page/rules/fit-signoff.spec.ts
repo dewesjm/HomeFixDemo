@@ -7,7 +7,6 @@ import {
   DEFAULT_STEP_FIELD_ACTIVATIONS,
   FieldActivation,
 } from '../../signoff-definition/step-field-config';
-import { STORAGE } from '../../../data/storage-keys';
 import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../../signoff-definition/joint-facts';
 import { requiredSignoffFields } from './fit-signoff';
 import { visibleSignoffFields } from '../../signoff-definition/shown-fields';
@@ -57,20 +56,4 @@ describe('joint-form fit-signoff', () => {
       expect(shown.find(f => f.key === 'consumableInsertSize')!.disabled).toBeTrue();
     } finally { resetStepFieldConfig(); }
   });
-
-  it('reads a saved definition that kept sign-off fields in a separate list', () => {
-    const both = job({ jointDesign: 'C-65' });
-    try {
-      localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify([{ stepId: 'fit', fields: [], signoffFields: [{ key: 'backingRingType' }] }]));
-      resetCacheOnly();
-      expect(keys(visibleSignoffFields(fitOf(both), both, {}))).toEqual(['backingRingType']);
-    } finally { resetStepFieldConfig(); }
-  });
 });
-
-/* drops the in-memory copy so the next read comes from localStorage */
-function resetCacheOnly() {
-  const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-  resetStepFieldConfig();
-  if (saved) localStorage.setItem(STORAGE.stepFieldConfig, saved);
-}

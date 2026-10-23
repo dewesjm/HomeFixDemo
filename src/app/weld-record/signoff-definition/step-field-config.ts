@@ -3,15 +3,12 @@
    Inspection Results goes, see definition-layout.ts). Live overrides are stored in localStorage
    (welding:step-field-config:v11) and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
-import { ConditionClause, FieldCondition, andConditions, conditionClauses, hasClauses } from './field-conditions';
-import { ENGINEERING_OVERRIDE_OFF, type FieldFill } from './field-catalog';
-import { defaultDisabledIf, disabledIfToStore } from './field-rules';
-import { ENGINEERING_OVERRIDE_KEY } from './condition-context';
+import { FieldCondition } from './field-conditions';
+import { type FieldFill } from './field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
 import { FILLER_KEYS } from './weld-fields';
-import { hasSignoffTypeRow, signoffTypeRowId, typeDefinition } from './signoff-types';
-import { WELD_BUILDUP_DEFINITION, isExcavationNdtStageId, isFitupInspId } from '../routing/step-ids';
-import { templateHasRejectTarget } from '../routing/stage-templates';
+import { signoffTypeRowId, typeDefinition } from './signoff-types';
+import { WELD_BUILDUP_DEFINITION } from '../routing/step-ids';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -215,175 +212,15 @@ export const DEFAULT_STEP_FIELD_ACTIVATIONS: StepFieldActivation[] = [
 
 let _cache: StepFieldActivation[] | null = null;
 
-/* a saved definition may hold some fields under signoffFields; they're read into the one list */
-type SavedActivation = StepFieldActivation & { signoffFields?: FieldActivation[] };
-const oneList = ({ signoffFields, ...a }: SavedActivation): StepFieldActivation =>
-  ({ ...a, fields: [...a.fields, ...(signoffFields ?? [])] });
-
-/* definitions saved before References was a field (v2) get it wherever it's on by default */
-const PRE_REFERENCES_KEY = 'welding:step-field-config:v2';
-function withReferences(a: StepFieldActivation): StepFieldActivation {
-  const byDefault = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields.some(f => f.key === 'references');
-  return byDefault && !a.fields.some(f => f.key === 'references') ? { ...a, fields: [...a.fields, { key: 'references' }] } : a;
-}
-
-/* definitions saved before the layout settings (v3) get the default layout: fields the default lists
-   in its order with its same-line settings, widths, headings and Inspection Results, the others after
-   them as saved */
-const PRE_LAYOUT_KEY = 'welding:step-field-config:v3';
-export function withDefaultLayout(a: StepFieldActivation): StepFieldActivation {
-  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields;
-  if (!def) return a;
-  const saved = new Map(a.fields.map(f => [f.key, f]));
-  const ordered: FieldActivation[] = [];
-  let headings: FieldActivation[] = [];
-  for (const d of def) {
-    if (isLayoutOnlyItem(d)) { headings.push(d); continue; }
-    const f = saved.get(d.key);
-    if (!f) continue;
-    ordered.push(...headings, { ...f, ...(d.sameLine && { sameLine: true }), ...(d.width ? { width: d.width } : {}) });
-    headings = [];
-  }
-  const extra = a.fields.filter(f => !def.some(d => d.key === f.key));
-  return { ...a, fields: [...ordered, ...extra] };
-}
-
-/* definitions saved before widths and Inspection Results were in the Layout list (v4) get the
-   default's widths on fields that have one, and Inspection Results where the default has it: before
-   Defect Code, else after the fields */
-const PRE_WIDTH_KEY = 'welding:step-field-config:v4';
-export function withDefaultWidths(a: StepFieldActivation): StepFieldActivation {
-  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === a.stepId)?.fields;
-  if (!def) return a;
-  const fields = a.fields.map(f => {
-    const width = def.find(d => d.key === f.key)?.width;
-    return width ? { ...f, width } : f;
-  });
-  if (!def.some(d => d.key === DECISION_KEY)) return { ...a, fields };
-  const at = fields.findIndex(f => f.key === 'defectCode');
-  return { ...a, fields: at < 0 ? [...fields, DECISION] : [...fields.slice(0, at), DECISION, ...fields.slice(at)] };
-}
-
-/* Definitions saved before Prepopulated from and Disabled when were separate rules (v5), when a fill
-   also locked its field and the WTN's fills were skipped under an engineering override in code: a
-   WTN fill gets "Engineering override is off", and a field its fill locked gets that fill's
-   condition as its Disabled when. A field with its own Disabled when keeps it as it is. */
-const PRE_SPLIT_KEY = 'welding:step-field-config:v5';
-export function withSplitFill(a: StepFieldActivation): StepFieldActivation {
-  return { ...a, fields: a.fields.map(splitFill) };
-}
-
-const isEngineeringClause = (c: ConditionClause) => c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY;
-
-function splitFill(f: FieldActivation): FieldActivation {
-  if (isLayoutOnlyItem(f)) return f;
-  const { disabledIf, ...rest } = f;
-  const fill = f.fill?.from === 'wtn' && !conditionClauses(f.fill.when).some(isEngineeringClause)
-    ? { ...f.fill, when: andConditions(ENGINEERING_OVERRIDE_OFF, f.fill.when) } : f.fill;
-  const out: FieldActivation = fill === undefined ? rest : { ...rest, fill };
-  if (hasClauses(disabledIf)) return { ...out, disabledIf };
-  /* never prepopulated: never locked before, so never disabled now */
-  if (fill === null) return defaultDisabledIf(f.key) ? { ...out, disabledIf: { all: [] } } : out;
-  /* the catalog's fill: its default Disabled when is the same condition */
-  if (fill === undefined) return out;
-  const stored = disabledIfToStore(f.key, fill.when);
-  return stored ? { ...out, disabledIf: stored } : out;
-}
-
-/* definitions saved before Affected Item's MIC verified rows were fields (v6) get them after
-   Affected Item wherever it's listed */
-const PRE_AFFECTED_MIC_KEY = 'welding:step-field-config:v6';
-export function withAffectedItemMics(a: StepFieldActivation): StepFieldActivation {
-  const at = a.fields.findIndex(f => f.key === 'affectedItem');
-  if (at < 0 || a.fields.some(f => f.key === 'affectedMicVerified1')) return a;
-  return { ...a, fields: [...a.fields.slice(0, at + 1), ...AFFECTED_ITEM_FIELDS.slice(1), ...a.fields.slice(at + 1)] };
-}
-
-/* Definitions saved before Type, Inspection Results and Comments were fields (v7) get them where the
-   step showed them: Type on a step with a Signoff Type Availability row (not Weld Build-Up's, which
-   Fit's own decides), Inspection Results on a step with a reject target (taken off any other, where
-   it was a Layout item that never showed), Comments on every step but Sold */
-const PRE_SIGNOFF_SECTION_KEY = 'welding:step-field-config:v7';
-export function withSignoffSectionFields(a: StepFieldActivation): StepFieldActivation {
-  const has = (key: string) => a.fields.some(f => f.key === key);
-  const decision = isExcavationNdtStageId(a.stepId) || templateHasRejectTarget(a.stepId);
-  let fields = decision ? a.fields : a.fields.filter(f => f.key !== DECISION_KEY);
-  if (decision && !has(DECISION_KEY)) fields = [...fields, DECISION];
-  if (!has(TYPE_KEY) && a.stepId !== WELD_BUILDUP_DEFINITION && hasSignoffTypeRow(a.stepId)) fields = [TYPE, ...fields];
-  if (!has(COMMENTS_KEY) && a.stepId !== 'sold') fields = [...fields, COMMENTS];
-  return { ...a, fields };
-}
-
-/* Root's definition saved before its 5X question was a field (v8) gets it at the end, shown when NDT
-   Root is 5X, and its Only Consumable Insert loses the "step is Root" rule it no longer needs */
-const PRE_ROOT_5X_KEY = 'welding:step-field-config:v8';
-export function withRoot5x(a: StepFieldActivation): StepFieldActivation {
-  if (a.stepId !== 'root-weld') return a;
-  const fields = a.fields.map(f => f.key === 'consumableInsertOnly' && conditionClauses(f.showIf ?? { all: [] }).some(c => c.source === 'stepId')
-    ? (({ showIf, ...rest }) => rest)(f) : f);
-  if (fields.some(f => f.key === 'performed5x')) return { ...a, fields };
-  const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(d => d.stepId === 'root-weld')!.fields;
-  const at = def.findIndex(f => f.key === 'performed5x');
-  const end = def.slice(at - 1, at + 1);
-  const comments = fields.findIndex(f => f.key === COMMENTS_KEY);
-  return { ...a, fields: comments < 0 ? [...fields, ...end] : [...fields.slice(0, comments), ...end, ...fields.slice(comments)] };
-}
-
-/* definitions saved before an inspection step's Qualification Check was a field (v9) get it on the
-   steps that ran the check (Pre-Fit, Fit-Up Insp, every NDT, Excavation NDT), after Type */
-const PRE_QUAL_CHECK_KEY = 'welding:step-field-config:v9';
-export function withInspectionQualCheck(a: StepFieldActivation): StepFieldActivation {
-  const inspection = a.stepId === 'pre-fit' || isFitupInspId(a.stepId) || /-ndt(-|$)/.test(a.stepId);
-  if (!inspection || a.fields.some(f => f.key === QUAL_CHECK.key)) return a;
-  const at = a.fields[0]?.key === TYPE_KEY ? 1 : 0;
-  return { ...a, fields: [...a.fields.slice(0, at), QUAL_CHECK, ...a.fields.slice(at)] };
-}
-
-/* Records Review definitions saved before the joint's History was a field (v10), when the Records
-   Review form always drew it, get it after their verify rows */
-const PRE_HISTORY_KEY = 'welding:step-field-config:v10';
-export function withSignoffHistory(a: StepFieldActivation): StepFieldActivation {
-  if (!/^review-/.test(a.stepId) || a.fields.some(f => f.key === SIGNOFF_HISTORY.key)) return a;
-  const at = a.fields.reduce((last, f, i) => f.key.startsWith('verify') ? i + 1 : last, 0);
-  return { ...a, fields: [...a.fields.slice(0, at), SIGNOFF_HISTORY, ...a.fields.slice(at)] };
-}
-
-const parse = (raw: string) => (JSON.parse(raw) as SavedActivation[]).map(oneList);
-
 export function getStepFieldConfig(): StepFieldActivation[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    const preHistory = saved ? null : localStorage.getItem(PRE_HISTORY_KEY);
-    const preQualCheck = saved || preHistory ? null : localStorage.getItem(PRE_QUAL_CHECK_KEY);
-    const preRoot5x = saved || preHistory || preQualCheck ? null : localStorage.getItem(PRE_ROOT_5X_KEY);
-    const old = preHistory ? parse(preHistory)
-      : preQualCheck ? parse(preQualCheck).map(withInspectionQualCheck)
-      : preRoot5x ? parse(preRoot5x).map(withRoot5x).map(withInspectionQualCheck)
-      : savedBeforeV8()?.map(withRoot5x).map(withInspectionQualCheck);
-    _cache = saved ? parse(saved) : old ? old.map(withSignoffHistory) : DEFAULT_STEP_FIELD_ACTIVATIONS;
+    _cache = saved ? JSON.parse(saved) as StepFieldActivation[] : DEFAULT_STEP_FIELD_ACTIVATIONS;
   } catch {
     _cache = DEFAULT_STEP_FIELD_ACTIVATIONS;
   }
   return _cache!;
-}
-
-/* definitions saved under a key before v8, brought up to v8; null when there are none */
-function savedBeforeV8(): StepFieldActivation[] | null {
-  const preSection = localStorage.getItem(PRE_SIGNOFF_SECTION_KEY);
-  const preMic = preSection ? null : localStorage.getItem(PRE_AFFECTED_MIC_KEY);
-  const preSplit = preSection || preMic ? null : localStorage.getItem(PRE_SPLIT_KEY);
-  const preWidth = preSection || preMic || preSplit ? null : localStorage.getItem(PRE_WIDTH_KEY);
-  const preLayout = preSection || preMic || preSplit || preWidth ? null : localStorage.getItem(PRE_LAYOUT_KEY);
-  const preReferences = preSection || preMic || preSplit || preWidth || preLayout ? null : localStorage.getItem(PRE_REFERENCES_KEY);
-  const old = preSection ? parse(preSection)
-    : preMic ? parse(preMic).map(withAffectedItemMics)
-    : preSplit ? parse(preSplit).map(withSplitFill).map(withAffectedItemMics)
-    : preWidth ? parse(preWidth).map(withDefaultWidths).map(withSplitFill).map(withAffectedItemMics)
-    : preLayout ? parse(preLayout).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
-    : preReferences ? parse(preReferences).map(withReferences).map(withDefaultLayout).map(withSplitFill).map(withAffectedItemMics)
-    : null;
-  return old ? old.map(withSignoffSectionFields) : null;
 }
 
 export function setStepFieldConfig(config: StepFieldActivation[]): void {
@@ -394,15 +231,6 @@ export function setStepFieldConfig(config: StepFieldActivation[]): void {
 export function resetStepFieldConfig(): void {
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
-  localStorage.removeItem(PRE_HISTORY_KEY);
-  localStorage.removeItem(PRE_QUAL_CHECK_KEY);
-  localStorage.removeItem(PRE_ROOT_5X_KEY);
-  localStorage.removeItem(PRE_SIGNOFF_SECTION_KEY);
-  localStorage.removeItem(PRE_AFFECTED_MIC_KEY);
-  localStorage.removeItem(PRE_SPLIT_KEY);
-  localStorage.removeItem(PRE_WIDTH_KEY);
-  localStorage.removeItem(PRE_LAYOUT_KEY);
-  localStorage.removeItem(PRE_REFERENCES_KEY);
 }
 
 /* a step by id, or the step itself, whose Type can pick a different definition */

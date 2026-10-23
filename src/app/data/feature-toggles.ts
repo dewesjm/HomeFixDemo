@@ -12,7 +12,12 @@ const DEFAULT_TOGGLES: FeatureToggles = { routingPreview: true, classicPipeWeldi
 function load(): FeatureToggles {
   try {
     const raw = localStorage.getItem(STORAGE.featureToggles);
-    if (raw) return { ...DEFAULT_TOGGLES, ...JSON.parse(raw) };
+    if (raw) {
+      /* only the switches listed above; one no longer offered drops out of an older save */
+      const saved = JSON.parse(raw) as Partial<FeatureToggles>;
+      return Object.fromEntries(Object.entries(DEFAULT_TOGGLES)
+        .map(([k, on]) => [k, typeof saved[k as keyof FeatureToggles] === 'boolean' ? saved[k as keyof FeatureToggles] : on])) as unknown as FeatureToggles;
+    }
   } catch { /* fall through to default */ }
   return { ...DEFAULT_TOGGLES };
 }
