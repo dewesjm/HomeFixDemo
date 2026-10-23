@@ -1,7 +1,7 @@
 # Routing rules plan
 
 Planned, not built. ROUTING.md describes how routing works today; this is the change agreed for it.
-Part 1 is fully decided and is built first. Part 2 builds on Part 1 and has one open question.
+Both parts are decided. Part 1 is built first; Part 2 builds on it.
 
 ## Part 1: "Then go to" rules replace Repeatable
 
@@ -77,7 +77,8 @@ All coded in routing/signoff-routing.ts:
 3. **"Where it came from" targets.** The NDT a Repair goes back to differs on every joint, so the target
    list gets entries relative to the reject:
    - **Rejecting NDT**: the NDT routing that added this Repair.
-   - Phase targets for Allowable thickness exceeded: see the open question.
+   - **Rejecting phase's UT/RT** and **Rejecting phase's VT/5X**: that routing in the phase (Root, Layer
+     or Final) whose NDT rejected the joint, so one rule covers all three phases.
 4. **Excavation NDT's Type** comes from the rejecting inspection, set on Signoff Types By Routing.
 5. **PT → 5X** is a visible rule, not code. It may live in one exceptions table together with the
    attribute code exceptions (waiting on the user's attribute code list).
@@ -91,11 +92,11 @@ All coded in routing/signoff-routing.ts:
 
 | Routing | When | Go to |
 |---|---|---|
-| Repair | Allowable thickness exceeded is Yes | the rejecting phase's UT/RT (see open question) |
+| Repair | Allowable thickness exceeded is Yes | Rejecting phase's UT/RT |
 | Repair | Repair Type is Grind | Rejecting NDT |
 | Repair | Repair Type is Cut | Fit |
 | Repair | Repair Type is Weld Repair | add Excavation NDT |
-| Excavation NDT | its Type was changed to 5X from PT | the rejecting phase's VT/5X |
+| Excavation NDT | its Type was changed to 5X from PT | Rejecting phase's VT/5X |
 | Excavation NDT | (no condition) | Rejecting NDT |
 
 Excavation NDT's UNSAT keeps Reject routes to = its own Repair. The thickness rule is listed
@@ -103,11 +104,3 @@ first so it wins over the Repair Type, as today.
 
 Engineering Hold is added by a Reject rule or an accepted deviation, and Engineering sets where the
 joint goes; it moves into the Added routings section but its behavior doesn't change.
-
-### Open question
-
-1. Allowable thickness exceeded goes to the UT/RT routing *of the phase that failed* (Root, Layer or
-   Final). How should the rule name that target?
-   - a) One target, "Rejecting phase's UT/RT": a single rule covers all three phases.
-   - b) Three rules, one per phase, e.g. *rejected in Root → Root UT/RT*. More rows, but each one
-     names a real routing.
