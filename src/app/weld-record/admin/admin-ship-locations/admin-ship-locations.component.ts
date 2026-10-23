@@ -15,7 +15,7 @@ import { WorkflowStore } from '../../services/workflow-store.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 
 type Field = 'hull' | 'deck' | 'frame' | 'pscl' | 'usage';
 interface LocRow extends ShipLocationEntry { uid: string; }

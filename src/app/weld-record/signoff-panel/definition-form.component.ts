@@ -7,10 +7,11 @@
    verify grids use it for the
    fields they list besides their grid rows (`except` leaves the rows out). */
 import { Component, input } from '@angular/core';
-import {
-  DECISION_KEY, FieldActivation, LayoutSection, SignoffField, StageField, WorkflowStage,
-  drawnOutsideForm, drawsFromDefinition, getActivationForStep, hasDecision, layoutSections,
-} from '../../data/workflow';
+import { DECISION_KEY, FieldActivation, getActivationForStep } from '../signoff-definition/step-field-config';
+import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';
+import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
+import { drawnOutsideForm, drawsFromDefinition } from '../signoff-definition/signoff-forms';
+import { hasDecision } from '../signoff-definition/stage-rules';
 import { AffectedItemComponent } from './affected-item.component';
 import { DefinitionFieldComponent } from './definition-field.component';
 import { SignoffContext } from './signoff-context';

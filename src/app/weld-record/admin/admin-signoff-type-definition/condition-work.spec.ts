@@ -1,5 +1,6 @@
 import { conditionToWork, workToCondition } from './condition-work';
-import { ENGINEERING_OVERRIDE_KEY, FieldCondition } from '../../../data/workflow';
+import { ENGINEERING_OVERRIDE_KEY } from '../../signoff-definition/condition-context';
+import { FieldCondition } from '../../signoff-definition/field-conditions';
 
 describe('condition editor working copy', () => {
   it('round-trips nested AND/OR groups, "one of" values and engineering override', () => {

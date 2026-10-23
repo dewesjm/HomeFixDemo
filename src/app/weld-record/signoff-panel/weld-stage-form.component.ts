@@ -3,9 +3,12 @@
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { WorkflowStage, StageField, isReadonlyLimit as readonlyLimit, isFieldLocked, ACTUAL_REQUIREMENT, definitionHas } from '../../data/workflow';
-import { qualCheck, QualCheckResult } from '../../data/qualifications';
-import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
+import { WorkflowStage, StageField } from '../model/workflow-types';
+import { isReadonlyLimit as readonlyLimit, isFieldLocked } from '../signoff-definition/field-locks';
+import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
+import { definitionHas } from '../signoff-definition/step-field-config';
+import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
+import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { SignoffContext } from './signoff-context';
 import { AffectedItemComponent } from './affected-item.component';
 

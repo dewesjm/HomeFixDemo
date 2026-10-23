@@ -4,8 +4,8 @@ import { Component, computed, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideSearch, LucideX } from '@lucide/angular';
 
-import { RawLine } from '../../data/external-loads/convert';
-import { LAYOUT, LINE_WIDTH, USED_WIDTH } from '../../data/external-loads/layout';
+import { RawLine } from './convert';
+import { LAYOUT, LINE_WIDTH, USED_WIDTH } from './layout';
 
 interface Segment { text: string; title: string; shade: number }
 

@@ -9,11 +9,11 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { TableState, inArray } from '../../../shared/table-state';
 import { ConfirmService } from '../../../shared/confirm.service';
 import { ToastService } from '../../../shared/toast.service';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 import {
   procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, procedureCsvColumns, type Procedure
 } from '../../../data/procedures';
-import { procedureSections } from '../../../data/procedure-sections';
+import { procedureSections } from '../../procedure-sections';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 
 @Component({

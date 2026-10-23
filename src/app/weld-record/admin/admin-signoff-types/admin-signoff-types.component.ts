@@ -10,11 +10,17 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
+import { DEFAULT_STEP_FIELD_ACTIVATIONS } from '../../signoff-definition/step-field-config';
 import {
-  DEFAULT_STEP_FIELD_ACTIVATIONS, EXCAVATION_TYPE_ROW, REPAIR_TYPE_ROW, WELD_BUILDUP_DEFINITION, getSignoffTypeRows, getTemplates,
-  setSignoffTypeRows, type StageOption
-} from '../../../data/workflow';
+  EXCAVATION_TYPE_ROW,
+  REPAIR_TYPE_ROW,
+  getSignoffTypeRows,
+  setSignoffTypeRows,
+} from '../../signoff-definition/signoff-types';
+import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
+import { getTemplates } from '../../routing/stage-templates';
+import { type StageOption } from '../../model/workflow-types';
 
 interface TypeRow {
   uid: string;

@@ -1,0 +1,174 @@
+import { JOBS, Job } from '../../../data/jobs';
+import { buildStages } from '../../routing/build-stages';
+import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/added-steps';
+import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
+import {
+  setStepFieldConfig,
+  resetStepFieldConfig,
+  DEFAULT_STEP_FIELD_ACTIVATIONS,
+} from '../../signoff-definition/step-field-config';
+import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
+import {
+  typedRequirementError, rtDegreeRequired, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues, startsGroup,
+  StageFormContext,
+} from './stage-form';
+import { typeChange } from './type-change';
+
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
+const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
+const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
+const field = (s: WorkflowStage, key: string) => s.fields.find(f => f.key === key)!;
+
+describe('joint-form stage-form', () => {
+  it('a typed PH/IP requirement on an engineering override must be a number or NC', () => {
+    const tack = stageOf(job(), 'tack', { engineeringEntry: true, inputs: { phMin: 'abc', phMax: '300', ipMin: 'NC' } });
+    expect(typedRequirementError(tack, field(tack, 'phMin'))).toBe('PH Min must be a number or NC');
+    expect(typedRequirementError(tack, field(tack, 'phMax'))).toBe('');
+    expect(typedRequirementError(tack, field(tack, 'ipMin'))).toBe('');
+    expect(typedRequirementError({ ...tack, engineeringEntry: false }, field(tack, 'phMin'))).toBe('');
+  });
+
+  it('RT degree required: Root from rtRoot, Final from rtFinal, Layer none', () => {
+    const j = job({ rtRoot: '360', rtFinal: '60' });
+    expect(rtDegreeRequired(j, { id: 'root-ndt-utrt' } as WorkflowStage)).toBe('360');
+    expect(rtDegreeRequired(j, { id: 'final-ndt-utrt' } as WorkflowStage)).toBe('60');
+    expect(rtDegreeRequired(j, { id: 'layer-ndt-utrt' } as WorkflowStage)).toBe('');
+  });
+
+  it('a Type that loads another definition swaps in its fields (Affected Item is drawn by its form); switching back restores the step\'s own', () => {
+    const fit = stageOf(job(), 'fit');
+    const toBuildup = typeChange('Welding', fit, 'weld-buildup');
+    expect(toBuildup.swapsDefinition).toBe(true);
+    expect(toBuildup.patch).toEqual(jasmine.objectContaining({ inspectionType: 'weld-buildup', signoffType: 'weld-buildup', signoffFields: [] }));
+    const buildup = toBuildup.patch.fields!.map(f => f.key);
+    expect(buildup).toContain('weldProcedure');
+    expect(buildup).toContain('fillerMetalMic');
+    expect(buildup).not.toContain('affectedItem');
+    const back = typeChange('Welding', { ...fit, ...toBuildup.patch }, 'fit');
+    expect(back.swapsDefinition).toBe(true);
+    expect(back.patch.fields).toEqual([]);
+    expect(back.patch.signoffFields!.map(f => f.key)).toContain('deferTack');
+  });
+
+  it('Layer\'s Final Weld Type loads Final Weld\'s definition; an NDT Type only changes the Type', () => {
+    const j = job();
+    const layer = typeChange('Welding', stageOf(j, 'root-layer'), 'final-weld');
+    expect(layer.swapsDefinition).toBe(true);
+    expect(layer.patch.signoffType).toBe('final-weld');
+    const ndt = buildStages(j).find(s => /-ndt-/.test(s.id) && !!s.typeOptions?.length)!;
+    const v = ndt.typeOptions![0].value;
+    expect(typeChange('Welding', ndt, v)).toEqual({ patch: { inspectionType: v, signoffType: v }, swapsDefinition: false });
+  });
+
+  it('Fit as Weld Build-Up shows the fields its own Signoff Type Definition lists', () => {
+    const j = job({ nInd: '1' });
+    const fit = { ...stageOf(j, 'fit'), ...typeChange('Welding', stageOf(j, 'fit'), 'weld-buildup').patch };
+    expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
+    const def = DEFAULT_STEP_FIELD_ACTIVATIONS.find(a => a.stepId === 'fit-weld-buildup')!;
+    setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);
+    try {
+      expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).not.toContain('weldPosition');
+    } finally {
+      resetStepFieldConfig();
+    }
+  });
+
+  it('Repair and Excavation NDT rounds read their Signoff Type Definition', () => {
+    const j = job({ rtRoot: '360', ndtEach: 'VT' });
+    const stages = buildStages(j);
+    const ctx: StageFormContext = { job: j, stages, offListUnlocked: false };
+    const repair2 = stageFromTemplate(nextRepairStage([{ id: 'repair' }]), { originPhase: 'root' });
+    expect(repair2.id).toBe('repair-2');
+    expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType', 'allowableThicknessExceeded']);
+    /* "exceeded" only when the rejected phase has an RT/UT step */
+    expect(visibleStageFields({ ...repair2, inputs: { originPhase: 'layer' } }, ctx).map(f => f.key)).toEqual(['repairType']);
+
+    const exc = (type: string) => visibleStageFields({ ...stageFromTemplate(excavationNdtStage(type)), inspectionType: type }, ctx).map(f => f.key);
+    expect(exc('rt')).toContain('degreeRt');
+    expect(exc('rt')).not.toContain('idAccessible');
+    expect(exc('mt')).toContain('idAccessible');
+    expect(exc('mt')).not.toContain('penetrantType');
+    expect(exc('pt')).toContain('penetrantType');
+
+    /* a saved definition applies to every round */
+    try {
+      setStepFieldConfig(DEFAULT_STEP_FIELD_ACTIVATIONS.map(a => a.stepId === 'repair' ? { ...a, fields: [{ key: 'repairType' }] } : a));
+      expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType']);
+    } finally { resetStepFieldConfig(); }
+  });
+
+  it('Weld Position shows only for N Ind. 1; override fields stay hidden while switched off', () => {
+    const keys = (j: Job) => visibleStageFields(stageOf(j, 'tack'), ctxFor(j)).map(f => f.key);
+    expect(keys(job({ nInd: '1' }))).toContain('weldPosition');
+    expect(keys(job({ nInd: '3' }))).not.toContain('weldPosition');
+    expect(keys(job()).some(k => k.startsWith('override'))).toBeFalse();
+  });
+
+  it('Tack hides filler when a consumable insert is used or neither part requires traceability; Root keeps it', () => {
+    const FILLER = ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'];
+    const keys = (j: Job, id: string, fab: Record<string, string> = {}) =>
+      visibleStageFields(stageOf(j, id), { ...ctxFor(j), fab }).map(f => f.key);
+    const traced = job({ mcl1: 'MC-I', jointDesign: 'C-24' });
+    expect(FILLER.every(k => keys(traced, 'tack').includes(k))).toBeTrue();
+    expect(FILLER.every(k => keys(traced, 'deferred-tack').includes(k))).toBeTrue();
+    expect(FILLER.some(k => keys(job({ jointDesign: 'C-24' }), 'tack').includes(k))).toBeFalse();
+    expect(FILLER.some(k => keys(job({ mcl1: 'MC-I', jointDesign: 'C-18' }), 'tack').includes(k))).toBeFalse();
+    expect(FILLER.some(k => keys(traced, 'tack', { revisedJointDesign: 'c-18' }).includes(k))).toBeFalse();
+    expect(FILLER.every(k => keys(job({ jointDesign: 'C-18' }), 'root-weld').includes(k))).toBeTrue();
+  });
+
+  it('Weld Color shows on VT, required, only when either Material Type is titanium', () => {
+    const keys = (j: Job, type: string) =>
+      visibleStageFields(stageOf(j, 'root-ndt-vt5x', { inspectionType: type }), ctxFor(j)).map(f => f.key);
+    expect(keys(job({ materialType1: '61-TI64', materialType2: '02-CS' }), 'vt')).toContain('weldColor');
+    expect(keys(job({ materialType1: '02-CS', materialType2: '60-TICP' }), 'vt')).toContain('weldColor');
+    expect(keys(job({ materialType1: '02-CS', materialType2: '12-SS304' }), 'vt')).not.toContain('weldColor');
+    expect(keys(job({ materialType1: '61-TI64', materialType2: '61-TI64' }), '5x')).not.toContain('weldColor');
+    expect(field(stageOf(job(), 'root-ndt-vt5x'), 'weldColor').required).toBeTrue();
+  });
+
+  it('Fit under Weld Build-Up shows Tack\'s fields even before its own fields are swapped', () => {
+    const j = job();
+    const fit = stageOf(j, 'fit', { signoffType: 'weld-buildup', fields: [] });
+    expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('wtn');
+  });
+
+  it('GWP lists the GWPs for the job\'s materials, keeps an off-list value, and opens fully under a Foreman Override', () => {
+    const j = job();
+    const tack = stageOf(j, 'tack');
+    const qualified = gwpOptionsForMaterials(j.materialType1, j.materialType2).map(o => o.value);
+    expect(stageFieldOptions(field(tack, 'weldProcedure'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(qualified);
+    const offList = { ...tack, inputs: { weldProcedure: 'W-OFF' } };
+    expect(stageFieldOptions(field(tack, 'weldProcedure'), offList, ctxFor(j)).options!.map(o => o.value)).toEqual([...qualified, 'W-OFF']);
+    const all = new Set(procedures().map(p => p.gwp));
+    expect(stageFieldOptions(field(tack, 'weldProcedure'), tack, ctxFor(j, true)).options!.length).toBe(all.size);
+  });
+
+  it('Filler Metal Type narrows to the WPS the GWP+WTN resolves to', () => {
+    const j = job();
+    const proc = procedures()[0];
+    const tack = stageOf(j, 'tack', { inputs: { weldProcedure: proc.gwp, wtn: proc.wtn } });
+    expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(
+      FILLER_METAL_TYPE_OPTIONS.filter(o => proc.fillerMetalTypes.includes(o.value)).map(o => o.value));
+    expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j, true)).options).toBe(FILLER_METAL_TYPE_OPTIONS);
+  });
+
+  it('engineering override turns the assigned fields and PH/IP requirements into text boxes', () => {
+    const j = job();
+    const tack = stageOf(j, 'tack', { engineeringEntry: true });
+    expect(stageFieldOptions(field(tack, 'weldProcedure'), tack, ctxFor(j)).type).toBe('text');
+    expect(stageFieldOptions(field(tack, 'phMin'), tack, ctxFor(j)).type).toBe('text');
+  });
+
+  it('finds dependent fields left holding a value after their trigger changed, and the trigger fields', () => {
+    const tpl: StageTemplate = { id: 'x', label: 'X', required: true, signoffFields: [], fields: [
+      { key: 'kind', label: 'Kind', type: 'select' },
+      { key: 'detail', label: 'Detail', type: 'text', showIf: { key: 'kind', equals: 'a' } },
+    ] };
+    const stage = stageFromTemplate(tpl, { kind: 'b', detail: 'left over' });
+    expect(hiddenFieldsWithValues(stage).map(f => f.key)).toEqual(['detail']);
+    expect(hiddenFieldsWithValues({ ...stage, inputs: { kind: 'a', detail: 'shown' } })).toEqual([]);
+    expect(startsGroup(stage, stage.fields[0])).toBeTrue();
+    expect(startsGroup(stage, stage.fields[1])).toBeFalse();
+  });
+});

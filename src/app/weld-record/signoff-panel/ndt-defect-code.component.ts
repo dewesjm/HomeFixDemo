@@ -1,7 +1,7 @@
 /* An NDT step's Defect Code, drawn below the decision since it only applies once the result is UNSAT */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { WorkflowStage } from '../../data/workflow';
+import { WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
 
 @Component({

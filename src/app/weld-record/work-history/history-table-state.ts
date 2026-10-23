@@ -3,7 +3,7 @@
 import { computed, signal } from '@angular/core';
 import { TableState, inArray } from '../../shared/table-state';
 import { formatDateTime } from '../../shared/date-format';
-import { HistoryRow, historyRowHasDetail } from '../../data/workflow';
+import { HistoryRow, historyRowHasDetail } from './history-rows';
 
 export class HistoryTableState extends TableState<HistoryRow> {
   constructor() {

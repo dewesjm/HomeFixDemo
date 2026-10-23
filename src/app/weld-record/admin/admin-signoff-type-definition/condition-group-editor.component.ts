@@ -3,8 +3,8 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideX } from '@lucide/angular';
-import { VIRTUAL_JOINT_DETAILS } from '../../../data/workflow';
-import { JOINT_DETAIL_FIELDS } from '../../../data/step-conditions';
+import { VIRTUAL_JOINT_DETAILS } from '../../signoff-definition/joint-facts';
+import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
 import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
 
 /* a field of the step a clause can test, with its suggested values */

@@ -4,7 +4,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
-import { QualGroup, QualTerm } from '../../../data/qual-requirements';
+import { QualGroup, QualTerm } from '../../qualifications/qual-requirements';
 
 @Component({
   selector: 'app-qual-group-editor',

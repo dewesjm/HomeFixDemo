@@ -1,7 +1,7 @@
 /* The form for a step with no layout of its own (Repair, Fit-Up Release, steps added in
    Admin > Routing Settings): its visible fields in order, a new line where a group starts */
 import { Component, input } from '@angular/core';
-import { WorkflowStage } from '../../data/workflow';
+import { WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
 import { StageFieldComponent } from './stage-field.component';
 

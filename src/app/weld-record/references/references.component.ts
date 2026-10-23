@@ -2,7 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucidePaperclip, LucideFile, LucideTrash2 } from '@lucide/angular';
 import { AppDateTimePipe } from '../../shared/date-format';
-import { Reference } from '../../data/workflow';
+import { Reference } from '../model/workflow-types';
 
 @Component({
   selector: 'app-references',

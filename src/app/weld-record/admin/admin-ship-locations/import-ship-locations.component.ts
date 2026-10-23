@@ -9,8 +9,8 @@ import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
 import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
 import { HULLS } from '../../../data/jobs';
-import { parseCsvImport, parseXlsxImport } from '../../../weld-planning/weld-planning.data';
-import { downloadCsv } from '../../../data/export-csv';
+import { parseCsvImport, parseXlsxImport } from '../../../data/weld-planning';
+import { downloadCsv } from '../../../shared/export-csv';
 
 type ImportRow = ShipLocationEntry & { _errors: string[]; _saved: boolean };
 

@@ -5,8 +5,8 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
-import { ConditionField, ConditionOption, USER_FIELD, conditionField, conditionFields } from '../../../data/qual-conditions';
-import { WhenClause, WhenGroup, WhenTerm, isWhenGroup } from '../../../data/qual-when';
+import { ConditionField, ConditionOption, USER_FIELD, conditionField, conditionFields } from '../../qualifications/qual-conditions';
+import { WhenClause, WhenGroup, WhenTerm, isWhenGroup } from '../../qualifications/qual-when';
 
 const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Sign-off', 'User'];
 

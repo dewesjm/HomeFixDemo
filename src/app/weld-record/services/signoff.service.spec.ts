@@ -3,7 +3,14 @@ import { addTestJob, Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { HistoryEntry, JobWorkflow, activeStageId, discardUnsignedEdits, getSignoffTypeRows, routingBarSteps, seededWorkflow, setSignoffTypeRows, updateStageTemplate, typeValues } from '../../data/workflow';
+import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
+import { activeStageId } from '../routing/current-routing';
+import { discardUnsignedEdits } from '../routing/route-changes';
+import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
+import { routingBarSteps } from '../routing/routing-bar';
+import { seededWorkflow } from '../../data/seeded-workflow';
+import { updateStageTemplate } from '../routing/stage-templates';
+import { typeValues } from '../signoff-definition/stage-rules';
 
 /* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
    N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),

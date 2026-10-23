@@ -6,7 +6,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angula
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 import { JointDesignEntry, jointDesigns, setJointDesigns } from '../../../data/joint-designs';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';

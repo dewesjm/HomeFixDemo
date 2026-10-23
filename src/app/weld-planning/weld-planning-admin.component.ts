@@ -9,11 +9,11 @@ import { ConfirmService } from '../shared/confirm.service';
 import { TableState } from '../shared/table-state';
 import { TableToolbarComponent } from '../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../shared/sort-header.component';
-import { downloadCsv } from '../data/export-csv';
+import { downloadCsv } from '../shared/export-csv';
 import {
   adminJointDesigns, persistAdminJointDesigns,
   type AdminJointDesign
-} from './weld-planning.data';
+} from '../data/weld-planning';
 
 @Component({
   selector: 'app-weld-planning-admin',

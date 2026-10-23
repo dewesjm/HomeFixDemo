@@ -3,9 +3,9 @@
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { EXTERNAL_LOADS } from '../../data/external-loads/loads';
-import { LookupQuery, isBlankQuery } from '../../data/external-loads/lookup';
-import { FlatRow, convertedRows, errorRows, processedRows, runRows, weldJointRows } from '../../data/external-loads/table-rows';
+import { EXTERNAL_LOADS } from './loads';
+import { LookupQuery, isBlankQuery } from './lookup';
+import { FlatRow, convertedRows, errorRows, processedRows, runRows, weldJointRows } from './table-rows';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { ProcessMapComponent, LoadView } from './process-map.component';
 import { StageTableComponent } from './stage-table.component';

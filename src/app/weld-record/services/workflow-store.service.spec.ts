@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
 import { addTestJob, Job } from '../../data/jobs';
-import { buildStages, isFitupInspId } from '../../data/workflow';
+import { buildStages } from '../routing/build-stages';
+import { isFitupInspId } from '../routing/step-ids';
 import { WorkflowStore } from './workflow-store.service';
 
 describe('WorkflowStore', () => {

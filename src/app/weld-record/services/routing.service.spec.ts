@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
-import { StageField, activeStageId } from '../../data/workflow';
+import { StageField } from '../model/workflow-types';
+import { activeStageId } from '../routing/current-routing';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 

@@ -1,4 +1,4 @@
-import { weldJoints } from './weld-planning.data';
+import { weldJoints } from '../data/weld-planning';
 import { applyFilters } from './weld-planning-filter-schema';
 
 describe('weld-planning filter schema', () => {

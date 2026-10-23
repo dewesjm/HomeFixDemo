@@ -2,7 +2,7 @@
    Used by the NDT and generic forms for every field they don't lay out specially. */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { StageField, WorkflowStage } from '../../data/workflow';
+import { StageField, WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
 
 @Component({

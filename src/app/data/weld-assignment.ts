@@ -3,9 +3,11 @@
    it: those need an engineering override, where the values are typed in by hand (see
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
 import { Job } from './jobs';
-import { WorkflowStage, SHOW_WELD_OVERRIDES, isFilledByRule } from './workflow';
-import { requirementsMet } from './qualifications';
-import { conditionRequirements } from './qual-conditions';
+import { WorkflowStage } from '../weld-record/model/workflow-types';
+import { SHOW_WELD_OVERRIDES } from '../weld-record/signoff-definition/weld-fields';
+import { isFilledByRule } from '../weld-record/signoff-definition/field-fill';
+import { requirementsMet } from '../weld-record/qualifications/qualifications';
+import { conditionRequirements } from '../weld-record/qualifications/qual-conditions';
 import {
   Procedure, procedures, gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure,
   fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride,

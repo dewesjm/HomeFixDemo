@@ -2,7 +2,9 @@
    Fabrication, any other fields its Signoff Type Definition lists, and Release to welding when it
    lists that */
 import { Component, input } from '@angular/core';
-import { StageField, WorkflowStage, definitionHas, isVerifyRow } from '../../data/workflow';
+import { StageField, WorkflowStage } from '../model/workflow-types';
+import { definitionHas } from '../signoff-definition/step-field-config';
+import { isVerifyRow } from '../signoff-definition/field-catalog';
 import { DefinitionFormComponent } from './definition-form.component';
 import { SignoffContext } from './signoff-context';
 

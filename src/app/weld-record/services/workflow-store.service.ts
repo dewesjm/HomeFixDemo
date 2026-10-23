@@ -6,10 +6,17 @@ import { Injectable, WritableSignal, inject, signal } from '@angular/core';
 import { SyncService } from './sync.service';
 import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
-import {
-  JobWorkflow, HistoryEntry, seededWorkflow, newWorkflow, buildStages, getTemplates, seedFabricationData,
-  fabricationSnapshot, currentRoutingLabel, REPAIR_STAGE, isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId, withComments, typeDefinition
-} from '../../data/workflow';
+import { JobWorkflow, HistoryEntry } from '../model/workflow-types';
+import { seededWorkflow } from '../../data/seeded-workflow';
+import { newWorkflow, buildStages } from '../routing/build-stages';
+import { getTemplates } from '../routing/stage-templates';
+import { seedFabricationData } from '../../data/seed-fabrication';
+import { fabricationSnapshot } from '../fabrication/fabrication-fields';
+import { currentRoutingLabel } from '../routing/current-routing';
+import { REPAIR_STAGE } from '../routing/added-steps';
+import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
+import { withComments } from '../signoff-definition/signoff-forms';
+import { typeDefinition } from '../signoff-definition/signoff-types';
 
 /* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = STORAGE.workflows;

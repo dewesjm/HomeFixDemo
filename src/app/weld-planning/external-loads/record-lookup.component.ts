@@ -4,9 +4,9 @@ import { Component, computed, effect, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideSearch, LucideX } from '@lucide/angular';
 
-import { ErrorLogEntry, LoadData } from '../../data/external-loads/loads';
-import { LookupQuery, isBlankQuery, lookupRecords } from '../../data/external-loads/lookup';
-import { USED_WIDTH } from '../../data/external-loads/layout';
+import { ErrorLogEntry, LoadData } from './loads';
+import { LookupQuery, isBlankQuery, lookupRecords } from './lookup';
+import { USED_WIDTH } from './layout';
 import { AppDateTimePipe } from '../../shared/date-format';
 
 const BLANK: LookupQuery = { xrefid: '', hull: '', drawing: '', joint: '' };

@@ -1,0 +1,104 @@
+/* The built-in Welding routing, in order. Admin > Routing Settings can reorder, edit and add to these
+   (stage-templates.ts keeps those changes). Type options are in signoff-types.ts. */
+import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from './procedures';
+import { SignoffField, StageField, StageTemplate } from '../weld-record/model/workflow-types';
+import { WELD_STAGE_FIELDS } from '../weld-record/signoff-definition/weld-fields';
+import { ndtStage } from '../weld-record/routing/ndt';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../weld-record/routing/step-ids';
+
+const BACKING_RING_OPTIONS = [
+  { label: 'Standard', value: 'standard' }, { label: 'Heavy', value: 'heavy' },
+  { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' },
+];
+
+/* Consumable Insert / Backing Ring sign-off fields shared by Pre-Fit and Fit. Insert and filler metal
+   share the same choices: "Only Consumable Insert used as filler" copies the Fit stage's insert
+   type/size into the filler fields. They show when the joint design needs each, and the MICs are only
+   required when either joint member's MCL requires traceability: the fields' Show when and Required
+   rules (field-catalog.ts defaults, Admin > Signoff Type Definition). */
+function insertAndBackingRingFields(): SignoffField[] {
+  return [
+    { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,
+      options: FILLER_METAL_TYPE_OPTIONS },
+    { key: 'consumableInsertSize', label: 'Consumable Insert Size', type: 'select', required: true,
+      options: FILLER_METAL_SIZE_OPTIONS },
+    { key: 'consumableInsertId', label: 'Consumable Insert MIC', type: 'text', required: false },
+    { key: 'backingRingType', label: 'Backing Ring Type', type: 'select', required: true,
+      options: BACKING_RING_OPTIONS },
+    { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', required: false },
+  ];
+}
+
+/* the checklist both Records Reviews (O63 and O04) go through */
+function recordsReviewFields(): StageField[] {
+  return [
+    { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
+    { key: 'verifyDrawingRev', label: 'Drawing Rev', type: 'checkbox' },
+    { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
+    { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },
+    { key: 'verifyWeldType', label: 'Weld Type', type: 'checkbox' },
+    { key: 'verifyPipeSize', label: 'Pipe Size', type: 'checkbox' },
+    { key: 'verifyWallThickness', label: 'Wall Thickness', type: 'checkbox' },
+    { key: 'verifyMaterial1', label: 'Material Type 1', type: 'checkbox' },
+    { key: 'verifyMaterial2', label: 'Material Type 2', type: 'checkbox' },
+    { key: 'verifyMcl1', label: 'MIC 1', type: 'checkbox' },
+    { key: 'verifyMcl2', label: 'MIC 2', type: 'checkbox' },
+    { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
+    { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
+    { key: 'verifyNInd', label: 'Nuclear Indicator', type: 'checkbox' },
+    { key: 'verifyWps', label: 'WPS', type: 'checkbox' },
+    { key: 'verifyOrder', label: 'Order', type: 'checkbox' },
+    { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
+  ];
+}
+
+const BUILT_IN_STEPS: StageTemplate[] = [
+  /* Pre-Fit has no Defer Tack: there's no Tack yet to defer. As signoffFields (not fields) so it
+     renders through the same signoff-fit-row layout as Fit. */
+  { id: 'pre-fit', label: 'Pre-Fit', form: 'fit', required: true, role: 'NQC Inspector', fields: [], signoffFields: insertAndBackingRingFields() },
+  { id: 'fit', label: 'Fit', form: 'fit', required: true, role: 'Fitting', fabricationCompleteToSign: true, fields: [], signoffFields: [
+    ...insertAndBackingRingFields(),
+    { key: 'deferTack', label: 'Defer Tack', type: 'text', required: false },
+  ] },
+  { id: 'tack', label: 'Tack', displayName: 'Tack', form: 'weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'fitup-insp', label: 'Fit-Up Insp', form: 'fitup-insp', required: true, role: 'Foreman|Inspector', fabricationCompleteToSign: true, fields: [
+    { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox' },
+    { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox' },
+    { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox' },
+    { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox' },
+    { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox' },
+  ],
+    signoffFields: [], decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
+  { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman', fields: [], signoffFields: [] },
+  /* same form as Tack; only its position differs (after Fit-Up Insp) */
+  { id: 'deferred-tack', label: 'Deferred Tack', form: 'weld', required: false, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  { id: 'root-weld', label: 'Root', form: 'weld', required: true, role: 'Welding', fields: [...WELD_STAGE_FIELDS,
+      { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
+    ], signoffFields: [] },
+  ndtStage('root', 'vt5x'),
+  ndtStage('root', 'mtpt'),
+  ndtStage('root', 'utrt'),
+  { id: 'root-layer', label: 'Layer', form: 'weld', required: true, role: 'Welding',
+    fields: WELD_STAGE_FIELDS,
+    signoffFields: [] },
+  ndtStage('layer', 'vt5x'),
+  ndtStage('layer', 'mtpt'),
+  ndtStage('layer', 'utrt'),
+  { id: 'final-weld', label: 'Final Weld', form: 'weld', required: true, role: 'Welding', fields: WELD_STAGE_FIELDS, signoffFields: [] },
+  ndtStage('final', 'vt5x'),
+  ndtStage('final', 'mtpt'),
+  ndtStage('final', 'utrt'),
+  /* a joint gets exactly one Records Review: O63 when the job has any SFFF/DSS-AAA/SS data, O04
+     otherwise (their Admin > Routing Settings conditions, see buildStages()) */
+  { id: 'review-o63', label: 'O63 Records Review', form: 'records-review', required: true, role: 'O63 Records', fields: recordsReviewFields(),
+    signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
+  { id: 'review-o04', label: 'O04 Records Review', form: 'records-review', required: true, role: 'O04 Records', fields: recordsReviewFields(),
+    signoffFields: [], rejectToStage: 'final-ndt-vt5x', decisionLabel: 'Inspection Results' },
+  { id: 'sold', label: 'Sold', form: 'sold', required: true, role: 'O63 Records', fields: [], signoffFields: [] }
+];
+
+/* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown
+   under the same Display Name (its Included when, seeded in step-conditions.ts, splits them by N Ind) */
+export const WELDING_STEPS: StageTemplate[] = BUILT_IN_STEPS.flatMap(t => NQC_SPLIT_STEP_IDS.includes(t.id)
+  ? [t, { ...t, id: nqcStepId(t.id), label: `NQC ${t.label}`, displayName: t.displayName ?? t.label, role: 'NQC Inspector' }]
+  : [t]);

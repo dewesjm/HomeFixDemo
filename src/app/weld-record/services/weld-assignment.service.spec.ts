@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { gwpOptionsForMaterials, getProcedureByGwpWtn } from '../../data/procedures';
-import { isFilledByRule } from '../../data/workflow';
+import { isFilledByRule } from '../signoff-definition/field-fill';
 import { isEngineeringEntryJoint } from '../../data/weld-assignment';
-import { detectDeviations } from '../../data/deviations';
+import { detectDeviations } from '../joint-page/rules/deviations';
 import { WeldAssignmentService } from './weld-assignment.service';
 import { WorkflowStore } from './workflow-store.service';
 

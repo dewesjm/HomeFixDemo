@@ -6,7 +6,7 @@ import { LucidePencil, LucideArrowLeft } from '@lucide/angular';
 import {
   getWeldJoint, NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_EXTRA_GROUPS, jointExtraDisplay,
   type WeldJoint, type JointExtraField, type JointExtraGroup
-} from './weld-planning.data';
+} from '../data/weld-planning';
 import { formatDateTime } from '../shared/date-format';
 
 @Component({

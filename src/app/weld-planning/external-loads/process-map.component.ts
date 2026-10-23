@@ -3,9 +3,9 @@
 import { Component, computed, input, output } from '@angular/core';
 import { LucideArrowRight, LucideTriangleAlert, LucideSearch } from '@lucide/angular';
 
-import { LoadData } from '../../data/external-loads/loads';
-import { LINE_WIDTH } from '../../data/external-loads/layout';
-import { MAX_CONVERSION_ERROR_RATE } from '../../data/external-loads/file-checks';
+import { LoadData } from './loads';
+import { LINE_WIDTH } from './layout';
+import { MAX_CONVERSION_ERROR_RATE } from './file-checks';
 
 export type LoadView = 'runs' | 'raw' | 'converted' | 'processed' | 'weldJoints' | 'errors' | 'lookup';
 

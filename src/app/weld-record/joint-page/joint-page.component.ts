@@ -27,25 +27,45 @@ import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { isAssignedStage } from '../../data/weld-assignment';
 import { WorkflowStore } from '../services/workflow-store.service';
 import {
-  WorkflowStage, StageField, SignoffField, StageResult, STAGE_RESULT_OPTIONS, isStageLocked, currentRoutingLabel,
-  activeStageId, routingBarSteps, allRequiredSigned, FabricationField, snapshotInputs, SignoffInput,
-  visibleSignoffFields, definitionHas,
-  ACTUAL_REQUIREMENT, HistoryRow, historyRows, inspectionTypeRequired, discardUnsignedEdits, fabricationEditable, isEngineeringHoldId, showsReferences, show, stepOnJoint,
-  fillChanges, signoffForm,
-} from '../../data/workflow';
+  WorkflowStage,
+  StageField,
+  SignoffField,
+  StageResult,
+  STAGE_RESULT_OPTIONS,
+  SignoffInput,
+} from '../model/workflow-types';
+import {
+  isStageLocked,
+  currentRoutingLabel,
+  activeStageId,
+  allRequiredSigned,
+  fabricationEditable,
+} from '../routing/current-routing';
+import { routingBarSteps } from '../routing/routing-bar';
+import { FabricationField } from '../fabrication/fabrication-fields';
+import { snapshotInputs, show } from '../signoff-definition/stage-display';
+import { visibleSignoffFields } from '../signoff-definition/shown-fields';
+import { definitionHas } from '../signoff-definition/step-field-config';
+import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
+import { HistoryRow, historyRows } from '../work-history/history-rows';
+import { inspectionTypeRequired, showsReferences } from '../signoff-definition/stage-rules';
+import { discardUnsignedEdits } from '../routing/route-changes';
+import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
+import { fillChanges } from '../signoff-definition/field-fill';
+import { signoffForm } from '../signoff-definition/signoff-forms';
 import { featureToggles } from '../../data/feature-toggles';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { formatDate } from '../../shared/date-format';
-import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../../data/joint-form/fabrication-form';
+import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
 import {
   REQUIREMENT_KEYS, StageFormContext, hiddenFieldsWithValues, startsGroup, visibleStageFields,
-} from '../../data/joint-form/stage-form';
-import { selectChangeCascade, typedRequirementChanges } from '../../data/joint-form/weld-cascade';
-import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from '../../data/joint-form/sign-validation';
-import { fitupVerifyValue, reviewVerifyValue } from '../../data/joint-form/verify-values';
-import { routePreviewLabel } from '../../data/joint-form/route-preview';
-import { typeChange } from '../../data/joint-form/type-change';
-import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from '../../data/joint-form/unsaved-edits';
+} from './rules/stage-form';
+import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
+import { SignContext, errorsAfterBlur, errorsAfterSelect, signProblems, stageFieldErrors } from './rules/sign-validation';
+import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
+import { routePreviewLabel } from '../routing/route-preview';
+import { typeChange } from './rules/type-change';
+import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 
 @Component({
   selector: 'app-joint-page',

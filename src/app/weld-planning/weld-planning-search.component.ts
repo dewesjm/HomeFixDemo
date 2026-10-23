@@ -18,9 +18,9 @@ import { TooltipDirective } from '../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../shared/ordered-pick-list.component';
 import { MenuButtonComponent } from '../shared/menu-button.component';
 import { ConfirmService } from '../shared/confirm.service';
-import { downloadCsv } from '../data/export-csv';
+import { downloadCsv } from '../shared/export-csv';
 
-import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from './weld-planning.data';
+import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from '../data/weld-planning';
 import {
   FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
   applyFilters, defaultValuesFor, getField, isEmpty,

@@ -9,7 +9,7 @@ import {
   addWeldJoint, updateWeldJoint, weldJoints, parseXlsxImport, parseCsvImport, downloadXlsxTemplate,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, JOINT_EXTRA_FIELDS, blankJointExtras, shipForHull,
   type WeldJoint, type JointExtraKey, type JointStatus, type JointType
-} from './weld-planning.data';
+} from '../data/weld-planning';
 
 type EditableRow = {
   _id: string;

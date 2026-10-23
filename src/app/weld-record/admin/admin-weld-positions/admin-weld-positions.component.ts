@@ -10,7 +10,7 @@ import { getWeldPositions, setWeldPositions } from '../../../data/weld-positions
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 
 interface WeldPositionRow {
   uid: string;

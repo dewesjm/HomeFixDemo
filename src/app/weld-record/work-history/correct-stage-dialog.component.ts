@@ -5,7 +5,11 @@
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
-import { StageField, SignoffField, fieldsShown, visibleSignoffFields, isUserEditable, isRoutingLockedField, withComments } from '../../data/workflow';
+import { StageField, SignoffField } from '../model/workflow-types';
+import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
+import { isUserEditable } from '../signoff-definition/field-locks';
+import { isRoutingLockedField } from '../signoff-definition/stage-rules';
+import { withComments } from '../signoff-definition/signoff-forms';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';

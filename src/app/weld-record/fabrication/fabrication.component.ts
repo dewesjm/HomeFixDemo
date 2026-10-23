@@ -2,7 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBox } from '@lucide/angular';
-import { FabricationField } from '../../data/workflow';
+import { FabricationField } from './fabrication-fields';
 
 @Component({
   selector: 'app-fabrication',

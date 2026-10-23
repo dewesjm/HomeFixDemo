@@ -1,4 +1,5 @@
-import { seededWorkflow, activeStageId } from './workflow';
+import { seededWorkflow } from './seeded-workflow';
+import { activeStageId } from '../weld-record/routing/current-routing';
 import { JOBS } from './jobs';
 
 describe('seeded joints', () => {

@@ -1,7 +1,9 @@
 /* Weld Build-Up's Affected Item: the joint members the build-up affects, each with its MIC verified
    row as the step's definition sets it (affectedMicRule); at least one must be picked */
 import { Component, input } from '@angular/core';
-import { WorkflowStage, affectedMicRule, buildConditionContext } from '../../data/workflow';
+import { WorkflowStage } from '../model/workflow-types';
+import { affectedMicRule } from '../signoff-definition/shown-fields';
+import { buildConditionContext } from '../signoff-definition/condition-context';
 import { SignoffContext } from './signoff-context';
 
 @Component({

@@ -4,9 +4,12 @@
    sign-off inputs. */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ACTUAL_REQUIREMENT, SignoffField, StageField, WorkflowStage, isFieldLocked, isPersonField, isReadonlyLimit } from '../../data/workflow';
-import { qualCheck, QualCheckResult } from '../../data/qualifications';
-import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
+import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
+import { SignoffField, StageField, WorkflowStage } from '../model/workflow-types';
+import { isFieldLocked, isReadonlyLimit } from '../signoff-definition/field-locks';
+import { isPersonField } from '../signoff-definition/field-catalog';
+import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
+import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { SignoffContext } from './signoff-context';
 

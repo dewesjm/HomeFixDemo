@@ -3,10 +3,12 @@
    so this state lives exactly as long as the page. */
 import { Injectable, inject, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, WorkflowStage, DeviationItem, ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS, displayValue } from '../../data/workflow';
+import { JobWorkflow, StageField, WorkflowStage, DeviationItem } from '../model/workflow-types';
+import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
+import { displayValue } from '../signoff-definition/stage-display';
 import { ASSIGNED_KEYS } from '../../data/weld-assignment';
-import { detectDeviations, isActualOutOfRange, BaseMetals } from '../../data/deviations';
-import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
+import { detectDeviations, isActualOutOfRange, BaseMetals } from './rules/deviations';
+import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';

@@ -1,7 +1,8 @@
 /* The O63 / O04 Records Review step: verify the joint's record fields, any other fields its Signoff
    Type Definition lists, and the joint's History alongside */
 import { Component, computed, effect, input } from '@angular/core';
-import { StageField, WorkflowStage, isVerifyRow } from '../../data/workflow';
+import { StageField, WorkflowStage } from '../model/workflow-types';
+import { isVerifyRow } from '../signoff-definition/field-catalog';
 import { DefinitionFormComponent } from './definition-form.component';
 import { HistoryTableComponent } from '../work-history/history-table.component';
 import { HistoryTableState } from '../work-history/history-table-state';

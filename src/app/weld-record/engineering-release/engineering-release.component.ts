@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { LucideCheck } from '@lucide/angular';
 
 import { Job } from '../../data/jobs';
-import { isEngineeringHoldId } from '../../data/workflow';
+import { isEngineeringHoldId } from '../routing/step-ids';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { DeviationService } from '../services/deviation.service';
 import { ToastService } from '../../shared/toast.service';

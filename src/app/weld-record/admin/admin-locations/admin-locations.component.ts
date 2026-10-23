@@ -10,7 +10,7 @@ import { Shop, getShops, setShops } from '../../../data/shops';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 
 interface LocRow extends Shop {
   uid: string;

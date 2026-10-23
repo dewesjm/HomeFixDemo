@@ -12,7 +12,7 @@ import {
   adminJointDesigns, JOINT_EXTRA_FIELDS, blankJointExtras, shipForHull,
   type JointExtraGroup,
   type WeldJoint
-} from './weld-planning.data';
+} from '../data/weld-planning';
 
 
 @Component({

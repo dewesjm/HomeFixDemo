@@ -2,7 +2,7 @@
    reason and the sign-off password, then signs. Replaces the plain sign-off confirm in that case. */
 import { Component, ElementRef, effect, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DeviationItem } from '../../data/workflow';
+import { DeviationItem } from '../model/workflow-types';
 
 export interface DeviationAcceptRequest { stageLabel: string; items: DeviationItem[] }
 

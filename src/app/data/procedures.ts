@@ -8,10 +8,10 @@
    data/joint-form/stage-form.ts) -- see ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
-import { CsvColumn } from './export-csv';
+import { CsvColumn } from '../shared/export-csv';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { extraValueText, type ExtraFields, type ProcedureSection } from './procedure-sections';
+import { extraValueText, type ExtraFields, type ProcedureSection } from '../weld-engineering/procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 

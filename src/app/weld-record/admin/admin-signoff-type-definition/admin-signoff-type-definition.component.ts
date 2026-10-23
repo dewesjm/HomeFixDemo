@@ -21,21 +21,58 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 import { featureToggles } from '../../../data/feature-toggles';
 import {
-  DEFAULT_STEP_FIELD_ACTIVATIONS, StepFieldActivation, FieldActivation,
-  FIELD_CATALOG,
-  getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
-  getTemplates, defaultShowIf, showIfToStore, defaultDisabledIf, disabledIfToStore, isAlwaysReadOnly,
-  defaultRequiredIf, requiredIfToStore, requiredRuleText, requiredMode, withRequiredMode,
-  showRuleText, disabledRuleText, hasBuiltInShowRule, hasFixedRules,
-  defaultFill, effectiveFill, fillToStore, fillRuleText, getActivationForStep, lookupCatalogField,
-  getSignoffTypeRows, isDefinitionLockedField, definitionFieldNote, drawnByOwnForm, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, WELD_BUILDUP_DEFINITION,
-  HEADING_KEY_PREFIX, DECISION_KEY, TYPE_KEY, definitionFields, isHeadingItem, isVerifyGrid, drawnOutsideForm, fieldRuleLines,
+  DEFAULT_STEP_FIELD_ACTIVATIONS,
+  StepFieldActivation,
+  FieldActivation,
+  getStepFieldConfig,
+  setStepFieldConfig,
+  resetStepFieldConfig,
+  getActivationForStep,
+  HEADING_KEY_PREFIX,
+  DECISION_KEY,
+  TYPE_KEY,
+  definitionFields,
+  isHeadingItem,
+} from '../../signoff-definition/step-field-config';
+import { FIELD_CATALOG, lookupCatalogField } from '../../signoff-definition/field-catalog';
+import { getTemplates } from '../../routing/stage-templates';
+import {
+  defaultShowIf,
+  showIfToStore,
+  defaultDisabledIf,
+  disabledIfToStore,
+  isAlwaysReadOnly,
+  defaultRequiredIf,
+  requiredIfToStore,
+  requiredRuleText,
+  requiredMode,
+  withRequiredMode,
+  showRuleText,
+  disabledRuleText,
+  hasBuiltInShowRule,
+  hasFixedRules,
+  defaultFill,
+  effectiveFill,
+  fillToStore,
+  fillRuleText,
+} from '../../signoff-definition/field-rules';
+import {
+  getSignoffTypeRows,
+  REPAIR_TYPE_ROW,
+  EXCAVATION_TYPE_ROW,
   signoffTypeOptions,
-} from '../../../data/workflow';
-import type { FieldCondition, FieldFill, FieldRuleLine, RequiredMode } from '../../../data/workflow';
+} from '../../signoff-definition/signoff-types';
+import { isDefinitionLockedField, definitionFieldNote } from '../../signoff-definition/stage-rules';
+import { drawnByOwnForm, isVerifyGrid, drawnOutsideForm } from '../../signoff-definition/signoff-forms';
+import { WELD_BUILDUP_DEFINITION } from '../../routing/step-ids';
+import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
+import type { FieldCondition } from '../../signoff-definition/field-conditions';
+import type { FieldFill } from '../../signoff-definition/field-catalog';
+import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
+import type { RequiredMode } from '../../signoff-definition/field-rules';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
 import { WorkGroup, conditionToWork, workToCondition } from './condition-work';
 import { ConditionGroupEditorComponent, StepFieldChoice } from './condition-group-editor.component';

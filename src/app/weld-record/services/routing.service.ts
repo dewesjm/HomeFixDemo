@@ -3,7 +3,10 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, StageField, show, deprogressWorkflow, fabricationSnapshot, moveRouting } from '../../data/workflow';
+import { JobWorkflow, StageField } from '../model/workflow-types';
+import { show } from '../signoff-definition/stage-display';
+import { deprogressWorkflow, moveRouting } from '../routing/route-changes';
+import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })

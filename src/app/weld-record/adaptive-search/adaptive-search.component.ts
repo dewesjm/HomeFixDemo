@@ -21,7 +21,7 @@ import { OrderedPickListComponent } from '../../shared/ordered-pick-list.compone
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 import { MenuButtonComponent } from '../../shared/menu-button.component';
 import { ConfirmService } from '../../shared/confirm.service';
-import { downloadCsv } from '../../data/export-csv';
+import { downloadCsv } from '../../shared/export-csv';
 import { bannerFor } from '../../data/banner';
 
 import { JOBS } from '../../data/jobs';
@@ -30,14 +30,15 @@ import {
   searchFields, buildRow, isExtraKey, standardLayout,
   loadVariants, saveVariants, loadSearchState, loadTabSearchState, saveSearchState,
   loadDefaultVariant, saveDefaultVariant
-} from '../../data/filter-schema';
+} from './filter-schema';
 import {
   Condition, FilterValues, Op, OPS_BY_KIND, opLabel, isExclude, needsNoValue, newCondition, activeConditions, applyFilters, chipLabel
-} from '../../data/filter-engine';
-import { allStepAnswerFields } from '../../data/step-conditions';
+} from '../../shared/filter-engine';
+import { allStepAnswerFields } from '../routing/step-conditions';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
-import { activeStage, ROLES, type Role } from '../../data/workflow';
+import { activeStage } from '../routing/current-routing';
+import { ROLES, type Role } from '../model/workflow-types';
 import { formatDate } from '../../shared/date-format';
 
 const PAGE_SIZES = [10, 25, 50, 100];

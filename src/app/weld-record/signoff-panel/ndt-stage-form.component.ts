@@ -3,7 +3,7 @@
    Defect Code is drawn below the decision instead (NdtDefectCodeComponent). */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { StageField, WorkflowStage } from '../../data/workflow';
+import { StageField, WorkflowStage } from '../model/workflow-types';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { SignoffContext } from './signoff-context';
 import { StageFieldComponent } from './stage-field.component';

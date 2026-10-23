@@ -8,8 +8,8 @@ import { TableToolbarComponent } from '../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { SelectOption } from '../../shared/multiselect-dropdown.component';
 import { AppDateTimePipe, formatDateTime } from '../../shared/date-format';
-import { downloadCsv } from '../../data/export-csv';
-import { FlatRow } from '../../data/external-loads/table-rows';
+import { downloadCsv } from '../../shared/export-csv';
+import { FlatRow } from './table-rows';
 
 export interface StageColumn {
   field: string;

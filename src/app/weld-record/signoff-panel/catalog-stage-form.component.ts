@@ -6,7 +6,8 @@
    Replacing the @switch in signoff-panel.component.html with this component keeps the panel
    template clean and makes the dispatch point easy to find. */
 import { Component, input } from '@angular/core';
-import { WorkflowStage, drawsFromDefinition, signoffForm } from '../../data/workflow';
+import { WorkflowStage } from '../model/workflow-types';
+import { drawsFromDefinition, signoffForm } from '../signoff-definition/signoff-forms';
 import { DefinitionFormComponent } from './definition-form.component';
 import { FitupInspFormComponent } from './fitup-insp-form.component';
 import { GenericStageFormComponent } from './generic-stage-form.component';

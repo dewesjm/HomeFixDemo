@@ -7,14 +7,14 @@ import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTr
 
 import { TablePagerComponent } from '../shared/table-pager.component';
 import { TableState, inArray } from '../shared/table-state';
-import { downloadCsv } from '../data/export-csv';
+import { downloadCsv } from '../shared/export-csv';
 import { ToastService } from '../shared/toast.service';
 import { ConfirmService } from '../shared/confirm.service';
 import {
   weldJoints, deleteWeldJoint,
   JOINT_STATUS_OPTIONS,
   WELD_JOINT_CSV_COLUMNS, type WeldJoint
-} from './weld-planning.data';
+} from '../data/weld-planning';
 import { BannerPillComponent } from '../shared/banner-pill.component';
 
 type Row = WeldJoint;

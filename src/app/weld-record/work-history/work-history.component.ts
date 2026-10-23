@@ -12,8 +12,8 @@ import { PersonSearchInputComponent } from '../../shared/person-search-input.com
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { HistoryRow, historyRows } from '../../data/workflow';
-import { downloadCsv } from '../../data/export-csv';
+import { HistoryRow, historyRows } from './history-rows';
+import { downloadCsv } from '../../shared/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import { formatDateTime } from '../../shared/date-format';
 import { HistoryTableComponent } from './history-table.component';

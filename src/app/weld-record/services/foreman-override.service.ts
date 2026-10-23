@@ -3,7 +3,7 @@
    in the joint's History, along with any off-list GWP/filler it let the person pick. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { DeviationItem } from '../../data/workflow';
+import { DeviationItem } from '../model/workflow-types';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })

@@ -14,13 +14,13 @@ import { PersonSearchInputComponent } from '../../shared/person-search-input.com
 import { TableState } from '../../shared/table-state';
 import { TableToolbarComponent } from '../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
-import { downloadCsv } from '../../data/export-csv';
+import { downloadCsv } from '../../shared/export-csv';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import {
   makeupGrants, addMakeupGrant, removeMakeupGrant, updateMakeupGrant, grantStatus, GrantStatus,
   daySpan, daysRemaining, ANNUAL_MAKEUP_DAYS, MakeupGrant
-} from '../../data/makeup';
+} from './makeup-grants';
 
 interface GrantRow {
   grant: MakeupGrant;

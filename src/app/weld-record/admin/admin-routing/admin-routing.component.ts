@@ -14,20 +14,26 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TooltipDirective } from '../../../shared/tooltip.directive';
 import { TableState } from '../../../shared/table-state';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
+import { downloadCsv } from '../../../shared/export-csv';
 import { Job } from '../../../data/jobs';
 import {
-  addStageTemplate, updateStageTemplate, deleteStageTemplate, reorderStageTemplates,
-  allStageIds, getTemplates, ROLES, type Role, FORM_OPTIONS, formLabel, type SignoffForm
-} from '../../../data/workflow';
+  addStageTemplate,
+  updateStageTemplate,
+  deleteStageTemplate,
+  reorderStageTemplates,
+  allStageIds,
+  getTemplates,
+} from '../../routing/stage-templates';
+import { ROLES, type Role, type SignoffForm } from '../../model/workflow-types';
+import { FORM_OPTIONS, formLabel } from '../../signoff-definition/signoff-forms';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import {
   ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
   describeConditions, stageConditionFields, stepAnswerFieldsBefore, ENGINEERING_HOLD_TARGET
-} from '../../../data/step-conditions';
+} from '../../routing/step-conditions';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
-} from '../../../data/condition-editing';
+} from './condition-editing';
 
 interface RoutingRow {
   id: string;

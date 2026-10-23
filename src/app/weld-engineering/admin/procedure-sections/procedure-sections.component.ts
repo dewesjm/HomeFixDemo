@@ -10,7 +10,7 @@ import { procedures } from '../../../data/procedures';
 import {
   procedureSections, addSection, addField, sectionNameProblem, fieldDraftProblem, sectionNumber,
   BUILT_IN_SECTIONS, EXTRA_FIELD_TYPE_OPTIONS, type ExtraFieldType, type ProcedureSection
-} from '../../../data/procedure-sections';
+} from '../../procedure-sections';
 
 interface FieldDraftForm { label: string; type: ExtraFieldType; required: boolean; optionsText: string; }
 

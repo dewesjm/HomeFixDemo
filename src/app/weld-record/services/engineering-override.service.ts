@@ -3,7 +3,7 @@
    joint (unlike other unsigned edits), with one History entry: the reason plus every value set. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { SignoffInput } from '../../data/workflow';
+import { SignoffInput } from '../model/workflow-types';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })

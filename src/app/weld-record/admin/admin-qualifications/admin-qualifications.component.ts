@@ -11,13 +11,13 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
-import { downloadCsv } from '../../../data/export-csv';
-import { ALL_QUALS } from '../../../data/qualifications';
+import { downloadCsv } from '../../../shared/export-csv';
+import { ALL_QUALS } from '../../qualifications/qualifications';
 import {
   QualCondition, SELF, conditionFields, conditionWhenText, heldBy, qualConditions, setQualConditions, userOf,
-} from '../../../data/qual-conditions';
-import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../../data/qual-requirements';
-import { WhenGroup, cloneWhen, pruneWhen } from '../../../data/qual-when';
+} from '../../qualifications/qual-conditions';
+import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications/qual-requirements';
+import { WhenGroup, cloneWhen, pruneWhen } from '../../qualifications/qual-when';
 import { QualGroupEditorComponent } from './qual-group-editor.component';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
 

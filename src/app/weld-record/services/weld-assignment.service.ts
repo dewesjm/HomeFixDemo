@@ -3,8 +3,10 @@
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { JobWorkflow, WorkflowStage, ENGINEERING_ENTRY_KEYS, isFilledByRule, withFills } from '../../data/workflow';
-import { heldQuals } from '../../data/qual-conditions';
+import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
+import { ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
+import { isFilledByRule, withFills } from '../signoff-definition/field-fill';
+import { heldQuals } from '../qualifications/qual-conditions';
 import { assignedInputs, isAssignedStage, isEngineeringEntryJoint } from '../../data/weld-assignment';
 import { WorkflowStore } from './workflow-store.service';
 

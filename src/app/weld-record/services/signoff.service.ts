@@ -3,8 +3,35 @@
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow, activeStage, applySignedFlags, routeBack, setRoutingFrom, signoffUndo, ndtKindOptions, fabricationSnapshot, nextRepairStage, isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, excavationIdForRepair, hasDecision, excavationNdtStageFor, stageFromTemplate, labelFor, isRoutingLockedField, baseStepId, stepOnJoint, fieldsShown, visibleSignoffFields, isUserEditable, snapshotInputs, displayValue, getTemplates, insertEngineeringHold, rejectHoldReason, typeRepeatable, blankStage, withComments, repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep, typeDefinition, signoffForm } from '../../data/workflow';
-import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../../data/step-conditions';
+import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
+import { activeStage, setRoutingFrom } from '../routing/current-routing';
+import { applySignedFlags, routeBack, signoffUndo, blankStage } from '../routing/route-changes';
+import { ndtKindOptions } from '../routing/ndt';
+import { fabricationSnapshot } from '../fabrication/fabrication-fields';
+import {
+  nextRepairStage,
+  excavationNdtStageFor,
+  stageFromTemplate,
+  insertEngineeringHold,
+  rejectHoldReason,
+} from '../routing/added-steps';
+import {
+  isRepairStageId,
+  isExcavationNdtStageId,
+  repairIdForExcavation,
+  excavationIdForRepair,
+  baseStepId,
+  stepOnJoint,
+} from '../routing/step-ids';
+import { hasDecision, isRoutingLockedField } from '../signoff-definition/stage-rules';
+import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/stage-display';
+import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
+import { isUserEditable } from '../signoff-definition/field-locks';
+import { getTemplates } from '../routing/stage-templates';
+import { typeRepeatable, typeDefinition } from '../signoff-definition/signoff-types';
+import { withComments, signoffForm } from '../signoff-definition/signoff-forms';
+import { repeatsThroughNdt, repeatReturnStep, signedAsStep, signAsStep } from '../routing/type-routing';
+import { describeConditions, matchingRejectRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from '../routing/step-conditions';
 import { isNonFerrousOrAustenitic } from '../../data/material-classification';
 import { WorkflowStore } from './workflow-store.service';
 

@@ -4,7 +4,9 @@ import { SignoffService } from './signoff.service';
 import { DeviationService } from './deviation.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
-import { activeStageId, isStageLocked, seededWorkflow, DeviationItem } from '../../data/workflow';
+import { activeStageId, isStageLocked } from '../routing/current-routing';
+import { seededWorkflow } from '../../data/seeded-workflow';
+import { DeviationItem } from '../model/workflow-types';
 
 function weldingJob(): Job {
   const job = addTestJob();

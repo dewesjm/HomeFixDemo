@@ -1,9 +1,15 @@
 /* The condition editor's working copy of a field condition: AND/OR groups of clauses as the admin
    edits them, and the conversion to and from the stored FieldCondition (data/workflow/field-conditions.ts) */
 import {
-  ConditionClause, ConditionTerm, ENGINEERING_OVERRIDE_KEY, FieldCondition, REJECTED_PHASE_UTRT_KEY,
-  conditionGroup, conditionOp, conditionTerms, isConditionGroup,
-} from '../../../data/workflow';
+  ConditionClause,
+  ConditionTerm,
+  FieldCondition,
+  conditionGroup,
+  conditionOp,
+  conditionTerms,
+  isConditionGroup,
+} from '../../signoff-definition/field-conditions';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../signoff-definition/condition-context';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
    the rejected phase has an RT/UT step */

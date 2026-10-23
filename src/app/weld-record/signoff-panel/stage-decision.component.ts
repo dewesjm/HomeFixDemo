@@ -1,7 +1,7 @@
 /* A step's decision (Inspection Results: SAT/UNSAT), on a step with a reject target. The sign-off panel
    draws it below the step's form, or the definition form where the Layout list places it. */
 import { Component, input } from '@angular/core';
-import { WorkflowStage } from '../../data/workflow';
+import { WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
 
 @Component({

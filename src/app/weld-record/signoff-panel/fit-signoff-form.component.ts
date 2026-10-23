@@ -2,7 +2,7 @@
    joint design calls for it), and Fit's Defer Tack */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SignoffField, WorkflowStage } from '../../data/workflow';
+import { SignoffField, WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
 
 /* visibleSignoffFields() leaves out a row's fields when the joint design doesn't call for them */

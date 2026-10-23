@@ -2,9 +2,19 @@ import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lucide/angular';
-import { WorkflowStage, FOREMAN_OVERRIDE_ENABLED, COMMENTS_FIELD, drawsFromDefinition, hasCommentsBox, hasDecision, showsType, panelDrawsQualCheck, ndtLayerType, signoffForm } from '../../data/workflow';
-import { qualCheck, QualCheckResult } from '../../data/qualifications';
-import { conditionRequirements, heldQuals } from '../../data/qual-conditions';
+import { WorkflowStage } from '../model/workflow-types';
+import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
+import {
+  COMMENTS_FIELD,
+  drawsFromDefinition,
+  hasCommentsBox,
+  panelDrawsQualCheck,
+  signoffForm,
+} from '../signoff-definition/signoff-forms';
+import { hasDecision, showsType } from '../signoff-definition/stage-rules';
+import { ndtLayerType } from '../routing/ndt';
+import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
+import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { CatalogStageFormComponent } from './catalog-stage-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
