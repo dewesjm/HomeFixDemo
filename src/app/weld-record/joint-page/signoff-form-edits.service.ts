@@ -119,7 +119,7 @@ export class SignoffFormEditsService {
     this.applyFills(stage);
   }
 
-  /* Fields prepopulated from another value (Admin > Signoff Type Definition, field-fill.ts) after a
+  /* Fields prepopulated from another value (Admin > Signoff Type Forms, field-fill.ts) after a
      change on the step: copied in when their rule starts holding or its source changes, blanked when
      it stops. Blanked ones get the external system's values back, unless a Foreman Override or
      engineering override has the step. */

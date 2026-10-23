@@ -1,5 +1,5 @@
 /* Facts about a joint that field conditions read as virtual Joint Details keys ('yes' or ''),
-   and how Admin > Signoff Type Definition words them */
+   and how Admin > Signoff Type Forms words them */
 import { Job } from '../../data/jobs';
 import { isTitaniumJoint } from '../../data/material-classification';
 import { requiresTraceability } from '../../data/mcl-traceability';

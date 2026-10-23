@@ -44,7 +44,7 @@ export interface SignoffField {
   options?: { label: string; value: string }[];
   showIf?: { key: string; equals?: string; anyOf?: string[] };
   fullWidth?: boolean;   // spans full grid width (3 columns)
-  disabled?: boolean;    /* runtime only: disabled by its Signoff Type Definition rule */
+  disabled?: boolean;    /* runtime only: disabled by its Signoff Type Form rule */
   requiredMessage?: string; /* runtime only: the definition's error for a required field left empty */
 }
 
@@ -187,7 +187,7 @@ export interface StageTemplate {
   rejectToStage?: string;
   /* role that this stage routes to */
   role?: string;
-  /* admin-managed signoff type options (Admin > Signoff Type Availability) (e.g. Fit/Weld Build-Up, MT/PT) */
+  /* admin-managed signoff type options (Admin > Signoff Types By Routing) (e.g. Fit/Weld Build-Up, MT/PT) */
   typeOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */
   includeWhen?: ConditionRule[];

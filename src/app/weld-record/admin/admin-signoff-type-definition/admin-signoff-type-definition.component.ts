@@ -1,4 +1,4 @@
-/* Admin → Signoff Type Definition: one definition per Type (Admin > Routing Signoff Types), plus
+/* Admin → Signoff Type Forms: one definition per Type (Admin > Signoff Types), plus
    Excavation NDT's own (one shared by every round). A row expands to one line per field, its rules
    stacked as Conditions | Behaviors; editing picks any field from the catalog and sets when it shows,
    when it's prepopulated (from a routing step, this step or the WTN), when it's disabled, and when it's
@@ -138,7 +138,7 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   private typeLabel(typeId: string): string {
-    return this.types.find(t => t.typeId === typeId)?.typeLabel ?? `${typeId} (not in Routing Signoff Types)`;
+    return this.types.find(t => t.typeId === typeId)?.typeLabel ?? `${typeId} (not in Signoff Types)`;
   }
 
   /* every Type with a seeded definition, merged with any stored overrides, then any other stored ones */

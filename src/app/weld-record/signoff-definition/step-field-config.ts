@@ -1,4 +1,4 @@
-/* Signoff Type Definitions: one per Type (Admin > Routing Signoff Types), matched by the Type's value.
+/* Signoff Type Forms: one per Type (Admin > Signoff Types), matched by the Type's value.
    Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
    out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A step
    reads the definition of the Type it's being signed as; Excavation NDT, whose Type is whichever
@@ -63,7 +63,7 @@ export function definitionFields(items: FieldActivation[]): FieldActivation[] {
 export type VerifyAgainst = 'fabrication' | 'record';
 
 export interface TypeDefinition {
-  /* the Type's value (Routing Signoff Types), or EXCAVATION_DEFINITION */
+  /* the Type's value (Signoff Types), or EXCAVATION_DEFINITION */
   typeId: string;
   fields: FieldActivation[];
   /* unset = the default definition's, else the record */
@@ -247,7 +247,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 
 /* the definition a step reads: its Type's (the shared Excavation NDT one for any round); '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
-   step added in Admin > Routing Settings without a Signoff Type Availability row), which uses its template */
+   step added in Admin > Routing Settings without a Signoff Types By Routing row), which uses its template */
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return EXCAVATION_DEFINITION;

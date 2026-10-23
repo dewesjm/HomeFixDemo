@@ -4,7 +4,7 @@ import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions } from './si
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signoff-types';
 
-describe('Signoff Type Availability', () => {
+describe('Signoff Types By Routing', () => {
   afterEach(() => { localStorage.removeItem(STORAGE.signoffTypes); localStorage.removeItem(STORAGE.routingSignoffTypes); });
 
   it('seeds the built-in steps plus Repair and Excavation NDT', () => {
@@ -45,7 +45,7 @@ describe('Signoff Type Availability', () => {
     expect(signoffTypeOptions('nqc-fitup-insp')?.map(o => o.value)).toEqual(['fitup-insp']);
   });
 
-  it('options carry their Routing Signoff Types name and settings; a deleted Type drops out', () => {
+  it('options carry their Signoff Types name and settings; a deleted Type drops out', () => {
     expect(signoffTypeOptions('root-layer')).toEqual([
       { label: 'Interim Layer', value: 'interim', default: true, repeatable: true },
       { label: 'Final Weld', value: 'final-weld', signsStep: 'final-weld' },

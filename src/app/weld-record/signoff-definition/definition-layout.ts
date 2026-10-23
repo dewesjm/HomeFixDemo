@@ -1,4 +1,4 @@
-/* How a step's form is laid out from its Signoff Type Definition: the items in line-number order,
+/* How a step's form is laid out from its Signoff Type Form: the items in line-number order,
    fields with the same line number side by side, split by headings (a heading can start a box).
    Type, Comments, References and Inspection Results are laid out like fields. Fields on a line share its width. */
 import type { FieldActivation } from './step-field-config';

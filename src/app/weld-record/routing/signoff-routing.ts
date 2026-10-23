@@ -37,7 +37,7 @@ function resolveExcavationInspectionType(originInspectionType: string, phase: st
   return needs5xInstead ? '5x' : originInspectionType;
 }
 
-/* a repeatable Type (Admin > Signoff Type Availability, e.g. Interim Layer, Weld Build-Up): the signoff
+/* a repeatable Type (Admin > Signoff Types By Routing, e.g. Interim Layer, Weld Build-Up): the signoff
    is recorded, but the step stays unsigned and the routing stays where it is */
 const repeatable = (s: WorkflowStage) => typeRepeatable(s.id, s.signoffType);
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;

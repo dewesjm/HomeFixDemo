@@ -1,5 +1,5 @@
-/* Admin → Signoff Type Availability: the seeded table of routing steps that have a Type droplist and
-   which Types (Admin > Routing Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
+/* Admin → Signoff Types By Routing: the seeded table of routing steps that have a Type droplist and
+   which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -53,7 +53,7 @@ export class AdminSignoffTypesComponent {
     { id: REPAIR_TYPE_ROW, label: 'Repair' },
     { id: EXCAVATION_TYPE_ROW, label: 'Excavation NDT' },
   ];
-  /* what an option can be: the Types in Admin > Routing Signoff Types */
+  /* what an option can be: the Types in Admin > Signoff Types */
   readonly typeChoices = getRoutingSignoffTypes();
 
   rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => this.toRow(r.stepId, r.types)));

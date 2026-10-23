@@ -1,4 +1,4 @@
-/* Edits one AND/OR group of a field condition on Admin > Signoff Type Definition (condition-work.ts).
+/* Edits one AND/OR group of a field condition on Admin > Signoff Type Forms (condition-work.ts).
    Items are clauses or nested groups, which render this same editor. Edits are emitted as a new group. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';

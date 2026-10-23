@@ -1,4 +1,4 @@
-/* The panel under a field on Admin > Signoff Type Definition while one of its rules is open: the
+/* The panel under a field on Admin > Signoff Type Forms while one of its rules is open: the
    condition (an AND/OR group, condition-group-editor), and for Prepopulated from the step and field it
    copies. Changes are emitted; the page writes them to the field (definition-edits.ts). */
 import { Component, input, output } from '@angular/core';

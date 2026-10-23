@@ -40,7 +40,7 @@ export function typedRequirementError(stage: WorkflowStage, f: { key: string; la
 }
 
 /* Fields shown on the step, with their runtime options. Steps with an Admin > Signoff Type
-   Definition (the built-in routing, Repair, Excavation NDT, Fit as Weld Build-Up) list its fields
+   Forms (the built-in routing, Repair, Excavation NDT, Fit as Weld Build-Up) list its fields
    (definedFields); steps added in Admin > Routing Settings use their template's fields. */
 export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext): StageField[] {
   const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);

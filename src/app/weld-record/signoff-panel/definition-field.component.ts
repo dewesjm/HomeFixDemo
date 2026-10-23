@@ -1,4 +1,4 @@
-/* One field on a form laid out from its Signoff Type Definition (definition-form): the control its
+/* One field on a form laid out from its Signoff Type Form (definition-form): the control its
    type calls for, its error or warning, and the description under it. A step field saves to the
    step's inputs; a sign-off field (Pre-Fit/Fit's insert, backing ring and Defer Tack) to its
    sign-off inputs. */

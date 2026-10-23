@@ -1,4 +1,4 @@
-/* Admin > Signoff Type Definition's Layout list: the line number of each of a definition's ticked
+/* Admin > Signoff Type Forms's Layout list: the line number of each of a definition's ticked
    fields and headings (optionally starting a box), which also places Inspection Results, and the
    fields' widths. The list is kept sorted by line number; the arrows reorder within a line. Edits are
    emitted as the new list. */

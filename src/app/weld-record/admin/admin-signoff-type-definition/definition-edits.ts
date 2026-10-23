@@ -1,4 +1,4 @@
-/* Admin > Signoff Type Definition's edits to a definition's field list that aren't layout: the
+/* Admin > Signoff Type Forms's edits to a definition's field list that aren't layout: the
    condition editor's working copy written back to the field it's open on (Show when, Disabled when,
    Required when, Prepopulated from), and the fill source picker's values. */
 import { FieldActivation } from '../../signoff-definition/step-field-config';

@@ -8,7 +8,7 @@ Last updated 2026-10-23.
 ## Terms
 
 - **Routing**: a status the joint is in (Pre-Fit, Fit, Tack, Root, Root NDT 5X/VT, …). Each is a row on Admin > Routing Settings and a box on the routing bar.
-- **Signoff Type** (Type): what gets signed in a routing (Fit, Weld Build-Up, VT, 5X, Interim Layer, Final Weld, …). Listed on Admin > Routing Signoff Types; Admin > Signoff Type Availability says which routings offer which; each has its own form on Admin > Signoff Type Definition.
+- **Signoff Type** (Type): what gets signed in a routing (Fit, Weld Build-Up, VT, 5X, Interim Layer, Final Weld, …). Listed on Admin > Signoff Types; Admin > Signoff Types By Routing says which routings offer which; each has its own form on Admin > Signoff Type Forms.
 - **Display Name**: what the joint and its routing bar call a routing (Routing Settings), so two routings can show the same name.
 
 ## How routing works
@@ -16,17 +16,17 @@ Last updated 2026-10-23.
 - A joint's routing is an ordered list of routings. The **current routing** is the first required routing that isn't signed off yet.
 - Routings are signed in order. A routing can't be signed until every required routing before it is signed.
 - Each routing is signed by one role (Fitting, Welding, Foreman, Inspector and so on), its **Persona** in Admin > Routing Settings.
-- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Type Availability row and starts with the regular row's reject rules. Excavation NDT isn't a Routing Settings row: it goes to the NQC Inspector on N Ind 1 or 2 joints in code.
+- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT isn't a Routing Settings row: it goes to the NQC Inspector on N Ind 1 or 2 joints in code.
 - **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on routings the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed routing and every routing after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
 - **Admin > Routing Override** changes a joint's current routing to any routing. Nothing is marked signed. Going back works like any route-back (that routing and every routing after it come up blank). Going forward only moves the current routing: the routings before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new routing. The joint is found by typing its Hull, Drawing and Joint exactly, and a Reason for change is required; the Routing History entry records it.
 - **Admin > Routing Settings** sets, per routing: its order, when a joint gets it ("Included when"), where an UNSAT goes ("Reject routes to", plus reject rules; a routing whose Reject routes to is itself records the UNSAT and the joint stays there), who signs it (**Persona**), and **Fabrication editable**. **Routing** is the routing's name in rules (Included when, reject rules, condition fields); **Display Name** is what the joint, its routing bar, Pipe Welding and History show (blank = the Routing name). A condition compares a field with "is", "is not" or "contains" (typed text, any case). The fields are every Joint Details field and every earlier routing's own answers (for example Root NDT 5X/VT's Weld Color); a reject rule can also use the rejected routing's own answers. Fields with a fixed list offer checkboxes; the others take a typed value. An earlier routing's answer is blank until that routing is signed, so a routing that depends on one is always on the joint and turns on or off as it's signed.
-- **Types** (Admin > Routing Signoff Types): a routing is where the joint is; its Types (Admin > Signoff Type Availability) are what can be signed there, and each Type has its own Signoff Type Definition. Picking a different Type clears the form and loads that Type's fields.
-- **Repeatable Types** (Admin > Routing Signoff Types): a Type can be repeatable. Signing with it records the signoff and History, but does nothing to the routing: the routing stays unsigned and current, on the same routing bar routing. The routing comes up blank for the next signoff, so every signoff is filled in fresh. Built in: Interim Layer and Weld Build-Up. Signing with a Type that isn't repeatable completes the routing. When the routing has NDT right after it (Layer and Layer NDT), a repeatable signoff completes the routing instead so its NDT comes up, and once that NDT (and any Repair it adds) is signed, the joint goes back to the routing, blank, for the next one.
-- **Signs routing** (Admin > Routing Signoff Types): a Type can name the routing it signs. Picked on an earlier routing, signing with it is that routing's signoff: the later routing is signed with the values, and the routings between are passed. Blank means it signs the routing it's picked on. Built in: **Final Weld** signs Final Weld, so Final Weld picked on Layer is the Final Weld signoff.
+- **Types** (Admin > Signoff Types): a routing is where the joint is; its Types (Admin > Signoff Types By Routing) are what can be signed there, and each Type has its own Signoff Type Form. Picking a different Type clears the form and loads that Type's fields.
+- **Repeatable Types** (Admin > Signoff Types): a Type can be repeatable. Signing with it records the signoff and History, but does nothing to the routing: the routing stays unsigned and current, on the same routing bar routing. The routing comes up blank for the next signoff, so every signoff is filled in fresh. Built in: Interim Layer and Weld Build-Up. Signing with a Type that isn't repeatable completes the routing. When the routing has NDT right after it (Layer and Layer NDT), a repeatable signoff completes the routing instead so its NDT comes up, and once that NDT (and any Repair it adds) is signed, the joint goes back to the routing, blank, for the next one.
+- **Signs routing** (Admin > Signoff Types): a Type can name the routing it signs. Picked on an earlier routing, signing with it is that routing's signoff: the later routing is signed with the values, and the routings between are passed. Blank means it signs the routing it's picked on. Built in: **Final Weld** signs Final Weld, so Final Weld picked on Layer is the Final Weld signoff.
 - **Fabrication editable**: the Fabrication fields can be changed while the current routing has it checked. Built in, that's Prep through Fit-Up Insp, so the fields lock once Fit-Up Insp is signed. A change applies straight away, including to joints already in progress. Repair and Excavation NDT routings, and a finished joint, always lock them. Correct does not change Fabrication fields.
-- Every routing's sign-off form, its fields and their layout, comes from Admin > Signoff Type Definition. Sold is never signed: the joint is closed once it gets there.
+- Every routing's sign-off form, its fields and their layout, comes from Admin > Signoff Type Forms. Sold is never signed: the joint is closed once it gets there.
 
 ## The path
 
@@ -37,7 +37,7 @@ Last updated 2026-10-23.
 | 3 | Tack | Welding | Unless Defer Tack was checked at Fit | Moves on to Fit-Up Insp |
 | 4 | Fit-Up Insp | Foreman or Inspector; NQC Inspector on its NQC row | Always (NQC row when Nuclear Indicator is 1 or 2, regular row otherwise) | **SAT**: moves on. **UNSAT**: back to Fit (Fit, Tack and Fit-Up Insp come up blank, and so does the fit-up data). If **Release to welding** is unchecked, Fit-Up Release becomes required |
 | 5 | Fit-Up Release | Foreman | Only when Fit-Up Insp didn't release to welding | Moves on |
-| 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Shown as **Tack** on the joint and its routing bar (its Display Name); its Type is **Deferred Tack**, so the record shows the Tack was deferred. Its own Signoff Type Definition, seeded with Tack's fields |
+| 6 | Deferred Tack | Welding | Only when Defer Tack was checked at Fit | Shown as **Tack** on the joint and its routing bar (its Display Name); its Type is **Deferred Tack**, so the record shows the Tack was deferred. Its own Signoff Type Form, seeded with Tack's fields |
 | 7 | Root | Welding | Always | Moves on to Root NDT |
 | 8 | Root NDT | Inspector; NQC Inspector on its NQC rows | Always (see the NDT chart; NQC rows when Nuclear Indicator is 1 or 2) | See "When an NDT routing fails" |
 | 9 | Layer | Welding | Always | Type is **Interim Layer** or **Final Weld**. **Interim Layer** is repeatable: recorded, then Layer NDT; when Layer NDT passes the joint comes back to Layer, blank, for the next layer. With no Layer NDT the joint just stays on Layer. **Final Weld** shows the Final Weld fields and is the Final Weld signoff: Final Weld is signed and the joint moves on to Final NDT. Layer then shows signed if it had an Interim Layer, otherwise it drops off the routing bar |
@@ -74,7 +74,7 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 - **Type is never pre-filled:** every inspection routing's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
 - **Valid values:** NDT Root, NDT Each Layer and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
-- **Root 5X question:** when NDT Root is 5X (its Show when on Admin > Signoff Type Definition, Root), the Root routing asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X routing automatically when Root itself is signed.
+- **Root 5X question:** when NDT Root is 5X (its Show when on Admin > Signoff Type Forms, Root), the Root routing asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X routing automatically when Root itself is signed.
 
 ## When an NDT routing fails
 
@@ -89,7 +89,7 @@ When the Repair routing is signed, where the joint goes depends on what was chos
 
 | Choice on the Repair routing | Where the joint goes |
 |---|---|
-| **Allowable thickness exceeded** (checked) | Back to that phase's RT/UT routing. This wins over the Repair Code. The checkbox only shows when that phase has a RT/UT routing (by default; it's the field's Show when rule on Admin > Signoff Type Definition) |
+| **Allowable thickness exceeded** (checked) | Back to that phase's RT/UT routing. This wins over the Repair Code. The checkbox only shows when that phase has a RT/UT routing (by default; it's the field's Show when rule on Admin > Signoff Type Forms) |
 | **Grind Only** | Back to the NDT routing that failed |
 | **Weld Repair** | An **Excavation NDT** routing is added right after the Repair (see below) |
 | **Cut** | The joint starts over from Fit (see below) |
@@ -123,7 +123,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 **Fit as Weld Build up**
 - The weld fields below, plus at least one **Affected Item**.
-- **MIC verified** for each affected item whose MCL is MC-I (by default: Admin > Signoff Type Definition, Weld Build-Up, Affected Item MIC 1 / MIC 2 verified).
+- **MIC verified** for each affected item whose MCL is MC-I (by default: Admin > Signoff Type Forms, Weld Build-Up, Affected Item MIC 1 / MIC 2 verified).
 
 **Weld routings (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed. Weld Process, the PH/IP limits and any override limits fill in from the WTN.
@@ -157,7 +157,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 Two things can be signed anyway, as accepted deviations. Everything else above stays a hard stop.
 - An Actual PH/IP value outside its requirement limits.
-- A failed Qualification Check (welding routings, and the inspection routings whose Signoff Type Definition lists Qualification Check).
+- A failed Qualification Check (welding routings, and the inspection routings whose Signoff Type Form lists Qualification Check).
 
 When a routing has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation created" entry with the reason and each item) and signs the routing.
 

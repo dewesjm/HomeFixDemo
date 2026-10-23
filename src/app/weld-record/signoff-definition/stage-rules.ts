@@ -5,7 +5,7 @@ import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation, StepRef } fro
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 
 /* true when the user picks SAT/UNSAT on this stage (the Decision radios render on the same
-   condition): its Signoff Type Definition lists Inspection Results, or, for a step with no definition
+   condition): its Signoff Type Form lists Inspection Results, or, for a step with no definition
    (added in Admin > Routing Settings), it has a reject target. Other stages are accepted on signoff
    with no choice, so their SAT isn't shown or recorded. */
 export function hasDecision(stage: Pick<WorkflowStage, 'id' | 'signoffType' | 'rejectToStage'>): boolean {
@@ -17,7 +17,7 @@ export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | '
   return stage.result === 'unsat' && !stage.rejectToStage;
 }
 
-/* whether the Type droplist shows: the step has Type options (Admin > Signoff Type Availability) and
+/* whether the Type droplist shows: the step has Type options (Admin > Signoff Types By Routing) and
    the definition of the Type it's on lists Type (a step with no definition, or whose Type isn't picked
    yet, always shows it) */
 export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'signoffType'>): boolean {
@@ -25,7 +25,7 @@ export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'sig
   return !hasStepActivation(stage) || definitionHas(stage, TYPE_KEY);
 }
 
-/* a step whose Type options have no default (Admin > Signoff Type Availability) starts blank
+/* a step whose Type options have no default (Admin > Signoff Types By Routing) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
    only one option */
 export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'typeOptions'>): boolean {
@@ -46,7 +46,7 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'typeOptions'>)
   return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
-/* which steps show References in their form: those whose Signoff Type Definition lists References
+/* which steps show References in their form: those whose Signoff Type Form lists References
    (by default RT, UT and Repair); Correct shows it on every step */
 export const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 
@@ -67,7 +67,7 @@ export function isRoutingLockedField(stageId: string, key: string): boolean {
   return (ROUTING_LOCKED_FIELD_KEYS[isRepairStageId(stageId) ? 'repair' : baseStepId(stageId)] ?? []).includes(key);
 }
 
-/* routing-read fields an admin may still take off a Signoff Type Definition, with what that does;
+/* routing-read fields an admin may still take off a Signoff Type Form, with what that does;
    the stored value then stays at the one the step starts with */
 export const DEFINITION_REMOVAL_NOTES: Record<string, string> = {
   releaseToWelding: 'Unticked: every joint is released to welding and Fit-Up Release never comes up.',
@@ -88,7 +88,7 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
 
 /* what the signoff section's fields and the joint's References show, and Inspection Results' routing */
 const OWN_SPOT_NOTES: Record<string, string> = {
-  type: "Shown when Admin > Signoff Type Availability gives the routing options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
+  type: "Shown when Admin > Signoff Types By Routing gives the routing options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
   decision: 'UNSAT can be signed only on a routing with a Reject routes to target (Admin > Routing Settings).',
   comments: 'Shown while the routing needs a signoff.',
   references: "The joint's References (attached file names), drawn the width of the form.",

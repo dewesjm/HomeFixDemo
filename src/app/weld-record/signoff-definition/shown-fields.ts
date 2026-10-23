@@ -1,4 +1,4 @@
-/* The fields a step shows: from its Admin > Signoff Type Definition when it has one (the built-in
+/* The fields a step shows: from its Admin > Signoff Type Forms when it has one (the built-in
    routing, Repair, Excavation NDT, Fit as Weld Build-Up), otherwise from its template (steps added
    in Admin > Routing Settings). The joint page adds runtime options on top (joint-form/stage-form.ts);
    History and Correct use these as they are, so all three list the same fields. */

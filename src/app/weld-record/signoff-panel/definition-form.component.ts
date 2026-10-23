@@ -1,4 +1,4 @@
-/* A step's form, drawn from its Signoff Type Definition: its fields in definition order, on the lines
+/* A step's form, drawn from its Signoff Type Form: its fields in definition order, on the lines
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
    sign-off fields go where the Layout list places them too; Comments, Inspection Results and the

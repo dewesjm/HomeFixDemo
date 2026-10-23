@@ -1,6 +1,6 @@
-/* Where a signoff goes because of its Type (Admin > Signoff Type Availability): a repeatable Type
+/* Where a signoff goes because of its Type (Admin > Signoff Types By Routing): a repeatable Type
    on a step its NDT follows (Interim Layer) brings up that NDT and then comes back to the step, and
-   a Type whose Signs step is a later step (Layer's Final Weld, Admin > Routing Signoff Types) is that
+   a Type whose Signs step is a later step (Layer's Final Weld, Admin > Signoff Types) is that
    step's signoff. */
 import { WorkflowStage } from '../model/workflow-types';
 import { typeRepeatable, typeSignsStep } from '../signoff-definition/signoff-types';

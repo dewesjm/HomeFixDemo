@@ -23,7 +23,7 @@ export function drawnByOwnForm(step: StepRef, key: string): boolean {
 /* The panel draws it, History and Correct add it (withComments). Saved in the step's signoffInputs. */
 export const COMMENTS_FIELD: SignoffField = { key: COMMENTS_KEY, label: 'Comments', type: 'text', required: false, fullWidth: true };
 
-/* a step whose Signoff Type Definition lists Comments; a step with no definition (added in Admin >
+/* a step whose Signoff Type Form lists Comments; a step with no definition (added in Admin >
    Routing Settings) has one unless noCommentsBox() says otherwise */
 export function hasCommentsBox(stage: Pick<WorkflowStage, 'id' | 'signoffType'>): boolean {
   if (hasStepActivation(stage)) return definitionHas(stage, COMMENTS_KEY);

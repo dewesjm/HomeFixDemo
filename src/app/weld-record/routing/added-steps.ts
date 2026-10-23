@@ -24,7 +24,7 @@ export function allowableThicknessAmount(nInd: string): string {
 /* Inserted when an NDT step is UNSAT. Its own routing on signoff (SignoffService.signStage()):
    Allowable thickness exceeded -> back to that phase's NDT RT/UT; else Grind Only -> that phase's
    NDT 5X/VT; Weld Repair -> inserts Excavation NDT next; Cut -> back to Fit. Its Type options are the
-   Repair row of Admin > Signoff Type Availability. */
+   Repair row of Admin > Signoff Types By Routing. */
 export const REPAIR_STAGE: StageTemplate = {
   id: 'repair', label: 'Repair', required: true, role: 'Foreman', fields: [
     { key: 'repairType', label: 'Repair Code', type: 'select', required: true,
@@ -52,7 +52,7 @@ const EXCAVATION_NDT_LABEL = 'Excavation NDT';
    `inspectionType` is the resolved single value the caller (SignoffService) passes in -- normally the
    origin's own inspectionType, except PT on non-ferrous/austenitic material requires 5X instead (the
    caller decides that, since it needs the job's material classification). UNSAT routes back to its
-   own round's Repair via rejectToStage. No Type at all when Admin > Signoff Type Availability has no
+   own round's Repair via rejectToStage. No Type at all when Admin > Signoff Types By Routing has no
    Excavation NDT row. */
 export function excavationNdtStage(inspectionType: string, repairId = 'repair'): StageTemplate {
   const kind: NdtKind = (inspectionType === 'ut' || inspectionType === 'rt') ? 'utrt'

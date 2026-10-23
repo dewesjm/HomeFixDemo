@@ -1,4 +1,4 @@
-/* The Type droplist on a step's form: options from Admin > Signoff Type Availability, blank to start
+/* The Type droplist on a step's form: options from Admin > Signoff Types By Routing, blank to start
    when none is the default (inspectionTypeRequired) */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';

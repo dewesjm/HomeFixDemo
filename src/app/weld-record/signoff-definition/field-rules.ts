@@ -1,5 +1,5 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
-   plain-language text for Admin > Signoff Type Definition */
+   plain-language text for Admin > Signoff Type Forms */
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
 import { jointDetailField } from '../routing/step-conditions';
 import { FieldActivation } from './step-field-config';

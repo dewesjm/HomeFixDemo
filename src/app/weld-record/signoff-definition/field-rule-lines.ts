@@ -1,5 +1,5 @@
 /* A field's rules on a step as Condition | Behaviors lines, for the expanded step rows on
-   Admin > Signoff Type Definition. Rules with the same condition share a line; a field with no
+   Admin > Signoff Type Forms. Rules with the same condition share a line; a field with no
    conditions reads "Always | Show"; a Required with its own error message quotes it. Never-required, never-disabled and not-prepopulated add no line. */
 import { FieldActivation } from './step-field-config';
 import { lookupCatalogField } from './field-catalog';

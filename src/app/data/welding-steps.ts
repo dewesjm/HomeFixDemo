@@ -15,7 +15,7 @@ const BACKING_RING_OPTIONS = [
    share the same choices: "Only Consumable Insert used as filler" copies the Fit stage's insert
    type/size into the filler fields. They show when the joint design needs each, and the MICs are only
    required when either joint member's MCL requires traceability: the fields' Show when and Required
-   rules (field-catalog.ts defaults, Admin > Signoff Type Definition). */
+   rules (field-catalog.ts defaults, Admin > Signoff Type Forms). */
 function insertAndBackingRingFields(): SignoffField[] {
   return [
     { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', required: true,

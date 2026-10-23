@@ -1,4 +1,4 @@
-/* Admin > Signoff Type Availability: which Types (Admin > Routing Signoff Types) each routing step
+/* Admin > Signoff Types By Routing: which Types (Admin > Signoff Types) each routing step
    offers in its Type droplist, and which is its default. The table is seeded below and the admin adds
    and removes rows; a step with no row has no Type. Every Repair round uses the Repair row. Excavation
    NDT's row has no options of its own: its Type is the inspection that rejected the joint
@@ -9,7 +9,7 @@ import { NDT_KINDS } from '../routing/ndt';
 import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from './routing-signoff-types';
 
-/* one Type a step offers, by its Routing Signoff Types value */
+/* one Type a step offers, by its Signoff Types value */
 export interface AvailableType {
   type: string;
   default?: boolean;
@@ -52,7 +52,7 @@ const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: EXCAVATION_TYPE_ROW, types: [] },
 ];
 
-/* bumped on every save of this table or of Routing Signoff Types, so getTemplates() knows its cached
+/* bumped on every save of this table or of Signoff Types, so getTemplates() knows its cached
    options are out of date */
 let version = 0;
 export const signoffTypesVersion = () => version * 1000 + routingSignoffTypesVersion();
@@ -79,8 +79,8 @@ export function hasSignoffTypeRow(stageId: string): boolean {
   return getSignoffTypeRows().some(r => r.stepId === id);
 }
 
-/* a step's Type options, each with its Routing Signoff Types name and settings; undefined when it
-   has no row (no Type droplist). A Type no longer in Routing Signoff Types is left out. */
+/* a step's Type options, each with its Signoff Types name and settings; undefined when it
+   has no row (no Type droplist). A Type no longer in Signoff Types is left out. */
 export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
   const id = signoffTypeRowId(stageId);
   const row = getSignoffTypeRows().find(r => r.stepId === id);

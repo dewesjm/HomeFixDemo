@@ -197,7 +197,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
 
   /* ── Signoff section ── (placed in the form by the Layout list on whichever step lists them) */
-  /* the Type droplist; its options and default are on Admin > Signoff Type Availability */
+  /* the Type droplist; its options and default are on Admin > Signoff Types By Routing */
   { key: 'type', label: 'Type', type: 'select', ownComponent: true },
   /* SAT/UNSAT, placed in the form by the Layout list; UNSAT needs a reject target to be signed */
   { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true },

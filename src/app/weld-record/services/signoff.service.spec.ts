@@ -433,7 +433,7 @@ describe('SignoffService', () => {
     expect(stages.find(s => s.id === 'review-o04')?.signed).toBeFalse();
   });
 
-  describe('repeatable Types (Admin > Signoff Type Availability)', () => {
+  describe('repeatable Types (Admin > Signoff Types By Routing)', () => {
     const setStage = (job: Job, id: string, patch: object) =>
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) }));
     const stage = (job: Job, id: string) => store.workflowFor(job)().stages.find(s => s.id === id)!;

@@ -1,6 +1,6 @@
-/* Admin > Routing Signoff Types: every Type a step can be signed as. A Type is added here first, then
-   offered on steps (Admin > Signoff Type Availability) and given its fields (Admin > Signoff Type
-   Definition, one definition per Type, matched by its value). Stored in localStorage. */
+/* Admin > Signoff Types: every Type a step can be signed as. A Type is added here first, then
+   offered on steps (Admin > Signoff Types By Routing) and given its fields (Admin > Signoff Type
+   Forms, one definition per Type, matched by its value). Stored in localStorage. */
 import { STORAGE } from '../../data/storage-keys';
 
 export interface RoutingSignoffType {

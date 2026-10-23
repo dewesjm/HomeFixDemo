@@ -53,7 +53,7 @@ describe('joint-form stage-form', () => {
     expect(change.fields!.map(f => f.key)).toEqual(ndt.fields.map(f => f.key));
   });
 
-  it('Fit as Weld Build-Up shows the fields its own Signoff Type Definition lists', () => {
+  it('Fit as Weld Build-Up shows the fields its own Signoff Type Form lists', () => {
     const j = job({ nInd: '1' });
     const fit = { ...stageOf(j, 'fit'), ...typeChange('Welding', stageOf(j, 'fit'), 'weld-buildup') };
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
@@ -66,7 +66,7 @@ describe('joint-form stage-form', () => {
     }
   });
 
-  it('Repair and Excavation NDT rounds read their Signoff Type Definition', () => {
+  it('Repair and Excavation NDT rounds read their Signoff Type Form', () => {
     const j = job({ rtRoot: '360', ndtEach: 'VT' });
     const stages = buildStages(j);
     const ctx: StageFormContext = { job: j, stages, offListUnlocked: false };

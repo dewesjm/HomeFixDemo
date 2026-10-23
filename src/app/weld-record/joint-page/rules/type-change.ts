@@ -1,5 +1,5 @@
 /* What picking a Type on the joint page does to the step: both stored Type values change, the form
-   clears and the step loads that Type's Signoff Type Definition. The step's own Types keep its
+   clears and the step loads that Type's Signoff Type Form. The step's own Types keep its
    template's field list; another Type (Fit's Weld Build-Up, Layer's Final Weld) carries its
    definition's. */
 import { Job } from '../../../data/jobs';

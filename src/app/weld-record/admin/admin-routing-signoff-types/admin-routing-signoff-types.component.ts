@@ -1,6 +1,6 @@
-/* Admin → Routing Signoff Types: every Type a step can be signed as, with whether it's repeatable and
+/* Admin → Signoff Types: every Type a step can be signed as, with whether it's repeatable and
    which step it signs (weld-record/signoff-definition/routing-signoff-types.ts). A Type is added here
-   first, then offered on steps (Signoff Type Availability) and given fields (Signoff Type Definition). */
+   first, then offered on steps (Signoff Types By Routing) and given fields (Signoff Type Form). */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

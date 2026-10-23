@@ -1,6 +1,6 @@
 /* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
    saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
-   Type options come from Admin > Signoff Type Availability (signoff-types.ts). */
+   Type options come from Admin > Signoff Types By Routing (signoff-types.ts). */
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, ConditionRule, RejectRule, registerStepTemplates } from './step-conditions';
