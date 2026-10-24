@@ -26,6 +26,7 @@ export interface SignoffTypeRow {
 
 export const REPAIR_TYPE_ROW = 'repair';
 export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
+export const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';
 
 const only = (type: string): AvailableType[] => [{ type, default: true }];
 
@@ -65,6 +66,8 @@ const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'review-o04', types: only('review-o04') },
   { stepId: 'sold', types: only('sold') },
   { stepId: REPAIR_TYPE_ROW, types: only('repair') },
+  { stepId: NQC_EXCAVATION_TYPE_ROW, types: [], typeSource: 'rejecting-inspection',
+    typeExceptions: [{ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }] },
   { stepId: EXCAVATION_TYPE_ROW, types: [], typeSource: 'rejecting-inspection',
     typeExceptions: [{ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }] },
 ];
@@ -88,7 +91,7 @@ export function setSignoffTypeRows(rows: SignoffTypeRow[]) {
 
 /* the table row a step reads: its own, or the shared Repair / Excavation NDT row for any round */
 export function signoffTypeRowId(stageId: string): string {
-  return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? EXCAVATION_TYPE_ROW : insertedDefinitionId(stageId) ?? stageId;
+  return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? (stageId.startsWith('nqc-') ? NQC_EXCAVATION_TYPE_ROW : EXCAVATION_TYPE_ROW) : insertedDefinitionId(stageId) ?? stageId;
 }
 
 export function hasSignoffTypeRow(stageId: string): boolean {
@@ -137,10 +140,10 @@ export function isOwnType(stageId: string, type: string): boolean {
 }
 
 /* The routing's configured Type source and first matching material exception. */
-export function excavationTypeOptions(job: Job | undefined, rejectingType: string): StageOption[] | undefined {
-  const row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
+export function excavationTypeOptions(job: Job | undefined, rejectingType: string, definitionId = EXCAVATION_TYPE_ROW): StageOption[] | undefined {
+  const row = getSignoffTypeRows().find(r => r.stepId === definitionId);
   if (!row) return undefined;
-  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(EXCAVATION_TYPE_ROW, job);
+  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(definitionId, job);
   const exception = job && row.typeExceptions?.find(r => r.from === rejectingType && (!r.materialFlag ||
     [job.materialType1, job.materialType2].some(code => materialClassification().some(m => m.code === code && m[r.materialFlag as MaterialFlag]))));
   const type = getRoutingSignoffTypes().find(t => t.value === (exception?.to ?? rejectingType));

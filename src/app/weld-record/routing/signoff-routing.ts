@@ -11,7 +11,6 @@ import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngine
 import {
   isRepairStageId,
   isExcavationNdtStageId,
-  excavationIdForRepair,
   baseStepId,
   stepOnJoint,
 } from './step-ids';
@@ -145,8 +144,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
     if (destination === 'add-excavation-ndt') {
       if (!isRepairStageId(stageId)) return;
-      const id = excavationIdForRepair(stageId);
       const excavation = excavationNdtStageFor(job, st.inputs['originInspectionType'] ?? '', stageId);
+      const id = excavation.id;
+      if (!excavation.role || !excavation.typeOptions?.length) throw new RoutingConfigurationError('Cannot insert Excavation NDT: configure a persona and available inspection Types.');
       const resolved = excavation.typeOptions?.[0]?.value ?? '';
       excavation.inputs['typeChangedFromPtTo5x'] = st.inputs['originInspectionType'] === 'pt' && resolved === '5x' ? 'yes' : '';
       if (stages.some(s => s.id === id)) stages = stages.map(s => s.id === id ? excavation : s);

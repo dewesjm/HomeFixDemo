@@ -11,7 +11,7 @@ export interface InsertionTrigger {
 
 export function insertionTriggers(templates: StageTemplate[], definitionId: string): InsertionTrigger[] {
   const matches = (to: string) => insertionDefinitionId(to) === definitionId
-    || to === ({ repair: 'repair', 'excavation-ndt': 'add-excavation-ndt', 'engineering-hold': 'engineering-hold' } as Record<string, string>)[definitionId];
+    || to === ({ repair: 'repair', 'excavation-ndt': 'add-excavation-ndt', 'nqc-excavation-ndt': 'add-excavation-ndt', 'engineering-hold': 'engineering-hold' } as Record<string, string>)[definitionId];
   const triggers: InsertionTrigger[] = [];
   for (const source of templates) {
     for (const mode of ['then', 'reject'] as const) {

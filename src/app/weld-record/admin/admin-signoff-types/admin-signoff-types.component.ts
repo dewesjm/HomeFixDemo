@@ -19,6 +19,7 @@ import {
   AvailableType,
   SignoffTypeRow,
   EXCAVATION_TYPE_ROW,
+  NQC_EXCAVATION_TYPE_ROW,
   getSignoffTypeRows,
   setSignoffTypeRows,
 } from '../../signoff-definition/signoff-types';
@@ -49,6 +50,7 @@ export class AdminSignoffTypesComponent {
   private seq = 0;
 
   readonly excavationId = EXCAVATION_TYPE_ROW;
+  readonly nqcExcavationId = NQC_EXCAVATION_TYPE_ROW;
   readonly excavationNote = EXCAVATION_NOTE;
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
@@ -99,7 +101,9 @@ export class AdminSignoffTypesComponent {
   exportCsv() {
     downloadCsv('signoff-type-availability', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
-      { header: 'Options', value: (r: TypeRow) => r.stepId === EXCAVATION_TYPE_ROW ? EXCAVATION_NOTE
+      { header: 'Type source', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Configured options' },
+      { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${e.materialFlag || 'Always'})`).join('; ') },
+      { header: 'Options', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },
     ], this.table.sorted());
   }
@@ -177,9 +181,11 @@ export class AdminSignoffTypesComponent {
   }
 
   reloadTypeRules() {
-    const row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
-    this.rows.update(rows => rows.map(r => r.stepId === EXCAVATION_TYPE_ROW
-      ? { ...r, typeSource: row?.typeSource, typeExceptions: row?.typeExceptions } : r));
+    const saved = getSignoffTypeRows();
+    this.rows.update(rows => rows.map(r => {
+      const row = saved.find(x => x.stepId === r.stepId);
+      return { ...r, typeSource: row?.typeSource, typeExceptions: row?.typeExceptions };
+    }));
   }
 
   private persist() {

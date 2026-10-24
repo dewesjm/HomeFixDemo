@@ -1,5 +1,5 @@
 <h2 class="section-title">Signoff Types By Routing</h2>
-<p class="text-sm mb-sm">Set each routing’s available Types, enable conditions and default. No default means the inspector must pick a Type.</p>
+<p class="text-sm mb-sm">A routing is where the joint is in the work process; a Signoff Type is the work or inspection recorded there. For example, Root NDT can offer VT and 5X. Use this page to choose each routing’s available Types, enable conditions and default. No default means the inspector must pick a Type.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search routings…" addLabel="Add routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -28,7 +28,7 @@
             }
           </td>
           <td>
-            @if (row.stepId === excavationId && editingUid() !== row.uid) {
+            @if (row.typeSource === 'rejecting-inspection' && editingUid() !== row.uid) {
               <span class="text-sm">{{ excavationNote }}</span>
             } @else if (editingUid() === row.uid) {
               <div class="flex flex-col gap-1">
@@ -108,3 +108,5 @@
 </div>
 
 <app-excavation-type-rules (saved)="reloadTypeRules()" />
+
+<app-excavation-type-rules [definitionId]="nqcExcavationId" title="NQC Excavation NDT" (saved)="reloadTypeRules()" />

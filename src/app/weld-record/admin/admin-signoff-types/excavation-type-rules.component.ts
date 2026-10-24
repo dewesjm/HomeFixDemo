@@ -1,12 +1,13 @@
 /* Excavation's dynamic Type source and material exceptions are saved with its availability row. */
-import { Component, output } from '@angular/core';
+import { Component, input, OnInit, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EXCAVATION_TYPE_ROW, getSignoffTypeRows, setSignoffTypeRows, SignoffTypeRow } from '../../signoff-definition/signoff-types';
 import { NDT_KINDS } from '../../routing/ndt';
 @Component({
   selector: 'app-excavation-type-rules', standalone: true, imports: [FormsModule],
   template: `
-    <h3 class="text-lg font-semibold mt-6">Excavation NDT Type</h3>
+    <section [attr.aria-label]="title() + ' Type settings'">
+    <h3 class="text-lg font-semibold mt-6">{{ title() }} Type</h3>
     <p class="text-sm mb-2">Type comes from the inspection that rejected the joint. The first matching exception below replaces it. Material conditions test either member using Admin &gt; Material Classification.</p>
     <label class="flex items-center gap-2 mb-2">Type source
       <select class="select select-sm" [(ngModel)]="source" aria-label="Excavation Type source">
@@ -30,15 +31,24 @@ import { NDT_KINDS } from '../../routing/ndt';
       }
     </tbody></table>
     <div class="flex gap-2 mt-2"><button class="btn btn-sm" (click)="add()">Add exception</button>
-      <button class="btn btn-sm btn-primary" (click)="save()">Save Type rules</button><span role="status">{{ message }}</span></div>
+      <button class="btn btn-sm btn-primary" (click)="save()">Save Type rules</button><button class="btn btn-sm" (click)="reset()">Cancel Type rules</button><span role="status">{{ message }}</span></div>
+    </section>
   `,
 })
-export class ExcavationTypeRulesComponent {
+export class ExcavationTypeRulesComponent implements OnInit {
+  definitionId = input(EXCAVATION_TYPE_ROW);
+  title = input('Excavation NDT');
   saved = output<void>();
   types = Object.values(NDT_KINDS).flatMap(k => k.options);
-  private row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
-  source = this.row?.typeSource ?? '';
-  rules = structuredClone(this.row?.typeExceptions ?? []);
+  source: string = '';
+  rules: NonNullable<SignoffTypeRow['typeExceptions']> = [];
+  ngOnInit() { this.reset(); }
+  reset() {
+    const row = getSignoffTypeRows().find(r => r.stepId === this.definitionId());
+    this.source = row?.typeSource ?? '';
+    this.rules = structuredClone(row?.typeExceptions ?? []);
+    this.message = '';
+  }
   message = '';
   add() { this.rules.push({ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }); }
   move(i: number, delta: number) {
@@ -47,9 +57,9 @@ export class ExcavationTypeRulesComponent {
   }
   save() {
     const rows = getSignoffTypeRows();
-    const patch: SignoffTypeRow = { ...(rows.find(r => r.stepId === EXCAVATION_TYPE_ROW) ?? { stepId: EXCAVATION_TYPE_ROW, types: [] }),
+    const patch: SignoffTypeRow = { ...(rows.find(r => r.stepId === this.definitionId()) ?? { stepId: this.definitionId(), types: [] }),
       typeSource: this.source === 'rejecting-inspection' ? 'rejecting-inspection' : undefined, typeExceptions: structuredClone(this.rules) };
-    setSignoffTypeRows([...rows.filter(r => r.stepId !== EXCAVATION_TYPE_ROW), patch]);
+    setSignoffTypeRows([...rows.filter(r => r.stepId !== this.definitionId()), patch]);
     this.message = 'Type rules saved';
     this.saved.emit();
   }

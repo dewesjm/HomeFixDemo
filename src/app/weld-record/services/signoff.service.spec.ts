@@ -234,7 +234,10 @@ describe('SignoffService', () => {
   describe('repeated repairs', () => {
     const patch = (job: Job, id: string, p: Record<string, unknown>) =>
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...p } : s) }));
-    const failNdt = (job: Job, id: string) => { patch(job, id, { result: 'unsat' }); service.signStage(job, id); };
+    const failNdt = (job: Job, id: string) => {
+      const type = store.workflowFor(job)().stages.find(s => s.id === id)!.typeOptions?.[0]?.value ?? '';
+      patch(job, id, { result: 'unsat', inspectionType: type, signoffType: type }); service.signStage(job, id);
+    };
     const signRepair = (job: Job, id: string, repairType: string) => {
       const st = store.workflowFor(job)().stages.find(s => s.id === id)!;
       patch(job, id, { inputs: { ...st.inputs, repairType } });

@@ -21,6 +21,21 @@ describe('Routing Settings rules editor', () => {
   afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
 
+  it('edits variant applicability with save, cancel and reopened stored settings', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();
+    const editor = fixture.componentInstance;
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.textContent).toContain('Inserted routings are unplanned work');
+    const open = () => { host.querySelector<HTMLButtonElement>('[aria-label="Edit applicability for NQC Excavation NDT"]')!.click(); fixture.detectChanges(); tick(); fixture.detectChanges(); };
+    const button = (label: string) => Array.from(host.querySelectorAll('dialog button')).find(b => b.textContent!.trim() === label) as HTMLButtonElement;
+    open(); editor.toggleValue(0, 0, '2'); button('Cancel').click(); fixture.detectChanges();
+    open(); expect(editor.condRules()[0][0].values).toEqual(['1', '2']);
+    editor.toggleValue(0, 0, '2'); button('Save conditions').click(); fixture.detectChanges();
+    expect(getTemplates()['Welding'].find(t => t.id === 'nqc-excavation-ndt')!.includeWhen![0][0].values).toEqual(['1']);
+    open(); expect(editor.condRules()[0][0].values).toEqual(['1']);
+    fixture.destroy();
+  }));
+
   it('opens saved thickness rules with valid selected fields rather than an empty selector', fakeAsync(() => {
     resetStepFieldConfig();
     localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify([{ typeId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }] }]));
@@ -57,7 +72,7 @@ describe('Routing Settings rules editor', () => {
     expect(getTemplates()['Welding'].find(t => t.id === 'test-inspection')!.rejectToStage).toBe('engineering-hold');
     expect(host.textContent).not.toContain('After an accepted signoff, the first matching rule');
     host.querySelector<HTMLButtonElement>('[aria-label="Edit persona for Excavation NDT"]')!.click(); fixture.detectChanges();
-    expect(host.querySelector('[aria-label="Rule persona"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Rule persona"]')).toBeNull();
     expect(host.querySelector('[aria-label="Otherwise persona"]')).not.toBeNull();
     fixture.destroy();
   }));
@@ -255,7 +270,7 @@ describe('Routing Settings rules editor', () => {
 
   it('separates inserted routings and edits the unconditional Excavation fallback', () => {
     expect(component.rows().filter(r => component.isAdded(r)).map(r => r.id)).toEqual([
-      'Welding:repair', 'Welding:excavation-ndt', 'Welding:engineering-hold',
+      'Welding:repair', 'Welding:excavation-ndt', 'Welding:nqc-excavation-ndt', 'Welding:engineering-hold',
     ]);
     const row = component.rows().find(r => r.id === 'Welding:excavation-ndt')!;
     component.openThenRules(row);

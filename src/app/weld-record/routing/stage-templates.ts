@@ -123,7 +123,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    _merged[trade] = _merged[trade].map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active', typeOptions: s.id === 'excavation-ndt' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
+    _merged[trade] = _merged[trade].map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active', typeOptions: s.lifecycle === 'excavation' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
   }
   return _merged;
 }
@@ -214,7 +214,7 @@ export function allStageIds(): { id: string; label: string }[] {
 
 /* A numbered round reads the settings of its shared added-routing row. */
 export function routingTemplateId(id: string): string {
-  return insertedDefinitionId(id) ?? /^(repair|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
+  return insertedDefinitionId(id) ?? /^(repair|nqc-excavation-ndt|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
 }
 export function getAddedTemplate(id: string): StageTemplate {
   return getTemplates()['Welding'].find(t => t.id === routingTemplateId(id))!;

@@ -20,11 +20,11 @@ export function stepOnJoint<T extends { id: string }>(stages: T[], id: string): 
    Repair's number. */
 
 export const isRepairStageId = (id: string) => /^repair(-\d+)?$/.test(id);
-export const isExcavationNdtStageId = (id: string) => /^excavation-ndt(-\d+)?$/.test(id);
+export const isExcavationNdtStageId = (id: string) => /^(nqc-)?excavation-ndt(-\d+)?$/.test(id);
 export const isEngineeringHoldId = (id: string) => /^engineering-hold(-\d+)?$/.test(id);
 
 const roundSuffix = (id: string) => /-(\d+)$/.exec(id)?.[0] ?? '';
-export const excavationIdForRepair = (repairId: string) => `excavation-ndt${roundSuffix(repairId)}`;
+export const excavationIdForRepair = (repairId: string, definitionId = 'excavation-ndt') => `${definitionId}${roundSuffix(repairId)}`;
 export const repairIdForExcavation = (excavationId: string) => `repair${roundSuffix(excavationId)}`;
 /* round number after the first, e.g. "Repair 2" */
 export const roundLabel = (label: string, id: string) => roundSuffix(id) ? `${label} ${roundSuffix(id).slice(1)}` : label;

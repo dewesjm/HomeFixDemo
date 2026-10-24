@@ -6,7 +6,7 @@ import { JobWorkflow, SignoffUndo, WorkflowStage } from '../model/workflow-types
 import { getTemplates } from './stage-templates';
 import { buildStages } from './build-stages';
 import { blankFabricationData } from '../fabrication/fabrication-fields';
-import { excavationIdForRepair, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
+import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
 import { fabricationSigned, goesBackPastFabrication } from './built-in-step-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
@@ -45,7 +45,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   const targetIdx = wf.stages.findIndex(s => s.id === targetId);
   if (targetIdx < 0) return { wf, fabReset: false };
   const fresh = new Map(buildStages(job).map(s => [s.id, s]));
-  const ownRound = isRepairStageId(targetId) ? [targetId, excavationIdForRepair(targetId)] : [];
+  const ownRound = isRepairStageId(targetId) ? [targetId, ...wf.stages.filter(s => isExcavationNdtStageId(s.id) && repairIdForExcavation(s.id) === targetId).map(s => s.id)] : [];
   const stages = wf.stages.map((s, i) => {
     if (i < targetIdx) return s;
     if (s.insertion && s.id !== targetId) return s.signed ? s : { ...s, required: false };

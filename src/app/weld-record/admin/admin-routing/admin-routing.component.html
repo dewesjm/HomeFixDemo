@@ -1,6 +1,6 @@
 <!-- Admin → Routing Settings maintenance table with sequence ordering and field config. -->
 <h2 class="section-title">Routing Settings</h2>
-<p class="text-sm mb-sm">Set routing order, inclusion conditions and signoff destinations.</p>
+<p class="text-sm mb-sm">A routing is where the joint is in the work process and what must happen next. A Signoff Type is the work or inspection recorded there and determines which form and fields you complete. Use this page to control the work sequence, inclusion conditions and destinations.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add numbered routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -8,10 +8,11 @@
 @for (added of [false, true]; track added) {
 <h3 class="text-lg font-semibold mt-4">{{ added ? 'Inserted routings' : 'Numbered routings' }}</h3>
 @if (added) {
+  <p class="text-sm mt-1">Inserted routings are unplanned work added when a condition occurs, such as a failed inspection or an accepted deviation.</p>
   <button type="button" class="btn btn-sm btn-outline my-2" [disabled]="!!editingId()" (click)="addRow(true)">Add inserted routing</button>
 }
 <div class="overflow-x-auto">
-<table class="table table-sm">
+<table class="table table-sm routing-settings-grid">
   <thead>
     <tr>
       <th appSortHeader [table]="table" field="sequence" label="Order" class="w-px"></th>
@@ -76,7 +77,7 @@
                 </div>
               } @empty { <p>No insertion rules.</p> }
             </details>
-            @if (canChangeStatus(row)) {
+            @if (canConfigureApplicability(row)) {
               <div class="mt-2">Applies when: {{ row.includedWhen }} <button type="button" class="btn btn-outline btn-xs" (click)="openConditions(row)" [attr.aria-label]="'Edit applicability for ' + row.routing">Edit</button></div>
             }
           } @else if (row.id.includes(':new-')) {

@@ -1,7 +1,7 @@
 /* Which steps the routing bar on the joint page shows, and their labels */
 import { WorkflowStage } from '../model/workflow-types';
 import { activeStageId } from './current-routing';
-import { excavationIdForRepair, isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
+import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
 
 export interface RoutingBarStep {
   stageIndex: number;
@@ -17,7 +17,7 @@ export function routingBarSteps(stages: WorkflowStage[]): RoutingBarStep[] {
   const activeId = activeStageId(stages);
   const byId = new Map(stages.map(s => [s.id, s]));
   const repairOpen = (repair: WorkflowStage | undefined) =>
-    isOpen(repair) || (!!repair && isOpen(byId.get(excavationIdForRepair(repair.id))));
+    isOpen(repair) || (!!repair && stages.some(s => isExcavationNdtStageId(s.id) && repairIdForExcavation(s.id) === repair.id && isOpen(s)));
   const shown = (s: WorkflowStage): boolean => {
     if (isRepairStageId(s.id)) return repairOpen(s);
     if (isExcavationNdtStageId(s.id)) return s.required && repairOpen(byId.get(repairIdForExcavation(s.id)));
@@ -28,6 +28,6 @@ export function routingBarSteps(stages: WorkflowStage[]): RoutingBarStep[] {
 
 /* a repair round's number is left off the bar (History keeps it) */
 function barLabel(s: WorkflowStage): string {
-  if (isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) return s.label.replace(/ \d+$/, '');
+  if (isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) return (s.displayName || s.label).replace(/ \d+$/, '');
   return s.displayName || s.label;
 }

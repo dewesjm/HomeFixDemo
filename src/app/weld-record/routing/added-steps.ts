@@ -1,3 +1,4 @@
+import { excavationDefinition } from './excavation-definition';
 /* Steps added to a joint while it's worked, not part of the built-in routing: Repair (after an NDT
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in step-ids.ts. */
@@ -27,18 +28,19 @@ export function nextRepairStage(stages: { id: string }[], job?: Job): StageTempl
 /* Build the round's inspection shell. Its selected Type loads the shared inspection form;
    signoff-types.ts resolves the configured Type source and exceptions before insertion. */
 export function excavationNdtStage(inspectionType: string, repairId = 'repair', job?: Job): StageTemplate {
+  const definition = job ? excavationDefinition(job) : getAddedTemplate('excavation-ndt');
   return {
-    ...getAddedTemplate('excavation-ndt'),
-    id: excavationIdForRepair(repairId), label: roundLabel(getAddedTemplate('excavation-ndt').displayName || getAddedTemplate('excavation-ndt').label, repairId), required: true,
-    rejectToStage: getAddedTemplate('excavation-ndt').rejectToStage, decisionLabel: 'Inspection Results',
-    typeOptions: excavationTypeOptions(job, inspectionType),
+    ...definition,
+    id: excavationIdForRepair(repairId, definition.id), label: roundLabel(definition.label, repairId), required: true,
+    rejectToStage: definition.rejectToStage, decisionLabel: 'Inspection Results',
+    typeOptions: excavationTypeOptions(job, inspectionType, definition.id),
   };
 }
 
 /* Runtime Excavation uses its saved persona conditions and resolved inspection choices. */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
-  const role = routingRole(getAddedTemplate('excavation-ndt'), job);
-  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId, job)), role };
+  const template = excavationNdtStage(inspectionType, repairId, job);
+  return { ...stageFromTemplate(template), displayName: template.displayName, role: routingRole(template, job) };
 }
 
 /* ── Engineering Hold ── */
@@ -79,6 +81,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
   return {
     id: t.id,
     label: t.label,
+    displayName: t.displayName,
     required: true,
     role: t.role ?? '',
     inputs,

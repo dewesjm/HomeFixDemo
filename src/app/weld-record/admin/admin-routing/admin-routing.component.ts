@@ -70,6 +70,11 @@ interface RoutingRow {
   ],
   templateUrl: './admin-routing.component.html',
   styles: [`
+    .routing-settings-grid { border-collapse: collapse; }
+    .routing-settings-grid th, .routing-settings-grid td {
+      vertical-align: top;
+      border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    }
     tr[draggable="true"] { cursor: grab; }
     tr.drop-above td { box-shadow: inset 0 2px 0 currentColor; }
     tr.drop-below td { box-shadow: inset 0 -2px 0 currentColor; }
@@ -166,6 +171,10 @@ export class AdminRoutingComponent {
   setupSummary(row: RoutingRow): string {
     const t = this.templateFor(row);
     return t ? addedRoutingSetup(t).summary : 'Save this draft, then configure its Types and forms.';
+  }
+
+  canConfigureApplicability(row: RoutingRow): boolean {
+    return this.canChangeStatus(row) || this.templateFor(row)?.lifecycle === 'excavation';
   }
 
   canChangeStatus(row: RoutingRow): boolean {
@@ -602,7 +611,7 @@ export class AdminRoutingComponent {
       { header: 'Type and form setup', value: (r: RoutingRow) => this.setupSummary(r) },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
-      { header: 'Included when', value: (r: RoutingRow) => this.isAdded(r) ? [...this.insertionTriggers(r).map(t => t.label), ...(this.canChangeStatus(r) ? [`Applies when: ${r.includedWhen}`] : [])].join('; ') : r.includedWhen },
+      { header: 'Included when', value: (r: RoutingRow) => this.isAdded(r) ? [...this.insertionTriggers(r).map(t => t.label), ...(this.canConfigureApplicability(r) ? [`Applies when: ${r.includedWhen}`] : [])].join('; ') : r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => this.getRejectLabel(r.rejectToStage) },
       { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },

@@ -1,6 +1,6 @@
 # Configurable inserted routing definitions and insertion
 
-Status: packages 1-2 implemented; stopped for review. Packages 3-4 remain deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
+Status: packages 1-3 implemented; stopped for review. Package 4 remains deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
@@ -65,7 +65,7 @@ Potential requirement raised for this scope: provide a separate **NQC Excavation
 - A Repair's Insert Excavation target should resolve the applicable regular/NQC definition from configuration rather than duplicate fixed nuclear checks inside insertion code. Decide whether the editor uses a shared logical target with conditional variants or explicit ordered insertion rules. Both must remain understandable in preview and exported settings.
 - Both variants must retain the parent Repair identity and original inspection, apply configured Type-source/material exceptions, return to their own Repair on rejection, and return to the correct regular/NQC phase inspection on acceptance.
 - Decide the routing-bar display name separately from the admin definition name; matching regular/NQC display names is consistent with existing numbered inspections. History must retain the actual instance/persona and inspection.
-- Confirm the separate-definition requirement and any distinct NQC Type/inspection rules before implementation. The present Persona rules already select the right signer, but do not satisfy independent NQC definition configuration by themselves.
+- Package 3 implements separate definitions with the same initial inspection/exception rules; no distinct NQC inspection requirements were specified. Persona, applicability, Types and destinations are independently configurable.
 
 ## Related Type-exception work
 
@@ -82,7 +82,7 @@ The current Excavation-specific Type exception section could become a shared **T
 
 1. **Definition classification and CRUD (complete):** persist inserted definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
 2. **Generic insertion and preview (complete):** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
-3. **Existing specialized types and NQC Excavation:** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
+3. **Existing specialized types and NQC Excavation (complete):** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
 4. **Shared Type Exceptions and configuration clarity:** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
 
 Review package boundaries before starting. Deliver each as a concrete, verified change and stop for review; this plan is not authorization to start all packages.
@@ -136,3 +136,18 @@ Inserted-routing name cells contain only the name. Repeated setup links, section
 Edit persona opens one dialog for ordered conditional choices and the Otherwise persona; the row pencil no longer exposes only the fallback. Both choices retain their effect on future instances, preserving existing recorded personas. Saved references to the obsolete single thickness confirmation are upgraded to indicator-specific conditions without discarding other clauses, destinations or priority. Saved forms upgrade the obsolete field while preserving customization. No storage-schema change or version reset is needed for this compatibility fix.
 
 Verified these refinements with 476 passing ChromeHeadless tests, the production build and the no-unused TypeScript check. Rendered tests cover insertion-source editing, both persona choices, compact name cells and legacy thickness-rule field selections.
+
+
+## Package 3 delivered
+
+The existing Add Excavation NDT logical target resolves exactly one active Excavation definition using its editable Included when conditions. Defaults select NQC Excavation NDT for Nuclear Indicators 1/2 and regular Excavation NDT for indicator 3. Missing or overlapping matches block signoff and preview with a configuration error, without changing History or undo. Seed construction uses the same resolver. Neither definition joins the numbered path.
+
+Both definitions have independent personas, accepted/rejected destinations and Signoff Types By Routing settings, including Type source and ordered material exceptions. Each Type rules editor supports cancel and reload; exports show Type source, exceptions and configured options. Both default to rejecting-inspection Type source and the existing PT-to-5X material exception. No additional NQC inspection rules were introduced. The shared Type Exceptions redesign remains package 4.
+
+NQC runtime IDs retain their definition and parent round (`nqc-excavation-ndt`, `nqc-excavation-ndt-2`). Own Repair, original inspection, phase returns, blanking, Deprogress and reload recognize both variants. The routing bar defaults to Excavation NDT for both; saved stage/History labels distinguish the NQC definition and round. Existing instance persona/Type choices remain recorded. Repair counters, Grind Only, Cut, fabrication clearing and Engineering Hold retain their existing specialized owners and regression coverage.
+
+Routing Settings now top-aligns cells with subtle cell borders and explains inserted work beneath the section heading. Both Excavation rows show editable applicability alongside their insertion sources. Routing Settings and the Type configuration pages briefly explain routings versus Signoff Types and what to configure on each page.
+
+Workflow version **2.10.57** follows the existing first-load demo cache reset policy for changed definitions/models and saved configuration. There is no migration of pre-upgrade demo work; subsequent reloads retain both variants.
+
+Verified with **484 passing ChromeHeadless tests**, production build and unused-code TypeScript check. Focused scenarios live in `excavation-definition.spec.ts` (indicator 1/2/3 execution/preview parity, PT replacement, round returns, Deprogress, ambiguous/missing variants, independent enabled Types, multiple rounds and reload), `excavation-type-rules.component.spec.ts` (rendered independent NQC save/cancel/reopen), and `admin-routing.component.spec.ts` (rendered applicability save/cancel/reopen). Existing specialized routing, persona and service suites remain included. The deferred test-coverage program was not started.

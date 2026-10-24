@@ -343,7 +343,7 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */
   }
-  if (/^excavation-ndt(-\d+)?$/.test(stage.id ?? '')) add('typeChangedFromPtTo5x', 'Type was changed to 5X from PT', [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
+  if (/^(nqc-)?excavation-ndt(-\d+)?$/.test(stage.id ?? '')) add('typeChangedFromPtTo5x', 'Type was changed to 5X from PT', [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
   return out;
 }
 
