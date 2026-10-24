@@ -104,13 +104,17 @@ Signoff Types supports conditional Additional Signoffs rules. Root's question an
 These findings are recorded for reference; no implementation is queued.
 
 
-## Generic inspection Type exceptions — under discussion
+## Shared Type Exceptions — implemented
 
-Replace the Excavation-specific exception list with a shared list selecting routing, original Type, replacement Type and conditions. Keep Type source (configured options or rejecting inspection) per routing. A shared resolver must honor enabled Types and work consistently for ordinary NDT, Excavation, routing preview and repair returns. This is follow-up scope, not an implementation queue.
+Implemented in added-routings package 4: one shared editor selects routing, original/replacement Type, ordered material and AND/OR Joint Details conditions. Type source remains per routing. The common resolver applies configured enable conditions in construction, insertion, preview and inspection returns. See ADDED-ROUTINGS-PLAN.md for behavior and verification.
+
+## Repair / Excavation routing-bar visibility — follow-up decision
+
+Confirm whether Repair and Excavation NDT should appear in the routing bar. The user recalls an earlier decision to hide them; revisit the desired display and whether visibility should be configurable. No display change is authorized as part of package 4.
 
 
 ## Configurable inserted routings and insertion — documented scope
 
 Inserted routings currently edits the fixed runtime types Repair, Excavation NDT and Engineering Hold. Add routing creates a regular numbered routing, not another runtime type. Supporting arbitrary inserted routings needs creation UI, insertion targets, Type/form setup and lifecycle/identity rules; editing existing runtime routing rules does not provide this capability.
 
-See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Implementation has not started.
+See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Packages 1-4 are implemented; stopped for review.

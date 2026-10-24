@@ -1,6 +1,6 @@
 # Configurable inserted routing definitions and insertion
 
-Status: packages 1-3 implemented; stopped for review. Package 4 remains deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
+Status: packages 1-4 implemented; stopped for review. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
@@ -83,7 +83,7 @@ The current Excavation-specific Type exception section could become a shared **T
 1. **Definition classification and CRUD (complete):** persist inserted definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
 2. **Generic insertion and preview (complete):** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
 3. **Existing specialized types and NQC Excavation (complete):** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
-4. **Shared Type Exceptions and configuration clarity:** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
+4. **Shared Type Exceptions and configuration clarity (complete):** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
 
 Review package boundaries before starting. Deliver each as a concrete, verified change and stop for review; this plan is not authorization to start all packages.
 
@@ -151,3 +151,16 @@ Routing Settings now top-aligns cells with subtle cell borders and explains inse
 Workflow version **2.10.57** follows the existing first-load demo cache reset policy for changed definitions/models and saved configuration. There is no migration of pre-upgrade demo work; subsequent reloads retain both variants.
 
 Verified with **484 passing ChromeHeadless tests**, production build and unused-code TypeScript check. Focused scenarios live in `excavation-definition.spec.ts` (indicator 1/2/3 execution/preview parity, PT replacement, round returns, Deprogress, ambiguous/missing variants, independent enabled Types, multiple rounds and reload), `excavation-type-rules.component.spec.ts` (rendered independent NQC save/cancel/reopen), and `admin-routing.component.spec.ts` (rendered applicability save/cancel/reopen). Existing specialized routing, persona and service suites remain included. The deferred test-coverage program was not started.
+
+
+## Package 4 delivered
+
+Signoff Types By Routing has one shared Type Exceptions editor selecting a routing, original Type, replacement Type, optional either-member material classification and AND/OR Joint Details conditions. Exceptions are ordered; only the first matching rule applies to each original Type, with no chained replacements. Source remains per routing: configured options, or rejecting inspection for Excavation and ordinary inserted definitions whose configured incoming sources supply inspection context. Missing context blocks insertion. Regular/NQC Excavation retain independent PT-to-5X seeds.
+
+The common Type resolver drives numbered routing construction, generic insertion, Excavation, previews and returned inspection availability. Disabled configured originals are excluded before replacements; a replacement's configured enable conditions also apply. Missing/deleted replacement Types produce no option, duplicate results merge, and the original default follows its replacement. Replacement catalog metadata drives the shared Type form and Signs routing. Ordinary insertion validates effective Types/forms before mutation. Existing inserted instance choices and original inspection context remain recorded; future construction uses current rules. Shared Type form definitions remain live.
+
+Save/cancel/reopen preserve nested conditions and unrelated routing rows. Changing routing is disabled until pending edits are saved or canceled. A readable effective-Type summary explains source, priority, conditions and fallback; the standard filtered/sorted export includes readable exception conditions. This summary describes Type selection; configured routing destinations retain their existing previews. No routing-bar visibility change is included; Tasks.md records that follow-up decision.
+
+Workflow version **2.10.58** uses the existing first-load demo cache reset policy for changed saved configuration. No migration of pre-upgrade demo work is promised; subsequent reloads preserve saved exceptions and recorded inserted choices.
+
+Verification: **493 passing tests** with `npx ng test --watch=false --browsers=ChromeHeadless`; `npx ng build` and `npx tsc --noEmit --noUnusedLocals -p tsconfig.app.json` pass. Build retains existing template/budget/CommonJS/SCSS warnings. Focused tests: `type-exceptions.component.spec.ts` (rendered routing selection, conditions, save/cancel/reopen and independent Excavation rows), `signoff-types.spec.ts` (first match, AND/OR, defaults, deduplication, disabled/deleted replacements and numbered Repair mapping), `generic-insertion.spec.ts` (preview/execution agreement, contextual source and frozen choices), and `admin-signoff-types.component.spec.ts` (actual exported contents). Existing Excavation round-return, Deprogress and reload regression tests remain included. The deferred coverage program is unchanged.

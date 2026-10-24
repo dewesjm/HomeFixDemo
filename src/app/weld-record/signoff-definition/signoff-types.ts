@@ -2,7 +2,7 @@ import { insertedDefinitionId } from '../routing/instance-identity';
 /* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
-import { materialClassification, MaterialFlag } from '../../data/material-classification';
+import { TypeException, replacedType } from './type-exceptions';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
@@ -21,7 +21,7 @@ export interface SignoffTypeRow {
   stepId: string;
   types: AvailableType[];
   typeSource?: 'rejecting-inspection';
-  typeExceptions?: { from: string; to: string; materialFlag: MaterialFlag | '' }[];
+  typeExceptions?: TypeException[];
 }
 
 export const REPAIR_TYPE_ROW = 'repair';
@@ -101,33 +101,48 @@ export function hasSignoffTypeRow(stageId: string): boolean {
 
 /* a step's Type options, each with its Signoff Types name and settings; undefined when it
    has no row (no Type droplist). A Type no longer in Signoff Types is left out. */
-export function signoffTypeOptions(stageId: string, job?: Job, inputs: Record<string, string> = {}): StageOption[] | undefined {
+export function signoffTypeOptions(stageId: string, job?: Job, inputs: Record<string, string> = {}, rejectingType?: string): StageOption[] | undefined {
   const id = signoffTypeRowId(stageId);
   const row = getSignoffTypeRows().find(r => r.stepId === id);
-  const types = getRoutingSignoffTypes();
-  const options = (row?.types ?? []).flatMap(a => {
-    if (job && !conditionsMatch(a.enableWhen, job, [], { id: stageId, signed: false, inputs, signoffInputs: {} })) return [];
-    const t = types.find(x => x.value === a.type);
-    return t ? [{
-      label: t.label, value: t.value,
-      ...(a.default ? { default: true } : {}),
-      ...(t.signsStep ? { signsStep: t.signsStep } : {}),
-    }] : [];
-  });
-  return row && !row.typeSource ? options : options.length ? options : undefined;
+  if (!row) return undefined;
+  return resolveTypeOptions(row, stageId, job, inputs, rejectingType);
+}
+
+/* Resolve configured or contextual candidates through the same ordered replacement rules. */
+function resolveTypeOptions(row: SignoffTypeRow, stageId: string, job?: Job,
+  inputs: Record<string, string> = {}, rejectingType?: string): StageOption[] {
+  const catalog = getRoutingSignoffTypes();
+  const enabled = (a: AvailableType) => !job || conditionsMatch(a.enableWhen, job, [],
+    { id: stageId, signed: false, inputs, signoffInputs: {} });
+  const candidates: AvailableType[] = row.typeSource === 'rejecting-inspection'
+    ? (rejectingType ? [{ type: rejectingType }] : []) : row.types.filter(enabled);
+  const result: StageOption[] = [];
+  for (const candidate of candidates) {
+    const value = replacedType(row.typeExceptions, candidate.type, job, inputs);
+    const configured = row.types.find(t => t.type === value);
+    if (configured && !enabled(configured)) continue;
+    const type = catalog.find(t => t.value === value);
+    if (!type) continue;
+    const existing = result.find(o => o.value === value);
+    if (existing) { if (candidate.default) existing.default = true; continue; }
+    result.push({ value, label: type.label, ...(candidate.default ? { default: true } : {}),
+      ...(type.signsStep ? { signsStep: type.signsStep } : {}) });
+  }
+  return result;
 }
 
 /* Only routings with contextual rules retain return data in their blank form. */
 export function usesReturningInspectionType(stageId: string): boolean {
-  return getSignoffTypeRows().find(r => r.stepId === signoffTypeRowId(stageId))?.types
-    .some(t => t.enableWhen?.some(rule => rule.some(c => c.field === 'self.returningInspectionType'))) ?? false;
+  const row = getSignoffTypeRows().find(r => r.stepId === signoffTypeRowId(stageId));
+  return [...(row?.types.map(t => t.enableWhen) ?? []), ...(row?.typeExceptions?.map(r => r.when) ?? [])]
+    .some(rules => rules?.some(rule => rule.some(c => c.field === 'self.returningInspectionType')));
 }
 
 const option = (stageId: string, type: string) => signoffTypeOptions(stageId)?.find(o => o.value === type);
 
 /* the routing step signing `stageId` with Type `type` signs (StageOption.signsStep); '' = itself */
 export function typeSignsStep(stageId: string, type: string): string {
-  return option(stageId, type)?.signsStep ?? '';
+  return option(stageId, type)?.signsStep ?? getRoutingSignoffTypes().find(t => t.value === type)?.signsStep ?? '';
 }
 
 /* whether `type` is the step's own: its default Type, or any of its Types when it has no default (the
@@ -142,10 +157,5 @@ export function isOwnType(stageId: string, type: string): boolean {
 /* The routing's configured Type source and first matching material exception. */
 export function excavationTypeOptions(job: Job | undefined, rejectingType: string, definitionId = EXCAVATION_TYPE_ROW): StageOption[] | undefined {
   const row = getSignoffTypeRows().find(r => r.stepId === definitionId);
-  if (!row) return undefined;
-  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(definitionId, job);
-  const exception = job && row.typeExceptions?.find(r => r.from === rejectingType && (!r.materialFlag ||
-    [job.materialType1, job.materialType2].some(code => materialClassification().some(m => m.code === code && m[r.materialFlag as MaterialFlag]))));
-  const type = getRoutingSignoffTypes().find(t => t.value === (exception?.to ?? rejectingType));
-  return type ? [{ value: type.value, label: type.label }] : [];
+  return row ? resolveTypeOptions(row, definitionId, job, {}, rejectingType) : undefined;
 }

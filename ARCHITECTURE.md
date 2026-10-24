@@ -863,3 +863,8 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 ### Excavation variants
 
 `routing/excavation-definition.ts` resolves Add Excavation NDT using active specialized definitions and their Included when conditions. Exactly one must match: indicators 1/2 select `nqc-excavation-ndt`, indicator 3 selects `excavation-ndt` by default. Both have independent persona, destination and Type-source/exception settings. Runtime IDs preserve the definition prefix and parent Repair round; round helpers, route-back and persistence support both. History retains the NQC label; the bar uses the configured display name. Workflow version 2.10.57 resets demo caches on first upgrade load.
+
+
+## Shared Type Exceptions
+
+`signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-types.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-types/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance. Workflow version 2.10.58 applies the documented first-load demo cache reset policy.

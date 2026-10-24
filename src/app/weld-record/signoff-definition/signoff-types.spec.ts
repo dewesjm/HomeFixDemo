@@ -2,11 +2,42 @@ import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
 import { excavationNdtStage, nextRepairStage } from '../routing/added-steps';
-import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions } from './signoff-types';
+import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions, usesReturningInspectionType } from './signoff-types';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signoff-types';
 
 describe('Signoff Types By Routing', () => {
+  it('retains return context when an exception condition needs the performed inspection Type', () => {
+    setSignoffTypeRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
+      { from: 'vt', to: '5x', when: [[{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]] }] }]);
+    expect(usesReturningInspectionType('final-ndt-vt5x')).toBeTrue();
+    expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0], { returningInspectionType: '5x' })?.[0].value).toBe('5x');
+    expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0])?.[0].value).toBe('vt');
+  });
+  it('replaces enabled configured Types once, merges duplicates and retains the default', () => {
+    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'vt', default: true }, { type: '5x' }],
+      typeExceptions: [{ from: 'vt', to: '5x', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] },
+        { from: '5x', to: 'pt', when: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
+    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([{ value: '5x', label: '5X', default: true }]);
+    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '2' })?.map(o => o.value)).toEqual(['vt', '5x']);
+  });
+
+  it('does not bypass replacement enable conditions or resurrect a deleted replacement', () => {
+    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'vt', default: true },
+      { type: '5x', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }],
+      typeExceptions: [{ from: 'vt', to: '5x' }] }]);
+    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([]);
+    setRoutingSignoffTypes(getRoutingSignoffTypes().filter(t => t.value !== '5x'));
+    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '1' })).toEqual([]);
+  });
+
+  it('uses first matching AND/OR conditions for numbered Repair rows', () => {
+    setSignoffTypeRows([{ stepId: 'repair', types: [{ type: 'repair' }], typeExceptions: [
+      { from: 'repair', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }, { field: 'hull', op: 'contains', values: ['test'] }],
+        [{ field: 'nInd', op: 'is', values: ['1'] }]] }, { from: 'repair', to: '5x' }] }]);
+    expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
+    expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
+  });
   afterEach(() => { localStorage.removeItem(STORAGE.signoffTypes); localStorage.removeItem(STORAGE.routingSignoffTypes); });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {

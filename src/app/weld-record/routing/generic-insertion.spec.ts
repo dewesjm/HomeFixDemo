@@ -95,6 +95,46 @@ describe('Ordinary insertion execution and preview', () => {
     expect(wf().history.filter(h => h.section === 'Sign-off').map(h => h.stageId)).toContain(first);
   });
 
+  it('shares conditional replacements between preview and execution and freezes existing inserted choices', () => {
+    definition(); rule('pre-fit', insertionTarget('extra'));
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r,
+      typeExceptions: [{ from: 'extra-type', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] } : r));
+    const preview = signoff.previewSignoff(wf(), job, 'pre-fit');
+    expect(preview.target?.typeOptions?.map(o => o.value)).toEqual(['vt']);
+    sign('pre-fit');
+    expect(current().typeOptions).toEqual(preview.target?.typeOptions);
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r, typeExceptions: [] } : r));
+    expect(current().typeOptions?.map(o => o.value)).toEqual(['vt']);
+    sign();
+    expect(wf().stages.find(s => s.insertion)?.inspectionType).toBe('vt');
+  });
+
+  it('inherits original inspection context for ordinary insertions with shared exceptions', () => {
+    job.ndtRoot = 'PT';
+    store.update(job, () => newWorkflow(job));
+    definition();
+    updateStageTemplate('Welding', 'root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r, types: [],
+      typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'pt', to: '5x' }] } : r));
+    store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-mtpt'
+      ? { ...s, result: 'unsat', inspectionType: 'pt', signoffType: 'pt' } : s) }));
+    const preview = signoff.previewSignoff(wf(), job, 'root-ndt-mtpt');
+    expect(preview.target?.typeOptions?.map(o => o.value)).toEqual(['5x']);
+    sign('root-ndt-mtpt');
+    expect(current().insertion?.originInspectionType).toBe('pt');
+    expect(current().typeOptions).toEqual(preview.target?.typeOptions);
+  });
+
+  it('blocks contextual Type source on a source without an original inspection', () => {
+    definition(); rule('pre-fit', insertionTarget('extra'));
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra'
+      ? { ...r, typeSource: 'rejecting-inspection', types: [] } : r));
+    const before = structuredClone(wf());
+    expect(signoff.previewSignoff(wf(), job, 'pre-fit').blocked).toContain('context is missing');
+    expect(signoff.signStage(job, 'pre-fit')).toBeFalse();
+    expect(wf()).toEqual(before);
+  });
+
   for (const failure of ['inactive', 'applicability', 'types', 'missing']) {
     it(`blocks ${failure} targets before signing or writing History, consistently with preview`, () => {
       definition(); rule('pre-fit', insertionTarget('extra'));

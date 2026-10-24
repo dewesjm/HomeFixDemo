@@ -1,9 +1,10 @@
+import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
 /* Admin → Signoff Types By Routing: the seeded table of routing steps that have a Type droplist and
    which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
-import { ExcavationTypeRulesComponent } from './excavation-type-rules.component';
+import { TypeExceptionsComponent } from './type-exceptions.component';
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +20,6 @@ import {
   AvailableType,
   SignoffTypeRow,
   EXCAVATION_TYPE_ROW,
-  NQC_EXCAVATION_TYPE_ROW,
   getSignoffTypeRows,
   setSignoffTypeRows,
 } from '../../signoff-definition/signoff-types';
@@ -39,7 +39,7 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
   selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [
-    TypeEnableConditionsComponent, ExcavationTypeRulesComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    TypeEnableConditionsComponent, TypeExceptionsComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './admin-signoff-types.component.html'
@@ -49,8 +49,6 @@ export class AdminSignoffTypesComponent {
   private confirm = inject(ConfirmService);
   private seq = 0;
 
-  readonly excavationId = EXCAVATION_TYPE_ROW;
-  readonly nqcExcavationId = NQC_EXCAVATION_TYPE_ROW;
   readonly excavationNote = EXCAVATION_NOTE;
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
@@ -102,7 +100,7 @@ export class AdminSignoffTypesComponent {
     downloadCsv('signoff-type-availability', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
       { header: 'Type source', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Configured options' },
-      { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${e.materialFlag || 'Always'})`).join('; ') },
+      { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${typeExceptionCondition(e)})`).join('; ') },
       { header: 'Options', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },
     ], this.table.sorted());

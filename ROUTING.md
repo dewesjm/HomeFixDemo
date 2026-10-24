@@ -258,3 +258,8 @@ The Included when column on inserted routings expands to list source routings an
 Repair’s Add Excavation NDT destination selects exactly one active Excavation definition through Included when in Routing Settings. Defaults: NQC Excavation NDT for Nuclear Indicator 1/2, regular Excavation NDT for 3. Missing or overlapping applicable definitions block signoff with a configuration error and leave History/undo unchanged. Preview and seeded construction use the same selector.
 
 Each variant has its own persona, Type source/material exceptions and accepted/rejected destinations. Both initially inherit the rejecting inspection and its PT-to-5X exception. NQC instances use nqc-excavation-ndt with the parent Repair round suffix. Own Repair and rejecting-phase returns retain the original inspection and round; SAT, UNSAT, route-back, Deprogress and reload follow the same specialized contract as regular Excavation. The routing bar may share a display name; History records the actual variant and round.
+
+
+## Shared Type Exceptions
+
+Signoff Types By Routing provides ordered Type Exceptions per routing. Each selects an original and replacement Type with optional material and AND/OR Joint Details conditions. First match wins once; no match keeps the original. Configured original availability and replacement availability both apply. The source is configured options or, where inspection context exists, the original rejecting inspection. Generic insertion, Excavation and previews share the resolver; returned inspections apply their own saved Type rules. Existing inserted choices stay recorded, while newly built instances use saved settings. The editor and Excel export show readable conditions and the source/fallback path.

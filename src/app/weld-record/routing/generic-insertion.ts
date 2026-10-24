@@ -1,3 +1,4 @@
+import { getStepFieldConfig } from '../signoff-definition/step-field-config';
 /* One resolver builds ordinary inserted work for execution, seeds and preview. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../model/workflow-types';
@@ -21,8 +22,6 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
   const setup = addedRoutingSetup(definition);
   if (setup.errors.length) return fail(setup.errors.join(' '));
   if (!conditionsMatch(definition.includeWhen, job, stages, source)) return fail('applicability conditions do not match');
-  const typeOptions = signoffTypeOptions(id, job);
-  if (!typeOptions?.length) return fail('no Signoff Type is enabled');
   const role = routingRole(definition, job);
   if (!role || role === 'View') return fail('no signing persona is available');
   const sequence = Math.max(0, ...[...stages.map(s => s.id), ...recordedIds].filter(key => insertedDefinitionId(key) === id).map(key => Number(key.split(':').at(-1)))) + 1;
@@ -38,6 +37,11 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
     originInspectionType: origin['originInspectionType'] || source.inspectionType,
     parentRepairId: parent,
   };
+  const typeOptions = signoffTypeOptions(id, job, {}, insertion.originPhase ? insertion.originInspectionType : undefined);
+  if (!typeOptions?.length) return fail('no Signoff Type is enabled or rejecting inspection context is missing');
+  const forms = getStepFieldConfig();
+  if (typeOptions.some(o => (o.signsStep && o.signsStep !== id) ||
+    !forms.some(f => f.typeId === o.value && f.fields.some(field => field.heading === undefined)))) return fail('resolved Type must sign this routing and have a form');
   const label = `${definition.displayName || definition.label} ${sequence}`;
   return { ...stageFromTemplate({ ...definition, id: `added:${id}:${sequence}`, label, typeOptions, role }), insertion };
 }

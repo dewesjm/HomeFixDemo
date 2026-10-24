@@ -3,6 +3,21 @@ import { AdminSignoffTypesComponent } from './admin-signoff-types.component';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 
 describe('Signoff Types By Routing admin', () => {
+  it('exports readable ordered exception conditions with the routing and source', async () => {
+    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
+      { from: 'fit', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] }]);
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
+    TestBed.flushEffects();
+    let exported: Blob | undefined;
+    spyOn(URL, 'createObjectURL').and.callFake(blob => { exported = blob as Blob; return 'blob:test'; });
+    spyOn(URL, 'revokeObjectURL');
+    spyOn(HTMLAnchorElement.prototype, 'click');
+    component.exportCsv();
+    const text = await exported!.text();
+    expect(text).toContain('Routing,Type source,Type exceptions,Options');
+    expect(text).toContain('Configured options');
+    expect(text).toContain('Fit -> VT ((N Ind. is 3))');
+  });
   beforeEach(() => localStorage.clear());
   afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
   it('cancels nested condition edits and saves changed enable rules', () => {
