@@ -20,6 +20,7 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
 - Nonempty search/filter inputs must provide a visible, accessible X clear button. Clearing removes the filter value and any corresponding URL or persisted state so an old value does not return unexpectedly. Preserve intentional deep links when first opening a page.
 - Paginated tables use the shared `TablePagerComponent`: 10 rows by default, with 10, 25, 50, and 100 rows per page. Keep options in the shared component rather than overriding them per page. Embedded lists deliberately showing all rows are not paginated tables.
 - Every admin table/list must offer Export to Excel through the standard table toolbar. Export the current filtered and sorted rows with readable column headings, matching the information shown in the table.
+  Groups is exempt; its export work was explicitly dropped from scope.
 
 ## Keep code organized for a human reader
 

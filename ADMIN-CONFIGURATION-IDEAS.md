@@ -96,7 +96,7 @@ Signoff Types supports conditional Also signs rules. Root's question and answer 
 
 ## Export audit — identified gaps
 
-- Groups hides the export action and has no export handler.
+- Groups export is excluded from the backlog by request; no export work is planned for that page.
 - Signoff Type Forms exports Type and field names, but omits expanded conditions and behaviors.
 
 These findings are recorded for reference; no implementation is queued.

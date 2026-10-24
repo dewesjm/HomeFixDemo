@@ -8,7 +8,6 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 - [ ] **Repair limits configuration:** confirm engineering limits, especially the unreviewed Non-nuclear fallback. Proposed table covers Nuclear Indicator, absolute limit, percentage and guidance. Current guidance uses 3/8 inch for indicator 1, 3/16 otherwise, or 20% of thickness, whichever is less. Automatic measured-thickness calculation is not agreed scope. [Details](ADMIN-CONFIGURATION-IDEAS.md#allowable-repair-thickness).
 - [ ] **Remaining Repair / Excavation configuration:** review configurable Inspector/NQC persona selection, general original/performed inspection facts replacing the PT-to-5X marker, and a readable summary of the effective path and related settings. Repair limits above are part of this follow-up, not a duplicate project. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
-- [ ] **Groups export:** identified gap: export action hidden and no handler. Apply the standard filtered/sorted admin-table export requirement. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 
 ## Deferred testing packages
@@ -42,6 +41,8 @@ Explicit prototype boundaries and source caveats, captured for visibility. Each 
 - **Engineering/source-data review:** material-classification seeds are explicitly unreviewed; engineering notes use placeholder references until real notes are wired up. Invented seed codes/procedures/defects need authoritative production data. Sources: `src/app/data/material-classification.ts`, `src/app/data/jobs.ts`, `src/app/data/procedures.ts` and ARCHITECTURE.md.
 
 ## Completed work and deliberate switches
+
+Groups export was dropped from scope; its missing export action is not an outstanding task.
 
 Routing configuration and field-definition consolidation are completed references. Weld Colors and conditional additional signoffs are implemented. O63/O04 selection already exists in Routing Settings; the recent discussion requested no change. Foreman Override is deliberately disabled, and Makeup's NO MIKE switch hides the retained real screen. These are not outstanding build tasks unless explicitly requested.
 
