@@ -1,3 +1,4 @@
+import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
 import { STORAGE } from '../../../data/storage-keys';
 import { resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { insertionTarget } from '../../routing/instance-identity';
@@ -20,6 +21,22 @@ describe('Routing Settings rules editor', () => {
   });
   afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
+
+  it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
+    setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
+    updateStageTemplate('Welding', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const editor = fixture.componentInstance;
+    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:repair')!);
+    fixture.detectChanges(); tick(); fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    const label = Array.from(host.querySelectorAll('dialog label')).find(l => l.textContent!.trim() === 'Recheck')!;
+    expect(label).toBeTruthy(); expect(label.querySelector<HTMLInputElement>('input')!.checked).toBeTrue();
+    Array.from(host.querySelectorAll<HTMLButtonElement>('dialog button')).find(b => b.textContent!.trim() === 'Save Then go to rules')!.click();
+    fixture.detectChanges();
+    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.thenRules![0].when[0].values).toEqual(['custom-recheck']);
+    fixture.destroy();
+  }));
 
   it('edits variant applicability with save, cancel and reopened stored settings', fakeAsync(() => {
     const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();

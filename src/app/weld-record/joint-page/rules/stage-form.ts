@@ -1,3 +1,4 @@
+import { repairCodeOptions } from '../../signoff-definition/repair-code-options';
 import { formInputFields } from '../../signoff-definition/form-fields';
 import { FormField } from '../../signoff-definition/field-catalog';
 /* A step's fields on the joint page: which show, and the options each offers */
@@ -54,6 +55,13 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
    Procedure that GWP+WTN resolves to. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
+  if (f.key === 'repairType') {
+    const current = stage.inputs['repairType'] ?? '';
+    const options = repairCodeOptions();
+    const recorded = repairCodeOptions(true).find(o => o.value === current);
+    return { ...f, options: current && !options.some(o => o.value === current)
+      ? [...options, recorded ?? { value: current, label: current }] : options };
+  }
   if (f.key === 'weldColor') {
     const current = stage.inputs['weldColor'] ?? '';
     const options = f.options ?? [];

@@ -263,3 +263,12 @@ Each variant has its own persona, Type source/material exceptions and accepted/r
 ## Shared Type Exceptions
 
 Signoff Types By Routing provides ordered Type Exceptions per routing. Each selects an original and replacement Type with optional material and AND/OR Joint Details conditions. First match wins once; no match keeps the original. Configured original availability and replacement availability both apply. The source is configured options or, where inspection context exists, the original rejecting inspection. Generic insertion, Excavation and previews share the resolver; returned inspections apply their own saved Type rules. Existing inserted choices stay recorded, while newly built instances use saved settings. The editor and Excel export show readable conditions and the source/fallback path.
+
+
+## Admin-defined Repair Codes
+
+Admin > Repair Codes adds and renames choices and marks them active/inactive. Saved values remain stable through rename. Active choices appear on Repair signoffs; recorded inactive values remain visible, and rule editors retain them with an inactive label. Deactivation does not rewrite History or existing conditions.
+
+Use Repair Code in Repair's Then go to conditions to choose a destination. The first matching rule wins; existing priority rules still apply. Signoff Type Form conditions can show or require existing fields for a chosen code. Custom codes without a matching destination rule and inactive/unknown codes block signoff and preview without changing History or undo. Invalid custom relative targets also block signing. Creating a choice creates no new lifecycle mechanic.
+
+Grind Only, Weld Repair and Cut keep their stored identities and behavior. Only the built-in Cut action returning to Fit increments Refit #. Any configured route-back to Fit retains the normal fabrication-clearing contract. Renaming another action to mention Cut does not make it Cut.

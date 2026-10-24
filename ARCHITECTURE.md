@@ -868,3 +868,10 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 ## Shared Type Exceptions
 
 `signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-types.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-types/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance. Workflow version 2.10.58 applies the documented first-load demo cache reset policy.
+
+
+## Repair Code lookup configuration
+
+Admin > Repair Codes (`/admin/repair-codes`) maintains stable values, names and active/inactive status in `data/repair-codes.ts`, using `STORAGE.repairCodes`. `signoff-definition/repair-code-options.ts` maps that lookup to active form choices and retained condition choices. The field catalog reads those options dynamically; the joint form filters active choices and retains a recorded inactive selection for display. Condition editors include inactive records to preserve saved references. Lookup saves invalidate field/qualification condition caches through the field-definition version.
+
+`routing/repair-code-rules.ts` validates selected codes and requires a matching existing destination rule for custom codes. `routeSignoff()` shares this validation with preview and rejects invalid custom destinations before saving. Existing built-in IDs and Cut/Refit semantics remain specialized. Version 2.10.59 applies the existing demo cache-reset policy; the Repair Code lookup itself survives subsequent resets. Field identities/types/mappings remain code controlled.

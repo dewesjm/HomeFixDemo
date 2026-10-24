@@ -1,3 +1,4 @@
+import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
 import { resolveInsertion, RoutingConfigurationError } from './generic-insertion';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { insertionDefinitionId } from './instance-identity';
@@ -57,6 +58,10 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   const signing = wf.stages.find(s => s.id === stageId)!;
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
+  if (isRepairStageId(stageId) && signing.result !== 'unsat') {
+    const error = repairCodeRoutingError(signing, job, wf.stages, getTemplates()[job.trade]?.find(t => t.id === 'repair'));
+    if (error) throw new RoutingConfigurationError(error);
+  }
   const now = new Date().toISOString();
   /* an UNSAT whose reject target is this step (Records Review's default): the signoff is recorded, but
      the step isn't signed, so the joint stays there */
@@ -157,7 +162,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
     const target = stepOnJoint(stages, resolveRuleTarget(stages, st, destination));
     if (!target) {
-      if (st.insertion) throw new RoutingConfigurationError(`Destination ${destination} has no routing context.`);
+      if (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType']))) throw new RoutingConfigurationError(`Destination ${destination} has no routing context.`);
       return;
     }
     const to = stages.findIndex(s => s.id === target.id);
@@ -192,7 +197,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   }
   if (st.result !== 'unsat') {
     const rule = matchingThenRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing);
-    if (rule && (st.insertion || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
+    if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
       reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
     }

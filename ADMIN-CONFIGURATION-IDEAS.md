@@ -31,7 +31,7 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 ### Remaining fixed business decisions
 
 - Repair thickness confirmations are configured through the existing Signoff Type Form; no separate limits table remains proposed for the current scope.
-- Repair Code options currently come from `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are agreed deferred scope below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
+- Repair Code options currently come from `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are implemented below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
 - Excavation persona selection is now configured through Routing Settings Persona rules.
 - PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
 
@@ -52,7 +52,7 @@ Before delivery, verify saved settings affect actual execution and the routing p
 
 Agreed boundary: the field catalog remains code controlled. New fields, their stable identities, data types, mappings and specialized behavior require code. Creating arbitrary fields through admin configuration is not planned.
 
-Signoff Type Forms continues to select existing fields and configure layout, visibility, required conditions and supported behaviors. Selected option lists on existing fields may be admin maintained where appropriate. Weld Colors is complete; admin-defined Repair Codes are agreed scope below. Other option lists need an individual decision.
+Signoff Type Forms continues to select existing fields and configure layout, visibility, required conditions and supported behaviors. Selected option lists on existing fields may be admin maintained where appropriate. Weld Colors is complete; admin-defined Repair Codes are implemented below. Other option lists need an individual decision.
 
 ## Fabrication form definitions — long term
 
@@ -112,13 +112,17 @@ Complete: administrators can create ordinary inserted definitions, configure Typ
 See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Packages 1-4 are implemented; stopped for review.
 
 
-## Repair Code configuration — agreed scope
+## Repair Code configuration — implemented
 
-Allow administrators to define Repair Code choices, then use those choices in the existing Signoff Type Form conditions and ordered Repair destination rules. Reuse the existing Repair Code field and configuration owners; do not introduce arbitrary fields or a second routing engine. This scope is agreed but implementation has not started.
+Admin > Repair Codes defines Repair Code choices using the existing field and configuration owners. Each record has a stable value, editable name and active/inactive status. New records get a readable permanent value; renames retain it. Deactivation retires a choice without removing saved rules or History. There is no delete action.
 
-Use stable IDs, editable labels and active/inactive status so renames and retirement preserve stored values and History. New codes need to appear in the Repair form and existing condition editors, with saved settings driving execution and preview consistently. Define missing-rule behavior and verify save/cancel/reload before delivery.
+Active codes appear in Repair forms. Condition editors include inactive codes with an inactive label so saved conditions remain readable. The existing Signoff Type Form conditions and Repair's ordered Then go to rules control fields and destinations. The first matching rule wins, including configured thickness-priority rules. A custom code with no matching rule, an inactive/unknown code, or an unresolved custom destination blocks signoff/preview before History or undo changes. Existing built-in fallback behavior is preserved.
 
-Retain the existing Grind Only, Weld Repair and Cut identities. Cut has specialized fabrication/reset/Refit behavior; creating a similarly named option must not acquire that behavior implicitly. New lifecycle effects need explicit code and acceptance criteria. Deactivating an option should preserve historical records and labels. New lifecycle mechanics are outside this configuration scope. Implement this deferred work only when requested.
+Grind Only, Weld Repair and Cut keep their existing IDs. Cut's Refit increment remains tied to its built-in code and restart destination; a new code named similarly does not acquire that behavior. Any route-back to Fit still clears fabrication through the existing routing contract. New lifecycle mechanics remain code controlled. Shared field definitions and mappings remain code controlled.
+
+The admin table uses the shared search/clear, sort, pager and filtered/sorted Excel-compatible export. Save/cancel/reload and storage failure preserve expected state. Version 2.10.59 follows the existing first-load demo cache-reset policy for the new lookup-backed field configuration. Repair Code records have their own storage key and are retained on later configuration resets.
+
+Verified with **503 passing ChromeHeadless tests** using `npx ng test --watch=false --browsers=ChromeHeadless`, plus `npx ng build` and `npx tsc --noEmit --noUnusedLocals -p tsconfig.app.json`. Existing template/budget/CommonJS/SCSS build warnings remain. Focused coverage: `data/repair-codes.spec.ts`, `signoff-definition/repair-code-options.spec.ts`, `admin/admin-repair-codes/admin-repair-codes.component.spec.ts`, `admin/admin-routing/admin-routing.component.spec.ts`, and `routing/repair-code-rules.spec.ts`. Scenarios include rendered add/edit/retire/cancel, duplicate/blank names, reload, storage failure, actual filtered export contents, Repair form selection, routing condition values, preview/execution agreement, missing/invalid destinations, History, Deprogress and preservation of built-in behavior. The separate deferred testing program remains unchanged.
 
 ## Mockup scope clarification
 

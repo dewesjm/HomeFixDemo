@@ -1,3 +1,4 @@
+import { repairCodeOptions } from './repair-code-options';
 /* The complete catalog of fields that can appear on any step. Per-step activations
    (step-field-config.ts) pick from this list; they cannot define fields outside it. */
 import { weldColorOptions } from '../../data/weld-colors';
@@ -199,7 +200,7 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Repair ── */
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
-    options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
+    get options() { return repairCodeOptions(true); } },
   /* "exceeded" sends the joint to that phase's RT/UT, so by default it shows only when there is one */
   { key: 'allowableThicknessExceededN1', label: 'Allowable thickness of 3/8 inch or 20% of material thickness, whichever is less, has been exceeded (Nuclear Indicator 1) - Volumetric inspection (UT/RT) is required', type: 'checkbox',
     defaultShowIf: { all: [

@@ -173,7 +173,7 @@ function clauseText(c: ConditionClause): string {
   const key = c.source === 'priorStep' ? c.fieldKey : c.key;
   const subject = c.source === 'jointDetail' ? `joint ${jointDetailField(key)?.label ?? labelOf(key)}` : labelOf(key);
   const isCheckbox = lookupCatalogField(key)?.type === 'checkbox';
-  const show = (v: string) => key === 'inspectionType' ? v.toUpperCase() : v;
+  const show = (v: string) => key === 'inspectionType' ? v.toUpperCase() : key === 'repairType' ? lookupCatalogField(key)?.options?.find(o => o.value === v)?.label ?? v : v;
   if (c.equals !== undefined) {
     const virtual = c.source === 'jointDetail' ? VIRTUAL_JOINT_DETAILS[key] : undefined;
     if (virtual) return c.equals === 'yes' ? virtual.yesText : virtual.noText;

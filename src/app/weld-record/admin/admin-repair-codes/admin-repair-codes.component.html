@@ -1,0 +1,27 @@
+<h2 class="section-title">Repair Codes</h2>
+<p class="text-sm mb-sm">Define the choices offered on Repair signoffs. Use Repair Code in Routing Settings conditions to choose the destination, and in Signoff Type Forms to control fields. New codes need a matching Repair destination rule before signoff. Deactivate codes to retire them while retaining records and existing rules.</p>
+<app-table-toolbar [table]="table" searchPlaceholder="Search Repair Codes…" addLabel="Add Repair Code"
+  (add)="add()" (exportCsv)="exportCsv()" />
+@if (editing()) {
+  <form class="border rounded p-3 my-3 flex flex-wrap items-end gap-3" aria-label="Edit Repair Code" (ngSubmit)="save()">
+    <label>Repair Code <input class="input input-sm input-bordered" name="name" aria-label="Repair Code name" [(ngModel)]="draft.name" /></label>
+    <label>Status <select class="select select-sm" name="active" aria-label="Repair Code status" [(ngModel)]="draft.active">
+      <option [ngValue]="true">Active</option><option [ngValue]="false">Inactive</option>
+    </select></label>
+    <button class="btn btn-sm btn-primary" type="submit">Save Repair Code</button>
+    <button class="btn btn-sm" type="button" (click)="cancel()">Cancel</button>
+    @if (error) { <p role="alert" class="text-error">{{ error }}</p> }
+  </form>
+}
+<div class="overflow-x-auto"><table class="table table-sm">
+  <thead><tr><th appSortHeader [table]="table" field="name" label="Repair Code"></th>
+    <th appSortHeader [table]="table" field="status" label="Status"></th><th>Actions</th></tr></thead>
+  <tbody>
+    @for (row of table.paged(); track row.code) {
+      <tr><td>{{ row.name }}</td><td>{{ row.active ? 'Active' : 'Inactive' }}</td><td>
+        <button class="btn btn-ghost btn-xs" [attr.aria-label]="'Edit ' + row.name" [disabled]="!!editing()" (click)="edit(row)">Edit</button>
+      </td></tr>
+    } @empty { <tr><td colspan="3">No Repair Codes match your search.</td></tr> }
+  </tbody>
+</table></div>
+<app-table-pager [state]="table" />

@@ -1,3 +1,4 @@
+import { repairCodesVersion } from '../../data/repair-codes';
 /* Signoff Type Forms: one per Type (Admin > Signoff Types), matched by the Type's value.
    Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
    out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A routing
@@ -206,7 +207,7 @@ const TYPE_ONLY: TypeDefinition = { typeId: '', fields: [{ ...TYPE, line: 1 }] }
 /* ── Storage ── */
 
 let version = 0;
-export const stepFieldConfigVersion = () => version;
+export const stepFieldConfigVersion = () => version + repairCodesVersion() * 1_000_000;
 
 let _cache: TypeDefinition[] | null = null;
 
