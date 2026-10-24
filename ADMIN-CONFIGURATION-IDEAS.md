@@ -8,6 +8,42 @@ A candidate for an engineering-owned admin table. `allowableThicknessAmount()` i
 
 Potential configuration: Nuclear Indicator, absolute thickness limit, percentage limit, and explanatory text. Review the intended values before implementing. The current value is guidance displayed beside the exceeded checkbox; making it configurable does not by itself add an automatic thickness calculation.
 
+## Repair and Excavation NDT configuration follow-up
+
+Deferred for a future session; review scope before implementing. Most routing decisions already read saved configuration, so this is an extension of existing configuration rather than a replacement workflow engine.
+
+### Already configurable
+
+| Behavior | Configuration owner |
+|---|---|
+| Failed NDT adds Repair | Routing Settings: Reject routes to / reject rules |
+| Thickness exceeded returns to the rejecting phase's UT/RT; Grind Only returns to the failed inspection; Cut returns to Fit; Weld Repair adds Excavation NDT | Routing Settings: Repair's ordered Then go to rules |
+| Excavation UNSAT returns to its own Repair; SAT returns to the failed inspection, or the phase's VT/5X for the PT-to-5X exception | Routing Settings: Excavation NDT's Reject routes to and Then go to rules |
+| Excavation inherits the failed inspection method, with ordered material exceptions such as PT to 5X | Signoff Types By Routing: Excavation Type source and exceptions; Material Classification supplies the material flags |
+| Repair fields, visibility and layout; shared inspection forms | Signoff Type Forms |
+
+Starting destination rules are in `src/app/weld-record/routing/added-stage-templates.ts`; execution reads saved templates through `stage-templates.ts`. Inspection Type source and exceptions are in `src/app/weld-record/signoff-definition/signoff-types.ts` and have an existing admin editor. Ordinary NDT inclusion and Type availability also use existing routing and Type configuration.
+
+### Remaining fixed business decisions
+
+- Allowable repair thickness and percentage guidance: see Allowable repair thickness above. Confirm the Non-nuclear fallback with engineering. This is displayed guidance, not an automatic measured-thickness calculation.
+- Repair Code options in `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Keep these fixed unless administrators need additional actions; adding an option alone does not define its routing behavior.
+- Excavation persona remapping in `routing/added-steps.ts`: configured Inspector becomes NQC Inspector for Nuclear Indicator 1 or 2.
+- PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
+
+### Recommended scope and configuration clarity
+
+1. Add a small engineering-owned Repair limits table for Nuclear Indicator, absolute limit and percentage, extending the guidance already described above.
+2. Make Excavation persona selection conditional through the existing configuration concern, avoiding an overlapping editor.
+3. Replace the specific PT-to-5X marker with general inspection-context conditions usable by the existing routing rule editor.
+4. Add a plain-language summary beside Repair and Excavation configuration, showing the effective path and identifying where Type exceptions and forms are maintained. The main usability issue is that related settings span Routing Settings, Signoff Types By Routing and Signoff Type Forms.
+
+Expected scope is moderate: configuration models and editors, persistence/version handling as needed, rule evaluation, validation, documentation and focused regression tests. Reuse existing editors and keep advanced details out of the main table where practical. A new general-purpose workflow editor would add unnecessary complexity.
+
+Keep round creation, linking Excavation to its own Repair, Repair # and Refit # counters, history preservation, route-back resets and Deprogress mechanics in code. These provide the consistent behavior that configured decisions invoke.
+
+Before delivery, verify saved settings affect actual execution and the routing preview consistently. Cover repeated repair rounds, Excavation UNSAT returning to its own Repair, inspection exceptions and return Types, NQC/regular persona selection, thickness-rule precedence, Cut/fabrication reset, and Deprogress restoring the prior workflow. Decide explicitly how changed settings affect joints already in progress and preserve historical signoffs. This follow-up does not start the separate deferred testing backlog.
+
 ## Signoff field catalog and reusable option lists
 
 Under discussion. Signoff Type Forms already configure which existing fields appear, their layout, and their conditions. The field catalog itself remains code-defined in `src/app/weld-record/signoff-definition/field-catalog.ts`.
