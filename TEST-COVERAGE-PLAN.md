@@ -1,11 +1,13 @@
 # Test coverage implementation backlog
 
-Status: documented backlog only; implementation has not started.
-Requested by the user on 2026-10-23. Baseline commit: `9d1eb03`.
+Status: deferred implementation packages; no package is queued automatically.
+Audit date: 2026-10-23. Baseline commit: `9d1eb03`.
 Implement one work package at a time, commit it, and stop for review. This document does not
 queue automatic implementation. Update the checkboxes and inventory as work is completed.
 
 ## Audit baseline and limits
+
+The counts, coverage percentages, and file inventory below are a historical snapshot at the baseline commit. Later feature work added focused tests, including Weld Colors and History filter clearing; those additions do not constitute completion of a backlog package or a new coverage audit.
 
 - Angular/Karma/Jasmine: 408 tests passed in ChromeHeadless on 2026-10-23.
 - 66 spec files and 208 non-spec TypeScript files under `src/app`.
@@ -214,7 +216,6 @@ named with reasons. 100% file matching or a larger raw test count is not the com
 Paths below are relative to `src/app/`. Direct spec means a sibling with the same basename and
 `.spec.ts`; other specs may also cover the file. Percentages are measured lines from the audit run.
 `Not measured` means absent from that run, **not** proof of no indirect test coverage.
-
 
 ### App root
 

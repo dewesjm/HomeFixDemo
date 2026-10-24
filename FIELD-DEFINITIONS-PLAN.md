@@ -1,114 +1,28 @@
-# Field definitions plan
+# Field definitions consolidation — completed
 
-Built and ready for review. This follows the two committed parts of ROUTING-RULES-PLAN.md.
-The sections below describe the implemented scope and the duplicate definitions removed.
+Reference for completed work. This file does not queue implementation. See [ARCHITECTURE.md](ARCHITECTURE.md) for current details.
 
-## The problem
+## Result
 
-Every field is defined twice:
+- The field catalog defines each field's label, control type, and option source.
+- Signoff Type Forms selects the fields for each Type and controls layout, visibility, required rules, disabled rules, and prepopulation.
+- Routings store recorded values and offer Types; they do not carry copied field definitions.
+- Forms, validation, condition pickers, History, and corrections use the same catalog and Type definitions.
+- Defer Tack is a checkbox. Required checkboxes must be checked, rather than merely contain text.
+- Disabled welding override fields remain available behind their existing feature flag.
 
-1. **The field catalog**, [field-catalog.ts](src/app/weld-record/signoff-definition/field-catalog.ts):
-   each field's label, type (text, number, select, checkbox, radio) and options. Admin > Signoff Type
-   Forms picks from it and sets which fields each Type uses and their rules.
-2. **Old per-routing field lists**: each routing's `fields` / `signoffFields`, written in code before
-   Signoff Type Forms existed, each with its own label, type and options.
+## Code ownership
 
-Some screens read the first and some read the second, and they've drifted apart. The bug that showed
-it: on Fit, **Defer Tack is a text box**. The catalog says checkbox, but Fit's Insert / Ring /
-Defer Tack row is drawn from the old list, where it's `type: 'text'` (`data/welding-steps.ts:61`).
-
-## The goal
-
-- The catalog is the **only** place a field is defined: label, type and options.
-- Signoff Type Forms is the **only** place that says which fields a Type uses, and their rules.
-- A routing doesn't list fields at all. It only offers Types (Signoff Types By Routing), and the
-  Type's form decides the fields.
-- The old lists, and everything reading them, are removed entirely, not left as a fallback, so
-  there is no second source to get confused by.
-
-## Where the old lists are defined (remove)
-
-| Location | What |
+| Concern | Source |
 |---|---|
-| `data/welding-steps.ts` | every routing's `fields` / `signoffFields`, `insertAndBackingRingFields()` (Fit/Pre-Fit, incl. Defer Tack as text), `recordsReviewFields()` |
-| `weld-record/signoff-definition/weld-fields.ts` | `WELD_STAGE_FIELDS`, `WELD_OVERRIDE_FIELDS` (move anything still needed into the catalog) |
-| `weld-record/routing/ndt.ts` | `NDT_COMMON_FIELDS` and each NDT kind's `fields` (lines 12-75), copied onto NDT stages (line 123) |
-| `weld-record/routing/added-steps.ts` | `REPAIR_STAGE.fields` (line 28), Excavation NDT's copied NDT fields (line 65), Engineering Hold's empty lists |
-| `weld-record/model/workflow-types.ts` | `fields` / `signoffFields` on `WorkflowStage` and `StageTemplate`, and the `StageField` / `SignoffField` types if nothing else needs them |
+| Field definitions | [field-catalog.ts](src/app/weld-record/signoff-definition/field-catalog.ts) |
+| Type forms and persistence | [step-field-config.ts](src/app/weld-record/signoff-definition/step-field-config.ts) |
+| Catalog fields selected by a Type | [form-fields.ts](src/app/weld-record/signoff-definition/form-fields.ts) |
+| Evaluated visibility and requirements | [shown-fields.ts](src/app/weld-record/signoff-definition/shown-fields.ts) |
+| Workflow persistence and legacy data handling | [workflow-store.service.ts](src/app/weld-record/services/workflow-store.service.ts) |
 
-## Where they're copied onto joints (remove)
+The original duplicate per-routing field lists and fallback readers were removed. Storage versions and exact implementation history belong in Git; current storage keys are in [storage-keys.ts](src/app/data/storage-keys.ts).
 
-| Location | What |
-|---|---|
-| `weld-record/routing/build-stages.ts:27-40` | copies the template lists onto each new stage, adds the weld override fields |
-| `weld-record/services/workflow-store.service.ts:146-185` | on load, refreshes every saved stage's `fields` / `signoffFields` from the templates, and Repair's from `REPAIR_STAGE` |
-| `weld-record/routing/route-changes.ts:82, 105, 145` | the undo snapshot strips and restores the lists |
-| `weld-record/routing/stage-templates.ts:69` | built-in templates' lists |
-| `weld-record/admin/admin-routing/admin-routing.component.ts:170` | an added routing gets empty lists |
-| `weld-record/joint-page/rules/type-change.ts:18-19` | a Type change copies the routing's own lists |
-| `weld-record/joint-page/rules/unsaved-edits.ts:14` | copies the lists when keeping unsaved edits |
+## Recorded validation
 
-## What reads them (switch to the catalog + the Type's form)
-
-**The joint page form**
-- `signoff-definition/shown-fields.ts:84` `visibleSignoffFields()`: Fit / Pre-Fit's Insert, Ring
-  and Defer Tack row. It takes the field from `stage.signoffFields`, so the old type wins.
-  **This is the Defer Tack bug.** Used by `signoff-panel/definition-form.component.ts:101`,
-  `joint-page/joint-page.component.ts:285`, `joint-page/rules/fit-signoff.ts:11` and sign validation.
-- `joint-page/rules/stage-form.ts:49` `visibleStageFields()` and `shown-fields.ts:71`
-  `fieldsShown()`: fall back to `stage.fields` for a routing without a form.
-- `signoff-definition/signoff-parts.ts:35` `withComments()`.
-- `signoff-panel/signoff-context.ts`, `signoff-panel/verify-grid.component.ts`: take
-  `StageField` / `SignoffField` (switch to the catalog field type).
-
-**Saving, History and Correct**
-- `signoff-definition/stage-display.ts:22-50`: field labels and History snapshot values.
-- `services/signoff.service.ts:137`: looks up a field definition when recording the signoff.
-- `work-history/correct-stage-dialog.component.ts:50-125`: Correct's field lists.
-- `joint-page/signoff-form-edits.service.ts:43, 134` and `signoff-form-errors.service.ts:55`.
-- `services/routing.service.ts:17-27`: `setStageInput` takes a `StageField`.
-
-**Field rules and lookups**
-- `joint-page/joint-overrides.service.ts:105-196`: Engineering Override's field lookups.
-- `joint-page/rules/deviations.ts:28-80`: deviation checks look up fields.
-- `joint-page/rules/weld-cascade.ts:20`.
-- `signoff-definition/field-fill.ts:16, 27` and `field-locks.ts:18`: check `stage.fields` for the key.
-- `data/weld-assignment.ts:20, 57` and `services/weld-assignment.service.ts:43`: "does this step
-  record a WTN / GWP".
-
-**Condition pickers**
-- `routing/step-conditions.ts:147-148` `answersOf()`: the routing condition, Reject and Then go to
-  pickers list each routing's answers from the old lists. They should list the fields of the Types
-  that routing offers. `step-conditions.ts:337` reads them too.
-- `qualifications/qual-conditions.ts:66-81`: the qualification condition picker lists every
-  routing's fields from the old lists. It would offer Defer Tack as free text.
-
-**Seed data**
-- `data/seeded-workflow.ts:45-51, 136-150`: picks demo values by the old field types.
-
-## Admin change
-
-Signoff Type Forms' Fields list shows each field's type (Text, Number, Droplist, Checkbox, Radio),
-read-only. Types stay fixed in the catalog: changing a field's type would misread values already
-saved on joints.
-
-## Also in the build
-
-- Storage versions and `CURRENT_VERSION` bumped. Saved joints carry their old copied lists; they
-  are dropped on load.
-- A Change Log line ("Defer Tack on Fit is a checkbox again"; "Signoff Type Forms shows each field's type").
-- ARCHITECTURE.md updated where it describes stage fields.
-- Unit tests: Defer Tack renders and validates as a checkbox; the condition pickers list a Type's
-  form fields; nothing reads `fields` / `signoffFields` (they no longer exist).
-
-## Implementation handoff
-
-- The catalog owns field types, labels and options. A catalog-derived `FormField` carries evaluated runtime rules; the former StageField/SignoffField models and per-routing lists are removed.
-- `form-fields.ts` derives ordinary inputs and signoff-stored values from the selected Type form. Build, Type changes, undo and unsaved-edit snapshots carry no copied field definitions. The store strips old lists on load, including any undo snapshots, while preserving recorded values and History.
-- Routing, Reject, Then go to and qualification condition pickers union the offered Types' catalog fields. Their caches refresh when Type forms are edited.
-- Defer Tack renders as a checkbox and saves yes/blank. Required checkboxes must be checked; a nonempty text value cannot satisfy them. Signoff Type Forms shows field types read-only.
-- The temporarily disabled welding overrides retain catalog definitions, form activations and working rule code under their existing flag.
-- Workflow version is `2.10.51`, workflow and routing-template keys are v5, and Signoff Type Forms is v15.
-- Browser review belongs to the user. Do not push or deploy.
-
-- Validation: all 401 unit tests passed, including DOM rendering of Defer Tack, condition-picker refresh, and legacy saved/undo field removal. Production build and TypeScript unused-code checks passed.
+At completion, 401 unit tests, the production build, and TypeScript unused-code checks passed. This is a historical result, not a claim about the current test count or coverage.

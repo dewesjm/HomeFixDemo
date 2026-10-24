@@ -4,7 +4,6 @@ This is the plain-language version of how a Welding joint moves through its rout
 
 Last updated 2026-10-23.
 
-
 ## Terms
 
 - **Routing**: a status the joint is in (Pre-Fit, Fit, Tack, Root, Root NDT 5X/VT, …). Each is a row on Admin > Routing Settings and a box on the routing bar.
@@ -17,7 +16,7 @@ Last updated 2026-10-23.
 - Routings are signed in order. A routing can't be signed until every required routing before it is signed.
 - Each routing is signed by one role (Fitting, Welding, Foreman, Inspector and so on), its **Persona** in Admin > Routing Settings.
 - **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Added routings and remaps Inspector to NQC Inspector on N Ind 1 or 2 joints.
-- **Nothing is ever unsigned or reopened** (user's rule, 2026-09-25). When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
+- **Nothing is ever unsigned or reopened**. When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on routings the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed routing and every routing after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
 - **Admin > Routing Override** changes a joint's current routing to any routing. Nothing is marked signed. Going back works like any route-back (that routing and every routing after it come up blank). Going forward only moves the current routing: the routings before it stay as they are (unsigned ones are simply passed), and the joint carries on from the new routing. The joint is found by typing its Hull, Drawing and Joint exactly, and a Reason for change is required; the Routing History entry records it.
@@ -187,13 +186,13 @@ When a routing has any deviation, Signoff opens an acceptance screen instead of 
 
 **Deprogress:** before Engineering releases it, deprogressing the sign-off that accepted the deviation removes its Engineering Hold; the deviation stays on record as withdrawn. After release, Deprogress can't reach back past it (same as Admin > Routing Override).
 
-**From a reject rule:** Admin > Routing Settings reject rules can send an UNSAT to **Engineering Hold** instead of Repair or a route-back. Built in: on Root, Layer and Final NDT MT/PT, "This routing: Type is PT and <that phase's weld routing>: Weld Process is GMAW" goes to Engineering Hold instead of Repair (Root NDT checks Root, Layer NDT checks Layer, Final NDT checks Final Weld). No deviation is involved: the hold keeps its reason (for example "Root NDT MT/PT was UNSAT (Type is PT, and Root: Weld Process is GMAW)"), the banner shows it, and Signoff releases it the same way (History: "Engineering Hold - Signed off"). Engineering can't pick Repair, since the joint has none (user's decision: the hold is instead of Repair).
+**From a reject rule:** Admin > Routing Settings reject rules can send an UNSAT to **Engineering Hold** instead of Repair or a route-back. Built in: on Root, Layer and Final NDT MT/PT, "This routing: Type is PT and <that phase's weld routing>: Weld Process is GMAW" goes to Engineering Hold instead of Repair (Root NDT checks Root, Layer NDT checks Layer, Final NDT checks Final Weld). No deviation is involved: the hold keeps its reason (for example "Root NDT MT/PT was UNSAT (Type is PT, and Root: Weld Process is GMAW)"), the banner shows it, and Signoff releases it the same way (History: "Engineering Hold - Signed off"). Engineering can't pick Repair, since the joint has none.
 
 **Seeded:** five demo joints start on Engineering Hold for a deviation (an Actual PH Max over the range, accepted at Tack, Root, Layer or Final Weld), and two for a PT failure on a GMAW weld.
 
 ## Foreman Override
 
-**Turned off 2026-10-01** (button hidden, `FOREMAN_OVERRIDE_ENABLED` in weld-record/signoff-definition/weld-fields.ts); blank values are handled by the engineering override above instead. How it worked when on:
+**Disabled** (button hidden, `FOREMAN_OVERRIDE_ENABLED` in weld-record/signoff-definition/weld-fields.ts); blank values are handled by the engineering override above instead. How it worked when on:
 
 **Foreman Override** (on welding routings and Fit as a Weld Build-Up, on the right, away from Signoff) records work done outside the procedure, in the person's own words. The pop-up asks them to "Describe the deviation and why it is necessary".
 - While a routing has an override, GWP (and so WTN), Filler Metal Type and Filler Metal Size can be picked from the full lists instead of being filled in for you. A GWP, type or size the WPS doesn't allow shows the warning "Foreman override".
@@ -220,4 +219,5 @@ Repair creation and seeded Excavation NDT use the same configured availability/s
 live routing. The old NDT method-filter helpers and the hardcoded return-to-5X option override are removed.
 
 ## Additional signoffs
+
 Admin > Signoff Types keeps Signs routing and adds Also signs rules. Each additional rule selects a routing, the inspection/signoff Type to record there, and an AND/OR condition using the existing condition editor. Matching rules sign eligible later required unsigned routings already on the joint; unavailable Types and missing targets are ignored. No intervening routing is skipped. Rejects, route-backs, and accepted deviations entering Engineering Hold do not apply additional signoffs. Additional signoffs create their own History entries and share the originating signoff's Deprogress action. Existing field values on the additional routing are retained; missing procedure or inspection data is not invented.

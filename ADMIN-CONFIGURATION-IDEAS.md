@@ -1,6 +1,6 @@
 # Weld Record admin configuration ideas
 
-Reference notes from the admin configuration evaluation. These are ideas for review, not queued implementation work. Scope is Weld Record only; Weld Planning and Weld Engineering configuration are outside the current scope.
+Weld Record ideas and deferred requirements. Nothing here queues implementation. Weld Planning and Weld Engineering are outside this scope.
 
 ## Allowable repair thickness
 
@@ -49,5 +49,16 @@ Groups already has an admin table, but its permissions are mocked rather than en
 For any future configuration, consider stable field/code IDs, deactivation instead of deleting referenced values, configuration change history, and explicit behavior for existing joints and historical signoffs. History preservation, record identity, and repair numbering remain application mechanics.
 
 ## Implemented: Weld Colors
-Weld Record now has Admin > Weld Colors for maintaining color names and codes. Backing Ring Type is likely externally owned; leave its list alone pending that integration.
 
+Admin > Weld Colors maintains a single Color field. Backing Ring Type is likely externally owned; leave its list alone pending that integration.
+
+## Implemented: additional signoffs
+
+Signoff Types supports conditional Also signs rules. Root's question and answer choices follow NDT Root VT or 5X, and the matching rule signs that inspection with Root. See ROUTING.md for behavior.
+
+## Export audit — identified gaps
+
+- Groups hides the export action and has no export handler.
+- Signoff Type Forms exports Type and field names, but omits expanded conditions and behaviors.
+
+These findings are recorded for reference; no implementation is queued.

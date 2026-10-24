@@ -18,7 +18,7 @@
       @for (row of table.sorted(); track row.uid) {
         @let editing = editingUid() === row.uid;
         <tr>
-          <td>
+          <td class="align-top">
             @if (editing) {
               <input class="input input-sm input-bordered w-full min-w-0" placeholder="Name"
                      [ngModel]="row.label" (ngModelChange)="row.label = $event" />
@@ -26,7 +26,7 @@
               {{ row.label }}
             }
           </td>
-          <td>
+          <td class="align-top">
             @if (editing) {
               <select class="select select-sm select-bordered w-48" aria-label="Signs routing"
                       [ngModel]="row.signsStep ?? ''" (ngModelChange)="setSignsStep(row, $event)">
@@ -37,12 +37,12 @@
               {{ signsStepLabel(row) }}
             }
           </td>
-          <td>
+          <td class="align-top">
             @if (editing) {
               <app-additional-signoffs-editor [rules]="row.alsoSigns ?? []" [routings]="routings" (changed)="row.alsoSigns = $event" />
             } @else { {{ alsoSignsLabel(row) }} }
           </td>
-          <td>
+          <td class="align-top">
             <div class="row-tight">
               @if (editing) {
                 <button type="button" class="btn btn-ghost btn-xs" title="Save" (click)="saveEdit(row)">

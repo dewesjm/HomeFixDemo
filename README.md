@@ -21,16 +21,20 @@ npx ng test --watch=false --browsers=ChromeHeadless
 
 - **No backend**: all data is seeded in memory or saved to the browser's `localStorage`. Admin settings are saved per browser too.
 - **480 seeded joints** with deterministic data (same every load).
-- **Welding routing**: sign-off, reject rules, NDT steps driven by each joint's NDT values, unlimited repair rounds, and Cut (start over from Fit).
+- **Welding routing**: signoff, configurable accepted/reject rules, NDT routings driven by each joint's requirements, unlimited repair rounds, and Cut (start over from Fit).
 - **History**: every sign-off, deprogress and correction is recorded with the field values as they were.
 - **Deprogress**: undo the last sign-off, with a required reason; History keeps the record. Nothing is ever un-signed.
-- **Sold**: once signed, the joint is locked; only Deprogress is allowed.
-- **Admin screens** for routing, Signoff Type Definition (which fields each step shows and their rules), qualifications, NDT settings, banners, joint designs and more.
+- **Sold**: the joint is closed and locked; Deprogress can reverse the preceding signoff.
+- **Admin screens** for routing, Signoff Types, Signoff Types By Routing, Signoff Type Forms, qualifications, inspection procedures, weld colors, locations, joint designs, banners, and more.
 - **No logins**: the app has a demo role filter, not real users, and nothing is access-controlled.
 - **32 DaisyUI themes** (default: Light).
 
 ## Documentation
 
-- [ROUTING.md](ROUTING.md): the routing rules in plain language, covering every step, NDT, repairs, Cut, and what's required to sign each step
+- [AGENTS.md](AGENTS.md): shared development rules and UI conventions
+- [ROUTING.md](ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
 - [ARCHITECTURE.md](ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
+- [ADMIN-CONFIGURATION-IDEAS.md](ADMIN-CONFIGURATION-IDEAS.md): deferred Weld Record ideas and requirements
+- [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
+- [ROUTING-RULES-PLAN.md](ROUTING-RULES-PLAN.md) and [FIELD-DEFINITIONS-PLAN.md](FIELD-DEFINITIONS-PLAN.md): completed implementation summaries, not queued work
 - Change Log (Quick Links > Change Log in the app, data in `src/app/data/changelog.ts`): user-facing changes, newest first
