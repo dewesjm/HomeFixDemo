@@ -20,6 +20,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
     fixed: [
+      'The top-bar Admin menu now scrolls when its entries exceed the available screen height, keeping the last entries reachable.',
       'Signoff Type Forms shows Conditions and Behaviors headers only within an expanded Type’s field table.','Defer Tack on Fit is a checkbox again. Required checkboxes must be checked to sign.'],
     changed: [
       'Admin pages now include a brief explanation. Signoff Types also reminds you to update Signoff Types By Routing and Signoff Type Forms.',

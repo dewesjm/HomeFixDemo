@@ -72,6 +72,14 @@
 .dropdown-wrapper > details > summary:hover { background: var(--app-muted); }
 .topnav-right .dropdown-menu { left: auto; right: 0; }
 
+/* Top-level Admin lists scroll within the viewport; system dropdowns retain their flyouts. */
+.dropdown-menu.flat-admin-menu {
+  max-height: calc(100dvh - 3.5rem);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-gutter: stable;
+}
+
 .dropdown-menu {
   position: absolute;
   top: 100%;
