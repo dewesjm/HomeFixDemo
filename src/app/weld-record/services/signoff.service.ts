@@ -1,3 +1,4 @@
+import { RoutingConfigurationError } from '../routing/generic-insertion';
 import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
 /* per-stage sign-off: signing a step (where it routes is routing/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
@@ -23,6 +24,7 @@ import { typeValues } from '../signoff-definition/stage-rules';
 /* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
 function signedActionLabel(st: WorkflowStage): string {
+  if (st.insertion) return st.label;
   const named = !isOwnType(st.id, st.signoffType) || namedAfterType(st.id);
   if (!named) return st.label;
   return st.typeOptions?.find(o => o.value === st.signoffType)?.label ?? st.label;
@@ -51,21 +53,34 @@ export class SignoffService {
   /* lock a stage's sign-off and advance (or route back on reject) */
   /* engineeringHold: the sign-off accepted deviations, so the joint goes to Engineering Hold */
   signStage(job: Job, stageId: string, inputs?: SignoffInput[], engineeringHold = false) {
-    let r: ReturnType<SignoffService['applySignoff']> | null = null;
-    this.store.update(job, wf => (r = this.applySignoff(wf, job, stageId, inputs, engineeringHold)).wf);
-    const { signedLabel, refitNumber, repairNumber } = r!;
+    let r: ReturnType<SignoffService['applySignoff']>;
+    try {
+      r = this.applySignoff(this.store.workflowFor(job)(), job, stageId, inputs, engineeringHold);
+    } catch (error) {
+      if (!(error instanceof RoutingConfigurationError)) throw error;
+      this.messages.add({ severity: 'error', summary: 'Routing configuration blocks signoff', detail: error.message, life: 6000 });
+      return false;
+    }
+    this.store.update(job, () => r.wf);
+    const { signedLabel, refitNumber, repairNumber } = r;
     if (refitNumber) job.refitNumber = refitNumber;
     if (repairNumber) job.repairNumber = repairNumber;
     this.messages.add({ severity: 'success', summary: 'Joint Signoff Complete', detail: signedLabel, life: 3000 });
+    return true;
   }
 
   /* Demo routing preview: runs the real sign-off on a copy (nothing is saved) and returns the
      stage the joint would be at afterward (undefined when it'd be complete) and which special
      routing rules applied. `result` tries a SAT/UNSAT the user hasn't picked yet. */
-  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result'], engineeringHold = false): { target: WorkflowStage | undefined; reasons: string[] } {
+  previewSignoff(wf: JobWorkflow, job: Job, stageId: string, result?: WorkflowStage['result'], engineeringHold = false): { target: WorkflowStage | undefined; reasons: string[]; blocked?: string } {
     const tried = result === undefined ? wf : { ...wf, stages: wf.stages.map(s => s.id === stageId ? { ...s, result } : s) };
-    const r = this.applySignoff(tried, job, stageId, undefined, engineeringHold);
-    return { target: activeStage(r.wf.stages), reasons: r.reasons };
+    try {
+      const r = this.applySignoff(tried, job, stageId, undefined, engineeringHold);
+      return { target: activeStage(r.wf.stages), reasons: r.reasons };
+    } catch (error) {
+      if (!(error instanceof RoutingConfigurationError)) throw error;
+      return { target: wf.stages.find(s => s.id === stageId), reasons: [`Blocked: ${error.message}`], blocked: error.message };
+    }
   }
 
   /* the sign-off itself, without saving: the new workflow plus what signStage() reports/stamps on the job */

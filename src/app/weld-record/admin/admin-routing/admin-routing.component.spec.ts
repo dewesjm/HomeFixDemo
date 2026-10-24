@@ -1,3 +1,4 @@
+import { insertionTarget } from '../../routing/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';
@@ -16,6 +17,38 @@ describe('Routing Settings rules editor', () => {
     component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
   });
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
+
+
+  it('renders stable insertion targets, saves their labels and rejects an unconditional cycle', fakeAsync(() => {
+    addStageTemplate('Welding', { id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
+    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
+    updateStageTemplate('Welding', 'extra', { status: 'active' });
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    fixture.detectChanges();
+    const editor = fixture.componentInstance;
+    const row = editor.rows().find(r => r.id === 'Welding:fit')!;
+    editor.openThenRules(row); editor.rejRules.set([]); editor.addRejectRule(); editor.removeRejectClause(0, 0);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    const select = Array.from(host.querySelectorAll('select')).find(s => Array.from(s.options).some(o => o.text === 'Insert Extra check'))!;
+    expect(select).toBeTruthy();
+    expect(select.getAttribute('aria-label')).toBe('Rule 1 destination');
+    expect(select.tabIndex).toBe(0);
+    expect(Array.from(select.options).find(o => o.text === 'Insert Extra check')!.text).toBe('Insert Extra check');
+    select.value = Array.from(select.options).find(o => o.text === 'Insert Extra check')!.value; select.dispatchEvent(new Event('change')); fixture.detectChanges();
+    expect(editor.rejRules()[0].to).toBe(insertionTarget('extra'));
+    editor.saveRejectRules();
+    expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
+    expect(editor.rows().find(r => r.id === row.id)!.thenRules[0]).toContain('Insert Extra check');
+    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:extra')!);
+    editor.addRejectRule(); editor.removeRejectClause(0, 0); editor.setRejectTo(0, insertionTarget('extra'));
+    fixture.detectChanges();
+    expect(editor.rejectRulesValid()).toBeFalse();
+    expect(host.querySelector('[role=alert]')?.textContent).toContain('cycle');
+    editor.saveRejectRules();
+    expect(getTemplates()['Welding'].find(t => t.id === 'extra')!.thenRules).toEqual([]);
+    fixture.destroy(); tick(2000);
+  }));
 
   it('renders the added-definition create and setup controls, saves a draft and cancels edits', fakeAsync(() => {
     const fixture = TestBed.createComponent(AdminRoutingComponent);

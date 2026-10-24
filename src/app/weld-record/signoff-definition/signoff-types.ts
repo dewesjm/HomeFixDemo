@@ -1,3 +1,4 @@
+import { insertedDefinitionId } from '../routing/instance-identity';
 /* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
@@ -87,7 +88,7 @@ export function setSignoffTypeRows(rows: SignoffTypeRow[]) {
 
 /* the table row a step reads: its own, or the shared Repair / Excavation NDT row for any round */
 export function signoffTypeRowId(stageId: string): string {
-  return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? EXCAVATION_TYPE_ROW : stageId;
+  return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? EXCAVATION_TYPE_ROW : insertedDefinitionId(stageId) ?? stageId;
 }
 
 export function hasSignoffTypeRow(stageId: string): boolean {

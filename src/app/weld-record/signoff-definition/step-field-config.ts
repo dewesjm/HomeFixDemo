@@ -242,7 +242,7 @@ export function resetStepFieldConfig(): void {
 }
 
 /* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
-export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
+export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions'>>;
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
@@ -250,7 +250,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'>;
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
-  const options = signoffTypeOptions(step.id);
+  const options = step.insertion ? step.typeOptions : signoffTypeOptions(step.id);
   if (!options) return undefined;
   return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
 }

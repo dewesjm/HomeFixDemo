@@ -11,7 +11,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-24',
-    added: ['Routing Settings: create custom added routing definitions as drafts, configure personas and applicability, and activate or deactivate them after Type/form setup. Custom insertion execution follows separately.'],
+    added: ['Routing Settings: create custom added routing definitions as drafts, configure personas and applicability, and activate or deactivate them after Type/form setup. Active definitions can be selected as Insert destinations in routing rules; preview shows the same persona and Type choices as live execution. Nested/repeated instances retain their own History and continuation; invalid targets block signoff.'],
     fixed: ['Routing Settings: new routings appear at the top while being edited and display the next numbered routing position instead of -1. Cancel removes the unsaved routing.'],
     changed: [
       'Repair: separate thickness-exceeded confirmations for Nuclear Indicator 1 and indicators 2/3 are available in Signoff Type Forms. Their conditions select the applicable limit; either confirmation routes to the phase’s UT/RT and History records the specific limit.',

@@ -1,3 +1,6 @@
+import { resolveInsertion, RoutingConfigurationError } from './generic-insertion';
+import { insertionConfigurationErrors } from './insertion-validation';
+import { insertionDefinitionId } from './instance-identity';
 /* Signoff routing decisions; SignoffService owns saving and History. */
 import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
@@ -24,12 +27,12 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* The first matching reject rule wins; otherwise use the routing's reject destination. */
 function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string) {
-  const rule = matchingRejectRule(getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId))?.rejectRules, job, stages, st);
+  const rule = matchingRejectRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st);
   const at = stages.findIndex(s => s.id === stageId);
   const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
   const targetAt = stages.findIndex(s => s.id === stepOnJoint(stages, targetId)?.id);
-  const usable = rule && (isAddTarget(rule.to) || (targetAt >= 0 && targetAt <= at));
-  return { to: usable ? rule.to : st.rejectToStage ?? '', rule: usable ? rule : null };
+  const usable = rule && (isAddTarget(rule.to) || (st.insertion && rule.to === 'continue') || (targetAt >= 0 && targetAt <= at));
+  return { to: st.insertion && rule ? rule.to : usable ? rule.to : st.rejectToStage ?? '', rule: st.insertion && rule ? rule : usable ? rule : null };
 }
 
 export interface SignoffRouting {
@@ -105,6 +108,23 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
      insertion bookkeeping belong here; the choice of destination belongs to the tables. */
   const executeTarget = (destination: string, reason = '') => {
     const currentIdx = stages.findIndex(s => s.id === stageId);
+    if (insertionDefinitionId(destination)) {
+      const templates = (getTemplates()[job.trade] ?? []).map(t => t.id === st.insertion?.definition.id ? st.insertion.definition : t);
+      const errors = insertionConfigurationErrors(templates);
+      if (errors.length) throw new RoutingConfigurationError(errors.join(' '));
+      const inserted = resolveInsertion(templates, stages, job, st, destination, wf.history.flatMap(h => h.stageId ? [h.stageId] : []));
+      stages = setRoutingFrom([...stages.slice(0, currentIdx + 1), inserted, ...stages.slice(currentIdx + 1)], inserted.id);
+      reasons.push(`Insert ${inserted.label} (${inserted.role}; Types: ${inserted.typeOptions!.map(t => t.label).join(', ')})`);
+      return;
+    }
+    if (destination === 'continue') {
+      const id = st.insertion?.continueAt;
+      if (!st.insertion) throw new RoutingConfigurationError('Continue requires an inserted routing.');
+      if (id && !stages.some(s => s.id === id)) throw new RoutingConfigurationError('Continuation routing is missing.');
+      if (id) stages = setRoutingFrom(stages, id);
+      reasons.push('continue after the inserted work');
+      return;
+    }
     if (destination === ENGINEERING_HOLD_TARGET) {
       stages = insertEngineeringHold(stages, stageId, reason, job);
       reasons.push('an Engineering Hold is added');
@@ -112,9 +132,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
     if (destination === 'repair') {
       const repairStage = stageFromTemplate(nextRepairStage(stages, job), {
-        originPhase: st.inputs['originPhase'] || baseStepId(stageId).split('-ndt-')[0],
-        originStageId: st.inputs['originStageId'] || stageId,
-        originInspectionType: st.inputs['originInspectionType'] || st.inspectionType,
+        originPhase: st.insertion?.originPhase || st.inputs['originPhase'] || baseStepId(stageId).split('-ndt-')[0],
+        originStageId: st.insertion?.originStageId || st.inputs['originStageId'] || stageId,
+        originInspectionType: st.insertion?.originInspectionType || st.inputs['originInspectionType'] || st.inspectionType,
       });
       const next = stages.slice(currentIdx + 1).find(s => !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id));
       if (next) stages = routeBack({ ...wf, stages }, job, next.id).wf.stages;
@@ -136,7 +156,10 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       return;
     }
     const target = stepOnJoint(stages, resolveRuleTarget(stages, st, destination));
-    if (!target) return;
+    if (!target) {
+      if (st.insertion) throw new RoutingConfigurationError(`Destination ${destination} has no routing context.`);
+      return;
+    }
     const to = stages.findIndex(s => s.id === target.id);
     const cut = isRepairStageId(stageId) && st.inputs['repairType'] === 'cut' && target.id === CUT_RESTARTS_AT;
     if (to <= currentIdx) {
@@ -155,7 +178,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     stages = stages.map(s => {
       if (s.id !== target.id) return s;
       const inputs = usesReturningInspectionType(s.id) ? { ...s.inputs, returningInspectionType: st.inspectionType } : s.inputs;
-      const typeOptions = signoffTypeOptions(s.id, job, inputs);
+      const typeOptions = s.insertion ? s.typeOptions : signoffTypeOptions(s.id, job, inputs);
       return { ...s, inputs, typeOptions, ...typeValues(initialInspectionType({ typeOptions })) };
     });
   };
@@ -168,11 +191,19 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
   }
   if (st.result !== 'unsat') {
-    const rule = matchingThenRule(getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId))?.thenRules, job, stages, signing);
-    if (rule && (isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
+    const rule = matchingThenRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing);
+    if (rule && (st.insertion || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
       reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
     }
+  }
+
+  if (st.insertion) {
+    const definition = st.insertion.definition;
+    const matched = st.result === 'unsat'
+      ? matchingRejectRule(definition.rejectRules, job, stages, signing)
+      : matchingThenRule(definition.thenRules, job, stages, signing);
+    if (!matched && !(st.result === 'unsat' && st.rejectToStage)) executeTarget('continue');
   }
 
   /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */

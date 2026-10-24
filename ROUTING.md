@@ -2,7 +2,7 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each routing. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-10-23.
+Last updated 2026-10-24.
 
 ## Terms
 
@@ -86,6 +86,16 @@ Admin > Routing Settings separates numbered routings from **Added routings**: Re
 Targets include **Add Repair**, **Add Excavation NDT** (on Repair), and **Add Engineering Hold**, plus destinations relative to a repair round: **Rejecting NDT**, **Rejecting phase’s UT/RT**, **Rejecting phase’s VT/5X**, and **Own Repair**. These resolve to the joint’s own regular or NQC routing and the correct repair round. Repair # and Cut’s Refit # remain automatic bookkeeping.
 
 The tables below describe the starting rules. Editing those rules changes the destinations, including the routing preview. Engineering Hold keeps its Engineering release form: Engineering chooses the destination there.
+
+### Ordinary configured insertions
+
+Active ordinary Added definitions are offered as **Insert <name>** destinations on accepted-signoff and reject rules. The first matching rule inserts one blank unsigned instance immediately after its source and makes it current. Persona rules and Type availability resolve before insertion; the selected Type uses its shared form. Missing/inactive/inapplicable definitions, incomplete setup or unavailable Types block signoff with a configuration message. Preview uses the same executor and shows the instance/persona/Types or the block.
+
+Instances retain source, original inspection/phase and parent Repair context when present, captured settings/Type choices, and distinct numbered labels in the routing bar and History. Renaming/deactivation affects future instances; open and signed instances retain their settings, persona and Type choices. Shared form field definitions remain live. Ordinary numbering does not change Repair # or Refit #.
+
+Without a matching destination, SAT or UNSAT continues at the first required unsigned routing after the original source, captured at insertion, or completes if none remained. Nested insertions inherit that continuation. Explicit continuation, insertion-source return, numbered destinations and further insertion are supported. Relative inspection/phase/Own Repair destinations are offered only when every configured incoming source supplies context; missing runtime context blocks signing. Unconditional insertion cycles cannot be saved. Conditional repeat work creates distinct instances.
+
+Route-back retains signed ordinary instances as records and retires other unsigned ordinary work. A targeted ordinary instance starts blank with context retained. Deprogress undoes insertion while preserving History and allowed corrections. Workflow version 2.10.56 uses the existing first-load demo cache reset. Separate NQC Excavation definitions and shared Type Exceptions remain deferred.
 
 ## When an NDT routing fails
 

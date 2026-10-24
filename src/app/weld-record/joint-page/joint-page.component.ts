@@ -330,6 +330,11 @@ export class JointPageComponent implements OnDestroy {
     /* validate required fields + range constraints */
     if (this.formErrors.showSigningErrors(stageFieldErrors(stage, this.signCtx(stage)))) return;
     if (!this.canSignStage(stage)) return;
+    const problem = this.wf && this.signoffService.previewSignoff(this.wf(), this.job, stage.id).blocked;
+    if (problem) {
+      this.signoffService.signStage(this.job, stage.id);
+      return;
+    }
     const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
     const deviations = this.overrides.stageDeviations(st);
     if (deviations.length) {
@@ -344,8 +349,7 @@ export class JointPageComponent implements OnDestroy {
       password: true,
       accept: () => {
         this.overrides.recordOverrides(st);
-        this.sign(stage.id, this.signoffSnapshot(stage));
-        this.router.navigate([this.backDestination()]);
+        if (this.sign(stage.id, this.signoffSnapshot(stage))) this.router.navigate([this.backDestination()]);
       }
     });
   }
@@ -354,8 +358,9 @@ export class JointPageComponent implements OnDestroy {
   private sign(stageId: string, inputs: SignoffInput[], engineeringHold = false) {
     if (!this.job || !this.wf) return;
     const before = this.wf();
-    this.signoffService.signStage(this.job, stageId, inputs, engineeringHold);
+    if (!this.signoffService.signStage(this.job, stageId, inputs, engineeringHold)) return false;
     if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
+    return true;
   }
 
   /* Records Review's Deprogress: undoes the latest sign-off, which the leave guard counts as loaded

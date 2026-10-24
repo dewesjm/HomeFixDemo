@@ -101,6 +101,12 @@ adding a method, ask:
 - Write the new service's spec file alongside it (see "Testing" below) in the same change, not as follow-up
   work.
 
+## Ordinary added routing instances
+
+`routing/generic-insertion.ts` resolves active ordinary definitions into blank instances for execution, seeds and preview. `instance-identity.ts` separates definition destinations from instance IDs; `insertion-validation.ts` rejects invalid definition targets and unconditional insertion cycles; `insertion-target-options.ts` limits relative destination choices to incoming context. `routeSignoff()` executes the first matching destination. Configuration errors block signoff before History/undo changes and appear in preview and a toast.
+
+`WorkflowStage.insertion` persists frozen definition settings, sequence, source, continuation and optional inspection/Repair context. Future configuration edits do not replace existing open/signed instance settings, personas or enabled Types; shared Type form field definitions remain live. Nested insertion inherits the original continuation. Route-back retains signed ordinary records and retires other unsigned instances. Deprogress restores the pre-signoff path. History participates in allocating sequences to avoid reusing signed record IDs. Workflow version 2.10.56 uses the existing first-load demo cache reset; subsequent reloads preserve inserted stages instead of treating them as missing numbered templates. See ROUTING.md and ADDED-ROUTINGS-PLAN.md for behavior and package boundaries.
+
 ## Testing
 
 The remaining test work is scoped in [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md):

@@ -48,6 +48,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   const ownRound = isRepairStageId(targetId) ? [targetId, excavationIdForRepair(targetId)] : [];
   const stages = wf.stages.map((s, i) => {
     if (i < targetIdx) return s;
+    if (s.insertion && s.id !== targetId) return s.signed ? s : { ...s, required: false };
     if ((isRepairStageId(s.id) || isExcavationNdtStageId(s.id) || isEngineeringHoldId(s.id)) && !ownRound.includes(s.id)) {
       return s.signed ? s : { ...s, required: false };
     }

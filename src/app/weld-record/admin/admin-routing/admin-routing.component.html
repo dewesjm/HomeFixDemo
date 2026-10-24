@@ -85,7 +85,7 @@
           <div class="flex items-start gap-1">
             <div class="flex-1">
               @for (line of row.thenRules; track $index) { <div>{{ line }}</div> }
-              <div>Otherwise: in order</div>
+              <div>Otherwise: {{ canChangeStatus(row) ? 'continue after inserted work' : 'in order' }}</div>
             </div>
             @if (!row.id.includes(':new-')) {
               <button type="button" class="btn btn-outline btn-xs" (click)="openThenRules(row)" aria-label="Edit Then go to rules">
@@ -97,8 +97,9 @@
         <td>
           @if (editingId() === row.id) {
             <select class="select select-sm select-bordered w-full min-w-0"
+                    aria-label="Default reject destination"
                     [ngModel]="row.rejectToStage" (ngModelChange)="updateRejectTo(row, $event)">
-              <option value="">None (no routing)</option>
+              <option value="">Continue in order</option>
               @for (s of rejectTargets(row); track s.id) {
                 <option [value]="s.id">{{ s.label }}</option>
               }
@@ -263,10 +264,12 @@
     <div class="modal-box max-w-3xl max-h-[85vh]">
       <h3 class="text-lg font-semibold mb-1">{{ ruleMode() === 'then' ? 'Then go to' : 'Reject rules' }}: {{ row.routing }}</h3>
       @if (ruleMode() === 'then') {
+      @if (ruleConfigurationError()) { <p role="alert" class="text-error">{{ ruleConfigurationError() }}</p> }
         <p class="mb-4">After an accepted signoff, the first matching rule picks where the joint goes. Otherwise it continues in order. The same or an earlier routing starts fresh; a later routing passes those in between.</p>
       } @else {
+      @if (ruleConfigurationError()) { <p role="alert" class="text-error">{{ ruleConfigurationError() }}</p> }
       <p class="mb-1">When this routing is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
-      <p class="mb-4">A rule's routing must be earlier on the joint (or Engineering Hold, or Repair on an NDT routing). If it isn't, the UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+      <p class="mb-4">Choose an earlier routing, an insertion target, or a supported relative destination. An unavailable insertion or unresolved relative destination blocks signoff. Ordinary added routings continue after the inserted work when no destination matches.</p>
 
       }
 
@@ -327,14 +330,14 @@
           </button>
           <div class="flex flex-wrap items-center gap-2 mt-3">
             <span class="font-semibold">Routes to</span>
-            <select class="select select-bordered select-sm" [ngModel]="rule.to" (ngModelChange)="setRejectTo(ri, $event)">
+            <select class="select select-bordered select-sm" [attr.aria-label]="'Rule ' + (ri + 1) + ' destination'" [ngModel]="rule.to" (ngModelChange)="setRejectTo(ri, $event)">
               @for (t of rejectTargets(row); track t.id) { <option [ngValue]="t.id">{{ t.label }}</option> }
             </select>
           </div>
         </div>
       } @empty {
-        @if (ruleMode() === 'then') { <p class="font-semibold">No rules: continue in order.</p> } @else {
-        <p class="font-semibold">No reject rules: an UNSAT always goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
+        @if (ruleMode() === 'then') { <p class="font-semibold">No rules: continue in order (inserted work resumes its captured continuation).</p> } @else {
+        <p class="font-semibold">No reject rules: an UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}. Ordinary inserted work with no destination resumes its captured continuation.</p>
         }
       }
 

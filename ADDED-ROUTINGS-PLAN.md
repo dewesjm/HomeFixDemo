@@ -1,6 +1,6 @@
 # Configurable added routing definitions and insertion
 
-Status: package 1 implemented; stopped for review. Generic insertion and packages 2-4 remain deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
+Status: packages 1-2 implemented; stopped for review. Packages 3-4 remain deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
@@ -8,7 +8,7 @@ Administrators can create a routing in **Added routings**, configure its signoff
 
 Example: create an additional inspection definition, assign its Type/form and persona, then configure a reject or accepted-signoff rule to insert it. Its own accepted/rejected rules decide what happens next. The administrator must not need a new hardcoded routing ID for each ordinary additional inspection.
 
-## Current behavior and gap
+## Original behavior and gap (before implementation)
 
 - Routing Settings configures inclusion, rejection, accepted-signoff destinations and conditional personas. Repair, Excavation NDT and Engineering Hold are editable in its Added routings section.
 - Add routing creates a regular numbered routing. Added routing definitions are currently a fixed list in added-stage-templates.ts, identified by isAddedTemplateId(). There is no create-added-routing action.
@@ -81,7 +81,7 @@ The current Excavation-specific Type exception section could become a shared **T
 ## Suggested implementation packages
 
 1. **Definition classification and CRUD (complete):** persist added definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
-2. **Generic insertion and preview:** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
+2. **Generic insertion and preview (complete):** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
 3. **Existing specialized types and NQC Excavation:** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
 4. **Shared Type Exceptions and configuration clarity:** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
 
@@ -107,3 +107,18 @@ The existing Signoff Types By Routing editor offers new definitions. Setup links
 Package 1 does not offer custom insertion targets or change live Repair, Excavation or Engineering Hold execution. Active custom definitions are prepared configuration only. Their applicability and destination rules are editable in advance; they do not put the routing on a new joint. Generic instance identity, context, execution, previews and cycle validation remain package 2. Separate NQC Excavation and shared Type Exceptions remain decisions for later packages.
 
 Workflow version 2.10.55 uses the existing demo cache reset on first load after upgrade, including saved configuration/workflows. No historical instance migration is needed because custom runtime instances cannot yet be created.
+
+
+## Package 2 delivered
+
+Both accepted-signoff and reject rules offer **Insert <name>** for active ordinary added definitions. Targets persist stable definition IDs (`insert:<id>`), surviving rename. Draft/inactive definitions are excluded from new choices; saved destinations remain readable. Missing, inactive, inapplicable or incomplete definitions, disabled Types and unresolved relative destinations block signoff with a configuration message and no signoff/History mutation. Preview runs the same executor and reports the block or inserted name, persona and enabled Types.
+
+Each instance has an independent `added:<definition-id>:<sequence>` ID and numbered routing-bar/History label. Its frozen definition settings, enabled Types, persona, source ID, original inspection/phase and parent Repair (when present), and continuation destination persist on the workflow. No entered user values are copied. Repair # and Refit # are unchanged. Existing open and signed instances retain their routing settings and Type choices; shared Type form field definitions remain live.
+
+The first matching rule supplies one destination. Without a matching destination, either accepted or rejected ordinary work resumes at the first required unsigned routing that followed its original source at insertion (or completes if none remained). Nested inserted work inherits that continuation. Explicit **Continue after inserted work**, **Insertion source routing**, numbered destinations and further insertion are supported. Contextual NDT/phase/Own Repair choices appear only when every configured incoming source supplies that context; nested sources inherit it. Missing runtime context blocks signing.
+
+Configuration saves reject direct/indirect unconditional insertion cycles, including fallback reject destinations. Conditional repeat rules remain deliberate supported work with fresh instances. Route-back retires other unsigned ordinary instances and retains signed records; targeting an ordinary instance blanks its user inputs but retains context. Deprogress removes inserted descendants, restores previous context, and retains allowed corrections and History. Sequence allocation considers History so signed instance IDs are not reused after Deprogress.
+
+Workflow version **2.10.56** follows the existing demo cache-reset policy on first load after upgrade, including saved workflows/routing/Type mappings. There is no migration of pre-upgrade demo work. Subsequent reloads retain inserted instances without rebuilding them as numbered routings.
+
+Verified with **469 passing ChromeHeadless tests**, production build, and the no-unused TypeScript check. Added execution/service scenarios in `generic-insertion.spec.ts`, relative-choice tests in `insertion-target-options.spec.ts`, and a rendered Routing Settings insertion/cycle test in `admin-routing.component.spec.ts`. Includes a rendered joint form edit/cancel/confirm/signoff/persistence journey, nested/repeated insertion, accepted/rejected destinations, invalid targets, cycles, rename/deactivation, resolver parity, reload, route-back and Deprogress. Existing specialized Repair/Excavation/Hold regression suites are included in the full run. Separate NQC Excavation and shared Type Exceptions remain packages 3/4. The separate deferred coverage program has not been started.

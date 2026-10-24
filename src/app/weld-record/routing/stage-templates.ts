@@ -1,3 +1,5 @@
+import { insertedDefinitionId } from './instance-identity';
+import { insertionConfigurationErrors } from './insertion-validation';
 import { addedRoutingSetup, routingNameError } from './added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
@@ -165,7 +167,10 @@ export function updateStageTemplate(trade: Job['trade'], stageId: string, patch:
     const setup = addedRoutingSetup(next);
     if (setup.errors.length) throw new Error(setup.errors.join(' '));
   }
-  templates[trade] = list.map(s => s.id === stageId ? next : s);
+  const updated = list.map(s => s.id === stageId ? next : s);
+  const insertionErrors = insertionConfigurationErrors(updated);
+  if (insertionErrors.length) throw new Error(insertionErrors.join(' '));
+  templates[trade] = updated;
   persistTemplates(templates);
 }
 
@@ -208,7 +213,7 @@ export function allStageIds(): { id: string; label: string }[] {
 
 /* A numbered round reads the settings of its shared added-routing row. */
 export function routingTemplateId(id: string): string {
-  return /^(repair|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
+  return insertedDefinitionId(id) ?? /^(repair|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
 }
 export function getAddedTemplate(id: string): StageTemplate {
   return getTemplates()['Welding'].find(t => t.id === routingTemplateId(id))!;

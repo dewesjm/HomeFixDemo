@@ -1,3 +1,6 @@
+import { insertionRelativeTargets } from '../../routing/insertion-target-options';
+import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
+import { insertionConfigurationErrors } from '../../routing/insertion-validation';
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
@@ -116,7 +119,8 @@ export class AdminRoutingComponent {
   isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(row.id.split(':')[1]); }
   sectionRows(added: boolean) { return pinDraftRoutings(this.visibleRows().filter(r => this.isAdded(r) === added)); }
   private targetOptions() {
-    return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS];
+    return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS,
+      ...Object.values(getTemplates()).flatMap(list => list.filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` })))];
   }
 
   private buildInitialRows(): RoutingRow[] {
@@ -164,6 +168,7 @@ export class AdminRoutingComponent {
     }
     updateStageTemplate(row.trade, t.id, { status: next });
     this.rows.set(this.buildInitialRows());
+    this.refreshStageOptions();
   }
 
   addRow(added = false) {
@@ -217,6 +222,12 @@ export class AdminRoutingComponent {
         this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
         return;
       }
+    }
+
+    const insertionErrors = insertionConfigurationErrors(getTemplates()[row.trade].map(t => t.id === stageId ? { ...t, rejectToStage: row.rejectToStage } : t));
+    if (insertionErrors.length) {
+      this.messages.add({ severity: 'warn', summary: 'Invalid routing destination', detail: insertionErrors.join(' '), life: 6000 });
+      return;
     }
 
     if (isNew) {
@@ -363,7 +374,14 @@ export class AdminRoutingComponent {
   }
 
   getRejectLabel(rejectToStage: string): string {
-    if (!rejectToStage) return '-';
+    if (!rejectToStage) return 'Continue in order';
+    if (rejectToStage === 'insertion-source') return 'Insertion source routing';
+    if (rejectToStage === 'continue') return 'Continue after inserted work';
+    const definition = insertionDefinitionId(rejectToStage);
+    if (definition) {
+      const t = Object.values(getTemplates()).flat().find(t => t.id === definition);
+      return `Insert ${t?.label ?? definition}${t && t.status !== 'active' ? ` (${t.status})` : ''}`;
+    }
     const special = RULE_TARGETS.find(t => t.id === rejectToStage);
     if (special) return special.label;
     const match = this.stageOptions().find(s => s.id === rejectToStage);
@@ -469,9 +487,12 @@ export class AdminRoutingComponent {
       .map(r => `${describeConditions([r.when], fields)} → ${this.getRejectLabel(r.to)}`);
   }
 
-  /* Then go to offers numbered routings; Reject also offers added targets. */
+  /* Ordinary definitions can continue their captured path or request another insertion. */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
-    return [...(getTemplates()[row.trade] ?? []).filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id.split(':')[1])];
+    return [...(getTemplates()[row.trade] ?? []).filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id.split(':')[1]),
+      ...(this.templateFor(row)?.lifecycle === 'ordinary' && this.isAdded(row)
+        ? insertionRelativeTargets(row.id.split(':')[1], getTemplates()[row.trade] ?? []) : []),
+      ...(getTemplates()[row.trade] ?? []).filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
   }
 
   openRejectRules(row: RoutingRow) {
@@ -530,11 +551,18 @@ export class AdminRoutingComponent {
     this.setRejectClause(ri, ci, { values: c.values.includes(value) ? c.values.filter(v => v !== value) : [...c.values, value] });
   }
 
-  rejectRulesValid = computed(() => this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(this.rejFields(), c))));
+  ruleConfigurationError(): string {
+    const row = this.rejRow();
+    if (!row) return '';
+    const patch = this.ruleMode() === 'then' ? { thenRules: this.rejRules() } : { rejectRules: this.rejRules() };
+    return insertionConfigurationErrors((getTemplates()[row.trade] ?? []).map(t => t.id === row.id.split(':')[1] ? { ...t, ...patch } : t)).join(' ');
+  }
+
+  rejectRulesValid = computed(() => !this.ruleConfigurationError() && this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(this.rejFields(), c))));
 
   saveRejectRules() {
     const row = this.rejRow();
-    if (!row) return;
+    if (!row || !this.rejectRulesValid()) return;
     if (this.ruleMode() === 'then') {
       updateStageTemplate(row.trade, row.id.split(':')[1], { thenRules: this.rejRules() });
       this.rows.update(r => r.map(x => x.id === row.id ? { ...x, thenRules: this.thenRuleLines(row) } : x));

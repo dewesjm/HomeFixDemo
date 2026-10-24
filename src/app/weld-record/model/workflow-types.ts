@@ -16,6 +16,17 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 ];
 
 export interface WorkflowStage {
+  /* Frozen insertion settings/context; later configuration edits affect future instances. */
+  insertion?: {
+    definition: StageTemplate;
+    sequence: number;
+    sourceId: string;
+    continueAt: string;
+    originStageId?: string;
+    originPhase?: string;
+    originInspectionType?: string;
+    parentRepairId?: string;
+  };
   id: string;
   label: string;
   displayName?: string;  /* override label shown on routing table */
