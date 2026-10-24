@@ -6,7 +6,7 @@ Outstanding items are indexed in [Tasks.md](Tasks.md); keep that master backlog 
 
 ## Allowable repair thickness
 
-A candidate for an engineering-owned admin table. `allowableThicknessAmount()` in `src/app/weld-record/routing/added-steps.ts` currently selects 3/8 inch for Nuclear Indicator 1 and 3/16 inch otherwise, with the text "or 20% of material thickness, which is less". The code identifies the Non-nuclear fallback as unreviewed.
+A candidate for an engineering-owned admin table. `allowableThicknessAmount()` in `src/app/weld-record/routing/added-steps.ts` currently selects 3/8 inch for Nuclear Indicator 1 and 3/16 inch otherwise, with the text "or 20% of material thickness, which is less". Indicators 2 and 3 intentionally share the same rule.
 
 Potential configuration: Nuclear Indicator, absolute thickness limit, percentage limit, and explanatory text. Review the intended values before implementing. The current value is guidance displayed beside the exceeded checkbox; making it configurable does not by itself add an automatic thickness calculation.
 
@@ -28,7 +28,7 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 
 ### Remaining fixed business decisions
 
-- Allowable repair thickness and percentage guidance: see Allowable repair thickness above. Confirm the Non-nuclear fallback with engineering. This is displayed guidance, not an automatic measured-thickness calculation.
+- Allowable repair thickness and percentage guidance: see Allowable repair thickness above. Indicators 2 and 3 share the same rule. This is displayed guidance, not an automatic measured-thickness calculation.
 - Repair Code options in `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Keep these fixed unless administrators need additional actions; adding an option alone does not define its routing behavior.
 - Excavation persona remapping in `routing/added-steps.ts`: configured Inspector becomes NQC Inspector for Nuclear Indicator 1 or 2.
 - PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
