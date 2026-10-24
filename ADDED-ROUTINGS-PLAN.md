@@ -1,6 +1,6 @@
 # Configurable added routing definitions and insertion
 
-Status: documented implementation scope; implementation has not started. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
+Status: package 1 implemented; stopped for review. Generic insertion and packages 2-4 remain deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
@@ -80,7 +80,7 @@ The current Excavation-specific Type exception section could become a shared **T
 
 ## Suggested implementation packages
 
-1. **Definition classification and CRUD:** persist added definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
+1. **Definition classification and CRUD (complete):** persist added definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
 2. **Generic insertion and preview:** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
 3. **Existing specialized types and NQC Excavation:** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
 4. **Shared Type Exceptions and configuration clarity:** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
@@ -97,3 +97,13 @@ Review package boundaries before starting. Deliver each as a concrete, verified 
 - Test Deprogress and route-back with generic instances and each specialized lifecycle. Prior signed records remain intact; current routing and restored counters/context are correct.
 - Verify admin save/cancel/reload, rename/deactivate references, export contents, accessible labels/keyboard operations and use of the standard table conventions.
 - Add focused rule/service tests plus representative rendered editor and execution journeys. Run production build, unused-code checks and affected/full cross-cutting suites. Do not begin the separate deferred coverage program automatically.
+
+## Package 1 delivered
+
+Routing Settings creates custom Added routing definitions as drafts with stable IDs, names/display names, personas, applicability and ordered persona/destination rules. Numbered-versus-added classification, supported lifecycle and draft/active/inactive status are persisted. Legacy saved built-ins infer classification/lifecycle from their stable IDs; existing custom numbered routings remain numbered.
+
+The existing Signoff Types By Routing editor offers new definitions. Setup links lead to the existing Type, availability and form editors. Activation validates a signing persona, offered known Types, no more than one default, shared forms, and Types that sign this routing. Conditional Type availability is shown in the setup/export summary; runtime applicability and Type availability remain package 2 work. Missing configuration is retained as a draft. Custom definitions can be deactivated and reactivated; removal is blocked for all added definitions to preserve references. Built-in specialized lifecycle definitions stay available.
+
+Package 1 does not offer custom insertion targets or change live Repair, Excavation or Engineering Hold execution. Active custom definitions are prepared configuration only. Their applicability and destination rules are editable in advance; they do not put the routing on a new joint. Generic instance identity, context, execution, previews and cycle validation remain package 2. Separate NQC Excavation and shared Type Exceptions remain decisions for later packages.
+
+Workflow version 2.10.55 uses the existing demo cache reset on first load after upgrade, including saved configuration/workflows. No historical instance migration is needed because custom runtime instances cannot yet be created.

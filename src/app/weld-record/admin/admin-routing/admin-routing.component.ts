@@ -3,8 +3,10 @@
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
+import { RouterLink } from '@angular/router';
+import { addedRoutingSetup, routingNameError } from '../../routing/added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
-import { isAddedTemplateId } from '../../routing/added-stage-templates';
+import { isAddedTemplateId } from '../../routing/stage-templates';
 import { RULE_TARGETS, availableRuleTargets } from '../../routing/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -45,6 +47,8 @@ interface RoutingRow {
   displayName: string;    /* shown on the joint and the routing bar; blank = routing */
   trade: Job['trade'];
   sequence: number;
+  added?: boolean;
+  status?: StageTemplate['status'];
   rejectToStage: string;
   role: Role;
   includedWhen: string;   /* describeConditions() of the step's rules */
@@ -56,7 +60,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [PersonaRulesComponent, TableToolbarComponent,
+  imports: [RouterLink, PersonaRulesComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -109,7 +113,7 @@ export class AdminRoutingComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  isAdded(row: RoutingRow): boolean { return isAddedTemplateId(row.id.split(':')[1]); }
+  isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(row.id.split(':')[1]); }
   sectionRows(added: boolean) { return pinDraftRoutings(this.visibleRows().filter(r => this.isAdded(r) === added)); }
   private targetOptions() {
     return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS];
@@ -122,6 +126,7 @@ export class AdminRoutingComponent {
       templates.forEach(t => {
         rows.push({
           id: `${trade}:${t.id}`,
+          added: t.classification === 'added', status: t.status ?? 'active',
           routing: t.label,
           displayName: t.displayName ?? '',
           trade: trade as Job['trade'],
@@ -139,12 +144,35 @@ export class AdminRoutingComponent {
 
   /* ── Row CRUD ── */
 
-  addRow() {
+  setupSummary(row: RoutingRow): string {
+    const t = this.templateFor(row);
+    return t ? addedRoutingSetup(t).summary : 'Save this draft, then configure its Types and forms.';
+  }
+
+  canChangeStatus(row: RoutingRow): boolean {
+    return this.isAdded(row) && this.templateFor(row)?.lifecycle === 'ordinary';
+  }
+
+  toggleStatus(row: RoutingRow) {
+    const t = this.templateFor(row);
+    if (!t || !this.canChangeStatus(row)) return;
+    const next = t.status === 'active' ? 'inactive' : 'active';
+    const setup = addedRoutingSetup(t);
+    if (next === 'active' && setup.errors.length) {
+      this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
+      return;
+    }
+    updateStageTemplate(row.trade, t.id, { status: next });
+    this.rows.set(this.buildInitialRows());
+  }
+
+  addRow(added = false) {
+    if (this.editingId()) return;
     const trade = 'Welding';
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
     const sequence = nextRoutingNumber(this.rows().filter(row => row.trade === trade && !this.isAdded(row)));
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
+    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: fullId, routing: '', displayName: '', trade, sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -153,6 +181,7 @@ export class AdminRoutingComponent {
   }
 
   deleteRow(row: RoutingRow) {
+    if (this.isAdded(row)) return;
     this.confirm.confirm({
       header: 'Delete Routing',
       message: `Delete ${row.routing}?`,
@@ -175,13 +204,25 @@ export class AdminRoutingComponent {
   }
 
   saveEdit(row: RoutingRow) {
+    const error = routingNameError(row.routing, row.id.split(':')[1], getTemplates()[row.trade]);
+    if (error) { this.messages.add({ severity: 'warn', summary: error, life: 4000 }); return; }
+    row = { ...row, routing: row.routing.trim() };
     const parts = row.id.split(':');
     const stageId = parts[1];
     const isNew = stageId.startsWith('new-');
+    const current = this.templateFor(row);
+    if (current?.classification === 'added' && current.lifecycle === 'ordinary' && current.status === 'active') {
+      const setup = addedRoutingSetup({ ...current, label: row.routing, role: row.role });
+      if (setup.errors.length) {
+        this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
+        return;
+      }
+    }
 
     if (isNew) {
-      const newId = `custom-${Date.now()}`;
+      const newId = `custom-${crypto.randomUUID()}`;
       addStageTemplate(row.trade, {
+        classification: this.isAdded(row) ? 'added' : 'numbered', lifecycle: 'ordinary', status: row.status,
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
         rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
@@ -201,6 +242,7 @@ export class AdminRoutingComponent {
       });
     }
 
+    this.rows.set(this.buildInitialRows());
     delete this.clonedRows[row.id];
     this.editingId.set(null);
     this.refreshStageOptions();
@@ -511,10 +553,12 @@ export class AdminRoutingComponent {
   exportCsv() {
     downloadCsv('routing', [
       { header: 'Order', value: (r: RoutingRow) => this.isAdded(r) ? 'Added' : r.sequence },
+      { header: 'Status', value: (r: RoutingRow) => r.status ?? 'active' },
+      { header: 'Type and form setup', value: (r: RoutingRow) => this.setupSummary(r) },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
-      { header: 'Reject routes to', value: (r: RoutingRow) => r.rejectToStage || 'None' },
+      { header: 'Reject routes to', value: (r: RoutingRow) => this.getRejectLabel(r.rejectToStage) },
       { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },

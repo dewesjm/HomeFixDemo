@@ -133,6 +133,9 @@ export interface StageOption {
 
 /* the definition a joint's step is built from (stage-templates.ts) */
 export interface StageTemplate {
+  classification?: 'numbered' | 'added';
+  lifecycle?: 'ordinary' | 'repair' | 'excavation' | 'engineering-hold';
+  status?: 'draft' | 'active' | 'inactive';
   id: string;
   label: string;
   displayName?: string;  /* override label shown on routing table (e.g. 'Tack' for both 'tack' and 'deferred-tack') */

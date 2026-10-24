@@ -2,12 +2,17 @@
 <h2 class="section-title">Routing Settings</h2>
 <p class="text-sm mb-sm">Set routing order, inclusion conditions and signoff destinations.</p>
 
-<app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add routing"
+<app-table-toolbar [table]="table" searchPlaceholder="Search routing…" addLabel="Add numbered routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
 
 @for (added of [false, true]; track added) {
 <h3 class="text-lg font-semibold mt-4">{{ added ? 'Added routings' : 'Numbered routings' }}</h3>
 @if (added) { <p class="text-sm">Inserted by routing rules or accepted deviations. Engineering chooses the release destination on Engineering Hold.</p> }
+@if (added) {
+  <p class="text-sm my-2">Custom definitions are saved as drafts. Configure Types and forms before activation. Custom definitions can be prepared here; inserting them through routing rules is not available yet.</p>
+  <button type="button" class="btn btn-sm btn-outline my-2" [disabled]="!!editingId()" (click)="addRow(true)">Add added routing</button>
+  <p class="text-sm mb-2"><a class="link" routerLink="/admin/signoff-types">Signoff Types By Routing</a> &middot; <a class="link" routerLink="/admin/routing-signoff-types">Signoff Types</a> &middot; <a class="link" routerLink="/admin/signoff-fields">Signoff Type Forms</a></p>
+}
 <div class="overflow-x-auto">
 <table class="table table-sm">
   <thead>
@@ -48,10 +53,11 @@
         </td>
         <td>
           @if (editingId() === row.id) {
-            <input type="text" class="input input-sm input-bordered w-full min-w-0" placeholder="Routing name"
+            <input type="text" class="input input-sm input-bordered w-full min-w-0" aria-label="Routing name" placeholder="Routing name"
                    [ngModel]="row.routing" (ngModelChange)="updateField(row, 'routing', $event)" />
           } @else {
             {{ row.routing || '-' }}
+            @if (added) { <div class="text-sm">Status: {{ row.status }} &middot; {{ setupSummary(row) }}</div> }
           }
         </td>
         <td>
@@ -63,7 +69,7 @@
           }
         </td>
         <td>
-          @if (added) { Added by a rule or deviation } @else if (row.id.includes(':new-')) {
+          @if (added && !canChangeStatus(row) && !row.id.includes(':new-')) { Added by a rule or deviation } @else if (row.id.includes(':new-')) {
             Always (save the routing to change this)
           } @else {
             <div class="flex items-start gap-1">
@@ -138,19 +144,22 @@
           }
         </td>
         <td>
+          @if (canChangeStatus(row) && editingId() !== row.id) {
+            <button type="button" class="btn btn-outline btn-xs" (click)="toggleStatus(row)">{{ row.status === 'active' ? 'Deactivate' : 'Activate' }}</button>
+          }
           <div class="row-tight">
             @if (editingId() !== row.id) {
-              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)" [attr.aria-label]="'Edit ' + row.routing">
                 <svg lucidePencil class="size-4"></svg>
               </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="added" (click)="deleteRow(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="added" (click)="deleteRow(row)" [attr.aria-label]="'Delete ' + row.routing">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             } @else {
-              <button type="button" class="btn btn-ghost btn-xs text-success" (click)="saveEdit(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-success" (click)="saveEdit(row)" aria-label="Save routing">
                 <svg lucideCheck class="size-4"></svg>
               </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="cancelEdit(row)">
+              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="cancelEdit(row)" aria-label="Cancel routing changes">
                 <svg lucideX class="size-4"></svg>
               </button>
             }

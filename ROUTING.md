@@ -230,3 +230,10 @@ Routing Settings provides **Persona rules** beside each routing's base Persona, 
 Excavation starts with one rule: Nuclear Indicator 1 or 2 selects NQC Inspector, with Inspector as the base fallback. Removing its rules removes that automatic remap. Persona rules are included in Routing Settings export.
 
 The Signoff Types table calls its conditional additional-signoff rules **Additional Signoffs**. These sign eligible additional routings with the main signoff when conditions match.
+
+
+## Custom added definitions (configuration)
+
+Routing Settings offers Add added routing separately from Add numbered routing. A custom added definition is saved as a draft and stays out of every new joint's numbered path. Its applicability, persona rules and destination rules can be configured. Use the setup links for Signoff Types, Signoff Types By Routing and shared Signoff Type Forms. Activation requires a signing persona, known offered Types and their forms, at most one default, and Types that sign this routing. Deactivate custom definitions instead of deleting them; names can change while IDs and references stay stable.
+
+Custom insertion through routing rules is not available yet. Active means setup passed validation; existing Repair, Excavation NDT and Engineering Hold remain the executable inserted routings.

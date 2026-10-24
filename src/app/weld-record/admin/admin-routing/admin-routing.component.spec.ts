@@ -1,6 +1,10 @@
+import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';
-import { getTemplates } from '../../routing/stage-templates';
+import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/stage-templates';
+import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { buildStages } from '../../routing/build-stages';
+import { JOBS } from '../../../data/jobs';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 
 describe('Routing Settings rules editor', () => {
@@ -8,10 +12,93 @@ describe('Routing Settings rules editor', () => {
   beforeEach(() => {
     localStorage.clear();
     setRoutingSignoffTypes(getRoutingSignoffTypes());
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({ imports: [AdminRoutingComponent], providers: [provideRouter([])] });
     component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
   });
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
+
+  it('renders the added-definition create and setup controls, saves a draft and cancels edits', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    const add = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.trim() === 'Add added routing')!;
+    add.click();
+    fixture.detectChanges();
+    const input = host.querySelector<HTMLInputElement>('input[aria-label="Routing name"]')!;
+    input.value = 'Rendered inspection';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    const draft = fixture.componentInstance.rows().find(r => r.id === fixture.componentInstance.editingId())!;
+    fixture.componentInstance.saveEdit(draft);
+    fixture.detectChanges();
+    expect(host.textContent).toContain('Rendered inspection');
+    expect(host.textContent).toContain('Status: draft');
+    expect(host.querySelector('a[href="/admin/signoff-fields"]')).not.toBeNull();
+    const saved = fixture.componentInstance.rows().find(r => r.routing === 'Rendered inspection')!;
+    fixture.componentInstance.startEdit(saved);
+    fixture.componentInstance.updateField(saved, 'routing', 'Discard me');
+    fixture.componentInstance.cancelEdit(saved);
+    fixture.detectChanges();
+    expect(host.textContent).not.toContain('Discard me');
+    tick(2000);
+    fixture.destroy();
+  }));
+
+  it('creates, reopens, renames and deactivates an added definition without numbering it', fakeAsync(() => {
+    component.addRow(true);
+    let row = component.rows().find(r => r.id === component.editingId())!;
+    expect(component.isAdded(row)).toBeTrue();
+    component.updateField(row, 'routing', 'Extra inspection');
+    component.updateField(row, 'role', 'Inspector');
+    component.saveEdit(component.rows().find(r => r.id === row.id)!);
+    row = component.rows().find(r => r.routing === 'Extra inspection')!;
+    const id = row.id.split(':')[1];
+    expect(row.status).toBe('draft');
+    expect(isAddedTemplateId(id)).toBeTrue();
+    expect(buildStages(JOBS[0]).some(s => s.id === id)).toBeFalse();
+    expect(component.rejectTargets(row).some(t => t.id === id)).toBeFalse();
+    component.toggleStatus(row);
+    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('draft');
+    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: id, types: [{ type: 'vt', default: true }] }]);
+    component.toggleStatus(row);
+    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('active');
+    component.startEdit(row);
+    component.updateField(row, 'routing', 'Renamed inspection');
+    component.saveEdit(component.rows().find(r => r.id === row.id)!);
+    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
+    row = reopened.rows().find(r => r.id === row.id)!;
+    expect(row.routing).toBe('Renamed inspection');
+    expect(row.sequence).toBe(0);
+    expect(getSignoffTypeRows().some(t => t.stepId === id)).toBeTrue();
+    reopened.toggleStatus(row);
+    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('inactive');
+    expect(() => deleteStageTemplate('Welding', id)).toThrowError(/Deactivate/);
+    tick(2000);
+  }));
+
+  it('cancels an added draft and rejects empty or duplicate names', fakeAsync(() => {
+    const count = component.rows().length;
+    component.addRow(true);
+    let row = component.rows().find(r => r.id === component.editingId())!;
+    component.saveEdit(row);
+    expect(component.editingId()).toBe(row.id);
+    component.updateField(row, 'routing', ' Fit ');
+    row = component.rows().find(r => r.id === row.id)!;
+    component.saveEdit(row);
+    expect(component.editingId()).toBe(row.id);
+    component.cancelEdit(row);
+    expect(component.rows().length).toBe(count);
+    tick(2000);
+  }));
+
+  it('enforces classification and activation validation in the configuration owner', () => {
+    addStageTemplate('Welding', { id: 'custom-added', label: 'Extra', role: 'Inspector', classification: 'added' });
+    expect(() => updateStageTemplate('Welding', 'custom-added', { status: 'active' })).toThrowError(/Signoff Type/);
+    updateStageTemplate('Welding', 'custom-added', { classification: 'numbered', lifecycle: 'repair' });
+    const definition = getTemplates()['Welding'].find(t => t.id === 'custom-added')!;
+    expect(definition.classification).toBe('added');
+    expect(definition.lifecycle).toBe('ordinary');
+  });
 
   it('pins a new draft at the top with the next numbered position and preserves its number after saving', fakeAsync(() => {
     const before = component.rows().filter(row => !component.isAdded(row));

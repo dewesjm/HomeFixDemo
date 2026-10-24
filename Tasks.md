@@ -4,6 +4,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Deferred requirements and identified gaps
 
+- [ ] **Configurable added routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Package 1 is complete: definition classification, create/edit/deactivate, setup links and activation validation. Stopped for review; generic insertion execution/preview and later packages remain deferred.
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
 - [ ] **Remaining Repair / Excavation configuration:** review general original/performed inspection facts replacing the PT-to-5X marker and a readable summary of the effective path and related settings. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
@@ -23,7 +24,6 @@ Implement one package at a time only when requested, commit and stop for review.
 
 ## Ideas requiring a decision before implementation
 
-- **Configurable added routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Documented; implementation not started.
 
 - **Generic Type Exceptions:** replace the Excavation-specific exception section with a shared per-routing exception list. Keep Type source per routing; apply replacement rules consistently to enabled options, previews and repair returns. Scope discussed; implementation not requested.
 

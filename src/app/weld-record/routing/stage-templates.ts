@@ -1,9 +1,10 @@
+import { addedRoutingSetup, routingNameError } from './added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
    saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
    Type options come from Admin > Signoff Types By Routing (signoff-types.ts). */
-import { ADDED_STAGE_TEMPLATES, isAddedTemplateId } from './added-stage-templates';
+import { ADDED_STAGE_TEMPLATES } from './added-stage-templates';
 import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
@@ -31,6 +32,9 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
 
 /* serialized form — required is always a plain boolean (no functions). Fields belong to Type forms and the catalog, not to routing templates. */
 interface SerializedStage {
+  classification?: StageTemplate['classification'];
+  lifecycle?: StageTemplate['lifecycle'];
+  status?: StageTemplate['status'];
   id: string;
   label: string;
   displayName?: string;
@@ -47,6 +51,7 @@ interface SerializedStage {
 
 function serializeStage(t: StageTemplate): SerializedStage {
   return {
+    classification: t.classification ?? 'numbered', lifecycle: t.lifecycle ?? 'ordinary', status: t.status ?? 'active',
     id: t.id,
     label: t.label,
     displayName: t.displayName,
@@ -66,6 +71,8 @@ function serializeStage(t: StageTemplate): SerializedStage {
    Reject rules never edited here follow the built-in ones. */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return {
+    classification: s.classification ?? builtIn?.classification ?? 'numbered',
+    lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
     role: s.role ?? '', roleRules: s.roleRules ?? builtIn?.roleRules ?? [], includeWhen: s.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
@@ -113,7 +120,7 @@ export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
     } else {
       _merged[trade] = statics;
     }
-    _merged[trade] = _merged[trade].map(s => ({ ...s, typeOptions: s.id === 'excavation-ndt' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
+    _merged[trade] = _merged[trade].map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active', typeOptions: s.id === 'excavation-ndt' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
   }
   return _merged;
 }
@@ -134,6 +141,13 @@ export function addStageTemplate(trade: Job['trade'], stage: Omit<StageTemplate,
     required: stage.required ?? true,
     rejectToStage: stage.rejectToStage ?? '',
   };
+  const error = routingNameError(newStage.label, newStage.id, templates[trade] ?? []);
+  if (error) throw new Error(error);
+  if ((templates[trade] ?? []).some(t => t.id === newStage.id)) throw new Error('Routing ID already exists.');
+  if (newStage.classification === 'added') {
+    newStage.lifecycle = 'ordinary';
+    newStage.status = 'draft';
+  }
   templates[trade] = [...(templates[trade] ?? []), newStage];
   persistTemplates(templates);
 }
@@ -142,7 +156,16 @@ export function updateStageTemplate(trade: Job['trade'], stageId: string, patch:
   const templates = getTemplates();
   const list = templates[trade];
   if (!list) return;
-  templates[trade] = list.map(s => s.id === stageId ? { ...s, ...patch } : s);
+  const current = list.find(s => s.id === stageId);
+  if (!current) return;
+  const next = { ...current, ...patch, classification: current.classification, lifecycle: current.lifecycle };
+  const error = routingNameError(next.label, stageId, list);
+  if (error) throw new Error(error);
+  if (next.classification === 'added' && next.lifecycle === 'ordinary' && next.status === 'active') {
+    const setup = addedRoutingSetup(next);
+    if (setup.errors.length) throw new Error(setup.errors.join(' '));
+  }
+  templates[trade] = list.map(s => s.id === stageId ? next : s);
   persistTemplates(templates);
 }
 
@@ -157,6 +180,7 @@ export function reorderStageTemplates(trade: Job['trade'], ids: string[]) {
 
 export function deleteStageTemplate(trade: Job['trade'], stageId: string) {
   const templates = getTemplates();
+  if (templates[trade]?.some(t => t.id === stageId && t.classification === 'added')) throw new Error('Deactivate added routings to retain references and history.');
   templates[trade] = (templates[trade] ?? []).filter(s => s.id !== stageId);
   persistTemplates(templates);
 }
@@ -189,4 +213,6 @@ export function routingTemplateId(id: string): string {
 export function getAddedTemplate(id: string): StageTemplate {
   return getTemplates()['Welding'].find(t => t.id === routingTemplateId(id))!;
 }
-export { isAddedTemplateId };
+export function isAddedTemplateId(id: string): boolean {
+  return getTemplates()['Welding'].some(t => t.id === id && t.classification === 'added');
+}

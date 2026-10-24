@@ -839,3 +839,10 @@ Repair offers distinct catalog fields allowableThicknessExceededN1 and allowable
 routing/routing-role.ts resolves ordered StageTemplate.roleRules from Joint Details, falling back to role. Routing Settings's separate persona-rules.component.ts owns editing these rules, and template serialization persists them. Numbered stage creation and runtime Repair, Excavation and Engineering Hold creation use the resolver. The Excavation default selects NQC Inspector for Nuclear Indicator 1/2 and Inspector otherwise. Saved changes apply when stages are created or rebuilt; existing stage personas are retained.
 
 Routing Settings draft placement is separate from sequence numbering (admin/admin-routing/routing-row-order.ts). Unsaved new routings stay pinned at the top and display the next numbered position. Saving returns them to routing order; cancel removes the draft. Added runtime definitions do not consume numbered positions. Planned creation and configured insertion of custom runtime definitions, including potential NQC Excavation variants, are documented in ADDED-ROUTINGS-PLAN.md.
+
+
+## Added routing definition configuration
+
+StageTemplate persists classification (numbered/added), supported lifecycle and draft/active/inactive status through stage-templates.ts. Built-in added definitions declare their specialized lifecycle; custom added definitions use ordinary lifecycle and begin as drafts. isAddedTemplateId reads persisted classification, so custom added definitions are excluded by buildStages. Legacy saves infer built-in classification from static definitions.
+
+added-routing-configuration.ts owns name/readiness validation using the existing Type/form configuration owners. Routing Settings reuses its condition/persona/destination editors and links to Type setup. Added definitions are retained, with custom deactivation instead of deletion. Package 1 supplies configuration only; generic insertion targets, runtime instances, applicability resolution and preview are deferred in ADDED-ROUTINGS-PLAN.md. Version 2.10.55 resets demo caches through the standard version mechanism.
