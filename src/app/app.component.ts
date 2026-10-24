@@ -1,3 +1,4 @@
+import { AdminTableScopeDirective } from './shared/admin-table-scope.directive';
 // Root component — the app shell: collapsible sidebar (menu + sync status + theme button)
 // and the routed content area where each screen renders. Also watches the service worker
 // for a new deploy and surfaces a "new version available" reload prompt.
@@ -37,7 +38,7 @@ function systemForUrl(url: string): string {
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterOutlet, RouterLink, RouterLinkActive,
+    AdminTableScopeDirective, RouterOutlet, RouterLink, RouterLinkActive,
     ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective, SyncStatusComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,

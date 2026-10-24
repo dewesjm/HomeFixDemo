@@ -22,6 +22,10 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
 - Every admin table/list must offer Export to Excel through the standard table toolbar. Export the current filtered and sorted rows with readable column headings, matching the information shown in the table.
   Groups is exempt; its export work was explicitly dropped from scope.
 
+## Admin table presentation
+
+- Every admin table uses the shared outline grid: collapsed one-pixel cell borders, theme-aware contrast and top-aligned contents, including nested editor/import tables. The routed content's `appAdminTableScope` applies `shared/admin-tables.css` automatically to admin routes across all systems. Use the shared scope rather than duplicating borders in individual components; preserve it for future admin tables.
+
 ## Keep code organized for a human reader
 
 - One concern per file. A new feature's logic goes in the file or service that owns that concern, not in

@@ -39,6 +39,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Admin table outline grid:** shared theme-aware cell borders and top alignment across all admin routes, including nested editors/imports. Recorded as the standard in AGENTS.md.
+
 - [x] **Admin-defined Repair Codes:** Admin > Repair Codes maintains names and active/inactive status with stable values. Choices feed Repair forms, Type Form conditions and existing Repair destination rules; custom codes without a matching rule block signoff/preview. Existing Grind Only/Weld Repair/Cut identities and specialized behavior remain.
 
 - [x] **Configurable inserted routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-4 are complete: definition CRUD/setup, generic insertion execution/preview, instance context, continuation, cycle validation, persistence, and separate configurable regular/NQC Excavation variants with round returns. Shared Type Exceptions adds ordered conditional replacements across routings, shared resolution, summaries and exports. Stopped for review.

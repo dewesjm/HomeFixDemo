@@ -1,0 +1,9 @@
+/* Shared outline grid for every admin table, including expanded editors. */
+.admin-table-scope table {
+  border-collapse: collapse;
+}
+
+.admin-table-scope table > :is(thead, tbody, tfoot) > tr > :is(th, td) {
+  vertical-align: top;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+}

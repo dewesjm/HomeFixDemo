@@ -70,11 +70,6 @@ interface RoutingRow {
   ],
   templateUrl: './admin-routing.component.html',
   styles: [`
-    .routing-settings-grid { border-collapse: collapse; }
-    .routing-settings-grid th, .routing-settings-grid td {
-      vertical-align: top;
-      border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
-    }
     tr[draggable="true"] { cursor: grab; }
     tr.drop-above td { box-shadow: inset 0 2px 0 currentColor; }
     tr.drop-below td { box-shadow: inset 0 -2px 0 currentColor; }

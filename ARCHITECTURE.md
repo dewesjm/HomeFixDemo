@@ -875,3 +875,11 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 Admin > Repair Codes (`/admin/repair-codes`) maintains stable values, names and active/inactive status in `data/repair-codes.ts`, using `STORAGE.repairCodes`. `signoff-definition/repair-code-options.ts` maps that lookup to active form choices and retained condition choices. The field catalog reads those options dynamically; the joint form filters active choices and retains a recorded inactive selection for display. Condition editors include inactive records to preserve saved references. Lookup saves invalidate field/qualification condition caches through the field-definition version.
 
 `routing/repair-code-rules.ts` validates selected codes and requires a matching existing destination rule for custom codes. `routeSignoff()` shares this validation with preview and rejects invalid custom destinations before saving. Existing built-in IDs and Cut/Refit semantics remain specialized. Version 2.10.59 applies the existing demo cache-reset policy; the Repair Code lookup itself survives subsequent resets. Field identities/types/mappings remain code controlled.
+
+
+## Admin table presentation
+
+The content wrapper uses `shared/admin-table-scope.directive.ts` to apply the admin table scope for routes containing an `admin` path segment (Weld Record, Planning and Engineering). `shared/admin-tables.css`, imported by the global stylesheet, gives every table in that scope collapsed one-pixel cell outlines and top-aligned contents using the Routing Settings border contrast. Nested editors and shared import grids inherit the same presentation. Navigation out of admin removes the scope. Future admin tables use this standard without individual border styling; AGENTS.md records the convention.
+
+
+Verified the shared admin grid with 506 passing ChromeHeadless tests, production build and the no-unused TypeScript check. `shared/admin-table-scope.directive.spec.ts` checks actual computed cell borders/alignment on all three systems, nested tables, direct entry and navigation out of admin; `shared/admin-table-scope.spec.ts` checks route boundaries and query/fragment exclusions. Existing build warnings remain.

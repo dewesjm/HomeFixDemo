@@ -27,4 +27,3 @@ export function setRepairCodes(rows: RepairCode[]): void {
   localStorage.setItem(STORAGE.repairCodes, JSON.stringify(rows));
   version++;
 }
-

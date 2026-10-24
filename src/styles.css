@@ -2,6 +2,7 @@
    history list, stage pipeline) used across screens. Component-specific styles live
    in each component's own .scss/styles block. */
 @import 'tailwindcss';
+@import './app/shared/admin-tables.css';
 @plugin 'daisyui' {
   themes: all;
 }
