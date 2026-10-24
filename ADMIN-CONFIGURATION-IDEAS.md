@@ -40,7 +40,7 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 1. Complete: separate repair thickness confirmation fields in Signoff Type Forms.
 2. Complete: conditional persona selection in Routing Settings.
 3. Replace the specific PT-to-5X marker with general inspection-context conditions usable by the existing routing rule editor.
-4. Add a plain-language summary beside Repair and Excavation configuration, showing the effective path and identifying where Type exceptions and forms are maintained. The main usability issue is that related settings span Routing Settings, Signoff Types By Routing and Signoff Type Forms.
+4. Partially complete: package 4 provides readable Type-selection source/exception/fallback summaries and exports. Remaining: summarize Repair/Excavation routing destinations across settings and identify the relevant form configuration. The main usability issue is that related settings span Routing Settings, Signoff Types By Routing and Signoff Type Forms.
 
 Expected scope is moderate: configuration models and editors, persistence/version handling as needed, rule evaluation, validation, documentation and focused regression tests. Reuse existing editors and keep advanced details out of the main table where practical. A new general-purpose workflow editor would add unnecessary complexity.
 
@@ -80,11 +80,11 @@ In production, the persona selection will automatically reflect the user's actua
 
 Record every Makeup change in a full audit log, including grants added, dates changed, and grants removed. Preserve who made the change, when it happened, the affected person/grant, and before/after values where applicable. The current Changed by column is not sufficient. Record removals without losing their audit history. Do not implement this now.
 
-## Existing configuration and implementation boundaries
+## Existing configuration and mockup boundaries
 
 Routing, Signoff Type Forms, qualifications, material classification/traceability, inspection procedures, defect codes, penetrants, locations, and weld positions already have configuration. Prefer extending their existing owners over adding overlapping editors.
 
-Groups already has an admin table, but its permissions are mocked rather than enforced. Identity and permission enforcement is separate work. People are intended to come from an external directory.
+Groups already has an admin table, but its permissions are mocked rather than enforced. Real identity, permission enforcement and directory integration are outside this mockup’s task scope.
 
 For any future configuration, consider stable field/code IDs, deactivation instead of deleting referenced values, configuration change history, and explicit behavior for existing joints and historical signoffs. History preservation, record identity, and repair numbering remain application mechanics.
 
@@ -115,6 +115,17 @@ Confirm whether Repair and Excavation NDT should appear in the routing bar. The 
 
 ## Configurable inserted routings and insertion — documented scope
 
-Inserted routings currently edits the fixed runtime types Repair, Excavation NDT and Engineering Hold. Add routing creates a regular numbered routing, not another runtime type. Supporting arbitrary inserted routings needs creation UI, insertion targets, Type/form setup and lifecycle/identity rules; editing existing runtime routing rules does not provide this capability.
+Complete: administrators can create ordinary inserted definitions, configure Types/forms/personas and choose them as insertion targets. Repair, regular/NQC Excavation and Engineering Hold retain their specialized lifecycle behavior. Packages 1–4 include shared Type Exceptions and execution/preview validation.
 
 See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Packages 1-4 are implemented; stopped for review.
+
+
+## Candidate Repair action configuration — discussion only
+
+A potential extension would maintain Repair Code options with stable IDs, labels and active/inactive status, then use the existing ordered Repair destination rules and Type Form conditions to define their behavior. Ordinary actions could request an additional configured inspection or engineering review using existing destinations. The actual action names and intended routes need to be specified before implementation.
+
+Retain the existing Grind Only, Weld Repair and Cut identities. Cut has specialized fabrication/reset/Refit behavior; creating a similarly named option must not acquire that behavior implicitly. New lifecycle effects need explicit code and acceptance criteria. Deactivating an option should preserve historical records and labels. This discussion does not authorize implementation.
+
+## Mockup scope clarification
+
+Production identity, permissions, backend/synchronization, external reference-data integration and authoritative production-data review are outside this mockup backlog. Notes about those boundaries explain the prototype and do not queue implementation.

@@ -4,9 +4,8 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Deferred requirements and identified gaps
 
-- [x] **Configurable inserted routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-4 are complete: definition CRUD/setup, generic insertion execution/preview, instance context, continuation, cycle validation, persistence, and separate configurable regular/NQC Excavation variants with round returns. Shared Type Exceptions adds ordered conditional replacements across routings, shared resolution, summaries and exports. Stopped for review.
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
-- [ ] **Remaining Repair / Excavation configuration:** review general original/performed inspection facts replacing the PT-to-5X marker and a readable summary of the effective path and related settings. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
+- [ ] **Remaining Repair / Excavation configuration:** replace the PT-to-5X marker with general original/performed inspection facts and summarize Repair/Excavation destinations across settings. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 
@@ -34,24 +33,23 @@ Implement one package at a time only when requested, commit and stop for review.
 - **Additional Repair Code options:** only if administrators need new actions; adding an option alone does not define routing. Existing Grind Only / Weld Repair / Cut remain fixed otherwise. [Details](ADMIN-CONFIGURATION-IDEAS.md#remaining-fixed-business-decisions).
 - **Override preview / reason-screen wording:** an earlier request mentioned wording, but the remaining exact changes are unspecified. Revisit only on a specific request; see the previous-request note below.
 
-## Production integration gaps, not agreed feature packages
+## Mockup scope
 
-Explicit prototype boundaries and source caveats, captured for visibility. Each needs its own scope before implementation.
-
-- **Identity and permission enforcement:** Groups permissions and persona selection are mocked; actual identity/roles and authorization remain separate work. People are intended to come from an external directory. [Details](ADMIN-CONFIGURATION-IDEAS.md#existing-configuration-and-implementation-boundaries).
-- **Backend and real synchronization:** browser-local data; SyncService simulates successful flush and contains an API TODO. Backend design/integration is unspecified. Sources: README.md and `src/app/weld-record/services/sync.service.ts`.
-- **Externally owned reference data:** Backing Ring Type integration/ownership is pending; People and shared engineering references need coordination with owning systems. Attribute-code maintenance belongs to another system; its lookup is retained locally. Sources: ADMIN-CONFIGURATION-IDEAS.md and ARCHITECTURE.md.
-- **Engineering/source-data review:** material-classification seeds are explicitly unreviewed; engineering notes use placeholder references until real notes are wired up. Invented seed codes/procedures/defects need authoritative production data. Sources: `src/app/data/material-classification.ts`, `src/app/data/jobs.ts`, `src/app/data/procedures.ts` and ARCHITECTURE.md.
+This project is a mockup. Real identity/permission enforcement, a backend, real synchronization, external reference-data integration and production data certification are outside the task backlog. Existing prototype boundaries are reference notes, not deferred implementation requirements.
 
 ## Completed work and deliberate switches
 
-Routing Settings uses Inserted routings terminology, compact name cells, editable insertion-source conditions and a unified persona editor. Saved single-field Repair thickness conditions/forms upgrade to the current indicator-specific fields.
+- [x] **Configurable inserted routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-4 are complete: definition CRUD/setup, generic insertion execution/preview, instance context, continuation, cycle validation, persistence, and separate configurable regular/NQC Excavation variants with round returns. Shared Type Exceptions adds ordered conditional replacements across routings, shared resolution, summaries and exports. Stopped for review.
+- [x] **Shared Type Exceptions:** per-routing sources, ordered material/Joint Details conditions, shared execution/preview resolution, save/cancel/reload, readable Type-selection summaries and exports.
+- [x] **Repair thickness confirmations:** separate indicator 1 and indicators 2/3 fields, distinct History labels, configurable visibility and destination rules, and compatibility for old saved conditions/forms.
+- [x] **Conditional routing personas:** one editor for ordered persona rules and fallback; Excavation defaults select the appropriate persona.
+- [x] **Routing Settings editing and terminology:** Inserted routings, compact name cells, editable insertion sources and applicability, and source-rule navigation.
+- [x] **Conditional Additional Signoffs:** configured additional routing/Type signoffs with shared Deprogress behavior and updated heading.
+- [x] **Weld Colors:** admin-maintained reusable inspection options.
+- [x] **Routing configuration and field-definition consolidation:** completed reference plans; not queued work.
+- [x] **Engineering Override:** implemented for joints without an external welding assignment; any unspecified wording changes remain a separate decision below.
 
-Repair limits are separate indicator 1 and indicator 2/3 checkbox fields in Signoff Type Forms, with distinct History labels and configurable routing rules. Conditional persona rules are editable in Routing Settings; Excavation starts with NQC Inspector for indicators 1/2 and Inspector otherwise. The Signoff Types heading is Additional Signoffs.
-
-Groups export was dropped from scope; its missing export action is not an outstanding task.
-
-Routing configuration and field-definition consolidation are completed references. Weld Colors and conditional additional signoffs are implemented. O63/O04 selection already exists in Routing Settings; the recent discussion requested no change. Foreman Override is deliberately disabled, and Makeup's NO MIKE switch hides the retained real screen. These are not outstanding build tasks unless explicitly requested.
+Groups export was dropped from scope. O63/O04 selection already exists; no change was requested. Foreman Override remains deliberately disabled, and Makeup's NO MIKE switch hides the retained real screen. These are deliberate choices, not unfinished build tasks.
 
 ## Previous override request
 
