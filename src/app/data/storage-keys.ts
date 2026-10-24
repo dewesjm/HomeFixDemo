@@ -9,6 +9,7 @@ export const STORAGE = {
   inspectionProcedures: 'welding:inspection-procedures:v1',
   defectCodes: 'welding:defect-codes:v1',
   shipLocations: 'welding:ship-locations:v1',
+  weldColors: 'welding:weld-colors:v1',
   weldPositions: 'welding:weld-positions:v1',
   shops: 'welding:shops:v3',
   jointDesigns: 'welding:joint-designs:v3',

@@ -1,0 +1,64 @@
+<h2 class="section-title">Weld Colors</h2>
+<p class="text-sm mb-sm">Maintain the colors offered on inspection signoffs and in condition editors. Codes stay fixed after saving so existing rules keep matching. Removing a color removes it from new choices; recorded values are retained.</p>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search weld colors…" addLabel="Add color"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
+
+<div class="overflow-x-auto">
+<table class="table table-sm">
+  <thead>
+    <tr>
+      <th appSortHeader [table]="table" field="code" label="Code" class="min-w-20"></th>
+      <th appSortHeader [table]="table" field="name" label="Color" class="min-w-44"></th>
+      <th class="min-w-11"></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of table.sorted(); track row.uid) {
+      <tr>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
+                   placeholder="e.g. light-blue" [disabled]="!isNew(row)" autofocus />
+          } @else {
+            {{ row.code || '-' }}
+          }
+        </td>
+        <td>
+          @if (editingId() === row.uid) {
+            <input type="text" class="input input-sm input-bordered w-full min-w-0"
+                   [ngModel]="row.name" (ngModelChange)="updateName(row, $event)"
+                   placeholder="e.g. Light Blue" />
+          } @else {
+            {{ row.name || '-' }}
+          }
+        </td>
+        <td>
+          <div class="row-tight">
+            @if (editingId() === row.uid) {
+              <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
+                <svg lucideCheck class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs" (click)="cancelEdit(row)">
+                <svg lucideX class="size-4"></svg>
+              </button>
+            } @else {
+              <button type="button" class="btn btn-ghost btn-xs" [disabled]="!!editingId()" (click)="startEdit(row)">
+                <svg lucidePencil class="size-4"></svg>
+              </button>
+              <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="!!editingId()" (click)="deleteRow(row)">
+                <svg lucideTrash2 class="size-4"></svg>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+    } @empty {
+      <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No weld colors match your search.' : 'No weld colors yet.' }}</td></tr>
+    }
+  </tbody>
+</table>
+</div>
+
+

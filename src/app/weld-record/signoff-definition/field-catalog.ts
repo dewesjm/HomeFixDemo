@@ -1,5 +1,6 @@
 /* The complete catalog of fields that can appear on any step. Per-step activations
    (step-field-config.ts) pick from this list; they cannot define fields outside it. */
+import { weldColorOptions } from '../../data/weld-colors';
 import { FieldCondition } from './field-conditions';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
 import { getWeldPositions } from '../../data/weld-positions';
@@ -171,11 +172,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── NDT 5X/VT ── */
   { key: 'weldColor', label: 'Weld Color', type: 'select', defaultRequired: true,
     defaultShowIf: showIfTitanium,
-    options: [
-      { label: 'Shiny Silver', value: 'shiny-silver' }, { label: 'Straw', value: 'straw' },
-      { label: 'Light Blue', value: 'light-blue' }, { label: 'Dark Blue', value: 'dark-blue' },
-      { label: 'Gray Powder', value: 'gray-powder' }, { label: 'Yellow Powder', value: 'yellow-powder' },
-    ] },
+    get options() { return weldColorOptions(); } },
 
   /* ── Fit / Pre-Fit ── */
   { key: 'consumableInsertType', label: 'Consumable Insert Type', type: 'select', defaultRequired: true,

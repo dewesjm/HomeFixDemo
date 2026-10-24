@@ -1,4 +1,5 @@
 /* route table */
+import { AdminWeldColorsComponent } from './weld-record/admin/admin-weld-colors/admin-weld-colors.component';
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
@@ -71,6 +72,7 @@ export const routes: Routes = [
   { path: 'admin/routing-signoff-types', component: AdminRoutingSignoffTypesComponent, title: 'EWR - Signoff Types' },
   { path: 'admin/signoff-types', component: AdminSignoffTypesComponent,     title: 'EWR - Signoff Types By Routing' },
   { path: 'admin/signoff-fields', component: AdminSignoffTypeDefinitionComponent, title: 'EWR - Signoff Type Forms' },
+  { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },
   { path: 'admin/banner', component: AdminBannerComponent, title: 'EWR - Banner' },
   { path: 'admin/joint-designs', component: AdminJointDesignsComponent, title: 'EWR - Joint Designs' },

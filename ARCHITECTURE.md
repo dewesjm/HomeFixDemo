@@ -821,3 +821,6 @@ live routing. The old NDT method-filter helpers and the hardcoded return-to-5X o
 Every admin page has a brief explanation directly below its title. Keep it to one short sentence
 (or two when a related setup action matters). Signoff Types reminds admins to update Signoff Types
 By Routing and Signoff Type Forms after adding or changing Types.
+
+### Weld Colors
+Admin > Weld Colors maintains the inspection color list in `data/weld-colors.ts`. The field catalog reads options at runtime so signoff forms and condition pickers share the saved list. Codes are fixed after saving; existing values remain visible if a color is removed. Saved colors persist across workflow cache resets.

@@ -22,6 +22,13 @@ const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): Workf
 const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 
 describe('joint-form stage-form', () => {
+  it('keeps a recorded weld color selectable after it is removed from the admin list', () => {
+    const j = job();
+    const stage = stageOf(j, 'root-ndt-vt5x', { inputs: { weldColor: 'retired-color' } });
+    const result = stageFieldOptions({ key: 'weldColor', label: 'Weld Color', type: 'select', options: [] }, stage, ctxFor(j));
+    expect(result.options).toEqual([{ label: 'retired-color', value: 'retired-color' }]);
+  });
+
   it('a typed PH/IP requirement on an engineering override must be a number or NC', () => {
     const tack = stageOf(job(), 'tack', { engineeringEntry: true, inputs: { phMin: 'abc', phMax: '300', ipMin: 'NC' } });
     expect(typedRequirementError(tack, field(tack, 'phMin'))).toBe('PH Min must be a number or NC');

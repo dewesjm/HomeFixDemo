@@ -55,6 +55,12 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
    Procedure that GWP+WTN resolves to. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
+  if (f.key === 'weldColor') {
+    const current = stage.inputs['weldColor'] ?? '';
+    const options = f.options ?? [];
+    return { ...f, options: current && !options.some(o => o.value === current)
+      ? [...options, { label: current, value: current }] : options };
+  }
   if (f.key === 'procedureUsed') {
     /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
     const cur = stage.inputs['procedureUsed'] ?? '';

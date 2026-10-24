@@ -12,6 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
     added: [
+      'Admin → Weld Colors: add, rename and remove the colors offered on inspection forms and in condition editors. Existing color codes stay unchanged.',
       'Signoff Types By Routing: each offered Type has editable Enable when conditions based on Joint Details. Inspection requirements now appear as starting conditions, including VT versus 5X and the NQC rows. A disabled default is not selected.',
       'Admin → Routing Signoff Types (new): every Type a step can be signed as, with Repeatable and Signs step. A Type is added here first, then offered on steps in Signoff Type Availability and given its fields in Signoff Type Definition. Signs step is the routing step the Type signs when it is picked on an earlier one (Final Weld picked on Layer signs Final Weld); blank means the step it is picked on.',
       'Admin → Signoff Type Definition: every Type has its own definition. VT, 5X, MT, PT, UT and RT each have one (shared by Root, Layer and Final NDT), as do Interim Layer, Weld Build-Up, Tack, Root and the others. Steps that had no Type droplist (Pre-Fit, Fit-Up Insp, Fit-Up Release, the Records Reviews, Sold) each have one Type named after them; their forms don\'t show it. Excavation NDT keeps one definition of its own for now.',
