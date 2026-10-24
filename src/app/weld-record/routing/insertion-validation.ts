@@ -12,7 +12,7 @@ export function insertionConfigurationErrors(templates: StageTemplate[]): string
       if (!to.startsWith('insert:')) continue;
       const target = templates.find(d => d.id === insertionDefinitionId(to));
       if (!target || target.classification !== 'added' || target.lifecycle !== 'ordinary') {
-        errors.push(`${t.label}: insertion target is not an ordinary added routing.`);
+        errors.push(`${t.label}: insertion target is not an ordinary inserted routing.`);
       }
     }
     edges.set(t.id, rules.filter(r => !r.when.length).map(r => insertionDefinitionId(r.to)).filter(Boolean));

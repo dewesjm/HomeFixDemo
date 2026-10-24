@@ -1,3 +1,5 @@
+import { STORAGE } from '../../../data/storage-keys';
+import { resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { insertionTarget } from '../../routing/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
@@ -16,8 +18,49 @@ describe('Routing Settings rules editor', () => {
     TestBed.configureTestingModule({ imports: [AdminRoutingComponent], providers: [provideRouter([])] });
     component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
   });
-  afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
+  afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
+
+  it('opens saved thickness rules with valid selected fields rather than an empty selector', fakeAsync(() => {
+    resetStepFieldConfig();
+    localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify([{ typeId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }] }]));
+    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [{ id: 'repair', label: 'Repair', required: true, role: 'Foreman', rejectToStage: '', thenRules: [{ when: [{ field: 'self.allowableThicknessExceeded', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' }] }] }));
+    setSignoffTypeRows(getSignoffTypeRows());
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const editor = fixture.componentInstance;
+    const row = editor.rows().find(r => r.id === 'Welding:repair')!;
+    expect(row.thenRules.join(' ')).toContain('Allowable thickness');
+    expect(row.thenRules.join(' ')).not.toContain('self.allowableThicknessExceeded');
+    editor.openThenRules(row); fixture.detectChanges(); tick(); fixture.detectChanges();
+    const selectedLabels = Array.from(fixture.nativeElement.querySelectorAll('dialog select') as NodeListOf<HTMLSelectElement>).map(select => select.selectedOptions[0]?.textContent);
+    expect(selectedLabels.some(label => label?.includes('Nuclear Indicator 1'))).toBeTrue();
+    expect(selectedLabels.some(label => label?.includes('Nuclear Indicators 2/3'))).toBeTrue();
+    expect(editor.rejectRulesValid()).toBeTrue();
+    editor.saveRejectRules();
+    expect(localStorage.getItem(STORAGE.stageTemplates)).not.toContain('"self.allowableThicknessExceeded"');
+    fixture.destroy();
+  }));
+
+  it('shows insertion sources and opens their owning rule including its editable fallback', fakeAsync(() => {
+    addStageTemplate('Welding', { id: 'test-inspection', label: 'Test inspection', role: 'Inspector', rejectToStage: 'repair' });
+    const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();
+    const editor = fixture.componentInstance;
+    const host: HTMLElement = fixture.nativeElement;
+    const button = host.querySelector<HTMLButtonElement>('[aria-label="Edit Test inspection: UNSAT"]')!;
+    expect(button).toBeTruthy(); button.click(); fixture.detectChanges(); tick(); fixture.detectChanges();
+    expect(editor.rejRow()?.id).toBe('Welding:test-inspection');
+    const select = host.querySelector<HTMLSelectElement>('[aria-label="Otherwise reject destination"]')!;
+    expect(select.selectedOptions[0].textContent).toContain('Repair');
+    select.value = Array.from(select.options).find(option => option.textContent === 'Add Engineering Hold')!.value;
+    select.dispatchEvent(new Event('change')); fixture.detectChanges();
+    editor.saveRejectRules();
+    expect(getTemplates()['Welding'].find(t => t.id === 'test-inspection')!.rejectToStage).toBe('engineering-hold');
+    expect(host.textContent).not.toContain('After an accepted signoff, the first matching rule');
+    host.querySelector<HTMLButtonElement>('[aria-label="Edit persona for Excavation NDT"]')!.click(); fixture.detectChanges();
+    expect(host.querySelector('[aria-label="Rule persona"]')).not.toBeNull();
+    expect(host.querySelector('[aria-label="Otherwise persona"]')).not.toBeNull();
+    fixture.destroy();
+  }));
 
   it('renders stable insertion targets, saves their labels and rejects an unconditional cycle', fakeAsync(() => {
     addStageTemplate('Welding', { id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
@@ -50,11 +93,11 @@ describe('Routing Settings rules editor', () => {
     fixture.destroy(); tick(2000);
   }));
 
-  it('renders the added-definition create and setup controls, saves a draft and cancels edits', fakeAsync(() => {
+  it('renders inserted routing names without setup text or cross-links, saves a draft and cancels edits', fakeAsync(() => {
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
-    const add = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.trim() === 'Add added routing')!;
+    const add = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.trim() === 'Add inserted routing')!;
     add.click();
     fixture.detectChanges();
     const input = host.querySelector<HTMLInputElement>('input[aria-label="Routing name"]')!;
@@ -65,8 +108,16 @@ describe('Routing Settings rules editor', () => {
     fixture.componentInstance.saveEdit(draft);
     fixture.detectChanges();
     expect(host.textContent).toContain('Rendered inspection');
-    expect(host.textContent).toContain('Status: draft');
-    expect(host.querySelector('a[href="/admin/signoff-fields"]')).not.toBeNull();
+    expect(host.textContent).not.toContain('Status:');
+    expect(host.textContent).not.toContain('Built-in lifecycle');
+    const nameCell = Array.from(host.querySelectorAll('tbody tr')).find(row => row.children[1]?.textContent?.trim() === 'Rendered inspection')?.children[1];
+    expect(nameCell).toBeTruthy();
+    expect(nameCell?.childElementCount).toBe(0);
+    expect(host.textContent).toContain('Inserted routings');
+    expect(host.textContent).not.toContain('Added routings');
+    expect(host.querySelector('a[href="/admin/signoff-fields"]')).toBeNull();
+    expect(host.querySelector('a[href="/admin/signoff-types"]')).toBeNull();
+    expect(host.querySelector('a[href="/admin/routing-signoff-types"]')).toBeNull();
     const saved = fixture.componentInstance.rows().find(r => r.routing === 'Rendered inspection')!;
     fixture.componentInstance.startEdit(saved);
     fixture.componentInstance.updateField(saved, 'routing', 'Discard me');
@@ -77,7 +128,7 @@ describe('Routing Settings rules editor', () => {
     fixture.destroy();
   }));
 
-  it('creates, reopens, renames and deactivates an added definition without numbering it', fakeAsync(() => {
+  it('creates, reopens, renames and deactivates an inserted definition without numbering it', fakeAsync(() => {
     component.addRow(true);
     let row = component.rows().find(r => r.id === component.editingId())!;
     expect(component.isAdded(row)).toBeTrue();
@@ -202,7 +253,7 @@ describe('Routing Settings rules editor', () => {
     expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules).toEqual([]);
   });
 
-  it('separates added routings and edits the unconditional Excavation fallback', () => {
+  it('separates inserted routings and edits the unconditional Excavation fallback', () => {
     expect(component.rows().filter(r => component.isAdded(r)).map(r => r.id)).toEqual([
       'Welding:repair', 'Welding:excavation-ndt', 'Welding:engineering-hold',
     ]);

@@ -4,7 +4,7 @@ import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/si
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../signoff-definition/step-field-config';
 
-describe('ordinary added routing setup', () => {
+describe('ordinary inserted routing setup', () => {
   const template: StageTemplate = { id: 'extra', label: 'Extra', required: true, classification: 'added', lifecycle: 'ordinary', role: 'Inspector', status: 'draft' };
   beforeEach(() => { localStorage.clear(); resetStepFieldConfig(); });
   afterEach(() => { localStorage.clear(); resetStepFieldConfig(); });

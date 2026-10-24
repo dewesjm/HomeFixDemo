@@ -131,7 +131,7 @@ Existing measured admin lines range roughly 30-60%; many CRUD pages are absent f
   nested condition editor, required error messages and saved definition driving the joint form.
   Conditions/Behaviors headers appear only inside expanded details; collapse removes them.
 - [ ] Routing Settings: inclusion/reject/then rule editors, add/remove/reorder, first match,
-  invalid/relative targets, regular/NQC rows, added routings, save/cancel and preview agreement.
+  invalid/relative targets, regular/NQC rows, inserted routings, save/cancel and preview agreement.
 - [ ] Qualification condition/user editors: nested groups, required/held qualifications,
   add/delete/save/cancel, failed-check behavior and persistence.
 - [ ] Lookup CRUD pages: inspection procedures, defect codes, penetrants, joint designs, locations,

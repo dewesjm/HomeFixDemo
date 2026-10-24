@@ -1,4 +1,5 @@
 import { insertedDefinitionId } from './instance-identity';
+import { migrateRepairConfirmationRules } from './repair-confirmation-migration';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { addedRoutingSetup, routingNameError } from './added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
@@ -77,8 +78,8 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
     lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
     role: s.role ?? '', roleRules: s.roleRules ?? builtIn?.roleRules ?? [], includeWhen: s.includeWhen,
-    rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
-    thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
+    rejectRules: migrateRepairConfirmationRules(s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules),
+    thenRules: migrateRepairConfirmationRules(s.thenRules ?? builtIn?.thenRules ?? []),
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,
   };
 }
@@ -185,7 +186,7 @@ export function reorderStageTemplates(trade: Job['trade'], ids: string[]) {
 
 export function deleteStageTemplate(trade: Job['trade'], stageId: string) {
   const templates = getTemplates();
-  if (templates[trade]?.some(t => t.id === stageId && t.classification === 'added')) throw new Error('Deactivate added routings to retain references and history.');
+  if (templates[trade]?.some(t => t.id === stageId && t.classification === 'added')) throw new Error('Deactivate inserted routings to retain references and history.');
   templates[trade] = (templates[trade] ?? []).filter(s => s.id !== stageId);
   persistTemplates(templates);
 }

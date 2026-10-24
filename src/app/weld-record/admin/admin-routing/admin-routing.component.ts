@@ -1,4 +1,5 @@
 import { insertionRelativeTargets } from '../../routing/insertion-target-options';
+import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/insertion-validation';
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
@@ -6,7 +7,6 @@ import { insertionConfigurationErrors } from '../../routing/insertion-validation
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
-import { RouterLink } from '@angular/router';
 import { addedRoutingSetup, routingNameError } from '../../routing/added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { isAddedTemplateId } from '../../routing/stage-templates';
@@ -63,7 +63,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [RouterLink, PersonaRulesComponent, TableToolbarComponent,
+  imports: [PersonaRulesComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -99,9 +99,24 @@ export class AdminRoutingComponent {
   private seq = 0;
 
   personaRow = signal<RoutingRow | null>(null);
+  insertionTriggers(row: RoutingRow) { return insertionTriggers(getTemplates()[row.trade] ?? [], row.id.split(':')[1]); }
+  editInsertionTrigger(row: RoutingRow, trigger: InsertionTrigger) {
+    const source = this.rows().find(r => r.trade === row.trade && r.id.split(':')[1] === trigger.sourceId);
+    if (!source) return;
+    if (trigger.mode === 'then') this.openThenRules(source);
+    else this.openRejectRules(source);
+  }
   personaTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
   personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.role; }
-  personaSaved() { this.rows.set(this.buildInitialRows()); }
+  personaSaved() {
+    this.rows.update(rows => rows.map(row => {
+      const role = this.templateFor(row)?.role as Role | undefined;
+      if (!role) return row;
+      const original = this.clonedRows[row.id];
+      if (original) this.clonedRows[row.id] = { ...original, role };
+      return { ...row, role };
+    }));
+  }
   editingId = signal<string | null>(null);
   newRowId = signal<string | null>(null);  // highlights the newly added row
 
@@ -469,6 +484,7 @@ export class AdminRoutingComponent {
   ruleMode = signal<'reject' | 'then'>('reject');
   rejRow = signal<RoutingRow | null>(null);
   rejRules = signal<RejectRule[]>([]);
+  rejDefaultTarget = signal('');
   rejFields = signal<StepConditionField[]>([]);
 
   private templateFor(row: RoutingRow) {
@@ -497,6 +513,7 @@ export class AdminRoutingComponent {
 
   openRejectRules(row: RoutingRow) {
     this.ruleMode.set('reject');
+    this.rejDefaultTarget.set(row.rejectToStage);
     this.rejFields.set(this.rejectFieldsFor(row));
     this.rejRules.set((this.templateFor(row)?.rejectRules ?? []).map(r => ({ to: r.to, when: r.when.map(c => ({ ...c, values: [...c.values] })) })));
     this.rejRow.set(row);
@@ -554,7 +571,7 @@ export class AdminRoutingComponent {
   ruleConfigurationError(): string {
     const row = this.rejRow();
     if (!row) return '';
-    const patch = this.ruleMode() === 'then' ? { thenRules: this.rejRules() } : { rejectRules: this.rejRules() };
+    const patch = this.ruleMode() === 'then' ? { thenRules: this.rejRules() } : { rejectRules: this.rejRules(), rejectToStage: this.rejDefaultTarget() };
     return insertionConfigurationErrors((getTemplates()[row.trade] ?? []).map(t => t.id === row.id.split(':')[1] ? { ...t, ...patch } : t)).join(' ');
   }
 
@@ -570,8 +587,8 @@ export class AdminRoutingComponent {
       this.messages.add({ severity: 'success', summary: 'Then go to rules saved', detail: row.routing, life: 3000 });
       return;
     }
-    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules(), rejectRulesEdited: true });
-    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectRules: this.rejectRuleLines(row) } : x));
+    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules(), rejectRulesEdited: true, rejectToStage: this.rejDefaultTarget() });
+    this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectToStage: this.rejDefaultTarget(), rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });
   }
@@ -580,12 +597,12 @@ export class AdminRoutingComponent {
 
   exportCsv() {
     downloadCsv('routing', [
-      { header: 'Order', value: (r: RoutingRow) => this.isAdded(r) ? 'Added' : r.sequence },
+      { header: 'Order', value: (r: RoutingRow) => this.isAdded(r) ? 'Inserted' : r.sequence },
       { header: 'Status', value: (r: RoutingRow) => r.status ?? 'active' },
       { header: 'Type and form setup', value: (r: RoutingRow) => this.setupSummary(r) },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
-      { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },
+      { header: 'Included when', value: (r: RoutingRow) => this.isAdded(r) ? [...this.insertionTriggers(r).map(t => t.label), ...(this.canChangeStatus(r) ? [`Applies when: ${r.includedWhen}`] : [])].join('; ') : r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => this.getRejectLabel(r.rejectToStage) },
       { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },

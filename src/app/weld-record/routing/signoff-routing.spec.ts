@@ -8,7 +8,7 @@ import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/si
 import { typeChange } from '../joint-page/rules/type-change';
 import { getActivationForStep, setStepFieldConfig, resetStepFieldConfig } from '../signoff-definition/step-field-config';
 
-describe('Added routing table decisions', () => {
+describe('Inserted routing table decisions', () => {
   let job: Job;
   let wf: JobWorkflow;
   beforeEach(() => {

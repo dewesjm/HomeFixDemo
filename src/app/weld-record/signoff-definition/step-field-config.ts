@@ -4,6 +4,7 @@
    reads the definition of the Type it is being signed as, including Excavation NDT. Live overrides are stored in
    localStorage and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
+import { migrateRepairConfirmationForm } from './repair-confirmation-migration';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from './field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
@@ -222,7 +223,7 @@ export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }

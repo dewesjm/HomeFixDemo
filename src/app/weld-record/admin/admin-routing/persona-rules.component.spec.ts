@@ -18,7 +18,7 @@ describe('Persona rules editor', () => {
   it('renders the default rule and cancels without saving nested changes', () => {
     const fixture = editor();
     const component = fixture.componentInstance;
-    expect(fixture.nativeElement.textContent).toContain('Existing routings keep their recorded persona');
+    expect(fixture.nativeElement.textContent).toContain('Persona: Excavation NDT');
     component.toggle(0, 0, '1');
     component.rules[0].role = 'Foreman';
     const cancel = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) => button.textContent.trim() === 'Cancel') as HTMLButtonElement;
@@ -33,13 +33,16 @@ describe('Persona rules editor', () => {
     const component = fixture.componentInstance;
     const select = fixture.nativeElement.querySelector('[aria-label="Rule persona"]') as HTMLSelectElement;
     select.value = 'Foreman'; select.dispatchEvent(new Event('change')); fixture.detectChanges();
-    const save = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) => button.textContent.trim() === 'Save persona rules') as HTMLButtonElement;
+    const fallback = fixture.nativeElement.querySelector('[aria-label="Otherwise persona"]') as HTMLSelectElement;
+    fallback.value = 'Welding'; fallback.dispatchEvent(new Event('change')); fixture.detectChanges();
+    const save = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) => button.textContent.trim() === 'Save persona') as HTMLButtonElement;
     save.click();
     expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair-2').role).toBe('Foreman');
     component.rules = []; component.save();
     const reopened = editor();
     expect(reopened.componentInstance.rules).toEqual([]);
-    expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair').role).toBe('Inspector');
+    expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair').role).toBe('Welding');
+    expect(excavationNdtStageFor({ ...JOBS[0], nInd: '3' }, 'pt', 'repair').role).toBe('Welding');
   });
   it('validates conditions and supports ordered and unconditional rules', () => {
     const component = editor().componentInstance;

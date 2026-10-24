@@ -15,7 +15,7 @@ Last updated 2026-10-24.
 - A joint's routing is an ordered list of routings. The **current routing** is the first required routing that isn't signed off yet.
 - Routings are signed in order. A routing can't be signed until every required routing before it is signed.
 - Each routing is signed by one role (Fitting, Welding, Foreman, Inspector and so on), its **Persona** in Admin > Routing Settings.
-- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Added routings and starts with a Persona rule selecting NQC Inspector on N Ind 1 or 2 joints, Inspector otherwise.
+- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Inserted routings and starts with a Persona rule selecting NQC Inspector on N Ind 1 or 2 joints, Inspector otherwise.
 - **Nothing is ever unsigned or reopened**. When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on routings the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed routing and every routing after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
@@ -79,9 +79,9 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root inspection question:** when NDT Root is VT or 5X (Show when on Admin > Signoff Type Forms, Root), both the question and its answer choices name that method. Answering Yes also signs the corresponding Root inspection as SAT when Root is signed, using the matching Additional Signoffs rule on Admin > Signoff Types. The rules select VT for NDT Root VT and 5X for NDT Root 5X, including NQC rows. Answering alone signs nothing.
 
-## Added routings and relative rule targets
+## Inserted routings and relative rule targets
 
-Admin > Routing Settings separates numbered routings from **Added routings**: Repair, Excavation NDT and Engineering Hold. Added routings are inserted during work, rather than included in every new joint. Their Reject rules and Then go to rules use the same editor as numbered routings. The first matching rule wins; a rule with no conditions always matches.
+Admin > Routing Settings separates numbered routings from **Inserted routings**: Repair, Excavation NDT and Engineering Hold. Inserted routings are inserted during work, rather than included in every new joint. Their Reject rules and Then go to rules use the same editor as numbered routings. The first matching rule wins; a rule with no conditions always matches.
 
 Targets include **Add Repair**, **Add Excavation NDT** (on Repair), and **Add Engineering Hold**, plus destinations relative to a repair round: **Rejecting NDT**, **Rejecting phase’s UT/RT**, **Rejecting phase’s VT/5X**, and **Own Repair**. These resolve to the joint’s own regular or NQC routing and the correct repair round. Repair # and Cut’s Refit # remain automatic bookkeeping.
 
@@ -89,7 +89,7 @@ The tables below describe the starting rules. Editing those rules changes the de
 
 ### Ordinary configured insertions
 
-Active ordinary Added definitions are offered as **Insert <name>** destinations on accepted-signoff and reject rules. The first matching rule inserts one blank unsigned instance immediately after its source and makes it current. Persona rules and Type availability resolve before insertion; the selected Type uses its shared form. Missing/inactive/inapplicable definitions, incomplete setup or unavailable Types block signoff with a configuration message. Preview uses the same executor and shows the instance/persona/Types or the block.
+Active ordinary Inserted definitions are offered as **Insert <name>** destinations on accepted-signoff and reject rules. The first matching rule inserts one blank unsigned instance immediately after its source and makes it current. Persona rules and Type availability resolve before insertion; the selected Type uses its shared form. Missing/inactive/inapplicable definitions, incomplete setup or unavailable Types block signoff with a configuration message. Preview uses the same executor and shows the instance/persona/Types or the block.
 
 Instances retain source, original inspection/phase and parent Repair context when present, captured settings/Type choices, and distinct numbered labels in the routing bar and History. Renaming/deactivation affects future instances; open and signed instances retain their settings, persona and Type choices. Shared form field definitions remain live. Ordinary numbering does not change Repair # or Refit #.
 
@@ -235,15 +235,20 @@ Admin > Signoff Types keeps Signs routing and adds Additional Signoffs rules. Ea
 
 ## Conditional routing personas
 
-Routing Settings provides **Persona rules** beside each routing's base Persona, including Added routings. Ordered rules use Joint Details conditions; the first match chooses the persona, otherwise the base Persona applies. New numbered routings, Repair rounds, Excavation NDT rounds and Engineering Holds use these settings. Existing routing instances retain their recorded persona; newly rebuilt routings use current settings.
+Routing Settings provides **Edit persona** for numbered and inserted routings. Its dialog edits both the ordered conditional personas and the Otherwise persona. Ordered rules use Joint Details conditions; the first match chooses the persona, otherwise the base Persona applies. New numbered routings, Repair rounds, Excavation NDT rounds and Engineering Holds use these settings. Existing routing instances retain their recorded persona; newly rebuilt routings use current settings.
 
 Excavation starts with one rule: Nuclear Indicator 1 or 2 selects NQC Inspector, with Inspector as the base fallback. Removing its rules removes that automatic remap. Persona rules are included in Routing Settings export.
 
 The Signoff Types table calls its conditional additional-signoff rules **Additional Signoffs**. These sign eligible additional routings with the main signoff when conditions match.
 
 
-## Custom added definitions (configuration)
+## Custom inserted definitions (configuration)
 
-Routing Settings offers Add added routing separately from Add numbered routing. A custom added definition is saved as a draft and stays out of every new joint's numbered path. Its applicability, persona rules and destination rules can be configured. Use the setup links for Signoff Types, Signoff Types By Routing and shared Signoff Type Forms. Activation requires a signing persona, known offered Types and their forms, at most one default, and Types that sign this routing. Deactivate custom definitions instead of deleting them; names can change while IDs and references stay stable.
+Routing Settings offers Add inserted routing separately from Add numbered routing. A custom inserted definition is saved as a draft and stays out of every new joint's numbered path. Its applicability, persona rules and destination rules can be configured. Configure Types and forms on the Signoff Types, Signoff Types By Routing and shared Signoff Type Forms admin pages. Activation requires a signing persona, known offered Types and their forms, at most one default, and Types that sign this routing. Deactivate custom definitions instead of deleting them; names can change while IDs and references stay stable.
 
 Custom insertion through routing rules is not available yet. Active means setup passed validation; existing Repair, Excavation NDT and Engineering Hold remain the executable inserted routings.
+
+
+### Editing insertion conditions
+
+The Included when column on inserted routings expands to list source routings and accepted/reject conditions. Edit opens the rule on its owning source; the reject editor also includes its Otherwise destination. Accepted-deviation insertion of Engineering Hold is marked automatic. Custom inserted definitions expose their own applicability separately. Saved single-field Repair thickness conditions and forms are upgraded to the current Nuclear Indicator 1 and 2/3 fields when loaded, retaining other conditions and field settings.

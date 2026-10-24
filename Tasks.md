@@ -4,7 +4,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Deferred requirements and identified gaps
 
-- [ ] **Configurable added routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-2 are complete: definition CRUD/setup plus generic insertion execution/preview, instance context, continuation, cycle validation and persistence. Stopped for review; specialized/NQC Excavation and shared Type Exceptions packages remain deferred.
+- [ ] **Configurable inserted routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-2 are complete: definition CRUD/setup plus generic insertion execution/preview, instance context, continuation, cycle validation and persistence. Stopped for review; specialized/NQC Excavation and shared Type Exceptions packages remain deferred.
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
 - [ ] **Remaining Repair / Excavation configuration:** review general original/performed inspection facts replacing the PT-to-5X marker and a readable summary of the effective path and related settings. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
@@ -44,6 +44,8 @@ Explicit prototype boundaries and source caveats, captured for visibility. Each 
 - **Engineering/source-data review:** material-classification seeds are explicitly unreviewed; engineering notes use placeholder references until real notes are wired up. Invented seed codes/procedures/defects need authoritative production data. Sources: `src/app/data/material-classification.ts`, `src/app/data/jobs.ts`, `src/app/data/procedures.ts` and ARCHITECTURE.md.
 
 ## Completed work and deliberate switches
+
+Routing Settings uses Inserted routings terminology, compact name cells, editable insertion-source conditions and a unified persona editor. Saved single-field Repair thickness conditions/forms upgrade to the current indicator-specific fields.
 
 Repair limits are separate indicator 1 and indicator 2/3 checkbox fields in Signoff Type Forms, with distinct History labels and configurable routing rules. Conditional persona rules are editable in Routing Settings; Excavation starts with NQC Inspector for indicators 1/2 and Inspector otherwise. The Signoff Types heading is Additional Signoffs.
 

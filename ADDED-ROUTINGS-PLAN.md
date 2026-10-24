@@ -1,26 +1,26 @@
-# Configurable added routing definitions and insertion
+# Configurable inserted routing definitions and insertion
 
 Status: packages 1-2 implemented; stopped for review. Packages 3-4 remain deferred. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
-Administrators can create a routing in **Added routings**, configure its signoff behavior, and select it as an insertion target in routing rules. Signing a routing that matches such a rule inserts an instance immediately after it and makes that instance current. A new runtime routing does not become part of every new joint's numbered path.
+Administrators can create a routing in **Inserted routings**, configure its signoff behavior, and select it as an insertion target in routing rules. Signing a routing that matches such a rule inserts an instance immediately after it and makes that instance current. A new runtime routing does not become part of every new joint's numbered path.
 
 Example: create an additional inspection definition, assign its Type/form and persona, then configure a reject or accepted-signoff rule to insert it. Its own accepted/rejected rules decide what happens next. The administrator must not need a new hardcoded routing ID for each ordinary additional inspection.
 
 ## Original behavior and gap (before implementation)
 
-- Routing Settings configures inclusion, rejection, accepted-signoff destinations and conditional personas. Repair, Excavation NDT and Engineering Hold are editable in its Added routings section.
-- Add routing creates a regular numbered routing. Added routing definitions are currently a fixed list in added-stage-templates.ts, identified by isAddedTemplateId(). There is no create-added-routing action.
+- Routing Settings configures inclusion, rejection, accepted-signoff destinations and conditional personas. Repair, Excavation NDT and Engineering Hold are editable in its Inserted routings section.
+- Add routing creates a regular numbered routing. Inserted routing definitions are currently a fixed list in added-stage-templates.ts, identified by isAddedTemplateId(). There is no create-added-routing action.
 - Rule targets and execution recognize specific Add Repair, Add Excavation NDT and Add Engineering Hold operations. They do not resolve an arbitrary saved definition as an insertion target.
 - Repair creates a numbered repair round and captures its rejecting inspection/phase. Excavation belongs to that Repair, inherits inspection context and may replace its Type. Engineering Hold has a blocking/release workflow. These lifecycle responsibilities remain specialized even when their settings are editable.
 - Excavation currently uses conditional Persona rules: NQC Inspector for Nuclear Indicator 1/2, Inspector otherwise. That is persona selection on one definition; it does not create a separate NQC definition.
 
 ## Required admin capabilities
 
-1. Provide **Add added routing** within the Added routings section, distinct from Add routing for the numbered path. Make the distinction explicit in labels/help text.
+1. Provide **Add inserted routing** within the Inserted routings section, distinct from Add routing for the numbered path. Make the distinction explicit in labels/help text.
 2. Create a definition with a stable internal ID, routing name, display name, base persona, optional ordered Persona rules, and applicability conditions using the existing condition editor.
-3. Configure offered Signoff Types, default/enable conditions and the form via the existing Signoff Types / Signoff Types By Routing / Signoff Type Forms owners. An added routing should not require a separate form system. Surface links or a short setup summary so its configuration can be completed.
+3. Configure offered Signoff Types, default/enable conditions and the form via the existing Signoff Types / Signoff Types By Routing / Signoff Type Forms owners. An inserted routing should not require a separate form system. Show a short setup summary so its configuration can be completed.
 4. Configure accepted-signoff and reject rules with the existing ordered editor. The first matching rule wins. Show an explicit default outcome where no rule matches.
 5. Offer eligible saved definitions as **Insert <routing name>** targets in accepted-signoff and reject rules. The target stores the stable definition ID, not a name or a runtime instance ID. Renaming must preserve references.
 6. Show and export applicability, persona conditions, Type source/options and insertion destinations with readable headings. Use the standard toolbar, clearable filters and shared pager if the list is paginated.
@@ -30,7 +30,7 @@ Example: create an additional inspection definition, assign its Type/form and pe
 
 ### Definitions and instances
 
-- Persist numbered-versus-added classification explicitly. Do not identify added definitions solely from a hardcoded ID list. Existing built-in IDs remain stable.
+- Persist numbered-versus-added classification explicitly. Do not identify inserted definitions solely from a hardcoded ID list. Existing built-in IDs remain stable.
 - Give every inserted instance a unique identity and a stable link to its definition. Capture its insertion source, relevant phase, rejecting inspection and parent round where applicable. Repeated instances must not overwrite or collide with earlier records.
 - Keep ordinary runtime-instance numbering distinct from Repair # and Refit #. Repeated display labels and History must make the specific instance identifiable.
 - Resolve the applicable definition, persona, Type choices and context before insertion, using the same resolver for live execution, seeded examples and preview. Filter inapplicable definitions and reject invalid targets predictably; do not silently mark anything signed.
@@ -52,7 +52,7 @@ Model these as explicit supported behaviors rather than branching on display nam
 ### Destinations and context
 
 - Preserve existing relative destinations: Own Repair, Rejecting NDT, Rejecting phase's VT/5X and UT/RT. Offer them only where the required context can be resolved.
-- For a generic added routing, specify supported destinations such as continue after the inserted work, a named numbered routing, or another configured insertion. Define what “continue” means when the source was itself an inserted instance.
+- For a generic inserted routing, specify supported destinations such as continue after the inserted work, a named numbered routing, or another configured insertion. Define what “continue” means when the source was itself an inserted instance.
 - Preserve the original rejecting inspection even when the performed inspection Type is replaced. Reuse that context for later returns and exceptions rather than encoding one PT-to-5X case.
 - Validate missing/deactivated definitions, unavailable Types, invalid relative targets and direct or indirect unconditional insertion cycles. Deliberate repeat work needs explicit rules and distinct instances; accidental unlimited insertion must not arise from an invalid configuration.
 
@@ -80,7 +80,7 @@ The current Excavation-specific Type exception section could become a shared **T
 
 ## Suggested implementation packages
 
-1. **Definition classification and CRUD (complete):** persist added definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
+1. **Definition classification and CRUD (complete):** persist inserted definitions, preserve built-ins, add the create/edit/deactivate UI, establish Type/form setup and validation. No generic insertion claims until execution is delivered.
 2. **Generic insertion and preview (complete):** stable definition targets, instance/context model, applicability, persona/Type resolution, default outcomes and relative destinations. Prove live execution and preview agree.
 3. **Existing specialized types and NQC Excavation:** preserve Repair/Excavation/Hold contracts; implement the agreed NQC variant selection through configuration and cover round returns.
 4. **Shared Type Exceptions and configuration clarity:** if selected for the same initiative, replace the Excavation-only editor/resolver with a general list and add readable effective-path summaries.
@@ -89,7 +89,7 @@ Review package boundaries before starting. Deliver each as a concrete, verified 
 
 ## Acceptance and verification
 
-- Create a custom added definition, configure its Type/form/persona, select it in a rule, save/reload, trigger it and sign it. It is absent from a new joint's ordinary numbered path and appears exactly when the rule requests it.
+- Create a custom inserted definition, configure its Type/form/persona, select it in a rule, save/reload, trigger it and sign it. It is absent from a new joint's ordinary numbered path and appears exactly when the rule requests it.
 - Show the same destination/persona/Type choices in preview and actual execution. No match, disabled Type, inapplicable definition and invalid context produce a clear supported outcome.
 - Insert the same definition more than once without identity collisions or lost History. Test nested insertion/continuation and configuration-cycle validation.
 - Exercise regular/NQC Excavation for indicators 1/2/3, PT-to-5X/material exceptions, SAT/UNSAT, multiple Repair rounds and correct Own Repair / phase-inspection returns.
@@ -100,9 +100,9 @@ Review package boundaries before starting. Deliver each as a concrete, verified 
 
 ## Package 1 delivered
 
-Routing Settings creates custom Added routing definitions as drafts with stable IDs, names/display names, personas, applicability and ordered persona/destination rules. Numbered-versus-added classification, supported lifecycle and draft/active/inactive status are persisted. Legacy saved built-ins infer classification/lifecycle from their stable IDs; existing custom numbered routings remain numbered.
+Routing Settings creates custom Inserted routing definitions as drafts with stable IDs, names/display names, personas, applicability and ordered persona/destination rules. Numbered-versus-added classification, supported lifecycle and draft/active/inactive status are persisted. Legacy saved built-ins infer classification/lifecycle from their stable IDs; existing custom numbered routings remain numbered.
 
-The existing Signoff Types By Routing editor offers new definitions. Setup links lead to the existing Type, availability and form editors. Activation validates a signing persona, offered known Types, no more than one default, shared forms, and Types that sign this routing. Conditional Type availability is shown in the setup/export summary; runtime applicability and Type availability remain package 2 work. Missing configuration is retained as a draft. Custom definitions can be deactivated and reactivated; removal is blocked for all added definitions to preserve references. Built-in specialized lifecycle definitions stay available.
+The existing Signoff Types By Routing editor offers new definitions. The existing Type, availability and form editors own the remaining configuration; validation and exports show setup readiness. Activation validates a signing persona, offered known Types, no more than one default, shared forms, and Types that sign this routing. Conditional Type availability is shown in the setup/export summary; runtime applicability and Type availability remain package 2 work. Missing configuration is retained as a draft. Custom definitions can be deactivated and reactivated; removal is blocked for all inserted definitions to preserve references. Built-in specialized lifecycle definitions stay available.
 
 Package 1 does not offer custom insertion targets or change live Repair, Excavation or Engineering Hold execution. Active custom definitions are prepared configuration only. Their applicability and destination rules are editable in advance; they do not put the routing on a new joint. Generic instance identity, context, execution, previews and cycle validation remain package 2. Separate NQC Excavation and shared Type Exceptions remain decisions for later packages.
 
@@ -111,7 +111,7 @@ Workflow version 2.10.55 uses the existing demo cache reset on first load after 
 
 ## Package 2 delivered
 
-Both accepted-signoff and reject rules offer **Insert <name>** for active ordinary added definitions. Targets persist stable definition IDs (`insert:<id>`), surviving rename. Draft/inactive definitions are excluded from new choices; saved destinations remain readable. Missing, inactive, inapplicable or incomplete definitions, disabled Types and unresolved relative destinations block signoff with a configuration message and no signoff/History mutation. Preview runs the same executor and reports the block or inserted name, persona and enabled Types.
+Both accepted-signoff and reject rules offer **Insert <name>** for active ordinary inserted definitions. Targets persist stable definition IDs (`insert:<id>`), surviving rename. Draft/inactive definitions are excluded from new choices; saved destinations remain readable. Missing, inactive, inapplicable or incomplete definitions, disabled Types and unresolved relative destinations block signoff with a configuration message and no signoff/History mutation. Preview runs the same executor and reports the block or inserted name, persona and enabled Types.
 
 Each instance has an independent `added:<definition-id>:<sequence>` ID and numbered routing-bar/History label. Its frozen definition settings, enabled Types, persona, source ID, original inspection/phase and parent Repair (when present), and continuation destination persist on the workflow. No entered user values are copied. Repair # and Refit # are unchanged. Existing open and signed instances retain their routing settings and Type choices; shared Type form field definitions remain live.
 
@@ -122,3 +122,17 @@ Configuration saves reject direct/indirect unconditional insertion cycles, inclu
 Workflow version **2.10.56** follows the existing demo cache-reset policy on first load after upgrade, including saved workflows/routing/Type mappings. There is no migration of pre-upgrade demo work. Subsequent reloads retain inserted instances without rebuilding them as numbered routings.
 
 Verified with **469 passing ChromeHeadless tests**, production build, and the no-unused TypeScript check. Added execution/service scenarios in `generic-insertion.spec.ts`, relative-choice tests in `insertion-target-options.spec.ts`, and a rendered Routing Settings insertion/cycle test in `admin-routing.component.spec.ts`. Includes a rendered joint form edit/cancel/confirm/signoff/persistence journey, nested/repeated insertion, accepted/rejected destinations, invalid targets, cycles, rename/deactivation, resolver parity, reload, route-back and Deprogress. Existing specialized Repair/Excavation/Hold regression suites are included in the full run. Separate NQC Excavation and shared Type Exceptions remain packages 3/4. The separate deferred coverage program has not been started.
+
+
+## Terminology and section cleanup
+
+The displayed term is **Inserted routings**, with an **Add inserted routing** button and **Inserted** export/order labels. The section no longer repeats links to the Type configuration pages or status/setup explanations beneath routing names. Setup readiness remains in validation and exports. Existing persisted classification values, IDs and source filenames are retained; this wording change does not require a cache reset.
+
+
+## Routing Settings editing refinements
+
+Inserted-routing name cells contain only the name. Repeated setup links, section help paragraphs and routing-rule editor explanations are removed. The Included when cell lists actual insertion sources in an expandable control; Edit opens the source routing's accepted/reject rules, including its editable reject fallback. Accepted deviations remain explicitly automatic. Custom applicability is edited separately in the same cell. Exports include these sources and custom applicability.
+
+Edit persona opens one dialog for ordered conditional choices and the Otherwise persona; the row pencil no longer exposes only the fallback. Both choices retain their effect on future instances, preserving existing recorded personas. Saved references to the obsolete single thickness confirmation are upgraded to indicator-specific conditions without discarding other clauses, destinations or priority. Saved forms upgrade the obsolete field while preserving customization. No storage-schema change or version reset is needed for this compatibility fix.
+
+Verified these refinements with 476 passing ChromeHeadless tests, the production build and the no-unused TypeScript check. Rendered tests cover insertion-source editing, both persona choices, compact name cells and legacy thickness-rule field selections.

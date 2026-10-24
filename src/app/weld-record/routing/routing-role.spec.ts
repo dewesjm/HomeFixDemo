@@ -30,7 +30,7 @@ describe('Configured routing personas', () => {
     expect(excavationNdtStageFor(job('1'), 'pt', 'repair').role).toBe('Foreman');
     expect(routingRole({ id: 'custom', label: 'Custom', required: true }, job('1'))).toBe('');
   });
-  it('applies persona rules to numbered and added routings without changing existing instances', () => {
+  it('applies persona rules to numbered and inserted routings without changing existing instances', () => {
     const existing = excavationNdtStageFor(job('1'), 'pt', 'repair');
     for (const id of ['excavation-ndt', 'repair', 'engineering-hold', 'tack']) {
       updateStageTemplate('Welding', id, { roleRules: [{ when: [], role: 'Engineering' }] });

@@ -12,8 +12,8 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
   template: `
     <dialog class="modal modal-open" (close)="closed.emit()" aria-labelledby="persona-rules-title">
       <div class="modal-box max-w-3xl">
-        <h3 id="persona-rules-title" class="text-lg font-semibold">Persona rules: {{ routing().label }}</h3>
-        <p class="my-3">The first matching rule chooses the persona when this routing is created. Otherwise use {{ routing().role }}. Existing routings keep their recorded persona.</p>
+        <h3 id="persona-rules-title" class="text-lg font-semibold">Persona: {{ routing().label }}</h3>
+
         @for (rule of rules; track $index; let ri = $index) {
           <div class="border border-base-300 rounded-box p-3 mb-3">
             <div class="flex gap-2 items-center mb-2">
@@ -51,11 +51,16 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
               </select>
             </label>
           </div>
-        } @empty { <p>No rules: use {{ routing().role }}.</p> }
-        <button class="btn btn-sm mt-2" (click)="add()">Add persona rule</button>
+        }
+        <label class="flex gap-2 items-center my-3">Otherwise
+          <select class="select select-sm" aria-label="Otherwise persona" [(ngModel)]="fallbackRole">
+            @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
+          </select>
+        </label>
+        <button class="btn btn-sm mt-2" (click)="add()">Add condition</button>
         <div class="modal-action">
           <button class="btn btn-ghost" (click)="closed.emit()">Cancel</button>
-          <button class="btn btn-primary" [disabled]="!valid()" (click)="save()">Save persona rules</button>
+          <button class="btn btn-primary" [disabled]="!valid()" (click)="save()">Save persona</button>
         </div>
       </div>
       <form method="dialog" class="modal-backdrop"><button type="button" (click)="closed.emit()">Close</button></form>
@@ -70,15 +75,17 @@ export class PersonaRulesComponent {
   fields = STEP_CONDITION_FIELDS.filter(field => !field.stepAnswer);
   roles: string[] = [...ROLES];
   rules: NonNullable<StageTemplate['roleRules']> = [];
+  fallbackRole = '';
   newClause = newConditionClause;
   ngOnInit() {
+    this.fallbackRole = this.routing().role ?? '';
     this.rules = structuredClone(this.routing().roleRules ?? []);
     this.roles = [...new Set([...this.roles, ...Object.values(getTemplates()).flatMap(rows => rows.flatMap(row => [row.role ?? '', ...(row.roleRules ?? []).map(rule => rule.role)]))])].filter(Boolean).sort();
   }
   typed(clause: ConditionClause) { return clauseTyped(this.fields, clause); }
   options(key: string) { return conditionValueOptions(this.fields, key); }
   validClause(clause: ConditionClause) { return this.fields.some(field => field.key === clause.field) && clauseValid(this.fields, clause); }
-  valid() { return this.rules.every(rule => !!rule.role && rule.when.every(clause => this.validClause(clause))); }
+  valid() { return !!this.fallbackRole && this.rules.every(rule => !!rule.role && rule.when.every(clause => this.validClause(clause))); }
   add() { this.rules.push({ when: [newConditionClause()], role: this.routing().role ?? 'Inspector' }); }
   patch(ri: number, ci: number, patch: Partial<ConditionClause>) { this.rules[ri].when[ci] = patchClause(this.fields, this.rules[ri].when[ci], patch); }
   toggle(ri: number, ci: number, value: string) {
@@ -91,7 +98,7 @@ export class PersonaRulesComponent {
   }
   save() {
     if (!this.valid()) return;
-    updateStageTemplate(this.trade(), this.routing().id, { roleRules: structuredClone(this.rules) });
+    updateStageTemplate(this.trade(), this.routing().id, { role: this.fallbackRole, roleRules: structuredClone(this.rules) });
     this.saved.emit();
     this.closed.emit();
   }

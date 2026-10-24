@@ -6,12 +6,9 @@
                    (exportCsv)="exportCsv()" (add)="addRow()" />
 
 @for (added of [false, true]; track added) {
-<h3 class="text-lg font-semibold mt-4">{{ added ? 'Added routings' : 'Numbered routings' }}</h3>
-@if (added) { <p class="text-sm">Inserted by routing rules or accepted deviations. Engineering chooses the release destination on Engineering Hold.</p> }
+<h3 class="text-lg font-semibold mt-4">{{ added ? 'Inserted routings' : 'Numbered routings' }}</h3>
 @if (added) {
-  <p class="text-sm my-2">Custom definitions are saved as drafts. Configure Types and forms before activation. Custom definitions can be prepared here; inserting them through routing rules is not available yet.</p>
-  <button type="button" class="btn btn-sm btn-outline my-2" [disabled]="!!editingId()" (click)="addRow(true)">Add added routing</button>
-  <p class="text-sm mb-2"><a class="link" routerLink="/admin/signoff-types">Signoff Types By Routing</a> &middot; <a class="link" routerLink="/admin/routing-signoff-types">Signoff Types</a> &middot; <a class="link" routerLink="/admin/signoff-fields">Signoff Type Forms</a></p>
+  <button type="button" class="btn btn-sm btn-outline my-2" [disabled]="!!editingId()" (click)="addRow(true)">Add inserted routing</button>
 }
 <div class="overflow-x-auto">
 <table class="table table-sm">
@@ -49,7 +46,7 @@
               <svg lucideArrowDown class="size-3"></svg>
             </button>
           </div>
-          } @else { Added }
+          } @else { Inserted }
         </td>
         <td>
           @if (editingId() === row.id) {
@@ -57,7 +54,6 @@
                    [ngModel]="row.routing" (ngModelChange)="updateField(row, 'routing', $event)" />
           } @else {
             {{ row.routing || '-' }}
-            @if (added) { <div class="text-sm">Status: {{ row.status }} &middot; {{ setupSummary(row) }}</div> }
           }
         </td>
         <td>
@@ -69,7 +65,21 @@
           }
         </td>
         <td>
-          @if (added && !canChangeStatus(row) && !row.id.includes(':new-')) { Added by a rule or deviation } @else if (row.id.includes(':new-')) {
+          @if (added && !row.id.includes(':new-')) {
+            @let triggers = insertionTriggers(row);
+            <details>
+              <summary class="cursor-pointer" [attr.aria-label]="'Insertion conditions for ' + row.routing">Insertion conditions ({{ triggers.length }})</summary>
+              @for (trigger of triggers; track $index) {
+                <div class="my-2">
+                  <span>{{ trigger.label }}</span>
+                  @if (trigger.sourceId) { <button type="button" class="btn btn-outline btn-xs ml-1" (click)="editInsertionTrigger(row, trigger)" [attr.aria-label]="'Edit ' + trigger.label">Edit</button> }
+                </div>
+              } @empty { <p>No insertion rules.</p> }
+            </details>
+            @if (canChangeStatus(row)) {
+              <div class="mt-2">Applies when: {{ row.includedWhen }} <button type="button" class="btn btn-outline btn-xs" (click)="openConditions(row)" [attr.aria-label]="'Edit applicability for ' + row.routing">Edit</button></div>
+            }
+          } @else if (row.id.includes(':new-')) {
             Always (save the routing to change this)
           } @else {
             <div class="flex items-start gap-1">
@@ -132,16 +142,13 @@
           }
         </td>
         <td>
-          @if (editingId() === row.id) {
-            <select class="select select-sm select-bordered w-full min-w-0"
-                    [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
-              @for (r of roleOptions(); track r) {
-                <option [value]="r">{{ r }}</option>
-              }
-            </select>
+          <div>{{ personaSummary(row) }}</div>
+          @if (!row.id.includes(':new-')) {
+            <button type="button" class="btn btn-ghost btn-xs" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona for ' + row.routing">Edit persona</button>
           } @else {
-            <div>{{ personaSummary(row) }}</div>
-            <button type="button" class="btn btn-ghost btn-xs" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona rules for ' + row.routing">Persona rules</button>
+            <select class="select select-sm" aria-label="Persona" [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
+              @for (r of roleOptions(); track r) { <option [value]="r">{{ r }}</option> }
+            </select>
           }
         </td>
         <td>
@@ -263,17 +270,7 @@
   <dialog class="modal modal-open" (close)="rejRow.set(null)">
     <div class="modal-box max-w-3xl max-h-[85vh]">
       <h3 class="text-lg font-semibold mb-1">{{ ruleMode() === 'then' ? 'Then go to' : 'Reject rules' }}: {{ row.routing }}</h3>
-      @if (ruleMode() === 'then') {
       @if (ruleConfigurationError()) { <p role="alert" class="text-error">{{ ruleConfigurationError() }}</p> }
-        <p class="mb-4">After an accepted signoff, the first matching rule picks where the joint goes. Otherwise it continues in order. The same or an earlier routing starts fresh; a later routing passes those in between.</p>
-      } @else {
-      @if (ruleConfigurationError()) { <p role="alert" class="text-error">{{ ruleConfigurationError() }}</p> }
-      <p class="mb-1">When this routing is signed UNSAT, the first rule whose conditions all match picks where it goes. If none match, it goes to {{ getRejectLabel(row.rejectToStage) }}.</p>
-      <p class="mb-4">Choose an earlier routing, an insertion target, or a supported relative destination. An unavailable insertion or unresolved relative destination blocks signoff. Ordinary added routings continue after the inserted work when no destination matches.</p>
-
-      }
-
-      <p class="text-sm mb-3">Add targets insert a routing immediately after this one. Relative targets use this repair round’s rejecting inspection and phase. A rule with no conditions always matches.</p>
       @for (rule of rejRules(); track $index; let ri = $index) {
         <div class="border border-base-300 rounded-box p-3 mb-3">
           <div class="flex items-center justify-between mb-2">
@@ -336,11 +333,19 @@
           </div>
         </div>
       } @empty {
-        @if (ruleMode() === 'then') { <p class="font-semibold">No rules: continue in order (inserted work resumes its captured continuation).</p> } @else {
-        <p class="font-semibold">No reject rules: an UNSAT goes to {{ getRejectLabel(row.rejectToStage) }}. Ordinary inserted work with no destination resumes its captured continuation.</p>
+        @if (ruleMode() === 'then') { <p class="font-semibold">No rules.</p> } @else {
+        <p class="font-semibold">No rules.</p>
         }
       }
 
+      @if (ruleMode() === 'reject') {
+        <label class="flex gap-2 items-center my-3">Otherwise
+          <select class="select select-bordered select-sm" aria-label="Otherwise reject destination" [ngModel]="rejDefaultTarget()" (ngModelChange)="rejDefaultTarget.set($event)">
+            <option value="">Continue in order</option>
+            @for (target of rejectTargets(row); track target.id) { <option [ngValue]="target.id">{{ target.label }}</option> }
+          </select>
+        </label>
+      }
       <button type="button" class="btn btn-sm btn-outline mt-1" (click)="addRejectRule()">
         <svg lucidePlus class="size-4"></svg> Add rule
       </button>

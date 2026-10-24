@@ -13,9 +13,9 @@ Routing Settings provides ordered **Then go to** rules, using the same condition
 
 Starting rules return Fit to Fit for Weld Build-Up, Layer to Layer for Interim Layer without Layer NDT, and Layer NDT to Layer after an Interim Layer signoff. Layer NDT selects one method group without adding an extra VT routing. Root and Final retain their separate VT/5X requirements.
 
-## Added routings and relative destinations
+## Inserted routings and relative destinations
 
-Repair, Excavation NDT, and Engineering Hold appear in the **Added routings** section of Routing Settings. They use the same editable accepted and reject rules as numbered routings.
+Repair, Excavation NDT, and Engineering Hold appear in the **Inserted routings** section of Routing Settings. They use the same editable accepted and reject rules as numbered routings.
 
 Targets can add Repair, Excavation NDT, or Engineering Hold, or resolve relative to the current repair round: Rejecting NDT, Rejecting phase's UT/RT, Rejecting phase's VT/5X, and Own Repair. Resolution selects the joint's regular or NQC row.
 
