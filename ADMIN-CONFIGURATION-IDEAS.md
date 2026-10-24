@@ -2,6 +2,8 @@
 
 Weld Record ideas and deferred requirements. Nothing here queues implementation. Weld Planning and Weld Engineering are outside this scope.
 
+Outstanding items are indexed in [Tasks.md](Tasks.md); keep that master backlog current when these detailed notes change.
+
 ## Allowable repair thickness
 
 A candidate for an engineering-owned admin table. `allowableThicknessAmount()` in `src/app/weld-record/routing/added-steps.ts` currently selects 3/8 inch for Nuclear Indicator 1 and 3/16 inch otherwise, with the text "or 20% of material thickness, which is less". The code identifies the Non-nuclear fallback as unreviewed.

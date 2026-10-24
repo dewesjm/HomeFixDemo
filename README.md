@@ -31,6 +31,7 @@ npx ng test --watch=false --browsers=ChromeHeadless
 
 ## Documentation
 
+- [Tasks.md](Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
 - [AGENTS.md](AGENTS.md): shared development rules and UI conventions
 - [ROUTING.md](ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
 - [ARCHITECTURE.md](ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
