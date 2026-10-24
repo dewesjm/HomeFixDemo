@@ -1,4 +1,4 @@
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';
 import { getTemplates } from '../../routing/stage-templates';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
@@ -12,6 +12,40 @@ describe('Routing Settings rules editor', () => {
     component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
   });
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
+
+  it('pins a new draft at the top with the next numbered position and preserves its number after saving', fakeAsync(() => {
+    const before = component.rows().filter(row => !component.isAdded(row));
+    const next = Math.max(...before.map(row => row.sequence)) + 1;
+    component.addRow();
+    TestBed.flushEffects();
+    const draft = component.rows().find(row => row.id === component.editingId())!;
+    expect(draft.sequence).toBe(next);
+    expect(component.sectionRows(false)[0].id).toBe(draft.id);
+    tick(2000);
+    expect(component.sectionRows(false)[0].id).toBe(draft.id);
+    component.updateField(draft, 'routing', 'Extra review');
+    component.saveEdit(component.rows().find(row => row.id === draft.id)!);
+    TestBed.flushEffects();
+    const saved = component.rows().find(row => row.routing === 'Extra review')!;
+    expect(saved.sequence).toBe(next);
+    expect(component.sectionRows(false).at(-1)!.id).toBe(saved.id);
+    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
+    expect(reopened.rows().find(row => row.routing === 'Extra review')!.sequence).toBe(next);
+    expect(reopened.rows().filter(row => !reopened.isAdded(row)).map(row => row.sequence))
+      .toEqual(Array.from({ length: next }, (_, index) => index + 1));
+  }));
+
+  it('cancels a pinned draft and reuses its available number', fakeAsync(() => {
+    const count = component.rows().length;
+    component.addRow();
+    const draft = component.rows().find(row => row.id === component.editingId())!;
+    component.cancelEdit(draft);
+    expect(component.rows().length).toBe(count);
+    expect(getTemplates()['Welding'].some(row => row.id.startsWith('new-'))).toBeFalse();
+    component.addRow();
+    expect(component.rows().find(row => row.id === component.editingId())!.sequence).toBe(draft.sequence);
+    tick(2000);
+  }));
 
   it('offers self, earlier and later routings for Then go to, with add targets', () => {
     const row = component.rows().find(r => r.id === 'Welding:fit')!;

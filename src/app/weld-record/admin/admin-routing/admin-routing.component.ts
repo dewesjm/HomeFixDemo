@@ -1,6 +1,7 @@
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
+import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
 import { StageTemplate } from '../../model/workflow-types';
 import { isAddedTemplateId } from '../../routing/added-stage-templates';
@@ -109,7 +110,7 @@ export class AdminRoutingComponent {
   }
 
   isAdded(row: RoutingRow): boolean { return isAddedTemplateId(row.id.split(':')[1]); }
-  sectionRows(added: boolean) { return this.visibleRows().filter(r => this.isAdded(r) === added); }
+  sectionRows(added: boolean) { return pinDraftRoutings(this.visibleRows().filter(r => this.isAdded(r) === added)); }
   private targetOptions() {
     return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS];
   }
@@ -117,13 +118,14 @@ export class AdminRoutingComponent {
   private buildInitialRows(): RoutingRow[] {
     const rows: RoutingRow[] = [];
     for (const [trade, templates] of Object.entries(getTemplates())) {
-      templates.forEach((t, i) => {
+      let sequence = 0;
+      templates.forEach(t => {
         rows.push({
           id: `${trade}:${t.id}`,
           routing: t.label,
           displayName: t.displayName ?? '',
           trade: trade as Job['trade'],
-          sequence: i + 1,
+          sequence: isAddedTemplateId(t.id) ? 0 : ++sequence,
           rejectToStage: t.rejectToStage ?? '',
           role: (t.role as Role) || 'View',
           includedWhen: describeConditions(t.includeWhen),
@@ -141,8 +143,8 @@ export class AdminRoutingComponent {
     const trade = 'Welding';
     const newId = `new-${++this.seq}`;
     const fullId = `${trade}:${newId}`;
-    // negative sequence keeps it at the top until saved
-    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence: -1, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
+    const sequence = nextRoutingNumber(this.rows().filter(row => row.trade === trade && !this.isAdded(row)));
+    const row: RoutingRow = { id: fullId, routing: '', displayName: '', trade, sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(fullId);
@@ -185,9 +187,10 @@ export class AdminRoutingComponent {
         fabricationEditable: row.fabricationEditable,
       });
       const newFullId = `${row.trade}:${newId}`;
-      /* saved at the end, same as addStageTemplate() */
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId, sequence: Number.MAX_SAFE_INTEGER } : x));
+      /* Saving ends draft pinning; its sequence remains in the numbered list. */
+      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId } : x));
       this.resequence(row.trade);
+      this.saveOrder(row.trade);
     } else {
       updateStageTemplate(row.trade, stageId, {
         label: row.routing,
@@ -205,6 +208,10 @@ export class AdminRoutingComponent {
   }
 
   cancelEdit(row: RoutingRow) {
+    if (isDraftRouting(row)) {
+      this.rows.update(rows => rows.filter(item => item.id !== row.id));
+      this.resequence(row.trade);
+    }
     const original = this.clonedRows[row.id];
     if (original) {
       this.rows.update(r => r.map(x => (x.id === row.id ? original : x)));
@@ -228,7 +235,7 @@ export class AdminRoutingComponent {
   /* ── Reorder ── */
 
   moveUp(row: RoutingRow) {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
+    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     const idx = tradeRows.findIndex(r => r.id === row.id);
     if (idx <= 0) return;
     const above = tradeRows[idx - 1];
@@ -241,7 +248,7 @@ export class AdminRoutingComponent {
   }
 
   moveDown(row: RoutingRow) {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
+    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     const idx = tradeRows.findIndex(r => r.id === row.id);
     if (idx < 0 || idx >= tradeRows.length - 1) return;
     const below = tradeRows[idx + 1];
@@ -289,11 +296,11 @@ export class AdminRoutingComponent {
     e.preventDefault();
     const from = this.rows().find(r => r.id === this.dragId());
     if (from && from.id !== target.id && from.trade === target.trade) {
-      const order = this.rows().filter(r => r.trade === target.trade).sort((a, b) => a.sequence - b.sequence).map(r => r.id);
+      const order = this.rows().filter(r => r.trade === target.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence).map(r => r.id);
       const movingDown = order.indexOf(from.id) < order.indexOf(target.id);
       const rest = order.filter(id => id !== from.id);
       rest.splice(rest.indexOf(target.id) + (movingDown ? 1 : 0), 0, from.id);
-      this.rows.update(rows => rows.map(r => r.trade === target.trade ? { ...r, sequence: rest.indexOf(r.id) + 1 } : r));
+      this.rows.update(rows => rows.map(r => r.trade === target.trade && !this.isAdded(r) ? { ...r, sequence: rest.indexOf(r.id) + 1 } : r));
       this.saveOrder(target.trade);
     }
     this.clearDrag();
@@ -305,11 +312,11 @@ export class AdminRoutingComponent {
   }
 
   isFirstInTrade(row: RoutingRow): boolean {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
+    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     return tradeRows[0]?.id === row.id;
   }
   isLastInTrade(row: RoutingRow): boolean {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade).sort((a, b) => a.sequence - b.sequence);
+    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     return tradeRows[tradeRows.length - 1]?.id === row.id;
   }
 
@@ -322,9 +329,9 @@ export class AdminRoutingComponent {
   }
 
   private resequence(trade: Job['trade']) {
-    const sorted = this.rows().filter(r => r.trade === trade).sort((a, b) => a.sequence - b.sequence);
+    const sorted = this.rows().filter(r => r.trade === trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     this.rows.update(rows => rows.map(r => {
-      if (r.trade !== trade) return r;
+      if (r.trade !== trade || this.isAdded(r)) return r;
       const idx = sorted.findIndex(s => s.id === r.id);
       return { ...r, sequence: idx + 1 };
     }));
@@ -503,7 +510,7 @@ export class AdminRoutingComponent {
 
   exportCsv() {
     downloadCsv('routing', [
-      { header: 'Order', value: (r: RoutingRow) => r.sequence },
+      { header: 'Order', value: (r: RoutingRow) => this.isAdded(r) ? 'Added' : r.sequence },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => r.includedWhen },

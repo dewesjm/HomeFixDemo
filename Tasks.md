@@ -23,7 +23,7 @@ Implement one package at a time only when requested, commit and stop for review.
 
 ## Ideas requiring a decision before implementation
 
-- **User-defined Added routings:** the section currently edits only the built-in Repair, Excavation NDT and Engineering Hold runtime types. Add routing creates a regular numbered routing; there is no create-added-routing action. A future extension would need insertion targets, Type/form setup, identity and lifecycle rules. Scope not yet agreed.
+- **Configurable added routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Documented; implementation not started.
 
 - **Generic Type Exceptions:** replace the Excavation-specific exception section with a shared per-routing exception list. Keep Type source per routing; apply replacement rules consistently to enabled options, previews and repair returns. Scope discussed; implementation not requested.
 

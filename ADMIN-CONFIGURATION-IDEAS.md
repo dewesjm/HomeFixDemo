@@ -109,6 +109,8 @@ These findings are recorded for reference; no implementation is queued.
 Replace the Excavation-specific exception list with a shared list selecting routing, original Type, replacement Type and conditions. Keep Type source (configured options or rejecting inspection) per routing. A shared resolver must honor enabled Types and work consistently for ordinary NDT, Excavation, routing preview and repair returns. This is follow-up scope, not an implementation queue.
 
 
-## User-defined Added routings — scope not agreed
+## Configurable added routings and insertion — documented scope
 
 Added routings currently edits the fixed runtime types Repair, Excavation NDT and Engineering Hold. Add routing creates a regular numbered routing, not another runtime type. Supporting arbitrary added routings needs creation UI, insertion targets, Type/form setup and lifecycle/identity rules; editing existing runtime routing rules does not provide this capability.
+
+See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Implementation has not started.

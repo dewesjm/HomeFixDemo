@@ -11,6 +11,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-24',
+    fixed: ['Routing Settings: new routings appear at the top while being edited and display the next numbered routing position instead of -1. Cancel removes the unsaved routing.'],
     changed: [
       'Repair: separate thickness-exceeded confirmations for Nuclear Indicator 1 and indicators 2/3 are available in Signoff Type Forms. Their conditions select the applicable limit; either confirmation routes to the phase’s UT/RT and History records the specific limit.',
       'Routing Settings: Persona rules select a persona from ordered Joint Details conditions. Excavation starts with NQC Inspector for Nuclear Indicator 1/2 and Inspector otherwise.',

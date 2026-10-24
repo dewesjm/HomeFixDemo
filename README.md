@@ -31,6 +31,7 @@ npx ng test --watch=false --browsers=ChromeHeadless
 
 ## Documentation
 
+- [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md): proposed configurable runtime routing creation/insertion, including NQC Excavation
 - [Tasks.md](Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
 - [AGENTS.md](AGENTS.md): shared development rules and UI conventions
 - [ROUTING.md](ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
