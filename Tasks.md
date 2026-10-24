@@ -4,6 +4,8 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Deferred requirements and identified gaps
 
+- [ ] **Admin-defined Repair Codes:** agreed scope: maintain Repair Code choices and use them in existing Signoff Type Form conditions and Repair routing rules. Field definitions/mappings and specialized lifecycle effects remain code controlled. Not started. [Details](ADMIN-CONFIGURATION-IDEAS.md#repair-code-configuration--agreed-scope).
+
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
 - [ ] **Remaining Repair / Excavation configuration:** replace the PT-to-5X marker with general original/performed inspection facts and summarize Repair/Excavation destinations across settings. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
@@ -26,11 +28,10 @@ Implement one package at a time only when requested, commit and stop for review.
 
 - **Repair / Excavation routing-bar visibility:** revisit whether Repair and Excavation NDT should appear in the routing bar. The user recalls an earlier decision to hide them; confirm the intended behavior and whether visibility should be configurable. Current behavior is unchanged pending that decision.
 
-- **Ordinary signoff field catalog and reusable option lists:** admin-managed labels, controls, units, help text, new ordinary fields and locally owned options. Under discussion; specialized behavior stays in its code owner. Weld Colors is complete. [Details](ADMIN-CONFIGURATION-IDEAS.md#signoff-field-catalog-and-reusable-option-lists).
+- **Reusable option lists:** consider configuration for choices on existing fields. New fields, data types and mappings remain code controlled; arbitrary field creation through configuration is not planned. Weld Colors is complete; Repair Codes have separate agreed scope. [Details](ADMIN-CONFIGURATION-IDEAS.md#signoff-field-catalog-and-reusable-option-lists).
 - **Fabrication form configuration:** layout, required flags, visibility and consolidation of Fit-required fabrication fields. Long term / low priority. [Details](ADMIN-CONFIGURATION-IDEAS.md#fabrication-form-definitions--long-term).
 - **Makeup allowance policy:** configurable annual limit and year allocation only if policy needs to change. Current policy is 90 days, assigned by grant start year. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-policy--lower-priority).
 - **Makeup entry point:** tentative move from top navigation to the Foreman grid; only foremen should manage it. No implementation approved. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-entry-point--tentative).
-- **Additional Repair Code options:** only if administrators need new actions; adding an option alone does not define routing. Existing Grind Only / Weld Repair / Cut remain fixed otherwise. [Details](ADMIN-CONFIGURATION-IDEAS.md#remaining-fixed-business-decisions).
 - **Override preview / reason-screen wording:** an earlier request mentioned wording, but the remaining exact changes are unspecified. Revisit only on a specific request; see the previous-request note below.
 
 ## Mockup scope

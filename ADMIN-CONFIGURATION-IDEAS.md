@@ -31,7 +31,7 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 ### Remaining fixed business decisions
 
 - Repair thickness confirmations are configured through the existing Signoff Type Form; no separate limits table remains proposed for the current scope.
-- Repair Code options in `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Keep these fixed unless administrators need additional actions; adding an option alone does not define its routing behavior.
+- Repair Code options currently come from `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are agreed deferred scope below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
 - Excavation persona selection is now configured through Routing Settings Persona rules.
 - PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
 
@@ -50,17 +50,9 @@ Before delivery, verify saved settings affect actual execution and the routing p
 
 ## Signoff field catalog and reusable option lists
 
-Under discussion. Signoff Type Forms already configure which existing fields appear, their layout, and their conditions. The field catalog itself remains code-defined in `src/app/weld-record/signoff-definition/field-catalog.ts`.
+Agreed boundary: the field catalog remains code controlled. New fields, their stable identities, data types, mappings and specialized behavior require code. Creating arbitrary fields through admin configuration is not planned.
 
-Possible extensions:
-
-- Maintain ordinary field definitions (label, control type, unit, help text) through admin configuration.
-- Create new ordinary fields and then select them in Signoff Type Forms.
-- Maintain other reusable option lists where Weld Record owns those values. Weld Colors is implemented below; Backing Ring Type is likely externally owned.
-
-Specialized fields such as GWP/WTN, Qualification Check, References, and Affected Item have dedicated behavior. Editing a field definition does not create new workflow behavior or integrations. Keep their behavior in code unless a separate requirement justifies configuration.
-
-Shared engineering reference lists used by Weld Record may warrant future coordination with their owning system; no Weld Engineering work is proposed here.
+Signoff Type Forms continues to select existing fields and configure layout, visibility, required conditions and supported behaviors. Selected option lists on existing fields may be admin maintained where appropriate. Weld Colors is complete; admin-defined Repair Codes are agreed scope below. Other option lists need an individual decision.
 
 ## Fabrication form definitions — long term
 
@@ -120,11 +112,13 @@ Complete: administrators can create ordinary inserted definitions, configure Typ
 See [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md) for the required admin capabilities, insertion model, lifecycle boundaries, potential separate NQC Excavation NDT for indicators 1/2, implementation packages and verification. Packages 1-4 are implemented; stopped for review.
 
 
-## Candidate Repair action configuration — discussion only
+## Repair Code configuration — agreed scope
 
-A potential extension would maintain Repair Code options with stable IDs, labels and active/inactive status, then use the existing ordered Repair destination rules and Type Form conditions to define their behavior. Ordinary actions could request an additional configured inspection or engineering review using existing destinations. The actual action names and intended routes need to be specified before implementation.
+Allow administrators to define Repair Code choices, then use those choices in the existing Signoff Type Form conditions and ordered Repair destination rules. Reuse the existing Repair Code field and configuration owners; do not introduce arbitrary fields or a second routing engine. This scope is agreed but implementation has not started.
 
-Retain the existing Grind Only, Weld Repair and Cut identities. Cut has specialized fabrication/reset/Refit behavior; creating a similarly named option must not acquire that behavior implicitly. New lifecycle effects need explicit code and acceptance criteria. Deactivating an option should preserve historical records and labels. This discussion does not authorize implementation.
+Use stable IDs, editable labels and active/inactive status so renames and retirement preserve stored values and History. New codes need to appear in the Repair form and existing condition editors, with saved settings driving execution and preview consistently. Define missing-rule behavior and verify save/cancel/reload before delivery.
+
+Retain the existing Grind Only, Weld Repair and Cut identities. Cut has specialized fabrication/reset/Refit behavior; creating a similarly named option must not acquire that behavior implicitly. New lifecycle effects need explicit code and acceptance criteria. Deactivating an option should preserve historical records and labels. New lifecycle mechanics are outside this configuration scope. Implement this deferred work only when requested.
 
 ## Mockup scope clarification
 
