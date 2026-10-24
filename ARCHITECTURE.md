@@ -103,6 +103,10 @@ adding a method, ask:
 
 ## Testing
 
+The remaining test work is scoped in [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md):
+prioritized scenarios, acceptance criteria, baseline measurements and a file-level inventory.
+This is a deferred backlog; implement one package at a time when requested.
+
 Karma + Jasmine (`npm test` / `npx ng test --watch=false --browsers=ChromeHeadless`), spec files colocated
 next to their source (`*.spec.ts`). The tests cover the rules: most of them are in `weld-record/services/` (routing, repairs, Cut, NDT routings in
 `signoff.service.spec.ts`), `weld-record/routing/`, `weld-record/signoff-definition/`, `data/procedures.spec.ts`, `weld-record/joint-page/rules/*.spec.ts` (one per rule file) and
