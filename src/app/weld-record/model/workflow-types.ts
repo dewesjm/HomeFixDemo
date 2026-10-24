@@ -143,6 +143,8 @@ export interface StageTemplate {
   rejectToStage?: string;
   /* role that this stage routes to */
   role?: string;
+  /* Ordered Joint Details conditions choose a persona; no match uses role. */
+  roleRules?: { when: ConditionRule; role: string }[];
   /* admin-managed signoff type options (Admin > Signoff Types By Routing) (e.g. Fit/Weld Build-Up, MT/PT) */
   typeOptions?: StageOption[];
   /* when a joint gets this step (step-conditions.ts); none = always */

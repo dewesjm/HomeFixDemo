@@ -10,6 +10,14 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-24',
+    changed: [
+      'Repair: separate thickness-exceeded confirmations for Nuclear Indicator 1 and indicators 2/3 are available in Signoff Type Forms. Their conditions select the applicable limit; either confirmation routes to the phase’s UT/RT and History records the specific limit.',
+      'Routing Settings: Persona rules select a persona from ordered Joint Details conditions. Excavation starts with NQC Inspector for Nuclear Indicator 1/2 and Inspector otherwise.',
+      'Signoff Types: Also signs is now labeled Additional Signoffs.',
+    ],
+  },
+  {
     date: '2026-10-23',
     added: [
       'Signoff Types: Also signs rules configure a second routing and Type to sign when a condition matches. Root starts with VT and 5X rules based on NDT Root and its successful-inspection answer. Deprogress undoes both signoffs together.',

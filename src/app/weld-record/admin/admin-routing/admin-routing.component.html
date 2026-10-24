@@ -133,7 +133,8 @@
               }
             </select>
           } @else {
-            {{ row.role }}
+            <div>{{ personaSummary(row) }}</div>
+            <button type="button" class="btn btn-ghost btn-xs" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona rules for ' + row.routing">Persona rules</button>
           }
         </td>
         <td>
@@ -343,4 +344,10 @@
       <button type="button" (click)="rejRow.set(null)">close</button>
     </form>
   </dialog>
+}
+
+@if (personaRow(); as row) {
+  @if (personaTemplate(row); as template) {
+    <app-persona-rules [routing]="template" [trade]="row.trade" (saved)="personaSaved()" (closed)="personaRow.set(null)" />
+  }
 }

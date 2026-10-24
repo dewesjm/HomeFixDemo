@@ -55,7 +55,7 @@ export const showsReferences = (step: StepRef) => definitionHas(step, 'reference
    Decision/Type aren't in here because Correct never touches
    `result`/`inspectionType`/`signoffType` at all -- only `inputs`/`signoffInputs`. */
 export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
-  repair: ['repairType', 'allowableThicknessExceeded'],
+  repair: ['repairType', 'allowableThicknessExceededN1', 'allowableThicknessExceededN23'],
   'fitup-insp': ['releaseToWelding'],
   fit: ['deferTack'],
 };

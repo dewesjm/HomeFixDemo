@@ -55,7 +55,7 @@ export class AdminRoutingSignoffTypesComponent {
     downloadCsv('routing-signoff-types', [
       { header: 'Type', value: (r: TypeRow) => r.label },
       { header: 'Signs routing', value: (r: TypeRow) => this.signsStepLabel(r) },
-      { header: 'Also signs', value: (r: TypeRow) => this.alsoSignsLabel(r) },
+      { header: 'Additional Signoffs', value: (r: TypeRow) => this.alsoSignsLabel(r) },
     ], this.table.sorted());
   }
 

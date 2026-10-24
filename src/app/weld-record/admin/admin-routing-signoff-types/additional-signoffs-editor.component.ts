@@ -11,7 +11,7 @@ import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-ty
   template: `
     @for (rule of rules(); track $index; let i = $index) {
       <div class="border border-base-300 rounded p-2 mb-2">
-        <label>Also signs routing
+        <label>Additional routing to sign
           <select class="select select-sm select-bordered" [ngModel]="rule.stepId" (ngModelChange)="patch(i, { stepId: $event })">
             <option value="">Select routing…</option>
             @for (routing of routings(); track routing.id) { <option [value]="routing.id">{{ routing.label }}</option> }

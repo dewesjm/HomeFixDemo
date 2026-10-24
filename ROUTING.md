@@ -15,7 +15,7 @@ Last updated 2026-10-23.
 - A joint's routing is an ordered list of routings. The **current routing** is the first required routing that isn't signed off yet.
 - Routings are signed in order. A routing can't be signed until every required routing before it is signed.
 - Each routing is signed by one role (Fitting, Welding, Foreman, Inspector and so on), its **Persona** in Admin > Routing Settings.
-- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Added routings and remaps Inspector to NQC Inspector on N Ind 1 or 2 joints.
+- **NQC rows:** Fit-Up Insp and every NDT routing have two rows in Routing Settings: the NQC row (for example **NQC Root NDT 5X/VT**), included when Nuclear Indicator is 1 or 2 and signed by the **NQC Inspector**, and the regular row, included when it isn't. A joint gets one of the two. Both have the same **Display Name** (Root NDT 5X/VT), so the joint and its routing bar look the same either way; only who signs differs. Each NQC NDT row also has its own Signoff Types By Routing row and starts with the regular row's reject rules. Excavation NDT is in Added routings and starts with a Persona rule selecting NQC Inspector on N Ind 1 or 2 joints, Inspector otherwise.
 - **Nothing is ever unsigned or reopened**. When something sends the joint back (a failed inspection, a Repair choice, a Cut), the **current routing is set back** to that routing and the joint proceeds along the path as normal from there: every routing from that point on comes up blank and is signed again as a new signoff. Earlier signoffs stay exactly as they were in the records and History. This applies to every current and future "goes back to" rule unless it says otherwise. Going back to Fit or earlier also blanks the fit-up (fabrication) data. Work History gets one row, "<Routing> — Routed back to <routing>", which keeps the fit-up data it blanked.
 - Every signoff is kept as a record, including ones on routings the joint later went back past, or reversed by Deprogress. Nothing is deleted.
 - **Deprogress** (Work History) reverses the joint's most recent signoff and **everything that signoff did**: a Repair it added, Repair #, a route-back, a Cut (earlier signoffs, fit-up data and Refit # come back), Defer Tack and so on. The deprogressed routing and every routing after it come up blank. A comment is required. There is no "reopen": the only way back is Deprogress or a route-back.
@@ -77,7 +77,7 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 - **Type is never pre-filled:** every inspection routing's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
 - **Valid values:** NDT Root, NDT Each Layer and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
-- **Root inspection question:** when NDT Root is VT or 5X (Show when on Admin > Signoff Type Forms, Root), both the question and its answer choices name that method. Answering Yes also signs the corresponding Root inspection as SAT when Root is signed, using the matching Also signs rule on Admin > Signoff Types. The rules select VT for NDT Root VT and 5X for NDT Root 5X, including NQC rows. Answering alone signs nothing.
+- **Root inspection question:** when NDT Root is VT or 5X (Show when on Admin > Signoff Type Forms, Root), both the question and its answer choices name that method. Answering Yes also signs the corresponding Root inspection as SAT when Root is signed, using the matching Additional Signoffs rule on Admin > Signoff Types. The rules select VT for NDT Root VT and 5X for NDT Root 5X, including NQC rows. Answering alone signs nothing.
 
 ## Added routings and relative rule targets
 
@@ -105,7 +105,7 @@ When the Repair routing is signed, where the joint goes depends on what was chos
 | **Weld Repair** | An **Excavation NDT** routing is added right after the Repair (see below) |
 | **Cut** | The joint starts over from Fit (see below) |
 
-**Allowable Thickness** is shown on the Repair routing: 3/8" when the Nuclear Indicator is 1, and 3/16" when it's 2 or 3.
+**Allowable thickness confirmations** are two separate checkbox fields on the Repair Signoff Type Form: 3/8 inch or 20% of material thickness (whichever is less) for Nuclear Indicator 1, and 3/16 inch or 20% (whichever is less) for indicators 2/3. Their editable Show when conditions select the applicable indicator group and require a rejecting-phase RT/UT routing. Each field records its own limit wording in History. Either confirmation matches a Repair Then go to rule for the rejecting phase’s UT/RT before the Repair Code rules. The app does not calculate measured thickness against these limits.
 
 ### Excavation NDT (after a Weld Repair)
 
@@ -220,4 +220,13 @@ live routing. The old NDT method-filter helpers and the hardcoded return-to-5X o
 
 ## Additional signoffs
 
-Admin > Signoff Types keeps Signs routing and adds Also signs rules. Each additional rule selects a routing, the inspection/signoff Type to record there, and an AND/OR condition using the existing condition editor. Matching rules sign eligible later required unsigned routings already on the joint; unavailable Types and missing targets are ignored. No intervening routing is skipped. Rejects, route-backs, and accepted deviations entering Engineering Hold do not apply additional signoffs. Additional signoffs create their own History entries and share the originating signoff's Deprogress action. Existing field values on the additional routing are retained; missing procedure or inspection data is not invented.
+Admin > Signoff Types keeps Signs routing and adds Additional Signoffs rules. Each additional rule selects a routing, the inspection/signoff Type to record there, and an AND/OR condition using the existing condition editor. Matching rules sign eligible later required unsigned routings already on the joint; unavailable Types and missing targets are ignored. No intervening routing is skipped. Rejects, route-backs, and accepted deviations entering Engineering Hold do not apply additional signoffs. Additional signoffs create their own History entries and share the originating signoff's Deprogress action. Existing field values on the additional routing are retained; missing procedure or inspection data is not invented.
+
+
+## Conditional routing personas
+
+Routing Settings provides **Persona rules** beside each routing's base Persona, including Added routings. Ordered rules use Joint Details conditions; the first match chooses the persona, otherwise the base Persona applies. New numbered routings, Repair rounds, Excavation NDT rounds and Engineering Holds use these settings. Existing routing instances retain their recorded persona; newly rebuilt routings use current settings.
+
+Excavation starts with one rule: Nuclear Indicator 1 or 2 selects NQC Inspector, with Inspector as the base fallback. Removing its rules removes that automatic remap. Persona rules are included in Routing Settings export.
+
+The Signoff Types table calls its conditional additional-signoff rules **Additional Signoffs**. These sign eligible additional routings with the main signoff when conditions match.

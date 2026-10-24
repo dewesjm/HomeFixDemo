@@ -4,11 +4,13 @@ Weld Record ideas and deferred requirements. Nothing here queues implementation.
 
 Outstanding items are indexed in [Tasks.md](Tasks.md); keep that master backlog current when these detailed notes change.
 
-## Allowable repair thickness
+## Implemented: separate repair thickness confirmations
 
-A candidate for an engineering-owned admin table. `allowableThicknessAmount()` in `src/app/weld-record/routing/added-steps.ts` currently selects 3/8 inch for Nuclear Indicator 1 and 3/16 inch otherwise, with the text "or 20% of material thickness, which is less". Indicators 2 and 3 intentionally share the same rule.
+Repair's Signoff Type Form includes two distinct checkbox fields. Indicator 1 uses the 3/8 inch or 20% limit; indicators 2/3 use the 3/16 inch or 20% limit, whichever is less. Editable Show when conditions select the group and require the phase's RT/UT routing. Separate recorded fields retain the confirmed limit in History; either checkbox routes via the existing Then go to rules. This replaces the proposed separate limits table for the current scope. No automatic measured-thickness calculation is included.
 
-Potential configuration: Nuclear Indicator, absolute thickness limit, percentage limit, and explanatory text. Review the intended values before implementing. The current value is guidance displayed beside the exceeded checkbox; making it configurable does not by itself add an automatic thickness calculation.
+## Implemented: conditional routing personas
+
+Routing Settings has ordered Persona rules using Joint Details conditions, with the base Persona as fallback. Excavation starts with NQC Inspector for indicators 1/2, Inspector otherwise. This replaces the fixed role remap. New/rebuilt stages use current configuration; existing stages keep their persona.
 
 ## Repair and Excavation NDT configuration follow-up
 
@@ -28,15 +30,15 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 
 ### Remaining fixed business decisions
 
-- Allowable repair thickness and percentage guidance: see Allowable repair thickness above. Indicators 2 and 3 share the same rule. This is displayed guidance, not an automatic measured-thickness calculation.
+- Repair thickness confirmations are configured through the existing Signoff Type Form; no separate limits table remains proposed for the current scope.
 - Repair Code options in `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Keep these fixed unless administrators need additional actions; adding an option alone does not define its routing behavior.
-- Excavation persona remapping in `routing/added-steps.ts`: configured Inspector becomes NQC Inspector for Nuclear Indicator 1 or 2.
+- Excavation persona selection is now configured through Routing Settings Persona rules.
 - PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
 
 ### Recommended scope and configuration clarity
 
-1. Add a small engineering-owned Repair limits table for Nuclear Indicator, absolute limit and percentage, extending the guidance already described above.
-2. Make Excavation persona selection conditional through the existing configuration concern, avoiding an overlapping editor.
+1. Complete: separate repair thickness confirmation fields in Signoff Type Forms.
+2. Complete: conditional persona selection in Routing Settings.
 3. Replace the specific PT-to-5X marker with general inspection-context conditions usable by the existing routing rule editor.
 4. Add a plain-language summary beside Repair and Excavation configuration, showing the effective path and identifying where Type exceptions and forms are maintained. The main usability issue is that related settings span Routing Settings, Signoff Types By Routing and Signoff Type Forms.
 
@@ -92,7 +94,7 @@ Admin > Weld Colors maintains a single Color field. Backing Ring Type is likely 
 
 ## Implemented: additional signoffs
 
-Signoff Types supports conditional Also signs rules. Root's question and answer choices follow NDT Root VT or 5X, and the matching rule signs that inspection with Root. See ROUTING.md for behavior.
+Signoff Types supports conditional Additional Signoffs rules. Root's question and answer choices follow NDT Root VT or 5X, and the matching rule signs that inspection with Root. See ROUTING.md for behavior.
 
 ## Export audit — identified gaps
 
@@ -100,3 +102,13 @@ Signoff Types supports conditional Also signs rules. Root's question and answer 
 - Signoff Type Forms exports Type and field names, but omits expanded conditions and behaviors.
 
 These findings are recorded for reference; no implementation is queued.
+
+
+## Generic inspection Type exceptions — under discussion
+
+Replace the Excavation-specific exception list with a shared list selecting routing, original Type, replacement Type and conditions. Keep Type source (configured options or rejecting inspection) per routing. A shared resolver must honor enabled Types and work consistently for ordinary NDT, Excavation, routing preview and repair returns. This is follow-up scope, not an implementation queue.
+
+
+## User-defined Added routings — scope not agreed
+
+Added routings currently edits the fixed runtime types Repair, Excavation NDT and Engineering Hold. Add routing creates a regular numbered routing, not another runtime type. Supporting arbitrary added routings needs creation UI, insertion targets, Type/form setup and lifecycle/identity rules; editing existing runtime routing rules does not provide this capability.

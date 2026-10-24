@@ -162,11 +162,11 @@ export function seededWorkflow(job: Job): JobWorkflow {
     const result: StageResult = i === ptHoldAt || i === repairAt ? 'unsat' : 'sat';
     return sign(s, inputs, signoffInputs, inspectionType, result, who);
   });
-  if (holdAt >= 0) seededDeviation(wf, holdAt, t + (5 + Math.floor(rand() * 30)) * MIN);
+  if (holdAt >= 0) seededDeviation(wf, job, holdAt, t + (5 + Math.floor(rand() * 30)) * MIN);
   if (ptHoldAt >= 0) {
     const st = wf.stages[ptHoldAt];
     const rule = DEFAULT_REJECT_RULES[st.id][0];
-    wf.stages = insertEngineeringHold(wf.stages, st.id, rejectHoldReason(st, rule));
+    wf.stages = insertEngineeringHold(wf.stages, st.id, rejectHoldReason(st, rule), job);
   }
   if (repairAt >= 0) seededRepair(wf, job, repairAt, repairSigned, sign, () => {
     t += (30 + Math.floor(rand() * 240)) * MIN;
@@ -185,14 +185,14 @@ function seededRepair(wf: JobWorkflow, job: Job, idx: number, signed: boolean, s
   wf.repairNumber = '01';
   if (signed) {
     const who = nextSigner();
-    repair = sign(repair, { ...repair.inputs, repairType: 'weld-repair', allowableThicknessExceeded: '' }, {}, repair.inspectionType, 'sat', who);
+    repair = sign(repair, { ...repair.inputs, repairType: 'weld-repair', allowableThicknessExceededN1: '', allowableThicknessExceededN23: '' }, {}, repair.inspectionType, 'sat', who);
   }
   const added = signed ? [repair, excavationNdtStageFor(job, ndt.inspectionType, repair.id)] : [repair];
   wf.stages = setRoutingFrom([...wf.stages.slice(0, idx + 1), ...added, ...wf.stages.slice(idx + 1)], repair.id);
 }
 
 /* a seeded joint's accepted deviation on stage `idx` and the Engineering Hold it put the joint on */
-function seededDeviation(wf: JobWorkflow, idx: number, t: number) {
+function seededDeviation(wf: JobWorkflow, job: Job, idx: number, t: number) {
   const s = wf.stages[idx];
   const item: DeviationItem = {
     kind: 'out-of-range', label: labelFor(s, 'actualPhMax'), entered: s.inputs['actualPhMax'],
@@ -200,7 +200,7 @@ function seededDeviation(wf: JobWorkflow, idx: number, t: number) {
   };
   const reason = 'Reading taken after a delay; value recorded as measured.';
   const when = new Date(t).toISOString();
-  wf.stages = insertEngineeringHold(wf.stages, s.id);
+  wf.stages = insertEngineeringHold(wf.stages, s.id, '', job);
   const holdStageId = wf.stages[idx + 1].id;
   wf.deviations = [{ id: `seed-${wf.jobId}`, stageId: s.id, stageLabel: s.label, items: [item], reason, who: wf.technician, when, status: 'open', holdStageId }];
   wf.history.push({

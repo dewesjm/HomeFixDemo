@@ -37,6 +37,7 @@ interface SerializedStage {
   required: boolean;
   rejectToStage: string;
   role?: string;
+  roleRules?: StageTemplate['roleRules'];
   includeWhen?: ConditionRule[];
   rejectRules?: RejectRule[];
   thenRules?: RejectRule[];
@@ -52,6 +53,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
     required: typeof t.required === 'function' ? true : t.required,
     rejectToStage: t.rejectToStage ?? '',
     role: t.role ?? '',
+    roleRules: t.roleRules ?? [],
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
     thenRules: t.thenRules ?? [],
@@ -65,7 +67,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return {
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
-    role: s.role ?? '', includeWhen: s.includeWhen,
+    role: s.role ?? '', roleRules: s.roleRules ?? builtIn?.roleRules ?? [], includeWhen: s.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,

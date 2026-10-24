@@ -1,3 +1,5 @@
+import { isRoutingLockedField } from '../../signoff-definition/stage-rules';
+import { snapshotInputs } from '../../signoff-definition/stage-display';
 import { formInputFields, formSignoffFields } from '../../signoff-definition/form-fields';
 import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
@@ -83,13 +85,34 @@ describe('joint-form stage-form', () => {
     }
   });
 
+  for (const nInd of ['1', '2', '3']) {
+    it(`shows and records the distinct repair limit for indicator ${nInd}, with editable form conditions`, () => {
+      const j = job({ nInd, rtRoot: '360' });
+      const ctx = ctxFor(j);
+      const repair = stageFromTemplate(nextRepairStage([], j), { originPhase: 'root' });
+      const key = nInd === '1' ? 'allowableThicknessExceededN1' : 'allowableThicknessExceededN23';
+      const fields = visibleStageFields(repair, ctx);
+      expect(fields.map(f => f.key)).toEqual(['repairType', key]);
+      expect(fields.find(f => f.key === key)!.label).toContain(nInd === '1' ? '3/8 inch' : '3/16 inch');
+      expect(isRoutingLockedField('repair-2', key)).toBeTrue();
+      const snapshot = snapshotInputs({ ...repair, inputs: { ...repair.inputs, [key]: 'yes' } }, fields, []);
+      expect(snapshot.find(input => input.label.includes(nInd === '1' ? '3/8 inch' : '3/16 inch'))?.value).toBe('Yes');
+      try {
+        const def = DEFAULT_TYPE_DEFINITIONS.find(d => d.typeId === 'repair')!;
+        setStepFieldConfig([{ ...def, fields: def.fields.map(f => f.key === key
+          ? { ...f, showIf: { all: [{ source: 'jointDetail' as const, key: 'nInd', equals: 'unknown' }] } } : f) }]);
+        expect(visibleStageFields(repair, ctx).map(f => f.key)).not.toContain(key);
+      } finally { resetStepFieldConfig(); }
+    });
+  }
+
   it('Repair and Excavation NDT rounds read their Signoff Type Form', () => {
     const j = job({ rtRoot: '360', ndtEach: 'VT' });
     const stages = buildStages(j);
     const ctx: StageFormContext = { job: j, stages, offListUnlocked: false };
     const repair2 = stageFromTemplate(nextRepairStage([{ id: 'repair' }]), { originPhase: 'root' });
     expect(repair2.id).toBe('repair-2');
-    expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType', 'allowableThicknessExceeded']);
+    expect(visibleStageFields(repair2, ctx).map(f => f.key)).toEqual(['repairType', 'allowableThicknessExceededN23']);
     /* "exceeded" only when the rejected phase has an RT/UT step */
     expect(visibleStageFields({ ...repair2, inputs: { originPhase: 'layer' } }, ctx).map(f => f.key)).toEqual(['repairType']);
 

@@ -201,8 +201,16 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'repairType', label: 'Repair Code', type: 'select', defaultRequired: true,
     options: [{ label: 'Grind Only', value: 'grind' }, { label: 'Weld Repair', value: 'weld-repair' }, { label: 'Cut', value: 'cut' }] },
   /* "exceeded" sends the joint to that phase's RT/UT, so by default it shows only when there is one */
-  { key: 'allowableThicknessExceeded', label: 'Allowable thickness exceeded - Volumetric inspection (UT/RT) is required', type: 'checkbox',
-    defaultShowIf: { all: [{ source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' }] } },
+  { key: 'allowableThicknessExceededN1', label: 'Allowable thickness of 3/8 inch or 20% of material thickness, whichever is less, has been exceeded (Nuclear Indicator 1) - Volumetric inspection (UT/RT) is required', type: 'checkbox',
+    defaultShowIf: { all: [
+      { source: 'jointDetail', key: 'nInd', equals: '1' },
+      { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' },
+    ] } },
+  { key: 'allowableThicknessExceededN23', label: 'Allowable thickness of 3/16 inch or 20% of material thickness, whichever is less, has been exceeded (Nuclear Indicators 2/3) - Volumetric inspection (UT/RT) is required', type: 'checkbox',
+    defaultShowIf: { all: [
+      { source: 'jointDetail', key: 'nInd', anyOf: ['2', '3'] },
+      { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: 'yes' },
+    ] } },
 
   /* ── Joint page ── */
   /* the joint's References (file names), the width of the form (Correct shows it on every step regardless) */

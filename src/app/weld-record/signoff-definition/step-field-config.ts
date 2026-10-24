@@ -193,7 +193,7 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
   ...NDT_TYPES,
   weldType('interim'),
   weldType('final-weld'),
-  { typeId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceeded' }, { key: 'references' }, COMMENTS] },
+  { typeId: 'repair', fields: [TYPE, { key: 'repairType' }, { key: 'allowableThicknessExceededN1' }, { key: 'allowableThicknessExceededN23' }, { key: 'references' }, COMMENTS] },
   { typeId: 'review-o63', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { typeId: 'review-o04', fields: [...RECORDS_REVIEW_FIELDS, SIGNOFF_HISTORY, DECISION, COMMENTS], verifyAgainst: 'record' },
   { typeId: 'sold', fields: [] },

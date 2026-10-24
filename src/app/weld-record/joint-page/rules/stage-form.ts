@@ -5,7 +5,6 @@ import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
-import { allowableThicknessAmount } from '../../routing/added-steps';
 import { rtDegreeRequired } from '../../routing/built-in-step-rules';
 import { evaluateCondition, conditionClauses } from '../../signoff-definition/field-conditions';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
@@ -76,9 +75,6 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
   if (f.key === 'degreeRt') {
     const required = rtDegreeRequired(job, stage);
     return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
-  }
-  if (f.key === 'allowableThicknessExceeded' && job) {
-    return { ...f, label: `Allowable thickness of ${allowableThicknessAmount(job.nInd)} has been exceeded - Volumetric inspection (UT/RT) is required` };
   }
   /* engineering override: typed by hand, no list (a filler prepopulated from Consumable Insert keeps its droplist below) */
   if (stage.engineeringEntry && ASSIGNED_KEYS.has(f.key) && !isFilledByRule(stage, f.key)) {

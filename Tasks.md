@@ -5,8 +5,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 ## Deferred requirements and identified gaps
 
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
-- [ ] **Repair limits configuration:** indicator 1 uses its own rule; indicators 2 and 3 share a rule. Proposed table covers Nuclear Indicator, absolute limit, percentage and guidance. Current guidance uses 3/8 inch for indicator 1, 3/16 otherwise, or 20% of thickness, whichever is less. Automatic measured-thickness calculation is not agreed scope. [Details](ADMIN-CONFIGURATION-IDEAS.md#allowable-repair-thickness).
-- [ ] **Remaining Repair / Excavation configuration:** review configurable Inspector/NQC persona selection, general original/performed inspection facts replacing the PT-to-5X marker, and a readable summary of the effective path and related settings. Repair limits above are part of this follow-up, not a duplicate project. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
+- [ ] **Remaining Repair / Excavation configuration:** review general original/performed inspection facts replacing the PT-to-5X marker and a readable summary of the effective path and related settings. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 
@@ -23,6 +22,10 @@ Implement one package at a time only when requested, commit and stop for review.
 - [ ] **7. App, storage and display integration:** persistence/migrations/failures, simulated sync, search/assignments, Makeup with its switch off, navigation/themes/banners/links, update prompts and deployment smoke checks.
 
 ## Ideas requiring a decision before implementation
+
+- **User-defined Added routings:** the section currently edits only the built-in Repair, Excavation NDT and Engineering Hold runtime types. Add routing creates a regular numbered routing; there is no create-added-routing action. A future extension would need insertion targets, Type/form setup, identity and lifecycle rules. Scope not yet agreed.
+
+- **Generic Type Exceptions:** replace the Excavation-specific exception section with a shared per-routing exception list. Keep Type source per routing; apply replacement rules consistently to enabled options, previews and repair returns. Scope discussed; implementation not requested.
 
 - **Ordinary signoff field catalog and reusable option lists:** admin-managed labels, controls, units, help text, new ordinary fields and locally owned options. Under discussion; specialized behavior stays in its code owner. Weld Colors is complete. [Details](ADMIN-CONFIGURATION-IDEAS.md#signoff-field-catalog-and-reusable-option-lists).
 - **Fabrication form configuration:** layout, required flags, visibility and consolidation of Fit-required fabrication fields. Long term / low priority. [Details](ADMIN-CONFIGURATION-IDEAS.md#fabrication-form-definitions--long-term).
@@ -41,6 +44,8 @@ Explicit prototype boundaries and source caveats, captured for visibility. Each 
 - **Engineering/source-data review:** material-classification seeds are explicitly unreviewed; engineering notes use placeholder references until real notes are wired up. Invented seed codes/procedures/defects need authoritative production data. Sources: `src/app/data/material-classification.ts`, `src/app/data/jobs.ts`, `src/app/data/procedures.ts` and ARCHITECTURE.md.
 
 ## Completed work and deliberate switches
+
+Repair limits are separate indicator 1 and indicator 2/3 checkbox fields in Signoff Type Forms, with distinct History labels and configurable routing rules. Conditional persona rules are editable in Routing Settings; Excavation starts with NQC Inspector for indicators 1/2 and Inspector otherwise. The Signoff Types heading is Additional Signoffs.
 
 Groups export was dropped from scope; its missing export action is not an outstanding task.
 

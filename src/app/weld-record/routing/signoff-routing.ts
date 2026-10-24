@@ -106,7 +106,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   const executeTarget = (destination: string, reason = '') => {
     const currentIdx = stages.findIndex(s => s.id === stageId);
     if (destination === ENGINEERING_HOLD_TARGET) {
-      stages = insertEngineeringHold(stages, stageId, reason);
+      stages = insertEngineeringHold(stages, stageId, reason, job);
       reasons.push('an Engineering Hold is added');
       return;
     }
@@ -177,7 +177,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
 
   /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */
   if (engineeringHold) {
-    stages = insertEngineeringHold(stages, recordedId);
+    stages = insertEngineeringHold(stages, recordedId, '', job);
     reasons.push('a deviation was accepted, so the joint goes to Engineering Hold');
   }
 

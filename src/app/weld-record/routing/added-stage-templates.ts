@@ -12,12 +12,14 @@ export const ENGINEERING_HOLD_STAGE: StageTemplate = {
 
 export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
   { ...REPAIR_STAGE, thenRules: [
-    { when: [{ field: 'self.allowableThicknessExceeded', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' },
+    { when: [{ field: 'self.allowableThicknessExceededN1', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' },
+    { when: [{ field: 'self.allowableThicknessExceededN23', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['grind'] }], to: 'rejecting-ndt' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['cut'] }], to: 'fit' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['weld-repair'] }], to: 'add-excavation-ndt' },
   ] },
   { id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
+    roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], role: 'NQC Inspector' }],
     rejectToStage: 'own-repair', thenRules: [
       { when: [{ field: 'self.typeChangedFromPtTo5x', op: 'is', values: ['yes'] }], to: 'rejecting-vt5x' },
       { when: [], to: 'rejecting-ndt' },

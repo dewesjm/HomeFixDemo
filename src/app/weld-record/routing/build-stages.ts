@@ -1,4 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
+import { routingRole } from './routing-role';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
@@ -22,7 +23,7 @@ export function buildStages(job: Job): WorkflowStage[] {
       : typeof t.required === 'function' ? t.required(job) : t.required;
     const typeOptions = signoffTypeOptions(t.id, job) ?? t.typeOptions;
     const inputs: Record<string, string> = startsReleasedToWelding(t.id) ? { releaseToWelding: 'yes' } : {};
-    const role = closesJoint(t.id) ? closingRole(hasO63Data) : (t.role ?? '');
+    const role = closesJoint(t.id) ? closingRole(hasO63Data) : routingRole(t, job);
     return {
       id: t.id,
       /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */

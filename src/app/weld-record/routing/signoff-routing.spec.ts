@@ -37,6 +37,19 @@ describe('Added routing table decisions', () => {
   it('excludes added templates from every new joint', () => {
     expect(wf.stages.some(s => ['repair', 'excavation-ndt', 'engineering-hold'].includes(s.id))).toBeFalse();
   });
+  for (const nInd of ['1', '2', '3']) {
+    it(`routes the indicator ${nInd} thickness confirmation to UT/RT before the Repair Code`, () => {
+      job.nInd = nInd;
+      job.rtRoot = '360';
+      wf = newWorkflow(job);
+      repair(`${nInd === '3' ? '' : 'nqc-'}root-ndt-mtpt`);
+      const key = nInd === '1' ? 'allowableThicknessExceededN1' : 'allowableThicknessExceededN23';
+      sign('repair', { inputs: { ...stage(wf, 'repair').inputs, repairType: 'cut', [key]: 'yes' } });
+      expect(activeStageId(wf.stages)).toBe(`${nInd === '3' ? '' : 'nqc-'}root-ndt-utrt`);
+      expect(wf.stages.some(s => s.id === 'excavation-ndt')).toBeFalse();
+    });
+  }
+
   it('an edited Repair rule changes the destination for numbered rounds', () => {
     repair();
     updateStageTemplate(job.trade, 'repair', { thenRules: [{ when: [], to: 'tack' }] });

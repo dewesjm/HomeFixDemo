@@ -2,6 +2,7 @@
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in step-ids.ts. */
 import { getAddedTemplate } from './stage-templates';
+import { routingRole } from './routing-role';
 import { Job } from '../../data/jobs';
 import { RejectRule, describeClauses, stageConditionFields } from './step-conditions';
 import { StageTemplate, WorkflowStage } from '../model/workflow-types';
@@ -12,20 +13,11 @@ import { excavationTypeOptions, signoffTypeOptions } from '../signoff-definition
 
 /* ── Repair ── */
 
-/* Repair's allowable thickness depends on the job's Nuclear Indicator (see the nInd tooltip,
-   joint-details.component.ts's N_IND_MEANINGS: '1' = N 250-1500-1, '2' = N TP278, '3' = Non).
-   '2' (TP278) and '3' (Non) share the same limit. Shown in the
-   "exceeded" checkbox's label (weld-record/joint-page/rules/stage-form.ts stageFieldOptions). */
-export function allowableThicknessAmount(nInd: string): string {
-  const inches = nInd === '1' ? '3/8' : '3/16';
-  return `${inches} inch or 20% of material thickness, which is less`;
-}
-
 /* every NDT UNSAT adds a new Repair round, with no limit */
 export function nextRepairStage(stages: { id: string }[], job?: Job): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job) };
+  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job), role: job ? routingRole(getAddedTemplate('repair'), job) : getAddedTemplate('repair').role };
 }
 
 /* ── Excavation NDT ── */
@@ -43,12 +35,9 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair', 
   };
 }
 
-/* Excavation NDT for `repairId`, its Type droplist offering only the one resolved method (still
-   blank until picked); the Inspector role gets the same NQC Inspector remap buildStages() gives every
-   other NDT step, since this one is built at runtime */
+/* Runtime Excavation uses its saved persona conditions and resolved inspection choices. */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
-  const configured = getAddedTemplate('excavation-ndt').role ?? 'Inspector';
-  const role = configured === 'Inspector' && (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : configured;
+  const role = routingRole(getAddedTemplate('excavation-ndt'), job);
   return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId, job)), role };
 }
 
@@ -71,11 +60,12 @@ export function rejectHoldReason(stage: WorkflowStage, rule: RejectRule): string
 
 /* a new Engineering Hold right after `afterId`, and the current routing starts there. `reason` is
    kept on it (inputs.holdReason) when no deviation explains the hold, e.g. a reject rule's */
-export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, reason = ''): WorkflowStage[] {
+export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, reason = '', job?: Job): WorkflowStage[] {
   const idx = stages.findIndex(s => s.id === afterId);
   if (idx < 0) return stages;
   const id = nextEngineeringHoldId(stages);
   const hold = stageFromTemplate({ ...getAddedTemplate('engineering-hold'), id, label: roundLabel(getAddedTemplate('engineering-hold').displayName || getAddedTemplate('engineering-hold').label, id) }, reason ? { holdReason: reason } : {});
+  if (job) hold.role = routingRole(getAddedTemplate('engineering-hold'), job);
   return setRoutingFrom([...stages.slice(0, idx + 1), hold, ...stages.slice(idx + 1)], id);
 }
 

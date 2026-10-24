@@ -1,6 +1,8 @@
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
+import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
+import { StageTemplate } from '../../model/workflow-types';
 import { isAddedTemplateId } from '../../routing/added-stage-templates';
 import { RULE_TARGETS, availableRuleTargets } from '../../routing/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -53,7 +55,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [TableToolbarComponent,
+  imports: [PersonaRulesComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -88,6 +90,10 @@ export class AdminRoutingComponent {
   private clonedRows: Record<string, RoutingRow> = {};
   private seq = 0;
 
+  personaRow = signal<RoutingRow | null>(null);
+  personaTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
+  personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.role; }
+  personaSaved() { this.rows.set(this.buildInitialRows()); }
   editingId = signal<string | null>(null);
   newRowId = signal<string | null>(null);  // highlights the newly added row
 
@@ -505,7 +511,7 @@ export class AdminRoutingComponent {
       { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
-      { header: 'Persona', value: (r: RoutingRow) => r.role }
+      { header: 'Persona', value: (r: RoutingRow) => this.personaSummary(r) }
     ], this.visibleRows());
   }
 }
