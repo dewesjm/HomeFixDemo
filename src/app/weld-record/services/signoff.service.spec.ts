@@ -319,7 +319,7 @@ describe('SignoffService', () => {
       patch(job, 'root-ndt-mtpt', { inspectionType: 'pt' });
       failNdt(job, 'root-ndt-mtpt');
       signRepair(job, 'repair', 'weld-repair');
-      patch(job, 'excavation-ndt', { result: 'sat' });
+      patch(job, 'excavation-ndt', { inspectionType: '5x', signoffType: '5x', result: 'sat' });
       service.signStage(job, 'excavation-ndt');
 
       const vt = stage(job, 'root-ndt-vt5x');

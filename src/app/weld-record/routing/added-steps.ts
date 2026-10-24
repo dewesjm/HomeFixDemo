@@ -5,11 +5,10 @@ import { getAddedTemplate } from './stage-templates';
 import { Job } from '../../data/jobs';
 import { RejectRule, describeClauses, stageConditionFields } from './step-conditions';
 import { StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { NDT_KINDS, NdtKind } from './ndt';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
-import { EXCAVATION_TYPE_ROW, hasSignoffTypeRow, signoffTypeOptions } from '../signoff-definition/signoff-types';
+import { excavationTypeOptions, signoffTypeOptions } from '../signoff-definition/signoff-types';
 
 /* ── Repair ── */
 
@@ -23,10 +22,10 @@ export function allowableThicknessAmount(nInd: string): string {
 }
 
 /* every NDT UNSAT adds a new Repair round, with no limit */
-export function nextRepairStage(stages: { id: string }[]): StageTemplate {
+export function nextRepairStage(stages: { id: string }[], job?: Job): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id) };
+  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job) };
 }
 
 /* ── Excavation NDT ── */
@@ -35,17 +34,12 @@ export function nextRepairStage(stages: { id: string }[]): StageTemplate {
 
 /* Build the round's inspection shell. Its selected Type loads the shared inspection form;
    signoff-types.ts resolves the configured Type source and exceptions before insertion. */
-export function excavationNdtStage(inspectionType: string, repairId = 'repair'): StageTemplate {
-  const kind: NdtKind = (inspectionType === 'ut' || inspectionType === 'rt') ? 'utrt'
-    : (inspectionType === 'mt' || inspectionType === 'pt') ? 'mtpt'
-    : 'vt5x';
-  const k = NDT_KINDS[kind];
-  const opt = k.options.find(o => o.value === inspectionType) ?? k.options[0];
+export function excavationNdtStage(inspectionType: string, repairId = 'repair', job?: Job): StageTemplate {
   return {
     ...getAddedTemplate('excavation-ndt'),
     id: excavationIdForRepair(repairId), label: roundLabel(getAddedTemplate('excavation-ndt').displayName || getAddedTemplate('excavation-ndt').label, repairId), required: true,
     rejectToStage: getAddedTemplate('excavation-ndt').rejectToStage, decisionLabel: 'Inspection Results',
-    typeOptions: hasSignoffTypeRow(EXCAVATION_TYPE_ROW) ? [{ label: opt.label, value: opt.value }] : undefined,
+    typeOptions: excavationTypeOptions(job, inspectionType),
   };
 }
 
@@ -55,7 +49,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair'):
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
   const configured = getAddedTemplate('excavation-ndt').role ?? 'Inspector';
   const role = configured === 'Inspector' && (job.nInd === '1' || job.nInd === '2') ? 'NQC Inspector' : configured;
-  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId)), role };
+  return { ...stageFromTemplate(excavationNdtStage(inspectionType, repairId, job)), role };
 }
 
 /* ── Engineering Hold ── */
@@ -102,7 +96,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     result: null,
     rejectToStage: t.rejectToStage ?? '',
     ...typeValues(initialInspectionType(t)),
-    typeOptions: t.typeOptions ?? [],
+    typeOptions: t.typeOptions,
     signed: false,
     signedAt: null,
     decisionLabel: t.decisionLabel,

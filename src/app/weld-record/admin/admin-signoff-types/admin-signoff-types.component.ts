@@ -1,3 +1,5 @@
+import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
+import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
 /* Admin → Signoff Types By Routing: the seeded table of routing steps that have a Type droplist and
    which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
@@ -36,7 +38,7 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
   selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [
-    ExcavationTypeRulesComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    TypeEnableConditionsComponent, ExcavationTypeRulesComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './admin-signoff-types.component.html'
@@ -65,7 +67,7 @@ export class AdminSignoffTypesComponent {
   }
 
   private toRow(stepId: string, types: AvailableType[]): TypeRow {
-    return { uid: `st-${++this.seq}`, stepId, stepLabel: this.stepLabel(stepId), types: types.map(t => ({ ...t })) };
+    return { uid: `st-${++this.seq}`, stepId, stepLabel: this.stepLabel(stepId), types: structuredClone(types) };
   }
 
   private stepLabel(stepId: string): string {
@@ -85,7 +87,13 @@ export class AdminSignoffTypesComponent {
 
   /* e.g. "Interim Layer (default)" */
   optionText(t: AvailableType): string {
-    return typeLabel(t.type) + (t.default ? ' (default)' : '');
+    return typeLabel(t.type) + (t.default ? ' (default)' : '') + ' — Enable when: ' + this.enableText(t);
+  }
+
+  enableText(t: AvailableType): string {
+    return t.enableWhen?.length ? t.enableWhen.map(rule => rule.map(c =>
+      `${JOINT_DETAIL_FIELDS.find(f => f.key === c.field)?.label ?? (c.field === 'self.returningInspectionType' ? 'Returning inspection Type' : c.field)} ${c.op === 'isNot' ? 'is not' : c.op} ${c.values.map(v => v || 'Blank').join(' or ')}`
+    ).join(' AND ')).join(' OR ') : 'Always';
   }
 
   exportCsv() {
@@ -118,7 +126,7 @@ export class AdminSignoffTypesComponent {
   }
 
   startEdit(row: TypeRow) {
-    this.cloned[row.uid] = { ...row, types: row.types.map(t => ({ ...t })) };
+    this.cloned[row.uid] = { ...row, types: structuredClone(row.types) };
     this.editingUid.set(row.uid);
   }
 

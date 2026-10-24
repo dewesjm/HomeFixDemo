@@ -313,9 +313,9 @@ function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], sel
 }
 
 /* no rules = always included */
-export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, stages: StageAnswers[] = []): boolean {
+export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, stages: StageAnswers[] = [], self?: StageAnswers): boolean {
   if (!rules?.length) return true;
-  return rules.some(rule => rule.every(c => clauseMatches(c, job, stages)));
+  return rules.some(rule => rule.every(c => clauseMatches(c, job, stages, self)));
 }
 
 /* the first reject rule matching the rejected step `self`, if any */

@@ -73,6 +73,21 @@ describe('Added routing table decisions', () => {
     expect(activeStageId(wf.stages)).toBe('root-ndt-vt5x');
     expect(stage(wf, 'root-ndt-vt5x').typeOptions?.map(t => t.value)).toContain('5x');
   });
+  it('returning from Excavation cannot restore a Type removed in configuration', () => {
+    job.materialType2 = '12-SS304';
+    repair(); weldRepair(); selectExcavation('5x');
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'root-ndt-vt5x'
+      ? { ...r, types: r.types.filter(t => t.type !== '5x') } : r));
+    sign('excavation-ndt', { result: 'sat' });
+    expect(stage(wf, 'root-ndt-vt5x').typeOptions?.map(t => t.value)).toEqual(['vt']);
+  });
+  it('applies enable conditions to added Repair routings', () => {
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'repair'
+      ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
+    repair();
+    expect(stage(wf, 'repair').typeOptions).toEqual([]);
+    expect(stage(wf, 'repair').inspectionType).toBe('');
+  });
   it('an edited Excavation rule replaces the default return to rejecting NDT', () => {
     repair(); weldRepair(); selectExcavation('pt');
     updateStageTemplate(job.trade, 'excavation-ndt', { thenRules: [{ when: [], to: 'fit' }] });

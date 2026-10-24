@@ -3,7 +3,6 @@ import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { setRoutingFrom } from './current-routing';
 import { applySignedFlags, routeBack, moveRouting } from './route-changes';
-import { ndtKindOptions } from './ndt';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from './added-steps';
 import {
@@ -13,13 +12,13 @@ import {
   baseStepId,
   stepOnJoint,
 } from './step-ids';
-import { hasDecision } from '../signoff-definition/stage-rules';
+import { hasDecision, initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { getTemplates, routingTemplateId } from './stage-templates';
 import { CUT_RESTARTS_AT } from './built-in-step-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
-import { excavationTypeOptions } from '../signoff-definition/signoff-types';
+import { signoffTypeOptions, usesReturningInspectionType } from '../signoff-definition/signoff-types';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
@@ -112,7 +111,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       return;
     }
     if (destination === 'repair') {
-      const repairStage = stageFromTemplate(nextRepairStage(stages), {
+      const repairStage = stageFromTemplate(nextRepairStage(stages, job), {
         originPhase: st.inputs['originPhase'] || baseStepId(stageId).split('-ndt-')[0],
         originStageId: st.inputs['originStageId'] || stageId,
         originInspectionType: st.inputs['originInspectionType'] || st.inspectionType,
@@ -127,11 +126,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     if (destination === 'add-excavation-ndt') {
       if (!isRepairStageId(stageId)) return;
       const id = excavationIdForRepair(stageId);
-      const options = excavationTypeOptions(job, st.inputs['originInspectionType'] ?? '');
-      const resolved = options?.[0]?.value ?? '';
-      const excavation = excavationNdtStageFor(job, resolved, stageId);
+      const excavation = excavationNdtStageFor(job, st.inputs['originInspectionType'] ?? '', stageId);
+      const resolved = excavation.typeOptions?.[0]?.value ?? '';
       excavation.inputs['typeChangedFromPtTo5x'] = st.inputs['originInspectionType'] === 'pt' && resolved === '5x' ? 'yes' : '';
-      excavation.typeOptions = options;
       if (stages.some(s => s.id === id)) stages = stages.map(s => s.id === id ? excavation : s);
       else stages = [...stages.slice(0, currentIdx + 1), excavation, ...stages.slice(currentIdx + 1)];
       stages = setRoutingFrom(stages, id);
@@ -154,9 +151,13 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       stages = moved.wf.stages;
       fabricationData = moved.wf.fabricationData;
     }
-    if (destination === 'rejecting-vt5x' && st.inputs['typeChangedFromPtTo5x'] === 'yes') {
-      stages = stages.map(s => s.id === target.id ? { ...s, typeOptions: ndtKindOptions('vt5x'), inspectionType: '' } : s);
-    }
+    /* Returned inspection context is data; the target's saved Type rules decide availability. */
+    stages = stages.map(s => {
+      if (s.id !== target.id) return s;
+      const inputs = usesReturningInspectionType(s.id) ? { ...s.inputs, returningInspectionType: st.inspectionType } : s.inputs;
+      const typeOptions = signoffTypeOptions(s.id, job, inputs);
+      return { ...s, inputs, typeOptions, ...typeValues(initialInspectionType({ typeOptions })) };
+    });
   };
 
   if (st.result === 'unsat' && !rejectsToItself) {

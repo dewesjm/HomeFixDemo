@@ -1,7 +1,5 @@
 <h2 class="section-title">Signoff Types By Routing</h2>
-<p class="text-sm mb-sm">Each routing offers Types from Admin &gt; Signoff Types, which is where a new Type is added first.</p>
-<p class="text-sm mb-sm">No default: the Type starts blank and must be picked before the routing can be signed, even when
-  there is only one option. Whether Type shows at all is set on each Type's Signoff Type Form.</p>
+<p class="text-sm mb-sm">Set each routing’s available Types, enable conditions and default. No default means the inspector must pick a Type.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search routings…" addLabel="Add routing"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -55,6 +53,8 @@
                       <svg lucideTrash2 class="size-3"></svg>
                     </button>
                   </div>
+                  <app-type-enable-conditions [rules]="opt.enableWhen ?? []" [listId]="row.uid + '-' + i"
+                    (changed)="opt.enableWhen = $event" />
                 }
                 @if (row.types.length > 0) {
                   <label class="flex items-center gap-1 text-xs cursor-pointer">
@@ -72,7 +72,7 @@
                 <span class="text-sm">No options</span>
               } @else {
                 @for (opt of row.types; track $index) {
-                  <span class="badge badge-sm me-1">{{ optionText(opt) }}</span>
+                  <div class="text-sm mb-1">{{ optionText(opt) }}</div>
                 }
                 @if (!hasDefault(row)) {
                   <span class="text-sm">No default</span>

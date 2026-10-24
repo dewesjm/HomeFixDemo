@@ -201,3 +201,20 @@ When a routing has any deviation, Signoff opens an acceptance screen instead of 
 - Signing records the override in History ("Foreman Override" entry), along with any value it allowed that the WPS doesn't. It is **not** a deviation and doesn't put the joint on hold.
 
 **MCL values:** MCL 1 and MCL 2 are **STD** or **MC-I**. MC-I requires traceability (the MIC fields above); STD doesn't.
+
+## Signoff Type enable conditions
+
+Admin > Signoff Types By Routing stores an **Enable when** condition for each offered Type.
+No conditions means always enabled; any rule can match, with all its Joint Details conditions matching.
+Root, Layer and Final NDT (including NQC rows) start with conditions selecting VT unless the phase requires
+5X, 5X only for a 5X requirement, MT/PT as specified, UT for UT, and RT for a required RT degree.
+These saved conditions control Type availability instead of a separate hardcoded method filter.
+A Type whose condition does not match cannot be picked, including a configured default. No enabled
+Types leaves the routing unable to sign. Excavation NDT retains its rejecting-inspection source and
+ordered material exceptions, including the PT to 5X exception.
+
+Returning inspection Type is available in Enable when conditions. It records the inspection Type
+of the routing that sent work back. The default 5X option also enables when the returning Type is
+5X, covering the excavation material exception without overriding the configured Type list.
+Repair creation and seeded Excavation NDT use the same configured availability/source resolver as
+live routing. The old NDT method-filter helpers and the hardcoded return-to-5X option override are removed.

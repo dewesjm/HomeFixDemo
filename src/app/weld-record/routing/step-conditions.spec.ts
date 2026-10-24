@@ -1,7 +1,6 @@
 import { buildStages } from './build-stages';
 import { applySignedFlags } from './route-changes';
 import { updateStageTemplate, reorderStageTemplates, getTemplates } from './stage-templates';
-import { jobNdtSteps } from './ndt';
 import { fabricationEditable, activeStageId } from './current-routing';
 import { JOBS, Job } from '../../data/jobs';
 import { getJointDesign } from '../../data/joint-designs';
@@ -10,11 +9,18 @@ import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswe
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
 function oldStepIds(job: Job, ids: string[]): string[] {
-  const ndt = jobNdtSteps(job);
+
   const hasO63 = Boolean(job.sfff || job.dssAaa || job.ss);
   return ids.filter(id => {
     const m = /^(root|layer|final)-ndt-(\w+)$/.exec(id);
-    if (m) return ndt[m[1] as 'root'].some(st => st.kind === m[2]);
+    if (m) {
+      const phase = m[1];
+      const ndt = (phase === 'root' ? job.ndtRoot : phase === 'layer' ? job.ndtEach : job.ndtFinal).trim().toUpperCase();
+      const rt = phase === 'root' ? job.rtRoot : phase === 'final' ? job.rtFinal : '';
+      if (m[2] === 'vt5x') return phase !== 'layer' || ['VT', '5X'].includes(ndt);
+      if (m[2] === 'mtpt') return ['MT', 'PT', 'MT/PT'].includes(ndt);
+      return ndt === 'UT' || (!!rt && rt !== 'NA');
+    }
     if (id === 'pre-fit') {
       const jd = getJointDesign(job.jointDesign);
       return job.nInd === '1' || job.nInd === '2' || !!jd?.requiresConsumableInsert || !!jd?.requiresBackingRing;

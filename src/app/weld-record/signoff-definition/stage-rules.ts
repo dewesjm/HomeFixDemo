@@ -26,7 +26,7 @@ export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'sig
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
    only one option */
 export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'typeOptions'>): boolean {
-  return !!stage.typeOptions?.length && !stage.typeOptions.some(o => o.default);
+  return stage.typeOptions !== undefined && !stage.typeOptions.some(o => o.default);
 }
 
 /* a step's Type is stored twice: inspectionType (what the joint page shows and NDT rules read) and

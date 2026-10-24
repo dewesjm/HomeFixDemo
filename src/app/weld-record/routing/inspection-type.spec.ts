@@ -28,4 +28,10 @@ describe('NDT Type is never pre-filled', () => {
     expect(s.typeOptions?.map(o => o.value)).toEqual(['rt']);
     expect(s.inspectionType).toBe('');
   });
+  it('seed and live Excavation construction share the configured material exception', () => {
+    const s = excavationNdtStageFor(job({ materialType1: '12-SS304' }), 'pt', 'repair');
+    expect(s.typeOptions?.map(o => o.value)).toEqual(['5x']);
+    expect(s.inspectionType).toBe('');
+  });
+
 });

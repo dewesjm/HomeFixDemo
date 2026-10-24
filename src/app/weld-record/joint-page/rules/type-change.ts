@@ -9,7 +9,7 @@ export function typeChange(_trade: Job['trade'], stage: WorkflowStage, value: st
   return {
     ...typeValues(value),
     inputs: isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)
-      ? Object.fromEntries(['originPhase', 'originStageId', 'originInspectionType', 'typeChangedFromPtTo5x'].filter(k => k in stage.inputs).map(k => [k, stage.inputs[k]])) : {},
+      ? Object.fromEntries(['originPhase', 'originStageId', 'originInspectionType', 'typeChangedFromPtTo5x'].filter(k => k in stage.inputs).map(k => [k, stage.inputs[k]])) : ('returningInspectionType' in stage.inputs ? { returningInspectionType: stage.inputs['returningInspectionType'] } : {}),
     signoffInputs: {},
   };
 }

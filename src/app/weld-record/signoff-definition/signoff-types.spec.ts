@@ -1,3 +1,5 @@
+import { JOBS } from '../../data/jobs';
+import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
 import { excavationNdtStage, nextRepairStage } from '../routing/added-steps';
 import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions } from './signoff-types';
@@ -6,6 +8,26 @@ import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signof
 
 describe('Signoff Types By Routing', () => {
   afterEach(() => { localStorage.removeItem(STORAGE.signoffTypes); localStorage.removeItem(STORAGE.routingSignoffTypes); });
+
+  it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
+    const job = { ...JOBS[0], ndtFinal: 'VT' };
+    for (const id of ['final-ndt-vt5x', 'nqc-final-ndt-vt5x']) {
+      expect(signoffTypeOptions(id, job)?.map(o => o.value)).toEqual(['vt']);
+      expect(signoffTypeOptions(id, { ...job, ndtFinal: '5X' })?.map(o => o.value)).toEqual(['5x']);
+    }
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'final-ndt-vt5x'
+      ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [] })) } : r));
+    expect(buildStages({ ...job, nInd: '3' }).find(s => s.id === 'final-ndt-vt5x')?.typeOptions?.map(o => o.value)).toEqual(['vt', '5x']);
+  });
+
+  it('does not select a disabled default, and no enabled Types still requires a pick', () => {
+    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'fit', default: true,
+      enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
+    const stage = buildStages({ ...JOBS[0], nInd: '3' }).find(s => s.id === 'fit')!;
+    expect(stage.typeOptions).toEqual([]);
+    expect(stage.inspectionType).toBe('');
+    expect(inspectionTypeRequired(stage)).toBeTrue();
+  });
 
   it('seeds the built-in steps plus Repair and Excavation NDT', () => {
     const ids = getSignoffTypeRows().map(r => r.stepId);

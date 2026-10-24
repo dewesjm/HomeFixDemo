@@ -12,13 +12,16 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-23',
     added: [
+      'Signoff Types By Routing: each offered Type has editable Enable when conditions based on Joint Details. Inspection requirements now appear as starting conditions, including VT versus 5X and the NQC rows. A disabled default is not selected.',
       'Admin → Routing Signoff Types (new): every Type a step can be signed as, with Repeatable and Signs step. A Type is added here first, then offered on steps in Signoff Type Availability and given its fields in Signoff Type Definition. Signs step is the routing step the Type signs when it is picked on an earlier one (Final Weld picked on Layer signs Final Weld); blank means the step it is picked on.',
       'Admin → Signoff Type Definition: every Type has its own definition. VT, 5X, MT, PT, UT and RT each have one (shared by Root, Layer and Final NDT), as do Interim Layer, Weld Build-Up, Tack, Root and the others. Steps that had no Type droplist (Pre-Fit, Fit-Up Insp, Fit-Up Release, the Records Reviews, Sold) each have one Type named after them; their forms don\'t show it. Excavation NDT keeps one definition of its own for now.',
       'Admin → Signoff Type Definition: the Fields list in the edit window has a search box that narrows it to the fields whose name contains what you type.',
       'Admin → Signoff Type Definition: a required field has an "Error message" box under Required. What you type there is the error shown when the field is left empty (or a verify row is left unchecked); left blank, the standard wording is used. The main grid shows it next to Required.',
     ],
-    fixed: ['Defer Tack on Fit is a checkbox again. Required checkboxes must be checked to sign.'],
+    fixed: [
+      'Signoff Type Forms shows Conditions and Behaviors headers only within an expanded Type’s field table.','Defer Tack on Fit is a checkbox again. Required checkboxes must be checked to sign.'],
     changed: [
+      'Admin pages now include a brief explanation. Signoff Types also reminds you to update Signoff Types By Routing and Signoff Type Forms.',
       'Signoff Type Forms: removed the descriptions beneath field names in the Fields list.',
       'Signoff Type Forms labels PH/IP requirements, actuals and overrides as Number or NC so their supported values are clear.',
       'Signoff Types: Signs routing now shows Current Routing for the default, including in the edit droplist and CSV export.',

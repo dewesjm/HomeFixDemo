@@ -4,9 +4,8 @@ import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { isAddedTemplateId, getTemplates } from './stage-templates';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
-import { NdtPhase, jobNdtSteps } from './ndt';
+import { signoffTypeOptions } from '../signoff-definition/signoff-types';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { baseStepId } from './step-ids';
 import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-step-rules';
 
 export function buildStages(job: Job): WorkflowStage[] {
@@ -21,6 +20,7 @@ export function buildStages(job: Job): WorkflowStage[] {
   const toStage = (t: StageTemplate): WorkflowStage => {
     const required = usesStepAnswers(t.includeWhen) ? conditionsMatch(t.includeWhen, job)
       : typeof t.required === 'function' ? t.required(job) : t.required;
+    const typeOptions = signoffTypeOptions(t.id, job) ?? t.typeOptions;
     const inputs: Record<string, string> = startsReleasedToWelding(t.id) ? { releaseToWelding: 'yes' } : {};
     const role = closesJoint(t.id) ? closingRole(hasO63Data) : (t.role ?? '');
     return {
@@ -33,28 +33,15 @@ export function buildStages(job: Job): WorkflowStage[] {
       signoffInputs: {},
       result: null,
       rejectToStage: t.rejectToStage ?? '',
-      ...typeValues(initialInspectionType(t)),
+      ...typeValues(initialInspectionType({ typeOptions })),
       decisionLabel: t.decisionLabel ?? '',
-      typeOptions: t.typeOptions,
+      typeOptions,
       signed: false,
       signedAt: null,
     };
   };
 
-  const ndtFor = jobNdtSteps(job);
-  const phaseOf = (id: string) => /^(root|layer|final)-ndt-/.exec(baseStepId(id))?.[1] as NdtPhase | undefined;
-  const stepFor = (id: string) => {
-    const phase = phaseOf(id);
-    return phase ? ndtFor[phase].find(st => baseStepId(id) === `${phase}-ndt-${st.kind}`) : undefined;
-  };
-  return tradeStages.filter(included).map(toStage).map(s => {
-    const step = stepFor(s.id);
-    /* a step an admin rule adds without the NDT values calling for it offers every method */
-    if (!step) return s;
-    /* only the method(s) the Joint Details values allow; a default that isn't one of them leaves Type blank */
-    const typeOptions = s.typeOptions?.filter(o => step.methods.includes(o.value));
-    return { ...s, typeOptions, ...typeValues(initialInspectionType({ typeOptions })) };
-  });
+  return tradeStages.filter(included).map(toStage);
 }
 
 /* a joint with nothing signed yet; Fabrication is pre-filled for the demo */

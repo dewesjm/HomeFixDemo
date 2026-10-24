@@ -147,7 +147,7 @@ export class SignoffFormEditsService {
   /* Type: the form clears and loads the new Type's definition (typeChange), the change is recorded
      in History, and a welding form gets its assignment */
   setType(stage: WorkflowStage, value: string) {
-    if (!this.src || value === stage.signoffType) return;
+    if (!this.src || value === stage.signoffType || !stage.typeOptions?.some(o => o.value === value)) return;
     const { job } = this.src;
     this.errors.clearStageErrors(stage.id);
     const patch = typeChange(job.trade, stage, value);

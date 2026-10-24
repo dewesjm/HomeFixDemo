@@ -4,6 +4,7 @@ import { Job } from '../../data/jobs';
 import { materialClassification, MaterialFlag } from '../../data/material-classification';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
+import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
 import { NDT_KINDS } from '../routing/ndt';
 import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from './routing-signoff-types';
@@ -12,6 +13,7 @@ import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion }
 export interface AvailableType {
   type: string;
   default?: boolean;
+  enableWhen?: ConditionRule[];
 }
 
 export interface SignoffTypeRow {
@@ -30,7 +32,19 @@ const only = (type: string): AvailableType[] => [{ type, default: true }];
    (step-ids.ts) gets its own row too. */
 const ndtRows = (phase: string): SignoffTypeRow[] => (['vt5x', 'mtpt', 'utrt'] as const)
   .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)]
-    .map(stepId => ({ stepId, types: NDT_KINDS[kind].options.map(o => ({ type: o.value })) })));
+    .map(stepId => ({ stepId, types: NDT_KINDS[kind].options.map(o => ({ type: o.value, enableWhen: inspectionEnableWhen(phase, o.value) })) })));
+
+/* Default availability belongs to the routing's Type configuration, not the builder. */
+function inspectionEnableWhen(phase: string, type: string): ConditionRule[] {
+  const field = phase === 'root' ? 'ndtRoot' : phase === 'layer' ? 'ndtEach' : 'ndtFinal';
+  if (type === 'vt') return [[{ field, op: 'isNot', values: ['5X'] }]];
+  if (type === '5x') return [[{ field, op: 'is', values: ['5X'] }],
+    [{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]];
+  if (type === 'rt') return phase === 'layer'
+    ? [[{ field, op: 'is', values: ['RT'] }]]
+    : [[{ field: phase === 'root' ? 'rtRoot' : 'rtFinal', op: 'isNot', values: ['', 'NA'] }]];
+  return [[{ field, op: 'is', values: type === 'mt' ? ['MT', 'MT/PT'] : type === 'pt' ? ['PT', 'MT/PT'] : ['UT'] }]];
+}
 
 const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'pre-fit', types: only('pre-fit') },
@@ -83,11 +97,12 @@ export function hasSignoffTypeRow(stageId: string): boolean {
 
 /* a step's Type options, each with its Signoff Types name and settings; undefined when it
    has no row (no Type droplist). A Type no longer in Signoff Types is left out. */
-export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
+export function signoffTypeOptions(stageId: string, job?: Job, inputs: Record<string, string> = {}): StageOption[] | undefined {
   const id = signoffTypeRowId(stageId);
   const row = getSignoffTypeRows().find(r => r.stepId === id);
   const types = getRoutingSignoffTypes();
   const options = (row?.types ?? []).flatMap(a => {
+    if (job && !conditionsMatch(a.enableWhen, job, [], { id: stageId, signed: false, inputs, signoffInputs: {} })) return [];
     const t = types.find(x => x.value === a.type);
     return t ? [{
       label: t.label, value: t.value,
@@ -95,7 +110,13 @@ export function signoffTypeOptions(stageId: string): StageOption[] | undefined {
       ...(t.signsStep ? { signsStep: t.signsStep } : {}),
     }] : [];
   });
-  return options.length ? options : undefined;
+  return row && !row.typeSource ? options : options.length ? options : undefined;
+}
+
+/* Only routings with contextual rules retain return data in their blank form. */
+export function usesReturningInspectionType(stageId: string): boolean {
+  return getSignoffTypeRows().find(r => r.stepId === signoffTypeRowId(stageId))?.types
+    .some(t => t.enableWhen?.some(rule => rule.some(c => c.field === 'self.returningInspectionType'))) ?? false;
 }
 
 const option = (stageId: string, type: string) => signoffTypeOptions(stageId)?.find(o => o.value === type);
@@ -115,12 +136,12 @@ export function isOwnType(stageId: string, type: string): boolean {
 }
 
 /* The routing's configured Type source and first matching material exception. */
-export function excavationTypeOptions(job: Job, rejectingType: string): StageOption[] | undefined {
+export function excavationTypeOptions(job: Job | undefined, rejectingType: string): StageOption[] | undefined {
   const row = getSignoffTypeRows().find(r => r.stepId === EXCAVATION_TYPE_ROW);
   if (!row) return undefined;
-  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(EXCAVATION_TYPE_ROW);
-  const exception = row.typeExceptions?.find(r => r.from === rejectingType && (!r.materialFlag ||
+  if (row.typeSource !== 'rejecting-inspection') return signoffTypeOptions(EXCAVATION_TYPE_ROW, job);
+  const exception = job && row.typeExceptions?.find(r => r.from === rejectingType && (!r.materialFlag ||
     [job.materialType1, job.materialType2].some(code => materialClassification().some(m => m.code === code && m[r.materialFlag as MaterialFlag]))));
   const type = getRoutingSignoffTypes().find(t => t.value === (exception?.to ?? rejectingType));
-  return type ? [{ value: type.value, label: type.label }] : undefined;
+  return type ? [{ value: type.value, label: type.label }] : [];
 }

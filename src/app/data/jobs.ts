@@ -124,8 +124,8 @@ export const N_IND_MEANINGS: Record<string, string> = {
   '3': 'Non',
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
-/* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see phaseNdtSteps() in
-   weld-record/routing/ndt.ts). Blank and NA aren't valid. */
+/* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see routing inclusion conditions and Type enable conditions in
+   weld-record/routing/step-conditions.ts and signoff-definition/signoff-types.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    weld-record/routing/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import

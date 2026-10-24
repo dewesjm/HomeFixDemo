@@ -1,11 +1,12 @@
 <h2 class="section-title">Signoff Type Forms</h2>
+<p class="text-sm mb-sm">Choose each Type’s fields, rules and form layout.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search types or fields…" addLabel="Add definition"
                    (exportCsv)="exportCsv()" (add)="addRow()">
   <button type="button" class="btn btn-sm btn-ghost" (click)="resetAll()">Reset all to defaults</button>
 </app-table-toolbar>
 
-<!-- A step's row expands to one line per field, its rules stacked as Conditions | Behaviors -->
+<!-- Each Type expands to a field table with its own condition and behavior headers. -->
 <div class="overflow-x-auto">
   <table class="table table-sm">
     <thead>
@@ -13,8 +14,6 @@
         <th class="w-px"></th>
         <th appSortHeader [table]="table" field="typeLabel" label="Type" class="min-w-44"></th>
         <th>Fields</th>
-        <th>Conditions</th>
-        <th>Behaviors</th>
         <th class="w-px"></th>
       </tr>
     </thead>
@@ -29,7 +28,7 @@
             </button>
           </td>
           <td class="font-semibold">{{ row.typeLabel }}</td>
-          <td colspan="3" class="text-sm">
+          <td class="text-sm">
             @if (!row.fieldRules.length) {
               <span class="text-base-content/40">—</span>
             } @else if (open) {
@@ -52,25 +51,35 @@
           </td>
         </tr>
         @if (open) {
-          @for (f of row.fieldRules; track f.key) {
-            @for (line of f.lines; track $index; let first = $first, last = $last) {
-              <tr>
-                @if (first) {
-                  <td [attr.rowspan]="f.lines.length" colspan="2"></td>
-                  <td [attr.rowspan]="f.lines.length" class="align-top">{{ f.label }} <span class="badge badge-sm badge-ghost">{{ f.typeLabel }}</span></td>
-                }
-                <!-- a field's rule lines share one box: no line between them -->
-                <td class="align-top" [class.border-b-0]="!last">{{ line.condition }}</td>
-                <td class="align-top" [class.border-b-0]="!last">
-                  @for (b of line.behaviors; track $index) { <div>{{ b }}</div> }
-                </td>
-                @if (first) { <td [attr.rowspan]="f.lines.length"></td> }
-              </tr>
-            }
-          }
+          <tr>
+            <td colspan="4" class="p-0">
+              <table class="table table-sm w-full" [attr.aria-label]="row.typeLabel + ' field rules'">
+                <thead>
+                  <tr><th>Field</th><th>Conditions</th><th>Behaviors</th></tr>
+                </thead>
+                <tbody>
+                  @for (f of row.fieldRules; track f.key) {
+                    @for (line of f.lines; track $index; let first = $first, last = $last) {
+                      <tr>
+                        @if (first) {
+                          <td [attr.rowspan]="f.lines.length" class="align-top">{{ f.label }} <span class="badge badge-sm badge-ghost">{{ f.typeLabel }}</span></td>
+                        }
+                        <td class="align-top" [class.border-b-0]="!last">{{ line.condition }}</td>
+                        <td class="align-top" [class.border-b-0]="!last">
+                          @for (b of line.behaviors; track $index) { <div>{{ b }}</div> }
+                        </td>
+                      </tr>
+                    }
+                  } @empty {
+                    <tr><td colspan="3" class="empty">No fields configured.</td></tr>
+                  }
+                </tbody>
+              </table>
+            </td>
+          </tr>
         }
       } @empty {
-        <tr><td colspan="6" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No definitions yet.' }}</td></tr>
+        <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No types match your search.' : 'No definitions yet.' }}</td></tr>
       }
     </tbody>
   </table>

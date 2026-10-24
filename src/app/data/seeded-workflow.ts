@@ -179,7 +179,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
    signed it as a Weld Repair, which adds Excavation NDT with the method that failed */
 function seededRepair(wf: JobWorkflow, job: Job, idx: number, signed: boolean, sign: SignFn, nextSigner: () => string) {
   const ndt = wf.stages[idx];
-  let repair = stageFromTemplate(nextRepairStage(wf.stages), {
+  let repair = stageFromTemplate(nextRepairStage(wf.stages, job), {
     originPhase: baseStepId(ndt.id).split('-ndt-')[0], originStageId: ndt.id, originInspectionType: ndt.inspectionType,
   });
   wf.repairNumber = '01';

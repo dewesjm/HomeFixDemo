@@ -722,7 +722,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
   - Code that reads the phase or method from a routing id uses `baseStepId()`; code that jumps to a built-in routing (`${phase}-ndt-utrt`, reject targets) goes through `stepOnJoint()`, which finds whichever twin the joint has.
   - Excavation NDT's NQC Inspector role is still set in code (`excavationNdtStageFor()`).
   - **Display Name** (`StageTemplate.displayName`, Routing Settings column): `buildStages()` sets the joint's `label` to `displayName || label`, so the joint, routing bar, Pipe Welding and History show it; the Routing name (`label` on the template) is what rules and condition fields use.
-- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (`phaseNdtSteps()`/`jobNdtSteps()` in `weld-record/routing/ndt.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
+- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (routing inclusion rules in `step-conditions.ts` and Type enable rules in `signoff-definition/signoff-types.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
   - The general `job.ndt` field doesn't drive routing.
   - Root and Final, in 5X/VT, MT/PT, RT/UT order: **VT is always required**, or 5X instead when the NDT value is 5X; MT, PT or UT adds that routing offering only that method; MT/PT adds the MT/PT routing with a choice; an **RT degree** (10/100/360/60/75, not blank or NA) adds the RT/UT routing offering only RT.
   - Layer gets one routing selected by `ndtEach`: VT/5X, MT/PT or UT, with no additional VT. Blank NDT Each Layer means no Layer NDT.
@@ -797,3 +797,23 @@ Emulates an external system that sets a welding routing's **GWP, WTN, Filler Met
   - It runs through the same filter as the normal path, so N Ind./traceability-gated fields (`weldPosition`, `consumableInsertId`, `backingRingId`) stay gated.
 - **One `showIf` rule**: `showIfMet()` (`weld-record/signoff-definition/stage-display.ts`) is the only place a field's `showIf` is resolved; field visibility (`visibleStageFields()`), blanking now-hidden values (`hiddenFieldsWithValues()`) and History/Correct (`fieldsShown()`, `weld-record/signoff-definition/shown-fields.ts`) all use it. `inspectionType` and `result` live on the stage itself, not in `stage.inputs`; reading them from `stage.inputs` makes every Type-gated field (Degree of RT, Defect Code, the Penetrant fields, Weld Color) blank itself the moment it's set.
 - **Field labels in History**: a sign-off entry's `inputs` come from `snapshotInputs()` and a correction's `changes` from `labelFor(stage, key)` (both `weld-record/signoff-definition/stage-display.ts`), never from raw `stage.inputs` keys. A raw key such as `consumableInsertType` showing in History or Records Review means something bypassed them.
+
+### Signoff Type availability conditions
+
+`AvailableType.enableWhen` in `signoff-definition/signoff-types.ts` stores Joint Details rules per Type
+per routing. `signoffTypeOptions(stageId, job)` evaluates them using the routing condition engine;
+`buildStages()` uses the result, including an empty list, before choosing a default. The admin editor
+is `admin-signoff-types/type-enable-conditions.component.ts`. Excavation's Type source and material
+exceptions remain separate from ordinary Type availability.
+
+Returning inspection Type is available in Enable when conditions. It records the inspection Type
+of the routing that sent work back. The default 5X option also enables when the returning Type is
+5X, covering the excavation material exception without overriding the configured Type list.
+Repair creation and seeded Excavation NDT use the same configured availability/source resolver as
+live routing. The old NDT method-filter helpers and the hardcoded return-to-5X option override are removed.
+
+### Admin page introductions
+
+Every admin page has a brief explanation directly below its title. Keep it to one short sentence
+(or two when a related setup action matters). Signoff Types reminds admins to update Signoff Types
+By Routing and Signoff Type Forms after adding or changing Types.

@@ -375,7 +375,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job || !this.wf) return;
     if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
     const ndtStage = stepOnJoint(this.wf().stages, 'root-ndt-vt5x');
-    if (!ndtStage || ndtStage.signed) return;
+    if (!ndtStage || ndtStage.signed || !ndtStage.typeOptions?.some(o => o.value === '5x')) return;
     this.sign(ndtStage.id, this.signoffSnapshot(ndtStage));
   }
 
