@@ -132,9 +132,9 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'fillerMetalMic', label: 'Filler Metal MIC', type: 'text', defaultRequired: true,
     defaultFill: fillFromFit('consumableInsertId'), defaultDisabledIf: insertOnly },
   { key: 'consumableInsertOnly', label: 'Only Consumable Insert used as filler', type: 'checkbox' },
-  /* answering yes signs the joint's Root 5X/VT NDT too (joint page) */
-  { key: 'performed5x', label: 'Did you perform 5X inspection and was it successful?', type: 'select',
-    options: [{ label: "No I didn't perform 5X", value: 'no' }, { label: 'Yes I performed 5X and it was successful', value: 'yes' }] },
+  /* The stored key is shared by the Root VT/5X question; wording follows NDT Root. */
+  { key: 'performed5x', label: 'Did you perform the required Root inspection and was it successful?', type: 'select',
+    options: [{ label: 'No', value: 'no' }, { label: 'Yes', value: 'yes' }] },
   /* SWITCHED OFF: weld override fields. Kept in catalog so they can be re-enabled without a rewrite. */
   { key: 'overridePhMin', label: 'Override PH Min', type: 'number', allowsNc: true },
   { key: 'overridePhMax', label: 'Override PH Max', type: 'number', allowsNc: true },

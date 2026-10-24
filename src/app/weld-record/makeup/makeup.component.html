@@ -51,11 +51,13 @@
             <input type="date" class="input input-bordered input-xs" [attr.min]="newStartDate()"
                    [ngModel]="newEndDate()" (ngModelChange)="newEndDate.set($event)" />
           </td>
-          <td colspan="3">
+          <td>{{ newPersonRemaining() !== null ? 0 : '' }}</td>
+          <td [class.text-error]="newPersonRemaining() !== null && newPersonRemaining()! <= 0">
             @if (newPersonRemaining() !== null) {
-              <span class="meta" [class.text-error]="newPersonRemaining()! <= 0">{{ newPersonRemaining() }} of {{ annualDays }} days left this year</span>
+              {{ newPersonRemaining() }}
             }
           </td>
+          <td></td>
           <td>
             <div class="row-tight">
               <button type="button" class="btn btn-ghost btn-xs" (click)="saveAdd()" title="Save">

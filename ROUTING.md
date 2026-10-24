@@ -78,7 +78,7 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 - **Type is never pre-filled:** every inspection routing's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
 - **Valid values:** NDT Root, NDT Each Layer and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
-- **Root 5X question:** when NDT Root is 5X (its Show when on Admin > Signoff Type Forms, Root), the Root routing asks "Did you perform 5X inspection and was it successful?". Answering yes signs the Root 5X routing automatically when Root itself is signed.
+- **Root inspection question:** when NDT Root is VT or 5X (Show when on Admin > Signoff Type Forms, Root), both the question and its answer choices name that method. Answering Yes also signs the corresponding Root inspection as SAT when Root is signed, using the matching Also signs rule on Admin > Signoff Types. The rules select VT for NDT Root VT and 5X for NDT Root 5X, including NQC rows. Answering alone signs nothing.
 
 ## Added routings and relative rule targets
 
@@ -218,3 +218,6 @@ of the routing that sent work back. The default 5X option also enables when the 
 5X, covering the excavation material exception without overriding the configured Type list.
 Repair creation and seeded Excavation NDT use the same configured availability/source resolver as
 live routing. The old NDT method-filter helpers and the hardcoded return-to-5X option override are removed.
+
+## Additional signoffs
+Admin > Signoff Types keeps Signs routing and adds Also signs rules. Each additional rule selects a routing, the inspection/signoff Type to record there, and an AND/OR condition using the existing condition editor. Matching rules sign eligible later required unsigned routings already on the joint; unavailable Types and missing targets are ignored. No intervening routing is skipped. Rejects, route-backs, and accepted deviations entering Engineering Hold do not apply additional signoffs. Additional signoffs create their own History entries and share the originating signoff's Deprogress action. Existing field values on the additional routing are retained; missing procedure or inspection data is not invented.

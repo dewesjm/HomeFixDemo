@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
+import { LucideX, LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft, LucideChevronsUpDown, LucideChevronsDownUp } from '@lucide/angular';
 
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
@@ -25,7 +25,7 @@ import { HistoryTableState } from './history-table-state';
   imports: [
     CommonModule, FormsModule,
     TablePagerComponent, PersonSearchInputComponent, HistoryTableComponent,
-    LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft,
+    LucideX, LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft,
     LucideChevronsUpDown, LucideChevronsDownUp
   ],
   templateUrl: './work-history.component.html'
@@ -47,7 +47,6 @@ export class WorkHistoryComponent {
   table = new HistoryTableState();
 
   constructor() {
-    this.table.setPageSize(15);
     /* seed filters from url for deep links (person by name or identifier) */
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(pm => {
       this.jobQuery.set(pm.get('job') ?? '');
@@ -60,10 +59,30 @@ export class WorkHistoryComponent {
 
   choosePerson(p: Person) {
     this.person.set(p);
+    this.saveFiltersToUrl();
   }
 
   clearPerson() {
     this.person.set(null);
+    this.saveFiltersToUrl();
+  }
+
+  setJobQuery(value: string) {
+    this.jobQuery.set(value);
+    this.saveFiltersToUrl();
+  }
+
+  setHistoryQuery(value: string) {
+    this.table.setGlobalFilter(value);
+    this.saveFiltersToUrl();
+  }
+
+  private saveFiltersToUrl() {
+    this.router.navigate([], { relativeTo: this.route, replaceUrl: true, queryParams: {
+      job: this.jobQuery() || null,
+      person: this.person()?.id ?? null,
+      q: this.table.globalFilter() || null,
+    } });
   }
 
   /* scope label for the header */
@@ -102,10 +121,10 @@ export class WorkHistoryComponent {
   }
 
   clear() {
-    this.clearPerson();
+    this.person.set(null);
     this.jobQuery.set('');
     this.table.clearFilters();
-    this.router.navigate([], { relativeTo: this.route, queryParams: {} });
+    this.saveFiltersToUrl();
   }
 
   /* export filtered rows to csv; a sign-off becomes one line per field it recorded */

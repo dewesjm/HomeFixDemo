@@ -72,7 +72,7 @@ export interface TypeDefinition {
 
 
 /* ── Condition shorthands ── */
-const ndtRoot5x: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
+const ndtRootInspection: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', anyOf: ['5X', 'VT'] }] };
 /* Tack's filler is hidden when a consumable insert is used, and when neither part requires
    material traceability (virtual keys in joint-facts.ts) */
 const tackFiller: FieldCondition = {
@@ -189,7 +189,7 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
   weldType('deferred-tack', TACK_FIELDS),
   { typeId: 'fitup-insp', fields: FITUP_INSP_FIELDS, verifyAgainst: 'fabrication' },
   { typeId: 'fitup-release', fields: [COMMENTS] },
-  weldType('root', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRoot5x, width: 400 }])),
+  weldType('root', weldFields([{ key: 'consumableInsertOnly' }], [box('performed5x'), { key: 'performed5x', showIf: ndtRootInspection, width: 400 }])),
   ...NDT_TYPES,
   weldType('interim'),
   weldType('final-weld'),
@@ -209,11 +209,20 @@ export const stepFieldConfigVersion = () => version;
 
 let _cache: TypeDefinition[] | null = null;
 
+/* Upgrade only the previous default visibility rule; retain customized conditions. */
+function migrateRootInspectionQuestion(definition: TypeDefinition): TypeDefinition {
+  const oldRule = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
+  const fields = definition.fields.map(field =>
+    definition.typeId === 'root' && field.key === 'performed5x'
+      && JSON.stringify(field.showIf) === JSON.stringify(oldRule)
+      ? { ...field, showIf: ndtRootInspection } : field);
+  return { ...definition, fields: numberLines(fields) };
+}
 export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(a => ({ ...a, fields: numberLines(a.fields) })) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }

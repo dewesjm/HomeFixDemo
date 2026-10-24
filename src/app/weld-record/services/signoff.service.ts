@@ -17,6 +17,8 @@ import { isOwnType } from '../signoff-definition/signoff-types';
 import { withComments } from '../signoff-definition/signoff-parts';
 import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
 import { WorkflowStore } from './workflow-store.service';
+import { additionalSignoffs } from '../routing/additional-signoffs';
+import { typeValues } from '../signoff-definition/stage-rules';
 
 /* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */
@@ -100,6 +102,18 @@ export class SignoffService {
         to: `Refit ${refitNumber}`,
         fabInputs: fabricationSnapshot(wf.fabricationData),
       });
+    }
+    const source = wf.stages.find(s => s.id === stageId)!;
+    if (!engineeringHold && !routedBack && signed.stages.find(s => s.id === recordedId)?.signed) {
+      for (const extra of additionalSignoffs(source, signed.stages, job, signed.fabricationData)) {
+        const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt };
+        signed = this.store.withHistory(signed, { ...signed, stages: signed.stages.map(s => s.id === target.id ? target : s) }, {
+          section: 'Sign-off', who, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',
+          reason: `Also signed with ${signedLabel}`,
+          inputs: snapshotInputs(target, fieldsShown(target, job, signed.stages, signed.fabricationData), visibleSignoffFields(target, job, signed.fabricationData)),
+        });
+        reasons.push(`${target.label} is also signed`);
+      }
     }
     return { wf: signed, signedLabel, refitNumber, repairNumber, reasons };
   }

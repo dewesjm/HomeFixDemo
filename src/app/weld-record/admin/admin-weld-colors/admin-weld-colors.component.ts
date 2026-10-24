@@ -40,7 +40,7 @@ export class AdminWeldColorsComponent {
   })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, WeldColorRow> = {};
-  table = new TableState<WeldColorRow>(['code', 'name']);
+  table = new TableState<WeldColorRow>(['name']);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));
@@ -56,7 +56,7 @@ export class AdminWeldColorsComponent {
   }
 
   deleteRow(row: WeldColorRow) {
-    this.confirm.confirmDelete(row.code, () => {
+    this.confirm.confirmDelete(row.name, () => {
       this.rows.update(r => r.filter(x => x.uid !== row.uid));
       this.persist();
       this.messages.add({ severity: 'info', summary: 'Deleted', life: 3000 });
@@ -80,7 +80,7 @@ export class AdminWeldColorsComponent {
     this.persist();
     delete this.cloned[row.uid];
     this.editingId.set(null);
-    this.messages.add({ severity: 'success', summary: 'Saved', detail: `${row.code} - ${row.name}`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Saved', detail: row.name, life: 3000 });
   }
 
   cancelEdit(row: WeldColorRow) {
@@ -93,22 +93,16 @@ export class AdminWeldColorsComponent {
     this.editingId.set(null);
   }
 
-  updateCode(row: WeldColorRow, value: string) {
-    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, code: value.toLowerCase() } : x));
-  }
-
   updateName(row: WeldColorRow, value: string) {
-    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, name: value } : x));
+    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, name: value, code: this.cloned[row.uid] ? x.code : value.trim() } : x));
   }
 
   exportCsv() {
     downloadCsv('weld-colors', [
-      { header: 'Code', value: (r: WeldColorRow) => r.code },
-      { header: 'Name', value: (r: WeldColorRow) => r.name },
+      { header: 'Color', value: (r: WeldColorRow) => r.name },
     ], this.table.sorted());
   }
 
-  isNew(row: WeldColorRow): boolean { return row.uid.startsWith('new-') && !this.cloned[row.uid]; }
 
   private persist() {
     const colors = this.rows()

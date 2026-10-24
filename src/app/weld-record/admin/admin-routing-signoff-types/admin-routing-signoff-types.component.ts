@@ -12,6 +12,8 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { RoutingSignoffType, getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { getTemplates } from '../../routing/stage-templates';
+import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
+import { conditionText } from '../../signoff-definition/field-rules';
 
 interface TypeRow extends RoutingSignoffType {
   uid: string;
@@ -20,7 +22,7 @@ interface TypeRow extends RoutingSignoffType {
 @Component({
   selector: 'app-admin-routing-signoff-types',
   standalone: true,
-  imports: [CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePencil, LucideCheck, LucideX, LucideTrash2],
+  imports: [AdditionalSignoffsEditorComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePencil, LucideCheck, LucideX, LucideTrash2],
   templateUrl: './admin-routing-signoff-types.component.html'
 })
 export class AdminRoutingSignoffTypesComponent {
@@ -53,6 +55,7 @@ export class AdminRoutingSignoffTypesComponent {
     downloadCsv('routing-signoff-types', [
       { header: 'Type', value: (r: TypeRow) => r.label },
       { header: 'Signs routing', value: (r: TypeRow) => this.signsStepLabel(r) },
+      { header: 'Also signs', value: (r: TypeRow) => this.alsoSignsLabel(r) },
     ], this.table.sorted());
   }
 
@@ -71,6 +74,10 @@ export class AdminRoutingSignoffTypesComponent {
   /* a new Type's stored value is made from its name when saved; renaming keeps the value, so steps
      and the definition stay matched */
   saveEdit(row: TypeRow) {
+    if (row.alsoSigns?.some(r => !r.stepId || !r.type)) {
+      this.messages.add({ severity: 'warn', summary: 'Select a routing and Type for each additional signoff', life: 3000 });
+      return;
+    }
     const label = row.label.trim();
     if (!label) {
       this.messages.add({ severity: 'warn', summary: 'Enter a name', life: 3000 });
@@ -106,6 +113,14 @@ export class AdminRoutingSignoffTypesComponent {
   /* '' = the step it's picked on */
   setSignsStep(row: TypeRow, stepId: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid ? withFlag(x, 'signsStep', stepId || undefined) : x));
+  }
+
+  alsoSignsLabel(row: TypeRow): string {
+    return (row.alsoSigns ?? []).map(rule => {
+      const routing = this.routings.find(r => r.id === rule.stepId)?.label ?? rule.stepId;
+      const type = this.rows().find(t => t.value === rule.type)?.label ?? rule.type;
+      return `${routing} as ${type}: ${conditionText(rule.when) || 'Always'}`;
+    }).join('; ');
   }
 
   private persist() {

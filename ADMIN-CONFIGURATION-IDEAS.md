@@ -30,6 +30,16 @@ Low priority because fabrication is currently consistent. Potential future confi
 
 Potential settings for the fixed 90-day annual allowance and how usage is assigned to a year. Only pursue if business policy needs to change; no current implementation requested.
 
+## Makeup entry point — tentative
+
+Consider moving Makeup from the top navigation to a button specifically on the Foreman grid, similar to Release to Welding, opening the existing management screen. Only foremen should manage Makeup. This placement is still under consideration; do not implement yet.
+
+In production, the persona selection will automatically reflect the user's actual role. The selectable persona droplist is a prototype stand-in while real roles are not implemented.
+
+## Makeup audit log — deferred requirement
+
+Record every Makeup change in a full audit log, including grants added, dates changed, and grants removed. Preserve who made the change, when it happened, the affected person/grant, and before/after values where applicable. The current Changed by column is not sufficient. Record removals without losing their audit history. Do not implement this now.
+
 ## Existing configuration and implementation boundaries
 
 Routing, Signoff Type Forms, qualifications, material classification/traceability, inspection procedures, defect codes, penetrants, locations, and weld positions already have configuration. Prefer extending their existing owners over adding overlapping editors.

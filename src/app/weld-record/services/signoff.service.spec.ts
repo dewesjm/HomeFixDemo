@@ -40,6 +40,49 @@ describe('SignoffService', () => {
 
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
+  for (const method of ['VT', '5X']) for (const nInd of ['1', '3']) {
+    it(`also signs ${method} on Root for N Ind ${nInd}, with one undo action`, () => {
+      const job = weldingJob({ ndtRoot: method, nInd });
+      store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-weld'
+        ? { ...s, inputs: { ...s.inputs, performed5x: 'yes' } } : s) }));
+      const before = store.workflowFor(job)().undo?.length ?? 0;
+      service.signStage(job, 'root-weld');
+      const wf = store.workflowFor(job)();
+      const target = wf.stages.find(s => s.id === (nInd === '1' ? 'nqc-' : '') + 'root-ndt-vt5x')!;
+      expect(target.signed).toBeTrue();
+      expect(target.signoffType).toBe(method.toLowerCase());
+      expect(target.result).toBe('sat');
+      expect(signoffEntries(wf, target.id).length).toBe(1);
+      expect(wf.undo!.length).toBe(before + 1);
+      TestBed.inject(RoutingService).deprogress(job, 'Undo Root and its inspection');
+      expect(store.workflowFor(job)().stages.find(s => s.id === target.id)!.signed).toBeFalse();
+    });
+  }
+
+  it('does not also sign when the answer is no or the configured rule is removed', () => {
+    const job = weldingJob({ ndtRoot: '5X' });
+    service.signStage(job, 'root-weld');
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
+    setRoutingSignoffTypes(getRoutingSignoffTypes().map(t => t.value === 'root' ? { ...t, alsoSigns: [] } : t));
+    store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-weld' ? { ...s, inputs: { performed5x: 'yes' } } : s) }));
+    service.signStage(job, 'root-weld');
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
+  });
+
+  it('does not sign an unavailable Type or apply additional signoffs on Engineering Hold', () => {
+    const job = weldingJob({ ndtRoot: 'VT' });
+    setRoutingSignoffTypes(getRoutingSignoffTypes().map(t => t.value === 'root' ? {
+      ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: '5x', when: { all: [] } }],
+    } : t));
+    service.signStage(job, 'root-weld');
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
+    setRoutingSignoffTypes(getRoutingSignoffTypes().map(t => t.value === 'root' ? {
+      ...t, alsoSigns: [{ stepId: 'root-ndt-vt5x', type: 'vt', when: { all: [] } }],
+    } : t));
+    service.signStage(job, 'root-weld', undefined, true);
+    expect(store.workflowFor(job)().stages.find(s => s.id === 'root-ndt-vt5x')!.signed).toBeFalse();
+  });
+
   it('locks the stage, timestamps it, and records a signoff entry', () => {
     const job = weldingJob();
     service.signStage(job, 'tack');

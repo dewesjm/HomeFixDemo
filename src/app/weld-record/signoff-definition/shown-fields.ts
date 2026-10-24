@@ -33,7 +33,12 @@ export function definedFields(stage: WorkflowStage, condCtx: ConditionContext): 
     if (show && !evaluateCondition(show, condCtx)) return [];
     const disabledCond = effectiveDisabledIf(act);
     const disabled = !!disabledCond && evaluateCondition(disabledCond, condCtx);
-    return [{ ...cat, required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
+    const method = condCtx.jointDetail('ndtRoot').toUpperCase();
+    const inspectionQuestion = cat.key === 'performed5x' && (method === 'VT' || method === '5X') ? {
+      label: `Did you perform ${method} inspection and was it successful?`,
+      options: [{ label: `No I didn't perform ${method}`, value: 'no' }, { label: `Yes I performed ${method} and it was successful`, value: 'yes' }],
+    } : {};
+    return [{ ...cat, ...inspectionQuestion, required: isRequiredNow(act, condCtx), ...requiredMessageProp(act), ...(cat.disabled || disabled ? { disabled: true } : {}) }];
   });
 }
 

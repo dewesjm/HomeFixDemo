@@ -2,6 +2,21 @@
    offered on steps (Admin > Signoff Types By Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage. */
 import { STORAGE } from '../../data/storage-keys';
+import { FieldCondition } from './field-conditions';
+
+export interface AdditionalSignoff {
+  stepId: string;
+  type: string;
+  when: FieldCondition;
+}
+
+const ROOT_ADDITIONAL_SIGNOFFS: AdditionalSignoff[] = ['5X', 'VT'].map(method => ({
+  stepId: 'root-ndt-vt5x', type: method.toLowerCase(),
+  when: { all: [
+    { source: 'field', key: 'performed5x', equals: 'yes' },
+    { source: 'jointDetail', key: 'ndtRoot', equals: method },
+  ] },
+}));
 
 export interface RoutingSignoffType {
   label: string;
@@ -10,6 +25,7 @@ export interface RoutingSignoffType {
   /* the routing step this Type signs when it's picked on an earlier step (Layer signed as Final Weld
      signs Final Weld, type-routing.ts); unset = the step it's picked on */
   signsStep?: string;
+  alsoSigns?: AdditionalSignoff[];
 }
 
 export const WELD_BUILDUP_TYPE = 'weld-buildup';
@@ -25,7 +41,7 @@ const SEED_TYPES: RoutingSignoffType[] = [
   type('Deferred Tack', 'deferred-tack'),
   type('Fit-Up Insp', 'fitup-insp'),
   type('Fit-Up Release', 'fitup-release'),
-  type('Root', 'root'),
+  type('Root', 'root', { alsoSigns: ROOT_ADDITIONAL_SIGNOFFS }),
   type('VT', 'vt'),
   type('5X', '5x'),
   type('MT', 'mt'),
@@ -47,7 +63,9 @@ export const routingSignoffTypesVersion = () => version;
 export function getRoutingSignoffTypes(): RoutingSignoffType[] {
   try {
     const raw = localStorage.getItem(STORAGE.routingSignoffTypes);
-    return raw ? JSON.parse(raw) : SEED_TYPES;
+    const types: RoutingSignoffType[] = raw ? JSON.parse(raw) : SEED_TYPES;
+    return types.map(t => t.value === 'root' && t.alsoSigns === undefined
+      ? { ...t, alsoSigns: structuredClone(ROOT_ADDITIONAL_SIGNOFFS) } : t);
   } catch { return SEED_TYPES; }
 }
 

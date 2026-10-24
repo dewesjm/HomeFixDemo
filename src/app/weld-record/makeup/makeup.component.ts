@@ -19,7 +19,7 @@ import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import {
   makeupGrants, addMakeupGrant, removeMakeupGrant, updateMakeupGrant, grantStatus, GrantStatus,
-  daySpan, daysRemaining, ANNUAL_MAKEUP_DAYS, MakeupGrant
+  daySpan, daysRemaining, MakeupGrant
 } from './makeup-grants';
 
 interface GrantRow {
@@ -46,7 +46,6 @@ const STATUS_ORDER: Record<GrantStatus, number> = { Active: 0, Upcoming: 1, Inac
 export class MakeupComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
-  readonly annualDays = ANNUAL_MAKEUP_DAYS;
   /* joke placeholder: page shows only "NO MIKE"; set false to restore the real page */
   readonly noMike = false;
 

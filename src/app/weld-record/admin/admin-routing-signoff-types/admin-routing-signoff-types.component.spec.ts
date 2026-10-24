@@ -17,4 +17,21 @@ describe('Signoff Types settings', () => {
     expect(getRoutingSignoffTypes().find(t => t.value === 'final-weld')!.signsStep).toBe('root-layer');
     expect(getRoutingSignoffTypes().every(t => !('repeatable' in t))).toBeTrue();
   });
+
+  it('saves and removes conditional additional signoffs without changing Signs routing', () => {
+    localStorage.clear();
+    const component = TestBed.runInInjectionContext(() => new AdminRoutingSignoffTypesComponent());
+    let row = component.rows().find(t => t.value === 'root')!;
+    expect(row.alsoSigns!.length).toBe(2);
+    component.startEdit(row);
+    row.alsoSigns = [row.alsoSigns![0]];
+    component.saveEdit(row);
+    expect(getRoutingSignoffTypes().find(t => t.value === 'root')!.alsoSigns!.length).toBe(1);
+    row = component.rows().find(t => t.value === 'root')!;
+    component.startEdit(row);
+    row.alsoSigns = [];
+    component.saveEdit(row);
+    expect(getRoutingSignoffTypes().find(t => t.value === 'root')!.alsoSigns).toEqual([]);
+    expect(getRoutingSignoffTypes().find(t => t.value === 'root')!.signsStep).toBeUndefined();
+  });
 });

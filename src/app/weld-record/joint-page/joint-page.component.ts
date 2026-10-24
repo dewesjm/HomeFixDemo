@@ -43,7 +43,7 @@ import { definitionHas } from '../signoff-definition/step-field-config';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { isEngineeringHoldId, stepOnJoint } from '../routing/step-ids';
+import { isEngineeringHoldId } from '../routing/step-ids';
 import { closesJoint } from '../routing/built-in-step-rules';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
@@ -345,7 +345,6 @@ export class JointPageComponent implements OnDestroy {
       accept: () => {
         this.overrides.recordOverrides(st);
         this.sign(stage.id, this.signoffSnapshot(stage));
-        this.signRelated5xIfNeeded(stage);
         this.router.navigate([this.backDestination()]);
       }
     });
@@ -367,16 +366,6 @@ export class JointPageComponent implements OnDestroy {
     this.wfService.deprogress(this.job, reason);
     if (this.loadSnapshot) rebaselineAfterSignoff(this.loadSnapshot, before, this.wf());
     this.selectedRouting.set(this.indexOfActive());
-  }
-
-  /* The 5X question on Root only records the answer; once Root itself is signed, a "yes" auto-signs
-     the Root 5X/VT NDT stage. Answering must never sign anything on its own. */
-  private signRelated5xIfNeeded(stage: WorkflowStage) {
-    if (!this.job || !this.wf) return;
-    if (stage.id !== 'root-weld' || (stage.inputs['performed5x'] ?? '') !== 'yes') return;
-    const ndtStage = stepOnJoint(this.wf().stages, 'root-ndt-vt5x');
-    if (!ndtStage || ndtStage.signed || !ndtStage.typeOptions?.some(o => o.value === '5x')) return;
-    this.sign(ndtStage.id, this.signoffSnapshot(ndtStage));
   }
 
   /* ── References and navigation ── */

@@ -16,7 +16,7 @@ import { TableState } from './table-state';
         <select class="select select-sm select-bordered"
                 [ngModel]="state().pageSize()"
                 (ngModelChange)="state().setPageSize($event)">
-          @for (n of pageSizeOptions(); track n) {
+          @for (n of pageSizeOptions; track n) {
             <option [ngValue]="n">{{ n }} / page</option>
           }
         </select>
@@ -35,5 +35,5 @@ import { TableState } from './table-state';
 })
 export class TablePagerComponent {
   state = input.required<TableState<any>>();
-  pageSizeOptions = input<number[]>([10, 25, 50, 100]);
+  readonly pageSizeOptions = [10, 25, 50, 100];
 }

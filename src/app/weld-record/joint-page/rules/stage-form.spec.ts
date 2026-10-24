@@ -22,6 +22,15 @@ const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): Workf
 const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 
 describe('joint-form stage-form', () => {
+  for (const method of ['VT', '5X']) {
+    it(`uses ${method} in both the Root question and answer choices`, () => {
+      const j = job({ ndtRoot: method });
+      const root = stageOf(j, 'root-weld');
+      const question = visibleStageFields(root, ctxFor(j)).find(f => f.key === 'performed5x')!;
+      expect(question.label).toBe(`Did you perform ${method} inspection and was it successful?`);
+      expect(question.options!.every(o => o.label.includes(method))).toBeTrue();
+    });
+  }
   it('keeps a recorded weld color selectable after it is removed from the admin list', () => {
     const j = job();
     const stage = stageOf(j, 'root-ndt-vt5x', { inputs: { weldColor: 'retired-color' } });
