@@ -21,13 +21,13 @@ export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
   { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]],
     rejectToStage: 'own-repair', thenRules: [
-      { when: [{ field: 'self.typeChangedFromPtTo5x', op: 'is', values: ['yes'] }], to: 'rejecting-vt5x' },
+      { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },
       { when: [], to: 'rejecting-ndt' },
     ] },
   { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'nqc-excavation-ndt', label: 'NQC Excavation NDT', displayName: 'Excavation NDT', required: true, role: 'NQC Inspector',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['1', '2'] }]],
     rejectToStage: 'own-repair', thenRules: [
-      { when: [{ field: 'self.typeChangedFromPtTo5x', op: 'is', values: ['yes'] }], to: 'rejecting-vt5x' },
+      { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },
       { when: [], to: 'rejecting-ndt' },
     ] },
   ENGINEERING_HOLD_STAGE,

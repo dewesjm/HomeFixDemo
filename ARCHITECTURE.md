@@ -883,3 +883,10 @@ The content wrapper uses `shared/admin-table-scope.directive.ts` to apply the ad
 
 
 Verified the shared admin grid with 506 passing ChromeHeadless tests, production build and the no-unused TypeScript check. `shared/admin-table-scope.directive.spec.ts` checks actual computed cell borders/alignment on all three systems, nested tables, direct entry and navigation out of admin; `shared/admin-table-scope.spec.ts` checks route boundaries and query/fragment exclusions. Existing build warnings remain.
+
+
+## General inspection routing facts
+
+`routing/inspection-context.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `step-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
+
+`inspection-context-migration.ts` translates saved boolean exception conditions, including negative/alternative operators, while preserving priority, destinations and other clauses. `stage-templates.ts` applies that configuration compatibility alongside Repair confirmation compatibility. Version 2.10.60 follows the existing demo cache-reset policy for changed routing definitions. Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.

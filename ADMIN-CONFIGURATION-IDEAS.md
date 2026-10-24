@@ -33,13 +33,13 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 - Repair thickness confirmations are configured through the existing Signoff Type Form; no separate limits table remains proposed for the current scope.
 - Repair Code options currently come from `signoff-definition/field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are implemented below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
 - Excavation persona selection is now configured through Routing Settings Persona rules.
-- PT-to-5X return context in `routing/signoff-routing.ts`: the special `typeChangedFromPtTo5x` marker is still generated in code even though the rule consuming it is configurable. Consider exposing original and performed inspection methods as readable rule facts instead. Preserve the original method across repair/excavation returns.
+- Complete: general Original rejecting inspection Type and Performed inspection Type facts replace the generated PT-to-5X flag. Original context comes from the linked Repair round or captured ordinary insertion context; performed Type comes from the selected signoff Type. Regular/NQC Excavation defaults use both facts.
 
 ### Recommended scope and configuration clarity
 
 1. Complete: separate repair thickness confirmation fields in Signoff Type Forms.
 2. Complete: conditional persona selection in Routing Settings.
-3. Replace the specific PT-to-5X marker with general inspection-context conditions usable by the existing routing rule editor.
+3. Complete: general inspection-context conditions are available in the existing routing rule editor; legacy boolean conditions translate to ordinary AND/OR facts.
 4. Partially complete: package 4 provides readable Type-selection source/exception/fallback summaries and exports. Remaining: summarize Repair/Excavation routing destinations across settings and identify the relevant form configuration. The main usability issue is that related settings span Routing Settings, Signoff Types By Routing and Signoff Type Forms.
 
 Expected scope is moderate: configuration models and editors, persistence/version handling as needed, rule evaluation, validation, documentation and focused regression tests. Reuse existing editors and keep advanced details out of the main table where practical. A new general-purpose workflow editor would add unnecessary complexity.
@@ -127,3 +127,15 @@ Verified with **503 passing ChromeHeadless tests** using `npx ng test --watch=fa
 ## Mockup scope clarification
 
 Production identity, permissions, backend/synchronization, external reference-data integration and authoritative production-data review are outside this mockup backlog. Notes about those boundaries explain the prototype and do not queue implementation.
+
+
+## General inspection routing facts — implemented
+
+Repair exposes Original rejecting inspection Type. Regular/NQC Excavation and ordinary inserted definitions expose that fact and Performed inspection Type in Routing Settings conditions. Available values use Signoff Type labels, including Blank for missing context. Original Type reads the captured context of the linked Repair round (or the ordinary instance); performed Type reads the current selected inspection Type, including changes before signoff. Neither is another editable form field.
+
+Default regular/NQC Excavation acceptance rules read original PT AND performed 5X, then return to the rejecting phase’s VT/5X; otherwise they return to the original inspection. The dedicated marker is no longer generated or retained by blanking/Type changes. Existing Repair/Excavation counters, round ownership, UNSAT/route-back, Deprogress, History and seed construction remain with their current owners.
+
+Saved legacy positive/negative flag conditions translate into equivalent general fact clauses while preserving other conditions, order and destinations. Negative conditions split into adjacent alternatives as needed. Workflow version 2.10.60 uses the established first-load demo cache-reset policy for changed routing definitions; no pre-upgrade workflow preservation is promised. New workflows and later reloads retain ordinary original/selected Type data. No routing-bar visibility decision or cross-page destination-summary feature is included.
+
+
+Verified with **513 passing ChromeHeadless tests** (`npx ng test --watch=false --browsers=ChromeHeadless`), `npx ng build`, and `npx tsc --noEmit --noUnusedLocals -p tsconfig.app.json`. Existing build warnings remain. Focused specs: `routing/inspection-context.spec.ts`, `routing/inspection-context-migration.spec.ts`, `routing/excavation-definition.spec.ts`, `routing/signoff-routing.spec.ts`, `joint-page/rules/type-change.spec.ts` and `admin/admin-routing/admin-routing.component.spec.ts`. Covers round-aware original facts, selected-Type changes, regular/NQC preview/execution and returns, another configured Type combination, legacy positive/negative condition semantics and rendered editor save. Existing reload, UNSAT, route-back, Deprogress, History and specialized Repair regression tests remain included.

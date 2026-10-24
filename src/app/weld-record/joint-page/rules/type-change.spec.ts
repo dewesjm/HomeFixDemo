@@ -10,12 +10,12 @@ describe('Repair round Type changes', () => {
     const change = typeChange('Welding', repair, 'repair');
     expect(change.inputs).toEqual({ originPhase: 'final', originStageId: 'nqc-final-ndt-mtpt', originInspectionType: 'pt' });
   });
-  it('keeps the resolved exception outcome while loading the shared form', () => {
-    const excavation = stageFromTemplate(excavationNdtStage('5x', 'repair-2'), { typeChangedFromPtTo5x: 'yes', procedureUsed: 'old' });
+  it('keeps original inspection context while loading the selected shared form', () => {
+    const excavation = stageFromTemplate(excavationNdtStage('5x', 'repair-2'), { originInspectionType: 'pt', procedureUsed: 'old' });
     const change = typeChange('Welding', excavation, '5x');
-    expect(change.inputs).toEqual({ typeChangedFromPtTo5x: 'yes' });
+    expect(change.inputs).toEqual({ originInspectionType: 'pt' });
     expect(change.signoffType).toBe('5x');
     expect(formInputFields({ ...excavation, ...change }).map(f => f.key)).toContain('procedureUsed');
-    expect(formInputFields({ ...excavation, ...change }).map(f => f.key)).not.toContain('typeChangedFromPtTo5x');
+    expect(formInputFields({ ...excavation, ...change }).map(f => f.key)).not.toContain('originInspectionType');
   });
 });

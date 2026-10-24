@@ -1,3 +1,4 @@
+import { originalInspectionType } from './inspection-context';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { addTestJob, JOBS, Job } from '../../data/jobs';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -62,7 +63,7 @@ describe('Configured regular and NQC Excavation', () => {
       expect(id).toBe((indicator === '3' ? '' : 'nqc-') + 'excavation-ndt');
       expect(current().role).toBe(indicator === '3' ? 'Inspector' : 'NQC Inspector');
       expect(current().typeOptions?.map(o => o.value)).toEqual(['5x']);
-      expect(current().inputs['typeChangedFromPtTo5x']).toBe('yes');
+      expect(originalInspectionType(current(), wf().stages)).toBe('pt');
       expect(wf().stages.find(s => s.id === 'repair')!.inputs['originStageId']).toBe(source);
       expect(routingBarSteps(wf().stages).filter(s => s.label === 'Excavation NDT').length).toBe(1);
       patch(id, {}, 'unsat', '5x');
@@ -83,6 +84,25 @@ describe('Configured regular and NQC Excavation', () => {
       expect(reset.stages.find(s => s.id === id)!.required).toBeFalse();
     });
   }
+  it('routes another configured original/performed combination with preview parity', () => {
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'excavation-ndt'
+      ? { ...r, typeExceptions: [{ from: 'pt', to: 'mt' }] } : r));
+    updateStageTemplate('Welding', 'excavation-ndt', { thenRules: [
+      { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] },
+        { field: 'self.performedInspectionType', op: 'is', values: ['mt'] }], to: 'tack' },
+      { when: [], to: 'rejecting-ndt' },
+    ] });
+    rejectOriginal(); const id = weldRepair();
+    expect(current().typeOptions?.map(o => o.value)).toEqual(['mt']);
+    patch(id, {}, 'sat', 'mt');
+    const preview = signoff.previewSignoff(wf(), job, id);
+    expect(preview.target?.id).toBe('tack');
+    expect(preview.reasons.join(' ')).toContain('Original rejecting inspection Type is PT');
+    expect(signoff.signStage(job, id)).toBeTrue();
+    expect(current().id).toBe(preview.target!.id);
+    expect(job.repairNumber).toBe('01');
+  });
+
   it('selects by editable applicability rather than fixed nuclear checks and rejects ambiguity', () => {
     updateStageTemplate('Welding', 'excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
     updateStageTemplate('Welding', 'nqc-excavation-ndt', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['2', '3'] }]] });

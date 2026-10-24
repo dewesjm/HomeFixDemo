@@ -1,3 +1,4 @@
+import { originalInspectionType, performedInspectionType } from './inspection-context';
 import { addTestJob, Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { routeSignoff } from './signoff-routing';
@@ -81,10 +82,20 @@ describe('Inserted routing table decisions', () => {
     expect(stage(wf, 'excavation-ndt').typeOptions?.map(t => t.value)).toEqual(['5x']);
     expect(getActivationForStep(stage(wf, 'excavation-ndt')).fields.map(f => f.key)).toEqual(['type']);
     selectExcavation('5x');
-    expect(stage(wf, 'excavation-ndt').inputs['typeChangedFromPtTo5x']).toBe('yes');
+    expect(originalInspectionType(stage(wf, 'excavation-ndt'), wf.stages)).toBe('pt');
+    expect(performedInspectionType(stage(wf, 'excavation-ndt'))).toBe('5x');
     sign('excavation-ndt', { result: 'sat' });
     expect(activeStageId(wf.stages)).toBe('root-ndt-vt5x');
     expect(stage(wf, 'root-ndt-vt5x').typeOptions?.map(t => t.value)).toContain('5x');
+  });
+  it('evaluates the Type actually selected at Excavation rather than an earlier replacement outcome', () => {
+    job.materialType2 = '12-SS304';
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'excavation-ndt'
+      ? { ...r, typeSource: undefined, types: [{ type: '5x' }, { type: 'pt' }] } : r));
+    repair(); weldRepair(); selectExcavation('5x'); selectExcavation('pt');
+    expect(originalInspectionType(stage(wf, 'excavation-ndt'), wf.stages)).toBe('pt');
+    sign('excavation-ndt', { result: 'sat' });
+    expect(activeStageId(wf.stages)).toBe('root-ndt-mtpt');
   });
   it('returning from Excavation cannot restore a Type removed in configuration', () => {
     job.materialType2 = '12-SS304';

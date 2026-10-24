@@ -6,7 +6,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 
 - [ ] **Attribute-code exceptions:** waiting for the applicable code list and each exception's behavior. Decide configuration versus fixed rules once requirements are known. Existing code/description lookup is implemented. [Source](ROUTING-RULES-PLAN.md#deferred-input).
-- [ ] **Remaining Repair / Excavation configuration:** replace the PT-to-5X marker with general original/performed inspection facts and summarize Repair/Excavation destinations across settings. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
+- [ ] **Remaining Repair / Excavation configuration:** summarize Repair/Excavation destinations across settings. General original/performed inspection facts have replaced the PT-to-5X marker. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 
@@ -38,6 +38,8 @@ Implement one package at a time only when requested, commit and stop for review.
 This project is a mockup. Real identity/permission enforcement, a backend, real synchronization, external reference-data integration and production data certification are outside the task backlog. Existing prototype boundaries are reference notes, not deferred implementation requirements.
 
 ## Completed work and deliberate switches
+
+- [x] **General inspection routing facts:** Original rejecting inspection Type and Performed inspection Type replace the special PT-to-5X flag. Regular/NQC defaults retain their return path; saved legacy conditions translate to the general facts.
 
 - [x] **Admin table outline grid:** shared theme-aware cell borders and top alignment across all admin routes, including nested editors/imports. Recorded as the standard in AGENTS.md.
 

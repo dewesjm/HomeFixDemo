@@ -22,6 +22,33 @@ describe('Routing Settings rules editor', () => {
   afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
 
+  it('opens saved inspection exception rules as original/performed conditions and saves the general facts', fakeAsync(() => {
+    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [{ id: 'excavation-ndt', label: 'Excavation NDT',
+      required: true, role: 'Inspector', rejectToStage: 'own-repair', thenRules: [
+        { when: [{ field: 'self.typeChangedFromPtTo5x', op: 'is', values: ['yes'] }], to: 'rejecting-vt5x' },
+        { when: [], to: 'rejecting-ndt' },
+      ] }] }));
+    setSignoffTypeRows(getSignoffTypeRows());
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const editor = fixture.componentInstance;
+    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:excavation-ndt')!);
+    fixture.detectChanges(); tick(); fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    const selects = Array.from(host.querySelectorAll<HTMLSelectElement>('dialog select'));
+    const selectedLabels = selects.map(s => s.selectedOptions[0]?.textContent);
+    expect(selectedLabels.some(s => s?.includes('Original rejecting inspection Type'))).toBeTrue();
+    expect(selectedLabels.some(s => s?.includes('Performed inspection Type'))).toBeTrue();
+    expect(host.textContent).not.toContain('Type was changed to 5X from PT');
+    const rule = editor.rejRules()[0];
+    expect(rule.when.map(c => c.values)).toEqual([['pt'], ['5x']]);
+    Array.from(host.querySelectorAll<HTMLButtonElement>('dialog button')).find(b => b.textContent!.trim() === 'Save Then go to rules')!.click();
+    fixture.detectChanges();
+    expect(localStorage.getItem(STORAGE.stageTemplates)).not.toContain('self.typeChangedFromPtTo5x');
+    expect(getTemplates()['Welding'].find(t => t.id === 'excavation-ndt')!.thenRules![0].when.map(c => c.field))
+      .toEqual(['self.originalInspectionType', 'self.performedInspectionType']);
+    fixture.destroy();
+  }));
+
   it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
     updateStageTemplate('Welding', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
@@ -293,7 +320,7 @@ describe('Routing Settings rules editor', () => {
     component.openThenRules(row);
     expect(component.rejRules().at(-1)?.when).toEqual([]);
     expect(component.rejectRulesValid()).toBeTrue();
-    component.removeRejectClause(0, 0);
+    while (component.rejRules()[0].when.length) component.removeRejectClause(0, 0);
     expect(component.rejRules()[0].when).toEqual([]);
     component.saveRejectRules();
     expect(getTemplates()['Welding'].find(t => t.id === 'excavation-ndt')!.thenRules![0].when).toEqual([]);

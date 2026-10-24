@@ -1,3 +1,5 @@
+import { originalInspectionType, performedInspectionType } from './inspection-context';
+import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches
    when every one of its clauses does. No rules = always included.
@@ -10,7 +12,7 @@ import { Job, MCL_POOL, N_IND_POOL, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THI
 import { getJointDesign } from '../../data/joint-designs';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { requiresTraceability } from '../../data/mcl-traceability';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
+import { NQC_SPLIT_STEP_IDS, nqcStepId, isRepairStageId, isExcavationNdtStageId } from './step-ids';
 import { NDT_LABELS } from '../../data/ndt-labels';
 
 export interface ConditionClause {
@@ -35,6 +37,7 @@ interface StageAnswers {
   inputs: Record<string, string>;
   signoffInputs: Record<string, string>;
   inspectionType?: string;
+  insertion?: { originInspectionType?: string };
 }
 
 export interface StepConditionField {
@@ -289,15 +292,17 @@ export function matchingThenRule(rules: RejectRule[] | undefined, job: Job, stag
 }
 
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */
-function selfValue(self: StageAnswers | undefined, key: string): string {
+function selfValue(self: StageAnswers | undefined, key: string, stages: StageAnswers[]): string {
   if (!self) return '';
+  if (key === 'originalInspectionType') return originalInspectionType(self, stages);
+  if (key === 'performedInspectionType') return performedInspectionType(self);
   if (key === 'inspectionType') return self.inspectionType ?? '';
   return self.inputs[key] ?? self.signoffInputs[key] ?? '';
 }
 
 function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], self?: StageAnswers): boolean {
   let value: string;
-  if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5));
+  if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5), stages);
   else {
     const f = conditionField(c.field);
     if (!f) return false;
@@ -326,6 +331,9 @@ export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, st
 /* the shape of a stage template stageConditionFields() reads */
 export interface StageShape {
   id?: string;
+  classification?: 'numbered' | 'added';
+  lifecycle?: string;
+  insertion?: { originInspectionType?: string };
   typeOptions?: { label: string; value: string }[];
 }
 
@@ -343,7 +351,12 @@ export function stageConditionFields(stage: StageShape): StepConditionField[] {
     if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
     else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */
   }
-  if (/^(nqc-)?excavation-ndt(-\d+)?$/.test(stage.id ?? '')) add('typeChangedFromPtTo5x', 'Type was changed to 5X from PT', [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
+  const repair = isRepairStageId(stage.id ?? '');
+  if (repair || isExcavationNdtStageId(stage.id ?? '') || stage.insertion || (stage.classification === 'added' && stage.lifecycle === 'ordinary')) {
+    const types = [{ label: 'Blank', value: '' }, ...getRoutingSignoffTypes().map(t => ({ label: t.label, value: t.value }))];
+    add('originalInspectionType', 'Original rejecting inspection Type', types);
+    if (!repair) add('performedInspectionType', 'Performed inspection Type', types);
+  }
   return out;
 }
 

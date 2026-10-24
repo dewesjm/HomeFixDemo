@@ -152,8 +152,6 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       const excavation = excavationNdtStageFor(job, st.inputs['originInspectionType'] ?? '', stageId);
       const id = excavation.id;
       if (!excavation.role || !excavation.typeOptions?.length) throw new RoutingConfigurationError('Cannot insert Excavation NDT: configure a persona and available inspection Types.');
-      const resolved = excavation.typeOptions?.[0]?.value ?? '';
-      excavation.inputs['typeChangedFromPtTo5x'] = st.inputs['originInspectionType'] === 'pt' && resolved === '5x' ? 'yes' : '';
       if (stages.some(s => s.id === id)) stages = stages.map(s => s.id === id ? excavation : s);
       else stages = [...stages.slice(0, currentIdx + 1), excavation, ...stages.slice(currentIdx + 1)];
       stages = setRoutingFrom(stages, id);

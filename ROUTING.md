@@ -272,3 +272,10 @@ Admin > Repair Codes adds and renames choices and marks them active/inactive. Sa
 Use Repair Code in Repair's Then go to conditions to choose a destination. The first matching rule wins; existing priority rules still apply. Signoff Type Form conditions can show or require existing fields for a chosen code. Custom codes without a matching destination rule and inactive/unknown codes block signoff and preview without changing History or undo. Invalid custom relative targets also block signing. Creating a choice creates no new lifecycle mechanic.
 
 Grind Only, Weld Repair and Cut keep their stored identities and behavior. Only the built-in Cut action returning to Fit increments Refit #. Any configured route-back to Fit retains the normal fabrication-clearing contract. Renaming another action to mention Cut does not make it Cut.
+
+
+## Inspection context in routing conditions
+
+Original rejecting inspection Type identifies the inspection that started the Repair round. Performed inspection Type identifies the Type currently selected on Excavation NDT or ordinary inserted work. These are read-only rule facts derived from existing records; they are not additional fields to enter. Excavation resolves its original Type from its own Repair, including regular/NQC later rounds. Ordinary inserted work reads its captured original context.
+
+Both Excavation variants start with: original Type is PT AND performed Type is 5X -> rejecting phase’s VT/5X. Otherwise acceptance returns to the rejecting inspection. If the performed Type changes, rules use that new choice. UNSAT still returns to the same Repair. Saved conditions using the former PT-to-5X boolean are translated into these facts when configuration loads. Type choices, enabled conditions and material exceptions remain configured in Signoff Types By Routing.
