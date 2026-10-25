@@ -131,7 +131,7 @@
       <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldPosition">
         <option value="">-</option>
         @for (wp of weldPositions; track wp.code) {
-          <option [value]="wp.code">{{ wp.code }} - {{ wp.description }}</option>
+          <option [value]="wp.code">{{ wp.code }} - {{ wp.description }}{{ wp.active === false ? ' (inactive)' : '' }}</option>
         }
       </select>
     </div>

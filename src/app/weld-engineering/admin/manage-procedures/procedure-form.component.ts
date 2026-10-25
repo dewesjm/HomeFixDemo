@@ -70,7 +70,9 @@ export class ProcedureFormComponent implements OnInit {
   backingOptions = BACKING_OPTIONS;
   weldProgressions = WELD_PROGRESSIONS;
   currentTypes = CURRENT_TYPES;
-  weldPositions = getWeldPositions();
+  get weldPositions() {
+    return getWeldPositions().filter(p => p.active !== false || p.code === this.form.weldPosition);
+  }
   addedSections = procedureSections;
   sectionNumber = sectionNumber;
 

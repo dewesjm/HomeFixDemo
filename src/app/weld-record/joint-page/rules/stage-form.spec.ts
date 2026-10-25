@@ -1,4 +1,7 @@
 import { isRoutingLockedField } from '../../signoff-definition/stage-rules';
+import { setDefectCodes } from '../../../data/defect-codes';
+import { setWeldPositions } from '../../../data/weld-positions';
+import { STORAGE } from '../../../data/storage-keys';
 import { snapshotInputs } from '../../signoff-definition/stage-display';
 import { formInputFields, formSignoffFields } from '../../signoff-definition/form-fields';
 import { JOBS, Job } from '../../../data/jobs';
@@ -24,6 +27,26 @@ const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): Workf
 const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 
 describe('joint-form stage-form', () => {
+  it('offers active lookup choices while preserving recorded inactive labels', () => {
+    try {
+      setDefectCodes([{ type: 'RT', code: 'PO', description: 'Porosity', active: false }]);
+      setWeldPositions([{ code: 'O', description: 'Overhead', active: false }]);
+      const j = job();
+      const stage = stageOf(j, 'root-weld', { inspectionType: 'rt', inputs: {} });
+      const ctx = ctxFor(j);
+      for (const key of ['defectCode', 'weldPosition']) {
+        expect(stageFieldOptions({ key, label: key, type: 'select' }, stage, ctx).options).toEqual([]);
+      }
+      stage.inputs = { defectCode: 'PO', weldPosition: 'o' };
+      expect(stageFieldOptions({ key: 'defectCode', label: 'Defect Code', type: 'select' }, stage, ctx).options)
+        .toEqual([{ value: 'PO', label: 'PO - Porosity (inactive)' }]);
+      expect(stageFieldOptions({ key: 'weldPosition', label: 'Weld Position', type: 'select' }, stage, ctx).options)
+        .toEqual([{ value: 'o', label: 'O - Overhead (inactive)' }]);
+    } finally {
+      localStorage.removeItem(STORAGE.defectCodes);
+      localStorage.removeItem(STORAGE.weldPositions);
+    }
+  });
   for (const method of ['VT', '5X']) {
     it(`uses ${method} in both the Root question and answer choices`, () => {
       const j = job({ ndtRoot: method });

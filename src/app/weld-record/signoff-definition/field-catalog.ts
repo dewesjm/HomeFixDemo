@@ -4,7 +4,7 @@ import { repairCodeOptions } from './repair-code-options';
 import { weldColorOptions } from '../../data/weld-colors';
 import { FieldCondition } from './field-conditions';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
-import { getWeldPositions } from '../../data/weld-positions';
+import { weldPositionOptions } from '../../data/weld-positions';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
@@ -125,7 +125,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'actualIpMax', label: 'Actual IP Max', type: 'number', allowsNc: true, defaultRequired: true,
     minField: 'ipMin', maxField: 'ipMax', defaultFill: ncFrom('ipMax'), defaultDisabledIf: ifNc('ipMax') },
   { key: 'weldPosition', label: 'Weld Position', type: 'select', defaultRequired: true, defaultShowIf: showIfNuclear,
-    options: getWeldPositions().map(p => ({ label: `${p.code} - ${p.description}`, value: p.code.toLowerCase() })) },
+    get options() { return weldPositionOptions(true); } },
   { key: 'fillerMetalType', label: 'Filler Metal Type', type: 'select', defaultRequired: true,
     defaultFill: fillFromFit('consumableInsertType'), defaultDisabledIf: insertOnly },
   { key: 'fillerMetalSize', label: 'Filler Metal Size', type: 'select', defaultRequired: true,
@@ -160,7 +160,7 @@ export const FIELD_CATALOG: CatalogField[] = [
     options: RT_DEGREE_OPTIONS },
   { key: 'rtFileNumber', label: 'RT File Number', type: 'text' },
   { key: 'defectCode', label: 'Defect Code', type: 'select', defaultRequired: true,
-    defaultShowIf: showIfUnsat, options: defectCodeOptions() },
+    defaultShowIf: showIfUnsat, get options() { return defectCodeOptions('', true); } },
 
   /* ── NDT MT/PT ── */
   { key: 'idAccessible', label: 'Inner surface of the weld / ID is accessible', type: 'select',

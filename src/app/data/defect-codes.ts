@@ -6,6 +6,7 @@ export interface DefectCodeEntry {
   type: string;          /* RT, UT, MT, PT, VT or 5X (INSPECTION_TYPES) */
   code: string;
   description: string;
+  active?: boolean;
 }
 
 const DEFAULT_DEFECT_CODES: DefectCodeEntry[] = [
@@ -20,8 +21,9 @@ const DEFAULT_DEFECT_CODES: DefectCodeEntry[] = [
 export function getDefectCodes(): DefectCodeEntry[] {
   try {
     const raw = localStorage.getItem(STORAGE.defectCodes);
-    return raw ? JSON.parse(raw) : DEFAULT_DEFECT_CODES;
-  } catch { return DEFAULT_DEFECT_CODES; }
+    const entries: DefectCodeEntry[] = raw ? JSON.parse(raw) : DEFAULT_DEFECT_CODES;
+    return entries.map(e => ({ ...e, active: e.active !== false }));
+  } catch { return DEFAULT_DEFECT_CODES.map(e => ({ ...e, active: true })); }
 }
 
 export function setDefectCodes(entries: DefectCodeEntry[]) {
@@ -29,10 +31,10 @@ export function setDefectCodes(entries: DefectCodeEntry[]) {
 }
 
 /* droplist options for a step's Type (stage.inspectionType, e.g. 'rt'), value = the code; every code when no Type is picked yet */
-export function defectCodeOptions(inspectionType = ''): { label: string; value: string }[] {
+export function defectCodeOptions(inspectionType = '', includeInactive = false): { label: string; value: string }[] {
   const t = inspectionType.toUpperCase();
   const seen = new Set<string>();
   return getDefectCodes()
-    .filter(e => (!t || e.type === t) && !seen.has(e.code) && seen.add(e.code))
-    .map(e => ({ label: `${e.code} - ${e.description}`, value: e.code }));
+    .filter(e => (includeInactive || e.active !== false) && (!t || e.type === t) && !seen.has(e.code) && seen.add(e.code))
+    .map(e => ({ label: `${e.code} - ${e.description}${e.active === false ? ' (inactive)' : ''}`, value: e.code }));
 }

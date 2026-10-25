@@ -1,5 +1,5 @@
 <h2 class="section-title">Weld Positions</h2>
-<p class="text-sm mb-sm">Maintain weld positions and their descriptions.</p>
+<p class="text-sm mb-sm">Maintain weld positions and their descriptions. Edit Status to retire a position without removing recorded values or existing rules. Saved codes stay fixed; descriptions can be updated.</p>
 
 <app-table-toolbar [table]="table" searchPlaceholder="Search weld positions…" addLabel="Add position"
                    (exportCsv)="exportCsv()" (add)="addRow()" />
@@ -10,16 +10,17 @@
     <tr>
       <th appSortHeader [table]="table" field="code" label="Code" class="min-w-20"></th>
       <th appSortHeader [table]="table" field="description" label="Description" class="min-w-44"></th>
+      <th appSortHeader [table]="table" field="status" label="Status"></th>
       <th class="min-w-11"></th>
     </tr>
   </thead>
   <tbody>
-    @for (row of table.sorted(); track row.uid) {
+    @for (row of table.paged(); track row.uid) {
       <tr>
         <td>
           @if (editingId() === row.uid) {
             <input type="text" class="input input-sm input-bordered w-full min-w-0"
-                   [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
+                   [disabled]="!row.uid.startsWith('new-')" [ngModel]="row.code" (ngModelChange)="updateCode(row, $event)"
                    placeholder="e.g. O" maxlength="2" autofocus />
           } @else {
             {{ row.code || '-' }}
@@ -35,6 +36,13 @@
           }
         </td>
         <td>
+          @if (editingId() === row.uid) {
+            <select class="select select-sm" aria-label="Weld Position status" [ngModel]="row.active" (ngModelChange)="updateActive(row, $event)">
+              <option [ngValue]="true">Active</option><option [ngValue]="false">Inactive</option>
+            </select>
+          } @else { {{ row.status }} }
+        </td>
+        <td>
           <div class="row-tight">
             @if (editingId() === row.uid) {
               <button type="button" class="btn btn-ghost btn-xs" (click)="saveEdit(row)">
@@ -44,19 +52,17 @@
                 <svg lucideX class="size-4"></svg>
               </button>
             } @else {
-              <button type="button" class="btn btn-ghost btn-xs" (click)="startEdit(row)">
+              <button type="button" class="btn btn-ghost btn-xs" [disabled]="!!editingId()" [attr.aria-label]="'Edit ' + row.code" (click)="startEdit(row)">
                 <svg lucidePencil class="size-4"></svg>
-              </button>
-              <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteRow(row)">
-                <svg lucideTrash2 class="size-4"></svg>
               </button>
             }
           </div>
         </td>
       </tr>
     } @empty {
-      <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No weld positions match your search.' : 'No weld positions yet.' }}</td></tr>
+      <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No weld positions match your search.' : 'No weld positions yet.' }}</td></tr>
     }
   </tbody>
 </table>
 </div>
+<app-table-pager [state]="table" />

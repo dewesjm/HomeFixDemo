@@ -1,4 +1,5 @@
 import { repairCodeOptions } from '../../signoff-definition/repair-code-options';
+import { weldPositionOptions } from '../../../data/weld-positions';
 import { formInputFields } from '../../signoff-definition/form-fields';
 import { FormField } from '../../signoff-definition/field-catalog';
 /* A step's fields on the joint page: which show, and the options each offers */
@@ -55,6 +56,13 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
    Procedure that GWP+WTN resolves to. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
+  if (f.key === 'weldPosition') {
+    const current = stage.inputs[f.key] ?? '';
+    const options = weldPositionOptions();
+    const recorded = weldPositionOptions(true).find(o => o.value === current);
+    return { ...f, options: current && !options.some(o => o.value === current)
+      ? [...options, recorded ?? { label: current, value: current }] : options };
+  }
   if (f.key === 'repairType') {
     const current = stage.inputs['repairType'] ?? '';
     const options = repairCodeOptions();
@@ -78,7 +86,8 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
     /* Admin > Defect Codes for the step's Type; a code no longer listed stays selectable so it doesn't show blank */
     const cur = stage.inputs['defectCode'] ?? '';
     const options = defectCodeOptions(stage.inspectionType);
-    return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
+    const recorded = defectCodeOptions(stage.inspectionType, true).find(o => o.value === cur);
+    return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, recorded ?? { label: cur, value: cur }] : options };
   }
   if (f.key === 'degreeRt') {
     const required = rtDegreeRequired(job, stage);

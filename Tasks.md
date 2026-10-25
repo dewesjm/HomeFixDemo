@@ -24,6 +24,8 @@ Implement one package at a time only when requested, commit and stop for review.
 
 ## Ideas requiring a decision before implementation
 
+- **Routing retirement and deletion:** deferred. Define reference checks, new-work eligibility, open-joint migration and preservation of signed routings/History before extending lifecycle controls. Permanent deletion should be considered only for unused, unreferenced definitions. See ADMIN-CONFIGURATION-IDEAS.md.
+
 
 - **Repair / Excavation routing-bar visibility:** revisit whether Repair and Excavation NDT should appear in the routing bar. The user recalls an earlier decision to hide them; confirm the intended behavior and whether visibility should be configurable. Current behavior is unchanged pending that decision.
 
@@ -38,6 +40,8 @@ Implement one package at a time only when requested, commit and stop for review.
 This project is a mockup. Real identity/permission enforcement, a backend, real synchronization, external reference-data integration and production data certification are outside the task backlog. Existing prototype boundaries are reference notes, not deferred implementation requirements.
 
 ## Completed work and deliberate switches
+
+- [x] **Defect Code and Weld Position retirement:** editable Active/Inactive status, preserved stored identities and recorded values, active-only new choices, readable inactive rule choices and Status in exports. Weld Colors unchanged.
 
 - [x] **Routing condition summaries:** If … Then go to distinguishes conditions from destinations, removes redundant inspection wording from thickness summaries and separates rules visually.
 
