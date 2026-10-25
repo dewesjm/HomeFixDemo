@@ -9,7 +9,11 @@
 <h3 class="text-lg font-semibold mt-4">{{ added ? 'Inserted routings' : 'Numbered routings' }}</h3>
 @if (added) {
   <p class="text-sm mt-1">Inserted routings are unplanned work added when a condition occurs, such as a failed inspection or an accepted deviation.</p>
-  <button type="button" class="btn btn-sm btn-outline my-2" [disabled]="!!editingId()" (click)="addRow(true)">Add inserted routing</button>
+  <div class="flex justify-end my-2">
+    <button type="button" class="btn btn-sm btn-primary" [disabled]="!!editingId()" (click)="addRow(true)">
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg> Add inserted routing
+    </button>
+  </div>
 }
 <div class="overflow-x-auto">
 <table class="table table-sm">
@@ -145,7 +149,7 @@
         <td>
           <div>{{ personaSummary(row) }}</div>
           @if (!row.id.includes(':new-')) {
-            <button type="button" class="btn btn-ghost btn-xs" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona for ' + row.routing">Edit persona</button>
+            <button type="button" class="btn btn-ghost btn-xs mt-2 whitespace-nowrap" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona for ' + row.routing">Edit persona</button>
           } @else {
             <select class="select select-sm" aria-label="Persona" [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
               @for (r of roleOptions(); track r) { <option [value]="r">{{ r }}</option> }

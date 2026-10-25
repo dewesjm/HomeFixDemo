@@ -39,6 +39,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Routing Settings button consistency:** right-aligned, theme-colored Add inserted routing matches Add numbered routing; Edit persona has spacing below the persona name and does not wrap.
+
 - [x] **General inspection routing facts:** Original rejecting inspection Type and Performed inspection Type replace the special PT-to-5X flag. Regular/NQC defaults retain their return path; saved legacy conditions translate to the general facts.
 
 - [x] **Admin table outline grid:** shared theme-aware cell borders and top alignment across all admin routes, including nested editors/imports. Recorded as the standard in AGENTS.md.

@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-25',
+    changed: ['Routing Settings: Add inserted routing now uses the same theme-colored button and plus icon as Add numbered routing, aligned to the right. Edit persona has more space below the persona name and stays on one line.'],
+  },
+  {
     date: '2026-10-24',
     added: ['Admin > Repair Codes: define and rename Repair choices, retire them with active/inactive status, and use them in existing form conditions and routing rules. New codes require a matching destination rule; preview and signoff explain missing configuration.', 'Routing Settings: create custom inserted routing definitions as drafts, configure personas and applicability, and activate or deactivate them after Type/form setup. Active definitions can be selected as Insert destinations in routing rules; preview shows the same persona and Type choices as live execution. Nested/repeated instances retain their own History and continuation; invalid targets block signoff.'],
     fixed: ['Routing Settings: saved single-field thickness rules and forms upgrade to the indicator-specific confirmations, so Repair conditions remain visible and editable.', 'Routing Settings: new routings appear at the top while being edited and display the next numbered routing position instead of -1. Cancel removes the unsaved routing.'],
