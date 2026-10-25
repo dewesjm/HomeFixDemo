@@ -11,6 +11,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-25',
+    fixed: ['Routing Settings: If … Then go to shows explicit If conditions and Then go to destinations, with shorter thickness-confirmation summaries and spacing between rules.'],
     changed: ['Routing Settings: Add inserted routing now uses the same theme-colored button and plus icon as Add numbered routing, aligned to the right. Edit persona has more space below the persona name and stays on one line.'],
   },
   {

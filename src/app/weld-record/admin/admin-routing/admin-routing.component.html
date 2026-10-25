@@ -23,7 +23,7 @@
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="routing" label="Routing"></th>
       <th appSortHeader class="whitespace-nowrap" [table]="table" field="displayName" label="Display Name"></th>
       <th class="min-w-64">Included when</th>
-      <th class="min-w-48">Then go to</th>
+      <th class="min-w-48">If … Then go to</th>
       <th class="min-w-48">Reject routes to</th>
       <th class="whitespace-nowrap" appTooltip="The Fabrication fields can be changed while this is the current routing">Fabrication editable</th>
       <th appSortHeader [table]="table" field="role" label="Persona" class="whitespace-nowrap"></th>
@@ -99,8 +99,8 @@
         <td>
           <div class="flex items-start gap-1">
             <div class="flex-1">
-              @for (line of row.thenRules; track $index) { <div>{{ line }}</div> }
-              <div>Otherwise: {{ canChangeStatus(row) ? 'continue after inserted work' : 'in order' }}</div>
+              @for (line of row.thenRules; track $index) { <div class="mb-2">{{ line }}</div> }
+              <div>Otherwise: {{ canChangeStatus(row) ? 'continue after inserted work' : 'continue in order' }}</div>
             </div>
             @if (!row.id.includes(':new-')) {
               <button type="button" class="btn btn-outline btn-xs" (click)="openThenRules(row)" aria-label="Edit Then go to rules">

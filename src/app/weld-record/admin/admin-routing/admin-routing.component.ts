@@ -1,4 +1,5 @@
 import { insertionRelativeTargets } from '../../routing/insertion-target-options';
+import { thenRuleSummary } from './then-rule-summary';
 import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/insertion-validation';
@@ -525,7 +526,7 @@ export class AdminRoutingComponent {
 
   private thenRuleLines(row: RoutingRow): string[] {
     return (this.templateFor(row)?.thenRules ?? [])
-      .map(r => `${describeConditions([r.when], this.rejectFieldsFor(row))} → ${this.getRejectLabel(r.to)}`);
+      .map(r => thenRuleSummary(r, this.rejectFieldsFor(row), this.getRejectLabel(r.to)));
   }
 
   openThenRules(row: RoutingRow) {
@@ -608,7 +609,7 @@ export class AdminRoutingComponent {
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => this.isAdded(r) ? [...this.insertionTriggers(r).map(t => t.label), ...(this.canConfigureApplicability(r) ? [`Applies when: ${r.includedWhen}`] : [])].join('; ') : r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => this.getRejectLabel(r.rejectToStage) },
-      { header: 'Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
+      { header: 'If … Then go to', value: (r: RoutingRow) => r.thenRules.join('; ') },
       { header: 'Reject rules', value: (r: RoutingRow) => r.rejectRules.join('; ') },
       { header: 'Fabrication editable', value: (r: RoutingRow) => r.fabricationEditable ? 'Yes' : 'No' },
       { header: 'Persona', value: (r: RoutingRow) => this.personaSummary(r) }
