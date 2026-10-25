@@ -144,6 +144,7 @@ export interface StageOption {
 
 /* the definition a joint's step is built from (stage-templates.ts) */
 export interface StageTemplate {
+  description?: string; /* Plain-English reference text maintained in Routing Settings. */
   classification?: 'numbered' | 'added';
   lifecycle?: 'ordinary' | 'repair' | 'excavation' | 'engineering-hold';
   status?: 'draft' | 'active' | 'inactive';

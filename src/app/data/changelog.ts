@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-10-25',
     added: ['Defect Codes and Weld Positions: edit Active/Inactive status to retire choices while preserving recorded values and rule references. New selections offer active choices; recorded inactive choices remain labeled. Status is included in Excel exports.'],
     fixed: ['Routing Settings: If … Then go to shows explicit If conditions and Then go to destinations, with shorter thickness-confirmation summaries and spacing between rules.'],
-    changed: ['Routing Settings: Add inserted routing now uses the same theme-colored button and plus icon as Add numbered routing, aligned to the right. Edit persona has more space below the persona name and stays on one line.'],
+    changed: ['Routing Settings: click a routing name to read or edit a plain-English description in a compact dialog. Descriptions are saved with the routing and included in Excel export.', 'Routing Settings: Add inserted routing now uses the same theme-colored button and plus icon as Add numbered routing, aligned to the right. Edit persona has more space below the persona name and stays on one line.'],
   },
   {
     date: '2026-10-24',

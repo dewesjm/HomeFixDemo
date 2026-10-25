@@ -36,6 +36,7 @@ const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
 
 /* serialized form — required is always a plain boolean (no functions). Fields belong to Type forms and the catalog, not to routing templates. */
 interface SerializedStage {
+  description?: string;
   classification?: StageTemplate['classification'];
   lifecycle?: StageTemplate['lifecycle'];
   status?: StageTemplate['status'];
@@ -55,6 +56,7 @@ interface SerializedStage {
 
 function serializeStage(t: StageTemplate): SerializedStage {
   return {
+    description: t.description,
     classification: t.classification ?? 'numbered', lifecycle: t.lifecycle ?? 'ordinary', status: t.status ?? 'active',
     id: t.id,
     label: t.label,
@@ -75,6 +77,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
    Reject rules never edited here follow the built-in ones. */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return {
+    description: s.description,
     classification: s.classification ?? builtIn?.classification ?? 'numbered',
     lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,

@@ -1,5 +1,6 @@
 import { insertionRelativeTargets } from '../../routing/insertion-target-options';
 import { thenRuleSummary } from './then-rule-summary';
+import { RoutingDescriptionComponent } from './routing-description.component';
 import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/insertion-validation';
@@ -64,7 +65,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [PersonaRulesComponent, TableToolbarComponent,
+  imports: [RoutingDescriptionComponent, PersonaRulesComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
@@ -100,6 +101,7 @@ export class AdminRoutingComponent {
   private seq = 0;
 
   personaRow = signal<RoutingRow | null>(null);
+  descriptionRow = signal<RoutingRow | null>(null);
   insertionTriggers(row: RoutingRow) { return insertionTriggers(getTemplates()[row.trade] ?? [], row.id.split(':')[1]); }
   editInsertionTrigger(row: RoutingRow, trigger: InsertionTrigger) {
     const source = this.rows().find(r => r.trade === row.trade && r.id.split(':')[1] === trigger.sourceId);
@@ -107,7 +109,7 @@ export class AdminRoutingComponent {
     if (trigger.mode === 'then') this.openThenRules(source);
     else this.openRejectRules(source);
   }
-  personaTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
+  routingTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
   personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.role; }
   personaSaved() {
     this.rows.update(rows => rows.map(row => {
@@ -606,6 +608,7 @@ export class AdminRoutingComponent {
       { header: 'Status', value: (r: RoutingRow) => r.status ?? 'active' },
       { header: 'Type and form setup', value: (r: RoutingRow) => this.setupSummary(r) },
       { header: 'Routing', value: (r: RoutingRow) => r.routing },
+      { header: 'Description', value: (r: RoutingRow) => this.templateFor(r)?.description ?? '' },
       { header: 'Display Name', value: (r: RoutingRow) => r.displayName || r.routing },
       { header: 'Included when', value: (r: RoutingRow) => this.isAdded(r) ? [...this.insertionTriggers(r).map(t => t.label), ...(this.canConfigureApplicability(r) ? [`Applies when: ${r.includedWhen}`] : [])].join('; ') : r.includedWhen },
       { header: 'Reject routes to', value: (r: RoutingRow) => this.getRejectLabel(r.rejectToStage) },

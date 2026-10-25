@@ -12,6 +12,35 @@ import { JOBS } from '../../../data/jobs';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 
 describe('Routing Settings rules editor', () => {
+  it('opens descriptions from routing names, saves multiline text, cancels edits and clears saved text', fakeAsync(() => {
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    const open = () => {
+      host.querySelector<HTMLButtonElement>('[aria-label="View or edit description for Repair"]')!.click();
+      fixture.detectChanges(); tick(); fixture.detectChanges();
+    };
+    const save = () => {
+      Array.from(host.querySelectorAll<HTMLButtonElement>('app-routing-description button')).find(b => b.textContent?.trim() === 'Save description')!.click();
+      fixture.detectChanges();
+    };
+    const enter = (text: string) => {
+      const area = host.querySelector<HTMLTextAreaElement>('textarea')!;
+      area.value = text; area.dispatchEvent(new Event('input')); fixture.detectChanges();
+    };
+    open(); enter('Explain the repair.\nRecord the result.'); save();
+    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.description).toBe('Explain the repair.\nRecord the result.');
+    expect(JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!)['Welding'].find((t: { id: string }) => t.id === 'repair').description)
+      .toBe('Explain the repair.\nRecord the result.');
+    open(); expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('Record the result.');
+    enter('Unsaved edit');
+    Array.from(host.querySelectorAll<HTMLButtonElement>('app-routing-description button')).find(b => b.textContent?.trim() === 'Cancel')!.click();
+    fixture.detectChanges(); open();
+    expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('Explain the repair.');
+    enter(''); save();
+    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.description).toBe('');
+    fixture.destroy();
+  }));
   let component: AdminRoutingComponent;
   beforeEach(() => {
     localStorage.clear();
@@ -171,7 +200,7 @@ describe('Routing Settings rules editor', () => {
     expect(host.textContent).not.toContain('Built-in lifecycle');
     const nameCell = Array.from(host.querySelectorAll('tbody tr')).find(row => row.children[1]?.textContent?.trim() === 'Rendered inspection')?.children[1];
     expect(nameCell).toBeTruthy();
-    expect(nameCell?.childElementCount).toBe(0);
+    expect(nameCell?.querySelector('button')?.textContent?.trim()).toBe('Rendered inspection');
     expect(host.textContent).toContain('Inserted routings');
     expect(host.textContent).not.toContain('Added routings');
     expect(host.querySelector('a[href="/admin/signoff-fields"]')).toBeNull();
