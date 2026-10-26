@@ -78,6 +78,7 @@ Conflicting attributes block signoff with an explanation; list order does not de
 | Independent signoff data | User emphasized that every signoff must have completely separate data. | Type, result, inputs, signoff inputs, completion records and the ID access/visibility answer are independent per signoff. There is no joint-level access fact. |
 | PU and Final RT | 2026-10-26: when PU is present, Final RT is not applicable; UT is done instead. | Recorded as an assumption for the configuration move (A12). Not yet built: current code still retains RT. |
 | GV and GTA | 2026-10-26: user believes the Weld Process field will specify GTAW. | GV applies per phase from the recorded Weld Process: Root NDT when Root was GTAW, Final NDT when Final Weld was GTAW. Replaces the GTA-only joint field in the configuration move. Tentative ("I believe"). |
+| SI and shop joints | 2026-10-26: a shop joint is any joint whose Fabrication Location is not a shipboard value; shipboard vs shop is the Shipboard column in Admin > Locations. | Replaces the Joint location category field in the configuration move. Conditions need a "Fabrication Location is shipboard" fact. |
 
 ## Executable demo assumptions and open questions
 
@@ -127,8 +128,8 @@ Planned, not built. Attribute behavior should be configured in the admin tables 
 
 | Gap | Need | Status |
 |---|---|---|
-| 1 | Shop/Field and GTA as condition facts (SI, GV). | GTA reviewed: use the recorded Weld Process (GTAW) per phase, no GTA-only field. Routing and Type conditions must be able to read the weld signoff's Weld Process. Shop/Field not yet reviewed. |
-| 2 | Attribute-code matching across all four slots in Signoff Type Forms and Type Exceptions conditions. | Not yet reviewed. |
+| 1 | Shop/Field and GTA as condition facts (SI, GV). | Reviewed. GTA: recorded Weld Process (GTAW) per phase. Shop: Fabrication Location with Shipboard = No (Admin > Locations). Both extra joint fields are dropped. Routing and Type conditions must be able to read Weld Process and the Location's Shipboard flag. |
+| 2 | Attribute-code matching across all four slots in Signoff Type Forms and Type Exceptions conditions. | No decision needed: "Has attribute code" matches any slot everywhere conditions are used. |
 | 3 | A second inspection of the same kind in one phase. | PU reviewed: no new routing. PU includes Final MT/PT (PT) and Final UT/RT (UT only, RT not applicable). Planned seeds: Included when and Enable when conditions for PU, and the PU demo example adjusted to match. RX, IA, RI, BP and the PU-with-Final-MT case not yet reviewed. Inserted routings remain the candidate where two inspections are truly needed. |
 | 4 | Configurable minimum RT degree (LR, RI, RX). | Not yet reviewed. |
 | 5 | Type valid only with a specific answer on the same signoff (ID accessible). | Not yet reviewed. |
