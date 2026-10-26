@@ -76,6 +76,7 @@ Conflicting attributes block signoff with an explanation; list order does not de
 | Follow-up | Preserve assumptions/questions alongside user answers; avoid a large batch of questions. | Keep this register; ask one focused clarification at a time. |
 | IA phase follow-up | User first tentatively suggested Root + Final if each has accessibility, asked about Layer, then said “I would assume it's for all 3.” | Latest provisional demo choice: Root, Layer and Final. Original Final-only assumption is retained below; this is not engineering confirmation. |
 | Independent signoff data | User emphasized that every signoff must have completely separate data. | Type, result, inputs, signoff inputs, completion records and the ID access/visibility answer are independent per signoff. There is no joint-level access fact. |
+| PU and Final RT | 2026-10-26: when PU is present, Final RT is not applicable; UT is done instead. | Recorded as an assumption for the configuration move (A12). Not yet built: current code still retains RT. |
 
 ## Executable demo assumptions and open questions
 
@@ -94,7 +95,7 @@ Every row below is a demo assumption unless explicitly identified above as a use
 | A09 | PM | Final PT can satisfy the same obligation as Final MT; inspector explicitly chooses one. Existing independently required PT need not be repeated. | Any material or procedure restrictions on substitution? |
 | A10 | FC | Final VT at 1X only; remove normal Final MT/PT/UT/RT. Root and Layer remain unchanged. | Does “only” override independently required RT/UT? Is 1X correct? |
 | A11 | BJ | Same Final effect as FC. Presence of BJ establishes brazed/material applicability; no extra material predicate is guessed. Supplied material placeholder and OPTO remain literal. | Material list, OPTO meaning, extra applicability and VT magnification. |
-| A12 | PU | Final PT and Final UT are separate obligations, with normal VT and any existing MT/RT retained. | Should existing MT/RT remain, and is inspection order prescribed? |
+| A12 | PU | Final PT on Final MT/PT and Final UT on Final UT/RT, with normal VT retained. User assumption (2026-10-26): Final RT is not applicable when PU is present, so the UT/RT routing offers UT only. Current code still retains RT until the configuration move. | Confirm RT is not required with PU. Whether an existing Final MT remains alongside PU's PT is still open. |
 | A13 | SI | On Shop joints, ID VT with access Yes may satisfy Root RT or Final RT separately. Field/Unknown location retains RT; access No on the signoff requires RT. Normal VT remains its own obligation because ID scope is distinct. | Which phase, whether visibility is necessary, and whether one VT record may satisfy normal VT too. |
 | A14 | RX | Require Root PT and Final RT; retain other normal requirements. Final RT uses the existing numeric degree, or 100 degrees if absent/NA. | Required Final RT coverage/degree and retained methods. |
 | A15 | IA | Original assumption: Final only. Latest user provisional choice: Root, Layer and Final each get an IA obligation with its own signoff. Access Yes requires an explicit ID PT or MT; access No records "Attribute inspection not required" and leaves the baseline unchanged. | Confirm all-three-phase interpretation, method/material restrictions and inaccessible/unknown behavior; see independent-data follow-up above. |
@@ -118,6 +119,22 @@ Every row below is a demo assumption unless explicitly identified above as a use
 | A33 | Display | Compact keyboard-focusable attribute badges in Joint Details expose exact supplied messages on hover/focus and accessible labels; expanded details retain code + full message. Raw Joint Details NDT source values remain visible; routing labels show resolved choices. | Preferred final presentation and whether to show a separate source-versus-effective summary. |
 | A34 | Demo seeds | Ordinary random seeds retain informational codes. AC001 through AC013 isolate one progression code each, start fresh, alternate regular/NQC and use Shop and GTA-only Yes facts to exercise conditions; ID access is answered at each signoff. Baseline Root PT, Layer PT, Final MT and RT100 are illustrative. | These are examples, not real engineering records. |
 | A35 | Persistence | Workflow version 2.10.62 resets demo caches. Obligation identity, allowed methods, scope and minimum degrees persist with stages; extra IDs retain their template owner. No migration of existing signed work. | None for this demo; source-system semantics remain open. |
+
+## Moving attribute rules into admin configuration
+
+Planned, not built. Attribute behavior should be configured in the admin tables (Routing Settings Included when, Signoff Types By Routing Enable when, Signoff Type Forms) instead of the fixed resolver in weld-record/attribute-codes/. Gaps are being reviewed with the user one at a time; no changes until reviewed.
+
+| Gap | Need | Status |
+|---|---|---|
+| 1 | Shop/Field and GTA-only as condition fields (SI, GV). | Not yet reviewed. |
+| 2 | Attribute-code matching across all four slots in Signoff Type Forms and Type Exceptions conditions. | Not yet reviewed. |
+| 3 | A second inspection of the same kind in one phase. | PU reviewed: no new routing. PU includes Final MT/PT (PT) and Final UT/RT (UT only, RT not applicable). Planned seeds: Included when and Enable when conditions for PU, and the PU demo example adjusted to match. RX, IA, RI, BP and the PU-with-Final-MT case not yet reviewed. Inserted routings remain the candidate where two inspections are truly needed. |
+| 4 | Configurable minimum RT degree (LR, RI, RX). | Not yet reviewed. |
+| 5 | Type valid only with a specific answer on the same signoff (ID accessible). | Not yet reviewed. |
+| 6 | ID Types (PT/MT/VT (ID), Not required) set up as ordinary Types. | Not yet reviewed. |
+| 7 | Configurable conflict blocking with a message. | Not yet reviewed. |
+| 8 | Forward-skip and Additional Signoffs guarantees: generic or dropped. | Not yet reviewed. |
+| 9 | Remove the fixed resolver; seed all 13 codes as default configuration. | After gaps 1-8. |
 
 ## Verification and code ownership
 
