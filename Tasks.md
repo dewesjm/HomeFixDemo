@@ -41,6 +41,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Additional Signoffs condition editing:** Add clause and Add group retain unfinished rows while editing; saved conditions include completed clauses only.
+
 - [x] **Seeded Excavation NDT descriptions:** supplied reference text explains repair readiness and NQC requirements for both regular and NQC Excavation NDT.
 
 - [x] **Seeded Repair description:** supplied reference text explains insertion after UNSAT NDT and configurable Repair codes in the Routing Settings description viewer.

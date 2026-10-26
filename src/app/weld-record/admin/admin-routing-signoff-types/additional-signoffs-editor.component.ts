@@ -4,6 +4,7 @@ import { AdditionalSignoff, getRoutingSignoffTypes } from '../../signoff-definit
 import { FIELD_CATALOG } from '../../signoff-definition/field-catalog';
 import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
 import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-type-definition/condition-work';
+import { FieldCondition } from '../../signoff-definition/field-conditions';
 
 @Component({
   selector: 'app-additional-signoffs-editor', standalone: true,
@@ -37,9 +38,17 @@ export class AdditionalSignoffsEditorComponent {
   changed = output<AdditionalSignoff[]>();
   types = getRoutingSignoffTypes();
   fields = FIELD_CATALOG.filter(f => !f.ownComponent).map(f => ({ key: f.key, label: f.label, values: f.options ?? [] }));
-  toWork = conditionToWork;
+  /* Keep unfinished clauses in the editor; only complete clauses belong in saved rules. */
+  private readonly drafts = new WeakMap<FieldCondition, WorkGroup>();
+  toWork(condition: FieldCondition | undefined): WorkGroup {
+    return (condition && this.drafts.get(condition)) || conditionToWork(condition);
+  }
   patch(index: number, patch: Partial<AdditionalSignoff>) { this.changed.emit(this.rules().map((r, i) => i === index ? { ...r, ...patch } : r)); }
-  setWhen(index: number, group: WorkGroup) { this.patch(index, { when: workToCondition(group) }); }
+  setWhen(index: number, group: WorkGroup) {
+    const when = workToCondition(group);
+    this.drafts.set(when, group);
+    this.patch(index, { when });
+  }
   add() { this.changed.emit([...this.rules(), { stepId: '', type: '', when: { all: [] } }]); }
   remove(index: number) { this.changed.emit(this.rules().filter((_, i) => i !== index)); }
 }
