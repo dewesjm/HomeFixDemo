@@ -1,83 +1,42 @@
 import { TestBed } from '@angular/core/testing';
 import { TypeExceptionsComponent } from './type-exceptions.component';
-import { excavationTypeOptions, getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
-import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
-import { JOBS } from '../../../data/jobs';
+import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
 
-describe('Excavation Type exceptions editor', () => {
+describe('Type exceptions grid', () => {
   beforeEach(() => localStorage.clear());
-  afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
-  it('selects an ordinary routing, edits conditions through DOM, saves, cancels and reopens', async () => {
-    const fixture = TestBed.createComponent(TypeExceptionsComponent);
-    fixture.detectChanges(); await fixture.whenStable();
-    const host: HTMLElement = fixture.nativeElement;
-    const select = (label: string, value: string) => {
-      const el = host.querySelector<HTMLSelectElement>(`[aria-label="${label}"]`)!;
-      el.value = value; el.dispatchEvent(new Event('change')); fixture.detectChanges();
-    };
-    const button = (label: string) => Array.from(host.querySelectorAll('button')).find(b => b.textContent!.trim() === label)!;
-    select('Exception routing', 'fit');
-    button('Add exception').click(); fixture.detectChanges(); await fixture.whenStable();
-    select('Original Type', 'fit'); select('Replacement Type', 'vt'); select('Material condition', '');
-    button('Add OR rule').click(); fixture.detectChanges(); await fixture.whenStable();
-    expect(host.querySelector('[aria-label="Effective Type path"]')!.textContent).toContain('N Ind. is 3');
-    button('Save Type rules').click(); fixture.detectChanges();
-    expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })?.[0].value).toBe('vt');
-    select('Replacement Type', 'pt');
-    button('Cancel Type rules').click(); fixture.detectChanges();
-    expect(fixture.componentInstance.rules[0].to).toBe('vt');
-    fixture.destroy();
-    const reopened = TestBed.createComponent(TypeExceptionsComponent);
-    reopened.componentRef.setInput('definitionId', 'fit'); reopened.detectChanges();
-    expect(reopened.componentInstance.rules[0].when?.[0][0].values).toEqual(['3']);
-    expect(reopened.componentInstance.rules[0].to).toBe('vt'); reopened.destroy();
+  afterEach(() => localStorage.clear());
+  const create = () => { const f = TestBed.createComponent(TypeExceptionsComponent); f.detectChanges(); return f; };
+  it('shows both seeded routings and only makes the grip draggable', () => {
+    const f = create(); const host: HTMLElement = f.nativeElement;
+    expect(host.querySelectorAll('tbody tr').length).toBe(2);
+    expect(host.textContent).toContain('NQC Excavation NDT');
+    expect(host.textContent).toContain('Excavation NDT');
+    expect(host.querySelector('tr[draggable]')).toBeNull();
+    expect(host.querySelectorAll('button[draggable="true"]').length).toBe(2);
   });
-  it('removing the seeded exception changes actual inspection selection, and saves other rows unchanged', () => {
-    const job = { ...JOBS[0], materialType1: '12-SS304', materialType2: '02-CS' };
-    const other = getSignoffTypeRows().filter(r => r.stepId !== 'excavation-ndt');
-    const editor = TestBed.runInInjectionContext(() => new TypeExceptionsComponent());
-    editor.ngOnInit();
-    expect(excavationTypeOptions(job, 'pt')?.[0].value).toBe('5x');
-    editor.rules = [];
-    editor.save();
-    expect(excavationTypeOptions(job, 'pt')?.[0].value).toBe('pt');
-    expect(getSignoffTypeRows().filter(r => r.stepId !== 'excavation-ndt')).toEqual(other);
+  it('cancels drafts and saves changes without changing another routing or its source', () => {
+    const f = create(); const c = f.componentInstance; const row = c.rows[0];
+    const before = structuredClone(getSignoffTypeRows());
+    c.edit(row); row.rule.to = 'mt'; c.cancel(row);
+    expect(c.rows[0].rule.to).toBe('5x');
+    c.edit(c.rows[0]); c.rows[0].rule.to = 'ut'; c.save(c.rows[0]);
+    const after = getSignoffTypeRows();
+    expect(after.find(r => r.stepId === row.routing)!.typeExceptions![0].to).toBe('ut');
+    expect(after.find(r => r.stepId === row.routing)!.typeSource).toBe('rejecting-inspection');
+    for (const r of before.filter(r => r.stepId !== row.routing)) {
+      expect(after.find(a => a.stepId === r.stepId)?.typeExceptions ?? []).toEqual(r.typeExceptions ?? []);
+    }
+    c.add(); c.cancel(c.rows[0]); expect(c.rows.length).toBe(2);
   });
-  it('uses saved exception order and checks both material members', () => {
-    const job = { ...JOBS[0], materialType1: '02-CS', materialType2: '12-SS304' };
-    const editor = TestBed.runInInjectionContext(() => new TypeExceptionsComponent());
-    editor.ngOnInit();
-    editor.rules.push({ from: 'pt', to: 'mt', materialFlag: '' });
-    editor.move(1, -1); editor.save();
-    expect(excavationTypeOptions(job, 'pt')?.[0].value).toBe('mt');
-    expect(excavationTypeOptions(job, 'rt')?.[0].value).toBe('rt');
-  });
-  it('edits NQC independently through rendered controls, cancels and reloads', () => {
-    const fixture = TestBed.createComponent(TypeExceptionsComponent);
-    fixture.componentRef.setInput('definitionId', 'nqc-excavation-ndt');
-    fixture.detectChanges();
-    const host: HTMLElement = fixture.nativeElement;
-    expect(host.querySelector('h3')!.textContent).toContain('Type Exceptions');
-    const replacement = host.querySelector<HTMLSelectElement>('[aria-label="Replacement Type"]')!;
-    replacement.value = 'mt'; replacement.dispatchEvent(new Event('change'));
-    fixture.detectChanges();
-    const button = (label: string) => Array.from(host.querySelectorAll('button')).find(b => b.textContent!.trim() === label)!;
-    button('Cancel Type rules').click(); fixture.detectChanges();
-    expect(fixture.componentInstance.rules[0].to).toBe('5x');
-    replacement.value = 'ut'; replacement.dispatchEvent(new Event('change'));
-    fixture.detectChanges(); button('Save Type rules').click();
-    fixture.destroy();
-    const reopened = TestBed.createComponent(TypeExceptionsComponent);
-    reopened.componentRef.setInput('definitionId', 'nqc-excavation-ndt'); reopened.detectChanges();
-    expect(reopened.componentInstance.rules[0].to).toBe('ut');
-    expect(getSignoffTypeRows().find(r => r.stepId === 'excavation-ndt')!.typeExceptions![0].to).toBe('5x');
-    reopened.destroy();
-  });
-  it('renders its saved source and exception in the admin form', () => {
-    const fixture = TestBed.createComponent(TypeExceptionsComponent);
-    fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Non-ferrous or austenitic');
-    expect(fixture.nativeElement.querySelectorAll('tbody tr').length).toBe(1);
-    fixture.destroy();
+  it('reorders only within the same routing and retains order on reload', () => {
+    const f = create(); const c = f.componentInstance;
+    c.add(); const added = c.rows[0]; added.routing = 'excavation-ndt'; added.rule.to = 'mt'; c.save(added);
+    c.move(added, 1);
+    expect(getSignoffTypeRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
+    c.dragId = added.id;
+    const other = c.rows.find(r => r.routing !== added.routing)!;
+    c.drop(new Event('drop') as DragEvent, other);
+    expect(getSignoffTypeRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
+    expect(create().componentInstance.rows.filter(r => r.routing === added.routing).map(r => r.rule.to)).toEqual(['5x', 'mt']);
   });
 });

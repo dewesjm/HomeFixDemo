@@ -86,3 +86,5 @@ Groups export was dropped from scope. O63/O04 selection already exists; no chang
 ## Previous override request
 
 Engineering Override is implemented for joints without an external welding assignment; Foreman Override remains disabled. See [ROUTING.md](ROUTING.md) for current behavior. The original task also mentioned preview and reason-screen wording; revisit any remaining wording only when specifically requested.
+
+- [x] Type Exceptions grid consistency: show every routing’s exceptions together, identify routing per row, use header Add and inline pencil/check/X controls, and reorder within routing with left arrows or grip-only dragging. Type source remains configurable in the upper routing grid.

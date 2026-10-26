@@ -1,3 +1,4 @@
+import { insertionRelativeTargets } from '../../routing/insertion-target-options';
 import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
@@ -81,6 +82,13 @@ export class AdminSignoffTypesComponent {
     return this.steps.filter(s => !used.has(s.id));
   }
 
+  canInherit(row: TypeRow): boolean {
+    const templates = getTemplates()['Welding'] ?? [];
+    const routing = templates.find(t => t.id === row.stepId);
+    return routing?.lifecycle === 'excavation' || (routing?.classification === 'added' && routing.lifecycle === 'ordinary' &&
+      insertionRelativeTargets(row.stepId, templates).some(t => t.id === 'rejecting-ndt'));
+  }
+
   hasDefault(row: TypeRow): boolean {
     return row.types.some(t => t.default);
   }
@@ -128,7 +136,7 @@ export class AdminSignoffTypesComponent {
   }
 
   startEdit(row: TypeRow) {
-    this.cloned[row.uid] = { ...row, types: structuredClone(row.types) };
+    this.cloned[row.uid] = structuredClone(row);
     this.editingUid.set(row.uid);
   }
 

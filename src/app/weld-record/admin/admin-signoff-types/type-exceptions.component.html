@@ -1,0 +1,42 @@
+<section aria-label="Type Exceptions">
+  <div class="flex items-center justify-between gap-2 mt-6 mb-2">
+    <h3 class="text-lg font-semibold">Type Exceptions</h3>
+    <button type="button" class="btn btn-sm btn-primary" [disabled]="editing !== null" (click)="add()"><svg lucidePlus class="size-4"></svg> Add exception</button>
+  </div>
+  <p class="text-sm mb-2">All routing exceptions are listed below. For each routing, the first matching exception replaces the original Type once; enable conditions still apply. Reorder exceptions within the same routing using the arrows or drag handle. Changes apply to future instances.</p>
+  <div class="overflow-x-auto">
+    <table class="table table-sm">
+      <thead><tr><th>Order</th><th>Routing</th><th>Original Type</th><th>Conditions</th><th>Use Type</th><th></th></tr></thead>
+      <tbody>
+        @for (row of rows; track row.id) {
+          <tr (dragover)="dragOver($event, row)" (drop)="drop($event, row)" (dragend)="dragId = null" [class.opacity-50]="dragId === row.id">
+            <td><div class="flex items-center gap-1">
+              <button type="button" class="btn btn-ghost btn-xs cursor-grab active:cursor-grabbing" [disabled]="editing !== null" [attr.draggable]="editing === null" aria-label="Drag exception" title="Drag to reorder" (dragstart)="startDrag($event, row)"><svg lucideGripVertical class="size-4"></svg></button>
+              <span>{{ siblings(row).indexOf(row) + 1 }}</span>
+              <button type="button" class="btn btn-ghost btn-xs" aria-label="Move exception up" [disabled]="!canMove(row, -1)" (click)="move(row, -1)"><svg lucideArrowUp class="size-3"></svg></button>
+              <button type="button" class="btn btn-ghost btn-xs" aria-label="Move exception down" [disabled]="!canMove(row, 1)" (click)="move(row, 1)"><svg lucideArrowDown class="size-3"></svg></button>
+            </div></td>
+            @if (editing === row.id) {
+              <td><select class="select select-sm select-bordered" aria-label="Exception routing" [(ngModel)]="row.routing"><option value="" disabled>Select a routing</option>@for (r of routings; track r.id) { <option [value]="r.id">{{ r.label }}</option> }</select></td>
+              <td><select class="select select-sm select-bordered" aria-label="Original Type" [(ngModel)]="row.rule.from">@for (t of types; track t.value) { <option [value]="t.value">{{ t.label }}</option> }</select></td>
+              <td><select class="select select-sm select-bordered" aria-label="Material condition" [(ngModel)]="row.rule.materialFlag"><option value="nonFerrousOrAustenitic">Non-ferrous or austenitic</option><option value="titanium">Titanium</option><option value="">Always</option></select><app-type-enable-conditions [rules]="row.rule.when ?? []" [listId]="'exception-' + row.id" (changed)="row.rule.when = $event" /></td>
+              <td><select class="select select-sm select-bordered" aria-label="Replacement Type" [(ngModel)]="row.rule.to">@for (t of types; track t.value) { <option [value]="t.value">{{ t.label }}</option> }</select></td>
+            } @else {
+              <td>{{ label(row.routing) }}</td><td>{{ typeLabel(row.rule.from) }}</td><td>{{ condition(row.rule) }}</td><td>{{ typeLabel(row.rule.to) }}</td>
+            }
+            <td><div class="row-tight">
+              @if (editing === row.id) {
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Save exception" title="Save" (click)="save(row)"><svg lucideCheck class="size-4"></svg></button>
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Cancel exception" title="Cancel" (click)="cancel(row)"><svg lucideX class="size-4"></svg></button>
+              } @else {
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Edit exception" title="Edit" [disabled]="editing !== null" (click)="edit(row)"><svg lucidePencil class="size-4"></svg></button>
+                <button type="button" class="btn btn-ghost btn-xs text-error" aria-label="Delete exception" title="Delete" [disabled]="editing !== null" (click)="remove(row)"><svg lucideTrash2 class="size-4"></svg></button>
+              }
+            </div></td>
+          </tr>
+        } @empty { <tr><td colspan="6" class="empty">No Type exceptions.</td></tr> }
+      </tbody>
+    </table>
+  </div>
+  <span role="status">{{ message }}</span>
+</section>
