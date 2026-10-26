@@ -72,7 +72,6 @@ interface RoutingRow {
   ],
   templateUrl: './admin-routing.component.html',
   styles: [`
-    tr[draggable="true"] { cursor: grab; }
     tr.drop-above td { box-shadow: inset 0 2px 0 currentColor; }
     tr.drop-below td { box-shadow: inset 0 -2px 0 currentColor; }
   `]

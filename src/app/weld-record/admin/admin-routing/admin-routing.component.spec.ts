@@ -12,6 +12,30 @@ import { JOBS } from '../../../data/jobs';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 
 describe('Routing Settings rules editor', () => {
+  it('starts reordering only from the grip button and disables the handle while editing', () => {
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    fixture.detectChanges();
+    const editor = fixture.componentInstance;
+    const host: HTMLElement = fixture.nativeElement;
+    const handle = host.querySelector<HTMLButtonElement>('button[draggable="true"]')!;
+    const row = handle.closest('tr')!;
+    expect(row.hasAttribute('draggable')).toBeFalse();
+    expect(handle.getAttribute('aria-label')).toContain('Drag to reorder');
+    row.querySelectorAll('td')[1].dispatchEvent(new Event('dragstart', { bubbles: true }));
+    expect(editor.dragId()).toBe('');
+    handle.dispatchEvent(new Event('dragstart', { bubbles: true }));
+    const draggedId = editor.dragId();
+    expect(draggedId).toBeTruthy();
+    row.dispatchEvent(new Event('dragend', { bubbles: true }));
+    expect(editor.dragId()).toBe('');
+    editor.editingId.set(draggedId);
+    fixture.detectChanges();
+    expect(handle.disabled).toBeTrue();
+    expect(handle.getAttribute('draggable')).toBe('false');
+    expect(host.querySelectorAll('tbody')[1].querySelector('[draggable="true"]')).toBeNull();
+    fixture.destroy();
+  });
+
   it('opens descriptions from routing names, saves multiline text, cancels edits and clears saved text', fakeAsync(() => {
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();

@@ -32,15 +32,20 @@
   </thead>
   <tbody>
     @for (row of sectionRows(added); track row.id) {
-      <tr [class.row-highlight]="newRowId() === row.id" [attr.draggable]="!added && editingId() !== row.id"
+      <tr [class.row-highlight]="newRowId() === row.id"
           [class.opacity-50]="dragId() === row.id"
           [class.drop-above]="dropSide(row) === 'above'" [class.drop-below]="dropSide(row) === 'below'"
-          (dragstart)="onDragStart($event, row)" (dragover)="onDragOver($event, row)"
+          (dragover)="onDragOver($event, row)"
           (drop)="onDrop($event, row)" (dragend)="clearDrag()">
         <td>
           @if (!added) {
           <div class="flex items-center gap-1">
-            <svg lucideGripVertical class="size-4 cursor-grab" aria-hidden="true"></svg>
+            <button type="button" class="btn btn-ghost btn-xs cursor-grab active:cursor-grabbing"
+                    [disabled]="editingId() === row.id" [attr.draggable]="editingId() !== row.id"
+                    [attr.aria-label]="'Drag to reorder ' + row.routing" title="Drag to reorder"
+                    (dragstart)="onDragStart($event, row)">
+              <svg lucideGripVertical class="size-4" aria-hidden="true"></svg>
+            </button>
             <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
             <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirstInTrade(row)"
                     (click)="moveUp(row)">
