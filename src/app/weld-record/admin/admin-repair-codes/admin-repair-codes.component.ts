@@ -1,4 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { LucidePencil, LucideCheck, LucideX } from '@lucide/angular';
 import { FormsModule } from '@angular/forms';
 import { getRepairCodes, RepairCode, setRepairCodes } from '../../../data/repair-codes';
 import { TableState } from '../../../shared/table-state';
@@ -11,7 +12,7 @@ import { newRepairCodeId, repairCodeError } from './repair-code-validation';
 
 @Component({
   selector: 'app-admin-repair-codes', standalone: true,
-  imports: [FormsModule, TableToolbarComponent, TablePagerComponent, SortHeaderComponent],
+  imports: [LucidePencil, LucideCheck, LucideX, FormsModule, TableToolbarComponent, TablePagerComponent, SortHeaderComponent],
   templateUrl: './admin-repair-codes.component.html',
 })
 export class AdminRepairCodesComponent {
@@ -22,6 +23,10 @@ export class AdminRepairCodesComponent {
   error = '';
   private isNew = false;
   table = new TableState<RepairCode & { status: string }>(['name', 'status']);
+
+  editorRows(): RepairCode[] {
+    return this.isNew && this.editing() ? [this.draft, ...this.table.paged()] : this.table.paged();
+  }
 
   constructor() {
     effect(() => this.table.setRows(this.rows().map(r => ({ ...r, status: r.active ? 'Active' : 'Inactive' }))));

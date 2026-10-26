@@ -41,6 +41,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Lookup editor consistency:** Repair Codes uses inline add/edit with pencil, save and cancel controls like Weld Colors. Repair Codes, Defect Codes and Weld Positions use an Active checkbox when editing; saved status and retirement behavior are preserved.
+
 - [x] **Plain-English routing descriptions:** click a routing name in Routing Settings to read/edit its saved description in a compact dialog; descriptions are included in Excel export.
 
 - [x] **Defect Code and Weld Position retirement:** editable Active/Inactive status, preserved stored identities and recorded values, active-only new choices, readable inactive rule choices and Status in exports. Weld Colors unchanged.

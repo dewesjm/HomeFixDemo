@@ -37,9 +37,7 @@
         </td>
         <td>
           @if (editingId() === row.uid) {
-            <select class="select select-sm" aria-label="Weld Position status" [ngModel]="row.active" (ngModelChange)="updateActive(row, $event)">
-              <option [ngValue]="true">Active</option><option [ngValue]="false">Inactive</option>
-            </select>
+            <label class="row-tight"><input type="checkbox" class="checkbox checkbox-sm" aria-label="Weld Position status" [ngModel]="row.active" (ngModelChange)="updateActive(row, $event)" /> Active</label>
           } @else { {{ row.status }} }
         </td>
         <td>

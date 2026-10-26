@@ -16,12 +16,14 @@ describe('Admin Repair Codes', () => {
     const fixture = TestBed.createComponent(AdminRepairCodesComponent);
     fixture.detectChanges(); await fixture.whenStable();
     const host: HTMLElement = fixture.nativeElement;
-    const button = (text: string) => Array.from(host.querySelectorAll('button')).find(b => b.textContent!.trim() === text)!;
+    const button = (text: string) => Array.from(host.querySelectorAll('button')).find(b => (b.getAttribute('aria-label') || b.textContent!.trim()) === text)!;
     const name = async (text: string) => {
       const input = host.querySelector<HTMLInputElement>('[aria-label="Repair Code name"]')!;
       input.value = text; input.dispatchEvent(new Event('input')); fixture.detectChanges(); await fixture.whenStable();
     };
     button('Add Repair Code').click(); fixture.detectChanges(); await fixture.whenStable();
+    expect(host.querySelector('[aria-label="Repair Code name"]')!.closest('tbody')).not.toBeNull();
+    expect(host.querySelector('form')).toBeNull();
     button('Save Repair Code').click(); fixture.detectChanges();
     expect(host.querySelector('[role="alert"]')!.textContent).toContain('Enter');
     await name(' cut '); button('Save Repair Code').click(); fixture.detectChanges();
@@ -34,8 +36,8 @@ describe('Admin Repair Codes', () => {
     expect(getRepairCodes().find(r => r.code === saved.code)!.name).toBe('Extra inspection');
     host.querySelector<HTMLButtonElement>('[aria-label="Edit Extra inspection"]')!.click(); fixture.detectChanges(); await fixture.whenStable();
     await name('Recheck');
-    const status = host.querySelector<HTMLSelectElement>('[aria-label="Repair Code status"]')!;
-    status.selectedIndex = 1; status.dispatchEvent(new Event('change'));
+    const status = host.querySelector<HTMLInputElement>('[aria-label="Repair Code status"]')!;
+    status.checked = false; status.dispatchEvent(new Event('change'));
     button('Save Repair Code').click(); fixture.detectChanges();
     fixture.destroy();
     const reopened = TestBed.createComponent(AdminRepairCodesComponent);

@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-26',
+    changed: ['Repair Codes: add and edit directly in the table, matching Weld Colors with pencil, save and cancel icons. Repair Codes, Defect Codes and Weld Positions use an Active checkbox while editing.'],
+  },
+  {
     date: '2026-10-25',
     added: ['Defect Codes and Weld Positions: edit Active/Inactive status to retire choices while preserving recorded values and rule references. New selections offer active choices; recorded inactive choices remain labeled. Status is included in Excel exports.'],
     fixed: ['Routing Settings: If … Then go to shows explicit If conditions and Then go to destinations, with shorter thickness-confirmation summaries and spacing between rules.'],
