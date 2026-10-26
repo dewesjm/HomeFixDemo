@@ -39,7 +39,8 @@ export class AdminMaterialClassificationComponent {
   exportCsv() {
     downloadCsv('material-classification', [
       { header: 'Material Code', value: (r: ClassRow) => r.code },
-      { header: 'Non-Ferrous or Austenitic', value: (r: ClassRow) => (r.nonFerrousOrAustenitic ? 'Yes' : 'No') },
+      { header: 'Non-Ferrous', value: (r: ClassRow) => (r.nonFerrous ? 'Yes' : 'No') },
+      { header: 'Austenitic', value: (r: ClassRow) => (r.austenitic ? 'Yes' : 'No') },
       { header: 'Titanium', value: (r: ClassRow) => (r.titanium ? 'Yes' : 'No') },
     ], this.table.sorted());
   }
@@ -48,7 +49,7 @@ export class AdminMaterialClassificationComponent {
     this.closeOpenEdit();
     const uid = `new-${++this.seq}`;
     this.table.clearFilters();
-    this.rows.update(r => [{ uid, isNew: true, code: '', nonFerrousOrAustenitic: false, titanium: false }, ...r]);
+    this.rows.update(r => [{ uid, isNew: true, code: '', nonFerrous: false, austenitic: false, titanium: false }, ...r]);
     this.editingId.set(uid);
   }
 
@@ -108,6 +109,6 @@ export class AdminMaterialClassificationComponent {
   /* stores every saved row; a row still being edited is stored as it was before the edit, a new one not at all */
   private persist() {
     setMaterialClassification(this.rows().map(r => this.cloned[r.uid] ?? r).filter(r => !r.isNew)
-      .map(({ code, nonFerrousOrAustenitic, titanium }) => ({ code, nonFerrousOrAustenitic, titanium })));
+      .map(({ code, nonFerrous, austenitic, titanium }) => ({ code, nonFerrous, austenitic, titanium })));
   }
 }

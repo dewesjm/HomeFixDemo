@@ -31,7 +31,7 @@ export class TypeExceptionsComponent {
     return getSignoffTypeRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
   }
   add() {
-    const row = { id: ++this.seq, routing: '', rule: { from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' as const } };
+    const row = { id: ++this.seq, routing: '', rule: { from: 'pt', to: '5x' } };
     this.rows = [row, ...this.rows]; this.editing = row.id; this.original = undefined;
   }
   edit(row: ExceptionRow) { this.original = structuredClone(row); this.editing = row.id; }

@@ -2,7 +2,7 @@ import { insertedDefinitionId } from '../routing/instance-identity';
 /* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
-import { TypeException, replacedType } from './type-exceptions';
+import { TypeException, replacedType, normalizeTypeException } from './type-exceptions';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
@@ -67,9 +67,9 @@ const SEED_ROWS: SignoffTypeRow[] = [
   { stepId: 'sold', types: only('sold') },
   { stepId: REPAIR_TYPE_ROW, types: only('repair') },
   { stepId: NQC_EXCAVATION_TYPE_ROW, types: [], typeSource: 'rejecting-inspection',
-    typeExceptions: [{ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }] },
+    typeExceptions: [{ from: 'pt', to: '5x', when: [[{ field: 'material.nonFerrous', op: 'is', values: ['Yes'] }], [{ field: 'material.austenitic', op: 'is', values: ['Yes'] }]] }] },
   { stepId: EXCAVATION_TYPE_ROW, types: [], typeSource: 'rejecting-inspection',
-    typeExceptions: [{ from: 'pt', to: '5x', materialFlag: 'nonFerrousOrAustenitic' }] },
+    typeExceptions: [{ from: 'pt', to: '5x', when: [[{ field: 'material.nonFerrous', op: 'is', values: ['Yes'] }], [{ field: 'material.austenitic', op: 'is', values: ['Yes'] }]] }] },
 ];
 
 /* bumped on every save of this table or of Signoff Types, so getTemplates() knows its cached
@@ -80,7 +80,8 @@ export const signoffTypesVersion = () => version * 1000 + routingSignoffTypesVer
 export function getSignoffTypeRows(): SignoffTypeRow[] {
   try {
     const raw = localStorage.getItem(STORAGE.signoffTypes);
-    return raw ? JSON.parse(raw) : SEED_ROWS;
+    return raw ? (JSON.parse(raw) as SignoffTypeRow[]).map(row => ({ ...row,
+      typeExceptions: row.typeExceptions?.map(normalizeTypeException) })) : SEED_ROWS;
   } catch { return SEED_ROWS; }
 }
 

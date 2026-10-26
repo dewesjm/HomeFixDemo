@@ -14,6 +14,18 @@ describe('Type exceptions grid', () => {
     expect(host.querySelector('tr[draggable]')).toBeNull();
     expect(host.querySelectorAll('button[draggable="true"]').length).toBe(2);
   });
+  it('edits separate material conditions as explicit OR groups and reloads them', async () => {
+    const f = create(); const c = f.componentInstance;
+    c.edit(c.rows[0]); f.detectChanges(); await f.whenStable();
+    const host: HTMLElement = f.nativeElement;
+    const fields = host.querySelectorAll<HTMLSelectElement>('[aria-label="Joint Details field"]');
+    expect(Array.from(fields).map(e => e.value)).toEqual(['material.nonFerrous', 'material.austenitic']);
+    fields[0].value = 'material.titanium'; fields[0].dispatchEvent(new Event('change')); f.detectChanges();
+    host.querySelector<HTMLButtonElement>('[aria-label="Save exception"]')!.click(); f.detectChanges();
+    const reopened = create().componentInstance;
+    expect(reopened.rows[0].rule.when![0][0].field).toBe('material.titanium');
+    expect(reopened.rows[0].rule.when![1][0].field).toBe('material.austenitic');
+  });
   it('cancels drafts and saves changes without changing another routing or its source', () => {
     const f = create(); const c = f.componentInstance; const row = c.rows[0];
     const before = structuredClone(getSignoffTypeRows());

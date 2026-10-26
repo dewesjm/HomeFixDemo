@@ -7,8 +7,8 @@ import { ConditionRule, JOINT_DETAIL_FIELDS } from '../../routing/step-condition
   selector: 'app-type-enable-conditions', standalone: true, imports: [FormsModule],
   template: `
     <div class="border rounded p-2 my-1 text-xs">
-      <div class="font-semibold">Enable when</div>
-      @if (!rules().length) { <p>Always enabled</p> }
+      <div class="font-semibold">{{ heading() }}</div>
+      @if (!rules().length) { <p>{{ emptyText() }}</p> }
       @for (rule of rules(); track $index; let ri = $index) {
         @if (ri > 0) { <div class="font-semibold my-1">OR</div> }
         @for (clause of rule; track $index; let ci = $index) {
@@ -39,6 +39,8 @@ import { ConditionRule, JOINT_DETAIL_FIELDS } from '../../routing/step-condition
   `,
 })
 export class TypeEnableConditionsComponent {
+  heading = input('Enable when');
+  emptyText = input('Always enabled');
   rules = input.required<ConditionRule[]>();
   listId = input.required<string>();
   changed = output<ConditionRule[]>();

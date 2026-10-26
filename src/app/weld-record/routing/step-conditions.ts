@@ -1,3 +1,4 @@
+import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
 import { originalInspectionType, performedInspectionType } from './inspection-context';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
@@ -87,6 +88,10 @@ const JOINT_DETAILS_TEXT: StepConditionField[] = [
 /* Joint Details fields (the built-in rules' fields first), then Fit's Defer Tack and Fit-Up Insp's
    Release to welding; every other step's fields come from stepAnswerFields() */
 export const STEP_CONDITION_FIELDS: StepConditionField[] = [
+  ...(['nonFerrous', 'austenitic', 'titanium'] as MaterialFlag[]).map(flag => ({
+    key: `material.${flag}`, label: `Either material is ${flag === 'nonFerrous' ? 'non-ferrous' : flag}`,
+    values: ['Yes', 'No'], get: (job: Job) => yesNo(hasMaterialFlag(job, flag)),
+  })),
   { key: 'nInd', label: 'N Ind.', values: N_IND_POOL, get: j => j.nInd },
   { key: 'jdInsert', label: 'Joint Design needs Consumable Insert', values: ['Yes', 'No'],
     get: j => yesNo(!!getJointDesign(j.jointDesign)?.requiresConsumableInsert) },
