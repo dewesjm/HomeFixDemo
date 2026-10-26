@@ -35,7 +35,7 @@ Repair numbering, Cut/Refit numbering, record preservation, reset mechanics, and
 
 ## Deferred input
 
-Attribute-code exceptions remain unspecified pending the applicable code list. Do not infer or implement them from this completed plan.
+Attribute-code requirements are being collected in [ATTRIBUTE-CODES-PLAN.md](ATTRIBUTE-CODES-PLAN.md), using provisional identifiers instead of actual source-system codes. The first five proposed effects include unresolved assumptions. Do not infer or implement exceptions from this completed plan; no attribute implementation is queued.
 
 ## Recorded validation
 
