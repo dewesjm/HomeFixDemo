@@ -5,7 +5,7 @@ import { ndtStage } from '../weld-record/routing/ndt';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../weld-record/routing/step-ids';
 
 const BUILT_IN_STEPS: StageTemplate[] = [
-  { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector' },
+  { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },
   { id: 'fit', label: 'Fit', required: true, role: 'Fitting' },
   { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding' },
   { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', decisionLabel: 'Inspection Results', rejectToStage: 'fit' },

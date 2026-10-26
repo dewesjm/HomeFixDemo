@@ -41,6 +41,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Seeded Pre-Fit description:** supplied reference text explains NQC validation and nuclear-joint applicability in the Routing Settings description viewer.
+
 - [x] **Routing Settings drag handle:** reordering starts only from the grip button; row text and controls do not start a routing drag.
 
 - [x] **Lookup editor consistency:** Repair Codes uses inline add/edit with pencil, save and cancel controls like Weld Colors. Repair Codes, Defect Codes and Weld Positions use an Active checkbox when editing; saved status and retirement behavior are preserved.

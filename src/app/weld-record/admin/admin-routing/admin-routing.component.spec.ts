@@ -12,6 +12,22 @@ import { JOBS } from '../../../data/jobs';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 
 describe('Routing Settings rules editor', () => {
+  it('shows the seeded Pre-Fit description with older saved settings and preserves an explicitly cleared description', fakeAsync(() => {
+    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [
+      { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', rejectToStage: '' },
+    ] }));
+    setSignoffTypeRows(getSignoffTypeRows());
+    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    host.querySelector<HTMLButtonElement>('[aria-label="View or edit description for Pre-Fit"]')!.click();
+    fixture.detectChanges(); tick(); fixture.detectChanges();
+    expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required');
+    updateStageTemplate('Welding', 'pre-fit', { description: '' });
+    expect(getTemplates()['Welding'].find(t => t.id === 'pre-fit')!.description).toBe('');
+    fixture.destroy();
+  }));
+
   it('starts reordering only from the grip button and disables the handle while editing', () => {
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();

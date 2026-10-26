@@ -77,7 +77,7 @@ function serializeStage(t: StageTemplate): SerializedStage {
    Reject rules never edited here follow the built-in ones. */
 function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTemplate {
   return {
-    description: s.description,
+    description: s.description ?? builtIn?.description,
     classification: s.classification ?? builtIn?.classification ?? 'numbered',
     lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
