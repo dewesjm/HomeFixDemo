@@ -12,7 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-26',
     fixed: ['Signoff Types: Add clause and Add group keep new conditions visible while configuring Additional Signoffs.', 'Routing Settings: drag to reorder only from the grip button, preventing accidental moves while using the rest of the row.'],
-    changed: ['Repair Codes: add and edit directly in the table, matching Weld Colors with pencil, save and cancel icons. Repair Codes, Defect Codes and Weld Positions use an Active checkbox while editing.'],
+    changed: ['Signoff Types By Routing: renamed the Options column to Options for Signoff Type.', 'Repair Codes: add and edit directly in the table, matching Weld Colors with pencil, save and cancel icons. Repair Codes, Defect Codes and Weld Positions use an Active checkbox while editing.'],
   },
   {
     date: '2026-10-25',
