@@ -41,6 +41,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Seeded Repair description:** supplied reference text explains insertion after UNSAT NDT and configurable Repair codes in the Routing Settings description viewer.
+
 - [x] **Seeded Pre-Fit description:** supplied reference text explains NQC validation and nuclear-joint applicability in the Routing Settings description viewer.
 
 - [x] **Routing Settings drag handle:** reordering starts only from the grip button; row text and controls do not start a routing drag.

@@ -3,6 +3,7 @@ import { StageTemplate } from '../model/workflow-types';
 
 export const REPAIR_STAGE: StageTemplate = {
   classification: 'added', lifecycle: 'repair', status: 'active', id: 'repair', label: 'Repair', required: true, role: 'Foreman',
+  description: 'Repair is inserted whenever an NDT is recorded as UNSAT. Repair codes are configurable and are utilized to route the joint further',
   decisionLabel: 'Inspection Results',
 };
 

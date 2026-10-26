@@ -68,7 +68,9 @@ describe('Routing Settings rules editor', () => {
       const area = host.querySelector<HTMLTextAreaElement>('textarea')!;
       area.value = text; area.dispatchEvent(new Event('input')); fixture.detectChanges();
     };
-    open(); enter('Explain the repair.\nRecord the result.'); save();
+    open();
+    expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('Repair is inserted whenever an NDT is recorded as UNSAT. Repair codes are configurable and are utilized to route the joint further');
+    enter('Explain the repair.\nRecord the result.'); save();
     expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.description).toBe('Explain the repair.\nRecord the result.');
     expect(JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!)['Welding'].find((t: { id: string }) => t.id === 'repair').description)
       .toBe('Explain the repair.\nRecord the result.');
