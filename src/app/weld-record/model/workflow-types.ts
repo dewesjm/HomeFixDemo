@@ -1,6 +1,7 @@
 /* The workflow data model: a joint's steps, what's recorded on them, and its history */
 import { Job } from '../../data/jobs';
 import { ConditionRule, RejectRule } from '../routing/step-conditions';
+import type { InspectionObligation } from '../attribute-codes/inspection-requirements';
 
 /* roles a step routes to; Pipe Welding filters its queue by these */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;
@@ -16,6 +17,7 @@ export const STAGE_RESULT_OPTIONS: { label: string; value: StageResult }[] = [
 ];
 
 export interface WorkflowStage {
+  attributeInspection?: InspectionObligation;
   /* Frozen insertion settings/context; later configuration edits affect future instances. */
   insertion?: {
     definition: StageTemplate;

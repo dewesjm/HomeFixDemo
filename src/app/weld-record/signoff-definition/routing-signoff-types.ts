@@ -48,6 +48,7 @@ const SEED_TYPES: RoutingSignoffType[] = [
   type('PT', 'pt'),
   type('UT', 'ut'),
   type('RT', 'rt'),
+  type('Attribute inspection not required', 'attribute-not-required'),
   type('Interim Layer', 'interim'),
   type('Final Weld', 'final-weld', { signsStep: 'final-weld' }),
   type('Repair', 'repair'),

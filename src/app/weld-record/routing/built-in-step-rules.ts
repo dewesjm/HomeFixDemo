@@ -2,8 +2,7 @@
    doesn't change per joint or per site, so it isn't offered in Admin. What the ids look like (NQC
    twins, repair rounds) is step-ids.ts.
 
-   Future enhancement, not built: attribute code exceptions (a list from the user). Whether they are
-   hard-coded here or become a setting is to be decided once the list is in. */
+   Attribute inspection requirements are resolved separately in attribute-codes/. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
@@ -56,6 +55,7 @@ export const isPhaseNdtId = (stageId: string) => /^(root|layer|final)-ndt-/.test
 /* the Degree of RT the joint requires on an RT/UT step: Root's is Joint Details RT Root, Final's is
    RT Final; Layer has no requirement, so nothing is enforced there */
 export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): string {
+  if (stage.attributeInspection) return String(stage.attributeInspection.methods.find(m => m.type === stage.inspectionType)?.minRt ?? 0);
   if (baseStepId(stage.id) === 'root-ndt-utrt') return job?.rtRoot ?? '';
   if (baseStepId(stage.id) === 'final-ndt-utrt') return job?.rtFinal ?? '';
   return '';

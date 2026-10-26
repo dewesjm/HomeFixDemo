@@ -2,6 +2,7 @@ import { insertedDefinitionId } from '../routing/instance-identity';
 /* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
+import { attributeTemplateId } from '../routing/step-ids';
 import { TypeException, replacedType, normalizeTypeException } from './type-exceptions';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
@@ -92,6 +93,7 @@ export function setSignoffTypeRows(rows: SignoffTypeRow[]) {
 
 /* the table row a step reads: its own, or the shared Repair / Excavation NDT row for any round */
 export function signoffTypeRowId(stageId: string): string {
+  stageId = attributeTemplateId(stageId);
   return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? (stageId.startsWith('nqc-') ? NQC_EXCAVATION_TYPE_ROW : EXCAVATION_TYPE_ROW) : insertedDefinitionId(stageId) ?? stageId;
 }
 

@@ -1,6 +1,7 @@
 /* mock Job model + seeded generator, stands in for a backend */
 import { TECHNICIAN_NAMES } from './people';
 import { CHARACTERISTIC_CODES } from './characteristics';
+import { attributeDemoJobs } from './attribute-demo-jobs';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 
 export interface Job {
@@ -58,6 +59,8 @@ export interface Job {
   attributeCode2: string;
   attributeCode3: string;
   attributeCode4: string;
+  attributeLocation?: string;
+  attributeGtaWeld?: string;
   estimatedHours: number;    /* labor hours */
   _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }
@@ -141,7 +144,7 @@ const workPackageFor = (hull: string, i: number) =>
 /* real codes from CHARACTERISTIC_CODES (data/characteristics.ts) so Joint Details can show
    "code description" instead of a bare code; the old ['AB','CD',...] pool never matched that
    lookup table, so descriptions never resolved */
-const ATTR_CODES = CHARACTERISTIC_CODES.map(c => c.code);
+const ATTR_CODES = CHARACTERISTIC_CODES.filter(c => /^\d+$/.test(c.code)).map(c => c.code);
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -282,6 +285,7 @@ function generateJobs(count = 480): Job[] {
 }
 
 export const JOBS: Job[] = generateJobs();
+JOBS.push(...attributeDemoJobs(JOBS[0]));
 
 
 /* a fresh blank Welding job for tests (N Ind. 1, so its routing starts at Pre-Fit) */

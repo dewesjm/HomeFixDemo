@@ -1,4 +1,6 @@
 import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
+import { jointAttributeCodes } from '../attribute-codes/attribute-context';
+import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { originalInspectionType, performedInspectionType } from './inspection-context';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
@@ -88,6 +90,8 @@ const JOINT_DETAILS_TEXT: StepConditionField[] = [
 /* Joint Details fields (the built-in rules' fields first), then Fit's Defer Tack and Fit-Up Insp's
    Release to welding; every other step's fields come from stepAnswerFields() */
 export const STEP_CONDITION_FIELDS: StepConditionField[] = [
+  { key: 'attributeCodes', label: 'Has attribute code (any slot)', values: PROGRESSION_ATTRIBUTE_CODES.map(a => a.code),
+    get: j => jointAttributeCodes(j).join(', ') },
   ...(['nonFerrous', 'austenitic', 'titanium'] as MaterialFlag[]).map(flag => ({
     key: `material.${flag}`, label: `Either material is ${flag === 'nonFerrous' ? 'non-ferrous' : flag}`,
     values: ['Yes', 'No'], get: (job: Job) => yesNo(hasMaterialFlag(job, flag)),
@@ -306,6 +310,11 @@ function selfValue(self: StageAnswers | undefined, key: string, stages: StageAns
 }
 
 function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], self?: StageAnswers): boolean {
+  if (c.field === 'attributeCodes') {
+    const codes = jointAttributeCodes(job);
+    const hit = c.values.some(value => codes.some(code => code.toLowerCase() === value.trim().toLowerCase()));
+    return c.op === 'isNot' ? !hit : hit;
+  }
   let value: string;
   if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5), stages);
   else {

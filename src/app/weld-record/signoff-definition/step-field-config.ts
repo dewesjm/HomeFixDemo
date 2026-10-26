@@ -151,6 +151,7 @@ function ndtType(typeId: string, fields: FieldActivation[]): TypeDefinition {
   return { typeId, fields: [TYPE, QUAL_CHECK, ...NDT_COMMON_FIELDS, ...fields, COMMENTS] };
 }
 const NDT_TYPES: TypeDefinition[] = [
+  { typeId: 'attribute-not-required', fields: [TYPE, { key: 'idAccessible', required: true }, COMMENTS] },
   ndtType('vt', [{ key: 'weldColor' }, DECISION]),
   ndtType('5x', [DECISION]),
   ndtType('mt', [{ key: 'idAccessible' }, DECISION]),
@@ -244,7 +245,7 @@ export function resetStepFieldConfig(): void {
 }
 
 /* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
-export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions'>>;
+export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeInspection'>>;
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
@@ -252,7 +253,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Parti
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
-  const options = step.insertion ? step.typeOptions : signoffTypeOptions(step.id);
+  const options = step.insertion || step.attributeInspection ? step.typeOptions : signoffTypeOptions(step.id);
   if (!options) return undefined;
   return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
 }
@@ -283,7 +284,12 @@ export function definitionHas(step: StepRef, key: string): boolean {
 
 /* the definition a step reads, or an empty one when it has none */
 export function getActivationForStep(step: StepRef): TypeDefinition {
-  return findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
+  const definition = findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
+  if (typeof step === 'string' || !step.attributeInspection?.methods.some(m => m.access)) return definition;
+  const fields = definition.fields.filter(f => f.key !== 'idAccessible');
+  const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY) + 1);
+  fields.splice(at, 0, { key: 'idAccessible', required: true, showIf: { all: [] }, fill: null });
+  return { ...definition, fields };
 }
 
 /* what the step's verify-grid rows are checked against */

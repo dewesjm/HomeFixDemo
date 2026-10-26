@@ -3,6 +3,7 @@ import { applySignedFlags } from './route-changes';
 import { updateStageTemplate, reorderStageTemplates, getTemplates } from './stage-templates';
 import { fabricationEditable, activeStageId } from './current-routing';
 import { JOBS, Job } from '../../data/jobs';
+import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { getJointDesign } from '../../data/joint-designs';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
 import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswerFieldsBefore } from './step-conditions';
@@ -38,8 +39,8 @@ const ALL_IDS = ['pre-fit', 'fit', 'tack', 'fitup-insp', 'fitup-release', 'defer
 describe('step conditions', () => {
   afterEach(() => updateStageTemplate('Welding', 'pre-fit', { includeWhen: DEFAULT_STEP_CONDITIONS['pre-fit'] }));
 
-  it('built-in rules give every seeded joint the same steps as before', () => {
-    for (const job of JOBS.filter(j => j.trade === 'Welding')) {
+  it('built-in rules preserve the baseline for seeded joints without progression attributes', () => {
+    for (const job of JOBS.filter(j => j.trade === 'Welding' && !jointAttributeCodes(j).length)) {
       /* N Ind 1 or 2 joints get the NQC row of each split step instead */
       const nuclear = job.nInd === '1' || job.nInd === '2';
       const expected = oldStepIds(job, ALL_IDS).map(id => nuclear && NQC_SPLIT_STEP_IDS.includes(id) ? nqcStepId(id) : id);

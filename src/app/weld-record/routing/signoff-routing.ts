@@ -1,4 +1,6 @@
 import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
+import { attributeConflicts } from '../attribute-codes/attribute-context';
+import { attributeInspectionError } from '../attribute-codes/inspection-validation';
 import { resolveInsertion, RoutingConfigurationError } from './generic-insertion';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { insertionDefinitionId } from './instance-identity';
@@ -56,6 +58,8 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   let repairNumber = '';
   const reasons: string[] = [];
   const signing = wf.stages.find(s => s.id === stageId)!;
+  const attributeErrors = [...attributeConflicts(job, signing), attributeInspectionError(signing)].filter(Boolean);
+  if (attributeErrors.length) throw new RoutingConfigurationError(attributeErrors.join(' '));
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
   if (isRepairStageId(stageId) && signing.result !== 'unsat') {
@@ -173,6 +177,9 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
         routedBack = null;
       }
     } else {
+      if (stages.slice(currentIdx + 1, to).some(s => s.attributeInspection && s.required && !s.signed)) {
+        throw new RoutingConfigurationError('Complete the intervening attribute inspection obligations before routing forward.');
+      }
       const moved = moveRouting({ ...wf, stages, fabricationData }, job, target.id);
       stages = moved.wf.stages;
       fabricationData = moved.wf.fabricationData;
@@ -181,8 +188,14 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     stages = stages.map(s => {
       if (s.id !== target.id) return s;
       const inputs = usesReturningInspectionType(s.id) ? { ...s.inputs, returningInspectionType: st.inspectionType } : s.inputs;
-      const typeOptions = s.insertion ? s.typeOptions : signoffTypeOptions(s.id, job, inputs);
-      return { ...s, inputs, typeOptions, ...typeValues(initialInspectionType({ typeOptions })) };
+      const returningOptions = signoffTypeOptions(s.id, job, inputs);
+      let typeOptions = s.insertion || s.attributeInspection ? s.typeOptions : returningOptions;
+      let attributeInspection = s.attributeInspection;
+      if (attributeInspection && inputs['returningInspectionType'] === '5x' && returningOptions?.some(o => o.value === '5x') && !typeOptions?.some(o => o.value === '5x')) {
+        typeOptions = [...(typeOptions ?? []), returningOptions.find(o => o.value === '5x')!];
+        attributeInspection = { ...attributeInspection, methods: [...attributeInspection.methods, { type: '5x', magnification: '5X' }] };
+      }
+      return { ...s, inputs, typeOptions, attributeInspection, ...typeValues(initialInspectionType({ typeOptions })) };
     });
   };
 
@@ -195,7 +208,11 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   }
   if (st.result !== 'unsat') {
     const rule = matchingThenRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing);
-    if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
+    const waitingForLayer = st.attributeInspection?.phase === 'layer' && rule?.to === 'root-layer'
+      && stages.some(s => s.id !== st.id && s.attributeInspection?.phase === 'layer' && s.required && !s.signed);
+    const hasAttributeLayer = st.id === 'root-layer' && st.inspectionType === 'interim' && rule?.to === 'root-layer'
+      && stages.some(s => s.attributeInspection?.phase === 'layer' && s.required && !s.signed);
+    if (rule && !waitingForLayer && !hasAttributeLayer && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
       reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
     }

@@ -152,6 +152,9 @@ src/app/
                            stage-display, form-fields (catalog fields selected by Type), weld-fields
     qualifications/        Qualification Check and Admin > Qualifications conditions (qual-conditions,
                            qual-when, qual-requirements, qualifications)
+    attribute-codes/       Attribute-code inspection requirements (see ROUTING.md and ATTRIBUTE-CODES-PLAN.md):
+                           attribute-context (codes, Shop/GTA applicability, conflicts), inspection-requirements
+                           (pure resolver), attribute-stages (called by buildStages), inspection-validation
     pipe-search/           Pipe Welding (Classic) — the old simple job table, switched off by a feature toggle
     adaptive-search/       Pipe Welding (built as Advanced Search) — job table + stacked-condition filters, every field, variants with columns;
                            filter-schema.ts: its fields, rows, variants/page state

@@ -121,6 +121,7 @@ export class SignoffService {
     const source = wf.stages.find(s => s.id === stageId)!;
     if (!engineeringHold && !routedBack && signed.stages.find(s => s.id === recordedId)?.signed) {
       for (const extra of additionalSignoffs(source, signed.stages, job, signed.fabricationData)) {
+        if (extra.stage.attributeInspection) continue;
         const target = { ...extra.stage, ...typeValues(extra.type), result: 'sat' as const, signed: true, signedAt: st.signedAt };
         signed = this.store.withHistory(signed, { ...signed, stages: signed.stages.map(s => s.id === target.id ? target : s) }, {
           section: 'Sign-off', who, stageId: target.id, action: `${target.label} - Signed off`, to: 'SAT',

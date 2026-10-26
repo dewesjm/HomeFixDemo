@@ -1,4 +1,5 @@
 import { migrateInspectionContextRules } from './inspection-context-migration';
+import { attributeTemplateId } from './step-ids';
 import { insertedDefinitionId } from './instance-identity';
 import { migrateRepairConfirmationRules } from './repair-confirmation-migration';
 import { insertionConfigurationErrors } from './insertion-validation';
@@ -218,6 +219,7 @@ export function allStageIds(): { id: string; label: string }[] {
 
 /* A numbered round reads the settings of its shared added-routing row. */
 export function routingTemplateId(id: string): string {
+  id = attributeTemplateId(id);
   return insertedDefinitionId(id) ?? /^(repair|nqc-excavation-ndt|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
 }
 export function getAddedTemplate(id: string): StageTemplate {

@@ -55,7 +55,8 @@ export type JointExtraKey =
   'mcl1' | 'mcl2' | 'joiningItem' | 'joinToItem' |
   'order' | 'workPackage' | 'workPermit' | 'waff' | 'serialNumber' | 'ss' | 'sfff' | 'dssAaa' |
   'er1' | 'er2' | 'er3' | 'er4' |
-  'attributeCode1' | 'attributeCode2' | 'attributeCode3' | 'attributeCode4';
+  'attributeCode1' | 'attributeCode2' | 'attributeCode3' | 'attributeCode4' |
+  'attributeLocation' | 'attributeGtaWeld';
 export type JointExtraGroup = 'Joint Info' | 'Joining' | 'Additional Data' | 'Attribute Codes';
 export interface JointExtraField {
   key: JointExtraKey;
@@ -91,6 +92,8 @@ export const JOINT_EXTRA_FIELDS: JointExtraField[] = [
   { key: 'attributeCode2', label: 'Attribute Code 2', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
   { key: 'attributeCode3', label: 'Attribute Code 3', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
   { key: 'attributeCode4', label: 'Attribute Code 4', group: 'Attribute Codes', options: ATTR_CODE_OPTIONS },
+  { key: 'attributeLocation', label: 'Joint location category', group: 'Attribute Codes', options: ['Unknown', 'Shop', 'Field'].map(value => ({ label: value, value })) },
+  { key: 'attributeGtaWeld', label: 'GTA-only weld', group: 'Attribute Codes', options: ['Unknown', 'Yes', 'No'].map(value => ({ label: value, value })) },
 ];
 export const JOINT_EXTRA_GROUPS: JointExtraGroup[] = ['Joint Info', 'Joining', 'Additional Data', 'Attribute Codes'];
 
@@ -183,6 +186,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     const hull = pick(HULLS);
     const attr = () => pick(CHARACTERISTIC_CODES).code;
     out.push({
+      ...blankJointExtras(),
       id: i % 4 === 0 ? '' : makeId(i + 1),
       hull,
       /* extras seeded the same way as the weld record's jobs.ts */

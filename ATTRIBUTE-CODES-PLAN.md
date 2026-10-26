@@ -1,6 +1,6 @@
-# Attribute-code routing exceptions — planning only
+# Attribute-code routing exceptions — demo implementation and clarification register
 
-Requirements collection is in progress. These are proposed meanings, not implemented behavior or approved build work. Codes below are two-character planning identifiers, not actual source-system codes; the first character is a letter and the second is usually a letter. FC is retained from the supplied notes as a provisional identifier. Actual codes are not needed for this discussion.
+All 13 progression-affecting attributes are collected. Demo implementation is authorized using explicit assumptions; their real-world meanings still need clarification. Codes below are two-character planning identifiers, not actual source-system codes; the first character is a letter and the second is usually a letter. FC is retained from the supplied notes as a provisional identifier. Actual source-system code mapping remains unconfirmed. This document is the single reference for messages, original interpretations, user comments, executable demo assumptions and unanswered questions.
 
 Attributes without routing effects still show their translated message. Their individual messages are outside this routing-exception list.
 
@@ -22,7 +22,9 @@ Attributes without routing effects still show their translated message. Their in
 | RI | 60 RT AND/OR PT OF ID REQUIRED | 60-degree RT and/or PT of the ID required. |
 | BP | BOTH 5X AND PT/MT ROOT REQ'D | Both Root VT at 5X and Root PT/MT required. |
 
-## Assumptions and questions to resolve
+## Original interpretations and questions — retained for comparison
+
+These notes preserve the original discussion. The implementation register below states the demo choices and records subsequent user comments separately; an implemented assumption is not a confirmed engineering requirement.
 
 - **PR:** preserve both the supplied message and explanation. They do not yet establish whether PT is at Root or Final, whether ID means inside diameter, or whether "visible" means visually inspectable. PT is described as allowed, not mandatory. Confirm whether No RT applies to Root, Final or both, and what happens when the visibility condition is not met.
 - **PM:** substitution is optional, not a requirement to perform both PT and MT. Decide how the choice is recorded and how PT satisfies an otherwise-required Final MT inspection.
@@ -39,9 +41,9 @@ Attributes without routing effects still show their translated message. Their in
 - **BP:** require two completed obligations: Root VT at 5X, and Root PT or MT. Neither replaces the other. Confirm how PT versus MT is selected.
 - **Terminology:** ID = inside diameter, GTA = GTAW, and PT/MT = one applicable method rather than both remain assumptions to confirm.
 - **Multiple attributes:** precedence and conflicts are undecided, especially VT-only versus PT-and-UT-required. Do not silently choose a winner.
-- **Lifecycle and configuration:** decide configuration versus fixed rules, regular/NQC applicability, changes to existing joints, signed-record preservation, Repair/Excavation returns and Deprogress after the requirements are collected. No implementation is authorized by this plan.
+- **Lifecycle and configuration:** originally open: configuration versus fixed rules, regular/NQC applicability, changes to existing joints, signed-record preservation, Repair/Excavation returns and Deprogress. See the implementation register for the authorized demo defaults.
 
-## Proposed implementation direction — not approved build work
+## Implementation approach
 
 This document is the single reference for all 13 collected attributes, interpretations and implementation discussion. The table preserves supplied intent; assumptions are not confirmed requirements.
 
@@ -56,4 +58,73 @@ Reuse existing routing inclusion and Type configuration where it fits. Consider 
 
 Check support for shop/field identity, recorded ID accessibility, magnification and 60-degree RT. Missing accessibility must remain unknown rather than being treated as inaccessible. Record the selected substitute and which obligation its completed inspection satisfies.
 
-Conflicting attributes need an explicit policy; list order must not silently determine precedence. Resolve phase scope, inspection order, configuration ownership and lifecycle questions before implementation. No values are being added to application screens, seed data or the changelog.
+Conflicting attributes block signoff with an explanation; list order does not determine precedence. The provisional demo choices below permit implementation while keeping engineering questions open.
+
+## User comments and decisions — recorded alongside assumptions
+
+| Topic | User comment or decision | Status / effect |
+|---|---|---|
+| Scope | These 13 are all codes that affect joint progression. | Complete collected list; no additional codes presumed. |
+| Authorization | Implement using assumptions and document every assumption for clarification. | Demo implementation authorized; engineering meanings remain provisional. |
+| Existing data | Demo only; effects on existing signed joints do not matter. Adjust seeded data as needed. | Use normal demo cache reset; no signed-joint migration work. |
+| ID | User does not know what ID means. | Preserve the literal term ID; do not present inside diameter as confirmed. |
+| GTA | User thinks GTA means GTAW and considers this sensible, but is unsure. | GTAW remains a working assumption, not a confirmed definition. |
+| PT/MT | The performed PT or MT must be specified. | Explicit Type selection; never a combined PT/MT completion record. |
+| PR visibility | User guesses no routing effect when ID is not visible. | Apply PR only with access/visibility Yes; retain this as a tentative interpretation. |
+| LR | Allows RT rather than requiring it; user assumes every interim layer is allowed that alternative. | PT remains offered; RT60 is independently offered on each applicable interim-layer inspection. |
+| Conflicts | User selected “Stop and explain the conflict.” | Chosen demo policy, recorded separately from the original proposal. |
+| Follow-up | Preserve assumptions/questions alongside user answers; avoid a large batch of questions. | Keep this register; ask one focused clarification at a time. |
+| IA phase follow-up | User first tentatively suggested Root + Final if each has accessibility, asked about Layer, then said “I would assume it's for all 3.” | Latest provisional demo choice: Root, Layer and Final. Original Final-only assumption is retained below; this is not engineering confirmation. |
+| Independent signoff data | User emphasized that every signoff must have completely separate data. | Type, result, inputs, signoff inputs, completion records and the ID access/visibility answer are independent per signoff. There is no joint-level access fact. |
+
+## Executable demo assumptions and open questions
+
+Every row below is a demo assumption unless explicitly identified above as a user decision. Defaults are reproducible and are not a certification of the source messages.
+
+| ID | Topic | Implemented demo assumption | Clarification still needed |
+|---|---|---|---|
+| A01 | Code identity | PR, PM, FC, BJ, PU, SI, RX, IA, IR, LR, GV, RI and BP are executable provisional identifiers. Exact, trimmed, case-insensitive matching across all four slots; duplicate codes apply once. | Actual source-system mapping. |
+| A02 | Other codes | Unknown and informational codes display their lookup text but have no built-in progression effect. | None for collected scope. |
+| A03 | ID | Store/display literal ID without expanding it. Scope is recorded in the obligation and selected Type label. | What does ID mean, and what portion of an inspection does it identify? |
+| A04 | Access / visibility | Each affected signoff requires its own Yes/No answer to "Inner surface of the weld / ID is accessible", representing both accessibility and visibility. Methods that depend on access (PR, SI, IA, IR, RI) are valid only with the matching answer on that signoff; signing is blocked until it is answered. | Should visibility and accessibility be separate answers? Is an Unknown answer needed? |
+| A05 | Context source | Shop/Field and GTA-only are job data, not inferred from engineering notes, dimensions, material, actual signoffs or code-message text; blank is Unknown. ID access is answered per signoff (A04). Weld Planning exposes these fields; its data remains independent of Weld Record, as before. | Source-system fields and integration/mapping. |
+| A06 | GTA | A GTA-only Yes fact stands for GTAW throughout the applicable weld. No/Unknown retains normal routing; mixed-process work is treated as not GTA-only. | GTA meaning, mixed-process behavior and whether actual process signoffs should determine applicability. |
+| A07 | PR phase | On each Root/Final UT/RT obligation, access Yes allows "Attribute inspection not required" in place of RT. Root PT (ID, access Yes) is allowed as an alternative to the normal Root VT/5X obligation, without adding mandatory PT. Other existing Root inspections remain. | Root versus Final PT; which RT phases; does PT replace VT or satisfy a different obligation? |
+| A08 | PR inactive | With access No on that signoff, PR makes no change; RT remains required. | Confirm the user's tentative guess. |
+| A09 | PM | Final PT can satisfy the same obligation as Final MT; inspector explicitly chooses one. Existing independently required PT need not be repeated. | Any material or procedure restrictions on substitution? |
+| A10 | FC | Final VT at 1X only; remove normal Final MT/PT/UT/RT. Root and Layer remain unchanged. | Does “only” override independently required RT/UT? Is 1X correct? |
+| A11 | BJ | Same Final effect as FC. Presence of BJ establishes brazed/material applicability; no extra material predicate is guessed. Supplied material placeholder and OPTO remain literal. | Material list, OPTO meaning, extra applicability and VT magnification. |
+| A12 | PU | Final PT and Final UT are separate obligations, with normal VT and any existing MT/RT retained. | Should existing MT/RT remain, and is inspection order prescribed? |
+| A13 | SI | On Shop joints, ID VT with access Yes may satisfy Root RT or Final RT separately. Field/Unknown location retains RT; access No on the signoff requires RT. Normal VT remains its own obligation because ID scope is distinct. | Which phase, whether visibility is necessary, and whether one VT record may satisfy normal VT too. |
+| A14 | RX | Require Root PT and Final RT; retain other normal requirements. Final RT uses the existing numeric degree, or 100 degrees if absent/NA. | Required Final RT coverage/degree and retained methods. |
+| A15 | IA | Original assumption: Final only. Latest user provisional choice: Root, Layer and Final each get an IA obligation with its own signoff. Access Yes requires an explicit ID PT or MT; access No records "Attribute inspection not required" and leaves the baseline unchanged. | Confirm all-three-phase interpretation, method/material restrictions and inaccessible/unknown behavior; see independent-data follow-up above. |
+| A16 | IR | ID PT or MT with access Yes may substitute for each Root/Final RT obligation. RT remains offered. Access No requires RT. | Phase and optional versus automatic substitution. |
+| A17 | LR | Only an existing Layer PT obligation gains RT of at least 60 degrees as an alternative. It creates no inspection when Layer PT is absent. Each interim-layer cycle resets its choice and needs its own inspection; no RT is mandatory. | Confirm a separate substitute per layer and exact versus minimum 60-degree coverage. |
+| A18 | GV | GTA-only Yes restricts Root to 5X and Final to VT at 1X. Layer requirements remain. Magnification is part of the required method/record label, not a separate editable measurement. | Does it remove Layer inspections? Is a measured magnification field needed? |
+| A19 | RI | Final obligation satisfied by RT of at least 60 degrees or by ID PT with access Yes. Access No leaves RT60 as the valid method for this added obligation. Independent baseline inspections remain; a stricter existing RT also satisfies RI. | Phase, “and/or” semantics, accessibility and whether RI is intended to replace baseline RT. |
+| A20 | BP | Separate Root 5X and Root PT or MT obligations; normal VT is replaced by 5X. Other Root methods remain. | Applicable PT versus MT selection rules and retained methods. |
+| A21 | PT/MT | Offer explicit PT and MT alternatives unless a stricter baseline obligation already fixes one. Inspector selects the applicable Type; material suitability is not guessed. | Authoritative material/procedure eligibility. |
+| A22 | Obligation completion | One method satisfies each alternative obligation. Distinct required methods need separate routing/signoff records. Identical requirements merge; a stricter singleton can satisfy a broader alternative. ID-scoped work does not merge into a generic inspection unless the obligation explicitly permits it. | Whether one record may satisfy additional overlapping obligations, and whether RI needs a deliberate “both” mode. |
+| A23 | RT degree | Values are plain numeric degrees, consistent with the existing app. Enforce at least the resolved minimum, including LR/RI 60; preserve a higher independent baseline RT minimum. Alternatives such as PT do not require RT fields. | Confirm “60” is degrees and whether exactly 60 is intended. |
+| A24 | Order | Within each phase use visual, surface, then volumetric owner groups; additional obligations sharing a group follow in deterministic order. No independent engineering order is inferred. | Required order and interaction with admin reordering. |
+| A25 | Conflicts | Block all signoff/preview progression for explicit VT-only versus required nonvisual attributes, GV versus Root PT/MT, and PR versus RX RT. Slot order never selects a winner. Permitted alternatives alone do not create conflicts. | Confirm engineering precedence; demo blocking policy was selected by user. |
+| A26 | Baseline | Start from the currently included/required NDT routings and their enabled Types. Apply attribute additions/removals afterward. Baseline method alternatives remain alternatives. Retain unaffected requirements. | How future custom admin inclusion/Type rules should constrain mandatory attribute additions. |
+| A27 | Configuration | Attribute meanings are fixed, isolated functions for this demo. Existing templates own personas, reject/Then-go destinations and shared Type forms. “Has attribute code (any slot)” is available in routing conditions; no new attribute-rule admin screen. | Whether production meanings should become editable settings. |
+| A28 | Regular/NQC | Use the indicator's regular or NQC template and configured persona for every added obligation; behavior is otherwise identical. | Attribute-specific nuclear exceptions. |
+| A29 | Repairs | UNSAT follows existing configured rejection logic. Store the exact failed obligation ID and performed Type; Grind/Excavation return to that obligation. Preserve configured PT-to-5X Excavation exceptions and returning 5X availability. | Whether substitute eligibility changes on repairs or repeats. |
+| A30 | Reset/Deprogress | Route-back, Cut and each Layer repeat rebuild blank choices from the same resolver. Deprogress restores the previous workflow snapshot and blanks unsigned values using the same obligation set. Earlier History remains. | No legacy-data migration needed for demo; confirm any future production policy separately. |
+| A31 | Forward routing | Ordinary configured forward destinations cannot skip intervening unsigned attribute obligations. Deliberate Admin Routing Override retains its existing skip semantics. Final Weld selected on Layer retains the existing bypass of interim Layer inspections. | Should attributes constrain deliberate overrides or Final Weld-on-Layer behavior? |
+| A32 | Additional signoffs | Automatic Additional Signoffs cannot complete attribute inspection obligations; require their own explicit performed inspection records. | Which automatic combinations, if any, are legitimately equivalent? |
+| A33 | Display | Compact keyboard-focusable attribute badges in Joint Details expose exact supplied messages on hover/focus and accessible labels; expanded details retain code + full message. Raw Joint Details NDT source values remain visible; routing labels show resolved choices. | Preferred final presentation and whether to show a separate source-versus-effective summary. |
+| A34 | Demo seeds | Ordinary random seeds retain informational codes. AC001 through AC013 isolate one progression code each, start fresh, alternate regular/NQC and use Shop and GTA-only Yes facts to exercise conditions; ID access is answered at each signoff. Baseline Root PT, Layer PT, Final MT and RT100 are illustrative. | These are examples, not real engineering records. |
+| A35 | Persistence | Workflow version 2.10.62 resets demo caches. Obligation identity, allowed methods, scope and minimum degrees persist with stages; extra IDs retain their template owner. No migration of existing signed work. | None for this demo; source-system semantics remain open. |
+
+## Verification and code ownership
+
+- Messages and provisional identifiers: data/attribute-codes.ts; lookup descriptions: data/characteristics.ts.
+- Applicability/conflicts: weld-record/attribute-codes/attribute-context.ts.
+- Pure requirement resolution: weld-record/attribute-codes/inspection-requirements.ts.
+- Stage construction: weld-record/attribute-codes/attribute-stages.ts, called by buildStages.
+- Per-obligation validation: weld-record/attribute-codes/inspection-validation.ts, shared by UI validation and routeSignoff (including preview).
+- Per-code, workflow and rendered message tests sit alongside these modules.
+- Verified 2026-10-26: type-check clean, production build succeeds, full unit suite 554/554 passing. Not browser-verified.

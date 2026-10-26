@@ -1,4 +1,6 @@
 import { FormField } from '../../signoff-definition/field-catalog';
+import { attributeConflicts } from '../../attribute-codes/attribute-context';
+import { attributeInspectionError } from '../../attribute-codes/inspection-validation';
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
@@ -56,6 +58,9 @@ function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
    and locked earlier steps are the caller's to check first) */
 export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   const reasons: string[] = [];
+  if (ctx.job) reasons.push(...attributeConflicts(ctx.job, stage));
+  const attributeError = attributeInspectionError(stage);
+  if (attributeError) reasons.push(attributeError);
   if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
@@ -79,6 +84,8 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
 export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record<string, string> {
   const errors: Record<string, string> = {};
   const key = (k: string) => `${stage.id}:${k}`;
+  const attributeErrors = [...(ctx.job ? attributeConflicts(ctx.job, stage) : []), attributeInspectionError(stage)].filter(Boolean);
+  if (attributeErrors.length) errors[key('__attributes')] = attributeErrors.join(' ');
   const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
   /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
   for (const f of ctx.visibleFields) {

@@ -1,10 +1,12 @@
-/* characteristic code lookup, job carries up to three */
+import { PROGRESSION_ATTRIBUTE_CODES } from './attribute-codes';
+/* Attribute code lookup; a joint carries up to four codes. */
 interface CharacteristicCode {
-  code: string;          /* short numeric code, e.g. 1234 */
+  code: string;
   description: string;   /* meaning, e.g. Hazardous */
 }
 
 export const CHARACTERISTIC_CODES: CharacteristicCode[] = [
+  ...PROGRESSION_ATTRIBUTE_CODES,
   { code: '1234', description: 'Hazardous' },
   { code: '2001', description: 'Confined space' },
   { code: '3050', description: 'Permit required' },

@@ -1,5 +1,6 @@
 /* A joint's steps, built from the step templates and its Joint Details */
 import { routingRole } from './routing-role';
+import { applyAttributeStages } from '../attribute-codes/attribute-stages';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
@@ -42,7 +43,7 @@ export function buildStages(job: Job): WorkflowStage[] {
     };
   };
 
-  return tradeStages.filter(included).map(toStage);
+  return applyAttributeStages(job, tradeStages.filter(included).map(toStage), tradeStages);
 }
 
 /* a joint with nothing signed yet; Fabrication is pre-filled for the demo */
