@@ -35,7 +35,7 @@ Repair numbering, Cut/Refit numbering, record preservation, reset mechanics, and
 
 ## Deferred input
 
-Attribute-code requirements are being collected in [ATTRIBUTE-CODES-PLAN.md](ATTRIBUTE-CODES-PLAN.md), using provisional identifiers instead of actual source-system codes. All 13 collected attributes, interpretations and the proposed implementation direction are consolidated there; proposed effects include unresolved assumptions. Do not infer or implement exceptions from this completed plan; no attribute implementation is queued.
+Attribute-code requirements are being collected in [ATTRIBUTE-CODES-PLAN.md](ATTRIBUTE-CODES-PLAN.md), using provisional identifiers instead of actual source-system codes. All 13 collected attributes and their interpretations are consolidated there. Demo behavior is implemented (see the attribute-code section of ROUTING.md); meanings remain provisional assumptions pending clarification.
 
 ## Recorded validation
 
