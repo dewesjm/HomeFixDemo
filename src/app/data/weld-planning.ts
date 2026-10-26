@@ -184,7 +184,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
 
     const hull = pick(HULLS);
-    const attr = () => pick(CHARACTERISTIC_CODES).code;
+    /* informational codes only, as in jobs.ts; progression codes appear only on the AC examples */
+    const attr = () => pick(CHARACTERISTIC_CODES.filter(c => /^\d+$/.test(c.code))).code;
     out.push({
       ...blankJointExtras(),
       id: i % 4 === 0 ? '' : makeId(i + 1),
