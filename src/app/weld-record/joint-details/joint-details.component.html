@@ -17,7 +17,7 @@
         <div class="detail-row"><span class="meta">Nuclear Indicator</span><span [appTooltip]="nIndTooltip()">{{ job().nInd || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Sequence #</span><span>{{ job().sequenceNumber || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Routing</span><span>{{ currentRouting() }}</span></div>
-        <div class="detail-row"><span class="meta">Engineering Notes</span><span>{{ job().engineeringNotes || '-' }}</span></div>
+        <div class="detail-row"><span class="meta">Engineering Notes</span><span class="whitespace-nowrap overflow-x-auto" tabindex="0" aria-label="Engineering Notes">{{ job().engineeringNotes || '-' }}</span></div>
       </div>
     </div>
 

@@ -26,7 +26,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
-  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick Deck, Frame and P/S/CL first' },
+  { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see weld-record/fabrication/fabrication-form.ts
   // fabricationFieldsShown()) when that joint member's MCL requires traceability, so required is unconditional here
   { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },

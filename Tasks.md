@@ -41,6 +41,10 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Joint Details Engineering Notes:** stays on one line with horizontal scrolling, scoped to the notes value.
+
+- [x] **Fabrication Usage field:** removed the prerequisite placeholder text.
+
 - [x] **Additional Signoffs condition editing:** Add clause and Add group retain unfinished rows while editing; saved conditions include completed clauses only.
 
 - [x] **Seeded Excavation NDT descriptions:** supplied reference text explains repair readiness and NQC requirements for both regular and NQC Excavation NDT.
