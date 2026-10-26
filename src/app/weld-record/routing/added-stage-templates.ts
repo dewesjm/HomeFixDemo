@@ -20,12 +20,14 @@ export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
     { when: [{ field: 'self.repairType', op: 'is', values: ['weld-repair'] }], to: 'add-excavation-ndt' },
   ] },
   { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
+    description: 'Excavation NDT is a request to repair, validating that the joint has been prepared and is ready for the actual repair (weld repair, cut, etc.) to proceed. Requires NQC for nuclear joints',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]],
     rejectToStage: 'own-repair', thenRules: [
       { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },
       { when: [], to: 'rejecting-ndt' },
     ] },
   { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'nqc-excavation-ndt', label: 'NQC Excavation NDT', displayName: 'Excavation NDT', required: true, role: 'NQC Inspector',
+    description: 'Excavation NDT is a request to repair, validating that the joint has been prepared and is ready for the actual repair (weld repair, cut, etc.) to proceed. Requires NQC for nuclear joints',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['1', '2'] }]],
     rejectToStage: 'own-repair', thenRules: [
       { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },

@@ -41,6 +41,8 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 
 ## Completed work and deliberate switches
 
+- [x] **Seeded Excavation NDT descriptions:** supplied reference text explains repair readiness and NQC requirements for both regular and NQC Excavation NDT.
+
 - [x] **Seeded Repair description:** supplied reference text explains insertion after UNSAT NDT and configurable Repair codes in the Routing Settings description viewer.
 
 - [x] **Seeded Pre-Fit description:** supplied reference text explains NQC validation and nuclear-joint applicability in the Routing Settings description viewer.
