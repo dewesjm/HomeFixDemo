@@ -3,7 +3,7 @@
     <h3 class="text-lg font-semibold">Type Exceptions</h3>
     <button type="button" class="btn btn-sm btn-primary" [disabled]="editing !== null" (click)="add()"><svg lucidePlus class="size-4"></svg> Add exception</button>
   </div>
-  <p class="text-sm mb-2">All routing exceptions are listed below. For each routing, the first matching exception replaces the original Type once; enable conditions still apply. Reorder exceptions within the same routing using the arrows or drag handle. Changes apply to future instances.</p>
+  <p class="text-sm mb-2">Exceptions change the Signoff Type offered on a routing when the listed conditions match. Each routing checks its exceptions from top to bottom and uses the first match; if none match, the original Type remains.</p>
   <div class="overflow-x-auto">
     <table class="table table-sm">
       <thead><tr><th>Order</th><th>Routing</th><th>Original Type</th><th>Conditions</th><th>Use Type</th><th></th></tr></thead>
