@@ -71,11 +71,11 @@ Each phase (Root, Layer, Final) gets its NDT routings from the joint's **Joint D
 | MT/PT | VT, then MT/PT with the inspector choosing MT or PT |
 | UT | VT, then RT/UT offering only UT |
 
-**Layer:** NDT Each Layer selects exactly one routing. Blank gives no Layer NDT; VT or 5X gives 5X/VT offering only that method; MT, PT or MT/PT gives MT/PT offering the specified method(s); UT gives RT/UT offering only UT. No extra Layer VT is added for MT, PT, MT/PT or UT. Each Layer NDT routing, including its NQC row, starts with a Then go to rule: when Layer was signed as Interim Layer, go to Layer. A Repair returns to the rejecting NDT as before; that NDT's SAT then applies its rule.
+**Layer:** NDT Each Layer selects exactly one routing. Blank gives no Layer NDT; VT or 5X gives 5X/VT offering only that method; MT, PT or MT/PT gives MT/PT offering the specified method(s). Layer has no RT/UT routing, so NDT Each Layer has no UT value. No extra Layer VT is added for MT, PT or MT/PT. Each Layer NDT routing, including its NQC row, starts with a Then go to rule: when Layer was signed as Interim Layer, go to Layer. A Repair returns to the rejecting NDT as before; that NDT's SAT then applies its rule.
 
 - **RT:** a degree in RT Degree Root or RT Degree Final (10, 100, 360, 60 or 75) adds a RT/UT routing offering only RT for that phase, after the others. Blank or NA adds nothing. A joint never has UT and an RT degree for the same phase.
 - **Type is never pre-filled:** every inspection routing's Type starts on "Select the inspection performed…", even when only one method is offered, so the inspector always picks what was performed.
-- **Valid values:** NDT Root, NDT Each Layer and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
+- **Valid values:** NDT Root and NDT Final Weld take 5X, MT, MT/PT, PT, UT or VT; NDT Each Layer takes 5X, MT, MT/PT, PT or VT. Blank and NA are not valid (a blank NDT Each Layer means no Layer NDT). RT Degree Root and RT Degree Final take blank, 10, 100, 360, 60, 75 or NA.
 - **The general NDT field** in Joint Details doesn't affect routing.
 - **Root inspection question:** when NDT Root is VT or 5X (Show when on Admin > Signoff Type Forms, Root), both the question and its answer choices name that method. Answering Yes also signs the corresponding Root inspection as SAT when Root is signed, using the matching Additional Signoffs rule on Admin > Signoff Types. The rules select VT for NDT Root VT and 5X for NDT Root 5X, including NQC rows. Answering alone signs nothing.
 

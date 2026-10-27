@@ -130,6 +130,8 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see routing inclusion conditions and Type enable conditions in
    weld-record/routing/step-conditions.ts and signoff-definition/signoff-types.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
+/* NDT Each Layer has no UT: Layer has no RT/UT routing */
+export const NDT_EACH_VALUES = NDT_REQUIREMENT_VALUES.filter(v => v !== 'UT');
 /* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
    weld-record/routing/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
    Job from this file); the Degree of RT Performed signoff field must be at least this to sign off.
@@ -257,7 +259,7 @@ function generateJobs(count = 480): Job[] {
       rtRoot,
       rtFinal,
       ndtRoot,
-      ndtEach: ((v: string) => ndtEachBlank ? '' : v)(pick(NDT_REQUIREMENT_VALUES)),   /* always picks, so later seeded values don't shift */
+      ndtEach: ((v: string) => ndtEachBlank ? '' : v)(pick(NDT_EACH_VALUES)),   /* always picks, so later seeded values don't shift */
       ndtFinal,
       ut: pick(NDT_RESULTS),
       order: `${i % 2 === 0 ? '2' : '5'}${String(i * 7919 % 100000000).padStart(8, '0')}`,

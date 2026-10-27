@@ -5,7 +5,7 @@
 import { STORAGE } from './storage-keys';
 import {
   jointNumbers, WELD_TYPES, PIPE_SIZES, decimalPipeSize, WALL_THICKNESSES, MATERIAL_TYPES,
-  NDT_REQUIREMENT_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
+  NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from './jobs';
 import { CHARACTERISTIC_CODES } from './characteristics';
@@ -37,10 +37,11 @@ export const JOINT_TYPE_OPTIONS: { label: string; value: JointType }[] = [
    stored requirement on the weld record, so they keep blank/X/5X for now. Blank = not set yet. */
 const RT_MARKS = ['', ...RT_DEGREE_OPTIONS.map(o => o.value)];
 const NDT_METHOD_MARKS = ['', ...NDT_REQUIREMENT_VALUES];
+const NDT_EACH_MARKS = ['', ...NDT_EACH_VALUES];
 const NDT_MARKS = ['', 'X', '5X'];
 export const NDT_FIELDS = [
   { key: 'rtRoot', label: NDT_LABELS.rtRoot, options: RT_MARKS }, { key: 'rtFinal', label: NDT_LABELS.rtFinal, options: RT_MARKS },
-  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: NDT_LABELS.ndtEach, options: NDT_METHOD_MARKS },
+  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, options: NDT_METHOD_MARKS }, { key: 'ndtEach', label: NDT_LABELS.ndtEach, options: NDT_EACH_MARKS },
   { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, options: NDT_METHOD_MARKS },
   { key: 'ut', label: NDT_LABELS.ut, options: NDT_MARKS }, { key: 'vt', label: NDT_LABELS.vt, options: NDT_MARKS },
 ] as const;
@@ -220,7 +221,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
       materialType1: pick(MATERIAL_TYPES),
       materialType2: pick(MATERIAL_TYPES),
-      ndtRoot, ndtEach: pick(NDT_REQUIREMENT_VALUES), ndtFinal,
+      ndtRoot, ndtEach: pick(NDT_EACH_VALUES), ndtFinal,
       rtRoot: ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS),
       rtFinal: ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS),
       ut: pick(NDT_MARKS), vt: pick(NDT_MARKS),

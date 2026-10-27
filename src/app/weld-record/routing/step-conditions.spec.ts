@@ -33,7 +33,7 @@ function oldStepIds(job: Job, ids: string[]): string[] {
 }
 
 const ALL_IDS = ['pre-fit', 'fit', 'tack', 'fitup-insp', 'fitup-release', 'deferred-tack', 'root-weld',
-  'root-ndt-vt5x', 'root-ndt-mtpt', 'root-ndt-utrt', 'root-layer', 'layer-ndt-vt5x', 'layer-ndt-mtpt', 'layer-ndt-utrt',
+  'root-ndt-vt5x', 'root-ndt-mtpt', 'root-ndt-utrt', 'root-layer', 'layer-ndt-vt5x', 'layer-ndt-mtpt',
   'final-weld', 'final-ndt-vt5x', 'final-ndt-mtpt', 'final-ndt-utrt', 'review-o63', 'review-o04', 'sold'];
 
 describe('step conditions', () => {

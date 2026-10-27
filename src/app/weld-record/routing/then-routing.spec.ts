@@ -1,6 +1,6 @@
 import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
-import { newWorkflow } from './build-stages';
+import { buildStages, newWorkflow } from './build-stages';
 import { activeStageId, isStageLocked, setRoutingFrom } from './current-routing';
 import { routeSignoff } from './signoff-routing';
 import { getTemplates, updateStageTemplate } from './stage-templates';
@@ -91,7 +91,7 @@ describe('Then go to routing', () => {
   });
 
   for (const nInd of ['1', '3']) {
-    for (const ndtEach of ['VT', '5X', 'MT', 'PT', 'MT/PT', 'UT']) {
+    for (const ndtEach of ['VT', '5X', 'MT', 'PT', 'MT/PT']) {
       it(`uses only ${ndtEach} on Layer for Nuclear Indicator ${nInd}, then returns after SAT`, () => {
         const j = job({ nInd, ndtEach });
         let wf = workflowAt(j, 'root-layer');
@@ -107,6 +107,9 @@ describe('Then go to routing', () => {
         expect(acceptedNdt.stages.find(s => s.id === 'root-layer')!.repeats ?? 0).toBe(0);
       });
     }
+    it(`has no Layer RT/UT routing for Nuclear Indicator ${nInd}`, () => {
+      expect(buildStages(job({ nInd, ndtEach: 'UT' })).some(s => s.id.includes('layer-ndt-utrt'))).toBeFalse();
+    });
   }
 
   it('returns from Repair to the rejecting Layer NDT, whose SAT then returns to Layer', () => {

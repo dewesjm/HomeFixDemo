@@ -11,11 +11,11 @@ import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-ty
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
-import { Job, MCL_POOL, N_IND_POOL, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
+import { Job, MCL_POOL, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
 import { getJointDesign } from '../../data/joint-designs';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { requiresTraceability } from '../../data/mcl-traceability';
-import { NQC_SPLIT_STEP_IDS, nqcStepId, isRepairStageId, isExcavationNdtStageId } from './step-ids';
+import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId, isRepairStageId, isExcavationNdtStageId } from './step-ids';
 import { NDT_LABELS } from '../../data/ndt-labels';
 
 export interface ConditionClause {
@@ -109,7 +109,7 @@ export const STEP_CONDITION_FIELDS: StepConditionField[] = [
   { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
   { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
   { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },
-  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: ['', ...NDT_REQUIREMENT_VALUES], valueLabel: v => v || 'Blank', get: j => upper(j.ndtEach) },
+  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: ['', ...NDT_EACH_VALUES], valueLabel: v => v || 'Blank', get: j => upper(j.ndtEach) },
   { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
   { key: 'rtFinal', label: NDT_LABELS.rtFinal, values: RT_DEGREES, get: j => j.rtFinal },
   ...JOINT_DETAILS_TEXT,
@@ -205,9 +205,9 @@ const conditionField = (key: string) =>
   STEP_CONDITION_FIELDS.find(f => f.key === key) ?? (key.startsWith('step.') ? stepAnswerField(key) : undefined);
 
 const RT_TAKEN = ['10', '100', '360', '60', '75'];
-const utrtRule = (ndtKey: string, rtKey?: string): ConditionRule[] => [
+const utrtRule = (ndtKey: string, rtKey: string): ConditionRule[] => [
   [{ field: ndtKey, op: 'is', values: ['UT'] }],
-  ...(rtKey ? [[{ field: rtKey, op: 'is' as const, values: RT_TAKEN }]] : []),
+  [{ field: rtKey, op: 'is', values: RT_TAKEN }],
 ];
 const mtptRule = (ndtKey: string): ConditionRule[] => [[{ field: ndtKey, op: 'is', values: ['MT', 'PT', 'MT/PT'] }]];
 
@@ -226,7 +226,6 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   /* Layer NDT comes up only when NDT Each is set */
   'layer-ndt-vt5x': [[{ field: 'ndtEach', op: 'is', values: ['VT', '5X'] }]],
   'layer-ndt-mtpt': mtptRule('ndtEach'),
-  'layer-ndt-utrt': utrtRule('ndtEach'),
   'final-ndt-mtpt': mtptRule('ndtFinal'),
   'final-ndt-utrt': utrtRule('ndtFinal', 'rtFinal'),
   'review-o63': [
@@ -288,7 +287,7 @@ export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
     { field: 'self.inspectionType', op: 'is', values: ['interim'] },
     { field: 'ndtEach', op: 'is', values: [''] },
   ], to: 'root-layer' }],
-  ...Object.fromEntries(['vt5x', 'mtpt', 'utrt'].flatMap(kind => {
+  ...Object.fromEntries(PHASE_NDT_KINDS.layer.flatMap(kind => {
     const id = `layer-ndt-${kind}`;
     const rules: RejectRule[] = [{ when: [{ field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] }], to: 'root-layer' }];
     return [[id, rules], [nqcStepId(id), rules]];

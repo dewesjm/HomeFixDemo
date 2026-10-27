@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-27',
+    changed: ['Layer NDT: removed the Layer RT/UT routing. NDT Each Layer no longer offers UT, in Joint Details conditions and Weld Planning.'],
+  },
+  {
     date: '2026-10-26',
     added: ['Attribute codes: demo inspection requirements support explicit substitutions, separate required inspections and conflict explanations. Joint Details shows attribute messages on hover or keyboard focus.'],
     fixed: ['Signoff Types: Add clause and Add group keep new conditions visible while configuring Additional Signoffs.', 'Routing Settings: drag to reorder only from the grip button, preventing accidental moves while using the rest of the row.'],

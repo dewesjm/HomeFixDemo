@@ -8,7 +8,7 @@ import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
 import { NDT_KINDS } from '../routing/ndt';
-import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
+import { PHASE_NDT_KINDS, isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from './routing-signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
@@ -33,7 +33,7 @@ const only = (type: string): AvailableType[] => [{ type, default: true }];
 
 /* NDT rows have no default: the inspector picks the inspection performed. Each NDT step's NQC row
    (step-ids.ts) gets its own row too. */
-const ndtRows = (phase: string): SignoffTypeRow[] => (['vt5x', 'mtpt', 'utrt'] as const)
+const ndtRows = (phase: 'root' | 'layer' | 'final'): SignoffTypeRow[] => PHASE_NDT_KINDS[phase]
   .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)]
     .map(stepId => ({ stepId, types: NDT_KINDS[kind].options.map(o => ({ type: o.value, enableWhen: inspectionEnableWhen(phase, o.value) })) })));
 
@@ -43,9 +43,7 @@ function inspectionEnableWhen(phase: string, type: string): ConditionRule[] {
   if (type === 'vt') return [[{ field, op: 'isNot', values: ['5X'] }]];
   if (type === '5x') return [[{ field, op: 'is', values: ['5X'] }],
     [{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]];
-  if (type === 'rt') return phase === 'layer'
-    ? [[{ field, op: 'is', values: ['RT'] }]]
-    : [[{ field: phase === 'root' ? 'rtRoot' : 'rtFinal', op: 'isNot', values: ['', 'NA'] }]];
+  if (type === 'rt') return [[{ field: phase === 'root' ? 'rtRoot' : 'rtFinal', op: 'isNot', values: ['', 'NA'] }]];
   return [[{ field, op: 'is', values: type === 'mt' ? ['MT', 'MT/PT'] : type === 'pt' ? ['PT', 'MT/PT'] : ['UT'] }]];
 }
 

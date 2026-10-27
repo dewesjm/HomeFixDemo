@@ -2,7 +2,7 @@
    (stage-templates.ts keeps those changes). Type options are in signoff-types.ts. */
 import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ndtStage } from '../weld-record/routing/ndt';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../weld-record/routing/step-ids';
+import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/step-ids';
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },
@@ -12,11 +12,11 @@ const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman' },
   { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding' },
   { id: 'root-weld', label: 'Root', required: true, role: 'Welding' },
-  ...(['vt5x', 'mtpt', 'utrt'] as const).map(kind => ndtStage('root', kind)),
+  ...PHASE_NDT_KINDS.root.map(kind => ndtStage('root', kind)),
   { id: 'root-layer', label: 'Layer', required: true, role: 'Welding' },
-  ...(['vt5x', 'mtpt', 'utrt'] as const).map(kind => ndtStage('layer', kind)),
+  ...PHASE_NDT_KINDS.layer.map(kind => ndtStage('layer', kind)),
   { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding' },
-  ...(['vt5x', 'mtpt', 'utrt'] as const).map(kind => ndtStage('final', kind)),
+  ...PHASE_NDT_KINDS.final.map(kind => ndtStage('final', kind)),
   { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', rejectToStage: 'review-o63', decisionLabel: 'Inspection Results' },
   { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', rejectToStage: 'review-o04', decisionLabel: 'Inspection Results' },
   { id: 'sold', label: 'Sold', required: true, role: 'O63 Records' },
