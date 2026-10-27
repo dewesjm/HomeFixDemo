@@ -1,19 +1,17 @@
 /* Admin > Attribute Code Exceptions: what each attribute code changes on a joint's routing, applied
    after the normal routing is built (Routing Settings, Signoff Types By Routing). One row per code
-   and routing. A row names the regular routing and applies to its NQC row too, unless appliesTo
-   limits it to one of the pair. Stored in localStorage. */
+   and routing. A regular routing and its NQC row are separate routings with separate rows. Stored in
+   localStorage. */
 import { STORAGE } from '../../data/storage-keys';
 import { ConditionRule } from '../routing/step-conditions';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../routing/step-ids';
 
 export type AccessibleAnswer = 'yes' | 'no';
-/* which row of an NQC pair a row covers; omitted = both */
-export type NqcScope = 'regular' | 'nqc';
 
 export interface AttributeCodeException {
   code: string;
-  /* the regular routing's id; its NQC row reads the same row unless appliesTo says otherwise */
+  /* the Routing Settings routing's id; an NQC row ('nqc-<id>') has its own rows */
   routing: string;
-  appliesTo?: NqcScope;
   /* extra conditions on top of the code being on the joint; none = always */
   when?: ConditionRule[];
   routingChange?: 'add' | 'drop';
@@ -42,17 +40,24 @@ export const ROOT_WELD_PROCESS = 'step.root-weld.weldProcess';
 export const FINAL_WELD_PROCESS = 'step.final-weld.weldProcess';
 
 const rtTaken = (field: 'rtRoot' | 'rtFinal'): ConditionRule[] => [[{ field, op: 'isNot', values: ['', 'NA'] }]];
-/* the routing (or its NQC row) was signed with "ID is accessible" Yes */
-const signedAccessible = (routing: string): ConditionRule[] => [routing, `nqc-${routing}`]
-  .map(id => [{ field: `step.${id}.idAccessible`, op: 'is', values: ['yes'] }]);
+/* the routing was signed with "ID is accessible" Yes */
+const signedAccessible = (routing: string): ConditionRule[] => [[{ field: `step.${routing}.idAccessible`, op: 'is', values: ['yes'] }]];
 const notMtPt = (field: string): ConditionRule[] => [[{ field, op: 'isNot', values: ['MT', 'PT', 'MT/PT'] }]];
 const shop = (field: 'rtRoot' | 'rtFinal'): ConditionRule[] => [[
   { field: SHIPBOARD_FIELD, op: 'is', values: ['No'] }, { field, op: 'isNot', values: ['', 'NA'] },
 ]];
 const gtaw = (field: string): ConditionRule[] => [[{ field, op: 'is', values: ['gtaw'] }]];
 
+/* a seed row's copy for the routing's NQC row, reading the NQC rows' answers */
+function withNqcCopy(row: AttributeCodeException): AttributeCodeException[] {
+  if (!NQC_SPLIT_STEP_IDS.includes(row.routing)) return [row];
+  const field = (f: string) => f.replace(/^step\.([^.]+)\./, (m, id) => NQC_SPLIT_STEP_IDS.includes(id) ? `step.${nqcStepId(id)}.` : m);
+  const when = row.when?.map(rule => rule.map(c => ({ ...c, field: field(c.field) })));
+  return [row, { ...row, routing: nqcStepId(row.routing), ...(when ? { when } : {}) }];
+}
+
 /* the demo's reading of each code (ATTRIBUTE-CODES-PLAN.md); every row is an assumption to confirm */
-export const SEED_EXCEPTIONS: AttributeCodeException[] = [
+const REGULAR_SEEDS: AttributeCodeException[] = [
   /* PR, confirmed 2026-10-27: Final PT of the weld root from the inside replaces Final RT */
   { code: 'PR', routing: 'final-ndt-mtpt', askAccessible: true },
   { code: 'PR', routing: 'final-ndt-utrt', when: signedAccessible('final-ndt-mtpt'), routingChange: 'drop' },
@@ -91,6 +96,7 @@ export const SEED_EXCEPTIONS: AttributeCodeException[] = [
   { code: 'BP', routing: 'root-ndt-vt5x', routingChange: 'add', typesMode: 'only', types: ['5x'] },
   { code: 'BP', routing: 'root-ndt-mtpt', routingChange: 'add', typesMode: 'add', types: ['pt', 'mt'] },
 ];
+export const SEED_EXCEPTIONS: AttributeCodeException[] = REGULAR_SEEDS.flatMap(withNqcCopy);
 
 /* bumped on every save, so stage templates and routing reads know the table changed */
 let version = 0;
@@ -108,13 +114,7 @@ export function setAttributeCodeExceptions(rows: AttributeCodeException[]) {
   version++;
 }
 
-/* whether a row covers this routing: the regular id, or its NQC row ('nqc-<id>') */
-export function rowCoversRouting(row: AttributeCodeException, routingId: string): boolean {
-  const nqc = routingId.startsWith('nqc-');
-  return row.routing === routingId.replace(/^nqc-/, '') && (!row.appliesTo || (row.appliesTo === 'nqc') === nqc);
-}
-
 /* the codes with a row for a routing, for the other admin tables' notes */
 export function codesChangingRouting(routingId: string): string[] {
-  return [...new Set(getAttributeCodeExceptions().filter(r => rowCoversRouting(r, routingId)).map(r => r.code))];
+  return [...new Set(getAttributeCodeExceptions().filter(r => r.routing === routingId).map(r => r.code))];
 }

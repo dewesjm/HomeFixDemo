@@ -11,7 +11,7 @@ import { fabricationSigned } from '../routing/built-in-step-rules';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-types';
 import { jointCodeSlots } from './attribute-context';
-import { AttributeCodeException, AttributeStageRules, SHIPBOARD_FIELD, getAttributeCodeExceptions, rowCoversRouting } from './attribute-code-exceptions';
+import { AttributeCodeException, AttributeStageRules, SHIPBOARD_FIELD, getAttributeCodeExceptions } from './attribute-code-exceptions';
 
 export interface RoutingEffect {
   codes: string[];
@@ -49,7 +49,7 @@ export function readsLaterAnswers(rules: ConditionRule[] | undefined): boolean {
 
 const rowsFor = (routingId: string, job: Job) => {
   const codes = jointCodeSlots(job);
-  return getAttributeCodeExceptions().filter(r => rowCoversRouting(r, routingId) && codes.includes(r.code.trim().toUpperCase()));
+  return getAttributeCodeExceptions().filter(r => r.routing === routingId && codes.includes(r.code.trim().toUpperCase()));
 };
 
 /* whether any of the joint's codes has a row for this routing that waits on a later answer */

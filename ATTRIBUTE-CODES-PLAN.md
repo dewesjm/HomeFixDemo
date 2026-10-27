@@ -191,7 +191,7 @@ The fixed resolver is gone; Admin > Attribute Code Exceptions holds all 13 codes
 - **GV**: VT 1X / 5X magnification labels are gone; GV rows read the Root and Final Weld's recorded Weld Process (GTAW).
 - **FC/BJ** Final VT and **RI** Final RT minimum 60 as before; RX has no minimum (decision 2).
 - **Added NQC-split routings** go on as the NQC or regular row whose Included when N Ind. clauses match the joint (regular when neither does).
-- **NQC rows:** a table row covers the regular routing and its NQC row by default. Its NQC rows setting can limit it to the regular row only or the NQC row only (added 2026-10-27 at the user's request, so the pair can be separated if needed). All seeds cover both.
+- **NQC rows:** a regular routing and its NQC row are separate entries in the table, edited separately (user decision 2026-10-27; no use case yet, may come later). Every seed on an NQC-split routing has an NQC copy reading the NQC rows' answers.
 - **NQC rows:** a table row covers the regular routing and its NQC row by default. Its NQC rows setting can limit it to the regular row only or the NQC row only (added 2026-10-27 at the user's request, so the pair can be separated if needed). All seeds cover both.
 - **"Fabrication Location is shipboard"** is offered only in the exceptions table's Applies when, not in the other tables' condition pickers (it needs the Fabrication values, which those rules don't read).
 - **Joint location category** and **GTA-only weld** joint fields are removed (gap 1), along with the Joint Details conflict and "current requirements retained" notes (gap 7).

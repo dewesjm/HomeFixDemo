@@ -125,14 +125,9 @@ describe('Attribute Code Exceptions', () => {
     expect(stage(stages, 'final-ndt-mtpt')).toBeUndefined();
   });
 
-  it('a row limited to one NQC pair row leaves the other row alone', () => {
-    const pu = (appliesTo: 'regular' | 'nqc') => setAttributeCodeExceptions([
-      { code: 'PU', routing: 'final-ndt-mtpt', appliesTo, routingChange: 'add', typesMode: 'only', types: ['pt'] }]);
-    pu('regular');
+  it('a regular routing and its NQC row have separate rows', () => {
+    setAttributeCodeExceptions(SEED_EXCEPTIONS.filter(r => !(r.code === 'PU' && r.routing === 'nqc-final-ndt-mtpt')));
     expect(stage(buildStages(job('PU')), 'final-ndt-mtpt')).toBeDefined();
     expect(stage(buildStages(job('PU', { nInd: '1' })), 'nqc-final-ndt-mtpt')).toBeUndefined();
-    pu('nqc');
-    expect(stage(buildStages(job('PU')), 'final-ndt-mtpt')).toBeUndefined();
-    expect(stage(buildStages(job('PU', { nInd: '1' })), 'nqc-final-ndt-mtpt')).toBeDefined();
   });
 });

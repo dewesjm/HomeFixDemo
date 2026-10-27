@@ -41,16 +41,8 @@
                 <option value="" disabled>Select a routing</option>
                 @for (r of routings; track r.id) { <option [value]="r.id">{{ r.label }}</option> }
               </select>
-              @if (hasNqcRow(row.routing)) {
-                <select class="select select-sm select-bordered w-full min-w-0 mt-1" aria-label="NQC rows" [(ngModel)]="row.appliesTo">
-                  <option [ngValue]="undefined">Regular and NQC rows</option>
-                  <option value="regular">Regular row only</option>
-                  <option value="nqc">NQC row only</option>
-                </select>
-              }
             } @else {
               <span class="text-sm">{{ row.routingLabel }}</span>
-              @if (nqcText(row)) { <div class="text-sm">{{ nqcText(row) }}</div> }
             }
           </td>
           <td>

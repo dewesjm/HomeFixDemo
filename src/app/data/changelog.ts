@@ -12,7 +12,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-27',
     added: ['Admin > Attribute Code Exceptions: each attribute code\'s changes to a joint\'s routing are now rows you can edit: add or drop a routing, the Types it offers, a Type that needs an ID accessible answer, and a minimum Degree of RT. All 13 codes come seeded. Routing Settings and Signoff Types By Routing rows name the codes that change them.',
-      'Admin > Attribute Code Exceptions: a row on a routing with an NQC row has an NQC rows setting: Regular and NQC rows (as before), Regular row only, or NQC row only.'],
+      'Admin > Attribute Code Exceptions: NQC routings are separate entries with their own rows, edited separately from the regular routing.'],
     fixed: ['Attribute Code Exceptions and Signoff Types By Routing conditions: an empty value shows as Blank instead of a stray comma, and typing Blank matches an empty field.'],
     changed: ['Routing Settings and Signoff Types By Routing: the attribute code note now reads Attribute Code Exceptions followed by the codes (for example Attribute Code Exceptions PR, FC).',
       'Attribute codes: PR now asks ID accessible on Final MT/PT, and a Yes there means Final RT/UT is not required; PR no longer changes Root. IA offers PT or MT and asks ID accessible. Removed the Attribute inspection not required Type. Attribute Code Exceptions rows can mark ID accessible as Always asked.',

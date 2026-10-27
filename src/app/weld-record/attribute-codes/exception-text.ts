@@ -16,10 +16,6 @@ export function exceptionConditionFields(): StepConditionField[] {
   ];
 }
 
-/* the NQC pair note under the routing name; '' for a routing without an NQC row */
-export const nqcScopeText = (row: AttributeCodeException, hasNqcRow: boolean) =>
-  !hasNqcRow ? '' : row.appliesTo === 'regular' ? 'Regular row only' : row.appliesTo === 'nqc' ? 'NQC row only' : 'and its NQC row';
-
 export const appliesWhenText = (row: AttributeCodeException) =>
   row.when?.length ? describeConditions(row.when, exceptionConditionFields()) : 'Always';
 

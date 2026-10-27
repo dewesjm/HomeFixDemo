@@ -13,7 +13,6 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { getTemplates } from '../../routing/stage-templates';
-import { NQC_SPLIT_STEP_IDS } from '../../routing/step-ids';
 import { ConditionRule } from '../../routing/step-conditions';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
@@ -21,7 +20,7 @@ import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,
 } from '../../attribute-codes/attribute-code-exceptions';
 import {
-  accessibleText, appliesWhenText, exceptionConditionFields, minRtText, nqcScopeText, routingChangeText, typesText,
+  accessibleText, appliesWhenText, exceptionConditionFields, minRtText, routingChangeText, typesText,
 } from '../../attribute-codes/exception-text';
 import { TypeEnableConditionsComponent } from '../admin-signoff-types/type-enable-conditions.component';
 
@@ -44,17 +43,13 @@ export class AdminAttributeCodeExceptionsComponent {
   private seq = 0;
 
   readonly codes = PROGRESSION_ATTRIBUTE_CODES;
-  /* the routings a row can name: Routing Settings' numbered routings, one entry for an NQC pair */
+  /* the routings a row can name: Routing Settings' numbered routings, NQC rows included */
   readonly routings = (getTemplates()['Welding'] ?? [])
-    .filter(t => t.classification !== 'added' && !(t.id.startsWith('nqc-') && NQC_SPLIT_STEP_IDS.includes(t.id.slice(4))))
+    .filter(t => t.classification !== 'added')
     .map(t => ({ id: t.id, label: t.label }));
   readonly typeChoices = getRoutingSignoffTypes();
   readonly conditionFields = exceptionConditionFields();
   readonly text = { appliesWhenText, routingChangeText, typesText, accessibleText, minRtText };
-
-  nqcText(row: ExceptionRow): string {
-    return nqcScopeText(row, this.hasNqcRow(row.routing));
-  }
 
   rows = signal<ExceptionRow[]>(getAttributeCodeExceptions().map(r => this.toRow(r)));
   editingUid = signal<string | null>(null);
@@ -75,10 +70,6 @@ export class AdminAttributeCodeExceptionsComponent {
 
   private message(code: string): string {
     return this.codes.find(c => c.code === code)?.description ?? '';
-  }
-
-  hasNqcRow(routing: string): boolean {
-    return NQC_SPLIT_STEP_IDS.includes(routing);
   }
 
   /* the Types an accessible rule can name: the row's own and the routing's (Signoff Types By Routing) */
@@ -113,8 +104,7 @@ export class AdminAttributeCodeExceptionsComponent {
   }
 
   setRouting(row: ExceptionRow, routing: string) {
-    this.rows.update(r => r.map(x => x.uid === row.uid
-      ? { ...x, routing, routingLabel: this.routingLabel(routing), appliesTo: this.hasNqcRow(routing) ? x.appliesTo : undefined } : x));
+    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, routing, routingLabel: this.routingLabel(routing) } : x));
   }
 
   setWhen(row: ExceptionRow, when: ConditionRule[]) {
@@ -126,7 +116,6 @@ export class AdminAttributeCodeExceptionsComponent {
       { header: 'Code', value: (r: ExceptionRow) => r.code },
       { header: 'Message', value: (r: ExceptionRow) => r.message },
       { header: 'Routing', value: (r: ExceptionRow) => r.routingLabel },
-      { header: 'NQC rows', value: (r: ExceptionRow) => this.nqcText(r) },
       { header: 'Applies when', value: appliesWhenText },
       { header: 'Routing change', value: routingChangeText },
       { header: 'Types offered', value: typesText },
@@ -183,7 +172,6 @@ export class AdminAttributeCodeExceptionsComponent {
       const { uid: _uid, routingLabel: _label, message: _message, ...row } = saved;
       return [{
         code: row.code, routing: row.routing,
-        ...(row.appliesTo && this.hasNqcRow(row.routing) ? { appliesTo: row.appliesTo } : {}),
         ...(row.when?.length ? { when: row.when } : {}),
         ...(row.routingChange ? { routingChange: row.routingChange } : {}),
         ...(row.typesMode && row.types?.length ? { typesMode: row.typesMode, types: row.types } : {}),
