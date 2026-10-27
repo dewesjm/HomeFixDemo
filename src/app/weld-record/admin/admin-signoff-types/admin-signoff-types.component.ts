@@ -6,6 +6,7 @@ import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
    which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
 import { TypeExceptionsComponent } from './type-exceptions.component';
+import { AttributeCodeNoteComponent } from '../admin-attribute-code-exceptions/attribute-code-note.component';
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -40,7 +41,7 @@ const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
   selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [
-    TypeEnableConditionsComponent, TypeExceptionsComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
+    TypeEnableConditionsComponent, TypeExceptionsComponent, AttributeCodeNoteComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
   templateUrl: './admin-signoff-types.component.html'

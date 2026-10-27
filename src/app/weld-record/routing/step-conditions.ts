@@ -280,16 +280,23 @@ export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
   ...Object.fromEntries(Object.entries(BUILT_IN_REJECT_RULES).map(([id, rules]) => [nqcStepId(id), rules])),
 };
 
-/* Starting accepted-signoff rules, editable in Routing Settings. */
+/* Starting accepted-signoff rules, editable in Routing Settings. Attribute code IA can add Layer MT/PT
+   (Admin > Attribute Code Exceptions), so Layer and Layer VT/5X go back to Layer only without IA and
+   Layer MT/PT does it after them. */
+const NOT_IA: ConditionClause = { field: 'attributeCodes', op: 'isNot', values: ['IA'] };
 export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
   fit: [{ when: [{ field: 'self.inspectionType', op: 'is', values: ['weld-buildup'] }], to: 'fit' }],
   'root-layer': [{ when: [
     { field: 'self.inspectionType', op: 'is', values: ['interim'] },
     { field: 'ndtEach', op: 'is', values: [''] },
+    NOT_IA,
   ], to: 'root-layer' }],
   ...Object.fromEntries(PHASE_NDT_KINDS.layer.flatMap(kind => {
     const id = `layer-ndt-${kind}`;
-    const rules: RejectRule[] = [{ when: [{ field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] }], to: 'root-layer' }];
+    const rules: RejectRule[] = [{ when: [
+      { field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] },
+      ...(kind === 'vt5x' ? [NOT_IA] : []),
+    ], to: 'root-layer' }];
     return [[id, rules], [nqcStepId(id), rules]];
   })),
 };

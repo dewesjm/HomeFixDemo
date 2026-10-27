@@ -1,6 +1,7 @@
 import { insertionRelativeTargets } from '../../routing/insertion-target-options';
 import { thenRuleSummary } from './then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
+import { AttributeCodeNoteComponent } from '../admin-attribute-code-exceptions/attribute-code-note.component';
 import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/insertion-validation';
@@ -65,7 +66,7 @@ interface RoutingRow {
 @Component({
   selector: 'app-admin-routing',
   standalone: true,
-  imports: [RoutingDescriptionComponent, PersonaRulesComponent, TableToolbarComponent,
+  imports: [RoutingDescriptionComponent, PersonaRulesComponent, AttributeCodeNoteComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical

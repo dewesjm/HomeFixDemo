@@ -74,6 +74,7 @@
               <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
                 <ul class="dropdown-menu flat-admin-menu">
+                  <li><a routerLink="/admin/attribute-code-exceptions" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Code Exceptions</a></li>
                   <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
                   <li><a routerLink="/admin/defect-codes" routerLinkActive="menu-active"><svg lucideBug class="size-4"></svg> Defect Codes</a></li>
                   <li><a routerLink="/admin/feature-toggles" routerLinkActive="menu-active"><svg lucideToggleRight class="size-4"></svg> Feature Toggles</a></li>
@@ -187,6 +188,7 @@
                 <details (toggle)="fitSubmenu($event)">
                   <summary><svg lucideSettings class="size-4"></svg> Admin</summary>
                   <ul class="submenu">
+                    <li><a routerLink="/admin/attribute-code-exceptions" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Code Exceptions</a></li>
                     <li><a routerLink="/admin/banner" routerLinkActive="menu-active"><svg lucideMegaphone class="size-4"></svg> Banner</a></li>
                     <li><a routerLink="/admin/defect-codes" routerLinkActive="menu-active"><svg lucideBug class="size-4"></svg> Defect Codes</a></li>
                     <li><a routerLink="/admin/feature-toggles" routerLinkActive="menu-active"><svg lucideToggleRight class="size-4"></svg> Feature Toggles</a></li>

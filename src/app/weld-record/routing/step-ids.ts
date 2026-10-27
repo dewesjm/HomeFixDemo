@@ -2,7 +2,6 @@
    ('nqc-<id>', N Ind 1 or 2) and the regular one (N Ind 3). A joint gets one of each pair; both work
    the same way, so rules that depend on the step (its phase, its method) read the base id. */
 const NQC_PREFIX = 'nqc-';
-export const attributeTemplateId = (id: string) => id.replace(/--attribute-\d+$/, '');
 /* the NDT routings each phase has: Layer has no RT/UT routing */
 export const PHASE_NDT_KINDS: Record<'root' | 'layer' | 'final', readonly ('vt5x' | 'mtpt' | 'utrt')[]> = {
   root: ['vt5x', 'mtpt', 'utrt'], layer: ['vt5x', 'mtpt'], final: ['vt5x', 'mtpt', 'utrt'],
@@ -10,7 +9,7 @@ export const PHASE_NDT_KINDS: Record<'root' | 'layer' | 'final', readonly ('vt5x
 export const NQC_SPLIT_STEP_IDS = ['fitup-insp',
   ...(['root', 'layer', 'final'] as const).flatMap(p => PHASE_NDT_KINDS[p].map(k => `${p}-ndt-${k}`))];
 export const nqcStepId = (id: string) => `${NQC_PREFIX}${id}`;
-export const baseStepId = (id: string) => attributeTemplateId(id.startsWith(NQC_PREFIX) ? id.slice(NQC_PREFIX.length) : id);
+export const baseStepId = (id: string) => id.startsWith(NQC_PREFIX) ? id.slice(NQC_PREFIX.length) : id;
 export const isFitupInspId = (id: string) => baseStepId(id) === 'fitup-insp';
 /* the O63 and O04 Records Review steps */
 export const isRecordsReviewId = (id: string) => /^review-/.test(id);

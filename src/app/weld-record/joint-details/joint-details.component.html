@@ -6,9 +6,6 @@
         <span class="badge badge-outline cursor-help" tabindex="0" [appTooltip]="attributeMessage(code)" [attr.aria-label]="code + ': ' + attributeMessage(code)">{{ code }}</span>
       }
     </div>
-    @for (warning of attributeWarnings(); track warning) {
-      <p class="text-warning text-sm mb-sm" role="status">{{ warning }}</p>
-    }
   }
   <div class="detail-columns">
     <!-- Column 1: Job Info -->
@@ -108,9 +105,6 @@
     <!-- Attribute Codes -->
     <div class="mt-sm">
       <div class="font-semibold text-sm mb-1">Attribute Codes</div>
-      @if (attributeCodes().length) {
-        <p class="text-sm mb-1">Joint location category: {{ job().attributeLocation || 'Unknown' }} · GTA-only weld: {{ job().attributeGtaWeld || 'Unknown' }}</p>
-      }
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-1 gap-x-6">
         <div class="detail-row"><span class="meta">Attribute Code 1</span><span>{{ attrCodeDisplay(job().attributeCode1) || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Attribute Code 2</span><span>{{ attrCodeDisplay(job().attributeCode2) || '-' }}</span></div>

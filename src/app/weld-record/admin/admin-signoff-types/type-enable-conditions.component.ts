@@ -1,7 +1,8 @@
-/* Joint Details conditions for one offered Type. Rules are OR; clauses within a rule are AND. */
+/* Joint Details conditions for one offered Type (or the fields given, for Attribute Code Exceptions'
+   Applies when). Rules are OR; clauses within a rule are AND. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConditionRule, JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
+import { ConditionRule, JOINT_DETAIL_FIELDS, StepConditionField } from '../../routing/step-conditions';
 
 @Component({
   selector: 'app-type-enable-conditions', standalone: true, imports: [FormsModule],
@@ -16,7 +17,7 @@ import { ConditionRule, JOINT_DETAIL_FIELDS } from '../../routing/step-condition
             @if (ci > 0) { <span>AND</span> }
             <select class="select select-xs select-bordered" aria-label="Joint Details field"
               [ngModel]="clause.field" (ngModelChange)="setField(ri, ci, $event)">
-              @for (field of fields; track field.key) { <option [value]="field.key">{{ field.label }}</option> }
+              @for (field of fields(); track field.key) { <option [value]="field.key">{{ field.label }}</option> }
             </select>
             <select class="select select-xs select-bordered" aria-label="Comparison"
               [ngModel]="clause.op" (ngModelChange)="clause.op = $event; emit()">
@@ -44,8 +45,8 @@ export class TypeEnableConditionsComponent {
   rules = input.required<ConditionRule[]>();
   listId = input.required<string>();
   changed = output<ConditionRule[]>();
-  readonly fields = [...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }];
-  values(field: string) { return this.fields.find(f => f.key === field)?.values ?? []; }
+  fields = input<Pick<StepConditionField, 'key' | 'label' | 'values'>[]>([...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }]);
+  values(field: string) { return this.fields().find(f => f.key === field)?.values ?? []; }
   emit() { this.changed.emit(structuredClone(this.rules())); }
   setField(ri: number, ci: number, field: string) {
     this.rules()[ri][ci] = { field, op: 'is', values: [''] }; this.emit();

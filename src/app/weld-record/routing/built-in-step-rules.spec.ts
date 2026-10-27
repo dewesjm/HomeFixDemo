@@ -1,8 +1,7 @@
-import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import {
   blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel, isPhaseNdtId,
-  needsFabricationComplete, rtDegreeRequired,
+  needsFabricationComplete,
 } from './built-in-step-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
@@ -22,13 +21,6 @@ describe('built-in step rules', () => {
     expect(goesBackPastFabrication(stages, 1)).toBeTrue();
     expect(goesBackPastFabrication(stages, 2)).toBeFalse();
     expect(goesBackPastFabrication([st('tack')], 0)).toBeFalse();
-  });
-
-  it('RT degree required: Root from rtRoot, Final from rtFinal, Layer none', () => {
-    const j = { rtRoot: '360', rtFinal: '60' } as Job;
-    expect(rtDegreeRequired(j, st('root-ndt-utrt'))).toBe('360');
-    expect(rtDegreeRequired(j, st('nqc-final-ndt-utrt'))).toBe('60');
-    expect(rtDegreeRequired(j, st('layer-ndt-utrt'))).toBe('');
   });
 
   it('NDT steps: phase NDT ids, and UNSAT adds a Repair except on Excavation NDT', () => {

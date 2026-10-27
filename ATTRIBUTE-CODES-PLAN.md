@@ -129,7 +129,7 @@ Every row below is a demo assumption unless explicitly identified above as a use
 
 ## Moving attribute rules into admin configuration
 
-Planned, not built. Attribute behavior should be configured in the admin tables (Routing Settings Included when, Signoff Types By Routing Enable when, Signoff Type Forms) instead of the fixed resolver in weld-record/attribute-codes/. Gaps are being reviewed with the user one at a time; no changes until reviewed.
+Built 2026-10-27 as Option B (see "Built: Attribute Code Exceptions" below). The review notes in this section are kept for reference.
 
 **Decided 2026-10-27: a separate Attribute Code Exceptions admin table (Option B), not clauses in the main tables.** One row per code and routing, applied after the normal routing is built, with five effect kinds: add a routing, drop a routing, change the Types a routing offers, a Type allowed only with ID accessible Yes/No on that signoff, and a minimum RT degree. Routing Settings, Signoff Types By Routing and Signoff Type Forms keep their rules and data; the only additions there are a possible read-only cross-reference note and a "Fabrication Location is shipboard" condition choice. The user may revisit clauses in the main tables (Option A) after seeing it. Answered 2026-10-27: (1) the joint's RT degree check (at least RT Degree Root/Final) becomes a visible, editable default rule on the RT form in Signoff Type Forms, and an RT signoff must meet the highest of that and any applicable code minimum; (2) RX sets no minimum by default (the earlier 100 was a demo assumption, A14), but its exceptions row has a configurable Minimum RT; (3) a read-only cross-reference note on Routing Settings and Signoff Types By Routing rows lists the codes that change each routing and links to the exceptions table. Layer has no RT/UT routing (removed 0140eee); LR's RT is a Type on Layer MT/PT. Gap answers below still hold for what each code does; where they name a main-table location (gap 4 RT form rules, gap 5 Enable when), that location moves to the exceptions table.
 
@@ -143,7 +143,7 @@ Planned, not built. Attribute behavior should be configured in the admin tables 
 | 6 | ID Types. | Reviewed 2026-10-26: no ID Types. ID means the joint can be accessed, recorded by the signoff's accessible answer (gap 5). Types stay plain PT, MT, VT and RT. Assumed for now: a "Not required" Type lets the inspector close a routing that a code makes unnecessary once accessible is answered (for example PR with access Yes on Root RT, IA with access No). Talking point for end users: how is it supposed to work when the accessible answer makes an inspection unnecessary? Asking accessible on an earlier signoff so the routing drops off (like Defer Tack) was considered and is probably not the way to go. |
 | 7 | Configurable conflict blocking with a message. | Reviewed 2026-10-26: assumption that conflicting codes (for example FC or BJ with PU, RX or RI) never appear together on a joint, so no conflict-blocking configuration is built. Supersedes the earlier "stop and explain" choice for the configuration move. To confirm with end users. |
 | 8 | Forward-skip and Additional Signoffs guarantees. | Reviewed 2026-10-26: dropped. Attribute-driven routings behave like every other routing; configured Then go to and Additional Signoffs rules decide. |
-| 9 | Remove the fixed resolver; seed all 13 codes as default configuration. | After gaps 1-8. |
+| 9 | Remove the fixed resolver; seed all 13 codes as default configuration. | Done 2026-10-27: Attribute Code Exceptions seeds. |
 
 ## Configuration review: questions and answers (2026-10-26)
 
@@ -165,12 +165,27 @@ Each question asked while reviewing the gaps above, with the options offered and
 14. **Gap 7, conflicting codes:** (1) Blocked when rules per routing; (2) one list of conflicting pairs. Answer: neither; assume no such scenario exists, document it and confirm.
 15. **Gap 8, attribute-only protections (forward rules can't skip, Additional Signoffs can't sign):** (1) drop them; (2) apply to all routings. Answer: 1; that hard-coding should not exist in the first place.
 
+## Built: Attribute Code Exceptions (2026-10-27)
+
+The fixed resolver is gone; Admin > Attribute Code Exceptions holds all 13 codes as seeded rows (ROUTING.md lists them). Choices made while building that the user has not reviewed:
+
+- **IA** rows add Root, Layer and Final MT/PT only where the joint's NDT Root / Each Layer / Final Weld has no MT or PT, offering PT, MT or "Attribute inspection not required" (that one needs ID accessible No). A joint that already has MT/PT in the phase is unchanged (its PT/MT signoff covers IA, per the leaning).
+- **IA and Layer**: because IA can add Layer MT/PT, two seeded Then go to rules in Routing Settings gained "Has attribute code (any slot) is not IA": Layer's (Interim Layer + blank NDT Each Layer -> Layer) and Layer VT/5X's (regular and NQC). Without it the joint would loop back to Layer before reaching the added Layer MT/PT.
+- **PR**: on Root and Final RT/UT only when that phase's RT Degree is set (not blank or NA); RT needs ID accessible No and "not required" needs Yes (the previous demo behavior). Root VT/5X adds PT needing Yes.
+- **SI**: Applies when Fabrication Location is shipboard is No AND that phase's RT Degree is set; VT needs Yes.
+- **IR**: only when that phase's RT Degree is set.
+- **LR**: only when NDT Each Layer is PT or MT/PT.
+- **BP**: Root MT/PT is added and offers PT and MT on top of what it had (open question 7 is still open; this is inspector-picks).
+- **GV**: VT 1X / 5X magnification labels are gone; GV rows read the Root and Final Weld's recorded Weld Process (GTAW).
+- **FC/BJ** Final VT and **RI** Final RT minimum 60 as before; RX has no minimum (decision 2).
+- **Added NQC-split routings** go on as the NQC or regular row whose Included when N Ind. clauses match the joint (regular when neither does).
+- **"Fabrication Location is shipboard"** is offered only in the exceptions table's Applies when, not in the other tables' condition pickers (it needs the Fabrication values, which those rules don't read).
+- **Joint location category** and **GTA-only weld** joint fields are removed (gap 1), along with the Joint Details conflict and "current requirements retained" notes (gap 7).
+
 ## Verification and code ownership
 
+- Table, seeds and storage: weld-record/attribute-codes/attribute-code-exceptions.ts; admin page: weld-record/admin/admin-attribute-code-exceptions/.
+- Effects on a joint (build, re-check as answers come in, Type narrowing): weld-record/attribute-codes/exception-effects.ts; ID accessible check: attribute-validation.ts.
+- RT minimum (RT form rule + code minimum): weld-record/signoff-definition/rt-degree-minimum.ts.
 - Messages and provisional identifiers: data/attribute-codes.ts; lookup descriptions: data/characteristics.ts.
-- Applicability/conflicts: weld-record/attribute-codes/attribute-context.ts.
-- Pure requirement resolution: weld-record/attribute-codes/inspection-requirements.ts.
-- Stage construction: weld-record/attribute-codes/attribute-stages.ts, called by buildStages.
-- Per-obligation validation: weld-record/attribute-codes/inspection-validation.ts, shared by UI validation and routeSignoff (including preview).
-- Per-code, workflow and rendered message tests sit alongside these modules.
-- Verified 2026-10-26: type-check clean, production build succeeds, full unit suite 554/554 passing. Not browser-verified.
+- Verified 2026-10-27: type-check clean, production build succeeds, unit suite 539/539. Headless browser: the new page, its edit mode, the notes on Routing Settings (14 routings) and Signoff Types By Routing, and AC001 (PR) at Root NDT RT/UT showing ID accessible above Type and narrowing the Types. Not clicked through by hand.

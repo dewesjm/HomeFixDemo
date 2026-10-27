@@ -1,0 +1,142 @@
+<h2 class="section-title">Attribute Code Exceptions</h2>
+<p class="text-sm mb-sm">The changes each attribute code makes to a joint's routing, applied on top of Routing Settings and Signoff Types By Routing.</p>
+
+<app-table-toolbar [table]="table" searchPlaceholder="Search codes or routings…" addLabel="Add exception"
+                   (exportCsv)="exportCsv()" (add)="addRow()" />
+
+<div class="overflow-x-auto">
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th appSortHeader [table]="table" field="code" label="Code" class="min-w-24"></th>
+        <th appSortHeader [table]="table" field="routingLabel" label="Routing" class="min-w-36"></th>
+        <th class="min-w-48">Applies when</th>
+        <th class="whitespace-nowrap">Routing change</th>
+        <th class="min-w-40">Types offered</th>
+        <th class="min-w-40">Type needs ID accessible</th>
+        <th class="whitespace-nowrap">Minimum RT</th>
+        <th class="min-w-11"></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of table.sorted(); track row.uid) {
+        @let editing = editingUid() === row.uid;
+        <tr>
+          <td>
+            @if (editing) {
+              <select class="select select-sm select-bordered w-full min-w-0" aria-label="Attribute code"
+                      [ngModel]="row.code" (ngModelChange)="setCode(row, $event)">
+                <option value="" disabled>Select a code</option>
+                @for (c of codes; track c.code) { <option [value]="c.code">{{ c.code }}</option> }
+              </select>
+            } @else {
+              <span class="text-sm font-semibold">{{ row.code }}</span>
+            }
+            <div class="text-sm">{{ row.message }}</div>
+          </td>
+          <td>
+            @if (editing) {
+              <select class="select select-sm select-bordered w-full min-w-0" aria-label="Routing"
+                      [ngModel]="row.routing" (ngModelChange)="setRouting(row, $event)">
+                <option value="" disabled>Select a routing</option>
+                @for (r of routings; track r.id) { <option [value]="r.id">{{ r.label }}</option> }
+              </select>
+            } @else {
+              <span class="text-sm">{{ row.routingLabel }}</span>
+            }
+            @if (hasNqcRow(row.routing)) { <div class="text-sm">and its NQC row</div> }
+          </td>
+          <td>
+            @if (editing) {
+              <app-type-enable-conditions heading="Applies when" emptyText="Always, when the code is on the joint"
+                [rules]="row.when ?? []" [fields]="conditionFields" [listId]="row.uid" (changed)="setWhen(row, $event)" />
+            } @else {
+              <span class="text-sm">{{ text.appliesWhenText(row) }}</span>
+            }
+          </td>
+          <td>
+            @if (editing) {
+              <select class="select select-sm select-bordered" aria-label="Routing change" [(ngModel)]="row.routingChange">
+                <option [ngValue]="undefined">No change</option>
+                <option value="add">Add</option>
+                <option value="drop">Drop</option>
+              </select>
+            } @else {
+              <span class="text-sm">{{ text.routingChangeText(row) }}</span>
+            }
+          </td>
+          <td>
+            @if (editing) {
+              <select class="select select-sm select-bordered mb-1" aria-label="Types offered" [(ngModel)]="row.typesMode">
+                <option [ngValue]="undefined">No change</option>
+                <option value="only">Only these</option>
+                <option value="add">Add these</option>
+              </select>
+              @if (row.typesMode) {
+                <div class="flex flex-col gap-0.5">
+                  @for (t of typeChoices; track t.value) {
+                    <label class="flex items-center gap-1 text-xs cursor-pointer">
+                      <input type="checkbox" class="checkbox checkbox-xs" [checked]="hasType(row, t.value)"
+                             (change)="toggleType(row, t.value, $any($event.target).checked)" />
+                      {{ t.label }}
+                    </label>
+                  }
+                </div>
+              }
+            } @else {
+              <span class="text-sm">{{ text.typesText(row) }}</span>
+            }
+          </td>
+          <td>
+            @if (editing) {
+              @for (type of accessibleChoices(row); track type) {
+                <label class="flex items-center justify-between gap-1 text-xs mb-0.5">
+                  {{ typeName(type) }}
+                  <select class="select select-bordered select-xs" [attr.aria-label]="typeName(type) + ' needs ID accessible'"
+                          [ngModel]="accessibleOf(row, type)" (ngModelChange)="setAccessible(row, type, $event)">
+                    <option value="">Either</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                </label>
+              } @empty {
+                <span class="text-xs">Pick a routing or Types first</span>
+              }
+            } @else {
+              <span class="text-sm">{{ text.accessibleText(row) }}</span>
+            }
+          </td>
+          <td>
+            @if (editing) {
+              <input type="number" min="0" class="input input-sm input-bordered w-20" aria-label="Minimum RT degrees"
+                     placeholder="None" [(ngModel)]="row.minRt" />
+            } @else {
+              <span class="text-sm">{{ text.minRtText(row) }}</span>
+            }
+          </td>
+          <td>
+            <div class="row-tight">
+              @if (editing) {
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Save" (click)="saveEdit(row)">
+                  <svg lucideCheck class="size-4"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Cancel" (click)="cancelEdit(row)">
+                  <svg lucideX class="size-4"></svg>
+                </button>
+              } @else {
+                <button type="button" class="btn btn-ghost btn-xs" aria-label="Edit" (click)="startEdit(row)">
+                  <svg lucidePencil class="size-4"></svg>
+                </button>
+                <button type="button" class="btn btn-ghost btn-xs text-error" aria-label="Delete" (click)="deleteRow(row)">
+                  <svg lucideTrash2 class="size-4"></svg>
+                </button>
+              }
+            </div>
+          </td>
+        </tr>
+      } @empty {
+        <tr><td colspan="8" class="empty">{{ table.hasRows() ? 'No exceptions match your search.' : 'No exceptions yet.' }}</td></tr>
+      }
+    </tbody>
+  </table>
+</div>

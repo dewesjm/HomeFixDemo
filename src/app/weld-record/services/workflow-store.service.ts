@@ -21,7 +21,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.63';
+const CURRENT_VERSION = '2.10.64';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -157,7 +157,7 @@ export class WorkflowStore {
              are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
           const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
-            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion && !s.attributeInspection && !/-r\d+$/.test(s.id));
+            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion && !/-r\d+$/.test(s.id));
           if (hasFillers || missingStages) {
             const oldStages = wf.stages;
             const newStages = buildStages(job);

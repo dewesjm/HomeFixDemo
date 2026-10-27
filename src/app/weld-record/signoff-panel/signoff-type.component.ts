@@ -1,9 +1,11 @@
-/* The Type droplist on a step's form: options from Admin > Signoff Types By Routing, blank to start
-   when none is the default (inspectionTypeRequired) */
+/* The Type droplist on a step's form: options from Admin > Signoff Types By Routing and Attribute Code
+   Exceptions, narrowed by the "ID is accessible" answer; blank to start when none is the default
+   (inspectionTypeRequired) */
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
+import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
 
 @Component({
   selector: 'app-signoff-type',
@@ -18,7 +20,7 @@ import { SignoffContext } from './signoff-context';
         @if (ctx().inspectionTypeRequired(st)) {
           <option [ngValue]="''">Select the inspection performed…</option>
         }
-        @for (opt of st.typeOptions ?? []; track opt.value) {
+        @for (opt of options(); track opt.value) {
           <option [ngValue]="opt.value">{{ opt.label }}</option>
         }
       </select>
@@ -31,4 +33,5 @@ import { SignoffContext } from './signoff-context';
 export class SignoffTypeComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
+  options = () => typesForAccessibleAnswer(this.stage());
 }

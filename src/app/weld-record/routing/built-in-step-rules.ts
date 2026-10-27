@@ -1,9 +1,6 @@
 /* Rules that belong to one built-in step by its id rather than to a setting. Each is fixed: it
    doesn't change per joint or per site, so it isn't offered in Admin. What the ids look like (NQC
-   twins, repair rounds) is step-ids.ts.
-
-   Attribute inspection requirements are resolved separately in attribute-codes/. */
-import { Job } from '../../data/jobs';
+   twins, repair rounds) is step-ids.ts. */
 import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
 
@@ -51,15 +48,6 @@ export const namedAfterType = (stageId: string) => stageId === 'root-layer';
 
 /* a Root / Layer / Final NDT step (either row) */
 export const isPhaseNdtId = (stageId: string) => /^(root|layer|final)-ndt-/.test(baseStepId(stageId));
-
-/* the Degree of RT the joint requires on an RT/UT step: Root's is Joint Details RT Root, Final's is
-   RT Final; Layer has no requirement, so nothing is enforced there */
-export function rtDegreeRequired(job: Job | undefined, stage: WorkflowStage): string {
-  if (stage.attributeInspection) return String(stage.attributeInspection.methods.find(m => m.type === stage.inspectionType)?.minRt ?? 0);
-  if (baseStepId(stage.id) === 'root-ndt-utrt') return job?.rtRoot ?? '';
-  if (baseStepId(stage.id) === 'final-ndt-utrt') return job?.rtFinal ?? '';
-  return '';
-}
 
 /* Inspecting on an inspection step: what's being inspected (Fit on Fit-Up Insp; Root, Layer, Final,
    or the Excavation of a Weld Repair on NDT); '' for any other step */

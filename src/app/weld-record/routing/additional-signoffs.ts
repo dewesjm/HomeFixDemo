@@ -15,7 +15,7 @@ export function additionalSignoffs(source: WorkflowStage, stages: WorkflowStage[
     if (!evaluateCondition(rule.when, context)) continue;
     const target = stepOnJoint(stages, rule.stepId);
     if (!target || target.signed || !target.required || stages.indexOf(target) <= stages.findIndex(s => s.id === source.id)) continue;
-    if (!(signoffTypeOptions(target.id, job) ?? []).some(o => o.value === rule.type)) continue;
+    if (!(target.typeOptions ?? signoffTypeOptions(target.id, job) ?? []).some(o => o.value === rule.type)) continue;
     if (!found.has(target.id)) found.set(target.id, { stage: target, type: rule.type });
   }
   return [...found.values()];

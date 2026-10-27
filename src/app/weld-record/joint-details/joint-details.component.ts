@@ -6,7 +6,7 @@ import { TooltipDirective } from '../../shared/tooltip.directive';
 import { characteristicLabel } from '../../data/characteristics';
 import { jointDetailsUt, jointDetailsVt } from './joint-details-values';
 import { NDT_LABELS } from '../../data/ndt-labels';
-import { attributeConflicts, attributeContextNotes, jointAttributeCodes } from '../attribute-codes/attribute-context';
+import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 
 @Component({
   selector: 'app-joint-details',
@@ -21,7 +21,6 @@ export class JointDetailsComponent {
   showAudit = signal(false);
   labels = NDT_LABELS;
   attributeCodes = () => jointAttributeCodes(this.job());
-  attributeWarnings = () => [...attributeConflicts(this.job()), ...attributeContextNotes(this.job())];
   attributeMessage = characteristicLabel;
 
   nIndTooltip(): string {

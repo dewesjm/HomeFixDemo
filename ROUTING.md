@@ -27,7 +27,7 @@ Last updated 2026-10-24.
 - **Fabrication editable**: the Fabrication fields can be changed while the current routing has it checked. Built in, that's Prep through Fit-Up Insp, so the fields lock once Fit-Up Insp is signed. A change applies straight away, including to joints already in progress. Repair and Excavation NDT routings, and a finished joint, always lock them. Correct does not change Fabrication fields.
 - Every routing's sign-off form, its fields and their layout, comes from Admin > Signoff Type Forms. Sold is never signed: the joint is closed once it gets there.
 
-The starting Then go to rules are Fit / Type is Weld Build-Up → Fit; Layer / Type is Interim Layer and NDT Each Layer is blank → Layer; each Layer NDT / Layer's Type is Interim Layer → Layer. The `repeats` count records only a routing's own rule returning it to itself.
+The starting Then go to rules are Fit / Type is Weld Build-Up → Fit; Layer / Type is Interim Layer and NDT Each Layer is blank and the joint doesn't have attribute code IA → Layer; each Layer NDT / Layer's Type is Interim Layer → Layer (on Layer VT/5X also: the joint doesn't have IA). IA can add Layer MT/PT (Attribute Code Exceptions), so those joints go on to it before returning to Layer. The `repeats` count records only a routing's own rule returning it to itself.
 
 ## The path
 
@@ -169,7 +169,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 - Type (unless locked), Procedure Used for Inspection (only the procedures listed for that Type on Admin > Inspection Procedures), and SAT or UNSAT.
 - Probationary Inspector and Oversight Inspector, when "Has Probationary Inspector" is checked.
 - Portion of Weld Inspected, when "Partial" is checked.
-- RT: Degree of RT Performed must be at least the RT Degree Root or RT Degree Final requirement (plain number of degrees; NA counts as none). Defect Code is needed when RT is UNSAT.
+- RT: Degree of RT Performed must be at least the RT form's minimum (Admin > Signoff Type Forms; by default the RT Degree Root or RT Degree Final requirement) and any Attribute Code Exceptions minimum on the routing, whichever is higher (plain number of degrees; NA counts as none). Defect Code is needed when RT is UNSAT.
 
 **Repair**
 - Repair Code (Grind Only, Weld Repair or Cut).
@@ -282,10 +282,17 @@ Both Excavation variants start with: original Type is PT AND performed Type is 5
 
 Material Classification stores separate Non-Ferrous, Austenitic and Titanium flags. Conditions expose each as Either material is ... with Yes/No values through the common AND/OR rule engine. Regular and NQC Excavation seed PT to 5X when either material is non-ferrous OR either material is austenitic. Saved combined exception guards expand into equivalent OR groups retaining existing AND conditions. Legacy classifications split by known seed classification; unknown custom codes retain combined eligibility as Non-Ferrous pending administrator review. Version 2.10.61 uses the standard demo cache reset; saved material classifications survive and migrate on load.
 
-## Attribute-code inspection requirements
+## Attribute Code Exceptions
 
-Progression attribute codes (any of the four slots) change which NDT inspections a joint needs. Meanings are fixed demo assumptions recorded in ATTRIBUTE-CODES-PLAN.md, not configuration. After the normal routings are built, a shared resolver starts from the required Root/Layer/Final NDT routings and their Types, then applies each code: added obligations become separate signoffs, permitted substitutions add Type choices to the existing obligation, and restrictions remove methods. Each signoff completes one obligation with one explicitly selected Type; RT choices enforce their minimum degree.
+Progression attribute codes (any of the four slots, any case) change a joint's routing through **Admin > Attribute Code Exceptions**, applied after Routing Settings and Signoff Types By Routing build the normal routing. Each row is one code and one routing (naming the regular routing covers its NQC row too), with optional Applies when conditions and up to five effects:
 
-Shop/Field and GTA-only are Joint Details facts that decide whether SI and GV apply. ID accessibility is answered separately on each affected signoff; choices that depend on access are valid only with the matching answer. Conflicting codes block signoff and preview with an explanation; slot order never picks a winner.
+- **Routing change**: Add puts the routing on the joint (as the NQC or regular row its N Ind. picks); Drop takes it off.
+- **Types offered**: Only these replaces the routing's Types; Add these offers them as well. These Types are offered whatever their Enable when says.
+- **Type needs ID accessible**: the Type may be picked only with that answer to "Inner surface of the weld / ID is accessible" on the same signoff. When a routing has any such rule, that question is asked, required, above the Type; answering narrows the Type list and changing it clears a Type it no longer allows.
+- **Minimum RT**: an RT signoff on the routing needs at least this Degree of RT Performed. The RT form's own rule (at least the joint's RT Degree Root or Final) still applies; the highest wins.
 
-Added obligations use their phase routing's template: persona, regular/NQC variant, Reject routes to and Then go to rules. UNSAT returns to the exact obligation. Configured forward rules cannot skip an unsigned obligation, and automatic Additional Signoffs never complete one. Route-back and Deprogress rebuild obligations from the same resolver. Joint Details shows each code with its message on hover or focus. Has attribute code (any slot) is available in routing conditions. Examples AC001 to AC013 each carry one code.
+Applies when reads Joint Details, **Fabrication Location is shipboard** (Admin > Locations' Shipboard flag; known once Fit is signed) and Root's or Final Weld's **Weld Process** (known once that weld is signed). A row waiting on one of those puts its routing on the joint from the start and is re-checked as the joint is signed: it can add or drop the routing (required on or off) and change its Types then.
+
+Seeded rows are the demo's reading of the 13 codes (ATTRIBUTE-CODES-PLAN.md), assumptions to confirm: PR (Root VT/5X adds PT with accessible Yes; Root and Final RT/UT, when RT is taken, add "Attribute inspection not required" with accessible Yes and RT needs No), PM (Final MT/PT adds PT), FC and BJ (Final VT/5X only VT; Final MT/PT and RT/UT dropped), PU (Final MT/PT only PT, Final RT/UT only UT, both added), SI (shop joints with RT: Root and Final RT/UT add VT with accessible Yes), RX (Root MT/PT only PT, Final RT/UT only RT, both added; no minimum by default), IA (Root, Layer and Final MT/PT added where the joint has no MT/PT there, offering PT, MT or "not required" with accessible No), IR (Root and Final RT/UT add PT and MT with accessible Yes), LR (Layer MT/PT with PT adds RT, minimum 60), GV (when that weld's Weld Process is GTAW: Root VT/5X only 5X, Final VT/5X only VT, that phase's MT/PT and RT/UT dropped), RI (Final RT/UT added, only RT or PT, PT with accessible Yes, minimum 60), BP (Root VT/5X only 5X; Root MT/PT added offering PT and MT).
+
+Codes are assumed never to conflict on one joint, so nothing blocks a conflict. Routings an exception adds or changes behave like every other routing: their Then go to, Reject routes to and Additional Signoffs rules decide. Routing Settings and Signoff Types By Routing rows show the codes that change them, linking to the table. Joint Details shows each code with its message on hover or focus. Examples AC001 to AC013 each carry one code.

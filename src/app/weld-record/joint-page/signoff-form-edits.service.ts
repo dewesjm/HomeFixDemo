@@ -18,6 +18,7 @@ import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './rules/stage-form';
 import { requiredError } from './rules/sign-validation';
 import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
 import { typeChange } from './rules/type-change';
+import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
 import { JointOverridesService } from './joint-overrides.service';
 import { SignoffFormErrorsService } from './signoff-form-errors.service';
 
@@ -99,6 +100,7 @@ export class SignoffFormEditsService {
         this.applyFills(stage);
       });
       this.clearHidden(stage);
+      if (field.key === 'idAccessible') this.clearTypeNotAllowed(stage, v);
       /* the WTN filled in Weld Process */
       if (field.key === 'wtn' && matchedProc) this.errors.clearFieldError(stage.id, 'weldProcess');
     }
@@ -154,6 +156,15 @@ export class SignoffFormEditsService {
     const name = stage.typeOptions?.find(o => o.value === value)?.label ?? value;
     this.signoffService.updateStageSignoff(job, stage.id, patch, { action: `${stage.label} - Type changed to ${name}` });
     if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(job, stage.id);
+  }
+
+  /* "ID is accessible" changed: a picked Type the new answer doesn't allow (Attribute Code Exceptions) is cleared */
+  private clearTypeNotAllowed(stage: WorkflowStage, answer: string) {
+    if (!this.src || !stage.inspectionType) return;
+    const after = { ...stage, inputs: { ...stage.inputs, idAccessible: answer } };
+    if (typesForAccessibleAnswer(after).some(o => o.value === stage.inspectionType)) return;
+    this.errors.clearStageErrors(stage.id);
+    this.signoffService.updateStageSignoff(this.src.job, stage.id, typeChange(this.src.job.trade, after, ''), { action: `${stage.label} - Type cleared` });
   }
 
   setStageResult(stage: WorkflowStage, result: StageResult) {

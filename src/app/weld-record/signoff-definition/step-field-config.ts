@@ -26,6 +26,9 @@ export interface FieldActivation {
   requiredIf?: FieldCondition;
   /* the error shown when it's required and left empty (or unchecked); unset = the standard wording */
   requiredMessage?: string;
+  /* Degree of RT Performed: at least the joint's RT Degree for the routing's phase (Root or Final);
+     unset = no minimum from the form (Attribute Code Exceptions can still set one) */
+  minimum?: 'jointRtDegree';
   /* the form line it's drawn on: items with the same number sit side by side, in list order. The
      list is kept sorted by it (one count for the whole form, headings included) */
   line?: number;
@@ -157,7 +160,7 @@ const NDT_TYPES: TypeDefinition[] = [
   ndtType('mt', [{ key: 'idAccessible' }, DECISION]),
   ndtType('pt', [{ key: 'idAccessible' }, { key: 'penetrantManufacturer' }, same('penetrantType'), DECISION]),
   ndtType('ut', [DECISION, { key: 'references' }]),
-  ndtType('rt', [{ key: 'degreeRt' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' }]),
+  ndtType('rt', [{ key: 'degreeRt', minimum: 'jointRtDegree' }, same('rtFileNumber'), DECISION, { key: 'defectCode', width: 320 }, { key: 'references' }]),
 ];
 
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
@@ -245,7 +248,7 @@ export function resetStepFieldConfig(): void {
 }
 
 /* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
-export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeInspection'>>;
+export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeRules' | 'inputs'>>;
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
@@ -253,7 +256,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Parti
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
-  const options = step.insertion || step.attributeInspection ? step.typeOptions : signoffTypeOptions(step.id);
+  const options = step.insertion || step.attributeRules ? step.typeOptions : signoffTypeOptions(step.id);
   if (!options) return undefined;
   return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
 }
@@ -285,11 +288,13 @@ export function definitionHas(step: StepRef, key: string): boolean {
 /* the definition a step reads, or an empty one when it has none */
 export function getActivationForStep(step: StepRef): TypeDefinition {
   const definition = findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
-  if (typeof step === 'string' || !step.attributeInspection?.methods.some(m => m.access)) return definition;
+  if (typeof step === 'string' || !step.attributeRules?.accessible.length) return definition;
+  /* Attribute Code Exceptions accessible rules: "ID is accessible" is asked above the Type, on its own line */
   const fields = definition.fields.filter(f => f.key !== 'idAccessible');
-  const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY) + 1);
-  fields.splice(at, 0, { key: 'idAccessible', required: true, showIf: { all: [] }, fill: null });
-  return { ...definition, fields };
+  const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY));
+  const line = fields[at]?.line ?? 1;
+  fields.splice(at, 0, { key: 'idAccessible', required: true, showIf: { all: [] }, fill: null, line });
+  return { ...definition, fields: fields.map((f, i) => i > at && f.line !== undefined && f.line >= line ? { ...f, line: f.line + 1 } : f) };
 }
 
 /* what the step's verify-grid rows are checked against */

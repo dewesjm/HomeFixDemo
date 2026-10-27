@@ -11,7 +11,11 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-27',
-    changed: ['Layer NDT: removed the Layer RT/UT routing. NDT Each Layer no longer offers UT, in Joint Details conditions and Weld Planning.'],
+    added: ['Admin > Attribute Code Exceptions: each attribute code\'s changes to a joint\'s routing are now rows you can edit: add or drop a routing, the Types it offers, a Type that needs an ID accessible answer, and a minimum Degree of RT. All 13 codes come seeded. Routing Settings and Signoff Types By Routing rows name the codes that change them.'],
+    changed: ['Layer NDT: removed the Layer RT/UT routing. NDT Each Layer no longer offers UT, in Joint Details conditions and Weld Planning.',
+      'Signoff Type Forms: Degree of RT Performed on the RT form has an At least setting (the joint\'s RT Degree Root or Final, or no minimum). An attribute code minimum can raise it.',
+      'Sign-off: when an attribute code needs it, "Inner surface of the weld / ID is accessible" is asked above the Type, and the answer narrows the Types offered.',
+      'Joint Details and Weld Planning: removed the Joint location category and GTA-only weld fields, and the attribute conflict notes. SI now reads the Fabrication Location, GV the recorded Weld Process.'],
   },
   {
     date: '2026-10-26',

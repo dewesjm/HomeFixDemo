@@ -59,8 +59,6 @@ export interface Job {
   attributeCode2: string;
   attributeCode3: string;
   attributeCode4: string;
-  attributeLocation?: string;
-  attributeGtaWeld?: string;
   estimatedHours: number;    /* labor hours */
   _fresh?: boolean;  /* skip seeded mid-stream stages, start at beginning */
 }

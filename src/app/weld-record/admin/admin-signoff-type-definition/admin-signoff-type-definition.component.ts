@@ -338,6 +338,19 @@ export class AdminSignoffTypeDefinitionComponent {
     return key.startsWith('affectedMicVerified') ? 'Please verify MIC for <item>' : standardRequiredMessage(key, label);
   }
 
+  /* Degree of RT Performed's minimum (rt-degree-minimum.ts); '' = none */
+  minimumOf(key: string): string {
+    return this.activation(key).minimum ?? '';
+  }
+
+  setMinimum(key: string, minimum: string) {
+    this.editing.update(e => e && { ...e, fieldActivations: e.fieldActivations.map(a => {
+      if (a.key !== key) return a;
+      const { minimum: _old, ...rest } = a;
+      return minimum === 'jointRtDegree' ? { ...rest, minimum } : rest;
+    }) });
+  }
+
   setRequiredMessage(key: string, message: string) {
     this.editing.update(e => e && { ...e, fieldActivations: e.fieldActivations.map(a => a.key === key ? withRequiredMessage(a, message) : a) });
   }

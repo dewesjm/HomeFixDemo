@@ -4,7 +4,8 @@ import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, SignoffUndo, WorkflowStage } from '../model/workflow-types';
 import { getTemplates } from './stage-templates';
-import { buildStages } from './build-stages';
+import { baseRequired, buildStages } from './build-stages';
+import { attributeTypeSettings, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../attribute-codes/exception-effects';
 import { blankFabricationData } from '../fabrication/fabrication-fields';
 import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
@@ -25,15 +26,32 @@ export function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowSta
 }
 
 /* required flags set by signed answers: every unsigned step whose Admin > Routing Settings conditions use a
-   step answer (by default Tack, Deferred Tack and Fit-Up Release) is re-checked against them */
-export function applySignedFlags(stages: WorkflowStage[], job: Job): WorkflowStage[] {
+   step answer (by default Tack, Deferred Tack and Fit-Up Release) is re-checked against them. A step with an
+   Admin > Attribute Code Exceptions row waiting on a later answer (Weld Process, Fabrication Location) is
+   re-checked too: the row can add or drop it and change its Types. `fab` is the joint's Fabrication values. */
+export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record<string, string>): WorkflowStage[] {
   const templates = getTemplates()[job.trade] ?? [];
   return stages.map(s => {
     if (s.signed) return s;
-    const rules = templates.find(t => t.id === s.id)?.includeWhen;
-    if (!usesStepAnswers(rules)) return s;
-    const required = conditionsMatch(rules, job, stages);
-    return required === s.required ? s : { ...s, required };
+    const t = templates.find(x => x.id === s.id);
+    if (!t) return s;
+    const laterRows = hasLaterAnswerRows(s.id, job);
+    if (!usesStepAnswers(t.includeWhen) && !laterRows) return s;
+    if (!laterRows) {
+      const required = conditionsMatch(t.includeWhen, job, stages);
+      return required === s.required ? s : { ...s, required };
+    }
+    const effect = routingEffect(s.id, job, stages, fab);
+    const included = usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
+    const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job, templates)) || (included && baseRequired(t, job, stages)));
+    const { typeOptions, attributeRules } = attributeTypeSettings(s.id, job, stages, fab, s.inputs);
+    const sameTypes = JSON.stringify(typeOptions) === JSON.stringify(s.typeOptions);
+    if (required === s.required && sameTypes && JSON.stringify(attributeRules) === JSON.stringify(s.attributeRules)) return s;
+    const { attributeRules: _old, ...rest } = s;
+    return {
+      ...rest, required, typeOptions, ...(attributeRules ? { attributeRules } : {}),
+      ...(sameTypes ? {} : typeValues(initialInspectionType({ typeOptions }))),
+    };
   });
 }
 
@@ -58,7 +76,7 @@ export function routeBack(wf: JobWorkflow, job: Job, targetId: string): { wf: Jo
   });
   const fabReset = goesBackPastFabrication(wf.stages, targetIdx);
   const fabricationData = fabReset ? blankFabricationData() : wf.fabricationData;
-  return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId), job), fabricationData }, fabReset };
+  return { wf: { ...wf, stages: applySignedFlags(setRoutingFrom(stages, targetId), job, fabricationData), fabricationData }, fabReset };
 }
 
 /* set the current routing to any step (Admin > Routing Override, Engineering's disposition): going back

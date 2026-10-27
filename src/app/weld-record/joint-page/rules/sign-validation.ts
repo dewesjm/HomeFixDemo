@@ -1,12 +1,12 @@
 import { FormField } from '../../signoff-definition/field-catalog';
-import { attributeConflicts } from '../../attribute-codes/attribute-context';
-import { attributeInspectionError } from '../../attribute-codes/inspection-validation';
+import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
-import { blocksOnFabricationErrors, needsFabricationComplete, rtDegreeRequired } from '../../routing/built-in-step-rules';
+import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-step-rules';
+import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
@@ -30,7 +30,7 @@ export interface SignContext {
 
 const UNSAT_NO_TARGET = 'UNSAT needs a Reject routes to target in Admin > Routing Settings';
 
-/* RT NDT: Degree of RT Performed must be at least the job's required degree (rtRoot/rtFinal), compared
+/* RT NDT: Degree of RT Performed must be at least the required degree (rt-degree-minimum.ts), compared
    as plain numbers of degrees; NA or blank counts as none. '' when it is enough. */
 function rtDegreeError(job: Job | undefined, stage: WorkflowStage): string {
   if (stage.inspectionType !== 'rt') return '';
@@ -58,9 +58,8 @@ function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
    and locked earlier steps are the caller's to check first) */
 export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   const reasons: string[] = [];
-  if (ctx.job) reasons.push(...attributeConflicts(ctx.job, stage));
-  const attributeError = attributeInspectionError(stage);
-  if (attributeError) reasons.push(attributeError);
+  const accessError = attributeAccessError(stage);
+  if (accessError) reasons.push(accessError);
   if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
   if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
@@ -84,8 +83,8 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
 export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record<string, string> {
   const errors: Record<string, string> = {};
   const key = (k: string) => `${stage.id}:${k}`;
-  const attributeErrors = [...(ctx.job ? attributeConflicts(ctx.job, stage) : []), attributeInspectionError(stage)].filter(Boolean);
-  if (attributeErrors.length) errors[key('__attributes')] = attributeErrors.join(' ');
+  const accessError = attributeAccessError(stage);
+  if (accessError) errors[key('__attributes')] = accessError;
   const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
   /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
   for (const f of ctx.visibleFields) {

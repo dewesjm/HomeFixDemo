@@ -66,6 +66,7 @@
             <button type="button" class="text-left underline decoration-dotted underline-offset-4 hover:text-primary"
                     [attr.aria-label]="'View or edit description for ' + row.routing"
                     title="View or edit routing description" (click)="descriptionRow.set(row)">{{ row.routing || '-' }}</button>
+            <app-attribute-code-note [routingId]="row.id.split(':')[1]" />
           }
         </td>
         <td>

@@ -222,6 +222,17 @@
           </label>
         }
       </div>
+      @if (key === 'degreeRt') {
+        <label class="flex items-center gap-1 text-xs px-2 py-1 border border-base-300 rounded-box">
+          At least
+          <select class="select select-bordered select-xs" aria-label="Minimum Degree of RT Performed"
+                  [ngModel]="minimumOf(key)" (ngModelChange)="setMinimum(key, $event)">
+            <option value="">No minimum</option>
+            <option value="jointRtDegree">The joint's RT Degree (Root or Final)</option>
+          </select>
+        </label>
+        <span class="text-xs">Attribute Code Exceptions can raise it; the highest applies.</span>
+      }
     }
   </div>
 </ng-template>

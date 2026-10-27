@@ -25,6 +25,7 @@
               </select>
             } @else {
               {{ row.stepLabel }}
+              <app-attribute-code-note [routingId]="row.stepId" />
             }
           </td>
           <td>
