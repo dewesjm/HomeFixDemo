@@ -20,6 +20,7 @@ export interface RoutingEffect {
   only?: string[];
   added: string[];
   accessible: AttributeStageRules['accessible'];
+  askAccessible: boolean;
   minRt?: number;
 }
 
@@ -76,6 +77,7 @@ export function routingEffect(routingId: string, job: Job, stages: WorkflowStage
     ...(only.length ? { only: [...new Set(only)] } : {}),
     added: [...new Set(rows.filter(r => r.typesMode === 'add').flatMap(r => r.types ?? []))],
     accessible,
+    askAccessible: rows.some(r => r.askAccessible),
     ...(minRt ? { minRt } : {}),
   };
 }
@@ -109,7 +111,10 @@ export function withExceptionTypes(options: StageOption[] | undefined, effect: R
 }
 
 export function stageRules(effect: RoutingEffect | null): AttributeStageRules | undefined {
-  return effect ? { codes: effect.codes, accessible: effect.accessible, ...(effect.minRt ? { minRt: effect.minRt } : {}) } : undefined;
+  return effect ? {
+    codes: effect.codes, accessible: effect.accessible,
+    ...(effect.askAccessible ? { askAccessible: true } : {}), ...(effect.minRt ? { minRt: effect.minRt } : {}),
+  } : undefined;
 }
 
 /* a routing's Types and frozen rules for this joint, from Signoff Types By Routing then the exceptions */

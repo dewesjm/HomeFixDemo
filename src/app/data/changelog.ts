@@ -15,6 +15,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Admin > Attribute Code Exceptions: a row on a routing with an NQC row has an NQC rows setting: Regular and NQC rows (as before), Regular row only, or NQC row only.'],
     fixed: ['Attribute Code Exceptions and Signoff Types By Routing conditions: an empty value shows as Blank instead of a stray comma, and typing Blank matches an empty field.'],
     changed: ['Routing Settings and Signoff Types By Routing: the attribute code note now reads Attribute Code Exceptions followed by the codes (for example Attribute Code Exceptions PR, FC).',
+      'Attribute codes: PR now asks ID accessible on Final MT/PT, and a Yes there means Final RT/UT is not required; PR no longer changes Root. IA offers PT or MT and asks ID accessible. Removed the Attribute inspection not required Type. Attribute Code Exceptions rows can mark ID accessible as Always asked.',
       'Layer NDT: removed the Layer RT/UT routing. NDT Each Layer no longer offers UT, in Joint Details conditions and Weld Planning.',
       'Signoff Type Forms: Degree of RT Performed on the RT form has an At least setting (the joint\'s RT Degree Root or Final, or no minimum). An attribute code minimum can raise it.',
       'Sign-off: when an attribute code needs it, "Inner surface of the weld / ID is accessible" is asked above the Type, and the answer narrows the Types offered.',

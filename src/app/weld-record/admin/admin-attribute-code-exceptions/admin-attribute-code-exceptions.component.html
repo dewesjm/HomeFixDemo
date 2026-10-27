@@ -96,6 +96,10 @@
           </td>
           <td>
             @if (editing) {
+              <label class="flex items-center gap-1 text-xs mb-1 cursor-pointer">
+                <input type="checkbox" class="checkbox checkbox-xs" [(ngModel)]="row.askAccessible" />
+                Always asked
+              </label>
               @for (type of accessibleChoices(row); track type) {
                 <label class="flex items-center justify-between gap-1 text-xs mb-0.5">
                   {{ typeName(type) }}

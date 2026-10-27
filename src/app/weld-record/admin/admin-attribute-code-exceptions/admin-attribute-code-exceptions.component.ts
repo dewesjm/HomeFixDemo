@@ -188,6 +188,7 @@ export class AdminAttributeCodeExceptionsComponent {
         ...(row.routingChange ? { routingChange: row.routingChange } : {}),
         ...(row.typesMode && row.types?.length ? { typesMode: row.typesMode, types: row.types } : {}),
         ...(row.accessible?.length ? { accessible: row.accessible } : {}),
+        ...(row.askAccessible ? { askAccessible: true } : {}),
         ...(row.minRt ? { minRt: Number(row.minRt) } : {}),
       }];
     }));

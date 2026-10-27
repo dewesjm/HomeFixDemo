@@ -97,7 +97,7 @@ Every row below is a demo assumption unless explicitly identified above as a use
 | A04 | Access / visibility | Each affected signoff requires its own Yes/No answer to "Inner surface of the weld / ID is accessible", representing both accessibility and visibility. Methods that depend on access (PR, SI, IA, IR, RI) are valid only with the matching answer on that signoff; signing is blocked until it is answered. | Should visibility and accessibility be separate answers? Is an Unknown answer needed? |
 | A05 | Context source | Shop/Field and GTA-only are job data, not inferred from engineering notes, dimensions, material, actual signoffs or code-message text; blank is Unknown. ID access is answered per signoff (A04). Weld Planning exposes these fields; its data remains independent of Weld Record, as before. | Source-system fields and integration/mapping. |
 | A06 | GTA | A GTA-only Yes fact stands for GTAW throughout the applicable weld. No/Unknown retains normal routing; mixed-process work is treated as not GTA-only. | GTA meaning, mixed-process behavior and whether actual process signoffs should determine applicability. |
-| A07 | PR phase | On each Root/Final UT/RT obligation, access Yes allows "Attribute inspection not required" in place of RT. Root PT (ID, access Yes) is allowed as an alternative to the normal Root VT/5X obligation, without adding mandatory PT. Other existing Root inspections remain. | Root versus Final PT; which RT phases; does PT replace VT or satisfy a different obligation? |
+| A07 | PR phase | SUPERSEDED 2026-10-27, see Code-by-code review. Was: On each Root/Final UT/RT obligation, access Yes allows "Attribute inspection not required" in place of RT. Root PT (ID, access Yes) is allowed as an alternative to the normal Root VT/5X obligation, without adding mandatory PT. Other existing Root inspections remain. | Root versus Final PT; which RT phases; does PT replace VT or satisfy a different obligation? |
 | A08 | PR inactive | With access No on that signoff, PR makes no change; RT remains required. | Confirm the user's tentative guess. |
 | A09 | PM | Final PT can satisfy the same obligation as Final MT; inspector explicitly chooses one. Existing independently required PT need not be repeated. | Any material or procedure restrictions on substitution? |
 | A10 | FC | Final VT at 1X only; remove normal Final MT/PT/UT/RT. Root and Layer remain unchanged. | Does “only” override independently required RT/UT? Is 1X correct? |
@@ -164,6 +164,18 @@ Each question asked while reviewing the gaps above, with the options offered and
 13. **Not required Type, or ask accessible earlier so the routing drops off:** Answer: assume a Not required Type for now. Talking point: how is it supposed to work? The earlier-signoff alternative is probably not the way to go.
 14. **Gap 7, conflicting codes:** (1) Blocked when rules per routing; (2) one list of conflicting pairs. Answer: neither; assume no such scenario exists, document it and confirm.
 15. **Gap 8, attribute-only protections (forward rules can't skip, Additional Signoffs can't sign):** (1) drop them; (2) apply to all routings. Answer: 1; that hard-coding should not exist in the first place.
+
+## Code-by-code review (started 2026-10-27, NEXT TASK)
+
+Go through every code, work out together what we think it means (reading the message, real joint data and how the routing works), then take the open points back to the end users to confirm. Record each conclusion here and change its seeded rows to match.
+
+| Code | Status | Conclusion |
+|---|---|---|
+| PR | Concluded 2026-10-27 (to confirm with end users) | "PT ROOT IF ID-VT / NO RT": root means the weld's root (inside surface), not the Root routing. Real PR joints all have NDT Final = PT and RT Final = 60. Final MT/PT with "ID is accessible" Yes means Final RT/UT is not required (it drops off); No means Final RT/UT applies as normal. Root is not affected by PR. ID accessible is required on Final MT/PT for PR joints. |
+| IA | Partly discussed 2026-10-27 | "PT/MT ID IF ACCESS": PT/MT is done either way; accessible Yes = PT/MT of the ID, No = PT/MT done normally. ID accessible is required on the added MT/PT, to record which. No "not required" outcome. Phases (Root, Layer, Final) and the existing-MT/PT case still to review. |
+| PM, FC, BJ, PU, SI, RX, IR, LR, GV, RI, BP | Not yet reviewed | |
+
+The "Attribute inspection not required" Type was removed 2026-10-27: with these readings no code leaves a routing with nothing to inspect.
 
 ## Built: Attribute Code Exceptions (2026-10-27)
 

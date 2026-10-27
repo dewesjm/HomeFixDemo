@@ -22,6 +22,8 @@ export interface AttributeCodeException {
   types?: string[];
   /* a Type that may be picked only with this answer to "ID is accessible" on the same signoff */
   accessible?: { type: string; answer: AccessibleAnswer }[];
+  /* "ID is accessible" must be answered on the signoff, whatever the Type */
+  askAccessible?: boolean;
   /* an RT signoff needs at least this Degree of RT Performed */
   minRt?: number;
 }
@@ -30,6 +32,7 @@ export interface AttributeCodeException {
 export interface AttributeStageRules {
   codes: string[];
   accessible: { type: string; answer: AccessibleAnswer }[];
+  askAccessible?: boolean;
   minRt?: number;
 }
 
@@ -39,20 +42,20 @@ export const ROOT_WELD_PROCESS = 'step.root-weld.weldProcess';
 export const FINAL_WELD_PROCESS = 'step.final-weld.weldProcess';
 
 const rtTaken = (field: 'rtRoot' | 'rtFinal'): ConditionRule[] => [[{ field, op: 'isNot', values: ['', 'NA'] }]];
+/* the routing (or its NQC row) was signed with "ID is accessible" Yes */
+const signedAccessible = (routing: string): ConditionRule[] => [routing, `nqc-${routing}`]
+  .map(id => [{ field: `step.${id}.idAccessible`, op: 'is', values: ['yes'] }]);
 const notMtPt = (field: string): ConditionRule[] => [[{ field, op: 'isNot', values: ['MT', 'PT', 'MT/PT'] }]];
 const shop = (field: 'rtRoot' | 'rtFinal'): ConditionRule[] => [[
   { field: SHIPBOARD_FIELD, op: 'is', values: ['No'] }, { field, op: 'isNot', values: ['', 'NA'] },
 ]];
 const gtaw = (field: string): ConditionRule[] => [[{ field, op: 'is', values: ['gtaw'] }]];
-const NOT_REQUIRED = 'attribute-not-required';
 
 /* the demo's reading of each code (ATTRIBUTE-CODES-PLAN.md); every row is an assumption to confirm */
 export const SEED_EXCEPTIONS: AttributeCodeException[] = [
-  { code: 'PR', routing: 'root-ndt-vt5x', typesMode: 'add', types: ['pt'], accessible: [{ type: 'pt', answer: 'yes' }] },
-  ...(['root', 'final'] as const).map((phase): AttributeCodeException => ({
-    code: 'PR', routing: `${phase}-ndt-utrt`, when: rtTaken(phase === 'root' ? 'rtRoot' : 'rtFinal'),
-    typesMode: 'add', types: [NOT_REQUIRED], accessible: [{ type: NOT_REQUIRED, answer: 'yes' }, { type: 'rt', answer: 'no' }],
-  })),
+  /* PR, confirmed 2026-10-27: Final PT of the weld root from the inside replaces Final RT */
+  { code: 'PR', routing: 'final-ndt-mtpt', askAccessible: true },
+  { code: 'PR', routing: 'final-ndt-utrt', when: signedAccessible('final-ndt-mtpt'), routingChange: 'drop' },
   { code: 'PM', routing: 'final-ndt-mtpt', typesMode: 'add', types: ['pt'] },
   ...['FC', 'BJ'].flatMap((code): AttributeCodeException[] => [
     { code, routing: 'final-ndt-vt5x', routingChange: 'add', typesMode: 'only', types: ['vt'] },
@@ -69,7 +72,7 @@ export const SEED_EXCEPTIONS: AttributeCodeException[] = [
   { code: 'RX', routing: 'final-ndt-utrt', routingChange: 'add', typesMode: 'only', types: ['rt'] },
   ...([['root', 'ndtRoot'], ['layer', 'ndtEach'], ['final', 'ndtFinal']] as const).map(([phase, field]): AttributeCodeException => ({
     code: 'IA', routing: `${phase}-ndt-mtpt`, when: notMtPt(field), routingChange: 'add',
-    typesMode: 'only', types: ['pt', 'mt', NOT_REQUIRED], accessible: [{ type: NOT_REQUIRED, answer: 'no' }],
+    typesMode: 'only', types: ['pt', 'mt'], askAccessible: true,
   })),
   ...(['root', 'final'] as const).map((phase): AttributeCodeException => ({
     code: 'IR', routing: `${phase}-ndt-utrt`, when: rtTaken(phase === 'root' ? 'rtRoot' : 'rtFinal'),

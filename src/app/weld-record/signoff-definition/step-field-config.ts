@@ -154,7 +154,6 @@ function ndtType(typeId: string, fields: FieldActivation[]): TypeDefinition {
   return { typeId, fields: [TYPE, QUAL_CHECK, ...NDT_COMMON_FIELDS, ...fields, COMMENTS] };
 }
 const NDT_TYPES: TypeDefinition[] = [
-  { typeId: 'attribute-not-required', fields: [TYPE, { key: 'idAccessible', required: true }, COMMENTS] },
   ndtType('vt', [{ key: 'weldColor' }, DECISION]),
   ndtType('5x', [DECISION]),
   ndtType('mt', [{ key: 'idAccessible' }, DECISION]),
@@ -288,7 +287,7 @@ export function definitionHas(step: StepRef, key: string): boolean {
 /* the definition a step reads, or an empty one when it has none */
 export function getActivationForStep(step: StepRef): TypeDefinition {
   const definition = findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
-  if (typeof step === 'string' || !step.attributeRules?.accessible.length) return definition;
+  if (typeof step === 'string' || !(step.attributeRules?.accessible.length || step.attributeRules?.askAccessible)) return definition;
   /* Attribute Code Exceptions accessible rules: "ID is accessible" is asked above the Type, on its own line */
   const fields = definition.fields.filter(f => f.key !== 'idAccessible');
   const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY));

@@ -66,14 +66,29 @@ describe('Attribute Code Exceptions', () => {
     expect(rtDegreeRequired(j, s)).toBe('75');
   });
 
-  it('PR needs ID accessible answered and narrows the Types by it', () => {
-    const s = stage(buildStages(job('PR', { rtRoot: '100' })), 'root-ndt-utrt')!;
-    expect(types(s)).toContain('attribute-not-required');
-    expect(attributeAccessError({ ...s, ...typeValues('rt') })).toBe('Answer ID accessibility for this signoff');
-    expect(attributeAccessError({ ...s, ...typeValues('rt'), inputs: { idAccessible: 'yes' } }))
-      .toBe('This choice requires ID accessibility No on this signoff');
-    expect(typesForAccessibleAnswer({ ...s, inputs: { idAccessible: 'yes' } }).map(o => o.value)).not.toContain('rt');
-    expect(attributeAccessError({ ...s, ...typeValues('attribute-not-required'), inputs: { idAccessible: 'yes' } })).toBe('');
+  it('PR asks ID accessible on Final MT/PT; Yes drops Final RT/UT, No keeps it', () => {
+    const j = job('PR', { ndtFinal: 'PT', rtFinal: '60' });
+    const stages = buildStages(j);
+    const mtpt = stage(stages, 'final-ndt-mtpt')!;
+    expect(stage(stages, 'final-ndt-utrt')!.required).toBeTrue();
+    expect(attributeAccessError({ ...mtpt, ...typeValues('pt') })).toBe('Answer ID accessibility for this signoff');
+    expect(attributeAccessError({ ...mtpt, ...typeValues('pt'), inputs: { idAccessible: 'no' } })).toBe('');
+    expect(stage(applySignedFlags(signed(stages, 'final-ndt-mtpt', { idAccessible: 'no' }), j), 'final-ndt-utrt')!.required).toBeTrue();
+    expect(stage(applySignedFlags(signed(stages, 'final-ndt-mtpt', { idAccessible: 'yes' }), j), 'final-ndt-utrt')!.required).toBeFalse();
+    expect(stage(stages, 'root-ndt-utrt')?.attributeRules).toBeUndefined();
+  });
+
+  it('PR reads the NQC Final MT/PT on an N Ind. 1 joint', () => {
+    const j = job('PR', { nInd: '1', ndtFinal: 'PT', rtFinal: '60' });
+    const stages = applySignedFlags(signed(buildStages(j), 'nqc-final-ndt-mtpt', { idAccessible: 'yes' }), j);
+    expect(stage(stages, 'nqc-final-ndt-utrt')!.required).toBeFalse();
+  });
+
+  it('IA offers PT or MT and asks ID accessible without narrowing them', () => {
+    const s = stage(buildStages(job('IA')), 'final-ndt-mtpt')!;
+    expect(types(s)).toEqual(['pt', 'mt']);
+    expect(attributeAccessError({ ...s, ...typeValues('mt') })).toBe('Answer ID accessibility for this signoff');
+    expect(typesForAccessibleAnswer({ ...s, inputs: { idAccessible: 'no' } }).map(o => o.value)).toEqual(['pt', 'mt']);
   });
 
   it('GV waits for the recorded Weld Process: GTAW on Root drops Root MT/PT and leaves only 5X', () => {
