@@ -173,7 +173,23 @@ Go through every code, work out together what we think it means (reading the mes
 |---|---|---|
 | PR | Concluded 2026-10-27 (to confirm with end users) | "PT ROOT IF ID-VT / NO RT": root means the weld's root (inside surface), not the Root routing. Real PR joints all have NDT Final = PT and RT Final = 60. Final MT/PT with "ID is accessible" Yes means Final RT/UT is not required (it drops off); No means Final RT/UT applies as normal. Root is not affected by PR. ID accessible is required on Final MT/PT for PR joints. |
 | IA | Partly discussed 2026-10-27 | "PT/MT ID IF ACCESS": PT/MT is done either way; accessible Yes = PT/MT of the ID, No = PT/MT done normally. ID accessible is required on the added MT/PT, to record which. No "not required" outcome. Phases (Root, Layer, Final) and the existing-MT/PT case still to review. |
-| PM, FC, BJ, PU, SI, RX, IR, LR, GV, RI, BP | Not yet reviewed | |
+| PM, FC, SI, IR, LR, GV | Not yet reviewed | |
+| BJ, PU, RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Review whether to remove before spending time on their meaning. |
+
+Note: the two-letter codes are made-up placeholders. The user recognises codes by their message text, so name a code by its message when discussing it.
+
+### Codes not used (found 2026-10-27, not yet acted on)
+
+The user found these five are not used at all in the real data:
+
+- BJ: [material type] BRAZED JOINT (OPTO) "VT" ONLY ON FINAL (its rows duplicated FC's, which IS used)
+- PU: PT & UT REQUIRED ON FINAL
+- RX: ROOT PT AND FINAL XRAY REQD
+- RI: 60 RT AND/OR PT OF ID REQUIRED
+- BP: BOTH 5X AND PT/MT ROOT REQ'D
+
+Review (no changes made): removing them does not simplify the Attribute Code Exceptions machinery. Every effect they use (add/drop routing, Only/Add Types, Type needs ID accessible, minimum RT) is still used by a code in use (IA and GV add and drop, PM/SI/IR/LR add Types, SI/IR use ID accessible rules, LR minimum RT). It does remove open questions: RI's RT and/or PT either-or with 60 minimum, PU's and RX's "MT/UT not applicable" assumptions, BP's 5X plus MT/PT, and BJ's duplicate of FC. It leaves a cleaner pattern: the codes in use mostly waive or swap an inspection (PR, SI, IR replace RT; PM PT for MT; LR RT for Layer PT; FC and GV VT only); IA is the only one that adds one. Removing would mean 20 seeded rows (10 plus NQC copies), their demo jobs among AC001-AC013, and probably their entries in the attribute code list.
+
 
 The "Attribute inspection not required" Type was removed 2026-10-27: with these readings no code leaves a routing with nothing to inspect.
 
