@@ -131,6 +131,8 @@ Every row below is a demo assumption unless explicitly identified above as a use
 
 Planned, not built. Attribute behavior should be configured in the admin tables (Routing Settings Included when, Signoff Types By Routing Enable when, Signoff Type Forms) instead of the fixed resolver in weld-record/attribute-codes/. Gaps are being reviewed with the user one at a time; no changes until reviewed.
 
+**Decided 2026-10-27: a separate Attribute Code Exceptions admin table (Option B), not clauses in the main tables.** One row per code and routing, applied after the normal routing is built, with five effect kinds: add a routing, drop a routing, change the Types a routing offers, a Type allowed only with ID accessible Yes/No on that signoff, and a minimum RT degree. Routing Settings, Signoff Types By Routing and Signoff Type Forms keep their rules and data; the only additions there are a possible read-only cross-reference note and a "Fabrication Location is shipboard" condition choice. The user may revisit clauses in the main tables (Option A) after seeing it. Open: whether the joint's RT degree check stays fixed, how RX sets a minimum when the joint has no RT Final, and where the cross-reference note appears. Gap answers below still hold for what each code does; where they name a main-table location (gap 4 RT form rules, gap 5 Enable when), that location moves to the exceptions table.
+
 | Gap | Need | Status |
 |---|---|---|
 | 1 | Shop/Field and GTA as condition facts (SI, GV). | Reviewed. GTA: recorded Weld Process (GTAW) per phase. Shop: Fabrication Location with Shipboard = No (Admin > Locations). Both extra joint fields are dropped. Routing and Type conditions must be able to read Weld Process and the Location's Shipboard flag. |
