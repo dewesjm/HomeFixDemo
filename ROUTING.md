@@ -284,7 +284,7 @@ Material Classification stores separate Non-Ferrous, Austenitic and Titanium fla
 
 ## Attribute Code Exceptions
 
-Progression attribute codes (any of the four slots, any case) change a joint's routing through **Admin > Attribute Code Exceptions**, applied after Routing Settings and Signoff Types By Routing build the normal routing. Each row is one code and one routing (naming the regular routing covers its NQC row too), with optional Applies when conditions and up to five effects:
+Progression attribute codes (any of the four slots, any case) change a joint's routing through **Admin > Attribute Code Exceptions**, applied after Routing Settings and Signoff Types By Routing build the normal routing. Each row is one code and one routing (naming the regular routing covers its NQC row too; a row can instead be limited to the regular row only or the NQC row only), with optional Applies when conditions and up to five effects:
 
 - **Routing change**: Add puts the routing on the joint (as the NQC or regular row its N Ind. picks); Drop takes it off.
 - **Types offered**: Only these replaces the routing's Types; Add these offers them as well. These Types are offered whatever their Enable when says.

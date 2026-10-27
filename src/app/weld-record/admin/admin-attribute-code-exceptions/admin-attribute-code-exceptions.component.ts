@@ -21,7 +21,7 @@ import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,
 } from '../../attribute-codes/attribute-code-exceptions';
 import {
-  accessibleText, appliesWhenText, exceptionConditionFields, minRtText, routingChangeText, typesText,
+  accessibleText, appliesWhenText, exceptionConditionFields, minRtText, nqcScopeText, routingChangeText, typesText,
 } from '../../attribute-codes/exception-text';
 import { TypeEnableConditionsComponent } from '../admin-signoff-types/type-enable-conditions.component';
 
@@ -51,6 +51,10 @@ export class AdminAttributeCodeExceptionsComponent {
   readonly typeChoices = getRoutingSignoffTypes();
   readonly conditionFields = exceptionConditionFields();
   readonly text = { appliesWhenText, routingChangeText, typesText, accessibleText, minRtText };
+
+  nqcText(row: ExceptionRow): string {
+    return nqcScopeText(row, this.hasNqcRow(row.routing));
+  }
 
   rows = signal<ExceptionRow[]>(getAttributeCodeExceptions().map(r => this.toRow(r)));
   editingUid = signal<string | null>(null);
@@ -109,7 +113,8 @@ export class AdminAttributeCodeExceptionsComponent {
   }
 
   setRouting(row: ExceptionRow, routing: string) {
-    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, routing, routingLabel: this.routingLabel(routing) } : x));
+    this.rows.update(r => r.map(x => x.uid === row.uid
+      ? { ...x, routing, routingLabel: this.routingLabel(routing), appliesTo: this.hasNqcRow(routing) ? x.appliesTo : undefined } : x));
   }
 
   setWhen(row: ExceptionRow, when: ConditionRule[]) {
@@ -121,6 +126,7 @@ export class AdminAttributeCodeExceptionsComponent {
       { header: 'Code', value: (r: ExceptionRow) => r.code },
       { header: 'Message', value: (r: ExceptionRow) => r.message },
       { header: 'Routing', value: (r: ExceptionRow) => r.routingLabel },
+      { header: 'NQC rows', value: (r: ExceptionRow) => this.nqcText(r) },
       { header: 'Applies when', value: appliesWhenText },
       { header: 'Routing change', value: routingChangeText },
       { header: 'Types offered', value: typesText },
@@ -177,6 +183,7 @@ export class AdminAttributeCodeExceptionsComponent {
       const { uid: _uid, routingLabel: _label, message: _message, ...row } = saved;
       return [{
         code: row.code, routing: row.routing,
+        ...(row.appliesTo && this.hasNqcRow(row.routing) ? { appliesTo: row.appliesTo } : {}),
         ...(row.when?.length ? { when: row.when } : {}),
         ...(row.routingChange ? { routingChange: row.routingChange } : {}),
         ...(row.typesMode && row.types?.length ? { typesMode: row.typesMode, types: row.types } : {}),

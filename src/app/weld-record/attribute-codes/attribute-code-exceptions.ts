@@ -1,15 +1,19 @@
 /* Admin > Attribute Code Exceptions: what each attribute code changes on a joint's routing, applied
    after the normal routing is built (Routing Settings, Signoff Types By Routing). One row per code
-   and routing. A row names the regular routing and applies to its NQC row too. Stored in localStorage. */
+   and routing. A row names the regular routing and applies to its NQC row too, unless appliesTo
+   limits it to one of the pair. Stored in localStorage. */
 import { STORAGE } from '../../data/storage-keys';
 import { ConditionRule } from '../routing/step-conditions';
 
 export type AccessibleAnswer = 'yes' | 'no';
+/* which row of an NQC pair a row covers; omitted = both */
+export type NqcScope = 'regular' | 'nqc';
 
 export interface AttributeCodeException {
   code: string;
-  /* the regular routing's id; its NQC row reads the same row */
+  /* the regular routing's id; its NQC row reads the same row unless appliesTo says otherwise */
   routing: string;
+  appliesTo?: NqcScope;
   /* extra conditions on top of the code being on the joint; none = always */
   when?: ConditionRule[];
   routingChange?: 'add' | 'drop';
@@ -101,8 +105,13 @@ export function setAttributeCodeExceptions(rows: AttributeCodeException[]) {
   version++;
 }
 
-/* the codes with a row for a routing (its NQC row reads the regular row), for the other admin tables' notes */
+/* whether a row covers this routing: the regular id, or its NQC row ('nqc-<id>') */
+export function rowCoversRouting(row: AttributeCodeException, routingId: string): boolean {
+  const nqc = routingId.startsWith('nqc-');
+  return row.routing === routingId.replace(/^nqc-/, '') && (!row.appliesTo || (row.appliesTo === 'nqc') === nqc);
+}
+
+/* the codes with a row for a routing, for the other admin tables' notes */
 export function codesChangingRouting(routingId: string): string[] {
-  const id = routingId.replace(/^nqc-/, '');
-  return [...new Set(getAttributeCodeExceptions().filter(r => r.routing === id).map(r => r.code))];
+  return [...new Set(getAttributeCodeExceptions().filter(r => rowCoversRouting(r, routingId)).map(r => r.code))];
 }
