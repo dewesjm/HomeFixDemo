@@ -10,8 +10,8 @@ import { codesChangingRouting } from '../../attribute-codes/attribute-code-excep
   imports: [RouterLink],
   template: `
     @if (codes().length) {
-      <div class="text-sm mt-1">Changed by attribute codes {{ codes().join(', ') }}
-        (<a routerLink="/admin/attribute-code-exceptions" class="link">Attribute Code Exceptions</a>)</div>
+      <div class="text-sm mt-1"><a routerLink="/admin/attribute-code-exceptions" class="link">Attribute Code Exceptions</a>
+        {{ codes().join(', ') }}</div>
     }
   `,
 })
