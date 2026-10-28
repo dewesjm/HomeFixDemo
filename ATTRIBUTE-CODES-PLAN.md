@@ -175,7 +175,9 @@ Go through every code, work out together what we think it means (reading the mes
 | IA | Partly discussed 2026-10-27 | "PT/MT ID IF ACCESS": PT/MT is done either way; accessible Yes = PT/MT of the ID, No = PT/MT done normally. ID accessible is required on the added MT/PT, to record which. No "not required" outcome. Phases (Root, Layer, Final) and the existing-MT/PT case still to review. |
 | PM | Concluded 2026-10-27 (to confirm with end users) | "FINAL PT MAY BE SUBSTITUTED FOR MT": NDT Final = MT, but PT may be done instead. Final MT/PT offers PT as well as MT; the inspector signs one, never both. No effect when NDT Final is already PT or MT/PT, and never adds a Final MT/PT routing. Seed already matched. |
 | FC | Concluded 2026-10-27 (to confirm with end users) | "FINAL PT NOT REQUIRED "VT" ONLY ON FINAL": real FC joints have a mix of PT and VT in NDT Final. Even when NDT Final = PT, only Final VT is required: Final MT/PT drops, Final VT/5X is added if missing and offers VT only. Final RT/UT also drops (reading "only" as nothing else on Final). Seed already matched. |
+| BJ | Concluded 2026-10-28 (to confirm with end users) | "[material type] BRAZED JOINT (OPTO) "VT" ONLY ON FINAL": same as FC. Final VT is required (Final VT/5X added if missing, VT only); every other Final inspection is disallowed and drops (Final MT/PT, Final RT/UT). Root and Layer unchanged. Not used in real data, but kept: the app may need to handle unused codes anyway (user). Seed already matched. |
 | SI, IR, LR, GV | Not yet reviewed | |
+| PU, RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
 
 ### Questions to take to end users
 
@@ -185,11 +187,11 @@ The user runs these down later. Add to this list as each code is reviewed.
 - **IA:** to be added once its phases and existing-MT/PT case are reviewed.
 - **PM:** any limits on when PT may stand in for MT (material, procedure), or can PT always be used on a PM joint?
 - **FC:** does "VT only on Final" also waive Final RT/UT when the joint calls for them, or only the PT? Check whether any FC joints have RT Final set (not NA) or UT.
-| BJ, PU, RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Review whether to remove before spending time on their meaning. |
+- **BJ:** what [material type] stands for and what OPTO means; does brazing change anything outside Final (Root, Layer), or do brazed joints follow the welding routings at all?
 
 Note: the two-letter codes are made-up placeholders. The user recognises codes by their message text, so name a code by its message when discussing it.
 
-### Codes not used (found 2026-10-27, not yet acted on)
+### Codes not used (found 2026-10-27; kept, user 2026-10-28)
 
 The user found these five are not used at all in the real data:
 
