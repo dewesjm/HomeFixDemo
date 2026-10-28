@@ -182,7 +182,7 @@ Go through every code, work out together what we think it means (reading the mes
 | GV | Discussed 2026-10-28, open (to ask end users) | "GTA WELDS:VT ONLY ROOT & FINAL (5XROOT/1XFINAL)": user's reading: GTAW process; only 5X allowed on Root NDT, only VT on Final NDT. Real GV joints: no Each Layer inspection, NDT Final always PT, NDT Root usually 5X, sometimes NA. Current seed unchanged: each phase checks its own Weld Process (Root Weld / Final Weld GTAW); Root VT/5X added if missing offering 5X only, Final VT/5X added if missing offering VT only; Root and Final MT/PT and UT/RT drop regardless of NDT settings (so the data's Final PT drops); Layer untouched. User is fairly confident GV does override the NDT settings (2026-10-28). |
 | PU | Concluded 2026-10-28 (to confirm with end users) | "PT & UT REQUIRED ON FINAL": Final PT and Final UT are both required. Final MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers UT only, so MT and RT are dropped and disallowed even when the joint data calls for them (end users to confirm). Final VT unchanged; PT before UT by normal routing order. Not used in real data. Seed already matched. |
 | RX | Concluded 2026-10-28 (to confirm with end users) | "ROOT PT AND FINAL XRAY REQD": Root PT and Final RT are inserted regardless of NDT settings. Root MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers RT only, so Root MT and Final UT are dropped and disallowed (end users to confirm). No Final RT degree minimum (end users to say what is required). Not used in real data. Seed already matched. |
-| RI | Discussed 2026-10-28, open (to ask end users) | "60 RT AND/OR PT OF ID REQUIRED": user's data: NDT Final always PT, RT Final always 60 or NA, RT Root always NA or 60, NDT Root 5X. Current seed unchanged: Final UT/RT added if missing, offering only RT (60 or higher) and PT (needs ID accessible Yes), inspector signs one; Final MT/PT unchanged, so a joint with NDT Final PT could get a second PT. "And" would need two signoffs, since one signoff moves the routing on; where RT Final = 60 the joint already has Final MT/PT (PT) and Final UT/RT (RT 60). |
+| RI | Discussed 2026-10-28, open (to ask end users) | "60 RT AND/OR PT OF ID REQUIRED": user's data: NDT Final always PT, RT Final always 60 or NA, RT Root always NA or 60, NDT Root 5X. Current seed unchanged: Final UT/RT added if missing, offering only RT (60 or higher) and PT (needs ID accessible Yes), inspector signs one; Final MT/PT unchanged, so a joint with NDT Final PT could get a second PT. "And" would need two signoffs, since one signoff moves the routing on; where RT Final = 60 the joint already has Final MT/PT (PT) and Final UT/RT (RT 60). PT signoff only accepting ID accessible Yes is acceptable (user). Used in real data (user 2026-10-28, correcting the 2026-10-27 unused list). |
 | BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
 
 ### Questions to take to end users
@@ -199,21 +199,20 @@ The user runs these down later. Add to this list as each code is reviewed.
 - **RX:** Root PT and Final RT are inserted regardless of NDT settings. What Final RT degree is required? Does this drop and disallow root mt and final UT if they exist?
 - **IR:** If this code exists, then in NDT UT/RT they can select PT or MT? And it will force yes in the is accessible field? Is this for final only?
 - **GV:** Is this referring to GTAW process type? Only 5X is allowed on root NDT, only VT is allowed final NDT. Does that mean no MT/PT/RT/UT regardless of the NDT settings? Assuming layer has no inspection? Data suggests no each layer inspection, PT is always NDT final value (so is there no PT because of the attribute code?) NDT root is usually 5x, sometimes NA. The code overrides this?
-- **RI:** Is this on root? Final? How are we supposed to account for and/or? Routing will progress on signoff how would we handle and? Force yes if PT is selected, have RT available as option accepting 60+?
+- **RI:** Is this on root? Final? How are we supposed to account for and/or? Routing will progress on signoff how would we do an OR, the system either skips RT or doesn't, right? Force yes if PT is selected, have RT available as option accepting 60+?
 - **LR:** confirm the reading above (RT of 60 degrees or higher may be signed instead of PT in Layer NDT MT/PT).
 
 Note: the two-letter codes are made-up placeholders. The user recognises codes by their message text, so name a code by its message when discussing it.
 
 ### Codes not used (found 2026-10-27; kept, user 2026-10-28)
 
-The user found these five are not used at all in the real data:
+The user found these are not used at all in the real data (RI was listed too, but the user confirmed 2026-10-28 that it IS used):
 
 - BJ: [material type] BRAZED JOINT (OPTO) "VT" ONLY ON FINAL (its rows duplicated FC's, which IS used)
 - PU: PT & UT REQUIRED ON FINAL
 - RX: ROOT PT AND FINAL XRAY REQD
-- RI: 60 RT AND/OR PT OF ID REQUIRED
 - BP: BOTH 5X AND PT/MT ROOT REQ'D
-- LR: ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT (found 2026-10-28; so the minimum RT effect below is used only by unused codes)
+- LR: ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT (found 2026-10-28; the minimum RT effect below is still used by RI)
 
 Review (no changes made): removing them does not simplify the Attribute Code Exceptions machinery. Every effect they use (add/drop routing, Only/Add Types, Type needs ID accessible, minimum RT) is still used by a code in use (IA and GV add and drop, PM/SI/IR/LR add Types, SI/IR use ID accessible rules, LR minimum RT). It does remove open questions: RI's RT and/or PT either-or with 60 minimum, PU's and RX's "MT/UT not applicable" assumptions, BP's 5X plus MT/PT, and BJ's duplicate of FC. It leaves a cleaner pattern: the codes in use mostly waive or swap an inspection (PR, SI, IR replace RT; PM PT for MT; LR RT for Layer PT; FC and GV VT only); IA is the only one that adds one. Removing would mean 20 seeded rows (10 plus NQC copies), their demo jobs among AC001-AC013, and probably their entries in the attribute code list.
 
