@@ -30,6 +30,7 @@ These notes preserve the original discussion. The implementation register below 
 - **PM:** substitution is optional, not a requirement to perform both PT and MT. Decide how the choice is recorded and how PT satisfies an otherwise-required Final MT inspection.
 - **FC:** provisionally read "VT only on Final" as excluding other Final NDT methods, rather than just removing PT. Confirm how this interacts with independently required UT/RT.
 - **BJ:** provisionally has the same Final inspection effect as FC. The material type placeholder, the meaning of OPTO, and any material-specific applicability still need definition; do not infer them.
+- **PU:** PT and UT are required, are MT/RT dropped and disallowed if normally required by data?
 - **PU:** PT and UT must both be completed; neither substitutes for the other. Provisionally retain the normal Final VT requirement because this message does not say "only". Confirm inspection order and interaction with any RT requirement.
 - **SI:** provisionally an optional substitution of ID VT for the applicable RT, for shop joints only. Confirm phase, how shop joints are identified, and whether accessibility must be confirmed.
 - **RX:** require Root PT and Final RT, retaining other requirements unless explicitly removed. Confirm Final RT coverage/degree.
@@ -177,7 +178,8 @@ Go through every code, work out together what we think it means (reading the mes
 | FC | Concluded 2026-10-27 (to confirm with end users) | "FINAL PT NOT REQUIRED "VT" ONLY ON FINAL": real FC joints have a mix of PT and VT in NDT Final. Even when NDT Final = PT, only Final VT is required: Final MT/PT drops, Final VT/5X is added if missing and offers VT only. Final RT/UT also drops (reading "only" as nothing else on Final). Seed already matched. |
 | BJ | Concluded 2026-10-28 (to confirm with end users) | "[material type] BRAZED JOINT (OPTO) "VT" ONLY ON FINAL": same as FC. Final VT is required (Final VT/5X added if missing, VT only); every other Final inspection is disallowed and drops (Final MT/PT, Final RT/UT). Root and Layer unchanged. Not used in real data, but kept: the app may need to handle unused codes anyway (user). Seed already matched. |
 | SI, IR, LR, GV | Not yet reviewed | |
-| PU, RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
+| PU | Concluded 2026-10-28 (to confirm with end users) | "PT & UT REQUIRED ON FINAL": Final PT and Final UT are both required. Final MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers UT only, so MT and RT are dropped and disallowed even when the joint data calls for them (end users to confirm). Final VT unchanged; PT before UT by normal routing order. Not used in real data. Seed already matched. |
+| RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
 
 ### Questions to take to end users
 
