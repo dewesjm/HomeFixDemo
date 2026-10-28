@@ -178,7 +178,8 @@ Go through every code, work out together what we think it means (reading the mes
 | BJ | Concluded 2026-10-28 (to confirm with end users) | "[material type] BRAZED JOINT (OPTO) "VT" ONLY ON FINAL": same as FC. Final VT is required (Final VT/5X added if missing, VT only); every other Final inspection is disallowed and drops (Final MT/PT, Final RT/UT). Root and Layer unchanged. Not used in real data, but kept: the app may need to handle unused codes anyway (user). Seed already matched. |
 | SI | Discussed 2026-10-28, open (to ask end users) | "SHOP JTS ONLY-ID INSP-LIEU RT": real SI joints all have RT Final = 60 and NDT Final = PT, which suggests Final but is not conclusive. Current seed unchanged: on shop joints (Fabrication Location not shipboard) with that phase's RT Degree set, Root and Final UT/RT each offer VT as an extra Type, needing ID accessible Yes; RT stays available. |
 | IR | Discussed 2026-10-28, open (to ask end users) | "PT/MT ID IN LIEU OF RT IF ACCESSIBLE": real IR joints have NDT Final pretty much always PT. Current seed unchanged: Root and Final UT/RT (when that phase's RT Degree is set) offer PT and MT next to RT/UT; PT/MT can be signed only with ID accessible Yes, No leaves RT. Whether a second PT happens (Final MT/PT then PT again at UT/RT) is settled by whether PT is selectable at UT/RT (user). |
-| LR, GV | Not yet reviewed | |
+| LR | Concluded 2026-10-28 (to confirm with end users) | "ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT": RT is allowed as a substitute in Layer NDT MT/PT and requires 60 degrees or higher (user's notes). Not used in real data. Seed already matched: Layer MT/PT offers RT next to PT when NDT Each Layer is PT or MT/PT, RT minimum 60, each layer chosen separately. |
+| GV | Not yet reviewed | |
 | PU | Concluded 2026-10-28 (to confirm with end users) | "PT & UT REQUIRED ON FINAL": Final PT and Final UT are both required. Final MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers UT only, so MT and RT are dropped and disallowed even when the joint data calls for them (end users to confirm). Final VT unchanged; PT before UT by normal routing order. Not used in real data. Seed already matched. |
 | RX | Concluded 2026-10-28 (to confirm with end users) | "ROOT PT AND FINAL XRAY REQD": Root PT and Final RT are inserted regardless of NDT settings. Root MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers RT only, so Root MT and Final UT are dropped and disallowed (end users to confirm). No Final RT degree minimum (end users to say what is required). Not used in real data. Seed already matched. |
 | RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
@@ -196,6 +197,7 @@ The user runs these down later. Add to this list as each code is reviewed.
 - **SI:** If it's a shop location, a VT is substitutable for RT? Is this for root, final, or both? Is it just a normal VT? Does the routing still go to VT/5X to NDT UT/RT and then VT is selectable there?
 - **RX:** Root PT and Final RT are inserted regardless of NDT settings. What Final RT degree is required? Does this drop and disallow root mt and final UT if they exist?
 - **IR:** If this code exists, then in NDT UT/RT they can select PT or MT? And it will force yes in the is accessible field? Is this for final only?
+- **LR:** confirm the reading above (RT of 60 degrees or higher may be signed instead of PT in Layer NDT MT/PT).
 
 Note: the two-letter codes are made-up placeholders. The user recognises codes by their message text, so name a code by its message when discussing it.
 
@@ -208,6 +210,7 @@ The user found these five are not used at all in the real data:
 - RX: ROOT PT AND FINAL XRAY REQD
 - RI: 60 RT AND/OR PT OF ID REQUIRED
 - BP: BOTH 5X AND PT/MT ROOT REQ'D
+- LR: ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT (found 2026-10-28; so the minimum RT effect below is used only by unused codes)
 
 Review (no changes made): removing them does not simplify the Attribute Code Exceptions machinery. Every effect they use (add/drop routing, Only/Add Types, Type needs ID accessible, minimum RT) is still used by a code in use (IA and GV add and drop, PM/SI/IR/LR add Types, SI/IR use ID accessible rules, LR minimum RT). It does remove open questions: RI's RT and/or PT either-or with 60 minimum, PU's and RX's "MT/UT not applicable" assumptions, BP's 5X plus MT/PT, and BJ's duplicate of FC. It leaves a cleaner pattern: the codes in use mostly waive or swap an inspection (PR, SI, IR replace RT; PM PT for MT; LR RT for Layer PT; FC and GV VT only); IA is the only one that adds one. Removing would mean 20 seeded rows (10 plus NQC copies), their demo jobs among AC001-AC013, and probably their entries in the attribute code list.
 
