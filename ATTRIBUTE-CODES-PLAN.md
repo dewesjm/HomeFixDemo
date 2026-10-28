@@ -179,7 +179,8 @@ Go through every code, work out together what we think it means (reading the mes
 | SI | Discussed 2026-10-28, open (to ask end users) | "SHOP JTS ONLY-ID INSP-LIEU RT": real SI joints all have RT Final = 60 and NDT Final = PT, which suggests Final but is not conclusive. Current seed unchanged: on shop joints (Fabrication Location not shipboard) with that phase's RT Degree set, Root and Final UT/RT each offer VT as an extra Type, needing ID accessible Yes; RT stays available. |
 | IR, LR, GV | Not yet reviewed | |
 | PU | Concluded 2026-10-28 (to confirm with end users) | "PT & UT REQUIRED ON FINAL": Final PT and Final UT are both required. Final MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers UT only, so MT and RT are dropped and disallowed even when the joint data calls for them (end users to confirm). Final VT unchanged; PT before UT by normal routing order. Not used in real data. Seed already matched. |
-| RX, RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
+| RX | Concluded 2026-10-28 (to confirm with end users) | "ROOT PT AND FINAL XRAY REQD": Root PT and Final RT are inserted regardless of NDT settings. Root MT/PT is added if missing and offers PT only; Final UT/RT is added if missing and offers RT only, so Root MT and Final UT are dropped and disallowed (end users to confirm). No Final RT degree minimum (end users to say what is required). Not used in real data. Seed already matched. |
+| RI, BP | Not used in real data (user, 2026-10-27) | See "Codes not used" below. Kept for now: the app may need to handle unused codes anyway. |
 
 ### Questions to take to end users
 
@@ -192,6 +193,7 @@ The user runs these down later. Add to this list as each code is reviewed.
 - **BJ:** what [material type] stands for and what OPTO means; does brazing change anything outside Final (Root, Layer), or do brazed joints follow the welding routings at all?
 - **PU:** PT and UT are required, are MT/RT dropped and disallowed if normally required by data?
 - **SI:** If it's a shop location, a VT is substitutable for RT? Is this for root, final, or both? Is it just a normal VT? Does the routing still go to VT/5X to NDT UT/RT and then VT is selectable there?
+- **RX:** Root PT and Final RT are inserted regardless of NDT settings. What Final RT degree is required? Does this drop and disallow root mt and final UT if they exist?
 
 Note: the two-letter codes are made-up placeholders. The user recognises codes by their message text, so name a code by its message when discussing it.
 
