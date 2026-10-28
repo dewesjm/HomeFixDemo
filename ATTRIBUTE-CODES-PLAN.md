@@ -31,7 +31,7 @@ These notes preserve the original discussion. The implementation register below 
 - **FC:** provisionally read "VT only on Final" as excluding other Final NDT methods, rather than just removing PT. Confirm how this interacts with independently required UT/RT.
 - **BJ:** provisionally has the same Final inspection effect as FC. The material type placeholder, the meaning of OPTO, and any material-specific applicability still need definition; do not infer them.
 - **PU:** PT and UT are required, are MT/RT dropped and disallowed if normally required by data?
-- **SI:** If it's a shipboard location, a VT is substitutable for RT? Is this for root, final, or both? Is it just a normal VT? Does the routing still go to VT/5X to NDT UT/RT and then VT is selectable there?
+- **SI:** If it's a shop location, a VT is substitutable for RT? Is this for root, final, or both? Is it just a normal VT? Does the routing still go to VT/5X to NDT UT/RT and then VT is selectable there?
 - **PU:** PT and UT must both be completed; neither substitutes for the other. Provisionally retain the normal Final VT requirement because this message does not say "only". Confirm inspection order and interaction with any RT requirement.
 - **SI:** provisionally an optional substitution of ID VT for the applicable RT, for shop joints only. Confirm phase, how shop joints are identified, and whether accessibility must be confirmed.
 - **RX:** require Root PT and Final RT, retaining other requirements unless explicitly removed. Confirm Final RT coverage/degree.
