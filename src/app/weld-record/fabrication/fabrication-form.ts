@@ -8,17 +8,18 @@ import { jointDesignOptions } from '../../data/joint-designs';
 
 type Fab = Record<string, string>;
 
-/* MIC 1 / MIC 2 only apply when that joint member's MCL (mcl1 / mcl2) requires traceability */
+/* Joining Item MIC / Join to Item MIC only apply when that joint member's MCL (mcl1 / mcl2) requires traceability */
 export function micApplies(job: Job | undefined, key: 'id1' | 'id2'): boolean {
   if (!job) return false;
   return requiresTraceability(key === 'id1' ? job.mcl1 : job.mcl2);
 }
 
-/* the fields shown, with their options filled in */
+/* the fields shown, with their options filled in; a MIC that doesn't apply shows disabled and not required */
 export function fabricationFieldsShown(job: Job | undefined, fab: Fab): FabricationField[] {
   return FABRICATION_FIELDS
     .filter(f => fabricationFieldVisible(f, fab))
-    .filter(f => (f.key === 'id1' || f.key === 'id2') ? micApplies(job, f.key) : true)
+    .map(f => (f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)
+      ? { ...f, required: false, notApplicable: 'Not required: material does not require traceability' } : f)
     .map(f => withFabricationOptions(f, job, fab));
 }
 
@@ -51,7 +52,7 @@ export function fabricationDisplayValue(key: string, job: Job | undefined, fab: 
 }
 
 /* live errors on the Fabrication panel, keyed by field: required fields that are shown and blank
-   (MIC 1/2 only when they apply) */
+   (the MICs only when they apply) */
 export function fabricationErrors(job: Job | undefined, fab: Fab): Record<string, string> {
   const errors: Record<string, string> = {};
   for (const f of FABRICATION_FIELDS) {
@@ -69,7 +70,7 @@ export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  location: 'Location', id1: 'MIC 1', id2: 'MIC 2', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
+  location: 'Location', id1: 'Joining Item MIC', id2: 'Join to Item MIC', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
 };
 
 /* labels of the Fit-required fabrication values still blank */

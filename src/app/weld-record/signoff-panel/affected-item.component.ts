@@ -52,8 +52,8 @@ export class AffectedItemComponent {
   /* the two joint members a weld build-up can affect, with their MIC (fabricationData key), the
      input their MIC verified checkbox saves to and the definition field that sets its rules */
   affectedItemSlots = [
-    { key: 'joiningItem', mic: 'id1', micLabel: 'MIC 1', micVerified: 'micVerified1', rule: 'affectedMicVerified1' },
-    { key: 'joinToItem', mic: 'id2', micLabel: 'MIC 2', micVerified: 'micVerified2', rule: 'affectedMicVerified2' },
+    { key: 'joiningItem', mic: 'id1', micLabel: 'Joining Item MIC', micVerified: 'micVerified1', rule: 'affectedMicVerified1' },
+    { key: 'joinToItem', mic: 'id2', micLabel: 'Join to Item MIC', micVerified: 'micVerified2', rule: 'affectedMicVerified2' },
   ] as const;
 
   isAffected(key: string): boolean {

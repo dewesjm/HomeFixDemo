@@ -7,17 +7,23 @@ import {
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', ...over });
 
 describe('joint-form fabrication-form', () => {
-  it('MIC 1 / MIC 2 apply only when that member\'s MCL requires traceability', () => {
+  it('Joining Item MIC / Join to Item MIC apply only when that member\'s MCL requires traceability', () => {
     const j = job({ mcl1: 'MC-I' });
     expect(micApplies(j, 'id1')).toBeTrue();
     expect(micApplies(j, 'id2')).toBeFalse();
     expect(micApplies(undefined, 'id1')).toBeFalse();
   });
 
-  it('shows MIC fields and Ship Location fields only when they apply', () => {
+  it('always shows the MIC fields, disabled and not required when they do not apply', () => {
+    const id1 = (j: Job) => fabricationFieldsShown(j, {}).find(f => f.key === 'id1')!;
+    expect(id1(job()).notApplicable).toBeTruthy();
+    expect(id1(job()).required).toBeFalse();
+    expect(id1(job({ mcl1: 'MC-I' })).notApplicable).toBeUndefined();
+    expect(id1(job({ mcl1: 'MC-I' })).required).toBeTrue();
+  });
+
+  it('shows Ship Location fields only when Location is Shipboard', () => {
     const keys = (j: Job, fab: Record<string, string>) => fabricationFieldsShown(j, fab).map(f => f.key);
-    expect(keys(job(), {})).not.toContain('id1');
-    expect(keys(job({ mcl2: 'MC-I' }), {})).toContain('id2');
     expect(keys(job(), {})).not.toContain('deck');
     expect(keys(job(), { location: 'ship' })).toContain('deck');
   });
@@ -41,7 +47,7 @@ describe('joint-form fabrication-form', () => {
     expect(errors['location']).toBe('Location is required');
     expect(errors['drawingRev']).toBeDefined();
     expect(errors['id1']).toBeUndefined();
-    expect(fabricationErrors(job({ mcl1: 'MC-I' }), {})['id1']).toBe('MIC 1 is required');
+    expect(fabricationErrors(job({ mcl1: 'MC-I' }), {})['id1']).toBe('Joining Item MIC is required');
   });
 
   it('requires Ship Location fields only when Location is Shipboard, and ER/IR Number when Revised Joint Design is set', () => {
@@ -57,7 +63,7 @@ describe('joint-form fabrication-form', () => {
   it('lists the Fit-required fabrication values still blank', () => {
     expect(missingFitFabrication(job(), {})).toEqual(['Location', 'Drawing Rev', 'Actual Thickness']);
     expect(missingFitFabrication(job({ mcl1: 'MC-I', mcl2: 'MC-I' }), { location: 'ship', drawingRev: 'A' }))
-      .toEqual(['MIC 1', 'MIC 2', 'Actual Thickness']);
+      .toEqual(['Joining Item MIC', 'Join to Item MIC', 'Actual Thickness']);
     expect(missingFitFabrication(job(), { location: 'ship', drawingRev: 'A', actualThickness: ' 0.2 ' })).toEqual([]);
   });
 });

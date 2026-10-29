@@ -57,16 +57,19 @@
       }
     </div>
 
-    <!-- Line 3: ID 1 and ID 2 -->
+    <!-- Line 3: Joining Item MIC and Join to Item MIC; one that doesn't apply is disabled with the reason under it -->
     <div class="flex gap-4">
       @for (f of fields(); track f.key) {
         @if (f.row === 3) {
           <div class="flex-1 max-w-xs">
             <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
             <input class="input input-bordered w-full" [class.input-error]="!!fabErrors()[f.key]" type="text"
-                   [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete()"
+                   [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete() || !!f.notApplicable"
                    [ngModel]="fabricationData()[f.key]"
                    (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
+            @if (f.notApplicable) {
+              <div class="meta">{{ f.notApplicable }}</div>
+            }
             @if (fabErrors()[f.key]) {
               <div class="field-error">{{ fabErrors()[f.key] }}</div>
             }

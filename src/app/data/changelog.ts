@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-10-29',
+    changed: ['Fabrication: MIC 1 and MIC 2 are renamed Joining Item MIC and Join to Item MIC, here and on Fit-Up Insp, Weld Build-Up (Affected Item) and Records Review. They always show; one whose material does not require traceability is disabled and not required.'],
+  },
+  {
     date: '2026-10-27',
     added: ['Admin > Attribute Code Exceptions: each attribute code\'s changes to a joint\'s routing are now rows you can edit: add or drop a routing, the Types it offers, a Type that needs an ID accessible answer, and a minimum Degree of RT. All 13 codes come seeded. Routing Settings and Signoff Types By Routing rows name the codes that change them.',
       'Admin > Attribute Code Exceptions: NQC routings are separate entries with their own rows, edited separately from the regular routing.'],

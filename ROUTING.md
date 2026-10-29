@@ -143,11 +143,11 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 **Pre-Fit and Fit**
 - **Consumable insert:** Type and Size when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is **MC-I**.
 - **Backing ring:** Type when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is MC-I.
-- **Fit only, fit-up data:** Location, Drawing Rev and Actual Thickness, and no Fabrication errors. Fit-Up Insp can't be signed while a Fabrication value has an error. Some Locations add more location fields (Deck, Frame, P/S/CL, Usage). MIC 1 and MIC 2 are needed only when that member's MCL is MC-I.
+- **Fit only, fit-up data:** Location, Drawing Rev and Actual Thickness, and no Fabrication errors. Fit-Up Insp can't be signed while a Fabrication value has an error. Some Locations add more location fields (Deck, Frame, P/S/CL, Usage). Joining Item MIC and Join to Item MIC are needed only when that member's MCL is MC-I (otherwise the field is disabled).
 
 **Fit as Weld Build up**
 - The weld fields below, plus at least one **Affected Item**.
-- **MIC verified** for each affected item whose MCL is MC-I (by default: Admin > Signoff Type Forms, Weld Build-Up, Affected Item MIC 1 / MIC 2 verified).
+- **MIC verified** for each affected item whose MCL is MC-I (by default: Admin > Signoff Type Forms, Weld Build-Up, Affected Item: Joining Item MIC / Join to Item MIC verified).
 
 **Weld routings (Tack, Deferred Tack, Root, Layer, Final Weld)**
 - GWP and WTN. These (and Filler Metal Type and Size) are filled in for you, standing in for an external system that has already checked them, and can't be changed. Weld Process, the PH/IP limits and any override limits fill in from the WTN.

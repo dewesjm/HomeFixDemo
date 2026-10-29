@@ -15,6 +15,8 @@ export interface FabricationField {
   /* shown only when another field has a value, or when Location is a Shipboard location */
   showIf?: { key: string; notEmpty: true } | { shipboardLocation: true };
   required?: boolean;
+  /* set at runtime on a field that doesn't apply to this joint: it shows disabled with this reason */
+  notApplicable?: string;
 }
 
 export const FABRICATION_FIELDS: FabricationField[] = [
@@ -27,10 +29,10 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
-  // Line 3: MIC 1 and MIC 2 -- only present in the fields list (see weld-record/fabrication/fabrication-form.ts
-  // fabricationFieldsShown()) when that joint member's MCL requires traceability, so required is unconditional here
-  { key: 'id1', label: 'MIC 1', type: 'text', row: 3, required: true },
-  { key: 'id2', label: 'MIC 2', type: 'text', row: 3, required: true },
+  // Line 3: Joining Item MIC and Join to Item MIC -- always shown, but disabled and not required (see
+  // weld-record/fabrication/fabrication-form.ts fabricationFieldsShown()) unless that joint member's MCL requires traceability
+  { key: 'id1', label: 'Joining Item MIC', type: 'text', row: 3, required: true },
+  { key: 'id2', label: 'Join to Item MIC', type: 'text', row: 3, required: true },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4, required: true },
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4, required: true },

@@ -193,9 +193,9 @@ export const FIELD_CATALOG: CatalogField[] = [
      any step that lists it */
   { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', ownComponent: true },
   /* drawn under Affected Item, beside its joint member while that one is picked */
-  { key: 'affectedMicVerified1', label: 'Affected Item MIC 1 verified', type: 'checkbox', ownComponent: true,
+  { key: 'affectedMicVerified1', label: 'Affected Item: Joining Item MIC verified', type: 'checkbox', ownComponent: true,
     defaultRequired: true, defaultShowIf: ifPart1Traceability },
-  { key: 'affectedMicVerified2', label: 'Affected Item MIC 2 verified', type: 'checkbox', ownComponent: true,
+  { key: 'affectedMicVerified2', label: 'Affected Item: Join to Item MIC verified', type: 'checkbox', ownComponent: true,
     defaultRequired: true, defaultShowIf: ifPart2Traceability },
 
   /* ── Repair ── */
@@ -228,8 +228,8 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── Fit-Up Insp ── */
   { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },
   /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
-  { key: 'verifyMic1', label: 'MIC 1 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
-  { key: 'verifyMic2', label: 'MIC 2 verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
+  { key: 'verifyMic1', label: 'Joining Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
+  { key: 'verifyMic2', label: 'Join to Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
   { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox', defaultRequired: true },
   { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox', defaultRequired: true },
   { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox', defaultRequired: true,
@@ -246,8 +246,8 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'verifyWallThickness', label: 'Wall Thickness', type: 'checkbox' },
   { key: 'verifyMaterial1', label: 'Material Type 1', type: 'checkbox' },
   { key: 'verifyMaterial2', label: 'Material Type 2', type: 'checkbox' },
-  { key: 'verifyMcl1', label: 'MIC 1', type: 'checkbox' },
-  { key: 'verifyMcl2', label: 'MIC 2', type: 'checkbox' },
+  { key: 'verifyMcl1', label: 'Joining Item MIC', type: 'checkbox' },
+  { key: 'verifyMcl2', label: 'Join to Item MIC', type: 'checkbox' },
   { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
   { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
   { key: 'verifyNInd', label: 'Nuclear Indicator', type: 'checkbox' },
