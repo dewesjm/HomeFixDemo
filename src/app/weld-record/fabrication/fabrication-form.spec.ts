@@ -7,7 +7,7 @@ import {
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', ...over });
 
 describe('joint-form fabrication-form', () => {
-  it('Joining Item MIC / Join to Item MIC apply only when that member\'s MCL requires traceability', () => {
+  it('Joining Item MIC / Join To Item MIC apply only when that member\'s MCL requires traceability', () => {
     const j = job({ mcl1: 'MC-I' });
     expect(micApplies(j, 'id1')).toBeTrue();
     expect(micApplies(j, 'id2')).toBeFalse();
@@ -63,7 +63,7 @@ describe('joint-form fabrication-form', () => {
   it('lists the Fit-required fabrication values still blank', () => {
     expect(missingFitFabrication(job(), {})).toEqual(['Location', 'Drawing Rev', 'Actual Thickness']);
     expect(missingFitFabrication(job({ mcl1: 'MC-I', mcl2: 'MC-I' }), { location: 'ship', drawingRev: 'A' }))
-      .toEqual(['Joining Item MIC', 'Join to Item MIC', 'Actual Thickness']);
+      .toEqual(['Joining Item MIC', 'Join To Item MIC', 'Actual Thickness']);
     expect(missingFitFabrication(job(), { location: 'ship', drawingRev: 'A', actualThickness: ' 0.2 ' })).toEqual([]);
   });
 });

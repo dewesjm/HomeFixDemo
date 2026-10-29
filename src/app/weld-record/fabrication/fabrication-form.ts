@@ -8,7 +8,7 @@ import { jointDesignOptions } from '../../data/joint-designs';
 
 type Fab = Record<string, string>;
 
-/* Joining Item MIC / Join to Item MIC only apply when that joint member's MCL (mcl1 / mcl2) requires traceability */
+/* Joining Item MIC / Join To Item MIC only apply when that joint member's MCL (mcl1 / mcl2) requires traceability */
 export function micApplies(job: Job | undefined, key: 'id1' | 'id2'): boolean {
   if (!job) return false;
   return requiresTraceability(key === 'id1' ? job.mcl1 : job.mcl2);
@@ -70,7 +70,7 @@ export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  location: 'Location', id1: 'Joining Item MIC', id2: 'Join to Item MIC', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
+  location: 'Location', id1: 'Joining Item MIC', id2: 'Join To Item MIC', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
 };
 
 /* labels of the Fit-required fabrication values still blank */

@@ -29,10 +29,10 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
-  // Line 3: Joining Item MIC and Join to Item MIC -- always shown, but disabled and not required (see
+  // Line 3: Joining Item MIC and Join To Item MIC -- always shown, but disabled and not required (see
   // weld-record/fabrication/fabrication-form.ts fabricationFieldsShown()) unless that joint member's MCL requires traceability
   { key: 'id1', label: 'Joining Item MIC', type: 'text', row: 3, required: true },
-  { key: 'id2', label: 'Join to Item MIC', type: 'text', row: 3, required: true },
+  { key: 'id2', label: 'Join To Item MIC', type: 'text', row: 3, required: true },
   // Line 4: Drawing Rev (Execution) and Actual Thickness
   { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4, required: true },
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4, required: true },
