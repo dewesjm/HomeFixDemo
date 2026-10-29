@@ -379,6 +379,11 @@ export class AdaptiveSearchComponent {
     this.setConditions(f.key, [...this.conditionsOf(f), newCondition(f.kind)]);
   }
 
+  /* a field's only line, still empty, has nothing to remove */
+  canRemoveCondition(f: SearchField, c: Condition): boolean {
+    return this.conditionsOf(f).length > 1 || activeConditions(f, [c]).length > 0;
+  }
+
   removeCondition(f: SearchField, i: number) {
     const conds = this.conditionsOf(f).filter((_, n) => n !== i);
     this.setConditions(f.key, conds);

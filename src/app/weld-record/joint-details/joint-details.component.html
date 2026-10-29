@@ -24,7 +24,6 @@
         <div class="detail-row"><span class="meta">Nuclear Indicator</span><span [appTooltip]="nIndTooltip()">{{ job().nInd || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Sequence #</span><span>{{ job().sequenceNumber || '-' }}</span></div>
         <div class="detail-row"><span class="meta">Routing</span><span>{{ currentRouting() }}</span></div>
-        <div class="detail-row"><span class="meta">Engineering Notes</span><span class="whitespace-nowrap overflow-x-auto" tabindex="0" aria-label="Engineering Notes">{{ job().engineeringNotes || '-' }}</span></div>
       </div>
     </div>
 
@@ -60,6 +59,8 @@
       </div>
     </div>
   </div>
+  <!-- Engineering Notes: its own line across the whole panel, scrolling only when longer than that -->
+  <div class="detail-row mt-1"><span class="meta">Engineering Notes</span><span class="whitespace-nowrap overflow-x-auto" tabindex="0" aria-label="Engineering Notes">{{ job().engineeringNotes || '-' }}</span></div>
 
   <!-- Show more / less -->
   <button type="button" class="btn btn-ghost btn-sm mt-sm" (click)="showAudit.set(!showAudit())">

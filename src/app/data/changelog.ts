@@ -11,7 +11,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-10-29',
-    changed: ['Fabrication: MIC 1 and MIC 2 are renamed Joining Item MIC and Join to Item MIC, here and on Fit-Up Insp, Weld Build-Up (Affected Item) and Records Review. They always show; one whose material does not require traceability is disabled and not required.'],
+    fixed: ['Pipe Welding filters: every condition line, including a field’s first or only one, has an x to remove it.'],
+    changed: ['Joint Details: Engineering Notes is on its own line across the whole panel, under the three columns, so it has room before it scrolls.',
+      'Fabrication: MIC 1 and MIC 2 are renamed Joining Item MIC and Join to Item MIC, here and on Fit-Up Insp, Weld Build-Up (Affected Item) and Records Review. They always show; one whose material does not require traceability is disabled and not required.'],
   },
   {
     date: '2026-10-27',

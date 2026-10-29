@@ -90,16 +90,17 @@
                        [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event })" />
               }
             </div>
-            <!-- the last line ends in +, earlier ones in x -->
+            <!-- every line can be removed (a lone empty one has nothing to remove); the last line also ends in + -->
+            @if (canRemoveCondition(f, c)) {
+              <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this condition"
+                      aria-label="Remove this condition" (click)="removeCondition(f, i)">
+                <svg lucideX class="size-3.5"></svg>
+              </button>
+            }
             @if (last) {
               <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Add condition"
                       aria-label="Add condition" (click)="addCondition(f)">
                 <svg lucidePlus class="size-4"></svg>
-              </button>
-            } @else {
-              <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this condition"
-                      aria-label="Remove this condition" (click)="removeCondition(f, i)">
-                <svg lucideX class="size-3.5"></svg>
               </button>
             }
           </div>
