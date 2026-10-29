@@ -57,7 +57,7 @@
       }
     </div>
 
-    <!-- Line 3: Joining Item MIC and Join To Item MIC; one that doesn't apply is disabled with the reason under it -->
+    <!-- Line 3: Joining Item MIC and Join To Item MIC; one that doesn't apply is disabled -->
     <div class="flex gap-4">
       @for (f of fields(); track f.key) {
         @if (f.row === 3) {
@@ -67,9 +67,6 @@
                    [placeholder]="f.placeholder || ''" [disabled]="fabLocked() || jobComplete() || !!f.notApplicable"
                    [ngModel]="fabricationData()[f.key]"
                    (blur)="inputBlur.emit({ key: f.key, value: $any($event.target).value })" />
-            @if (f.notApplicable) {
-              <div class="meta">{{ f.notApplicable }}</div>
-            }
             @if (fabErrors()[f.key]) {
               <div class="field-error">{{ fabErrors()[f.key] }}</div>
             }

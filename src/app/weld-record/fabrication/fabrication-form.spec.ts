@@ -16,7 +16,7 @@ describe('joint-form fabrication-form', () => {
 
   it('always shows the MIC fields, disabled and not required when they do not apply', () => {
     const id1 = (j: Job) => fabricationFieldsShown(j, {}).find(f => f.key === 'id1')!;
-    expect(id1(job()).notApplicable).toBeTruthy();
+    expect(id1(job()).notApplicable).toBeTrue();
     expect(id1(job()).required).toBeFalse();
     expect(id1(job({ mcl1: 'MC-I' })).notApplicable).toBeUndefined();
     expect(id1(job({ mcl1: 'MC-I' })).required).toBeTrue();

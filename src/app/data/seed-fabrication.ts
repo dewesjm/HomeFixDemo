@@ -2,6 +2,7 @@
 import { Job } from './jobs';
 import { DEFAULT_SHIP_LOCATIONS } from './ship-locations';
 import { getShops, shopValue } from './shops';
+import { requiresTraceability } from './mcl-traceability';
 
 /* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts) */
 export function seeded(n: number) {
@@ -36,12 +37,16 @@ export function seedFabricationData(job: Job): Record<string, string> {
   const shipRows = DEFAULT_SHIP_LOCATIONS.filter(e => e.hull === job.hull);
   const shipRow = onShip && shipRows.length ? pick(shipRows) : undefined;
   const revised = rand() < 0.3;
+  const specificLocation = pick(SEED_SPECIFIC_LOCATIONS);
+  /* drawn for every joint, so the other sample values don't shift with the MCL */
+  const mic1 = seededMic(rand), mic2 = seededMic(rand);
   return {
     location,
-    specificLocation: pick(SEED_SPECIFIC_LOCATIONS),
+    specificLocation,
     ...(shipRow ? { deck: shipRow.deck, frame: shipRow.frame, pscl: shipRow.pscl, usage: shipRow.usage } : {}),
-    id1: seededMic(rand),
-    id2: seededMic(rand),
+    /* a MIC only where that joint member's MCL requires traceability (otherwise the field is disabled) */
+    id1: requiresTraceability(job.mcl1) ? mic1 : '',
+    id2: requiresTraceability(job.mcl2) ? mic2 : '',
     drawingRev: job.drawingRev || 'C',
     actualThickness: pick(['0.375', '0.5', '0.625', '0.75', '1.0']),
     weldMemo: seedWeMemo(rand),

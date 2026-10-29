@@ -19,7 +19,7 @@ export function fabricationFieldsShown(job: Job | undefined, fab: Fab): Fabricat
   return FABRICATION_FIELDS
     .filter(f => fabricationFieldVisible(f, fab))
     .map(f => (f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)
-      ? { ...f, required: false, notApplicable: 'Not required: material does not require traceability' } : f)
+      ? { ...f, required: false, notApplicable: true } : f)
     .map(f => withFabricationOptions(f, job, fab));
 }
 

@@ -15,8 +15,8 @@ export interface FabricationField {
   /* shown only when another field has a value, or when Location is a Shipboard location */
   showIf?: { key: string; notEmpty: true } | { shipboardLocation: true };
   required?: boolean;
-  /* set at runtime on a field that doesn't apply to this joint: it shows disabled with this reason */
-  notApplicable?: string;
+  /* set at runtime on a field that doesn't apply to this joint: it shows disabled */
+  notApplicable?: boolean;
 }
 
 export const FABRICATION_FIELDS: FabricationField[] = [
