@@ -115,7 +115,7 @@ export class SignoffService {
         action: 'Cut - routed back to Fit',
         from: job.refitNumber || '00',
         to: `Refit ${refitNumber}`,
-        fabInputs: fabricationSnapshot(wf.fabricationData),
+        fabInputs: fabricationSnapshot(wf.fabricationData, job.hull),
       });
     }
     const source = wf.stages.find(s => s.id === stageId)!;

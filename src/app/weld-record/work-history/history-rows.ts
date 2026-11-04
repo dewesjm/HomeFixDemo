@@ -21,7 +21,7 @@ export interface HistoryRow extends HistoryEntry {
 /* the joint's History newest-first; per-field edits (Stages, Fabrication) are left out, since
    History records what was input at each sign-off, and each sign-off lists the Fabrication changes since the last one */
 export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[] {
-  const fabChanges = fabricationChangesBySignoff(wf.history);
+  const fabChanges = fabricationChangesBySignoff(wf.history, job?.hull ?? '');
   return wf.history
     .filter(e => e.section !== 'Stages' && e.section !== 'Fabrication')
     .map(e => ({
@@ -41,13 +41,13 @@ export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[]
 /* each sign-off's Fabrication changes, compared with the snapshot at the sign-off before it (the
    first one against blank). A Refit or Routing entry's snapshot is the data it blanked, so the
    comparison after it starts from blank again. */
-function fabricationChangesBySignoff(history: HistoryEntry[]): Map<HistoryEntry, { label: string; from: string; to: string }[]> {
+function fabricationChangesBySignoff(history: HistoryEntry[], hull: string): Map<HistoryEntry, { label: string; from: string; to: string }[]> {
   const out = new Map<HistoryEntry, { label: string; from: string; to: string }[]>();
   let before: SignoffInput[] = [];
   for (const e of [...history].sort((a, b) => a.when.localeCompare(b.when))) {
     if (!e.fabInputs) continue;
     if (e.section !== 'Sign-off') { before = []; continue; }
-    const changes = fabricationChanges(before, e.fabInputs);
+    const changes = fabricationChanges(before, e.fabInputs, hull);
     if (changes.length) out.set(e, changes);
     before = e.fabInputs;
   }

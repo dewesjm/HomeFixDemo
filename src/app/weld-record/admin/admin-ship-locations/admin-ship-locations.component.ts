@@ -1,5 +1,5 @@
 /* Admin → Ship Locations: per hull, the Deck / Frame / P/S/CL / Usage rows Fabrication's droplists
-   cascade from (data/ship-locations.ts). A row a joint is using can't be changed or deleted. */
+   cascade from (data/ship-locations.ts); S and D hulls' rows have no Usage. A row a joint is using can't be changed or deleted. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +8,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideUpload } from '
 
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
-import { ShipLocationEntry, PSCL_OPTIONS, getShipLocations, setShipLocations } from '../../../data/ship-locations';
+import { ShipLocationEntry, PSCL_OPTIONS, getShipLocations, hullHasUsage, setShipLocations } from '../../../data/ship-locations';
 import { HULLS, JOBS } from '../../../data/jobs';
 import { isShipboardLocation } from '../../../data/shops';
 import { WorkflowStore } from '../../services/workflow-store.service';
@@ -37,6 +37,7 @@ export class AdminShipLocationsComponent {
 
   hulls = HULLS;
   psclOptions = PSCL_OPTIONS;
+  hasUsage = hullHasUsage;
   rows = signal<LocRow[]>(getShipLocations().map((e, i) => ({ ...e, uid: `sl-${i}` })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, LocRow> = {};
@@ -48,7 +49,7 @@ export class AdminShipLocationsComponent {
     for (const job of JOBS) {
       const fab = this.store.workflowFor(job)().fabricationData;
       if (!isShipboardLocation(fab['location'])) continue;
-      const k = keyOf({ hull: job.hull, deck: fab['deck'] ?? '', frame: fab['frame'] ?? '', pscl: fab['pscl'] ?? '', usage: fab['usage'] ?? '' });
+      const k = keyOf({ hull: job.hull, deck: fab['deck'] ?? '', frame: fab['frame'] ?? '', pscl: fab['pscl'] ?? '', usage: hullHasUsage(job.hull) ? fab['usage'] ?? '' : '' });
       counts.set(k, (counts.get(k) ?? 0) + 1);
     }
     return counts;
@@ -93,11 +94,13 @@ export class AdminShipLocationsComponent {
 
   saveEdit(row: LocRow) {
     const current = this.rows().find(x => x.uid === row.uid)!;
-    if (!current.hull || !current.deck.trim() || !current.frame.trim() || !current.pscl || !current.usage.trim()) {
-      this.messages.add({ severity: 'error', summary: 'Missing values', detail: 'Hull, Deck, Frame, P/S/CL and Usage are all required.', life: 4000 });
+    const usage = hullHasUsage(current.hull);
+    if (!current.hull || !current.deck.trim() || !current.frame.trim() || !current.pscl || (usage && !current.usage.trim())) {
+      const detail = usage ? 'Hull, Deck, Frame, P/S/CL and Usage are all required.' : 'Hull, Deck, Frame and P/S/CL are all required.';
+      this.messages.add({ severity: 'error', summary: 'Missing values', detail, life: 4000 });
       return;
     }
-    const trimmed: LocRow = { ...current, deck: current.deck.trim(), frame: current.frame.trim(), usage: current.usage.trim() };
+    const trimmed: LocRow = { ...current, deck: current.deck.trim(), frame: current.frame.trim(), usage: usage ? current.usage.trim() : '' };
     if (this.rows().some(x => x.uid !== row.uid && keyOf(x) === keyOf(trimmed))) {
       this.messages.add({ severity: 'error', summary: 'Duplicate', detail: 'That location is already on the list.', life: 4000 });
       return;
@@ -106,7 +109,7 @@ export class AdminShipLocationsComponent {
     this.persist();
     delete this.cloned[row.uid];
     this.editingId.set(null);
-    this.messages.add({ severity: 'success', summary: 'Saved', detail: `${trimmed.hull} ${trimmed.deck} ${trimmed.frame} ${trimmed.pscl} ${trimmed.usage}`, life: 3000 });
+    this.messages.add({ severity: 'success', summary: 'Saved', detail: [trimmed.hull, trimmed.deck, trimmed.frame, trimmed.pscl, trimmed.usage].filter(v => v).join(' '), life: 3000 });
   }
 
   cancelEdit(row: LocRow) {
@@ -117,7 +120,9 @@ export class AdminShipLocationsComponent {
   }
 
   updateField(row: LocRow, field: Field, value: string) {
-    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, [field]: value } : x));
+    /* picking an S or D hull blanks Usage: those hulls have none */
+    const blankUsage = field === 'hull' && !hullHasUsage(value);
+    this.rows.update(r => r.map(x => x.uid === row.uid ? { ...x, [field]: value, ...(blankUsage ? { usage: '' } : {}) } : x));
   }
 
   exportCsv() {
@@ -132,7 +137,7 @@ export class AdminShipLocationsComponent {
   }
 
   private persist() {
-    setShipLocations(this.rows().filter(r => r.hull && r.deck && r.frame && r.pscl && r.usage)
+    setShipLocations(this.rows().filter(r => r.hull && r.deck && r.frame && r.pscl && (r.usage || !hullHasUsage(r.hull)))
       .map(({ hull, deck, frame, pscl, usage }) => ({ hull, deck, frame, pscl, usage })));
   }
 }

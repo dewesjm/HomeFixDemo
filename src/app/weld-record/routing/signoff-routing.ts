@@ -98,7 +98,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     const r = routeBack({ ...wf, stages, fabricationData }, job, target.id);
     stages = r.wf.stages;
     fabricationData = r.wf.fabricationData;
-    routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined };
+    routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData, job.hull) : undefined };
   };
 
   /* steps whose Admin > Routing Settings conditions use a signed answer (Defer Tack, Release to welding) turn on or off */

@@ -1,6 +1,7 @@
 /* Fabrication: the cross-step data section on a Welding joint (location, MICs, drawing rev...) */
 import { jointDesignOptions } from '../../data/joint-designs';
 import { isShipboardLocation, shopOptions } from '../../data/shops';
+import { hullHasUsage } from '../../data/ship-locations';
 import { SignoffInput } from '../model/workflow-types';
 
 export interface FabricationField {
@@ -24,7 +25,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
-  // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts)
+  // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts).
+  // S and D hulls have no Usage and their Deck reads Level/Deck (fabricationFields below)
   { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
@@ -44,6 +46,14 @@ export const FABRICATION_FIELDS: FabricationField[] = [
     showIf: { key: 'revisedJointDesign', notEmpty: true }, required: true },
 ];
 
+/* the Fabrication fields a joint on this hull has: S and D hulls have no Usage, and Deck reads Level/Deck */
+export function fabricationFields(hull: string): FabricationField[] {
+  if (hullHasUsage(hull)) return FABRICATION_FIELDS;
+  return FABRICATION_FIELDS
+    .filter(f => f.key !== 'usage')
+    .map(f => f.key === 'deck' ? { ...f, label: 'Level/Deck' } : f);
+}
+
 /* whether a field's showIf is met by the joint's fabrication data */
 export function fabricationFieldVisible(f: FabricationField, fab: Record<string, string>): boolean {
   if (!f.showIf) return true;
@@ -53,8 +63,8 @@ export function fabricationFieldVisible(f: FabricationField, fab: Record<string,
 
 /* fabrication data as it stood at some moment (e.g. a sign-off) — every field, blanks included, with
    Location/Revised Joint Design resolved to their display label the same way the live form does */
-export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[] {
-  return FABRICATION_FIELDS
+export function fabricationSnapshot(fab: Record<string, string>, hull: string): SignoffInput[] {
+  return fabricationFields(hull)
     .filter(f => fabricationFieldVisible(f, fab))
     .map(f => {
       const options = f.key === 'location' ? shopOptions()
@@ -68,10 +78,10 @@ export function fabricationSnapshot(fab: Record<string, string>): SignoffInput[]
 
 /* the fields whose value differs between two fabrication snapshots, in field order; a field missing
    from one snapshot (hidden by its showIf) counts as blank there */
-export function fabricationChanges(before: SignoffInput[], after: SignoffInput[]): { label: string; from: string; to: string }[] {
+export function fabricationChanges(before: SignoffInput[], after: SignoffInput[], hull: string): { label: string; from: string; to: string }[] {
   const was = new Map(before.map(i => [i.label, i.value]));
   const now = new Map(after.map(i => [i.label, i.value]));
-  return FABRICATION_FIELDS
+  return fabricationFields(hull)
     .map(f => ({ label: f.label, from: was.get(f.label) ?? '', to: now.get(f.label) ?? '' }))
     .filter(c => c.from !== c.to);
 }

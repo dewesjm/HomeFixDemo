@@ -10,6 +10,7 @@ import { currentRoutingLabel } from '../routing/current-routing';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
 import { isShipboardShop } from '../../data/shops';
+import { hullHasUsage } from '../../data/ship-locations';
 import { TableState } from '../../shared/table-state';
 import { TableToolbarComponent } from '../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
@@ -42,8 +43,10 @@ export class MyAssignmentsComponent {
     return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
   }
 
-  /* a Shipboard assignment's Deck/Frame/P-S-CL/Usage are the joint's own Fabrication values, live */
+  /* a Shipboard assignment's Deck/Frame/P-S-CL/Usage (Level/Deck/Frame/P-S-CL on S and D hulls) are the joint's own Fabrication values, live */
   isShipboard = (a: Assignment) => isShipboardShop(a.location);
+  /* S and D hulls: Level/Deck, Frame and P/S/CL, no Usage */
+  hasUsage = (a: Assignment) => hullHasUsage(this.jobFor(a)?.hull ?? '');
 
   fabFor(a: Assignment): Record<string, string> {
     const job = this.jobFor(a);

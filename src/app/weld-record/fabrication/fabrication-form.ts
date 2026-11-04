@@ -1,6 +1,6 @@
 /* The joint page's Fabrication panel: which fields show, their options, and what's missing */
 import { Job } from '../../data/jobs';
-import { FABRICATION_FIELDS, FabricationField, fabricationFieldVisible } from './fabrication-fields';
+import { FabricationField, fabricationFieldVisible, fabricationFields } from './fabrication-fields';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { shopOptions } from '../../data/shops';
 import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../../data/ship-locations';
@@ -16,7 +16,7 @@ export function micApplies(job: Job | undefined, key: 'id1' | 'id2'): boolean {
 
 /* the fields shown, with their options filled in; a MIC that doesn't apply shows disabled and not required */
 export function fabricationFieldsShown(job: Job | undefined, fab: Fab): FabricationField[] {
-  return FABRICATION_FIELDS
+  return fabricationFields(job?.hull ?? '')
     .filter(f => fabricationFieldVisible(f, fab))
     .map(f => (f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)
       ? { ...f, required: false, notApplicable: true } : f)
@@ -45,7 +45,7 @@ function withFabricationOptions(f: FabricationField, job: Job | undefined, fab: 
 export function fabricationDisplayValue(key: string, job: Job | undefined, fab: Fab): string {
   const val = fab[key] ?? '';
   if (!val) return '';
-  const field = FABRICATION_FIELDS.find(f => f.key === key);
+  const field = fabricationFields(job?.hull ?? '').find(f => f.key === key);
   const options = field ? withFabricationOptions(field, job, fab).options : undefined;
   if (field?.type === 'select' && options) return options.find(o => o.value === val)?.label ?? val;
   return val;
@@ -55,7 +55,7 @@ export function fabricationDisplayValue(key: string, job: Job | undefined, fab: 
    (the MICs only when they apply) */
 export function fabricationErrors(job: Job | undefined, fab: Fab): Record<string, string> {
   const errors: Record<string, string> = {};
-  for (const f of FABRICATION_FIELDS) {
+  for (const f of fabricationFields(job?.hull ?? '')) {
     if (!f.required || !fabricationFieldVisible(f, fab)) continue;
     if ((f.key === 'id1' || f.key === 'id2') && !micApplies(job, f.key)) continue;
     if (!(fab[f.key] ?? '').trim()) errors[f.key] = `${f.label} is required`;

@@ -2,7 +2,7 @@
    (localStorage). Matching itself is shared/filter-engine.ts. */
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
-import { FABRICATION_FIELDS, fabricationFieldVisible } from '../fabrication/fabrication-fields';
+import { FABRICATION_FIELDS, fabricationFieldVisible, fabricationFields } from '../fabrication/fabrication-fields';
 import { JobWorkflow } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { shopOptions } from '../../data/shops';
@@ -99,8 +99,9 @@ export function searchFields(): SearchField[] {
 
 export type SearchRow = Job & { currentRouting: string } & Record<string, any>;
 
-function fabValue(fab: Record<string, string>, key: string): string {
-  const f = FABRICATION_FIELDS.find(x => x.key === key);
+/* blank where the joint's hull doesn't have the field (Usage on S and D hulls) */
+function fabValue(fab: Record<string, string>, key: string, hull: string): string {
+  const f = fabricationFields(hull).find(x => x.key === key);
   if (!f) return '';
   if (!fabricationFieldVisible(f, fab)) return '';
   const options = key === 'location' ? shopOptions() : key === 'revisedJointDesign' ? jointDesignOptions() : f.options;
@@ -113,7 +114,7 @@ function fabValue(fab: Record<string, string>, key: string): string {
 export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepFields: Map<string, StepConditionField>): SearchRow {
   const row: SearchRow = { ...j, currentRouting: currentRoutingLabel(wf.stages), ut: jointDetailsUt(j), vt: jointDetailsVt(j) };
   for (const key of extraKeys) {
-    if (key.startsWith(FAB_KEY)) row[key] = fabValue(wf.fabricationData ?? {}, key.slice(FAB_KEY.length));
+    if (key.startsWith(FAB_KEY)) row[key] = fabValue(wf.fabricationData ?? {}, key.slice(FAB_KEY.length), j.hull);
     else {
       const f = stepFields.get(key);
       if (!f) continue;

@@ -115,7 +115,7 @@ export function seededWorkflow(job: Job): JobWorkflow {
       to: hasDecision(s) ? result.toUpperCase() : '',
       routing: s.label,
       inputs: snapshotInputs(signedView, fieldsShown(signedView, job, wf.stages, wf.fabricationData), visibleSignoffFields(signedView, job, wf.fabricationData)),
-      fabInputs: fabricationSnapshot(wf.fabricationData),
+      fabInputs: fabricationSnapshot(wf.fabricationData, job.hull),
       stageId: s.id,
     });
     return {

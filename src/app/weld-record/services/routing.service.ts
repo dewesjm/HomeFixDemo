@@ -67,7 +67,7 @@ export class RoutingService {
       action: `${r.back ? 'Routed back to' : 'Routing set to'} ${target.label} (${by})`,
       to: target.label,
       inputs: reason ? [{ label: 'Reason', value: reason }] : undefined,
-      fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData) : undefined,
+      fabInputs: r.fabReset ? fabricationSnapshot(wf.fabricationData, job.hull) : undefined,
     }, routingAt);
   }
 

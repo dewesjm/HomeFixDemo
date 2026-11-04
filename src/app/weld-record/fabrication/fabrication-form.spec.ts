@@ -28,6 +28,20 @@ describe('joint-form fabrication-form', () => {
     expect(keys(job(), { location: 'ship' })).toContain('deck');
   });
 
+  it('S and D hulls show Level/Deck, Frame and P/S/CL with no Usage; T and N hulls keep Usage', () => {
+    const shown = (hull: string) => fabricationFieldsShown(job({ hull }), { location: 'ship' });
+    for (const hull of ['S1000', 'D1000']) {
+      expect(shown(hull).map(f => f.key)).not.toContain('usage');
+      expect(shown(hull).find(f => f.key === 'deck')!.label).toBe('Level/Deck');
+      expect(fabricationErrors(job({ hull }), { location: 'ship' })['deck']).toBe('Level/Deck is required');
+      expect(fabricationErrors(job({ hull }), { location: 'ship' })['usage']).toBeUndefined();
+    }
+    for (const hull of ['T1000', 'N1000']) {
+      expect(shown(hull).map(f => f.key)).toContain('usage');
+      expect(shown(hull).find(f => f.key === 'deck')!.label).toBe('Deck');
+    }
+  });
+
   it('shows ER/IR Number only when Revised Joint Design is set', () => {
     const keys = (fab: Record<string, string>) => fabricationFieldsShown(job(), fab).map(f => f.key);
     expect(keys({})).not.toContain('changeNumber');
@@ -52,7 +66,7 @@ describe('joint-form fabrication-form', () => {
 
   it('requires Ship Location fields only when Location is Shipboard, and ER/IR Number when Revised Joint Design is set', () => {
     expect(fabricationErrors(job(), { location: 'south-bay-welding' })['deck']).toBeUndefined();
-    expect(fabricationErrors(job(), { location: 'ship' })['deck']).toBe('Deck is required');
+    expect(fabricationErrors(job({ hull: 'T1000' }), { location: 'ship' })['deck']).toBe('Deck is required');
     expect(fabricationErrors(job(), { revisedJointDesign: 'c-18' })['changeNumber']).toBe('ER/IR Number is required');
     expect(fabricationErrors(job(), {})['changeNumber']).toBeUndefined();
     const changeNumber = FABRICATION_FIELDS.find(f => f.key === 'changeNumber')!;

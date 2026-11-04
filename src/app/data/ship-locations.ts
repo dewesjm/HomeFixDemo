@@ -1,6 +1,6 @@
 /* Admin > Ship Locations: per hull, the Deck / Frame / P/S/CL / Usage combinations a joint on the
-   Ship can be given. Fabrication's droplists cascade from it: Deck lists the joint's hull's decks,
-   Frame the frames on that deck, P/S/CL the sides set up at that Deck + Frame, Usage the usages at
+   Ship can be given (S and D hulls have no Usage). Fabrication's droplists cascade from it: Deck
+   lists the joint's hull's decks, Frame the frames on that deck, P/S/CL the sides set up at that Deck + Frame, Usage the usages at
    that Deck + Frame + P/S/CL. Stored in localStorage. */
 import { STORAGE } from './storage-keys';
 import { HULLS } from './jobs';
@@ -19,30 +19,34 @@ const psclSide = (v: string) => v === '0' ? 'Centerline' : Number(v) % 2 ? 'Star
 /* droplist option for a P/S/CL number: the open list reads "2 Port", the stored value is just 2 */
 const psclOption = (v: string) => ({ label: `${v} ${psclSide(v)}`, value: v });
 export const PSCL_OPTIONS = PSCL_VALUES.map(psclOption);
+/* S and D hulls' ship locations have no Usage (Fabrication shows Level/Deck, Frame and P/S/CL) */
+export const hullHasUsage = (hull: string) => !['S', 'D'].includes(hull.charAt(0));
+
 /* the Fabrication fields this table supplies options for */
 export const SHIP_LOCATION_KEYS = ['deck', 'frame', 'pscl', 'usage'];
 
 /* sample data: hulls with the same letter share one layout. Deck is 1-8, Frame a number like 190,
    Usage a one-letter code. Each line is one Deck + Frame, then each P/S/CL with its usages; about
-   half the sides have more than one, so Usage is sometimes a choice. */
+   half the sides have more than one, so Usage is sometimes a choice. S and D hulls have no Usage,
+   so their sides are just the P/S/CL number. */
 const LAYOUTS: Record<string, string[]> = {
   S: [
-    '1 110 | 0: L Q | 1: L | 2: M E A',
-    '1 125 | 0: E | 2: E Q V | 3: M',
-    '2 140 | 0: A L | 1: A | 4: Q',
-    '3 155 | 1: L | 2: L V | 5: V',
-    '4 170 | 0: M Q | 3: M | 6: E A',
-    '6 190 | 0: E | 1: M V | 2: E',
-    '8 210 | 2: Q V | 7: Q | 8: A',
+    '1 110 | 0 | 1 | 2',
+    '1 125 | 0 | 2 | 3',
+    '2 140 | 0 | 1 | 4',
+    '3 155 | 1 | 2 | 5',
+    '4 170 | 0 | 3 | 6',
+    '6 190 | 0 | 1 | 2',
+    '8 210 | 2 | 7 | 8',
   ],
   D: [
-    '1 112 | 0: L Q | 1: L | 2: E M',
-    '2 128 | 0: E | 3: E M | 4: V',
-    '3 146 | 1: A L | 2: A | 0: Q',
-    '4 162 | 0: L | 5: V A | 6: L',
-    '5 178 | 2: M | 1: M V | 0: A E',
-    '7 194 | 0: Q | 4: Q V | 9: E',
-    '8 220 | 2: A Q | 3: L | 0: A M V',
+    '1 112 | 0 | 1 | 2',
+    '2 128 | 0 | 3 | 4',
+    '3 146 | 1 | 2 | 0',
+    '4 162 | 0 | 5 | 6',
+    '5 178 | 2 | 1 | 0',
+    '7 194 | 0 | 4 | 9',
+    '8 220 | 2 | 3 | 0',
   ],
   T: [
     '1 114 | 0: L Q | 1: L | 2: E M',
@@ -66,7 +70,7 @@ export const DEFAULT_SHIP_LOCATIONS: ShipLocationEntry[] = HULLS.flatMap(hull =>
     const [deck, frame] = place.split(' ');
     return sides.flatMap(side => {
       const [pscl, usages] = side.split(': ');
-      return usages.split(' ').map(usage => ({ hull, deck, frame, pscl, usage }));
+      return (usages ? usages.split(' ') : ['']).map(usage => ({ hull, deck, frame, pscl, usage }));
     });
   }));
 

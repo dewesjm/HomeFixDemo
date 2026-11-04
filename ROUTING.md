@@ -143,7 +143,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 **Pre-Fit and Fit**
 - **Consumable insert:** Type and Size when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is **MC-I**.
 - **Backing ring:** Type when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is MC-I.
-- **Fit only, fit-up data:** Location, Drawing Rev and Actual Thickness, and no Fabrication errors. Fit-Up Insp can't be signed while a Fabrication value has an error. Some Locations add more location fields (Deck, Frame, P/S/CL, Usage). Joining Item MIC and Join To Item MIC are needed only when that member's MCL is MC-I (otherwise the field is disabled).
+- **Fit only, fit-up data:** Location, Drawing Rev and Actual Thickness, and no Fabrication errors. Fit-Up Insp can't be signed while a Fabrication value has an error. Some Locations add more location fields (Deck, Frame, P/S/CL, Usage; on S and D hulls Level/Deck, Frame, P/S/CL). Joining Item MIC and Join To Item MIC are needed only when that member's MCL is MC-I (otherwise the field is disabled).
 
 **Fit as Weld Build up**
 - The weld fields below, plus at least one **Affected Item**.

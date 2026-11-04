@@ -7,7 +7,7 @@ import { LucideArrowLeft } from '@lucide/angular';
 
 import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
-import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
+import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, hullHasUsage, setShipLocations } from '../../../data/ship-locations';
 import { HULLS } from '../../../data/jobs';
 import { parseCsvRows, parseXlsxRows } from '../../../shared/spreadsheet-import';
 import { downloadCsv } from '../../../shared/export-csv';
@@ -15,6 +15,10 @@ import { downloadCsv } from '../../../shared/export-csv';
 type ImportRow = ShipLocationEntry & { _errors: string[]; _saved: boolean };
 
 const keyOf = (e: ShipLocationEntry) => [e.hull, e.deck, e.frame, e.pscl, e.usage].join('|');
+/* the row as it's saved: trimmed, and no Usage on S and D hulls (any given is dropped) */
+const entryOf = (row: ShipLocationEntry): ShipLocationEntry => ({
+  hull: row.hull, deck: row.deck.trim(), frame: row.frame.trim(), pscl: row.pscl, usage: hullHasUsage(row.hull) ? row.usage.trim() : '',
+});
 const blank = (): ImportRow => ({ _errors: [], _saved: false, hull: '', deck: '', frame: '', pscl: '', usage: '' });
 
 @Component({
@@ -27,6 +31,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   protected readonly noun = 'ship locations';
   hulls = HULLS;
   psclOptions = PSCL_OPTIONS;
+  hasUsage = hullHasUsage;
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
     return file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? parseXlsxRows(file) : file.text().then(parseCsvRows);
@@ -50,8 +55,8 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
     if (!row.deck.trim()) errors.push('Deck required');
     if (!row.frame.trim()) errors.push('Frame required');
     if (!PSCL_VALUES.includes(row.pscl)) errors.push('P/S/CL must be a number from 0 to 9');
-    if (!row.usage.trim()) errors.push('Usage required');
-    if (getShipLocations().some(e => keyOf(e) === keyOf(row))) errors.push('Already on the list');
+    if (hullHasUsage(row.hull) && !row.usage.trim()) errors.push('Usage required');
+    if (getShipLocations().some(e => keyOf(e) === keyOf(entryOf(row)))) errors.push('Already on the list');
     row._errors = errors;
   }
 
@@ -62,11 +67,13 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   }
 
   protected sampleRows(): ImportRow[] {
-    const hull = HULLS[0];
+    /* one hull with Usage and one S or D hull without */
+    const hull = HULLS.find(h => hullHasUsage(h)) ?? HULLS[0];
+    const noUsageHull = HULLS.find(h => !hullHasUsage(h)) ?? HULLS[0];
     return [
       { ...blank(), hull, deck: '5', frame: '230', pscl: '2', usage: 'L' },
       { ...blank(), hull, deck: '5', frame: '230', pscl: '1', usage: 'L' },
-      { ...blank(), hull, deck: '5', frame: '240', pscl: '0', usage: 'M' },
+      { ...blank(), hull: noUsageHull, deck: '5', frame: '240', pscl: '0' },
     ];
   }
 
@@ -76,7 +83,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
 
   protected saveRow(row: ImportRow) {
     const entries = getShipLocations();
-    const entry: ShipLocationEntry = { hull: row.hull, deck: row.deck.trim(), frame: row.frame.trim(), pscl: row.pscl, usage: row.usage.trim() };
+    const entry = entryOf(row);
     if (entries.some(e => keyOf(e) === keyOf(entry))) throw new Error('duplicate');
     setShipLocations([...entries, entry]);
   }

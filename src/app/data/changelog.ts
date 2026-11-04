@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-04',
-    changed: ['Joint Details: the page address is now the hull, drawing and joint number (for example /jobs/S7234/H711-1234/ST-10001) instead of the XREFID, so joints without an XREFID have a proper address.'],
+    changed: ['Joint Details: the page address is now the hull, drawing and joint number (for example /jobs/S7234/H711-1234/ST-10001) instead of the XREFID, so joints without an XREFID have a proper address.',
+      'Fabrication: on S and D hulls, a Shipboard location shows Level/Deck, Frame and P/S/CL (no Usage). T and N hulls still show Deck, Frame, P/S/CL and Usage. My Assignments matches, and Admin > Ship Locations rows for S and D hulls have no Usage.'],
   },
   {
     date: '2026-10-29',
