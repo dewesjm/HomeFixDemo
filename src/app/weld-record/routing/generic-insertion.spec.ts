@@ -38,7 +38,7 @@ describe('Ordinary insertion execution and preview', () => {
     localStorage.clear();
     setSignoffTypeRows(getSignoffTypeRows());
     resetStepFieldConfig();
-    TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ id: job.id }), queryParamMap: convertToParamMap({}) } }) }] });
+    TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ hull: job.hull, drawing: job.drawing, joint: job.joint }), queryParamMap: convertToParamMap({}) } }) }] });
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
     job = Object.assign(addTestJob(), { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', refitNumber: '', repairNumber: '' });
