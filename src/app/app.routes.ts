@@ -88,7 +88,7 @@ export const routes: Routes = [
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR - Quick Links' },
   { path: 'admin/feature-toggles', component: AdminFeatureTogglesComponent, title: 'EWR - Feature Toggles' },
 
-  { path: 'jobs/:id', component: JointPageComponent, title: 'EWR - Hull Details', canDeactivate: [canDeactivateGuard] },
+  { path: 'jobs/:hull/:drawing/:joint', component: JointPageComponent, title: 'EWR - Hull Details', canDeactivate: [canDeactivateGuard] },
 
   /* ── Weld Planning routes (separate system) ── */
   { path: 'weld-planning', component: WeldPlanningListComponent, title: 'EWP - Joint Search' },

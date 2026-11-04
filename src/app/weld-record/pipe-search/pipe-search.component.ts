@@ -23,6 +23,7 @@ import { WorkflowStore } from '../services/workflow-store.service';
 import { currentRoutingLabel, activeStage } from '../routing/current-routing';
 import { ROLES, DEFAULT_ROLE, type Role } from '../model/workflow-types';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
+import { jointRoute } from '../joint-page/joint-route';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
@@ -166,7 +167,7 @@ export class PipeSearchComponent {
 
 //nav to details
   openDetails(job: Job) {
-    this.router.navigate(['/jobs', job.id]);
+    this.router.navigate(jointRoute(job));
   }
 
 //nav to history with this job pre-filled

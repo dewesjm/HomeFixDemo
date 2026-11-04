@@ -16,6 +16,7 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { downloadCsv } from '../../shared/export-csv';
 import { AppDatePipe, formatDate } from '../../shared/date-format';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
+import { jointRoute } from '../joint-page/joint-route';
 
 /* Assignment plus its live routing, so the table can sort/filter/search on it like any other column */
 type AssignmentRow = Assignment & { routing: string };
@@ -91,7 +92,7 @@ export class MyAssignmentsComponent {
 
   openDetails(a: Assignment) {
     const job = this.jobFor(a);
-    if (job) this.router.navigate(['/jobs', job.id], { queryParams: { from: 'assignments' } });
+    if (job) this.router.navigate(jointRoute(job), { queryParams: { from: 'assignments' } });
   }
 
   /* row click expands/collapses; the Details button (own click, stopped from bubbling) navigates */

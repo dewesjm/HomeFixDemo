@@ -40,6 +40,7 @@ import { SignoffService } from '../services/signoff.service';
 import { activeStage } from '../routing/current-routing';
 import { ROLES, type Role } from '../model/workflow-types';
 import { formatDate } from '../../shared/date-format';
+import { jointRoute } from '../joint-page/joint-route';
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
@@ -463,7 +464,7 @@ export class AdaptiveSearchComponent {
     this.selectedIds.set(new Set());
   }
 
-  openDetails(row: SearchRow) { this.router.navigate(['/jobs', row.id]); }
+  openDetails(row: SearchRow) { this.router.navigate(jointRoute(row)); }
   openHistory(row: SearchRow) { this.router.navigate(['/history'], { queryParams: { job: row.id } }); }
 
   /* column header filter kind: list = multiselect, text = box; numbers and dates sort only */

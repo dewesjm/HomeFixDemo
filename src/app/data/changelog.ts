@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-04',
+    changed: ['Joint Details: the page address is now the hull, drawing and joint number (for example /jobs/S7234/H711-1234/ST-10001) instead of the XREFID, so joints without an XREFID have a proper address.'],
+  },
+  {
     date: '2026-10-29',
     fixed: ['Pipe Welding filters: every condition line, including a field’s first or only one, has an x to remove it.'],
     changed: ['Joint Details: Engineering Notes is on its own line across the whole panel, under the three columns, so it has room before it scrolls.',

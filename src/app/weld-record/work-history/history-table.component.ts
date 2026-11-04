@@ -15,6 +15,7 @@ import { getTemplates } from '../routing/stage-templates';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { HistoryTableState } from './history-table-state';
+import { jointRoute } from '../joint-page/joint-route';
 
 @Component({
   selector: 'app-history-table',
@@ -108,6 +109,7 @@ export class HistoryTableComponent {
   }
 
   openDetails(jobId: string) {
-    this.router.navigate(['/jobs', jobId], { queryParams: { from: 'history' } });
+    const job = this.jobById.get(jobId);
+    if (job) this.router.navigate(jointRoute(job), { queryParams: { from: 'history' } });
   }
 }

@@ -365,7 +365,7 @@ src/app/
 | `/pipe-search-classic` | Pipe Welding (Classic) = `PipeSearchComponent`; redirects to `/pipe-search` unless Admin > Feature Toggles > Classic Pipe Welding page is on |
 | `/history` | History (`?job=<id>` deep-link) |
 | `/adaptive` | Redirects to `/pipe-search` (kept so old links still work) |
-| `/jobs/:id` | Job detail (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
+| `/jobs/:hull/:drawing/:joint` | Joint Details, keyed by the unique hull + drawing + joint (never XREFID, which can be blank; `jointRoute()` in `joint-page/joint-route.ts`) (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
 | `/assignments` | My Assignments |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-signoff-types`, `/admin/signoff-types` | Routing admin |

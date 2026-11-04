@@ -19,7 +19,8 @@ import { JointOverridesService } from './joint-overrides.service';
 import { SignoffFormEditsService } from './signoff-form-edits.service';
 import { SignoffFormErrorsService } from './signoff-form-errors.service';
 
-import { JOBS, Job } from '../../data/jobs';
+import { Job } from '../../data/jobs';
+import { findJointByRoute } from './joint-route';
 import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
@@ -79,7 +80,7 @@ export class JointPageComponent implements OnDestroy {
   private formEdits = inject(SignoffFormEditsService);
   private formErrors = inject(SignoffFormErrorsService);
 
-  job: Job | undefined = JOBS.find(j => j.id === this.route.snapshot.paramMap.get('id'));
+  job: Job | undefined = findJointByRoute(this.route.snapshot.paramMap.get('hull'), this.route.snapshot.paramMap.get('drawing'), this.route.snapshot.paramMap.get('joint'));
   wf = this.job ? this.store.workflowFor(this.job) : null;
 
   /* snapshot of state as loaded, so unsigned/unsaved edits (Fab data, stage inputs, sign-off
