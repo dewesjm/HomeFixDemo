@@ -28,13 +28,13 @@
         }
       </div>
 
-    <!-- Line 2: Deck Frame P/S/CL and Usage (S and D hulls: Level/Deck Frame P/S/CL) -->
+    <!-- Line 2: Level/Deck Frame P/S/CL and Usage (S and D hulls: no Usage) -->
     <div class="flex gap-4">
       @for (f of fields(); track f.key) {
         @if (f.row === 2) {
           <div [class]="f.key === 'pscl' ? 'w-16' : 'flex-1 max-w-xs'">
             <div class="meta">{{ f.label }}@if (f.required) { <span class="text-error">*</span> }{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-            <!-- options come from Admin > Ship Locations; a field waiting on Deck/Frame/P-S-CL says so instead of an empty list.
+            <!-- options come from Admin > Ship Locations; a field waiting on Level/Deck/Frame/P-S-CL says so instead of an empty list.
                  P/S/CL's open list reads "2 Port"; its closed box shows just the number -->
             <div class="relative">
               <select class="select select-bordered w-full" [class.select-error]="!!fabErrors()[f.key]"

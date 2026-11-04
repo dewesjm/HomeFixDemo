@@ -43,9 +43,9 @@ export class MyAssignmentsComponent {
     return job ? currentRoutingLabel(this.store.workflowFor(job)().stages) : '';
   }
 
-  /* a Shipboard assignment's Deck/Frame/P-S-CL/Usage (Level/Deck/Frame/P-S-CL on S and D hulls) are the joint's own Fabrication values, live */
+  /* a Shipboard assignment's Level/Deck/Frame/P-S-CL/Usage (no Usage on S and D hulls) are the joint's own Fabrication values, live */
   isShipboard = (a: Assignment) => isShipboardShop(a.location);
-  /* S and D hulls: Level/Deck, Frame and P/S/CL, no Usage */
+  /* S and D hulls have no Usage */
   hasUsage = (a: Assignment) => hullHasUsage(this.jobFor(a)?.hull ?? '');
 
   fabFor(a: Assignment): Record<string, string> {

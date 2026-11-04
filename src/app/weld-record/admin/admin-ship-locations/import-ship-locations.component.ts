@@ -42,7 +42,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
     return {
       ...blank(),
       hull: get('Hull', 'hull').toUpperCase(),
-      deck: get('Deck', 'deck'),
+      deck: get('Level/Deck', 'Deck', 'deck'),
       frame: get('Frame', 'frame'),
       pscl: get('P/S/CL', 'pscl', 'PSCL'),
       usage: get('Usage', 'usage'),
@@ -52,7 +52,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   validateRow(row: ImportRow) {
     const errors: string[] = [];
     if (!HULLS.includes(row.hull)) errors.push('Hull not found');
-    if (!row.deck.trim()) errors.push('Deck required');
+    if (!row.deck.trim()) errors.push('Level/Deck required');
     if (!row.frame.trim()) errors.push('Frame required');
     if (!PSCL_VALUES.includes(row.pscl)) errors.push('P/S/CL must be a number from 0 to 9');
     if (hullHasUsage(row.hull) && !row.usage.trim()) errors.push('Usage required');
@@ -78,7 +78,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
   }
 
   downloadTemplate() {
-    downloadCsv('ship-locations-template', ['Hull', 'Deck', 'Frame', 'P/S/CL', 'Usage'].map(h => ({ header: h, value: () => '' })), []);
+    downloadCsv('ship-locations-template', ['Hull', 'Level/Deck', 'Frame', 'P/S/CL', 'Usage'].map(h => ({ header: h, value: () => '' })), []);
   }
 
   protected saveRow(row: ImportRow) {

@@ -1,4 +1,4 @@
-/* Admin > Ship Locations: per hull, the Deck / Frame / P/S/CL / Usage combinations a joint on the
+/* Admin > Ship Locations: per hull, the Level/Deck / Frame / P/S/CL / Usage combinations a joint on the
    Ship can be given (S and D hulls have no Usage). Fabrication's droplists cascade from it: Deck
    lists the joint's hull's decks, Frame the frames on that deck, P/S/CL the sides set up at that Deck + Frame, Usage the usages at
    that Deck + Frame + P/S/CL. Stored in localStorage. */
@@ -19,7 +19,7 @@ const psclSide = (v: string) => v === '0' ? 'Centerline' : Number(v) % 2 ? 'Star
 /* droplist option for a P/S/CL number: the open list reads "2 Port", the stored value is just 2 */
 const psclOption = (v: string) => ({ label: `${v} ${psclSide(v)}`, value: v });
 export const PSCL_OPTIONS = PSCL_VALUES.map(psclOption);
-/* S and D hulls' ship locations have no Usage (Fabrication shows Level/Deck, Frame and P/S/CL) */
+/* S and D hulls' ship locations have no Usage (Fabrication shows Level/Deck, Frame and P/S/CL only) */
 export const hullHasUsage = (hull: string) => !['S', 'D'].includes(hull.charAt(0));
 
 /* the Fabrication fields this table supplies options for */

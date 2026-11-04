@@ -24,11 +24,11 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
   { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
-  // Line 2: Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
+  // Line 2: Level/Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
   // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts).
-  // S and D hulls have no Usage and their Deck reads Level/Deck (fabricationFields below)
-  { key: 'deck', label: 'Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
-  { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Deck first' },
+  // S and D hulls have no Usage (fabricationFields below)
+  { key: 'deck', label: 'Level/Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
+  { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Level/Deck first' },
   { key: 'pscl', label: 'P/S/CL', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'usage', label: 'Usage', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   // Line 3: Joining Item MIC and Join To Item MIC -- always shown, but disabled and not required (see
@@ -46,12 +46,10 @@ export const FABRICATION_FIELDS: FabricationField[] = [
     showIf: { key: 'revisedJointDesign', notEmpty: true }, required: true },
 ];
 
-/* the Fabrication fields a joint on this hull has: S and D hulls have no Usage, and Deck reads Level/Deck */
+/* the Fabrication fields a joint on this hull has: S and D hulls have no Usage */
 export function fabricationFields(hull: string): FabricationField[] {
   if (hullHasUsage(hull)) return FABRICATION_FIELDS;
-  return FABRICATION_FIELDS
-    .filter(f => f.key !== 'usage')
-    .map(f => f.key === 'deck' ? { ...f, label: 'Level/Deck' } : f);
+  return FABRICATION_FIELDS.filter(f => f.key !== 'usage');
 }
 
 /* whether a field's showIf is met by the joint's fabrication data */

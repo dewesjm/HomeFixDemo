@@ -1,5 +1,5 @@
 /* Admin > Locations: the shops Fabrication's Location droplist offers (localStorage). A Shipboard
-   location shows Deck/Frame/P-S-CL/Usage on the joint's Fabrication panel. */
+   location shows Level/Deck/Frame/P-S-CL/Usage on the joint's Fabrication panel. */
 import { STORAGE } from './storage-keys';
 
 export interface Shop {
