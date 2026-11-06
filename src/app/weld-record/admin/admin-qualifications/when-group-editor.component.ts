@@ -30,9 +30,12 @@ export class WhenGroupEditorComponent {
     return !this.nested() && this.group().items.length === 1 && !isWhenGroup(t) && t.field === USER_FIELD;
   }
 
-  fieldGroupsFor(): { name: string; fields: ConditionField[] }[] {
+  /* Type has its own Signoff Type column; a clause saved with it still shows it */
+  fieldGroupsFor(current: string): { name: string; fields: ConditionField[] }[] {
     const userOk = !this.nested() && this.group().items.length === 1;
-    return this.fieldGroups.filter(g => g.name !== 'User' || userOk);
+    return this.fieldGroups
+      .filter(g => g.name !== 'User' || userOk)
+      .map(g => ({ ...g, fields: g.fields.filter(f => !f.ownColumn || f.key === current) }));
   }
 
   asGroup(t: WhenTerm): WhenGroup | null {

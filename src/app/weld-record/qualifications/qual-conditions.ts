@@ -1,9 +1,10 @@
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
-   - "when <clauses>, require <group>": the clauses are an AND/OR group of "field is value"
-     (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts). Joint Details fields are checked on every step with a Qualification
-     Check as soon as it opens; sign-off fields are read from the step being checked, so they apply
-     once they're filled in.
+   - "when <clauses>, signoff type <types>, require <group>": the clauses are an AND/OR group of
+     "field is value" (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
+     Signoff Type is the Types the row applies to (none = all of them). Joint Details fields are checked
+     on every step with a Qualification Check as soon as it opens; sign-off fields are read from the
+     step being checked, so they apply once they're filled in.
    - "when User is <person>, holds <quals>" (a When of just that one clause): the quals that person holds. There's no login, so the
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
@@ -15,11 +16,12 @@ import { PEOPLE } from '../../data/people';
 import { isTitaniumJoint } from '../../data/material-classification';
 import { STEP_CONDITION_FIELDS, tradeSteps, routingAnswerFields } from '../routing/step-conditions';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
-import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
+import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, whenMatches, whenText } from './qual-when';
 
 export interface QualCondition {
   when: WhenGroup;
   require: QualGroup;   /* on a User row: the quals held (always an 'all' list) */
+  types?: string[];     /* Signoff Type values the row applies to; none = all. Not used on a User row */
 }
 
 /* the step being checked; its fields are blank until filled in */
@@ -38,6 +40,8 @@ export interface ConditionField {
   key: string;
   label: string;
   group: 'Joint Details' | 'Sign-off' | 'User';
+  /* set in its own Signoff Type column, so not offered in the When (old clauses still match) */
+  ownColumn?: boolean;
   /* none = the value is typed (compared whole, any case) */
   options: () => ConditionOption[];
   get: (s: ConditionSubject) => string;
@@ -47,6 +51,7 @@ export const USER_FIELD = 'user';
 export const SELF = 'SELF';
 /* sign-off field keys: 'step:<field key>' ('step:inspectionType' = the step's Type, 'step:id' = the step) */
 const STEP_PREFIX = 'step:';
+export const TYPE_FIELD = `${STEP_PREFIX}inspectionType`;
 const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
@@ -83,7 +88,7 @@ function signoffFields(): ConditionField[] {
   }
   for (const [key, e] of byKey) {
     out.push({
-      key: STEP_PREFIX + key, label: e.label, group: 'Sign-off',
+      key: STEP_PREFIX + key, label: e.label, group: 'Sign-off', ownColumn: key === 'inspectionType',
       options: () => e.checkbox ? plain(['Yes', 'No']) : [...e.options].map(([value, label]) => ({ value, label })),
       get: s => {
         if (key === 'inspectionType') return s.step.inspectionType ?? '';
@@ -125,7 +130,26 @@ export function clauseText(c: WhenClause): string {
   return `${f?.label ?? c.field} is ${f?.options().find(o => o.value === c.value)?.label ?? c.value}`;
 }
 
-export const conditionWhenText = (c: QualCondition) => whenText(c.when, clauseText);
+/* an empty When with Signoff Types set applies to every joint of those types */
+export const conditionWhenText = (c: QualCondition) =>
+  c.when.items.length ? whenText(c.when, clauseText) : c.types?.length ? 'Always' : '';
+
+/* every Signoff Type a row can be limited to */
+export const signoffTypeChoices = (): ConditionOption[] => conditionField(TYPE_FIELD)?.options() ?? [];
+
+/* e.g. "VT, 5X"; "All" when the row isn't limited */
+export function conditionTypesText(c: QualCondition): string {
+  if (!c.types?.length) return 'All';
+  const opts = signoffTypeChoices();
+  return c.types.map(t => opts.find(o => o.value === t)?.label ?? t).join(', ');
+}
+
+/* the When must match (an empty one only counts with Signoff Types set) and the step's Type must be one of the row's */
+function applies(c: QualCondition, valueOf: (field: string) => string): boolean {
+  const types = c.types ?? [];
+  if (types.length && !types.includes(valueOf(TYPE_FIELD))) return false;
+  return c.when.items.length ? whenMatches(c.when, valueOf) : types.length > 0;
+}
 
 const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, value }] });
 
@@ -136,7 +160,7 @@ function defaultConditions(): QualCondition[] {
     { when: when(USER_FIELD, SELF), require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
     { when: when('controlledMaterial', 'Yes'), require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
     { when: when('ss', 'Yes'), require: { op: 'all', items: ['SSWELD1'] } },
-    { when: when(`${STEP_PREFIX}inspectionType`, 'vt'), require: { op: 'all', items: ['VTINSP1'] } },
+    { when: { op: 'all', items: [] }, types: ['vt'], require: { op: 'all', items: ['VTINSP1'] } },
     { when: when('titanium', 'Yes'), require: { op: 'all', items: ['TIWELD1'] } },
   ];
 }
@@ -145,12 +169,27 @@ function defaultConditions(): QualCondition[] {
 const PREVIOUS_KEY = 'welding:qual-conditions:v4';
 type PreviousCondition = { field: string; value: string; require: QualGroup };
 
+/* rows saved before the Signoff Type column (no types): a top-level "Type is X" moves into it when
+   that means the same thing (one Type clause in an All of, or an Any of only Type clauses); any other
+   Type clause stays in the When, where it still matches */
+export function liftTypes(c: QualCondition): QualCondition {
+  if (c.types) return c;
+  const isType = (t: WhenTerm): t is WhenClause => !isWhenGroup(t) && t.field === TYPE_FIELD;
+  const typeItems = c.when.items.filter(isType);
+  const rest = c.when.items.filter(t => !isType(t));
+  if (userOf(c) === null && typeItems.length) {
+    if (c.when.op === 'all' && typeItems.length === 1) return { when: { op: 'all', items: rest }, require: c.require, types: [typeItems[0].value] };
+    if (c.when.op === 'any' && !rest.length) return { when: { op: 'all', items: [] }, require: c.require, types: typeItems.map(t => t.value) };
+  }
+  return { ...c, types: [] };
+}
+
 function load(): QualCondition[] {
   try {
     const raw = localStorage.getItem(STORAGE.qualConditions);
-    if (raw) return JSON.parse(raw);
+    if (raw) return (JSON.parse(raw) as QualCondition[]).map(liftTypes);
     const prev = localStorage.getItem(PREVIOUS_KEY);
-    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => ({ when: when(c.field, c.value), require: c.require }));
+    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => liftTypes({ when: when(c.field, c.value), require: c.require }));
   } catch { /* ignore */ }
   return defaultConditions();
 }
@@ -177,7 +216,7 @@ export function conditionRequirements(job: Job | undefined | null, step: Conditi
   const fields = new Map(conditionFields().map(f => [f.key, f]));
   const valueOf = (key: string) => fields.get(key)?.get(subject) ?? '';
   return qualConditions()
-    .filter(c => userOf(c) === null && whenMatches(c.when, valueOf))
+    .filter(c => userOf(c) === null && applies(c, valueOf))
     .map(c => cloneGroup(c.require));
 }
 
@@ -185,7 +224,7 @@ export function conditionRequirements(job: Job | undefined | null, step: Conditi
    '' when there's none */
 export function wtnRequirementText(wtn: string): string {
   const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : '';
-  const groups = qualConditions().filter(c => c.require.items.length && whenMatches(c.when, valueOf));
+  const groups = qualConditions().filter(c => c.require.items.length && userOf(c) === null && applies(c, valueOf));
   if (groups.length === 1) return requirementText(groups[0].require);
   return groups.map(c => requirementText(c.require, true)).join(' AND ');
 }

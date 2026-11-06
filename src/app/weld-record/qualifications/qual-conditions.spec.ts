@@ -1,7 +1,7 @@
 import { addTestJob } from '../../data/jobs';
 import {
-  QualCondition, SELF, conditionFields, conditionWhenText, conditionRequirements, heldBy, heldQuals, qualConditions, setQualConditions,
-  wtnRequirementText,
+  QualCondition, SELF, conditionFields, conditionTypesText, conditionWhenText, conditionRequirements, heldBy, heldQuals, liftTypes,
+  qualConditions, setQualConditions, wtnRequirementText,
 } from './qual-conditions';
 import { WhenGroup } from './qual-when';
 
@@ -58,7 +58,33 @@ describe('qual conditions', () => {
   it('seeds SELF plus controlled material, SS, VT and titanium requirements, all met by SELF', () => {
     setQualConditions(saved);
     expect(qualConditions().map(conditionWhenText))
-      .toEqual(['User is SELF', 'Controlled Material is Yes', 'SS is Yes', 'Type is VT', 'Titanium is Yes']);
+      .toEqual(['User is SELF', 'Controlled Material is Yes', 'SS is Yes', 'Always', 'Titanium is Yes']);
+    expect(qualConditions().map(conditionTypesText)).toEqual(['All', 'All', 'All', 'VT', 'All']);
+  });
+
+  it('limits a row to its Signoff Types; none = all, and an empty When then matches every joint', () => {
+    const job = addTestJob();
+    setQualConditions([
+      { when: w('titanium', 'Yes'), types: ['vt', 'mt'], require: { op: 'all', items: ['TIWELD1'] } },
+      { when: { op: 'all', items: [] }, types: ['rt'], require: { op: 'all', items: ['WELD412'] } },
+      { when: { op: 'all', items: [] }, types: [], require: { op: 'all', items: ['WELD427'] } },
+    ]);
+    const ti = { ...job, materialType1: '61-TI64' };
+    expect(conditionRequirements(ti, { inspectionType: 'vt' }).length).toBe(1);
+    expect(conditionRequirements(ti, { inspectionType: 'ut' }).length).toBe(0);
+    expect(conditionRequirements(job, { inspectionType: 'rt' }).length).toBe(1);
+    expect(conditionRequirements(job).length).toBe(0);
+    expect(conditionTypesText(qualConditions()[0])).toBe('VT, MT');
+  });
+
+  it('moves a saved top-level Type clause into the Signoff Type column', () => {
+    const req = { op: 'all' as const, items: ['VTINSP1'] };
+    expect(liftTypes({ when: { op: 'all', items: [{ field: 'step:inspectionType', value: 'vt' }, { field: 'ss', value: 'Yes' }] }, require: req }))
+      .toEqual({ when: w('ss', 'Yes'), require: req, types: ['vt'] });
+    expect(liftTypes({ when: { op: 'any', items: [{ field: 'step:inspectionType', value: 'vt' }, { field: 'step:inspectionType', value: '5x' }] }, require: req }))
+      .toEqual({ when: { op: 'all', items: [] }, require: req, types: ['vt', '5x'] });
+    const mixed: QualCondition = { when: { op: 'any', items: [{ field: 'step:inspectionType', value: 'vt' }, { field: 'ss', value: 'Yes' }] }, require: req };
+    expect(liftTypes(mixed)).toEqual({ ...mixed, types: [] });
   });
 
   it('matches a When of AND and OR clauses, with nested groups', () => {

@@ -16,7 +16,7 @@
       <span class="flex flex-wrap items-center gap-1">
         <select class="select select-bordered select-sm w-52" [ngModel]="c.field" (ngModelChange)="setField(i, $event)"
                 aria-label="Field">
-          @for (fg of fieldGroupsFor(); track fg.name) {
+          @for (fg of fieldGroupsFor(c.field); track fg.name) {
             <optgroup [label]="fg.name">
               @for (f of fg.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
             </optgroup>

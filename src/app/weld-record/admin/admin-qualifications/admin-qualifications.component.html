@@ -1,6 +1,6 @@
 <div class="table-page-wrap">
   <h2 class="section-title">Qualifications</h2>
-  <p class="text-sm mb-sm">Set qualification requirements by condition and record the qualifications each user holds.</p>
+  <p class="text-sm mb-sm">Set qualification requirements by condition and signoff type, and record the qualifications each user holds.</p>
 
   <app-table-toolbar [table]="table" searchPlaceholder="Search conditions…" (exportCsv)="exportCsv()">
     <span class="font-semibold">{{ self }} holds {{ selfHeld().length }} quals</span>
@@ -17,6 +17,7 @@
       <thead>
         <tr>
           <th appSortHeader [table]="table" field="when" label="When"></th>
+          <th appSortHeader [table]="table" field="typesText" label="Signoff Type"></th>
           <th appSortHeader [table]="table" field="require" label="Require"></th>
           <th class="min-w-11"></th>
         </tr>
@@ -28,12 +29,37 @@
               <td class="align-top">
                 <app-when-group-editor [group]="r.c.when" (changed)="setWhen(r.uid, $event)" />
               </td>
+              <td class="align-top">
+                @if (r.userRow) {
+                  -
+                } @else {
+                  <div class="flex flex-wrap items-center gap-2">
+                    @for (t of r.c.types ?? []; track t) {
+                      <span class="badge badge-lg gap-2">
+                        {{ typeLabel(t) }}
+                        <button type="button" (click)="removeType(r, t)"
+                                [attr.aria-label]="'Remove ' + typeLabel(t)"><svg lucideX class="size-3"></svg></button>
+                      </span>
+                    } @empty {
+                      <span>All</span>
+                    }
+                    @if (addableTypes(r).length) {
+                      <select class="select select-bordered select-sm w-auto" aria-label="Add a signoff type"
+                              (change)="addType(r, $any($event.target).value); $any($event.target).value = ''">
+                        <option value="">Add type…</option>
+                        @for (o of addableTypes(r); track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+                      </select>
+                    }
+                  </div>
+                }
+              </td>
               <td>
                 <app-qual-group-editor [group]="r.c.require" [allQuals]="allQuals" [holds]="r.userRow"
                                        (changed)="setRequire(r.uid, $event)" />
               </td>
             } @else {
-              <td class="align-top">{{ r.when }}</td>
+              <td class="align-top">{{ r.when || '-' }}</td>
+              <td class="align-top">{{ r.userRow ? '-' : r.typesText }}</td>
               <td class="align-top">{{ r.require || '-' }}</td>
             }
             <td class="align-top">
@@ -57,7 +83,7 @@
             </td>
           </tr>
         } @empty {
-          <tr><td colspan="3" class="empty">{{ table.hasRows() ? 'No conditions match your search.' : 'No conditions yet. No quals are checked.' }}</td></tr>
+          <tr><td colspan="4" class="empty">{{ table.hasRows() ? 'No conditions match your search.' : 'No conditions yet. No quals are checked.' }}</td></tr>
         }
       </tbody>
     </table>
