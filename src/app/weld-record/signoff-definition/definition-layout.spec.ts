@@ -58,7 +58,7 @@ describe('layoutSections', () => {
     expect(sections[4].parts).toEqual([{ kind: 'line', keys: ['performed5x'] }]);
     expect(sections[5].parts).toEqual([{ kind: 'line', keys: ['comments'] }]);
     expect(sections[1].parts).toEqual([
-      { kind: 'line', keys: ['weldProcedure', 'wtn', 'weldProcess'] }, { kind: 'line', keys: ['qualificationCheck'] },
+      { kind: 'line', keys: ['weldProcedure', 'wtn', 'weldProcess'] },
       { kind: 'line', keys: ['consumableInsertOnly'] }, { kind: 'line', keys: ['fillerMetalType', 'fillerMetalSize', 'fillerMetalMic'] },
     ]);
     expect(sections[2].parts[1]).toEqual({ kind: 'line', keys: ['phMin', 'phMax', 'ipMin', 'ipMax'] });

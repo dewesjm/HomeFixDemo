@@ -22,10 +22,13 @@ describe('verifyAgainst', () => {
 });
 
 describe('Qualification Check', () => {
-  it('is an ordinary field of every step whose definition lists it', () => {
-    for (const s of [step('pre-fit'), step('fitup-insp'), step('nqc-fitup-insp'), step('root-ndt-vt5x', 'vt'), step('nqc-final-ndt-utrt', 'rt'), step('excavation-ndt', 'mt'), step('tack')]) {
+  it('is an ordinary field of the NDT forms only', () => {
+    for (const s of [step('root-ndt-vt5x', 'vt'), step('nqc-final-ndt-utrt', 'rt'), step('excavation-ndt', 'mt')]) {
       expect(drawnByOwnForm(s, 'qualificationCheck')).withContext(s.id).toBeFalse();
       expect(formInputFields(s).some(f => f.key === 'qualificationCheck')).withContext(s.id).toBeTrue();
+    }
+    for (const s of [step('pre-fit'), step('fitup-insp'), step('nqc-fitup-insp'), step('tack')]) {
+      expect(formInputFields(s).some(f => f.key === 'qualificationCheck')).withContext(s.id).toBeFalse();
     }
   });
 });

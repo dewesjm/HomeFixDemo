@@ -181,7 +181,7 @@ Required fields are marked with a red `*`. Signoff is always clickable: a failed
 
 Two things can be signed anyway, as accepted deviations. Everything else above stays a hard stop.
 - An Actual PH/IP value outside its requirement limits.
-- A failed Qualification Check (welding routings, and the inspection routings whose Signoff Type Form lists Qualification Check).
+- A failed Qualification Check (the NDT routings, whose Signoff Type Forms list Qualification Check).
 
 When a routing has any deviation, Signoff opens an acceptance screen instead of the usual confirm: each deviation with what was entered and what was required, a required reason, and the password. Accepting records the deviation (History shows a "Deviation created" entry with the reason and each item) and signs the routing.
 

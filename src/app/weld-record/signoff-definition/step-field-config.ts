@@ -126,11 +126,10 @@ const RING_FIELDS: FieldActivation[] = [
 ];
 
 /* the welding steps' boxes; Root's Only Consumable Insert goes between
-   Qualification Check and the filler, its 5X question at the end */
+   the GWP line and the filler, its 5X question at the end */
 function weldFields(beforeFiller: FieldActivation[] = [], atEnd: FieldActivation[] = []): FieldActivation[] {
   return [
     box('weld'), { key: 'weldProcedure', width: 320 }, same('wtn', 320), same('weldProcess', 200),
-    { key: 'qualificationCheck' },
     ...beforeFiller,
     { key: 'fillerMetalType', width: 160 }, same('fillerMetalSize', 160), same('fillerMetalMic', 240),
     box('preheat', 'Preheat/Interpass'),
@@ -177,7 +176,7 @@ function weldType(typeId: string, fields = WELD_FIELDS): TypeDefinition {
 const TACK_FIELDS = WELD_FIELDS.map(f => FILLER_KEYS.has(f.key) ? { ...f, showIf: tackFiller } : f);
 
 const FITUP_INSP_FIELDS: FieldActivation[] = [
-  QUAL_CHECK, { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
+  { key: 'verifyMic1' }, { key: 'verifyMic2' }, { key: 'verifyDrawingRev' },
   { key: 'verifyActualThickness' }, { key: 'verifyRevisedJointDesign' },
   { key: 'releaseToWelding' }, DECISION, COMMENTS,
 ];
@@ -186,7 +185,7 @@ const FITUP_INSP_FIELDS: FieldActivation[] = [
 const AFFECTED_ITEM_FIELDS: FieldActivation[] = [{ key: 'affectedItem' }, { key: 'affectedMicVerified1' }, { key: 'affectedMicVerified2' }];
 
 export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
-  { typeId: 'pre-fit', fields: [QUAL_CHECK, ...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
+  { typeId: 'pre-fit', fields: [...INSERT_FIELDS, ...RING_FIELDS, COMMENTS] },
   { typeId: 'fit', fields: [TYPE, ...INSERT_FIELDS, ...RING_FIELDS, { key: 'deferTack' }, COMMENTS] },
   weldType(WELD_BUILDUP_TYPE, [...AFFECTED_ITEM_FIELDS, ...WELD_FIELDS]),
   weldType('tack', TACK_FIELDS),
@@ -222,17 +221,11 @@ function migrateRootInspectionQuestion(definition: TypeDefinition): TypeDefiniti
       ? { ...field, showIf: ndtRootInspection } : field);
   return { ...definition, fields: numberLines(fields) };
 }
-/* Records Review rows for values the joint no longer has; saved forms drop them */
-const REMOVED_FIELDS = new Set(['verifyNdt', 'verifyPwht', 'verifyWps']);
-function dropRemovedFields(definition: TypeDefinition): TypeDefinition {
-  return definition.fields.some(f => REMOVED_FIELDS.has(f.key))
-    ? { ...definition, fields: numberLines(definition.fields.filter(f => !REMOVED_FIELDS.has(f.key))) } : definition;
-}
 export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion).map(dropRemovedFields) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }
