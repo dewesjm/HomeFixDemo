@@ -1,4 +1,4 @@
-/* The Type droplist on a step's form: options from Admin > Signoff Types By Routing and Attribute Code
+/* The Type droplist on a step's form: options from Admin > Signoff Type to Routing and Attribute Code
    Exceptions, narrowed by the "ID is accessible" answer; blank to start when none is the default
    (inspectionTypeRequired) */
 import { Component, input } from '@angular/core';

@@ -15,8 +15,7 @@ const REVIEW_VERIFY_MAP: Record<string, keyof Job> = {
   verifyWeldType: 'weldType', verifyPipeSize: 'pipeSize',
   verifyWallThickness: 'wallThickness', verifyMaterial1: 'materialType1',
   verifyMaterial2: 'materialType2', verifyMcl1: 'mcl1', verifyMcl2: 'mcl2',
-  verifyNdt: 'ndt', verifyPwht: 'pwht', verifyNInd: 'nInd',
-  verifyWps: 'wps', verifyOrder: 'order', verifyWorkPackage: 'workPackage',
+  verifyNInd: 'nInd', verifyOrder: 'order', verifyWorkPackage: 'workPackage',
 };
 
 export function fitupVerifyValue(fieldKey: string, job: Job | undefined, fab: Record<string, string>): string {

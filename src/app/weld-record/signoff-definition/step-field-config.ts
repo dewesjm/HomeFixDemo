@@ -165,8 +165,7 @@ const NDT_TYPES: TypeDefinition[] = [
 const RECORDS_REVIEW_FIELDS: FieldActivation[] = [
   'verifyDrawing', 'verifyDrawingRev', 'verifyJoint', 'verifyJointDesign', 'verifyWeldType',
   'verifyPipeSize', 'verifyWallThickness', 'verifyMaterial1', 'verifyMaterial2',
-  'verifyMcl1', 'verifyMcl2', 'verifyNdt', 'verifyPwht', 'verifyNInd',
-  'verifyWps', 'verifyOrder', 'verifyWorkPackage',
+  'verifyMcl1', 'verifyMcl2', 'verifyNInd', 'verifyOrder', 'verifyWorkPackage',
 /* Drawing Rev is also a Fit-Up Insp row, required there; here no row is required */
 ].map(key => key === 'verifyDrawingRev' ? { key, required: false } : { key });
 
@@ -223,11 +222,17 @@ function migrateRootInspectionQuestion(definition: TypeDefinition): TypeDefiniti
       ? { ...field, showIf: ndtRootInspection } : field);
   return { ...definition, fields: numberLines(fields) };
 }
+/* Records Review rows for values the joint no longer has; saved forms drop them */
+const REMOVED_FIELDS = new Set(['verifyNdt', 'verifyPwht', 'verifyWps']);
+function dropRemovedFields(definition: TypeDefinition): TypeDefinition {
+  return definition.fields.some(f => REMOVED_FIELDS.has(f.key))
+    ? { ...definition, fields: numberLines(definition.fields.filter(f => !REMOVED_FIELDS.has(f.key))) } : definition;
+}
 export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion).map(dropRemovedFields) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }
@@ -251,7 +256,7 @@ export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Parti
 
 /* the definition a step reads: its Type's, including Excavation NDT; '' while
    the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
-   routing without a Signoff Types By Routing row), which has no form */
+   routing without a Signoff Type to Routing row), which has no form */
 export function definitionId(step: StepRef): string | undefined {
   if (typeof step === 'string') return step;
   if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;

@@ -6,7 +6,7 @@ import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions, usesReturni
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signoff-types';
 
-describe('Signoff Types By Routing', () => {
+describe('Signoff Type to Routing', () => {
   it('retains return context when an exception condition needs the performed inspection Type', () => {
     setSignoffTypeRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
       { from: 'vt', to: '5x', when: [[{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]] }] }]);

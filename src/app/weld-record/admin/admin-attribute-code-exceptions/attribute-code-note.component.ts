@@ -1,4 +1,4 @@
-/* Read-only note on a Routing Settings or Signoff Types By Routing row: the attribute codes with an
+/* Read-only note on a Routing Settings or Signoff Type to Routing row: the attribute codes with an
    Attribute Code Exceptions row for that routing, linking to the table where they are edited */
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';

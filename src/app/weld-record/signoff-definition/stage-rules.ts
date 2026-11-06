@@ -14,7 +14,7 @@ export function unsatWithoutRejectTarget(stage: Pick<WorkflowStage, 'result' | '
   return stage.result === 'unsat' && !stage.rejectToStage;
 }
 
-/* whether the Type droplist shows: the step has Type options (Admin > Signoff Types By Routing) and
+/* whether the Type droplist shows: the step has Type options (Admin > Signoff Type to Routing) and
    the definition of the Type it's on lists Type (a step with no definition, or whose Type isn't picked
    yet, always shows it) */
 export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'signoffType'>): boolean {
@@ -22,7 +22,7 @@ export function showsType(stage: Pick<WorkflowStage, 'id' | 'typeOptions' | 'sig
   return !hasStepActivation(stage) || definitionHas(stage, TYPE_KEY);
 }
 
-/* a step whose Type options have no default (Admin > Signoff Types By Routing) starts blank
+/* a step whose Type options have no default (Admin > Signoff Type to Routing) starts blank
    ("Select the inspection performed…") and can't be signed until one is picked, even when there is
    only one option */
 export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'typeOptions'>): boolean {
@@ -85,7 +85,7 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
 
 /* what the signoff section's fields and the joint's References show, and Inspection Results' routing */
 const OWN_SPOT_NOTES: Record<string, string> = {
-  type: "Shown when Admin > Signoff Types By Routing gives the routing options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
+  type: "Shown when Admin > Signoff Type to Routing gives the routing options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
   decision: 'UNSAT can be signed only on a routing with a Reject routes to target (Admin > Routing Settings).',
   comments: 'Shown while the routing needs a signoff.',
   references: "The joint's References (attached file names), drawn the width of the form.",

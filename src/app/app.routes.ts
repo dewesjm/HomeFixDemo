@@ -73,7 +73,7 @@ export const routes: Routes = [
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations' },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },
   { path: 'admin/routing-signoff-types', component: AdminRoutingSignoffTypesComponent, title: 'EWR - Signoff Types' },
-  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent,     title: 'EWR - Signoff Types By Routing' },
+  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent,     title: 'EWR - Signoff Type to Routing' },
   { path: 'admin/signoff-fields', component: AdminSignoffTypeDefinitionComponent, title: 'EWR - Signoff Type Forms' },
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes' },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors' },

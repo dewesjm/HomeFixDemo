@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AdminSignoffTypesComponent } from './admin-signoff-types.component';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 
-describe('Signoff Types By Routing admin', () => {
+describe('Signoff Type to Routing admin', () => {
   it('exports readable ordered exception conditions with the routing and source', async () => {
     setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
       { from: 'fit', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] }]);

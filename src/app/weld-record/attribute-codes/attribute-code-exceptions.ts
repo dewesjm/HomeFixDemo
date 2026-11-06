@@ -1,5 +1,5 @@
 /* Admin > Attribute Code Exceptions: what each attribute code changes on a joint's routing, applied
-   after the normal routing is built (Routing Settings, Signoff Types By Routing). One row per code
+   after the normal routing is built (Routing Settings, Signoff Type to Routing). One row per code
    and routing. A regular routing and its NQC row are separate routings with separate rows. Stored in
    localStorage. */
 import { STORAGE } from '../../data/storage-keys';

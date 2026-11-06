@@ -72,7 +72,7 @@ export class AdminAttributeCodeExceptionsComponent {
     return this.codes.find(c => c.code === code)?.description ?? '';
   }
 
-  /* the Types an accessible rule can name: the row's own and the routing's (Signoff Types By Routing) */
+  /* the Types an accessible rule can name: the row's own and the routing's (Signoff Type to Routing) */
   accessibleChoices(row: ExceptionRow): string[] {
     const configured = getSignoffTypeRows().find(r => r.stepId === row.routing)?.types.map(t => t.type) ?? [];
     return [...new Set([...(row.types ?? []), ...configured, ...(row.accessible ?? []).map(a => a.type)])];

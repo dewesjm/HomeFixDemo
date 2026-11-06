@@ -25,7 +25,7 @@ npx ng test --watch=false --browsers=ChromeHeadless
 - **History**: every sign-off, deprogress and correction is recorded with the field values as they were.
 - **Deprogress**: undo the last sign-off, with a required reason; History keeps the record. Nothing is ever un-signed.
 - **Sold**: the joint is closed and locked; Deprogress can reverse the preceding signoff.
-- **Admin screens** for routing, Signoff Types, Signoff Types By Routing, Signoff Type Forms, qualifications, inspection procedures, weld colors, locations, joint designs, banners, and more.
+- **Admin screens** for routing, Signoff Types, Signoff Type to Routing, Signoff Type Forms, qualifications, inspection procedures, weld colors, locations, joint designs, banners, and more.
 - **No logins**: the app has a demo role filter, not real users, and nothing is access-controlled.
 - **32 DaisyUI themes** (default: Light).
 

@@ -10,6 +10,11 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-06',
+    changed: ['Admin: Signoff Types By Routing is renamed Signoff Type to Routing.',
+      'Records Review: removed the NDT Requirement, PWHT and WPS checks; Signoff Type Forms no longer offers them.'],
+  },
+  {
     date: '2026-11-04',
     changed: ['Joint Details: the page address is now the hull, drawing and joint number (for example /jobs/S7234/H711-1234/ST-10001) instead of the XREFID, so joints without an XREFID have a proper address.',
       'Fabrication: Deck is renamed Level/Deck everywhere (Fabrication, My Assignments, Admin > Ship Locations and its Import).',

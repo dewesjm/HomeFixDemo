@@ -117,7 +117,7 @@ export function stageRules(effect: RoutingEffect | null): AttributeStageRules | 
   } : undefined;
 }
 
-/* a routing's Types and frozen rules for this joint, from Signoff Types By Routing then the exceptions */
+/* a routing's Types and frozen rules for this joint, from Signoff Type to Routing then the exceptions */
 export function attributeTypeSettings(stageId: string, job: Job, stages: WorkflowStage[] = [], fab?: Record<string, string>,
   inputs: Record<string, string> = {}): { typeOptions: StageOption[] | undefined; attributeRules: AttributeStageRules | undefined } {
   const effect = routingEffect(stageId, job, stages, fab);

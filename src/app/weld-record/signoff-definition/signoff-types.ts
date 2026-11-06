@@ -1,5 +1,5 @@
 import { insertedDefinitionId } from '../routing/instance-identity';
-/* Signoff Types By Routing stores available Types and defaults. Every Repair round reads
+/* Signoff Type to Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
 import { TypeException, replacedType, normalizeTypeException } from './type-exceptions';

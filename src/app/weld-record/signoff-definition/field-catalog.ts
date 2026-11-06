@@ -218,7 +218,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
 
   /* ── Signoff section ── (placed in the form by the Layout list on whichever step lists them) */
-  /* the Type droplist; its options and default are on Admin > Signoff Types By Routing */
+  /* the Type droplist; its options and default are on Admin > Signoff Type to Routing */
   { key: 'type', label: 'Type', type: 'select', ownComponent: true },
   /* SAT/UNSAT, placed in the form by the Layout list; UNSAT needs a reject target to be signed */
   { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true },
@@ -248,10 +248,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'verifyMaterial2', label: 'Material Type 2', type: 'checkbox' },
   { key: 'verifyMcl1', label: 'Joining Item MIC', type: 'checkbox' },
   { key: 'verifyMcl2', label: 'Join To Item MIC', type: 'checkbox' },
-  { key: 'verifyNdt', label: 'NDT Requirement', type: 'checkbox' },
-  { key: 'verifyPwht', label: 'PWHT', type: 'checkbox' },
   { key: 'verifyNInd', label: 'Nuclear Indicator', type: 'checkbox' },
-  { key: 'verifyWps', label: 'WPS', type: 'checkbox' },
   { key: 'verifyOrder', label: 'Order', type: 'checkbox' },
   { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
 ];
