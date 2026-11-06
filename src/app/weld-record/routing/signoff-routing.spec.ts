@@ -35,6 +35,12 @@ describe('Inserted routing table decisions', () => {
     const exc = stage(wf, 'excavation-ndt');
     Object.assign(exc, typeChange(job.trade, exc, type));
   }
+  it('Defer Tack names the routings it turns on and off by routing name', () => {
+    const fit = stage(wf, 'fit');
+    const routed = sign('fit', { signoffInputs: { ...fit.signoffInputs, deferTack: 'yes' } });
+    expect(routed.reasons.some(r => r.startsWith('Deferred Tack is now required'))).toBeTrue();
+    expect(routed.reasons.some(r => r.startsWith('Tack is skipped'))).toBeTrue();
+  });
   it('excludes added templates from every new joint', () => {
     expect(wf.stages.some(s => ['repair', 'excavation-ndt', 'engineering-hold'].includes(s.id))).toBeFalse();
   });

@@ -101,14 +101,17 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     routedBack = { label: target.label, fabBefore: r.fabReset ? fabricationSnapshot(wf.fabricationData, job.hull) : undefined };
   };
 
-  /* steps whose Admin > Routing Settings conditions use a signed answer (Defer Tack, Release to welding) turn on or off */
+  /* steps whose Admin > Routing Settings conditions use a signed answer (Defer Tack, Release to welding) turn on or off,
+     named by their routing name (Deferred Tack, not its Display Name Tack) */
   const before = stages;
   stages = applySignedFlags(stages, job, fabricationData);
   if (st.result !== 'unsat') {
     stages.forEach((s, i) => {
       if (s.required === before[i].required) return;
-      const rule = describeConditions(getTemplates()[job.trade]?.find(t => t.id === s.id)?.includeWhen);
-      reasons.push(s.required ? `${s.label} is now required (included when ${rule})` : `${s.label} is skipped (included only when ${rule})`);
+      const template = getTemplates()[job.trade]?.find(t => t.id === s.id);
+      const name = template?.label || s.label;
+      const rule = describeConditions(template?.includeWhen);
+      reasons.push(s.required ? `${name} is now required (included when ${rule})` : `${name} is skipped (included only when ${rule})`);
     });
   }
 
