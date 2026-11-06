@@ -24,6 +24,7 @@ import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, stageConditionFields, ENGINEERING_HOLD_TARGET } from './step-conditions';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
 import { usesReturningInspectionType } from '../signoff-definition/signoff-types';
+import { lastingReasons, signedFlagChanges } from './signed-flag-reasons';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 
@@ -105,15 +106,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
      named by their routing name (Deferred Tack, not its Display Name Tack) */
   const before = stages;
   stages = applySignedFlags(stages, job, fabricationData);
-  if (st.result !== 'unsat') {
-    stages.forEach((s, i) => {
-      if (s.required === before[i].required) return;
-      const template = getTemplates()[job.trade]?.find(t => t.id === s.id);
-      const name = template?.label || s.label;
-      const rule = describeConditions(template?.includeWhen);
-      reasons.push(s.required ? `${name} is now required (included when ${rule})` : `${name} is skipped (included only when ${rule})`);
-    });
-  }
+  const flagChanges = signedFlagChanges(before, stages, job, fabricationData);
 
   /* Table targets share one executor for accepted and rejected signoffs. Counters and
      insertion bookkeeping belong here; the choice of destination belongs to the tables. */
@@ -217,6 +210,8 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
       : matchingThenRule(definition.thenRules, job, stages, signing);
     if (!matched && !(st.result === 'unsat' && st.rejectToStage)) executeTarget('continue');
   }
+
+  reasons.push(...lastingReasons(flagChanges, stages));
 
   /* accepted deviations: the joint waits on Engineering Hold, whatever else this sign-off did */
   if (engineeringHold) {

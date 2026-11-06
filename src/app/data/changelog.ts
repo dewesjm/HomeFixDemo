@@ -14,7 +14,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: ['Admin: Signoff Types By Routing is renamed Signoff Type to Routing.',
       'Records Review: removed the NDT Requirement, PWHT and WPS checks; Signoff Type Forms no longer offers them.',
       'Qualification Check is now only on the NDT forms. Welding, Pre-Fit and Fit-Up Insp no longer show it or check qualifications. Saved Signoff Type Forms go back to the sample forms once to pick this up.',
-      'Routing preview: a routing that Defer Tack or Release to welding turns on or off is named by its routing name, for example Deferred Tack is now required instead of Tack is now required.'],
+      'Routing preview: a routing that Defer Tack or Release to welding turns on or off is named by its routing name, for example Deferred Tack is now required instead of Tack is now required.',
+      'Routing preview: when an attribute code adds or drops a routing, or changes the Types it offers, during a signoff, the Why names the code (for example Root NDT MT/PT is dropped by attribute code GV). These changes are now explained on UNSAT too.'],
   },
   {
     date: '2026-11-04',

@@ -100,6 +100,21 @@ describe('Attribute Code Exceptions', () => {
     expect(types(stage(stages, 'root-ndt-vt5x'))).toEqual(['5x']);
   });
 
+  it('the routing preview names the code that drops a routing or changes its Types', () => {
+    const gv = job('GV', { ndtRoot: 'PT' });
+    const gvStages = setRoutingFrom(buildStages(gv).map(s => s.id === 'root-weld' ? { ...s, inputs: { ...s.inputs, weldProcess: 'gtaw' } } : s), 'root-weld');
+    const dropped = routeSignoff({ ...newWorkflow(gv), stages: gvStages }, gv, 'root-weld').reasons;
+    expect(dropped).toContain('Root NDT MT/PT is dropped by attribute code GV');
+    expect(dropped.some(r => r.startsWith('Root NDT 5X/VT now offers 5X') && r.endsWith('(attribute code GV)'))).toBeTrue();
+
+    const si = job('SI', { rtRoot: '100' });
+    const ashore = getShops().find(s => !s.shipboard)!;
+    const wf = newWorkflow(si);
+    const fit = { ...wf, stages: setRoutingFrom(wf.stages, 'fit'), fabricationData: { location: shopValue(ashore.name) } };
+    const offered = routeSignoff(fit, si, 'fit').reasons;
+    expect(offered.some(r => r.startsWith('Root NDT ') && r.includes(' now offers ') && r.includes('VT') && r.endsWith('(attribute code SI)'))).toBeTrue();
+  });
+
   it('SI offers VT on Root UT/RT once Fit is signed with a shop Fabrication Location', () => {
     const j = job('SI', { rtRoot: '100' });
     const ashore = getShops().find(s => !s.shipboard)!;
