@@ -52,6 +52,8 @@ export interface CatalogField {
   ownComponent?: boolean;
   /* typed with the person search (a name from People) */
   personSearch?: boolean;
+  /* the Type shown in admin when it isn't a plain input (References is 'Special') */
+  typeLabel?: string;
 }
 
 /* A catalog field with the form's rules evaluated for this signoff. Never stored on a routing. */
@@ -61,7 +63,8 @@ export interface FormField extends CatalogField {
 }
 
 /* Admin describes the allowed value as well as the numeric control. */
-export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allowsNc'>): string {
+export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allowsNc' | 'typeLabel'>): string {
+  if (field.typeLabel) return field.typeLabel;
   return field.type === 'number' && field.allowsNc ? 'Number or NC' : FIELD_TYPE_LABELS[field.type];
 }
 
@@ -215,7 +218,7 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Joint page ── */
   /* the joint's References (file names), the width of the form (Correct shows it on every step regardless) */
-  { key: 'references', label: 'References', type: 'checkbox', ownComponent: true },
+  { key: 'references', label: 'References', type: 'checkbox', typeLabel: 'Special', ownComponent: true },
 
   /* ── Signoff section ── (placed in the form by the Layout list on whichever step lists them) */
   /* the Type droplist; its options and default are on Admin > Signoff Type to Routing */
