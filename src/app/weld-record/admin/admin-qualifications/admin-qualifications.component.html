@@ -3,7 +3,7 @@
   <p class="text-sm mb-sm">Set qualification requirements by condition and signoff type, and record the qualifications each user holds.</p>
 
   <app-table-toolbar [table]="table" searchPlaceholder="Search conditions…" (exportCsv)="exportCsv()">
-    <span class="font-semibold">{{ self }} holds {{ selfHeld().length }} quals</span>
+    <span class="font-semibold">DEMO USER holds {{ selfHeld().length }} quals</span>
     <span>· fails {{ failingCount() }} of {{ requirementCount() }} requirements</span>
     <div toolbarEnd class="flex flex-wrap gap-2 min-w-0 max-w-full">
       <button type="button" class="btn btn-sm btn-primary" (click)="addCondition()">

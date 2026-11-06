@@ -41,7 +41,6 @@ export class AdminQualificationsComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private seq = 0;
-  self = SELF;
   allQuals = ALL_QUALS;
   typeChoices = signoffTypeChoices();
   conditions = signal<StoredRow[]>(qualConditions().map((c, i) => ({ uid: `qc-${i}`, c: copy(c), isNew: false })));
