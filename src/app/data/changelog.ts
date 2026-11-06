@@ -13,7 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-11-06',
     changed: ['Admin > Qualifications: new Signoff Type column. A condition applies to All signoff types, or only the ones you add (for example VT, 5X); with only Signoff Types set and no When clauses it applies to every joint of those types. Type is no longer picked in the When; saved "Type is ..." conditions move into the new column.',
       'Admin > Qualifications: the toolbar reads DEMO USER holds ... quals instead of SELF holds ... quals.',
-      'Admin > Signoff Type Forms: References is listed as a Special field instead of a Checkbox.',
+      'Admin > Signoff Type Forms: References, Signoff History, Affected Item and its two MIC verified rows are listed as Special fields instead of Checkbox.',
       'Admin: Signoff Types By Routing is renamed Signoff Type to Routing.',
       'Records Review: removed the NDT Requirement, PWHT and WPS checks; Signoff Type Forms no longer offers them.',
       'Qualification Check is now only on the NDT forms. Welding, Pre-Fit and Fit-Up Insp no longer show it or check qualifications. Saved Signoff Type Forms go back to the sample forms once to pick this up.',

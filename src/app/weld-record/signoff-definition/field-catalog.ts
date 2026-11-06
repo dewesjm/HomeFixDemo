@@ -52,7 +52,7 @@ export interface CatalogField {
   ownComponent?: boolean;
   /* typed with the person search (a name from People) */
   personSearch?: boolean;
-  /* the Type shown in admin when it isn't a plain input (References is 'Special') */
+  /* the Type shown in admin when it isn't a plain input (References, Signoff History, Affected Item: 'Special') */
   typeLabel?: string;
 }
 
@@ -194,11 +194,11 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── Weld Build-Up ── */
   /* the joint members the build-up affects (affected-item.component); at least one must be picked on
      any step that lists it */
-  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', ownComponent: true },
+  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', typeLabel: 'Special', ownComponent: true },
   /* drawn under Affected Item, beside its joint member while that one is picked */
-  { key: 'affectedMicVerified1', label: 'Affected Item: Joining Item MIC verified', type: 'checkbox', ownComponent: true,
+  { key: 'affectedMicVerified1', label: 'Affected Item: Joining Item MIC verified', type: 'checkbox', typeLabel: 'Special', ownComponent: true,
     defaultRequired: true, defaultShowIf: ifPart1Traceability },
-  { key: 'affectedMicVerified2', label: 'Affected Item: Join To Item MIC verified', type: 'checkbox', ownComponent: true,
+  { key: 'affectedMicVerified2', label: 'Affected Item: Join To Item MIC verified', type: 'checkbox', typeLabel: 'Special', ownComponent: true,
     defaultRequired: true, defaultShowIf: ifPart2Traceability },
 
   /* ── Repair ── */
@@ -240,7 +240,7 @@ export const FIELD_CATALOG: CatalogField[] = [
 
   /* ── Records Review ── (verify-grid rows; none required by default) */
   /* the joint's History table, so the reviewer can check the signoffs alongside the record */
-  { key: 'signoffHistory', label: 'Signoff History', type: 'checkbox', ownComponent: true },
+  { key: 'signoffHistory', label: 'Signoff History', type: 'checkbox', typeLabel: 'Special', ownComponent: true },
   { key: 'verifyDrawing', label: 'Drawing', type: 'checkbox' },
   { key: 'verifyJoint', label: 'Joint Reference', type: 'checkbox' },
   { key: 'verifyJointDesign', label: 'Joint Design', type: 'checkbox' },
