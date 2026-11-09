@@ -6,7 +6,7 @@
   <p class="text-sm mb-2">Exceptions change the Signoff Type offered on a routing when the listed conditions match. Each routing checks its exceptions from top to bottom and uses the first match; if none match, the original Type remains.</p>
   <div class="overflow-x-auto">
     <table class="table table-sm">
-      <thead><tr><th>Order</th><th>Routing</th><th>Original Type</th><th>Conditions</th><th>Use Type</th><th></th></tr></thead>
+      <thead><tr><th>Order</th><th>Routing</th><th>Type source</th><th>Original Type</th><th>Conditions</th><th>Use Type</th><th></th></tr></thead>
       <tbody>
         @for (row of rows; track row.id) {
           <tr (dragover)="dragOver($event, row)" (drop)="drop($event, row)" (dragend)="dragId = null" [class.opacity-50]="dragId === row.id">
@@ -18,11 +18,12 @@
             </div></td>
             @if (editing === row.id) {
               <td><select class="select select-sm select-bordered" aria-label="Exception routing" [(ngModel)]="row.routing"><option value="" disabled>Select a routing</option>@for (r of routings; track r.id) { <option [value]="r.id">{{ r.label }}</option> }</select></td>
+              <td>{{ typeSourceLabel(row.routing) }}</td>
               <td><select class="select select-sm select-bordered" aria-label="Original Type" [(ngModel)]="row.rule.from">@for (t of types; track t.value) { <option [value]="t.value">{{ t.label }}</option> }</select></td>
               <td><app-type-enable-conditions heading="Conditions" emptyText="Always matches" [rules]="row.rule.when ?? []" [listId]="'exception-' + row.id" (changed)="row.rule.when = $event" /></td>
               <td><select class="select select-sm select-bordered" aria-label="Replacement Type" [(ngModel)]="row.rule.to">@for (t of types; track t.value) { <option [value]="t.value">{{ t.label }}</option> }</select></td>
             } @else {
-              <td>{{ label(row.routing) }}</td><td>{{ typeLabel(row.rule.from) }}</td><td>{{ condition(row.rule) }}</td><td>{{ typeLabel(row.rule.to) }}</td>
+              <td>{{ label(row.routing) }}</td><td>{{ typeSourceLabel(row.routing) }}</td><td>{{ typeLabel(row.rule.from) }}</td><td>{{ condition(row.rule) }}</td><td>{{ typeLabel(row.rule.to) }}</td>
             }
             <td><div class="row-tight">
               @if (editing === row.id) {
@@ -34,7 +35,7 @@
               }
             </div></td>
           </tr>
-        } @empty { <tr><td colspan="6" class="empty">No Type exceptions.</td></tr> }
+        } @empty { <tr><td colspan="7" class="empty">No Type exceptions.</td></tr> }
       </tbody>
     </table>
   </div>

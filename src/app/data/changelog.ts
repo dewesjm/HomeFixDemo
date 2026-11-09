@@ -10,6 +10,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-09',
+    changed: ['Admin > Signoff Type to Routing: the Type Exceptions grid has a read-only Type source column showing where each routing gets its Original Type (Rejecting inspection or Options on the routing row).'],
+  },
+  {
     date: '2026-11-06',
     changed: ['Admin > Qualifications: new Signoff Type column. A condition applies to All signoff types, or only the ones you add (for example VT, 5X); with only Signoff Types set and no When clauses it applies to every joint of those types. Type is no longer picked in the When; saved "Type is ..." conditions move into the new column.',
       'Admin > Qualifications: the toolbar reads DEMO USER holds ... quals instead of SELF holds ... quals.',

@@ -27,6 +27,12 @@ export class TypeExceptionsComponent {
   condition = typeExceptionCondition;
   label(id: string) { return this.routings.find(r => r.id === id)?.label ?? id; }
   typeLabel(id: string) { return this.types.find(t => t.value === id)?.label ?? id; }
+  /* read-only here: Type source is one setting per routing, edited on the routing's own row */
+  typeSourceLabel(routing: string) {
+    const row = getSignoffTypeRows().find(r => r.stepId === routing);
+    if (!row) return '';
+    return row.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Options on the routing row';
+  }
   private load(): ExceptionRow[] {
     return getSignoffTypeRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
   }

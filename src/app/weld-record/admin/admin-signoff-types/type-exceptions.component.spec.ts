@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { TypeExceptionsComponent } from './type-exceptions.component';
-import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 
 describe('Type exceptions grid', () => {
   beforeEach(() => localStorage.clear());
@@ -13,6 +13,18 @@ describe('Type exceptions grid', () => {
     expect(host.textContent).toContain('Excavation NDT');
     expect(host.querySelector('tr[draggable]')).toBeNull();
     expect(host.querySelectorAll('button[draggable="true"]').length).toBe(2);
+  });
+  it('shows each routing\'s Type source read-only and follows a change saved on the routing row', async () => {
+    const f = create(); const host: HTMLElement = f.nativeElement;
+    const sources = () => Array.from(host.querySelectorAll('tbody tr')).map(tr => tr.querySelectorAll('td')[2].textContent!.trim());
+    expect(Array.from(host.querySelectorAll('th')).map(th => th.textContent)).toContain('Type source');
+    expect(sources()).toEqual(['Rejecting inspection', 'Rejecting inspection']);
+    const routing = f.componentInstance.rows[0].routing;
+    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === routing ? { ...r, typeSource: undefined } : r));
+    f.detectChanges();
+    expect(sources()).toEqual(['Options on the routing row', 'Rejecting inspection']);
+    f.componentInstance.edit(f.componentInstance.rows[0]); f.detectChanges(); await f.whenStable();
+    expect(host.querySelector('[aria-label="Type source"]')).toBeNull();
   });
   it('edits separate material conditions as explicit OR groups and reloads them', async () => {
     const f = create(); const c = f.componentInstance;
