@@ -1,4 +1,4 @@
-import { insertionRelativeTargets } from '../../routing/insertion-target-options';
+import { isExcavationNdtStageId } from '../../routing/step-ids';
 import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
@@ -24,6 +24,7 @@ import {
   EXCAVATION_TYPE_ROW,
   getSignoffTypeRows,
   setSignoffTypeRows,
+  typeSourceLabel,
 } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes, typeLabel } from '../../signoff-definition/routing-signoff-types';
 import { getTemplates } from '../../routing/stage-templates';
@@ -52,6 +53,7 @@ export class AdminSignoffTypesComponent {
   private seq = 0;
 
   readonly excavationNote = EXCAVATION_NOTE;
+  readonly typeSourceLabel = typeSourceLabel;
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
@@ -83,13 +85,6 @@ export class AdminSignoffTypesComponent {
     return this.steps.filter(s => !used.has(s.id));
   }
 
-  canInherit(row: TypeRow): boolean {
-    const templates = getTemplates()['Welding'] ?? [];
-    const routing = templates.find(t => t.id === row.stepId);
-    return routing?.lifecycle === 'excavation' || (routing?.classification === 'added' && routing.lifecycle === 'ordinary' &&
-      insertionRelativeTargets(row.stepId, templates).some(t => t.id === 'rejecting-ndt'));
-  }
-
   hasDefault(row: TypeRow): boolean {
     return row.types.some(t => t.default);
   }
@@ -108,7 +103,7 @@ export class AdminSignoffTypesComponent {
   exportCsv() {
     downloadCsv('signoff-type-availability', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
-      { header: 'Type source', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection' },
+      { header: 'Type source', value: (r: TypeRow) => typeSourceLabel(r.typeSource) },
       { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${typeExceptionCondition(e)})`).join('; ') },
       { header: 'Options', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },
@@ -122,9 +117,11 @@ export class AdminSignoffTypesComponent {
     this.editingUid.set(row.uid);
   }
 
+  /* Type source is read-only, so a re-added Excavation row has to start on its fixed source */
   setStep(row: TypeRow, stepId: string) {
     this.rows.update(r => r.map(x => x.uid === row.uid
-      ? { ...x, stepId, stepLabel: this.stepLabel(stepId), types: stepId === EXCAVATION_TYPE_ROW ? [] : x.types }
+      ? { ...x, stepId, stepLabel: this.stepLabel(stepId), types: stepId === EXCAVATION_TYPE_ROW ? [] : x.types,
+          typeSource: isExcavationNdtStageId(stepId) ? 'rejecting-inspection' as const : undefined }
       : x));
   }
 

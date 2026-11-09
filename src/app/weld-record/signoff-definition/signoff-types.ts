@@ -24,6 +24,9 @@ export interface SignoffTypeRow {
   typeExceptions?: TypeException[];
 }
 
+export const typeSourceLabel = (source: SignoffTypeRow['typeSource']) =>
+  source === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection';
+
 export const REPAIR_TYPE_ROW = 'repair';
 export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
 export const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';

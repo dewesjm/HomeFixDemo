@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { AdminSignoffTypesComponent } from './admin-signoff-types.component';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 
@@ -20,6 +21,20 @@ describe('Signoff Type to Routing admin', () => {
   });
   beforeEach(() => localStorage.clear());
   afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
+  it('shows Type source read-only while editing and re-adds Excavation on the rejecting inspection', async () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const f = TestBed.createComponent(AdminSignoffTypesComponent); f.detectChanges(); await f.whenStable();
+    const c = f.componentInstance; const host: HTMLElement = f.nativeElement;
+    const row = c.rows().find(r => r.stepId === 'excavation-ndt')!;
+    c.startEdit(row); f.detectChanges(); await f.whenStable();
+    expect(host.querySelector('select[aria-label="Type source"]')).toBeNull();
+    expect(host.textContent).toContain('Type source: Rejecting inspection');
+    c.cancelEdit(row);
+    c.addRow(); c.setStep(c.rows()[0], 'nqc-excavation-ndt');
+    expect(c.rows()[0].typeSource).toBe('rejecting-inspection');
+    c.setStep(c.rows()[0], 'tack');
+    expect(c.rows()[0].typeSource).toBeUndefined();
+  });
   it('cancels nested condition edits and saves changed enable rules', () => {
     const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
     const row = component.rows().find(r => r.stepId === 'final-ndt-vt5x')!;

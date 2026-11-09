@@ -1,7 +1,7 @@
 import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRows, setSignoffTypeRows, typeSourceLabel } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { getTemplates } from '../../routing/stage-templates';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
@@ -27,11 +27,9 @@ export class TypeExceptionsComponent {
   condition = typeExceptionCondition;
   label(id: string) { return this.routings.find(r => r.id === id)?.label ?? id; }
   typeLabel(id: string) { return this.types.find(t => t.value === id)?.label ?? id; }
-  /* read-only here: Type source is one setting per routing, edited on the routing's own row */
-  typeSourceLabel(routing: string) {
+  routingSource(routing: string) {
     const row = getSignoffTypeRows().find(r => r.stepId === routing);
-    if (!row) return '';
-    return row.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection';
+    return row ? typeSourceLabel(row.typeSource) : '';
   }
   private load(): ExceptionRow[] {
     return getSignoffTypeRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));

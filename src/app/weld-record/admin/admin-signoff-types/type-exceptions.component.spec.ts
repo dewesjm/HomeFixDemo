@@ -14,7 +14,7 @@ describe('Type exceptions grid', () => {
     expect(host.querySelector('tr[draggable]')).toBeNull();
     expect(host.querySelectorAll('button[draggable="true"]').length).toBe(2);
   });
-  it('shows each routing\'s Type source read-only and follows a change saved on the routing row', async () => {
+  it('shows each routing\'s Type source read-only and follows the saved setting', async () => {
     const f = create(); const host: HTMLElement = f.nativeElement;
     const sources = () => Array.from(host.querySelectorAll('tbody tr')).map(tr => tr.querySelectorAll('td')[2].textContent!.trim());
     expect(Array.from(host.querySelectorAll('th')).map(th => th.textContent)).toContain('Type source');
