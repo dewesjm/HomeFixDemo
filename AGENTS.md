@@ -6,7 +6,7 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. One field catalog: [FIELD-CATALOG-PLAN.md](FIELD-CATALOG-PLAN.md). Planned, not built. Ask its open question first.
+1. One field catalog: [FIELD-CATALOG-PLAN.md](FIELD-CATALOG-PLAN.md). Planned, not built.
 
 Completed plans are references, not instructions to start another feature.
 

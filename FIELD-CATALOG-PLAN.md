@@ -1,6 +1,6 @@
 # One field catalog plan
 
-**Status: PLANNED, NOT BUILT. Agreed in discussion 2026-11-09.** Build it in a fresh session. Answer the open question below with the user before building the affected step.
+**Status: PLANNED, NOT BUILT. Agreed in discussion 2026-11-09.** Build it in a fresh session.
 
 Starting point: commits `7f25026` and `5fb296f`, which put `form-field-catalog.ts` and `condition-catalog.ts` side by side in `src/app/weld-record/catalogs/` and folded `joint-facts.ts` into the condition catalog. Baseline is 599 passing tests.
 
@@ -16,6 +16,7 @@ To the user, this is one list of things available for configuration. Today it is
 4. **Fabrication fields are available as options in the list, but the Fabrication form does not build its fields from the list.** See "Fabrication" below for how this is applied.
 5. **Special cases are defined in the catalog**, as settings on their rows.
 6. **Labels:** the Joint Details field stays `Drawing Rev`. The Fabrication field becomes `Drawing Rev Execution` (today `Drawing Rev (Execution)`).
+7. **Droplists are grouped logically by Source and state the Source.** Today's mixed order does not need to be kept.
 
 ## Target layout
 
@@ -78,7 +79,7 @@ Only generated entries are not written as rows: per-routing `step.<stageId>.<key
 
 ## What each screen must keep offering
 
-Screens stay as they are. This is a reorganization, not a change to what admins can pick.
+Admins can pick the same fields as today. Only the droplist grouping and the Source shown change (see "Droplist grouping").
 
 | Screen | Offers today | New filter |
 |---|---|---|
@@ -91,7 +92,14 @@ Screens stay as they are. This is a reorganization, not a change to what admins 
 
 Note that a plain "Source is Joint Details" filter is wrong for the first row: it must also include joint-only Calculated rows, and must exclude the Fabrication-dependent ones.
 
-Keep each screen's existing group headings. Calculated rows show under Joint Details or Fabrication today.
+## Droplist grouping
+
+Calculated rows show under Joint Details or Fabrication today. They move to their own Calculated group.
+
+- **Droplists with headings** (Routing Settings via `admin-routing/condition-editing.ts`, Qualifications): the Source is the heading. Order: This routing, Joint Details, Calculated, Fabrication, Earlier routings. Choices that aren't catalog rows keep their current names.
+- **Flat searchable lists** (Signoff Type Forms clauses via `condition-choices.ts`): the Source starts each name, as in `Calculated: Controlled Material`. Fabrication rows already start with the word, so don't double it. Same order, with `This form` first and the non-field clauses (Routing ID matches and so on) last, as today.
+- Fields inside a group keep their order from the list.
+- `Signoff Form` as a heading applies only where those rows are offered directly. Per-routing answers keep the `Earlier routings` and `This routing` names, because those say which routing's answer is meant.
 
 ## Traps
 
@@ -112,16 +120,12 @@ Keep each screen's existing group headings. Calculated rows show under Joint Det
 2. Before merging, record each screen's list (keys, labels, order, group) so it can be compared afterward.
 3. Move the two constants out of `condition-context.ts`.
 4. Create `field-catalog.ts` and `field-choices.ts`, moving entries across, and update imports. `FormField` is imported by 20 files; keep the type name. Delete both old catalog files. Merge `condition-catalog.spec.ts` into a new spec.
-5. Add tests: keys are unique across the list; each Source's rows have what that Source needs; each screen's list matches the recording from step 2, apart from the open question below.
+5. Add tests: keys are unique across the list; each Source's rows have what that Source needs; each screen offers the same keys as the recording from step 2, with the order and names following "Droplist grouping".
 6. Update docs (below), commit, and stop for review.
 
 ## Open question for the user
 
-**Droplist order.** Today's Joint Details list mixes Calculated and plain rows, with the built-in rules' fields first. Sections by Source would change the order slightly on Signoff Type to Routing, Routing Settings and other screens. Should the screens keep today's exact order, which needs an explicit ordering, or follow the sections? No default has been chosen.
-
-## Noted, not decided
-
-The missing-Fabrication message uses the short name `Drawing Rev` (`fabrication/fabrication-form.ts:73`). It was left out of the label decision, so leave it unless the user says otherwise.
+**Fit signing error wording.** Signing Fit with required Fabrication values blank is blocked with an error such as `Fabrication: Location, Drawing Rev, Actual Thickness`. That text uses its own short name for the field (`FIT_REQUIRED_FABRICATION`, `fabrication/fabrication-form.ts:73`; built in `joint-page/rules/sign-validation.ts:75`). Should it say `Drawing Rev Execution`? Leave it as it is unless the user says to change it.
 
 ## Verify
 
@@ -136,5 +140,5 @@ The missing-Fabrication message uses the short name `Drawing Rev` (`fabrication/
 - `ARCHITECTURE.md`: the `catalogs/` entry in the folder tree, and the catalog references near "Configurable field system", the field-type note and the Fit/Pre-Fit signoff note
 - `TEST-COVERAGE-PLAN.md`, `ADMIN-CONFIGURATION-IDEAS.md`, `FIELD-DEFINITIONS-PLAN.md`: path mentions
 - Comments that name either old catalog file
-- `data/changelog.ts`: the label change only, because the merge has no user-facing effect
+- `data/changelog.ts`: the label change and the droplist grouping; the merge itself has no other user-facing effect
 - `AGENTS.md`: remove the queue item. `Tasks.md`: tick it off. Mark this plan BUILT.
