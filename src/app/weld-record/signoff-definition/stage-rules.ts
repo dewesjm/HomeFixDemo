@@ -43,9 +43,6 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'typeOptions'>)
   return stage.typeOptions?.find(o => o.default)?.value ?? stage.typeOptions?.[0]?.value ?? '';
 }
 
-/* which steps show References in their form: those whose Signoff Type Form lists References
-   (by default RT, UT and Repair); Correct shows it on every step */
-export const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 
 /* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
@@ -86,8 +83,7 @@ const AFFECTED_ITEM_PART_NOTES: Record<string, string> = {
 /* what the signoff section's fields and the joint's References show, and Inspection Results' routing */
 const OWN_SPOT_NOTES: Record<string, string> = {
   type: "Shown when Admin > Signoff Type to Routing gives the routing options. No default there means it must be picked; picking another Type clears the form and loads that Type's definition.",
-  decision: 'UNSAT can be signed only on a routing with a Reject routes to target (Admin > Routing Settings).',
-  comments: 'Shown while the routing needs a signoff.',
+  decision: 'UNSAT can be signed only on a routing with a Reject routes to target (Admin > Routing Settings). While hidden, the signoff is accepted with no result.',
   references: "The joint's References (attached file names), drawn the width of the form.",
   signoffHistory: "The joint's History table, where the Layout list places it.",
 };

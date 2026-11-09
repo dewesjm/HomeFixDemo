@@ -8,12 +8,12 @@ import { WorkflowStage } from '../../model/workflow-types';
 import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-step-rules';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
-import { hasDecision, unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
+import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
-import { definitionHas, verifyAgainst } from '../../signoff-definition/step-field-config';
+import { DECISION_KEY, verifyAgainst } from '../../signoff-definition/step-field-config';
 import { isVerifyRow } from '../../signoff-definition/field-catalog';
 import { standardRequiredMessage } from '../../signoff-definition/field-rules';
-import { affectedMicRule } from '../../signoff-definition/shown-fields';
+import { DrawnFieldRule, drawnFieldRule } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { missingFitFabrication } from '../../fabrication/fabrication-form';
 import { requiredSignoffFields } from './fit-signoff';
@@ -26,7 +26,13 @@ export interface SignContext {
   visibleFields: FormField[];
   /* the joint's steps, for conditions that read another step */
   stages?: WorkflowStage[];
+  /* how many References the joint has */
+  referenceCount?: number;
 }
+
+/* a field drawn by its own component, as its form's rules have it right now */
+const drawnRule = (stage: WorkflowStage, ctx: SignContext, key: string): DrawnFieldRule =>
+  drawnFieldRule(stage, buildConditionContext(stage, ctx.job, ctx.stages ?? [], ctx.fab), key);
 
 const UNSAT_NO_TARGET = 'UNSAT needs a Reject routes to target in Admin > Routing Settings';
 
@@ -60,8 +66,9 @@ export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
   const reasons: string[] = [];
   const accessError = attributeAccessError(stage);
   if (accessError) reasons.push(accessError);
-  if (hasDecision(stage) && !stage.result) reasons.push('Choose SAT or UNSAT');
-  if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
+  const decision = drawnRule(stage, ctx, DECISION_KEY);
+  if (decision.required && !stage.result) reasons.push(decision.requiredMessage || 'Choose SAT or UNSAT');
+  if (decision.shown && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
   if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
   /* Fit needs the required Fabrication values; Fit-Up Insp needs Fabrication free of errors (below) */
   if (needsFabricationComplete(stage.id)) {
@@ -100,25 +107,29 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
   }
   /* each unchecked required verify-grid row gets its own error (the blockers give one summary reason) */
   for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = requiredError(f);
-  /* Weld Build-Up's Affected Item, while its definition lists it: at least one, and each picked
-     member's MIC verified row checked while its rule makes it required (affectedMicRule) */
-  if (definitionHas(stage, 'affectedItem')) {
+  /* Weld Build-Up's Affected Item, while it's shown: at least one while required, and each picked
+     member's MIC verified row checked while its rule makes it required */
+  const affected = drawnRule(stage, ctx, 'affectedItem');
+  if (affected.shown) {
     const raw = stage.inputs?.['affectedItems'] ?? '';
     const items = raw ? raw.split(',') : [];
     const job = ctx.job;
     const condCtx = buildConditionContext(stage, job, ctx.stages ?? [], ctx.fab);
-    if (!items.length) errors[key('affectedItem')] = 'Select at least one Affected Item';
-    const mic1 = affectedMicRule(stage, condCtx, 'affectedMicVerified1');
+    if (affected.required && !items.length) errors[key('affectedItem')] = affected.requiredMessage || 'Select at least one Affected Item';
+    const mic1 = drawnFieldRule(stage, condCtx, 'affectedMicVerified1');
     if (items.includes('joiningItem') && mic1.required && stage.inputs?.['micVerified1'] !== 'yes') {
       errors[key('affectedItem')] = mic1.requiredMessage || 'Please verify MIC for ' + (job?.joiningItem || 'item');
     }
-    const mic2 = affectedMicRule(stage, condCtx, 'affectedMicVerified2');
+    const mic2 = drawnFieldRule(stage, condCtx, 'affectedMicVerified2');
     if (items.includes('joinToItem') && mic2.required && stage.inputs?.['micVerified2'] !== 'yes') {
       errors[key('affectedItem')] = mic2.requiredMessage || 'Please verify MIC for ' + (job?.joinToItem || 'item');
     }
   }
-  if (hasDecision(stage) && !stage.result) errors[key('__decision')] = 'Choose SAT or UNSAT';
-  if (hasDecision(stage) && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
+  const decision = drawnRule(stage, ctx, DECISION_KEY);
+  if (decision.required && !stage.result) errors[key('__decision')] = decision.requiredMessage || 'Choose SAT or UNSAT';
+  if (decision.shown && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
+  const references = drawnRule(stage, ctx, 'references');
+  if (references.required && !ctx.referenceCount) errors[key('references')] = references.requiredMessage || standardRequiredMessage('references', 'References');
   if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
   /* the fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
   if (needsFabricationComplete(stage.id) && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';

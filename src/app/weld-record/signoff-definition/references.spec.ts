@@ -1,4 +1,6 @@
-import { showsReferences } from './stage-rules';
+import { StepRef, definitionHas } from './step-field-config';
+
+const showsReferences = (step: StepRef) => definitionHas(step, 'references');
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';
 
 describe('showsReferences', () => {

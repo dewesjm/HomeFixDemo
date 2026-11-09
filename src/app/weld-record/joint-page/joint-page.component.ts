@@ -39,8 +39,8 @@ import {
 import { routingBarSteps } from '../routing/routing-bar';
 import { FabricationField } from '../fabrication/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
-import { visibleSignoffFields } from '../signoff-definition/shown-fields';
-import { definitionHas } from '../signoff-definition/step-field-config';
+import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
+import { buildConditionContext } from '../signoff-definition/condition-context';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
@@ -292,13 +292,13 @@ export class JointPageComponent implements OnDestroy {
     const job = this.job;
     const hold = () => this.overrides.stageDeviations(stage).length > 0;
     return routePreviewLabel(job, wf.stages, stage, this.activeStage(),
-      result => this.signoffService.previewSignoff(wf, job, stage.id, result, hold()));
+      result => this.signoffService.previewSignoff(wf, job, stage.id, result, hold()), wf.fabricationData);
   }
 
   /* ── Validation ── */
 
   private signCtx(stage: WorkflowStage): SignContext {
-    return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage), stages: this.wf?.().stages };
+    return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage), stages: this.wf?.().stages, referenceCount: this.wf?.().references?.length ?? 0 };
   }
 
   /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
@@ -317,9 +317,11 @@ export class JointPageComponent implements OnDestroy {
   /* What History records for a sign-off: every editable field the user was shown, with its value right now
      (blanks included). Read from the live workflow, since the stage object a click handler holds can be stale. */
   private signoffSnapshot(stage: WorkflowStage): SignoffInput[] {
-    const st = this.wf?.().stages.find(s => s.id === stage.id) ?? stage;
-    const out = snapshotInputs(st, this.visibleFields(st), this.visibleSignoffFields(st));
-    if (definitionHas(st, 'affectedItem') && this.job) {
+    const stages = this.wf?.().stages ?? [];
+    const live = stages.find(s => s.id === stage.id) ?? stage;
+    const st = withoutHiddenAnswers(live, this.job, stages, this.fab());
+    const out = snapshotInputs(st, this.visibleFields(live), this.visibleSignoffFields(live));
+    if (this.job && drawnFieldRule(live, buildConditionContext(live, this.job, stages, this.fab()), 'affectedItem').shown) {
       const names = (st.inputs['affectedItems'] ?? '').split(',').filter(Boolean).map(k => this.job![k as 'joiningItem' | 'joinToItem']);
       out.push({ label: 'Affected Item', value: names.join(', ') });
     }

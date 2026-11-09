@@ -1,8 +1,8 @@
 /* Weld Build-Up's Affected Item: the joint members the build-up affects, each with its MIC verified
-   row as the step's definition sets it (affectedMicRule); at least one must be picked */
+   row as the step's definition sets it (drawnFieldRule); at least one must be picked while it's required */
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
-import { affectedMicRule } from '../signoff-definition/shown-fields';
+import { drawnFieldRule } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { SignoffContext } from './signoff-context';
 
@@ -13,7 +13,7 @@ import { SignoffContext } from './signoff-context';
   template: `
     @let st = stage();
     <div class="flex flex-col gap-1 mb-sm">
-      <span class="stage-field-label">Affected Item<span class="text-error">*</span></span>
+      <span class="stage-field-label">Affected Item@if (rule('affectedItem').required) {<span class="text-error">*</span>}</span>
       @for (it of affectedItemSlots; track it.key) {
         @if (ctx().job[it.key]) {
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -60,9 +60,13 @@ export class AffectedItemComponent {
     return (this.stage().inputs['affectedItems'] as string | undefined)?.includes(key) ?? false;
   }
 
-  micRule(key: 'affectedMicVerified1' | 'affectedMicVerified2') {
+  rule(key: string) {
     const wf = this.ctx().wf();
-    return affectedMicRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), key);
+    return drawnFieldRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), key);
+  }
+
+  micRule(key: 'affectedMicVerified1' | 'affectedMicVerified2') {
+    return this.rule(key);
   }
 
   micValue(mic: string): string {
@@ -70,6 +74,6 @@ export class AffectedItemComponent {
   }
 
   fieldsEditable(): boolean {
-    return this.ctx().inputsEditable(this.stage(), this.ctx().selectedRouting());
+    return this.ctx().inputsEditable(this.stage(), this.ctx().selectedRouting()) && !this.rule('affectedItem').disabled;
   }
 }

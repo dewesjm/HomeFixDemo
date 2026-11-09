@@ -7,21 +7,45 @@ import { WorkflowStage } from '../model/workflow-types';
 import { lookupCatalogField } from './field-catalog';
 import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
-import { getActivationForStep } from './step-field-config';
+import { getActivationForStep, DECISION_KEY } from './step-field-config';
+import { DEFINITION_REMOVAL_NOTES } from './stage-rules';
 import { effectiveDisabledIf, effectiveShowIf, isRequiredNow, requiredMessageProp } from './field-rules';
 import { drawnByOwnForm } from './signoff-parts';
 
 type Fab = Record<string, string>;
 
-/* one of Affected Item's MIC verified rows (affected-item component, sign-validation): shown when the
-   step's definition lists it and its Show when holds (its joint member must also be picked), and
-   whether it must be checked */
-export function affectedMicRule(stage: WorkflowStage, condCtx: ConditionContext, key: 'affectedMicVerified1' | 'affectedMicVerified2'): { shown: boolean; required: boolean; requiredMessage?: string } {
+export interface DrawnFieldRule {
+  shown: boolean;
+  disabled: boolean;
+  required: boolean;
+  requiredMessage?: string;
+}
+
+/* A field drawn by its own component (Inspection Results, Affected Item and its MIC rows, References,
+   Signoff History): the same Show when, Disabled when and Required rules as any other field. Not on
+   the form = not shown. */
+export function drawnFieldRule(stage: WorkflowStage, condCtx: ConditionContext, key: string): DrawnFieldRule {
   const act = getActivationForStep(stage).fields.find(a => a.key === key);
-  if (!act) return { shown: false, required: false };
+  if (!act) return { shown: false, disabled: false, required: false };
   const show = effectiveShowIf(act);
   const shown = !show || evaluateCondition(show, condCtx);
-  return { shown, required: shown && isRequiredNow(act, condCtx), ...requiredMessageProp(act) };
+  const disabled = effectiveDisabledIf(act);
+  return { shown, disabled: !!disabled && evaluateCondition(disabled, condCtx), required: shown && isRequiredNow(act, condCtx), ...requiredMessageProp(act) };
+}
+
+/* The stage as signing reads it: a hidden Inspection Results, or a hidden checkbox routing reads,
+   counts as never answered, like a form that doesn't list it. */
+export function withoutHiddenAnswers(stage: WorkflowStage, job: Job | undefined, stages: WorkflowStage[], fab: Fab): WorkflowStage {
+  const acts = getActivationForStep(stage).fields;
+  const ctx = buildConditionContext(stage, job, stages, fab);
+  const hidden = (key: string) => acts.some(a => a.key === key) && !drawnFieldRule(stage, ctx, key).shown;
+  const drop = (values: Record<string, string>, keys: string[]) => Object.fromEntries(Object.entries(values).filter(([k]) => !keys.includes(k)));
+  const keys = Object.keys(DEFINITION_REMOVAL_NOTES).filter(hidden);
+  return {
+    ...stage,
+    ...(hidden(DECISION_KEY) ? { result: null } : {}),
+    ...(keys.length ? { inputs: drop(stage.inputs, keys), signoffInputs: drop(stage.signoffInputs, keys) } : {}),
+  };
 }
 
 /* The definition's fields whose Show when holds, each required and disabled as its rules say right now */

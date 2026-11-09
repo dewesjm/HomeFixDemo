@@ -15,7 +15,6 @@ import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/st
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { isOwnType } from '../signoff-definition/signoff-types';
-import { withComments } from '../signoff-definition/signoff-parts';
 import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
 import { WorkflowStore } from './workflow-store.service';
 import { additionalSignoffs } from '../routing/additional-signoffs';
@@ -164,7 +163,7 @@ export class SignoffService {
       const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated, job, stages, wf.fabricationData).filter(f => isUserEditable(updated, f)), visibleSignoffFields(updated, job, wf.fabricationData));
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
          convention -- Work History reads this to show exactly what changed, not just the reason */
-      const fieldDefFor = (key: string) => formInputFields(updated).find(f => f.key === key) ?? withComments(updated, formSignoffFields(updated)).find(f => f.key === key);
+      const fieldDefFor = (key: string) => formInputFields(updated).find(f => f.key === key) ?? formSignoffFields(updated).find(f => f.key === key);
       const historyChanges = changes.map(c => {
         const fd = fieldDefFor(c.key);
         return fd ? { ...c, from: displayValue(fd, c.from), to: displayValue(fd, c.to) } : c;

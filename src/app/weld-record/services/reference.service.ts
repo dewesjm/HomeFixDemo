@@ -1,4 +1,4 @@
-/* a job's References (file names on its workflow), see showsReferences() (the step's definition) */
+/* a job's References (file names on its workflow), shown on a step whose definition lists References */
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';

@@ -3,7 +3,6 @@ import { FormField } from './field-catalog';
 import { SignoffInput, WorkflowStage } from '../model/workflow-types';
 import { isUserEditable } from './field-locks';
 import { hasDecision, showsType } from './stage-rules';
-import { withComments } from './signoff-parts';
 import { lookupCatalogField } from './field-catalog';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
@@ -34,7 +33,7 @@ export function snapshotInputs(stage: WorkflowStage, fields: FormField[], signof
   for (const f of fields) {
     if (isUserEditable(stage, f)) out.push({ label: f.label, value: displayValue(f, stage.inputs[f.key]) });
   }
-  for (const f of withComments(stage, signoffFields)) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
+  for (const f of signoffFields) out.push({ label: f.label, value: displayValue(f, stage.signoffInputs[f.key]) });
   if (stage.result && hasDecision(stage)) out.push({ label: stage.decisionLabel || 'Decision', value: stage.result.toUpperCase() });
   return out;
 }

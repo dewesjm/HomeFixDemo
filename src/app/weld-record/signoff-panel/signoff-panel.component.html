@@ -64,7 +64,7 @@
             </button>
           }
         } @else {
-          @if (hasDecision(st)) {
+          @if (hasDecision(st) && st.result) {
             <span class="badge" [class.badge-error]="st.result === 'unsat'" [class.badge-success]="st.result === 'sat'">
               {{ (st.result || '') | uppercase }}
             </span>

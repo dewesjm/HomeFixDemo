@@ -13,7 +13,7 @@ export function formFields(step: StepRef): FormField[] {
 }
 function ownValue(step: StepRef, field: FormField): boolean {
   const id = typeof step === 'string' ? (step === WELD_BUILDUP_TYPE ? 'fit' : step) : step.id;
-  return !!field.ownFormSteps?.includes(baseStepId(id));
+  return !!field.signoffValue || !!field.ownFormSteps?.includes(baseStepId(id));
 }
 export const formInputFields = (step: StepRef): FormField[] => formFields(step).filter(f => !f.ownComponent && !ownValue(step, f));
 export const formSignoffFields = (step: StepRef): FormField[] => formFields(step).filter(f => !f.ownComponent && ownValue(step, f));

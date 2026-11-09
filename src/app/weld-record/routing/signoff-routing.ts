@@ -18,6 +18,7 @@ import {
   stepOnJoint,
 } from './step-ids';
 import { hasDecision, initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
+import { withoutHiddenAnswers } from '../signoff-definition/shown-fields';
 import { getTemplates, routingTemplateId } from './stage-templates';
 import { CUT_RESTARTS_AT } from './built-in-step-rules';
 import { signedAsStep, signAsStep } from './type-routing';
@@ -59,6 +60,8 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   let refitNumber = '';
   let repairNumber = '';
   const reasons: string[] = [];
+  /* a field hidden on the form can't steer the route */
+  wf = { ...wf, stages: wf.stages.map(s => s.id === stageId ? withoutHiddenAnswers(s, job, wf.stages, wf.fabricationData) : s) };
   const signing = wf.stages.find(s => s.id === stageId)!;
   const accessError = attributeAccessError(signing);
   if (accessError) throw new RoutingConfigurationError(accessError);

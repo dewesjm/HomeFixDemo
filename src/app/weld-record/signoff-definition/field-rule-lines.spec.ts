@@ -31,7 +31,7 @@ describe('field rule lines', () => {
   it('uses the fixed rules of fields set in code', () => {
     expect(fieldRuleLines({ key: 'deferTack' }, label)).toEqual([{ condition: 'Always', behaviors: ['Show'] }]);
     expect(fieldRuleLines({ key: 'affectedItem' }, label))
-      .toEqual([{ condition: 'Always', behaviors: ['Show', 'Required (at least one must be picked)'] }]);
+      .toEqual([{ condition: 'Always', behaviors: ['Show', 'Required'] }]);
     for (const key of ['allowableThicknessExceededN1', 'allowableThicknessExceededN23']) {
       const line = fieldRuleLines({ key }, label)[0];
       expect(line.condition).toContain('rejected phase has an RT/UT routing');

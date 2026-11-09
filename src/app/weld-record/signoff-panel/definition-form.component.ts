@@ -2,16 +2,17 @@ import { FormField } from '../signoff-definition/field-catalog';
 /* A step's form, drawn from its Signoff Type Form: its fields in definition order, on the lines
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
-   sign-off fields go where the Layout list places them too; Comments, Inspection Results and the
-   sign-off fields only while the step is required. The verify-grid rows are drawn
+   sign-off fields go where the Layout list places them too, each as its Show when says; Comments,
+   Inspection Results and the sign-off fields only while the step is required. The verify-grid rows are drawn
    together as one grid where the first of them is listed. A routing without a Type form has no fields. */
 import { Component, input } from '@angular/core';
-import { COMMENTS_KEY, DECISION_KEY, FieldActivation, TYPE_KEY, definitionHas, getActivationForStep } from '../signoff-definition/step-field-config';
+import { DECISION_KEY, FieldActivation, TYPE_KEY, getActivationForStep } from '../signoff-definition/step-field-config';
 import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';
 import { WorkflowStage } from '../model/workflow-types';
-import { COMMENTS_FIELD, hasCommentsBox } from '../signoff-definition/signoff-parts';
+import { buildConditionContext } from '../signoff-definition/condition-context';
+import { drawnFieldRule } from '../signoff-definition/shown-fields';
 import { isVerifyRow } from '../signoff-definition/field-catalog';
-import { hasDecision, showsReferences, showsType } from '../signoff-definition/stage-rules';
+import { showsType } from '../signoff-definition/stage-rules';
 import { ReferencesComponent } from '../references/references.component';
 import { AffectedItemComponent } from './affected-item.component';
 import { DefinitionFieldComponent } from './definition-field.component';
@@ -62,8 +63,9 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
                   } @else if (cell.kind === 'history') {
                     <app-signoff-history class="w-full" [ctx]="ctx()" />
                   } @else if (cell.kind === 'references') {
-                    <app-references class="w-full" [card]="true" [references]="ctx().references()" [disabled]="ctx().jobComplete()"
-                                    (add)="ctx().addReferences($event)" (remove)="ctx().removeReference($event)" />
+                    <app-references class="w-full" [card]="true" [references]="ctx().references()" [disabled]="ctx().jobComplete() || referencesDisabled()"
+                                    (add)="ctx().addReferences($event); ctx().clearFieldError(st.id, 'references')" (remove)="ctx().removeReference($event)" />
+                    @if (ctx().fieldError(st.id, 'references'); as err) { <div class="field-error w-full">{{ err }}</div> }
                   } @else if (cell.kind === 'type') {
                     <app-signoff-type class="flex-1" [class.min-w-40]="!width"
                                       [style.max-width.px]="width" [style.min-width.px]="width && minWidth(width)"
@@ -99,13 +101,22 @@ export class DefinitionFormComponent {
       else if (field === rows[0]) cells.set(field.key, { kind: 'verifyGrid', rows });
     }
     if (st.required) for (const field of this.ctx().visibleSignoffFields(st)) cells.set(field.key, { kind: 'signoff', field });
-    if (definitionHas(st, 'affectedItem')) cells.set('affectedItem', { kind: 'affectedItem' });
-    if (definitionHas(st, 'signoffHistory')) cells.set('signoffHistory', { kind: 'history' });
-    if (st.required && hasDecision(st)) cells.set(DECISION_KEY, { kind: 'decision' });
+    const shown = (key: string) => this.rule(key).shown;
+    if (shown('affectedItem')) cells.set('affectedItem', { kind: 'affectedItem' });
+    if (shown('signoffHistory')) cells.set('signoffHistory', { kind: 'history' });
+    if (st.required && shown(DECISION_KEY)) cells.set(DECISION_KEY, { kind: 'decision' });
     if (showsType(st)) cells.set(TYPE_KEY, { kind: 'type' });
-    if (st.required && hasCommentsBox(st)) cells.set(COMMENTS_KEY, { kind: 'signoff', field: COMMENTS_FIELD });
-    if (showsReferences(st)) cells.set('references', { kind: 'references' });
+    if (shown('references')) cells.set('references', { kind: 'references' });
     return cells;
+  }
+
+  private rule(key: string) {
+    const wf = this.ctx().wf();
+    return drawnFieldRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), key);
+  }
+
+  referencesDisabled(): boolean {
+    return this.rule('references').disabled;
   }
 
   /* the widths the definition gives its fields */

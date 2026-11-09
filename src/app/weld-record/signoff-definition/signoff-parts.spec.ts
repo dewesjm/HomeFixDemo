@@ -1,10 +1,12 @@
 import { formInputFields, formSignoffFields } from './form-fields';
-import { COMMENTS_FIELD, drawnByOwnForm, hasCommentsBox, withComments } from './signoff-parts';
-import { verifyAgainst } from './step-field-config';
+import { drawnByOwnForm } from './signoff-parts';
+import { StepRef, definitionHas, verifyAgainst } from './step-field-config';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from '../routing/build-stages';
 import { JOBS } from '../../data/jobs';
 import { signoffTypeOptions } from './signoff-types';
+
+const hasCommentsBox = (s: StepRef) => definitionHas(s, 'comments');
 
 /* a step on its default Type, or the one given */
 const step = (id: string, signoffType = signoffTypeOptions(id)?.find(o => o.default)?.value ?? 'standard') => ({ id, signoffType });
@@ -41,11 +43,10 @@ describe('Comments box', () => {
     expect(hasCommentsBox(step('engineering-hold'))).toBeFalse();
   });
 
-  it('no step lists Comments itself, so it is added exactly once', () => {
+  it('Comments is one sign-off field on every step whose form lists it', () => {
     for (const s of buildStages(JOBS[0]).map(onType)) {
-      expect([...formInputFields(s), ...formSignoffFields(s)].some(f => f.key === 'comments')).withContext(s.id).toBeFalse();
-      expect(withComments(s, withComments(s, formSignoffFields(s))).filter(f => f === COMMENTS_FIELD).length)
-        .withContext(s.id).toBe(s.id === 'sold' ? 0 : 1);
+      expect(formInputFields(s).some(f => f.key === 'comments')).withContext(s.id).toBeFalse();
+      expect(formSignoffFields(s).filter(f => f.key === 'comments').length).withContext(s.id).toBe(s.id === 'sold' ? 0 : 1);
     }
   });
 

@@ -48,6 +48,8 @@ export interface CatalogField {
   /* the steps where it's a sign-off field, saved with the sign-off (Pre-Fit/Fit's insert, ring and
      Defer Tack); on any other step it's an ordinary field of that step */
   ownFormSteps?: string[];
+  /* saved with the sign-off on whichever step lists it (Comments) */
+  signoffValue?: boolean;
   /* drawn by its own component on whichever step lists it, never as an ordinary field */
   ownComponent?: boolean;
   /* typed with the person search (a name from People) */
@@ -193,7 +195,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* ── Weld Build-Up ── */
   /* the joint members the build-up affects (affected-item.component); at least one must be picked on
      any step that lists it */
-  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', typeLabel: 'Special', ownComponent: true },
+  { key: 'affectedItem', label: 'Affected Item', type: 'checkbox', typeLabel: 'Special', ownComponent: true, defaultRequired: true },
   /* drawn under Affected Item, beside its joint member while that one is picked */
   { key: 'affectedMicVerified1', label: 'Affected Item: Joining Item MIC verified', type: 'checkbox', typeLabel: 'Special', ownComponent: true,
     defaultRequired: true, defaultShowIf: ifPart1Traceability },
@@ -223,9 +225,9 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* the Type droplist; its options and default are on Admin > Signoff Type to Routing */
   { key: 'type', label: 'Type', type: 'select', ownComponent: true },
   /* SAT/UNSAT, placed in the form by the Layout list; UNSAT needs a reject target to be signed */
-  { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true },
+  { key: 'decision', label: 'Inspection Results (SAT/UNSAT)', type: 'radio', ownComponent: true, defaultRequired: true },
   /* the Comments box, saved in the step's signoffInputs */
-  { key: 'comments', label: 'Comments', type: 'text', ownComponent: true },
+  { key: 'comments', label: 'Comments', type: 'text', signoffValue: true },
 
   /* ── Fit-Up Insp ── */
   { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },

@@ -2,6 +2,9 @@
    draws it below the step's form, or the definition form where the Layout list places it. */
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
+import { buildConditionContext } from '../signoff-definition/condition-context';
+import { drawnFieldRule } from '../signoff-definition/shown-fields';
+import { DECISION_KEY } from '../signoff-definition/step-field-config';
 import { SignoffContext } from './signoff-context';
 
 @Component({
@@ -10,11 +13,12 @@ import { SignoffContext } from './signoff-context';
   host: { class: 'block' },
   template: `
     @let st = stage();
-    <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__decision')">{{ st.decisionLabel || 'Decision' }} <span class="text-error">*</span></div>
+    @let r = rule();
+    <div class="meta" [class.text-error]="!!ctx().fieldError(st.id, '__decision')">{{ st.decisionLabel || 'Decision' }}@if (r.required) { <span class="text-error">*</span>}</div>
     <div class="result-radios">
       @for (o of ctx().resultOptions; track o.value) {
         <label>
-          <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__decision')" [name]="'result-' + st.id" [disabled]="!ctx().editable(st)"
+          <input type="radio" class="radio radio-sm" [class.radio-error]="!!ctx().fieldError(st.id, '__decision')" [name]="'result-' + st.id" [disabled]="!ctx().editable(st) || r.disabled"
                  [checked]="st.result === o.value" (change)="ctx().setStageResult(st, o.value)" />
           <span>{{ o.label }}</span>
         </label>
@@ -28,4 +32,9 @@ import { SignoffContext } from './signoff-context';
 export class StageDecisionComponent {
   ctx = input.required<SignoffContext>();
   stage = input.required<WorkflowStage>();
+
+  rule() {
+    const wf = this.ctx().wf();
+    return drawnFieldRule(this.stage(), buildConditionContext(this.stage(), this.ctx().job, wf.stages, wf.fabricationData), DECISION_KEY);
+  }
 }
