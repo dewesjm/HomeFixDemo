@@ -12,7 +12,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
     changed: ['Admin > Signoff Type to Routing: the Type Exceptions grid has a read-only Type source column showing where each routing gets its Original Type (Rejecting inspection or Signoff Type Selection). The Type source choice that was worded Options on the routing row now reads Signoff Type Selection, on the page and in the export.',
-      'Admin > Signoff Type to Routing: Type source is now read-only when editing a routing. Excavation NDT and NQC Excavation NDT stay on Rejecting inspection, and other routings use their Signoff Type Selection.'],
+      'Admin > Signoff Type to Routing: Type source is now read-only when editing a routing. Excavation NDT and NQC Excavation NDT stay on Rejecting inspection, and other routings use their Signoff Type Selection.',
+      'Admin > Groups: the Force routing override permission now reads Routing Override, matching the Admin menu.'],
   },
   {
     date: '2026-11-06',

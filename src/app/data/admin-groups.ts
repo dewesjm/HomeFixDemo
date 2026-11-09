@@ -16,7 +16,7 @@ export interface AdminGroup {
 
 export const PERMISSIONS: Permission[] = [
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
-  { key: 'force-routing', label: 'Force routing override', category: 'Routing' },
+  { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
   { key: 'signoff-pre-fit', label: 'Pre-Fit', category: 'Sign-off' },
   { key: 'signoff-fit', label: 'Fit', category: 'Sign-off' },
   { key: 'signoff-tack', label: 'Tack', category: 'Sign-off' },
