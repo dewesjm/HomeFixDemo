@@ -34,7 +34,7 @@ import {
 import {
   Condition, FilterValues, Op, OPS_BY_KIND, opLabel, isExclude, needsNoValue, newCondition, activeConditions, applyFilters, chipLabel
 } from '../../shared/filter-engine';
-import { allStepAnswerFields } from '../catalogs/condition-catalog';
+import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { activeStage } from '../routing/current-routing';

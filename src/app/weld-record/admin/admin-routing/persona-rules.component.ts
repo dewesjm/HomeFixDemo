@@ -5,7 +5,7 @@ import { Job } from '../../../data/jobs';
 import { ROLES, StageTemplate } from '../../model/workflow-types';
 import { getTemplates, updateStageTemplate } from '../../routing/stage-templates';
 import { ConditionClause, describeConditions } from '../../routing/step-conditions';
-import { JOINT_DETAIL_FIELDS } from '../../catalogs/condition-catalog';
+import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './condition-editing';
 
 @Component({

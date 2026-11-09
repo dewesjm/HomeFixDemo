@@ -7,7 +7,7 @@ import {
   DEFAULT_TYPE_DEFINITIONS,
   FieldActivation,
 } from '../../signoff-definition/step-field-config';
-import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../../catalogs/condition-catalog';
+import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../../catalogs/field-catalog';
 import { requiredSignoffFields } from './fit-signoff';
 import { visibleSignoffFields } from '../../signoff-definition/shown-fields';
 

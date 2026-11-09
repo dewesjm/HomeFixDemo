@@ -1,17 +1,12 @@
 /* The values a step's field conditions are checked against. Joint Details and Fabrication read
-   through the condition catalog (catalogs/condition-catalog.ts); 'inspectionType' and 'result' (SAT/UNSAT) are merged into inputs
+   through the field catalog (catalogs/field-choices.ts); 'inspectionType' and 'result' (SAT/UNSAT) are merged into inputs
    so field-source conditions can reach them. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionContext } from './field-conditions';
-import { jointOrFabricationField } from '../catalogs/condition-catalog';
+import { jointOrFabricationField } from '../catalogs/field-choices';
 import { stepOnJoint } from '../routing/step-ids';
-
-/* the stage property an "Engineering override is on/off" clause reads */
-export const ENGINEERING_OVERRIDE_KEY = 'engineeringEntry';
-/* the stage property a "Rejected phase has RT/UT" clause reads: on a Repair, whether the phase whose
-   NDT rejected the joint has an RT/UT step on this joint */
-export const REJECTED_PHASE_UTRT_KEY = 'rejectedPhaseHasUtrt';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
 
 /* the step's own fields, its id and whether an engineering override has it, without the joint or
    other steps (they read as blank): what a fill's "when" may read */

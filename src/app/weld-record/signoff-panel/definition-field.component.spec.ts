@@ -4,7 +4,7 @@ import { SignoffContext } from './signoff-context';
 import { addTestJob } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { visibleSignoffFields } from '../signoff-definition/shown-fields';
-import { FormField } from '../catalogs/form-field-catalog';
+import { FormField } from '../catalogs/field-catalog';
 import { WorkflowStage } from '../model/workflow-types';
 
 describe('Defer Tack control', () => {

@@ -1,7 +1,8 @@
 /* Admin > Attribute Code Exceptions rows in plain words, for the table, its export and the notes on
    Routing Settings and Signoff Type to Routing */
 import { describeConditions } from '../routing/step-conditions';
-import { allStepAnswerFields, FABRICATION_CONDITION_FIELDS, JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../catalogs/condition-catalog';
+import { ConditionCatalogField } from '../catalogs/field-catalog';
+import { allStepAnswerFields, FABRICATION_DEPENDENT_FIELDS, JOINT_DETAIL_FIELDS } from '../catalogs/field-choices';
 import { typeLabel } from '../signoff-definition/routing-signoff-types';
 import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from './attribute-code-exceptions';
 
@@ -11,7 +12,7 @@ export function exceptionConditionFields(): ConditionCatalogField[] {
   const answers = allStepAnswerFields('Welding');
   return [
     ...JOINT_DETAIL_FIELDS.map(f => ({ ...f, valueLabel: (v: string) => f.valueLabel?.(v) ?? (v || 'Blank') })),
-    ...FABRICATION_CONDITION_FIELDS,
+    ...FABRICATION_DEPENDENT_FIELDS,
     ...[ROOT_WELD_PROCESS, FINAL_WELD_PROCESS].flatMap(key => answers.filter(f => f.key === key)),
     ...answers.filter(f => /^step\.(nqc-)?\w+-ndt-mtpt\.(inspectionType|idAccessible)$/.test(f.key)),
   ];

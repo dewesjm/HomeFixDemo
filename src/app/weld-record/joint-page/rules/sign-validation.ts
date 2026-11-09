@@ -1,4 +1,4 @@
-import { FormField } from '../../catalogs/form-field-catalog';
+import { FormField } from '../../catalogs/field-catalog';
 import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
@@ -11,7 +11,7 @@ import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-
 import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
 import { DECISION_KEY, verifyAgainst } from '../../signoff-definition/step-field-config';
-import { isVerifyRow } from '../../catalogs/form-field-catalog';
+import { isVerifyRow } from '../../catalogs/field-catalog';
 import { standardRequiredMessage } from '../../signoff-definition/field-rules';
 import { DrawnFieldRule, drawnFieldRule } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';

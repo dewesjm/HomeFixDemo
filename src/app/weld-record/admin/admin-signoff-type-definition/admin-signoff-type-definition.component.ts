@@ -9,7 +9,7 @@
    definition-edits.ts); the Layout list is definition-layout-list. Add's list is the Types; picking
    one that already has a definition edits it. Stored by step-field-config.ts. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { formFieldValues } from '../../catalogs/condition-catalog';
+import { formFieldValues } from '../../catalogs/field-choices';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -35,7 +35,7 @@ import {
   definitionFields,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
-import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../catalogs/form-field-catalog';
+import { FORM_FIELDS, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../catalogs/field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,
@@ -106,7 +106,7 @@ export class AdminSignoffTypeDefinitionComponent {
   private confirm = inject(ConfirmService);
 
   /* every catalog field can be on any step */
-  fieldChoices = FIELD_CATALOG.map(f => ({ key: f.key, label: f.label, typeLabel: catalogFieldTypeLabel(f) }));
+  fieldChoices = FORM_FIELDS.map(f => ({ key: f.key, label: f.label, typeLabel: catalogFieldTypeLabel(f) }));
   /* the Fields list's search box: fields whose name contains it, any case */
   fieldSearch = signal('');
   shownFieldChoices = computed(() => {

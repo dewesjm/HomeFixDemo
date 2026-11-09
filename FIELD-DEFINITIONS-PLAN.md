@@ -15,7 +15,7 @@ Reference for completed work. This file does not queue implementation. See [ARCH
 
 | Concern | Source |
 |---|---|
-| Field definitions | [form-field-catalog.ts](src/app/weld-record/catalogs/form-field-catalog.ts) |
+| Field definitions | [field-catalog.ts](src/app/weld-record/catalogs/field-catalog.ts) |
 | Type forms and persistence | [step-field-config.ts](src/app/weld-record/signoff-definition/step-field-config.ts) |
 | Catalog fields selected by a Type | [form-fields.ts](src/app/weld-record/signoff-definition/form-fields.ts) |
 | Evaluated visibility and requirements | [shown-fields.ts](src/app/weld-record/signoff-definition/shown-fields.ts) |

@@ -1,18 +1,22 @@
-import { ConditionCatalogField } from '../../catalogs/condition-catalog';
+import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause } from './condition-editing';
 
 const FIELDS: ConditionCatalogField[] = [
-  { key: 'self.result', label: 'Result', group: 'This routing', values: ['sat', 'unsat'], valueLabel: (v: string) => v.toUpperCase() },
-  { key: 'nInd', label: 'Nuclear Indicator', group: 'Joint Details', values: ['1', '2', '3'] },
-  { key: 'drawing', label: 'Drawing', group: 'Joint Details', values: [] },
-  { key: 'tack.wtn', label: 'Tack WTN', group: 'Routing answers', values: [], stepAnswer: true },
+  { key: 'self.result', label: 'Result', source: 'This routing', values: ['sat', 'unsat'], valueLabel: (v: string) => v.toUpperCase() },
+  { key: 'nInd', label: 'Nuclear Indicator', source: 'Joint Details', values: ['1', '2', '3'] },
+  { key: 'drawing', label: 'Drawing', source: 'Joint Details', values: [] },
+  { key: 'controlled', label: 'Controlled Material', source: 'Calculated', values: ['Yes', 'No'] },
+  { key: 'fab.id1', label: 'Fabrication: MIC', source: 'Fabrication', values: [], stepAnswer: true },
+  { key: 'tack.wtn', label: 'Tack WTN', source: 'Routing answers', values: [], stepAnswer: true },
 ] as unknown as ConditionCatalogField[];
 
 describe('condition-editing', () => {
-  it('groups fields into This routing, Joint Details and Earlier routings, dropping empty groups', () => {
+  it('groups fields by Source in order, dropping empty groups', () => {
     expect(conditionFieldGroups(FIELDS).map(g => [g.label, g.fields.map(f => f.key)])).toEqual([
       ['This routing', ['self.result']],
       ['Joint Details', ['nInd', 'drawing']],
+      ['Calculated', ['controlled']],
+      ['Fabrication', ['fab.id1']],
       ['Earlier routings (once signed)', ['tack.wtn']],
     ]);
     expect(conditionFieldGroups([FIELDS[1]]).map(g => g.label)).toEqual(['Joint Details']);

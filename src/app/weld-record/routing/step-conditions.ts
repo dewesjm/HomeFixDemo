@@ -1,7 +1,8 @@
 import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
-import { ConditionCatalogField, Fabrication, StageAnswers, catalogField } from '../catalogs/condition-catalog';
+import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';
+import { catalogField, readsFabrication } from '../catalogs/field-choices';
 import { originalInspectionType, performedInspectionType } from './inspection-context';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches
@@ -12,7 +13,7 @@ import { originalInspectionType, performedInspectionType } from './inspection-co
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
 export interface ConditionClause {
-  field: string;          /* a condition-catalog.ts key */
+  field: string;          /* a field-catalog.ts or field-choices.ts key */
   op: 'is' | 'isNot' | 'contains';
   values: string[];       /* matches any of these; 'contains' has one typed text, any case */
 }
@@ -175,7 +176,7 @@ export function usesStepAnswers(rules: ConditionRule[] | undefined): boolean {
 }
 
 export function usesFabrication(rules: ConditionRule[] | undefined): boolean {
-  return !!rules?.some(rule => rule.some(c => catalogField(c.field)?.group === 'Fabrication'));
+  return !!rules?.some(rule => rule.some(c => readsFabrication(catalogField(c.field))));
 }
 
 function describeClause(c: ConditionClause, extra: ConditionCatalogField[]): string {

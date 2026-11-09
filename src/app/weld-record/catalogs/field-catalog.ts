@@ -1,15 +1,63 @@
-import { repairCodeOptions } from '../signoff-definition/repair-code-options';
-/* The complete catalog of fields that can appear on any step. Per-step activations
-   (step-field-config.ts) pick from this list; they cannot define fields outside it. */
-import { weldColorOptions } from '../../data/weld-colors';
-import { FieldCondition } from '../signoff-definition/field-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-definition/condition-context';
-import { weldPositionOptions } from '../../data/weld-positions';
-import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { inspectionProcedureOptions } from '../../data/inspection-procedures';
+/* The one list of everything available for configuration. Each entry says what the field is and where
+   its value comes from, its Source: Joint Details, Calculated, Fabrication or Signoff Form.
+   The catalog says what a field is; other code decides when it is used. Which fields each admin screen
+   offers, and the per-routing fields generated from these rows, are in field-choices.ts. The Fabrication
+   form builds its fields from fabrication/fabrication-fields.ts; this list only maps them in. */
+import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { defectCodeOptions } from '../../data/defect-codes';
+import { inspectionProcedureOptions } from '../../data/inspection-procedures';
+import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
+import { Job, MCL_POOL, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
+import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
+import { requiresTraceability } from '../../data/mcl-traceability';
+import { NDT_LABELS } from '../../data/ndt-labels';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
+import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { isShipboardLocation, shopOptions } from '../../data/shops';
+import { weldColorOptions } from '../../data/weld-colors';
+import { weldPositionOptions } from '../../data/weld-positions';
+import { jointAttributeCodes } from '../attribute-codes/attribute-context';
+import { FABRICATION_FIELDS } from '../fabrication/fabrication-fields';
+import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
+import { WorkflowStage } from '../model/workflow-types';
+import { fabricationSigned } from '../routing/built-in-step-rules';
 import { RT_DEGREE_OPTIONS } from '../routing/ndt';
+import { nqcStepId } from '../routing/step-ids';
+import { FieldCondition } from '../signoff-definition/field-conditions';
+import { repairCodeOptions } from '../signoff-definition/repair-code-options';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-definition/stage-property-keys';
+
+/* ── What an entry is ── */
+
+export type FieldSource = 'Joint Details' | 'Calculated' | 'Fabrication' | 'Signoff Form';
+
+/* the part of a workflow stage a condition reads (kept structural to avoid importing the workflow files) */
+export interface StageAnswers {
+  id: string;
+  signed: boolean;
+  inputs: Record<string, string>;
+  signoffInputs: Record<string, string>;
+  inspectionType?: string;
+  insertion?: { originInspectionType?: string };
+}
+
+export type Fabrication = Record<string, string>;
+
+/* a field a condition can test: a catalog row, or one field-choices.ts generates for a routing */
+export interface ConditionCatalogField {
+  key: string;
+  label: string;
+  source: Exclude<FieldSource, 'Signoff Form'> | 'Routing answers' | 'This routing';
+  values: string[];       /* none = a typed value (is / is not compare whole text, any case) */
+  /* only has a value once a routing is signed or Fabrication is filled in, so it is re-checked as the joint moves */
+  stepAnswer?: boolean;
+  get: (job: Job, stages: StageAnswers[], fab?: Fabrication) => string;
+  /* shown instead of the stored value (a routing's own option values, e.g. straw -> Straw) */
+  valueLabel?: (v: string) => string;
+  /* a Yes/No field's sentence in a Signoff Type Form's rule text */
+  yesText?: string;
+  noText?: string;
+}
 
 const FIELD_TYPE_LABELS = { text: 'Text', number: 'Number', select: 'Droplist', checkbox: 'Checkbox', radio: 'Radio' } as const;
 
@@ -23,6 +71,7 @@ type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 export type FieldFill = { fieldKey: string; when: FieldCondition }
   & ({ from?: 'step'; stepId: string } | { from: 'thisStep' } | { from: 'wtn' });
 
+/* an input a signoff form can show */
 interface CatalogField {
   key: string;
   label: string;
@@ -64,11 +113,137 @@ export interface FormField extends CatalogField {
   requiredMessage?: string;
 }
 
-/* Admin describes the allowed value as well as the numeric control. */
-export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allowsNc' | 'typeLabel'>): string {
-  if (field.typeLabel) return field.typeLabel;
-  return field.type === 'number' && field.allowsNc ? 'Number or NC' : FIELD_TYPE_LABELS[field.type];
+/* a Signoff Form field the built-in rules read by a fixed key, once its routing is signed */
+export interface FixedAnswer {
+  key: string;
+  stageIds: string[];
+  label: string;
 }
+
+type SignoffFormRow = CatalogField & { fixedAnswer?: FixedAnswer };
+
+export type RuleEntry = ConditionCatalogField & { source: Exclude<FieldSource, 'Signoff Form'> };
+export type SignoffFormEntry = SignoffFormRow & { source: 'Signoff Form' };
+export type CatalogEntry = RuleEntry | SignoffFormEntry;
+
+/* sets the Source on the rows themselves: copying them would freeze rows whose options are live getters */
+function inSection<S extends FieldSource, R extends object>(source: S, rows: R[]): (R & { source: S })[] {
+  for (const row of rows) (row as R & { source: S }).source = source;
+  return rows as (R & { source: S })[];
+}
+
+type RuleRow = Omit<ConditionCatalogField, 'source'>;
+
+const YES_NO = ['Yes', 'No'];
+const yesNo = (b: boolean) => b ? 'Yes' : 'No';
+const upper = (v: string) => (v || '').trim().toUpperCase();
+const RT_DEGREES = ['NA', '10', '100', '360', '60', '75'];
+
+/* ── Joint Details: what the Joint Details panel shows (Routing left out: it's what these rules decide).
+   UT/VT read the same values the panel shows (UT X or -, VT X or blank). ── */
+
+const text = (key: keyof Job, label: string, values: string[] = []): RuleRow =>
+  ({ key, label, values, get: j => String(j[key] ?? '') });
+
+const JOINT_DETAILS: RuleEntry[] = inSection('Joint Details', [
+  { key: 'nInd', label: 'N Ind.', values: N_IND_POOL, get: j => j.nInd },
+  { key: 'ss', label: 'SS', values: YES_NO, get: j => yesNo(!!j.ss) },
+  { key: 'sfff', label: 'SFFF', values: YES_NO, get: j => yesNo(!!j.sfff) },
+  { key: 'dssAaa', label: 'DSS-AAA', values: YES_NO, get: j => yesNo(!!j.dssAaa) },
+  { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
+  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
+  { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },
+  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: ['', ...NDT_EACH_VALUES], valueLabel: v => v || 'Blank', get: j => upper(j.ndtEach) },
+  { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
+  { key: 'rtFinal', label: NDT_LABELS.rtFinal, values: RT_DEGREES, get: j => j.rtFinal },
+  text('xrefid', 'XREFID'), text('ship', 'Ship'), text('hull', 'Hull'), text('drawing', 'Drawing'),
+  text('drawingRev', 'Drawing Rev'), text('joint', 'Joint'), text('jointDesign', 'Joint Design'),
+  text('pipeSize', 'Pipe Size', PIPE_SIZES), text('wallThickness', 'Wall Thickness', WALL_THICKNESSES),
+  text('sequenceNumber', 'Sequence #'), text('engineeringNotes', 'Engineering Notes'),
+  text('mcl1', 'MCL 1', MCL_POOL), text('materialType1', 'Material Type 1'), text('joiningItem', 'Joining Item'),
+  text('mcl2', 'MCL 2', MCL_POOL), text('materialType2', 'Material Type 2'), text('joinToItem', 'Join To Item'),
+  { key: 'ut', label: NDT_LABELS.ut, values: ['X', '-'], get: jointDetailsUt },
+  { key: 'vt', label: NDT_LABELS.vt, values: ['X'], get: jointDetailsVt },
+  text('order', 'Order'), text('workPackage', 'Work Package'), text('workPermit', 'Work Permit'), text('waff', 'WAFF'),
+  text('serialNumber', 'Serial Number'), text('refitNumber', 'Refit #'), text('repairNumber', 'Repair #'),
+  text('er1', 'ER1'), text('er2', 'ER2'), text('er3', 'ER3'), text('er4', 'ER4'),
+  text('attributeCode1', 'Attribute Code 1'), text('attributeCode2', 'Attribute Code 2'),
+  text('attributeCode3', 'Attribute Code 3'), text('attributeCode4', 'Attribute Code 4'),
+] as RuleRow[]);
+
+/* ── Calculated: worked out from the joint, then (stepAnswer) from what Fabrication and signoffs add ── */
+
+/* Revised Joint Design takes priority; falls back to the Joint Details joint design */
+function effectiveJointDesign(job: Job, fab: Fabrication): string {
+  return (fab['revisedJointDesign'] ?? '').trim() || job.jointDesign;
+}
+
+export function jointDesignRequiresInsert(job: Job, fab: Fabrication): boolean {
+  const code = effectiveJointDesign(job, fab);
+  return !!code && !!getJointDesign(code)?.requiresConsumableInsert;
+}
+
+export function jointDesignRequiresBackingRing(job: Job, fab: Fabrication): boolean {
+  const code = effectiveJointDesign(job, fab);
+  return !!code && !!getJointDesign(code)?.requiresBackingRing;
+}
+
+/* either joint member's MCL requires material traceability (Admin > Material Traceability) */
+function jointRequiresTraceability(job: Job): boolean {
+  return requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2);
+}
+
+export const SHIPBOARD_FIELD = 'fabricationShipboard';
+
+const fact = (key: string, label: string, get: (job: Job, fab: Fabrication) => boolean, yesText: string, noText: string): RuleRow =>
+  ({ key, label, values: YES_NO, stepAnswer: true, get: (job, _stages, fab) => yesNo(get(job, fab ?? {})), yesText, noText });
+
+const CALCULATED: RuleEntry[] = inSection('Calculated', [
+  { key: 'attributeCodes', label: 'Has attribute code (any slot)', values: PROGRESSION_ATTRIBUTE_CODES.map(a => a.code),
+    get: j => jointAttributeCodes(j).join(', ') },
+  ...(['nonFerrous', 'austenitic', 'titanium'] as MaterialFlag[]).map((flag): RuleRow => ({
+    key: `material.${flag}`, label: `Either material is ${flag === 'nonFerrous' ? 'non-ferrous' : flag}`,
+    values: YES_NO, get: job => yesNo(hasMaterialFlag(job, flag)),
+    ...(flag === 'titanium' ? { yesText: 'the joint is titanium', noText: 'the joint is not titanium' } : {}),
+  })),
+  { key: 'jdInsert', label: 'Joint Design needs Consumable Insert', values: YES_NO,
+    get: j => yesNo(!!getJointDesign(j.jointDesign)?.requiresConsumableInsert) },
+  { key: 'jdRing', label: 'Joint Design needs Backing Ring', values: YES_NO,
+    get: j => yesNo(!!getJointDesign(j.jointDesign)?.requiresBackingRing) },
+  { key: 'controlledMaterial', label: 'Controlled Material', values: YES_NO, get: j => yesNo(jointRequiresTraceability(j)),
+    yesText: 'either part requires material traceability', noText: 'neither part requires material traceability' },
+  { key: 'part1Traceability', label: 'Part 1 requires material traceability', values: YES_NO, get: j => yesNo(requiresTraceability(j.mcl1)),
+    yesText: 'part 1 requires material traceability', noText: 'part 1 does not require material traceability' },
+  { key: 'part2Traceability', label: 'Part 2 requires material traceability', values: YES_NO, get: j => yesNo(requiresTraceability(j.mcl2)),
+    yesText: 'part 2 requires material traceability', noText: 'part 2 does not require material traceability' },
+  { key: SHIPBOARD_FIELD, label: 'Fabrication Location is shipboard (once Fit is signed)', values: YES_NO, stepAnswer: true,
+    get: (_job, stages, fab) => fabricationSigned(stages as WorkflowStage[]) ? yesNo(isShipboardLocation(fab?.['location'])) : '' },
+  fact('consumableInsertRequired', 'Current Joint Design needs Consumable Insert', jointDesignRequiresInsert,
+    'the joint design needs a consumable insert', 'the joint design doesn\'t need a consumable insert'),
+  fact('backingRingRequired', 'Current Joint Design needs Backing Ring', jointDesignRequiresBackingRing,
+    'the joint design needs a backing ring', 'the joint design doesn\'t need a backing ring'),
+  fact('revisedJointDesignEntered', 'Revised Joint Design entered', (_job, fab) => !!(fab['revisedJointDesign'] ?? '').trim(),
+    'a Revised Joint Design is entered', 'no Revised Joint Design is entered'),
+] as RuleRow[]);
+
+/* ── Fabrication: every Fabrication value, blank until entered ── */
+
+/* Location and Revised Joint Design read their admin-edited lists each time they're asked */
+function fabricationOptions(key: string, own?: { label: string; value: string }[]): { label: string; value: string }[] {
+  if (key === 'location') return shopOptions();
+  if (key === 'revisedJointDesign') return jointDesignOptions();
+  return own ?? [];
+}
+
+const FABRICATION: RuleEntry[] = inSection('Fabrication', FABRICATION_FIELDS.map((f): RuleRow => ({
+  key: `fab.${f.key}`, label: `Fabrication: ${f.label}`, stepAnswer: true,
+  get values() { return fabricationOptions(f.key, f.options).map(o => o.value); },
+  valueLabel: v => fabricationOptions(f.key, f.options).find(o => o.value === v)?.label ?? v,
+  get: (_job, _stages, fab) => fab?.[f.key] ?? '',
+})));
+
+/* ── Signoff Form: every input a signoff form can show. Signoff Type Forms picks from these; it cannot
+   define fields outside them. ── */
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
 const showIfPartial: FieldCondition = { all: [{ source: 'field', key: 'partial', equals: 'yes' }] };
@@ -87,7 +262,7 @@ const ifNc = (requirement: string): FieldCondition => ({ all: [{ source: 'field'
 const ncFrom = (requirement: string): FieldFill => ({ from: 'thisStep', fieldKey: requirement, when: ifNc(requirement) });
 
 const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
-/* Yes/No fields worked out by the condition catalog (catalogs/condition-catalog.ts) */
+/* Yes/No fields from the Calculated section */
 const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'Yes' }] };
 const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'Yes' }] };
 const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' }] };
@@ -103,7 +278,7 @@ const BACKING_RING_OPTIONS = [
   { label: 'Copper', value: 'copper' }, { label: 'Ceramic', value: 'ceramic' },
 ];
 
-export const FIELD_CATALOG: CatalogField[] = [
+const SIGNOFF_FORM_ROWS: SignoffFormRow[] = [
   /* ── Welding ── */
   { key: 'weldProcedure', label: 'GWP', type: 'select', defaultRequired: true },
   { key: 'wtn', label: 'WTN', type: 'select', defaultRequired: true },
@@ -190,7 +365,8 @@ export const FIELD_CATALOG: CatalogField[] = [
     defaultShowIf: showIfRing, options: BACKING_RING_OPTIONS, ownFormSteps: FIT_STEPS },
   { key: 'backingRingId', label: 'Backing Ring MIC', type: 'text', defaultRequired: true,
     defaultRequiredIf: ifTraceability, defaultShowIf: showIfRing, ownFormSteps: FIT_STEPS },
-  { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', ownFormSteps: ['fit'] },
+  { key: 'deferTack', label: 'Defer Tack', type: 'checkbox', ownFormSteps: ['fit'],
+    fixedAnswer: { key: 'fitDeferTack', stageIds: ['fit'], label: 'Fit: Defer Tack (once Fit is signed)' } },
 
   /* ── Weld Build-Up ── */
   /* the joint members the build-up affects (affected-item.component); at least one must be picked on
@@ -230,7 +406,8 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'comments', label: 'Comments', type: 'text', signoffValue: true },
 
   /* ── Fit-Up Insp ── */
-  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox' },
+  { key: 'releaseToWelding', label: 'Release to welding upon inspection', type: 'checkbox',
+    fixedAnswer: { key: 'inspReleaseToWelding', stageIds: ['fitup-insp', nqcStepId('fitup-insp')], label: 'Fit-Up Insp: Release to welding (once Fit-Up Insp is signed)' } },
   /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
   { key: 'verifyMic1', label: 'Joining Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
   { key: 'verifyMic2', label: 'Join To Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
@@ -257,8 +434,21 @@ export const FIELD_CATALOG: CatalogField[] = [
   { key: 'verifyWorkPackage', label: 'Work Package', type: 'checkbox' },
 ];
 
-export function lookupCatalogField(key: string): CatalogField | undefined {
-  return FIELD_CATALOG.find(f => f.key === key);
+export const FORM_FIELDS: SignoffFormEntry[] = inSection('Signoff Form', SIGNOFF_FORM_ROWS);
+
+/* ── The list ── */
+
+export const FIELD_CATALOG: CatalogEntry[] = [...JOINT_DETAILS, ...CALCULATED, ...FABRICATION, ...FORM_FIELDS];
+
+/* a Signoff Form field by key */
+export function lookupCatalogField(key: string): SignoffFormEntry | undefined {
+  return FORM_FIELDS.find(f => f.key === key);
+}
+
+/* Admin describes the allowed value as well as the numeric control. */
+export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allowsNc' | 'typeLabel'>): string {
+  if (field.typeLabel) return field.typeLabel;
+  return field.type === 'number' && field.allowsNc ? 'Number or NC' : FIELD_TYPE_LABELS[field.type];
 }
 
 /* a verify-grid row (keys start with "verify"): a checkbox ticked against a value its step's

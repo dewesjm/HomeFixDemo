@@ -9,7 +9,7 @@ import {
   conditionTerms,
   isConditionGroup,
 } from '../../signoff-definition/field-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../signoff-definition/condition-context';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../signoff-definition/stage-property-keys';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
    the rejected phase has an RT/UT step */

@@ -3,7 +3,7 @@
    and routing. A regular routing and its NQC row are separate routings with separate rows. Stored in
    localStorage. */
 import { STORAGE } from '../../data/storage-keys';
-import { SHIPBOARD_FIELD } from '../catalogs/condition-catalog';
+import { SHIPBOARD_FIELD } from '../catalogs/field-catalog';
 import { ConditionRule } from '../routing/step-conditions';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../routing/step-ids';
 

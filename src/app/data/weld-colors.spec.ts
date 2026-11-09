@@ -1,6 +1,6 @@
 import { getWeldColors, setWeldColors, weldColorOptions } from './weld-colors';
 import { STORAGE } from './storage-keys';
-import { lookupCatalogField } from '../weld-record/catalogs/form-field-catalog';
+import { lookupCatalogField } from '../weld-record/catalogs/field-catalog';
 
 describe('weld colors', () => {
   beforeEach(() => localStorage.removeItem(STORAGE.weldColors));

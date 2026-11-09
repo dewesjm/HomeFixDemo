@@ -1,5 +1,5 @@
 /* The fields every welding step (Tack, Root, Layer, Final Weld) records, which are typed under an
-   engineering override, and how actuals follow their requirements (fill rules in form-field-catalog.ts
+   engineering override, and how actuals follow their requirements (fill rules in field-catalog.ts
    set Weld Process, PH/IP and NC actuals; field-locks.ts decides what's locked) */
 
 
@@ -19,7 +19,7 @@ export const ENGINEERING_ENTRY_KEYS = new Set([
 ]);
 
 /* each actual and the requirement it follows: NC there sets the actual to NC and locks it (the
-   actual's fill rule, form-field-catalog.ts) */
+   actual's fill rule, field-catalog.ts) */
 export const ACTUAL_REQUIREMENT: Record<string, string> = {
   actualPhMin: 'phMin', actualPhMax: 'phMax', actualIpMin: 'ipMin', actualIpMax: 'ipMax',
 };

@@ -3,7 +3,7 @@ import { DefinitionFieldComponent } from '../../signoff-panel/definition-field.c
 import { SignoffContext } from '../../signoff-panel/signoff-context';
 import { stageFromTemplate, nextRepairStage } from '../../routing/added-steps';
 import { stageFieldOptions } from '../../joint-page/rules/stage-form';
-import { lookupCatalogField } from '../../catalogs/form-field-catalog';
+import { lookupCatalogField } from '../../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { AdminRepairCodesComponent } from './admin-repair-codes.component';
 import { getRepairCodes } from '../../../data/repair-codes';

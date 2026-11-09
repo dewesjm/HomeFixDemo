@@ -3,7 +3,7 @@
 import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideX } from '@lucide/angular';
-import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/condition-catalog';
+import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/field-choices';
 import { clauseChoiceId, clauseChoices, withSavedChoice } from './condition-choices';
 import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
 import { SearchableSelectComponent } from './searchable-select.component';

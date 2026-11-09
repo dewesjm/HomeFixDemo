@@ -6,7 +6,7 @@ import { getAddedTemplate } from './stage-templates';
 import { routingRole } from './routing-role';
 import { Job } from '../../data/jobs';
 import { RejectRule, describeClauses } from './step-conditions';
-import { stageConditionFields } from '../catalogs/condition-catalog';
+import { stageConditionFields } from '../catalogs/field-choices';
 import { StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
 import { setRoutingFrom } from './current-routing';

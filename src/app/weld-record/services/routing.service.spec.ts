@@ -1,4 +1,4 @@
-import { FormField } from '../catalogs/form-field-catalog';
+import { FormField } from '../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
 

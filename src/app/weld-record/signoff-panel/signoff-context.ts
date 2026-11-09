@@ -1,4 +1,4 @@
-import { FormField } from '../catalogs/form-field-catalog';
+import { FormField } from '../catalogs/field-catalog';
 /* What the joint page hands the Signoff panel and its parts: the joint, its workflow, and the
    page's rules and actions for the current step */
 import { Job } from '../../data/jobs';

@@ -1,4 +1,4 @@
-import { FormField } from '../catalogs/form-field-catalog';
+import { FormField } from '../catalogs/field-catalog';
 /* The sign-off form's red field messages on the joint page: set when a field loses focus, a droplist
    changes or Signoff is pressed, and cleared the moment the field is fixed. What counts as an error
    is rules/sign-validation.ts. Provided by JointPageComponent, so the messages last as long as the page. */

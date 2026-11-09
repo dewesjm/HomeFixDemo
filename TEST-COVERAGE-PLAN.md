@@ -658,7 +658,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 |---|---|---|
 | [condition-context.ts](src/app/weld-record/signoff-definition/condition-context.ts) | Yes | 62.5% |
 | [definition-layout.ts](src/app/weld-record/signoff-definition/definition-layout.ts) | Yes | 100% |
-| [form-field-catalog.ts](src/app/weld-record/catalogs/form-field-catalog.ts) | No | 96.15% |
+| [field-catalog.ts](src/app/weld-record/catalogs/field-catalog.ts) | No | 96.15% |
 | [field-conditions.ts](src/app/weld-record/signoff-definition/field-conditions.ts) | No | 76.19% |
 | [field-fill.ts](src/app/weld-record/signoff-definition/field-fill.ts) | No | 100% |
 | [field-locks.ts](src/app/weld-record/signoff-definition/field-locks.ts) | No | 100% |

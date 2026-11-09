@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['Fabrication: Drawing Rev (Execution) now reads Drawing Rev Execution, on the Fabrication panel, in History and on the Fit-Up Insp verify row.',
+    changed: ['Admin condition droplists: fields worked out from the joint or Fabrication, such as Controlled Material and Either material is titanium, now sit in their own Calculated group on Routing Settings and Qualifications. On Signoff Type Forms their names now start with Calculated, for example Calculated: Controlled Material.',
+      'Fabrication: Drawing Rev (Execution) now reads Drawing Rev Execution, on the Fabrication panel, in History and on the Fit-Up Insp verify row.',
       'Admin > Qualifications: the count at the top of the page counts each requirement once, however many signoff types it is on.',
       'The theme picker moved under a new avatar icon at the top right of the page. Click the icon and pick a Theme from the droplist.',
       'Admin > Qualifications: each row now applies to one Signoff Type, picked from a required droplist. All is gone, because it did not say which types it meant. To require something on several types, add a row for each. Existing rows convert automatically: an All row becomes one row per type, and a row with several types becomes one row each. A row applies once the signoff\'s Type is picked.',

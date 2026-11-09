@@ -4,7 +4,7 @@ import { formInputFields } from './form-fields';
    filler from Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked.
    Whether the field can then be typed into is its separate Disabled when rule (field-locks.ts). */
 import { WorkflowStage } from '../model/workflow-types';
-import { FieldFill } from '../catalogs/form-field-catalog';
+import { FieldFill } from '../catalogs/field-catalog';
 import { evaluateCondition } from './field-conditions';
 import { stepOnlyContext } from './condition-context';
 import { isDisabledByOwnRule } from './field-locks';

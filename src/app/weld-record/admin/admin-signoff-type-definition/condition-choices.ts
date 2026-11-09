@@ -1,6 +1,7 @@
 /* The one list a Signoff Type Forms condition clause picks from: this form's fields, Joint Details,
-   Fabrication and the clauses that aren't about a field, each named by where it comes from. */
-import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/condition-catalog';
+   Calculated, Fabrication and the clauses that aren't about a field, each named by its Source. */
+import { ConditionCatalogField } from '../../catalogs/field-catalog';
+import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/field-choices';
 import type { StepFieldChoice } from './condition-group-editor.component';
 import { ClauseSrc, WorkClause } from './condition-work';
 import type { SearchChoice } from './searchable-select.component';
@@ -21,9 +22,9 @@ const choice = (source: ClauseSrc, key: string, equals: string, label: string): 
   return { id: clauseChoiceId(clause), label, clause };
 };
 
-/* Fabrication's own entries already start with the word */
+/* Fabrication rows already start with the word */
 function catalogLabel(f: ConditionCatalogField): string {
-  return f.group === 'Fabrication' && f.label.startsWith('Fabrication') ? f.label : `${f.group}: ${f.label}`;
+  return f.source === 'Fabrication' ? f.label : `${f.source}: ${f.label}`;
 }
 
 /* Prepopulated from's condition reads only the step itself (stepOnly) */

@@ -7,8 +7,8 @@ const labels = (list: { label: string }[]) => list.map(c => c.label);
 describe('condition clause list', () => {
   it('names every entry by where it comes from, in one list', () => {
     const all = labels(clauseChoices(fields, false));
-    ['This form: Weld Color', 'Joint Details: N Ind.', 'Joint Details: Either material is titanium', 'Fabrication: Joining Item MIC',
-      'Fabrication Location is shipboard (once Fit is signed)', 'Routing ID matches', 'Rejected phase has RT/UT', 'Engineering override']
+    ['This form: Weld Color', 'Joint Details: N Ind.', 'Calculated: Either material is titanium', 'Fabrication: Joining Item MIC',
+      'Calculated: Fabrication Location is shipboard (once Fit is signed)', 'Routing ID matches', 'Rejected phase has RT/UT', 'Engineering override']
       .forEach(l => expect(all).toContain(l));
     expect(all.some(l => l.startsWith('Fabrication: Fabrication'))).toBeFalse();
     expect(new Set(clauseChoices(fields, false).map(c => c.id)).size).toBe(all.length);

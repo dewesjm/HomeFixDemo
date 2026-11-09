@@ -1,10 +1,10 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Forms */
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
-import { jointOrFabricationField } from '../catalogs/condition-catalog';
+import { jointOrFabricationField } from '../catalogs/field-choices';
 import { FieldActivation } from './step-field-config';
-import { FieldFill, isVerifyRow, lookupCatalogField } from '../catalogs/form-field-catalog';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
+import { FieldFill, isVerifyRow, lookupCatalogField } from '../catalogs/field-catalog';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
 
 /* Fields whose visibility is decided in code, not by a condition: Type, which picks the form these
    rules belong to ('' = always shown) */

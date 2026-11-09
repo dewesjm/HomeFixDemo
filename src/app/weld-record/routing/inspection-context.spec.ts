@@ -1,6 +1,6 @@
 import { InspectionContextStage, originalInspectionType, performedInspectionType } from './inspection-context';
 import { conditionsMatch } from './step-conditions';
-import { stageConditionFields } from '../catalogs/condition-catalog';
+import { stageConditionFields } from '../catalogs/field-choices';
 import { JOBS } from '../../data/jobs';
 
 const record = (id: string, original = '', performed = '') => ({ id, signed: false, inputs: { originInspectionType: original }, signoffInputs: {}, inspectionType: performed });

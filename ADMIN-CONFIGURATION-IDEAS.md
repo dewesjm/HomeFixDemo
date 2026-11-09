@@ -31,7 +31,7 @@ Starting destination rules are in `src/app/weld-record/routing/added-stage-templ
 ### Remaining fixed business decisions
 
 - Repair thickness confirmations are configured through the existing Signoff Type Form; no separate limits table remains proposed for the current scope.
-- Repair Code options currently come from `catalogs/form-field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are implemented below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
+- Repair Code options currently come from `catalogs/field-catalog.ts`: Grind Only, Weld Repair and Cut. Admin-defined choices are implemented below; their behavior uses existing form conditions and routing rules. Specialized lifecycle effects remain code controlled.
 - Excavation persona selection is now configured through Routing Settings Persona rules.
 - Complete: general Original rejecting inspection Type and Performed inspection Type facts replace the generated PT-to-5X flag. Original context comes from the linked Repair round or captured ordinary insertion context; performed Type comes from the selected signoff Type. Regular/NQC Excavation defaults use both facts.
 

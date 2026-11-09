@@ -16,7 +16,8 @@ import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
-import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS, StageAnswers, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/condition-catalog';
+import { ConditionCatalogField, StageAnswers } from '../catalogs/field-catalog';
+import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/field-choices';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatches, whenText } from './qual-when';
 
@@ -41,7 +42,9 @@ export interface ConditionOption { value: string; label: string; }
 export interface ConditionField {
   key: string;
   label: string;
-  group: 'Joint Details' | 'Fabrication' | 'Routing answers' | 'Sign-off' | 'User';
+  group: 'Joint Details' | 'Calculated' | 'Fabrication' | 'Routing answers' | 'Sign-off' | 'User';
+  /* read from the joint alone, so a blank value still counts as an answer */
+  jointOnly?: boolean;
   /* set in its own Signoff Type column, so not offered in the When (old clauses still match) */
   ownColumn?: boolean;
   /* not on any form with a Qualification Check, so not offered and never matched (old clauses still show) */
@@ -64,7 +67,7 @@ const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value:
 /* a condition catalog field as a Qualifications field */
 function fromCatalog(f: ConditionCatalogField): ConditionField {
   const valueLabel = (v: string) => f.valueLabel?.(v) ?? v;
-  return { key: f.key, label: f.label, group: f.group as ConditionField['group'], valueLabel,
+  return { key: f.key, label: f.label, group: f.source as ConditionField['group'], jointOnly: !f.stepAnswer, valueLabel,
     options: () => f.values.map(value => ({ value, label: valueLabel(value) })), get: s => f.get(s.job, s.stages ?? [], s.fab) };
 }
 
@@ -272,7 +275,7 @@ export const heldQuals = computed(() => heldBy(SELF));
 function clauseValue(f: ConditionField | undefined, subject: ConditionSubject): string | undefined {
   if (!f || f.unavailable) return undefined;
   const value = f.get(subject);
-  return f.group !== 'Joint Details' && !value ? undefined : value;
+  return !f.jointOnly && !value ? undefined : value;
 }
 
 /* the requirements of every condition the joint and step match, in table order (User rows aren't requirements) */

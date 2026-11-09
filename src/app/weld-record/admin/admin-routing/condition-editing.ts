@@ -1,15 +1,17 @@
 /* How a condition clause behaves while it is edited in Admin > Routing Settings's rule dialogs (Included when
    and Reject rules): the field droplist's sections, a field's value choices, and when a clause is complete */
 import { ConditionClause } from '../../routing/step-conditions';
-import { ConditionCatalogField, ROUTING_CONDITION_FIELDS } from '../../catalogs/condition-catalog';
+import { ConditionCatalogField } from '../../catalogs/field-catalog';
+import { ROUTING_CONDITION_FIELDS } from '../../catalogs/field-choices';
 
-/* droplist sections: this routing's answers (reject rules), Joint Details, Fabrication, earlier routings' answers */
+/* droplist sections, named by Source: this routing's answers (reject rules), Joint Details, Calculated, Fabrication, earlier routings' answers */
 export function conditionFieldGroups(fields: ConditionCatalogField[]): { label: string; fields: ConditionCatalogField[] }[] {
   const groups = [
-    { label: 'This routing', fields: fields.filter(f => f.group === 'This routing') },
-    { label: 'Joint Details', fields: fields.filter(f => f.group === 'Joint Details') },
-    { label: 'Fabrication', fields: fields.filter(f => f.group === 'Fabrication') },
-    { label: 'Earlier routings (once signed)', fields: fields.filter(f => f.group === 'Routing answers') },
+    { label: 'This routing', fields: fields.filter(f => f.source === 'This routing') },
+    { label: 'Joint Details', fields: fields.filter(f => f.source === 'Joint Details') },
+    { label: 'Calculated', fields: fields.filter(f => f.source === 'Calculated') },
+    { label: 'Fabrication', fields: fields.filter(f => f.source === 'Fabrication') },
+    { label: 'Earlier routings (once signed)', fields: fields.filter(f => f.source === 'Routing answers') },
   ];
   return groups.filter(g => g.fields.length);
 }
