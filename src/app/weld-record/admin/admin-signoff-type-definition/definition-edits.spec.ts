@@ -1,4 +1,4 @@
-import { OpenCondition, THIS_STEP, WTN, applyOpenCondition, fillSourceId } from './definition-edits';
+import { FillSource, OpenCondition, THIS_STEP, WTN, applyOpenCondition, fillChoiceId, fillChoices, fillSourceId, matchingFillChoices } from './definition-edits';
 import { conditionToWork } from './condition-work';
 
 const open = (o: Partial<OpenCondition>): OpenCondition =>
@@ -30,5 +30,31 @@ describe('applyOpenCondition', () => {
     expect(fillSourceId({ from: 'thisStep', fieldKey: 'a', when: { all: [] } })).toBe(THIS_STEP);
     expect(fillSourceId({ stepId: 'fit', fieldKey: 'a', when: { all: [] } })).toBe('fit');
     expect(fillSourceId(undefined)).toBe('');
+  });
+});
+
+describe('Prepopulated from list', () => {
+  const sources: FillSource[] = [
+    { stepId: THIS_STEP, stepLabel: 'This signoff', fields: [{ key: 'weldColor', label: 'Weld Color' }] },
+    { stepId: WTN, stepLabel: 'WTN', fields: [{ key: 'weldProcess', label: 'Weld Process' }] },
+    { stepId: 'root-weld', stepLabel: 'Root Weld', fields: [{ key: 'weldProcess', label: 'Weld Process' }] },
+  ];
+  const none = { stepId: '', key: '' };
+  const labels = (list: { label: string }[]) => list.map(c => c.label);
+
+  it('lists every source\'s fields in one list, named by source', () => {
+    expect(labels(fillChoices(sources, none, k => k))).toEqual(['This signoff: Weld Color', 'WTN: Weld Process', 'Root Weld: Weld Process']);
+  });
+
+  it('keeps a saved pick that no source lists any more', () => {
+    expect(labels(fillChoices(sources, { stepId: 'root-weld', key: 'gone' }, () => 'Gone'))[0]).toBe('Root Weld: Gone');
+    expect(fillChoices(sources, { stepId: WTN, key: 'weldProcess' }, k => k).length).toBe(3);
+  });
+
+  it('searches the whole name and keeps the current pick', () => {
+    const all = fillChoices(sources, none, k => k);
+    expect(labels(matchingFillChoices(all, ' root ', ''))).toEqual(['Root Weld: Weld Process']);
+    expect(labels(matchingFillChoices(all, 'root', fillChoiceId(WTN, 'weldProcess')))).toEqual(['WTN: Weld Process', 'Root Weld: Weld Process']);
+    expect(matchingFillChoices(all, '', '').length).toBe(3);
   });
 });

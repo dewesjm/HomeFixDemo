@@ -135,7 +135,7 @@
               @if (isAnyCondOpen(f.key)) {
                 <app-field-condition-editor [kind]="e.condKind" [group]="e.condGroup" [stepFields]="condStepFields()"
                                             [fillStepId]="e.fillStepId" [fillFieldKey]="e.fillFieldKey"
-                                            [fillSteps]="fillSteps()" [fillSourceFields]="fillSourceFields()"
+                                            [fillChoices]="fillChoiceList()"
                                             (groupChange)="setCondGroup($event)" (fillSourceChange)="setFillSource($event)" />
               }
             </div>

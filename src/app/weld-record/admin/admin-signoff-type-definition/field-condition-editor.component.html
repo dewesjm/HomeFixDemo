@@ -1,19 +1,19 @@
 <div class="ml-5 mb-2 bg-base-200 rounded-box p-2 text-sm">
   @if (kind() === 'fill') {
-    <div class="text-xs font-semibold mb-1">Prepopulated from (no field = not prepopulated)</div>
+    <div class="text-xs font-semibold mb-1">Prepopulated from (Nothing = not prepopulated)</div>
     <div class="flex flex-wrap items-center gap-1 mb-2">
-      <select class="select select-bordered select-xs w-44" aria-label="Prepopulated from"
-              [ngModel]="fillStepId()" (ngModelChange)="fillSourceChange.emit({ fillStepId: $event })">
+      <input type="text" class="input input-bordered input-xs w-44" placeholder="Search fields" aria-label="Search Prepopulated from fields"
+             [ngModel]="fillSearch()" (ngModelChange)="fillSearch.set($event)" />
+      @if (fillSearch()) {
+        <button type="button" class="btn btn-ghost btn-xs" aria-label="Clear Prepopulated from search" (click)="fillSearch.set('')">
+          <svg lucideX class="size-3"></svg>
+        </button>
+      }
+      <select class="select select-bordered select-xs w-96 max-w-full" aria-label="Prepopulated from"
+              [ngModel]="selectedChoiceId()" (ngModelChange)="pick($event)">
         <option value="">Nothing</option>
-        @for (s of fillSteps(); track s.stepId) {
-          <option [value]="s.stepId">{{ s.stepLabel }}</option>
-        }
-      </select>
-      <select class="select select-bordered select-xs w-56" aria-label="Field to prepopulate from"
-              [ngModel]="fillFieldKey()" (ngModelChange)="fillSourceChange.emit({ fillFieldKey: $event })" [disabled]="!fillStepId()">
-        <option value="">No field</option>
-        @for (f of fillSourceFields(); track f.key) {
-          <option [value]="f.key">{{ f.label }}</option>
+        @for (c of shownChoices(); track choiceId(c.stepId, c.key)) {
+          <option [value]="choiceId(c.stepId, c.key)">{{ c.label }}</option>
         }
       </select>
     </div>

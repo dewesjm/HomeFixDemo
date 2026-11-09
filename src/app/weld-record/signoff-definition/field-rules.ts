@@ -209,14 +209,14 @@ export function builtInShowCondition(key: string): string | undefined {
   return BUILT_IN_SHOW_CONDITION[key];
 }
 
-/* e.g. "Fit's Consumable Insert Type", "the WTN's PH Min" */
+/* e.g. "Fit's Consumable Insert Type", "WTN's PH Min" */
 export function fillSourceText(fill: FieldFill, stepLabel: (stepId: string) => string): string {
-  const source = fill.from === 'wtn' ? 'the WTN' : fill.from === 'thisStep' ? 'this signoff' : stepLabel(fill.stepId);
+  const source = fill.from === 'wtn' ? 'WTN' : fill.from === 'thisStep' ? 'this signoff' : stepLabel(fill.stepId);
   return `${source}'s ${labelOf(fill.fieldKey)}`;
 }
 
 /* e.g. "Prepopulated from Fit's Consumable Insert Type when Only Consumable Insert used as filler
-   is Yes", "Prepopulated from the WTN's PH Min when Engineering override is off"; "Not
+   is Yes", "Prepopulated from WTN's PH Min when Engineering override is off"; "Not
    prepopulated" when it never is */
 export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
   const fill = effectiveFill(act);

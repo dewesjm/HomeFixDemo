@@ -65,7 +65,7 @@ import type { RequiredMode } from '../../signoff-definition/field-rules';
 import { WTN_FILL_FIELDS } from '../../../data/procedures';
 import { WorkGroup, conditionToWork } from './condition-work';
 import { StepFieldChoice } from './condition-group-editor.component';
-import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillSourceId } from './definition-edits';
+import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillChoices, fillSourceId } from './definition-edits';
 import { FieldConditionEditorComponent } from './field-condition-editor.component';
 import { DefinitionLayoutListComponent } from './definition-layout-list.component';
 import { withNewField } from '../../signoff-definition/definition-layout';
@@ -381,29 +381,26 @@ export class AdminSignoffTypeDefinitionComponent {
     return fillRuleText(this.activation(key), id => this.stepLabel(id));
   }
 
-  /* what a field can be prepopulated from: this step, the WTN, and the routing steps */
-  fillSteps = computed(() => [
-    { stepId: THIS_STEP, stepLabel: 'This signoff' },
-    { stepId: WTN, stepLabel: 'The WTN' },
-    ...this.routingSteps,
-  ]);
-
-  /* the chosen source's fields: the WTN's WPS values, this step's other fields, or the fields of
-     every Type that step offers */
-  fillSourceFields = computed(() => {
-    const e = this.editing();
-    const sourceId = e?.fillStepId;
-    if (!e || !sourceId) return [];
+  /* a source's fields: the WTN's WPS values, this step's other fields, or the fields of every Type that step offers */
+  private fillSourceFields(sourceId: string, e: EditState): { key: string; label: string }[] {
     if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
     const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)
       : (signoffTypeOptions(sourceId) ?? []).flatMap(o => this.rows().find(r => r.typeId === o.value)?.fieldActivations ?? getActivationForStep(o.value).fields);
     const keys = [...new Set(definitionFields(acts).map(a => a.key))];
     return keys.map(key => ({ key, label: lookupCatalogField(key)?.label ?? key }));
+  }
+
+  /* everything a field can be prepopulated from, as one list: this step, the WTN, then the routing steps */
+  fillChoiceList = computed(() => {
+    const e = this.editing();
+    if (!e) return [];
+    const sources = [{ stepId: THIS_STEP, stepLabel: 'This signoff' }, { stepId: WTN, stepLabel: 'WTN' }, ...this.routingSteps]
+      .map(s => ({ ...s, fields: this.fillSourceFields(s.stepId, e) }));
+    return fillChoices(sources, { stepId: e.fillStepId, key: e.fillFieldKey }, key => lookupCatalogField(key)?.label ?? key);
   });
 
-  /* picking another step clears the field picked from the old one */
-  setFillSource(partial: { fillStepId?: string; fillFieldKey?: string }) {
-    this.editing.update(e => e ? { ...e, ...(partial.fillStepId !== undefined ? { fillFieldKey: '' } : {}), ...partial } : e);
+  setFillSource(pick: { fillStepId: string; fillFieldKey: string }) {
+    this.editing.update(e => e ? { ...e, ...pick } : e);
   }
 
   /* When opens the condition editor; Never and Always close it without applying its clauses */

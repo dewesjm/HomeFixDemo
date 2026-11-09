@@ -36,6 +36,36 @@ function fillFromSource(sourceId: string, fieldKey: string, when: FieldCondition
   return { stepId: sourceId, fieldKey, when };
 }
 
+/* one source and the fields it offers */
+export interface FillSource {
+  stepId: string;
+  stepLabel: string;
+  fields: { key: string; label: string }[];
+}
+
+/* one entry of the Prepopulated from list, e.g. "Root Weld: Weld Process" */
+export interface FillChoice {
+  stepId: string;
+  key: string;
+  label: string;
+}
+
+export const fillChoiceId = (stepId: string, key: string) => `${stepId}|${key}`;
+
+/* every source's fields as one list; a saved pick no source lists any more stays in it, first */
+export function fillChoices(sources: FillSource[], selected: { stepId: string; key: string }, fieldLabel: (key: string) => string): FillChoice[] {
+  const choices = sources.flatMap(s => s.fields.map(f => ({ stepId: s.stepId, key: f.key, label: `${s.stepLabel}: ${f.label}` })));
+  if (!selected.stepId || !selected.key || choices.some(c => c.stepId === selected.stepId && c.key === selected.key)) return choices;
+  const source = sources.find(s => s.stepId === selected.stepId)?.stepLabel ?? selected.stepId;
+  return [{ ...selected, label: `${source}: ${fieldLabel(selected.key)}` }, ...choices];
+}
+
+/* the entries matching the search, always keeping the current pick so the list still shows it */
+export function matchingFillChoices(choices: FillChoice[], search: string, selectedId: string): FillChoice[] {
+  const text = search.trim().toLowerCase();
+  return text ? choices.filter(c => c.label.toLowerCase().includes(text) || fillChoiceId(c.stepId, c.key) === selectedId) : choices;
+}
+
 /* the fields with the open editor's condition written to its field; a condition the same as the
    catalog default is left off, and a fill with no source or field = not prepopulated */
 export function applyOpenCondition(acts: FieldActivation[], o: OpenCondition): FieldActivation[] {
