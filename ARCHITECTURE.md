@@ -124,7 +124,7 @@ lacks a spec file, adding one is in scope for that change, not a separate task.
 
 ```
 src/app/
-  app.component.*        Shell: top nav + <router-outlet>. System dropdowns / flatten button, theme picker, PWA update prompt.
+  app.component.*        Shell: top nav + <router-outlet>. System dropdowns / flatten button, avatar menu, PWA update prompt.
   app.routes.ts          URL → screen mapping
 
   weld-record/            All Weld Record (EWR) screens, their admin pages, and the rules behind them. Folder
@@ -303,7 +303,8 @@ src/app/
                               range, list; required or not). Add only: no rename/remove. A "How it's stored"
                               panel shows the definitions and one procedure's extraFields as JSON.
 
-  theme-picker/           DaisyUI theme switcher (32 themes, default: Light)
+  avatar-menu/            Top-right avatar button and its panel (holds the theme picker)
+  theme-picker/           DaisyUI theme switcher droplist (32 themes, default: Light); applies the saved theme when created, so the avatar panel stays in the page while closed
 
   data/                   Seed data and stored lookup tables only: the app's stand-in for a backend. Each
                           file is records, their model, and load/save (localStorage); rules that use them

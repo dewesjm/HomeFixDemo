@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['Admin > Qualifications: each row now applies to one Signoff Type, picked from a required droplist. All is gone, because it did not say which types it meant. To require something on several types, add a row for each. Existing rows convert automatically: an All row becomes one row per type, and a row with several types becomes one row each. A row applies once the signoff\'s Type is picked.',
+    changed: ['The theme picker moved under a new avatar icon at the top right of the page. Click the icon and pick a Theme from the droplist.',
+      'Admin > Qualifications: each row now applies to one Signoff Type, picked from a required droplist. All is gone, because it did not say which types it meant. To require something on several types, add a row for each. Existing rows convert automatically: an All row becomes one row per type, and a row with several types becomes one row each. A row applies once the signoff\'s Type is picked.',
       'The app now installs under the name Welding.',
       'My Assignments is hidden by default. Admin > Feature Toggles > My Assignments page brings it back in the Weld Record menu.',
       'Admin > Signoff Type Forms: Comments, Inspection Results, References, Affected Item, Defer Tack and Release to welding now have Show when, Disabled when and Required rules like any other field; only Type stays fixed. A hidden Inspection Results signs with no result and counts as accepted, and a hidden Defer Tack or Release to welding counts as unticked. Comments can also be used in conditions and Advanced Search.',

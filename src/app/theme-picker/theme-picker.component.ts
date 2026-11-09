@@ -1,7 +1,6 @@
-/* Theme button (palette icon): switch the active DaisyUI theme at runtime, persisted. */
+/* Theme droplist, in the avatar menu: switch the active DaisyUI theme at runtime, persisted. */
 import { STORAGE } from '../data/storage-keys';
 import { Component, signal } from '@angular/core';
-import { LucidePalette } from '@lucide/angular';
 
 interface ThemeOption { name: string; label: string; dark?: boolean; }
 
@@ -45,20 +44,14 @@ const THEME_KEY = STORAGE.theme;
 @Component({
   selector: 'app-theme-picker',
   standalone: true,
-  imports: [LucidePalette],
+  imports: [],
   template: `
-    <div class="dropdown dropdown-bottom dropdown-end w-full">
-      <div tabindex="0" role="button" title="Theme" aria-label="Theme" class="btn btn-ghost btn-sm w-full justify-start">
-        <svg lucidePalette class="size-4"></svg>
-      </div>
-      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-10 w-48 p-2 shadow max-h-[60vh] overflow-y-auto overflow-x-hidden flex-nowrap">
-        @for (t of themes; track t.name) {
-          <li>
-            <a [class.menu-active]="active() === t.name" (click)="pick(t.name)">{{ t.label }}</a>
-          </li>
-        }
-      </ul>
-    </div>
+    <fieldset class="fieldset">
+      <legend class="fieldset-legend">Theme</legend>
+      <select class="select w-full" aria-label="Theme" (change)="pick($any($event.target).value)">
+        @for (t of themes; track t.name) { <option [value]="t.name" [selected]="active() === t.name">{{ t.label }}</option> }
+      </select>
+    </fieldset>
   `
 })
 export class ThemePickerComponent {

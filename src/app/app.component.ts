@@ -7,7 +7,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } fro
 import { filter } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { CompactNavDirective } from './shared/compact-nav.directive';
-import { ThemePickerComponent } from './theme-picker/theme-picker.component';
+import { AvatarMenuComponent } from './avatar-menu/avatar-menu.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import { SyncStatusComponent } from './weld-record/sync-status/sync-status.component';
@@ -39,7 +39,7 @@ function systemForUrl(url: string): string {
   standalone: true,
   imports: [
     AdminTableScopeDirective, RouterOutlet, RouterLink, RouterLinkActive,
-    ThemePickerComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective, SyncStatusComponent,
+    AvatarMenuComponent, ToastHostComponent, ConfirmDialogComponent, CompactNavDirective, SyncStatusComponent,
     LucideCircleArrowUp, LucideRefreshCw, LucideMapPin, LucideTarget,
     LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideMegaphone, LucideClipboardList, LucideLayers,
