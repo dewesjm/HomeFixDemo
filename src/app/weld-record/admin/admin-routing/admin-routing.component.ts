@@ -40,7 +40,7 @@ import {
 import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { ConditionClause, ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, describeConditions } from '../../routing/step-conditions';
-import { ConditionCatalogField, ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore } from '../../routing/condition-catalog';
+import { ConditionCatalogField, ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore } from '../../catalogs/condition-catalog';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
 } from './condition-editing';

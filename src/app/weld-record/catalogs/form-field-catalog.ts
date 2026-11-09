@@ -1,9 +1,9 @@
-import { repairCodeOptions } from './repair-code-options';
+import { repairCodeOptions } from '../signoff-definition/repair-code-options';
 /* The complete catalog of fields that can appear on any step. Per-step activations
    (step-field-config.ts) pick from this list; they cannot define fields outside it. */
 import { weldColorOptions } from '../../data/weld-colors';
-import { FieldCondition } from './field-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
+import { FieldCondition } from '../signoff-definition/field-conditions';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-definition/condition-context';
 import { weldPositionOptions } from '../../data/weld-positions';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -87,7 +87,7 @@ const ifNc = (requirement: string): FieldCondition => ({ all: [{ source: 'field'
 const ncFrom = (requirement: string): FieldFill => ({ from: 'thisStep', fieldKey: requirement, when: ifNc(requirement) });
 
 const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
-/* Yes/No fields worked out by the condition catalog (routing/condition-catalog.ts) */
+/* Yes/No fields worked out by the condition catalog (catalogs/condition-catalog.ts) */
 const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'Yes' }] };
 const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'Yes' }] };
 const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' }] };

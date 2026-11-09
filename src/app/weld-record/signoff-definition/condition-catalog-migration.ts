@@ -1,4 +1,4 @@
-/* Saved Signoff Type Form conditions moved onto the one condition catalog (routing/condition-catalog.ts):
+/* Saved Signoff Type Form conditions moved onto the one condition catalog (catalogs/condition-catalog.ts):
    two joint facts took the catalog's existing entries, and yes/no joint facts read Yes / No like every
    other Joint Details field. Safe to run again: converted clauses no longer match. */
 const RENAMED: Record<string, string> = { titanium: 'material.titanium', materialTraceability: 'controlledMaterial' };

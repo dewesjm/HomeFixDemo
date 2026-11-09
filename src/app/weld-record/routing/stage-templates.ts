@@ -13,7 +13,7 @@ import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule } from './step-conditions';
-import { registerStepTemplates, registerRoutingFields } from './condition-catalog';
+import { registerStepTemplates, registerRoutingFields } from '../catalogs/condition-catalog';
 import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';

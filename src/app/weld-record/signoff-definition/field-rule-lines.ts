@@ -2,7 +2,7 @@
    Admin > Signoff Type Forms. Rules with the same condition share a line; a field with no
    conditions reads "Always | Show"; a Required with its own error message quotes it. Never-required, never-disabled and not-prepopulated add no line. */
 import { FieldActivation } from './step-field-config';
-import { lookupCatalogField } from './form-field-catalog';
+import { lookupCatalogField } from '../catalogs/form-field-catalog';
 import { FieldCondition, hasClauses } from './field-conditions';
 import {
   builtInShowCondition, conditionText, effectiveShowIf, effectiveFill, effectiveDisabledIf, effectiveRequired,

@@ -5,11 +5,11 @@ import { evaluateCondition } from '../signoff-definition/field-conditions';
 import { migrateConditionClauses } from '../signoff-definition/condition-catalog-migration';
 import { conditionText } from '../signoff-definition/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
-import { newWorkflow } from './build-stages';
+import { newWorkflow } from '../routing/build-stages';
 import { FABRICATION_CONDITION_FIELDS, JOINT_AND_FABRICATION_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, jointOrFabricationField, stageConditionFields } from './condition-catalog';
-import { recheckFabricationRules } from './route-changes';
-import { getTemplates, updateStageTemplate } from './stage-templates';
-import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from './step-conditions';
+import { recheckFabricationRules } from '../routing/route-changes';
+import { getTemplates, updateStageTemplate } from '../routing/stage-templates';
+import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/step-conditions';
 
 const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], trade: 'Welding', ...more });
 const stage = { id: 'tack', signed: false, inputs: {}, signoffInputs: {}, inspectionType: '', result: null } as unknown as WorkflowStage;

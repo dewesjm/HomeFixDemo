@@ -1,5 +1,5 @@
 import { formInputFields } from '../signoff-definition/form-fields';
-import { FormField } from '../signoff-definition/form-field-catalog';
+import { FormField } from '../catalogs/form-field-catalog';
 /* The joint page's overrides for one visit: Foreman Override entries, the engineering override
    reason given on a step, and the deviations a sign-off would accept. Provided by JointPageComponent,
    so this state lives exactly as long as the page. */

@@ -1,5 +1,5 @@
 /* Catalog fields selected by a Type form, resolved when read and never copied onto routings. */
-import { FormField, lookupCatalogField } from './form-field-catalog';
+import { FormField, lookupCatalogField } from '../catalogs/form-field-catalog';
 import { getActivationForStep, StepRef } from './step-field-config';
 import { signoffTypeOptions } from './signoff-types';
 import { baseStepId } from '../routing/step-ids';

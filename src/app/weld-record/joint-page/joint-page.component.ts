@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/form-field-catalog';
+import { FormField } from '../catalogs/form-field-catalog';
 //This is the job details page
 
 /* The joint page: page state, wiring to the sign-off panel, and signing. A value changing on the

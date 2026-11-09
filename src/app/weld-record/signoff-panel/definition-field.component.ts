@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/form-field-catalog';
+import { FormField } from '../catalogs/form-field-catalog';
 /* One field on a form laid out from its Signoff Type Form (definition-form): the control its
    type calls for, its error or warning, and the description under it. A step field saves to the
    step's inputs; a sign-off field (Pre-Fit/Fit's insert, backing ring and Defer Tack) to its
@@ -8,7 +8,7 @@ import { FormsModule } from '@angular/forms';
 import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { isFieldLocked, isReadonlyLimit } from '../signoff-definition/field-locks';
-import { isPersonField } from '../signoff-definition/form-field-catalog';
+import { isPersonField } from '../catalogs/form-field-catalog';
 import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
 import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';

@@ -3,7 +3,7 @@ import { buildStages } from '../routing/build-stages';
 import { stageFromTemplate } from '../routing/added-steps';
 import { getTemplates } from '../routing/stage-templates';
 import { conditionsMatch } from '../routing/step-conditions';
-import { stageConditionFields, stepAnswerFieldsBefore } from '../routing/condition-catalog';
+import { stageConditionFields, stepAnswerFieldsBefore } from '../catalogs/condition-catalog';
 import { conditionFields } from '../qualifications/qual-conditions';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';
 import { formInputFields, formSignoffFields } from './form-fields';

@@ -3,7 +3,7 @@
    Type, Comments, References and Inspection Results are laid out like fields. Fields on a line share its width. */
 import type { FieldActivation } from './step-field-config';
 import { DECISION_KEY, isHeadingItem } from './step-field-config';
-import { isVerifyRow } from './form-field-catalog';
+import { isVerifyRow } from '../catalogs/form-field-catalog';
 
 type LayoutPart = { kind: 'heading'; text: string } | { kind: 'line'; keys: string[] };
 

@@ -23,7 +23,7 @@ import { getTemplates, routingTemplateId } from './stage-templates';
 import { CUT_RESTARTS_AT } from './built-in-step-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from './step-conditions';
-import { stageConditionFields } from './condition-catalog';
+import { stageConditionFields } from '../catalogs/condition-catalog';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
 import { usesReturningInspectionType } from '../signoff-definition/signoff-types';
 import { lastingReasons, signedFlagChanges } from './signed-flag-reasons';

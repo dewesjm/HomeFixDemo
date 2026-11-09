@@ -1,7 +1,7 @@
 import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
-import { ConditionCatalogField, Fabrication, StageAnswers, catalogField } from './condition-catalog';
+import { ConditionCatalogField, Fabrication, StageAnswers, catalogField } from '../catalogs/condition-catalog';
 import { originalInspectionType, performedInspectionType } from './inspection-context';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches

@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/form-field-catalog';
+import { FormField } from '../catalogs/form-field-catalog';
 /* Work History — "Correct" a signed stage's already-recorded field values in place, with a
    required reason, instead of deprogressing it (see SignoffService.correctStage()). Fields that fed a
    routing decision at the original signoff are shown disabled with an explanation, never editable

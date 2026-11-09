@@ -16,7 +16,7 @@ import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
-import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS, StageAnswers, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../routing/condition-catalog';
+import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS, StageAnswers, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/condition-catalog';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatches, whenText } from './qual-when';
 

@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/form-field-catalog';
+import { FormField } from '../catalogs/form-field-catalog';
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
    routing (Admin > Routing Override, Deprogress). Sign-off decisions live in SignoffService. */
 import { Injectable, inject } from '@angular/core';

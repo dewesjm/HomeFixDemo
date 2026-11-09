@@ -1,4 +1,4 @@
-import { ConditionCatalogField } from '../../routing/condition-catalog';
+import { ConditionCatalogField } from '../../catalogs/condition-catalog';
 import { conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause } from './condition-editing';
 
 const FIELDS: ConditionCatalogField[] = [

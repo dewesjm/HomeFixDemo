@@ -7,7 +7,7 @@ import { JobWorkflow } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { shopOptions } from '../../data/shops';
 import { jointDesignOptions } from '../../data/joint-designs';
-import { ConditionCatalogField, allStepAnswerFields } from '../routing/condition-catalog';
+import { ConditionCatalogField, allStepAnswerFields } from '../catalogs/condition-catalog';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { Condition, FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import { NDT_LABELS } from '../../data/ndt-labels';

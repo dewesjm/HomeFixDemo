@@ -3,7 +3,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConditionRule } from '../../routing/step-conditions';
-import { JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../../routing/condition-catalog';
+import { JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../../catalogs/condition-catalog';
 
 const BLANK = 'Blank';
 

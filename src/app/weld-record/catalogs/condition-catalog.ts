@@ -20,10 +20,9 @@ import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { FABRICATION_FIELDS } from '../fabrication/fabrication-fields';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { WorkflowStage } from '../model/workflow-types';
-import { jointDesignRequiresBackingRing, jointDesignRequiresInsert, jointRequiresTraceability } from '../signoff-definition/joint-facts';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
-import { fabricationSigned } from './built-in-step-rules';
-import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from './step-ids';
+import { fabricationSigned } from '../routing/built-in-step-rules';
+import { isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
 
 /* the part of a workflow stage a routing-answer field reads (kept structural to avoid importing the workflow files) */
 export interface StageAnswers {
@@ -64,6 +63,26 @@ const signedAnswer = (stageIds: string[], key: string, signoff: boolean) => (_: 
   if (!s?.signed) return '';
   return yesNo((signoff ? s.signoffInputs : s.inputs)[key] === 'yes');
 };
+
+/* Revised Joint Design takes priority; falls back to the Joint Details joint design */
+function effectiveJointDesign(job: Job, fab: Fabrication): string {
+  return (fab['revisedJointDesign'] ?? '').trim() || job.jointDesign;
+}
+
+export function jointDesignRequiresInsert(job: Job, fab: Fabrication): boolean {
+  const code = effectiveJointDesign(job, fab);
+  return !!code && !!getJointDesign(code)?.requiresConsumableInsert;
+}
+
+export function jointDesignRequiresBackingRing(job: Job, fab: Fabrication): boolean {
+  const code = effectiveJointDesign(job, fab);
+  return !!code && !!getJointDesign(code)?.requiresBackingRing;
+}
+
+/* either joint member's MCL requires material traceability (Admin > Material Traceability) */
+function jointRequiresTraceability(job: Job): boolean {
+  return requiresTraceability(job.mcl1) || requiresTraceability(job.mcl2);
+}
 
 type JointEntry = Omit<ConditionCatalogField, 'group'>;
 

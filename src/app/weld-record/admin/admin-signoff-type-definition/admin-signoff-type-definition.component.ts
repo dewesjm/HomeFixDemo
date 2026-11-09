@@ -9,7 +9,7 @@
    definition-edits.ts); the Layout list is definition-layout-list. Add's list is the Types; picking
    one that already has a definition edits it. Stored by step-field-config.ts. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { formFieldValues } from '../../routing/condition-catalog';
+import { formFieldValues } from '../../catalogs/condition-catalog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -35,7 +35,7 @@ import {
   definitionFields,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
-import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../signoff-definition/form-field-catalog';
+import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../catalogs/form-field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,

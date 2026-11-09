@@ -1,7 +1,7 @@
 /* Admin > Attribute Code Exceptions rows in plain words, for the table, its export and the notes on
    Routing Settings and Signoff Type to Routing */
 import { describeConditions } from '../routing/step-conditions';
-import { allStepAnswerFields, FABRICATION_CONDITION_FIELDS, JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../routing/condition-catalog';
+import { allStepAnswerFields, FABRICATION_CONDITION_FIELDS, JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../catalogs/condition-catalog';
 import { typeLabel } from '../signoff-definition/routing-signoff-types';
 import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from './attribute-code-exceptions';
 

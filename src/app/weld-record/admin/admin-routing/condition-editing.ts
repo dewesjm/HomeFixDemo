@@ -1,7 +1,7 @@
 /* How a condition clause behaves while it is edited in Admin > Routing Settings's rule dialogs (Included when
    and Reject rules): the field droplist's sections, a field's value choices, and when a clause is complete */
 import { ConditionClause } from '../../routing/step-conditions';
-import { ConditionCatalogField, ROUTING_CONDITION_FIELDS } from '../../routing/condition-catalog';
+import { ConditionCatalogField, ROUTING_CONDITION_FIELDS } from '../../catalogs/condition-catalog';
 
 /* droplist sections: this routing's answers (reject rules), Joint Details, Fabrication, earlier routings' answers */
 export function conditionFieldGroups(fields: ConditionCatalogField[]): { label: string; fields: ConditionCatalogField[] }[] {
