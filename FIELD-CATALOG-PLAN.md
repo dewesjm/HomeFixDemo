@@ -117,15 +117,13 @@ Calculated rows show under Joint Details or Fabrication today. They move to thei
    - `catalogs/form-field-catalog.ts:237`, which becomes `Drawing Rev Execution verified`
    - specs that expect the old label, such as `history-rows-fabrication.spec.ts`
    - check whether history entries already saved under the old label need handling
+   - `fabrication/fabrication-form.ts:73`, the short name in `FIT_REQUIRED_FABRICATION`, also becomes `Drawing Rev Execution`, with `fabrication-form.spec.ts:78` and `sign-validation.spec.ts:33`. This text feeds `signProblems()`, which only decides whether signing is allowed; it is not displayed.
+   - the new label is two characters shorter than the old one, so it should not add a line. The user asked that it not wrap, so look at the Fabrication panel and the Fit-Up Insp verify row in a browser.
 2. Before merging, record each screen's list (keys, labels, order, group) so it can be compared afterward.
 3. Move the two constants out of `condition-context.ts`.
 4. Create `field-catalog.ts` and `field-choices.ts`, moving entries across, and update imports. `FormField` is imported by 20 files; keep the type name. Delete both old catalog files. Merge `condition-catalog.spec.ts` into a new spec.
 5. Add tests: keys are unique across the list; each Source's rows have what that Source needs; each screen offers the same keys as the recording from step 2, with the order and names following "Droplist grouping".
 6. Update docs (below), commit, and stop for review.
-
-## Open question for the user
-
-**Fit signing error wording.** Signing Fit with required Fabrication values blank is blocked with an error such as `Fabrication: Location, Drawing Rev, Actual Thickness`. That text uses its own short name for the field (`FIT_REQUIRED_FABRICATION`, `fabrication/fabrication-form.ts:73`; built in `joint-page/rules/sign-validation.ts:75`). Should it say `Drawing Rev Execution`? Leave it as it is unless the user says to change it.
 
 ## Verify
 
