@@ -2,9 +2,12 @@ import { seededWorkflow } from './seeded-workflow';
 import { activeStageId } from '../weld-record/routing/current-routing';
 import { JOBS } from './jobs';
 
+/* joints the app seeds: addTestJob() joints share JOBS, so including them depends on test order */
+const seededJobs = () => JOBS.filter(j => !j._fresh);
+
 describe('seeded joints', () => {
   it('only joints still on their first step start with no history, at both Pre-Fit and Fit', () => {
-    const empty = JOBS.map(j => seededWorkflow(j)).filter(wf => !wf.history.some(e => e.section === 'Sign-off'));
+    const empty = seededJobs().map(j => seededWorkflow(j)).filter(wf => !wf.history.some(e => e.section === 'Sign-off'));
     for (const wf of empty) {
       expect(activeStageId(wf.stages)).withContext(wf.jobId).toBe(wf.stages.find(s => s.required)!.id);
     }
@@ -13,7 +16,7 @@ describe('seeded joints', () => {
   });
 
   it('a handful wait on Repair after an NDT UNSAT, and a couple on Excavation NDT after a Weld Repair', () => {
-    const at = (id: RegExp) => JOBS.map(j => seededWorkflow(j)).filter(wf => id.test(activeStageId(wf.stages) ?? ''));
+    const at = (id: RegExp) => seededJobs().map(j => seededWorkflow(j)).filter(wf => id.test(activeStageId(wf.stages) ?? ''));
     const onRepair = at(/^repair$/);
     const onExcavation = at(/^excavation-ndt$/);
     expect(onRepair.length).toBeGreaterThanOrEqual(3);

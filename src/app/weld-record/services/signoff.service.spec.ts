@@ -140,7 +140,7 @@ describe('SignoffService', () => {
   });
 
   it('seeded joints never sign a skipped step (Deferred Tack, Fit-Up Release) or defer their Tack', () => {
-    for (const job of JOBS.filter(j => j.trade === 'Welding')) {
+    for (const job of JOBS.filter(j => j.trade === 'Welding' && !j._fresh)) {
       const stages = seededWorkflow(job).stages;
       expect(stages.filter(s => s.signed && !s.required).map(s => s.id)).withContext(job.id).toEqual([]);
       expect(stages.find(s => s.id === 'fit')?.signoffInputs['deferTack'] ?? '').withContext(job.id).not.toBe('yes');

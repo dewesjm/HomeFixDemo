@@ -14,6 +14,9 @@ function weldingJob(): Job {
   return job;
 }
 
+/* joints the app seeds: addTestJob() joints share JOBS, so counting them depends on test order */
+const seededJobs = () => JOBS.filter(j => !j._fresh);
+
 const ITEM: DeviationItem = { kind: 'out-of-range', label: 'Actual PH Max', entered: '140', required: '50 to 125' };
 
 describe('DeviationService', () => {
@@ -131,7 +134,7 @@ describe('Engineering Hold (deviations)', () => {
   });
 
   it('a few seeded joints wait on Engineering Hold', () => {
-    const held = JOBS.map(j => seededWorkflow(j)).filter(wf => wf.deviations?.some(d => d.status === 'open'));
+    const held = seededJobs().map(j => seededWorkflow(j)).filter(wf => wf.deviations?.some(d => d.status === 'open'));
     expect(held.length).toBeGreaterThanOrEqual(2);
     expect(held.length).toBeLessThanOrEqual(8);
     for (const wf of held) expect(activeStageId(wf.stages)).withContext(wf.jobId).toBe('engineering-hold');
@@ -190,7 +193,7 @@ describe('Engineering Hold from a reject rule (PT failure on a GTAW weld)', () =
   });
 
   it('at least one seeded joint waits on a PT-failure hold', () => {
-    const held = JOBS.map(j => seededWorkflow(j)).filter(wf => wf.stages.some(s => s.id === 'engineering-hold' && s.inputs['holdReason']));
+    const held = seededJobs().map(j => seededWorkflow(j)).filter(wf => wf.stages.some(s => s.id === 'engineering-hold' && s.inputs['holdReason']));
     expect(held.length).toBeGreaterThanOrEqual(1);
     expect(held.length).toBeLessThanOrEqual(6);
     for (const wf of held) {
