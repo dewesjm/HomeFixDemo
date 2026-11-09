@@ -13,7 +13,7 @@ import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseSte
 export class RoutingConfigurationError extends Error {}
 
 export function resolveInsertion(templates: StageTemplate[], stages: WorkflowStage[], job: Job,
-  source: WorkflowStage, target: string, recordedIds: string[] = []): WorkflowStage {
+  source: WorkflowStage, target: string, recordedIds: string[] = [], fab?: Record<string, string>): WorkflowStage {
   const id = insertionDefinitionId(target);
   const definition = templates.find(t => t.id === id);
   const fail = (why: string): never => { throw new RoutingConfigurationError(`Cannot insert ${definition?.label ?? id}: ${why}.`); };
@@ -21,7 +21,7 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
   if (definition.status !== 'active') return fail('definition is not active');
   const setup = addedRoutingSetup(definition);
   if (setup.errors.length) return fail(setup.errors.join(' '));
-  if (!conditionsMatch(definition.includeWhen, job, stages, source)) return fail('applicability conditions do not match');
+  if (!conditionsMatch(definition.includeWhen, job, stages, source, fab)) return fail('applicability conditions do not match');
   const role = routingRole(definition, job);
   if (!role || role === 'View') return fail('no signing persona is available');
   const sequence = Math.max(0, ...[...stages.map(s => s.id), ...recordedIds].filter(key => insertedDefinitionId(key) === id).map(key => Number(key.split(':').at(-1)))) + 1;

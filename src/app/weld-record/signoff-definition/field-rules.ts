@@ -1,11 +1,10 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Forms */
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
-import { jointDetailField } from '../routing/step-conditions';
+import { jointOrFabricationField } from '../routing/condition-catalog';
 import { FieldActivation } from './step-field-config';
 import { FieldFill, isVerifyRow, lookupCatalogField } from './field-catalog';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
-import { VIRTUAL_JOINT_DETAILS } from './joint-facts';
 
 /* Fields whose visibility is decided in code, not by a condition: the two checkboxes routing reads,
    Weld Build-Up's Affected Item, References and the signoff section's Type, Inspection Results and
@@ -171,13 +170,14 @@ function clauseText(c: ConditionClause): string {
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return `Engineering override is ${c.equals ? 'on' : 'off'}`;
   if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return c.equals ? 'the rejected phase has an RT/UT routing' : 'the rejected phase has no RT/UT routing';
   const key = c.source === 'priorStep' ? c.fieldKey : c.key;
-  const subject = c.source === 'jointDetail' ? `joint ${jointDetailField(key)?.label ?? labelOf(key)}` : labelOf(key);
+  const listed = c.source === 'jointDetail' ? jointOrFabricationField(key) : undefined;
+  const subject = c.source === 'jointDetail' ? `joint ${listed?.label ?? labelOf(key)}` : labelOf(key);
   const isCheckbox = lookupCatalogField(key)?.type === 'checkbox';
   const show = (v: string) => key === 'inspectionType' ? v.toUpperCase() : key === 'repairType' ? lookupCatalogField(key)?.options?.find(o => o.value === v)?.label ?? v : v;
   if (c.equals !== undefined) {
-    const virtual = c.source === 'jointDetail' ? VIRTUAL_JOINT_DETAILS[key] : undefined;
-    if (virtual) return c.equals === 'yes' ? virtual.yesText : virtual.noText;
-    if (c.equals === 'yes' && isCheckbox) return `${subject} is checked`;
+    if (listed?.yesText && c.equals === 'Yes') return listed.yesText;
+    if (listed?.noText && c.equals === 'No') return listed.noText;
+    if (isCheckbox && !listed) return `${subject} is ${c.equals === 'yes' ? 'Yes' : 'No'}`;
     return `${subject} is ${show(c.equals)}`;
   }
   if (c.anyOf !== undefined) return `${subject} is ${c.anyOf.map(show).join(' or ')}`;
@@ -192,7 +192,7 @@ export function conditionText(cond: FieldCondition, nested = false): string {
   return nested && parts.length > 1 ? `(${text})` : text;
 }
 
-/* e.g. "Shown when Has Probationary Inspector is checked" or "Always shown" */
+/* e.g. "Shown when Has Probationary Inspector is Yes" or "Always shown" */
 export function showRuleText(act: FieldActivation): string {
   const builtIn = builtInShowCondition(act.key);
   if (builtIn !== undefined) return builtIn ? `Shown when ${builtIn}` : 'Always shown';
@@ -216,7 +216,7 @@ export function fillSourceText(fill: FieldFill, stepLabel: (stepId: string) => s
 }
 
 /* e.g. "Prepopulated from Fit's Consumable Insert Type when Only Consumable Insert used as filler
-   is checked", "Prepopulated from the WTN's PH Min when Engineering override is off"; "Not
+   is Yes", "Prepopulated from the WTN's PH Min when Engineering override is off"; "Not
    prepopulated" when it never is */
 export function fillRuleText(act: FieldActivation, stepLabel: (stepId: string) => string): string {
   const fill = effectiveFill(act);

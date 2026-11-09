@@ -9,6 +9,7 @@
    definition-edits.ts); the Layout list is definition-layout-list. Add's list is the Types; picking
    one that already has a definition edits it. Stored by step-field-config.ts. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
+import { formFieldValues } from '../../routing/condition-catalog';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -461,8 +462,7 @@ export class AdminSignoffTypeDefinitionComponent {
       .flatMap(a => {
         const cat = lookupCatalogField(a.key);
         if (!cat) return [];
-        const values = cat.type === 'checkbox' ? [{ value: 'yes', label: 'Checked' }] : (cat.options ?? []).map(o => ({ value: o.value, label: o.label }));
-        return [{ key: a.key, label: cat.label, values }];
+        return [{ key: a.key, label: cat.label, values: formFieldValues(cat), yesNo: cat.type === 'checkbox' }];
       });
     const result = e.fieldActivations.some(a => a.key === DECISION_KEY)
       ? [{ key: 'result', label: 'Inspection Results (SAT/UNSAT)', values: [{ value: 'sat', label: 'SAT' }, { value: 'unsat', label: 'UNSAT' }] }] : [];

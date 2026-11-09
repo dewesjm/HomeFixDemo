@@ -1,16 +1,17 @@
 /* Admin > Attribute Code Exceptions rows in plain words, for the table, its export and the notes on
    Routing Settings and Signoff Type to Routing */
-import { allStepAnswerFields, describeConditions, JOINT_DETAIL_FIELDS, StepConditionField } from '../routing/step-conditions';
+import { describeConditions } from '../routing/step-conditions';
+import { allStepAnswerFields, FABRICATION_CONDITION_FIELDS, JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../routing/condition-catalog';
 import { typeLabel } from '../signoff-definition/routing-signoff-types';
-import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS, SHIPBOARD_FIELD } from './attribute-code-exceptions';
+import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from './attribute-code-exceptions';
 
-/* what an Applies when condition can read: Joint Details, Fabrication Location's Shipboard flag,
+/* what an Applies when condition can read: Joint Details, Fabrication,
    Root's and Final Weld's Weld Process, and each MT/PT routing's Type and ID accessible answer */
-export function exceptionConditionFields(): StepConditionField[] {
+export function exceptionConditionFields(): ConditionCatalogField[] {
   const answers = allStepAnswerFields('Welding');
   return [
     ...JOINT_DETAIL_FIELDS.map(f => ({ ...f, valueLabel: (v: string) => f.valueLabel?.(v) ?? (v || 'Blank') })),
-    { key: SHIPBOARD_FIELD, label: 'Fabrication Location is shipboard (once Fit is signed)', values: ['Yes', 'No'], stepAnswer: true, get: () => '' },
+    ...FABRICATION_CONDITION_FIELDS,
     ...[ROOT_WELD_PROCESS, FINAL_WELD_PROCESS].flatMap(key => answers.filter(f => f.key === key)),
     ...answers.filter(f => /^step\.(nqc-)?\w+-ndt-mtpt\.(inspectionType|idAccessible)$/.test(f.key)),
   ];

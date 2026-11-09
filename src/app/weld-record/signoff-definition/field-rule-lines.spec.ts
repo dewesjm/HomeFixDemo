@@ -14,7 +14,7 @@ describe('field rule lines', () => {
 
   it('stacks rules that share a condition on one line', () => {
     expect(fieldRuleLines({ key: 'oversightInspector' }, label)).toEqual([
-      { condition: 'Has Probationary Inspector is checked', behaviors: ['Show'] },
+      { condition: 'Has Probationary Inspector is Yes', behaviors: ['Show'] },
       { condition: 'Always', behaviors: ['Required'] },
     ]);
     expect(fieldRuleLines({ key: 'actualPhMin' }, label)).toEqual([

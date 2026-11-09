@@ -3,15 +3,13 @@
    conditions read a later answer (a weld's Weld Process, Fabrication Location once Fit is signed)
    are re-checked as the joint is signed (route-changes.ts applySignedFlags). */
 import { Job } from '../../data/jobs';
-import { isShipboardLocation } from '../../data/shops';
 import { StageOption, StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { ConditionClause, ConditionRule, conditionsMatch, usesStepAnswers } from '../routing/step-conditions';
+import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/step-conditions';
 import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/step-ids';
-import { fabricationSigned } from '../routing/built-in-step-rules';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-types';
 import { jointCodeSlots } from './attribute-context';
-import { AttributeCodeException, AttributeStageRules, SHIPBOARD_FIELD, getAttributeCodeExceptions } from './attribute-code-exceptions';
+import { AttributeCodeException, AttributeStageRules, getAttributeCodeExceptions } from './attribute-code-exceptions';
 
 export interface RoutingEffect {
   codes: string[];
@@ -24,27 +22,14 @@ export interface RoutingEffect {
   minRt?: number;
 }
 
-/* Fabrication Location's Shipboard flag (Admin > Locations), blank until Fit is signed */
-function shipboardValue(stages: WorkflowStage[], fab: Record<string, string> | undefined): string {
-  if (!fabricationSigned(stages)) return '';
-  return isShipboardLocation(fab?.['location']) ? 'Yes' : 'No';
-}
-
-function clauseHolds(c: ConditionClause, job: Job, stages: WorkflowStage[], fab?: Record<string, string>): boolean {
-  if (c.field !== SHIPBOARD_FIELD) return conditionsMatch([[c]], job, stages);
-  const value = shipboardValue(stages, fab).toLowerCase();
-  const hit = c.values.some(v => v.trim().toLowerCase() === value);
-  return c.op === 'isNot' ? !hit : hit;
-}
-
 /* the row's own conditions; rowsFor() has already matched its code */
 function applies(row: AttributeCodeException, job: Job, stages: WorkflowStage[], fab?: Record<string, string>): boolean {
-  return !row.when?.length || row.when.some(rule => rule.every(c => clauseHolds(c, job, stages, fab)));
+  return conditionsMatch(row.when, job, stages, undefined, fab);
 }
 
 /* conditions known only once something on the joint is signed */
 export function readsLaterAnswers(rules: ConditionRule[] | undefined): boolean {
-  return usesStepAnswers(rules) || !!rules?.some(rule => rule.some(c => c.field === SHIPBOARD_FIELD));
+  return usesStepAnswers(rules);
 }
 
 const rowsFor = (routingId: string, job: Job) => {
@@ -55,6 +40,12 @@ const rowsFor = (routingId: string, job: Job) => {
 /* whether any of the joint's codes has a row for this routing that waits on a later answer */
 export function hasLaterAnswerRows(routingId: string, job: Job): boolean {
   return rowsFor(routingId, job).some(r => readsLaterAnswers(r.when));
+}
+
+/* whether any row for one of the joint's codes reads a Fabrication value */
+export function hasFabricationRows(job: Job): boolean {
+  const codes = jointCodeSlots(job);
+  return getAttributeCodeExceptions().some(r => codes.includes(r.code.trim().toUpperCase()) && usesFabrication(r.when));
 }
 
 /* a later-answer row that may add this routing, so it is on the joint (not required) from the start */

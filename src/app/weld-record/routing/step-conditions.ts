@@ -1,8 +1,8 @@
-import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
+import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
+import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
-import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
+import { ConditionCatalogField, Fabrication, StageAnswers, catalogField } from './condition-catalog';
 import { originalInspectionType, performedInspectionType } from './inspection-context';
-import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches
    when every one of its clauses does. No rules = always included.
@@ -11,15 +11,8 @@ import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-ty
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
-import { Job, MCL_POOL, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
-import { getJointDesign } from '../../data/joint-designs';
-import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
-import { requiresTraceability } from '../../data/mcl-traceability';
-import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId, isRepairStageId, isExcavationNdtStageId } from './step-ids';
-import { NDT_LABELS } from '../../data/ndt-labels';
-
 export interface ConditionClause {
-  field: string;          /* STEP_CONDITION_FIELDS key */
+  field: string;          /* a condition-catalog.ts key */
   op: 'is' | 'isNot' | 'contains';
   values: string[];       /* matches any of these; 'contains' has one typed text, any case */
 }
@@ -32,177 +25,6 @@ export interface RejectRule {
   when: ConditionRule;
   to: string;             /* stage id; 'repair' on an NDT step adds a Repair */
 }
-
-/* the part of a workflow stage a step-answer clause reads (kept structural to avoid importing the workflow fils) */
-interface StageAnswers {
-  id: string;
-  signed: boolean;
-  inputs: Record<string, string>;
-  signoffInputs: Record<string, string>;
-  inspectionType?: string;
-  insertion?: { originInspectionType?: string };
-}
-
-export interface StepConditionField {
-  key: string;
-  label: string;
-  values: string[];       /* none = a typed value (is / is not compare whole text, any case) */
-  /* step answers only have a value once that step is signed */
-  stepAnswer?: boolean;
-  get: (job: Job, stages: StageAnswers[]) => string;
-  /* shown instead of the stored value (a step's own option values, e.g. straw -> Straw) */
-  valueLabel?: (v: string) => string;
-}
-
-const yesNo = (b: boolean) => b ? 'Yes' : 'No';
-const upper = (v: string) => (v || '').trim().toUpperCase();
-const RT_DEGREES = ['NA', '10', '100', '360', '60', '75'];
-
-/* Yes/No from a signed step's checkbox, blank until that step is signed */
-const signedAnswer = (stageIds: string[], key: string, signoff: boolean) => (_: Job, stages: StageAnswers[]) => {
-  const s = stages.find(st => stageIds.includes(st.id));
-  if (!s?.signed) return '';
-  return yesNo((signoff ? s.signoffInputs : s.inputs)[key] === 'yes');
-};
-
-/* a Joint Details text field, as shown there */
-const text = (key: keyof Job, label: string, values: string[] = []): StepConditionField =>
-  ({ key, label, values, get: j => String(j[key] ?? '') });
-
-/* Joint Details as shown on the weld record (Routing left out: it's what these rules decide).
-   UT/VT read the same values the Joint Details panel shows (UT X or -, VT X or blank). */
-const JOINT_DETAILS_TEXT: StepConditionField[] = [
-  text('xrefid', 'XREFID'), text('ship', 'Ship'), text('hull', 'Hull'), text('drawing', 'Drawing'),
-  text('drawingRev', 'Drawing Rev'), text('joint', 'Joint'), text('jointDesign', 'Joint Design'),
-  text('pipeSize', 'Pipe Size', PIPE_SIZES), text('wallThickness', 'Wall Thickness', WALL_THICKNESSES),
-  text('sequenceNumber', 'Sequence #'), text('engineeringNotes', 'Engineering Notes'),
-  text('mcl1', 'MCL 1', MCL_POOL), text('materialType1', 'Material Type 1'), text('joiningItem', 'Joining Item'),
-  text('mcl2', 'MCL 2', MCL_POOL), text('materialType2', 'Material Type 2'), text('joinToItem', 'Join To Item'),
-  { key: 'ut', label: NDT_LABELS.ut, values: ['X', '-'], get: jointDetailsUt },
-  { key: 'vt', label: NDT_LABELS.vt, values: ['X'], get: jointDetailsVt },
-  text('order', 'Order'), text('workPackage', 'Work Package'), text('workPermit', 'Work Permit'), text('waff', 'WAFF'),
-  text('serialNumber', 'Serial Number'), text('refitNumber', 'Refit #'), text('repairNumber', 'Repair #'),
-  text('er1', 'ER1'), text('er2', 'ER2'), text('er3', 'ER3'), text('er4', 'ER4'),
-  text('attributeCode1', 'Attribute Code 1'), text('attributeCode2', 'Attribute Code 2'),
-  text('attributeCode3', 'Attribute Code 3'), text('attributeCode4', 'Attribute Code 4'),
-];
-
-/* Joint Details fields (the built-in rules' fields first), then Fit's Defer Tack and Fit-Up Insp's
-   Release to welding; every other step's fields come from stepAnswerFields() */
-export const STEP_CONDITION_FIELDS: StepConditionField[] = [
-  { key: 'attributeCodes', label: 'Has attribute code (any slot)', values: PROGRESSION_ATTRIBUTE_CODES.map(a => a.code),
-    get: j => jointAttributeCodes(j).join(', ') },
-  ...(['nonFerrous', 'austenitic', 'titanium'] as MaterialFlag[]).map(flag => ({
-    key: `material.${flag}`, label: `Either material is ${flag === 'nonFerrous' ? 'non-ferrous' : flag}`,
-    values: ['Yes', 'No'], get: (job: Job) => yesNo(hasMaterialFlag(job, flag)),
-  })),
-  { key: 'nInd', label: 'N Ind.', values: N_IND_POOL, get: j => j.nInd },
-  { key: 'jdInsert', label: 'Joint Design needs Consumable Insert', values: ['Yes', 'No'],
-    get: j => yesNo(!!getJointDesign(j.jointDesign)?.requiresConsumableInsert) },
-  { key: 'jdRing', label: 'Joint Design needs Backing Ring', values: ['Yes', 'No'],
-    get: j => yesNo(!!getJointDesign(j.jointDesign)?.requiresBackingRing) },
-  { key: 'ss', label: 'SS', values: ['Yes', 'No'], get: j => yesNo(!!j.ss) },
-  { key: 'sfff', label: 'SFFF', values: ['Yes', 'No'], get: j => yesNo(!!j.sfff) },
-  { key: 'dssAaa', label: 'DSS-AAA', values: ['Yes', 'No'], get: j => yesNo(!!j.dssAaa) },
-  { key: 'controlledMaterial', label: 'Controlled Material', values: ['Yes', 'No'],
-    get: j => yesNo(requiresTraceability(j.mcl1) || requiresTraceability(j.mcl2)) },
-  { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
-  { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
-  { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },
-  { key: 'ndtEach', label: NDT_LABELS.ndtEach, values: ['', ...NDT_EACH_VALUES], valueLabel: v => v || 'Blank', get: j => upper(j.ndtEach) },
-  { key: 'ndtFinal', label: NDT_LABELS.ndtFinal, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtFinal) },
-  { key: 'rtFinal', label: NDT_LABELS.rtFinal, values: RT_DEGREES, get: j => j.rtFinal },
-  ...JOINT_DETAILS_TEXT,
-  { key: 'fitDeferTack', label: 'Fit: Defer Tack (once Fit is signed)', values: ['Yes', 'No'], stepAnswer: true,
-    get: signedAnswer(['fit'], 'deferTack', true) },
-  { key: 'inspReleaseToWelding', label: 'Fit-Up Insp: Release to welding (once Fit-Up Insp is signed)', values: ['Yes', 'No'], stepAnswer: true,
-    get: signedAnswer(['fitup-insp', nqcStepId('fitup-insp')], 'releaseToWelding', false) },
-];
-
-/* the Joint Details fields (no step answers): also what a field condition's Joint detail can read */
-export const JOINT_DETAIL_FIELDS = STEP_CONDITION_FIELDS.filter(f => !f.stepAnswer);
-export const jointDetailField = (key: string) => JOINT_DETAIL_FIELDS.find(f => f.key === key);
-
-/* ── Step answers: every step's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
-
-/* the part of a stage template these read (structural, so the workflow files aren't imported here) */
-export interface StepTemplateShape extends StageShape { id: string; label: string }
-
-/* Registered with templates to keep condition evaluation independent of form initialization. */
-interface RoutingField { key: string; label: string; type: string; options?: { label: string; value: string }[]; ownFormSteps?: string[]; }
-let routingFields: (stageId: string, options?: StageShape['typeOptions']) => RoutingField[] = () => [];
-let fieldsVersion: () => number = () => 0;
-export function registerRoutingFields(fn: typeof routingFields, version: () => number) { routingFields = fn; fieldsVersion = version; }
-export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
-
-/* workflow/stage-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
-let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
-export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
-
-/* covered by the fixed fields above (the built-in rules use those keys) */
-const FIXED_STEP_ANSWERS = new Set(['fit.deferTack', 'fitup-insp.releaseToWelding', `${nqcStepId('fitup-insp')}.releaseToWelding`]);
-
-/* one step's answers as condition fields; blank until that step is signed */
-function answersOf(t: StepTemplateShape): StepConditionField[] {
-  const out: StepConditionField[] = [];
-  const add = (key: string, label: string, type: string, opts?: { label: string; value: string }[], signoff = false) => {
-    if (FIXED_STEP_ANSWERS.has(`${t.id}.${key}`) || out.some(f => f.key === `step.${t.id}.${key}`)) return;
-    const labels = new Map((opts ?? []).map(o => [o.value, o.label]));
-    const checkbox = type === 'checkbox';
-    out.push({
-      key: `step.${t.id}.${key}`, label: `${t.label}: ${label}`, stepAnswer: true,
-      values: checkbox ? ['Yes', 'No'] : (opts ?? []).map(o => o.value),
-      valueLabel: checkbox ? undefined : v => labels.get(v) ?? v,
-      get: (_: Job, stages: StageAnswers[]) => {
-        const s = stages.find(st => st.signed && st.id === t.id);
-        if (!s) return '';
-        if (key === 'inspectionType') return s.inspectionType ?? '';
-        const v = (signoff ? s.signoffInputs : s.inputs)[key] ?? (signoff ? s.inputs : s.signoffInputs)[key] ?? '';
-        return checkbox ? yesNo(v === 'yes') : v;
-      },
-    });
-  };
-  if ((t.typeOptions?.length ?? 0) > 1) add('inspectionType', 'Type', 'select', t.typeOptions);
-  for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, f.options, !!f.ownFormSteps?.includes(t.id));
-  return out;
-}
-
-const stepsOf = (trade: string): StepTemplateShape[] => stepTemplates()[trade] ?? [];
-
-/* a trade's steps (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
-export const tradeSteps = (trade: string): StepTemplateShape[] => stepsOf(trade);
-
-/* the answers of a trade's steps before `stageId`, in routing order (what a rule on that step can use) */
-export function stepAnswerFieldsBefore(trade: string, stageId: string): StepConditionField[] {
-  const list = stepsOf(trade);
-  const at = list.findIndex(t => t.id === stageId);
-  return (at < 0 ? list : list.slice(0, at)).flatMap(answersOf);
-}
-
-/* every step's answers for a trade, in routing order, with Fit's and Fit-Up Insp's fixed ones under
-   their own step (Advanced Search) */
-export function allStepAnswerFields(trade: string): StepConditionField[] {
-  const fixed = STEP_CONDITION_FIELDS.filter(f => f.stepAnswer);
-  const fixedOf = (stageId: string) => fixed.filter(f => FIXED_STEP_ANSWERS.has(`${stageId}.${FIXED_KEY[f.key]}`));
-  return stepsOf(trade).flatMap(t => [...fixedOf(t.id), ...answersOf(t)]);
-}
-/* fixed step-answer field -> the step field it reads */
-const FIXED_KEY: Record<string, string> = { fitDeferTack: 'deferTack', inspReleaseToWelding: 'releaseToWelding' };
-
-/* every trade's step answers, for looking a saved clause's field up by key */
-let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, StepConditionField>; version: number } | null = null;
-function stepAnswerField(key: string): StepConditionField | undefined {
-  const src = stepTemplates();
-  if (cache?.src !== src || cache?.version !== fieldsVersion()) {
-    const fields = new Map<string, StepConditionField>();
-    for (const f of Object.values(src).flat().flatMap(answersOf)) if (!fields.has(f.key)) fields.set(f.key, f);
-    cache = { src, fields, version: fieldsVersion() };
-  }
-  return cache.fields.get(key);
-}
-
-const conditionField = (key: string) =>
-  STEP_CONDITION_FIELDS.find(f => f.key === key) ?? (key.startsWith('step.') ? stepAnswerField(key) : undefined);
 
 const RT_TAKEN = ['10', '100', '360', '60', '75'];
 const utrtRule = (ndtKey: string, rtKey: string): ConditionRule[] => [
@@ -302,8 +124,8 @@ export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
 };
 
 /* The first accepted-signoff rule whose conditions match. */
-export function matchingThenRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers): RejectRule | undefined {
-  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self)));
+export function matchingThenRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers, fab?: Fabrication): RejectRule | undefined {
+  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self, fab)));
 }
 
 /* a rejected step's own answer: its Type, or a field (checkbox unticked = '') */
@@ -315,7 +137,7 @@ function selfValue(self: StageAnswers | undefined, key: string, stages: StageAns
   return self.inputs[key] ?? self.signoffInputs[key] ?? '';
 }
 
-function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], self?: StageAnswers): boolean {
+function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], self?: StageAnswers, fab?: Fabrication): boolean {
   if (c.field === 'attributeCodes') {
     const codes = jointAttributeCodes(job);
     const hit = c.values.some(value => codes.some(code => code.toLowerCase() === value.trim().toLowerCase()));
@@ -324,9 +146,9 @@ function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], sel
   let value: string;
   if (c.field.startsWith('self.')) value = selfValue(self, c.field.slice(5), stages);
   else {
-    const f = conditionField(c.field);
+    const f = catalogField(c.field);
     if (!f) return false;
-    value = f.get(job, stages);
+    value = f.get(job, stages, fab);
   }
   if (c.op === 'contains') {
     const text = (c.values[0] ?? '').trim().toLowerCase();
@@ -338,54 +160,26 @@ function clauseMatches(c: ConditionClause, job: Job, stages: StageAnswers[], sel
 }
 
 /* no rules = always included */
-export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, stages: StageAnswers[] = [], self?: StageAnswers): boolean {
+export function conditionsMatch(rules: ConditionRule[] | undefined, job: Job, stages: StageAnswers[] = [], self?: StageAnswers, fab?: Fabrication): boolean {
   if (!rules?.length) return true;
-  return rules.some(rule => rule.every(c => clauseMatches(c, job, stages, self)));
+  return rules.some(rule => rule.every(c => clauseMatches(c, job, stages, self, fab)));
 }
 
 /* the first reject rule matching the rejected step `self`, if any */
-export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers): RejectRule | undefined {
-  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self)));
-}
-
-/* the shape of a stage template stageConditionFields() reads */
-export interface StageShape {
-  id?: string;
-  classification?: 'numbered' | 'added';
-  lifecycle?: string;
-  insertion?: { originInspectionType?: string };
-  typeOptions?: { label: string; value: string }[];
-}
-
-/* a step's own answers a reject rule can test: its Type, and every field */
-export function stageConditionFields(stage: StageShape): StepConditionField[] {
-  const out: StepConditionField[] = [];
-  const add = (key: string, label: string, opts: { label: string; value: string }[]) => {
-    if (out.some(f => f.key === `self.${key}`)) return;
-    const labels = new Map(opts.map(o => [o.value, o.label]));
-    out.push({ key: `self.${key}`, label: `This routing: ${label}`, values: opts.map(o => o.value),
-      valueLabel: v => labels.get(v) ?? v, get: () => '' });
-  };
-  if (stage.typeOptions?.length) add('inspectionType', 'Type', stage.typeOptions);
-  for (const f of routingAnswerFields(stage)) {
-    if (f.type === 'checkbox') add(f.key, f.label, [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }]);
-    else add(f.key, f.label, f.options ?? []);   /* no options = a typed value */
-  }
-  const repair = isRepairStageId(stage.id ?? '');
-  if (repair || isExcavationNdtStageId(stage.id ?? '') || stage.insertion || (stage.classification === 'added' && stage.lifecycle === 'ordinary')) {
-    const types = [{ label: 'Blank', value: '' }, ...getRoutingSignoffTypes().map(t => ({ label: t.label, value: t.value }))];
-    add('originalInspectionType', 'Original rejecting inspection Type', types);
-    if (!repair) add('performedInspectionType', 'Performed inspection Type', types);
-  }
-  return out;
+export function matchingRejectRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers, fab?: Fabrication): RejectRule | undefined {
+  return rules?.find(r => r.when.every(c => clauseMatches(c, job, stages, self, fab)));
 }
 
 export function usesStepAnswers(rules: ConditionRule[] | undefined): boolean {
-  return !!rules?.some(rule => rule.some(c => conditionField(c.field)?.stepAnswer));
+  return !!rules?.some(rule => rule.some(c => catalogField(c.field)?.stepAnswer));
 }
 
-function describeClause(c: ConditionClause, extra: StepConditionField[]): string {
-  const f = extra.find(x => x.key === c.field) ?? conditionField(c.field);
+export function usesFabrication(rules: ConditionRule[] | undefined): boolean {
+  return !!rules?.some(rule => rule.some(c => catalogField(c.field)?.group === 'Fabrication'));
+}
+
+function describeClause(c: ConditionClause, extra: ConditionCatalogField[]): string {
+  const f = extra.find(x => x.key === c.field) ?? catalogField(c.field);
   const label = f?.label.replace(/ \(once .*\)$/, '') ?? c.field;
   if (c.op === 'contains') return `${label} contains "${(c.values[0] ?? '').trim()}"`;
   const vals = c.values.length ? c.values.map(v => f?.valueLabel?.(v) ?? v).join(' or ') : '(nothing)';
@@ -393,13 +187,13 @@ function describeClause(c: ConditionClause, extra: StepConditionField[]): string
 }
 
 /* each clause in plain words, e.g. "Type is PT" (the rejected routing's own fields lose their "This routing: ") */
-export function describeClauses(rule: ConditionRule, extra: StepConditionField[] = []): string[] {
+export function describeClauses(rule: ConditionRule, extra: ConditionCatalogField[] = []): string[] {
   return rule.map(c => describeClause(c, extra).replace(/^This routing: /, ''));
 }
 
 /* plain words for the Routing table, e.g. "N Ind. is 1 or 2; or Joint Design needs Backing Ring is Yes";
    `extra` is the step's own fields (stageConditionFields) for reject rules */
-export function describeConditions(rules: ConditionRule[] | undefined, extra: StepConditionField[] = []): string {
+export function describeConditions(rules: ConditionRule[] | undefined, extra: ConditionCatalogField[] = []): string {
   if (!rules?.length) return 'Always';
   return rules.map(rule => rule.length ? rule.map(c => describeClause(c, extra)).join(' and ') : 'Always').join('; or ');
 }

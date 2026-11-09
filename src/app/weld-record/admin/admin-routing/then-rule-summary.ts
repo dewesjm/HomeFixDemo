@@ -1,7 +1,8 @@
-import { RejectRule, StepConditionField, describeClauses } from '../../routing/step-conditions';
+import { RejectRule, describeClauses } from '../../routing/step-conditions';
+import { ConditionCatalogField } from '../../routing/condition-catalog';
 
 /** Describe the condition separately from the destination in Routing Settings. */
-export function thenRuleSummary(rule: RejectRule, fields: StepConditionField[], destination: string): string {
+export function thenRuleSummary(rule: RejectRule, fields: ConditionCatalogField[], destination: string): string {
   const summaryFields = fields.map(field => ({
     ...field,
     label: field.label.replace(/ - Volumetric inspection \(UT\/RT\) is required$/, ''),

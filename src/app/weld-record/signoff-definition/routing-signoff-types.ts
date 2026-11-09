@@ -2,6 +2,7 @@
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage. */
 import { STORAGE } from '../../data/storage-keys';
+import { migrateConditionClauses } from './condition-catalog-migration';
 import { FieldCondition } from './field-conditions';
 
 export interface AdditionalSignoff {
@@ -63,7 +64,7 @@ export const routingSignoffTypesVersion = () => version;
 export function getRoutingSignoffTypes(): RoutingSignoffType[] {
   try {
     const raw = localStorage.getItem(STORAGE.routingSignoffTypes);
-    const types: RoutingSignoffType[] = raw ? JSON.parse(raw) : SEED_TYPES;
+    const types: RoutingSignoffType[] = raw ? migrateConditionClauses(JSON.parse(raw) as RoutingSignoffType[]) : SEED_TYPES;
     return types.map(t => t.value === 'root' && t.alsoSigns === undefined
       ? { ...t, alsoSigns: structuredClone(ROOT_ADDITIONAL_SIGNOFFS) } : t);
   } catch { return SEED_TYPES; }

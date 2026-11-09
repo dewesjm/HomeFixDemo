@@ -1,12 +1,12 @@
-import { StepConditionField } from '../../routing/step-conditions';
+import { ConditionCatalogField } from '../../routing/condition-catalog';
 import { conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause } from './condition-editing';
 
-const FIELDS: StepConditionField[] = [
-  { key: 'self.result', label: 'Result', values: ['sat', 'unsat'], valueLabel: (v: string) => v.toUpperCase() },
-  { key: 'nInd', label: 'Nuclear Indicator', values: ['1', '2', '3'] },
-  { key: 'drawing', label: 'Drawing', values: [] },
-  { key: 'tack.wtn', label: 'Tack WTN', values: [], stepAnswer: true },
-] as unknown as StepConditionField[];
+const FIELDS: ConditionCatalogField[] = [
+  { key: 'self.result', label: 'Result', group: 'This routing', values: ['sat', 'unsat'], valueLabel: (v: string) => v.toUpperCase() },
+  { key: 'nInd', label: 'Nuclear Indicator', group: 'Joint Details', values: ['1', '2', '3'] },
+  { key: 'drawing', label: 'Drawing', group: 'Joint Details', values: [] },
+  { key: 'tack.wtn', label: 'Tack WTN', group: 'Routing answers', values: [], stepAnswer: true },
+] as unknown as ConditionCatalogField[];
 
 describe('condition-editing', () => {
   it('groups fields into This routing, Joint Details and Earlier routings, dropping empty groups', () => {

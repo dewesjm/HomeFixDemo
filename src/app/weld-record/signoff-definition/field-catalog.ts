@@ -70,8 +70,7 @@ export function catalogFieldTypeLabel(field: Pick<CatalogField, 'type' | 'allows
 
 const showIfHasProbationary: FieldCondition = { all: [{ source: 'field', key: 'hasProbationary', equals: 'yes' }] };
 const showIfPartial: FieldCondition = { all: [{ source: 'field', key: 'partial', equals: 'yes' }] };
-/* 'titanium' is a virtual Joint Details key (joint-facts.ts) */
-const showIfTitanium: FieldCondition = { all: [{ source: 'jointDetail', key: 'titanium', equals: 'yes' }] };
+const showIfTitanium: FieldCondition = { all: [{ source: 'jointDetail', key: 'material.titanium', equals: 'Yes' }] };
 const showIfUnsat: FieldCondition = { all: [{ source: 'field', key: 'result', equals: 'unsat' }] };
 /* Root's filler follows Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked
    (the checkbox is only on Root, so the rule never holds on other steps) */
@@ -87,12 +86,12 @@ const ncFrom = (requirement: string): FieldFill => ({ from: 'thisStep', fieldKey
 
 const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
 /* virtual Joint Details keys (joint-facts.ts) */
-const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'yes' }] };
-const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'yes' }] };
-const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'materialTraceability', equals: 'yes' }] };
-const ifPart1Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part1Traceability', equals: 'yes' }] };
-const ifPart2Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part2Traceability', equals: 'yes' }] };
-const ifRevisedJointDesign: FieldCondition = { all: [{ source: 'jointDetail', key: 'revisedJointDesignEntered', equals: 'yes' }] };
+const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'Yes' }] };
+const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'Yes' }] };
+const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' }] };
+const ifPart1Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part1Traceability', equals: 'Yes' }] };
+const ifPart2Traceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'part2Traceability', equals: 'Yes' }] };
+const ifRevisedJointDesign: FieldCondition = { all: [{ source: 'jointDetail', key: 'revisedJointDesignEntered', equals: 'Yes' }] };
 
 /* Pre-Fit and Fit hold the insert and ring fields as sign-off fields (welding-steps.ts) */
 const FIT_STEPS = ['pre-fit', 'fit'];

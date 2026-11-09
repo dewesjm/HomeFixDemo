@@ -6,7 +6,8 @@ import { JOBS, Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { getJointDesign } from '../../data/joint-designs';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
-import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch, stepAnswerFieldsBefore } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch } from './step-conditions';
+import { stepAnswerFieldsBefore } from './condition-catalog';
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
 function oldStepIds(job: Job, ids: string[]): string[] {

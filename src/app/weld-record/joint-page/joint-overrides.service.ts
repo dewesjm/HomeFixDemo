@@ -100,7 +100,7 @@ export class JointOverridesService {
   }
 
   private detect(stage: WorkflowStage, visibleKeys: ReadonlySet<string>): DeviationItem[] {
-    return detectDeviations(stage, visibleKeys, heldQuals(), this.baseMetals(), conditionRequirements(this.src?.job, stage));
+    return detectDeviations(stage, visibleKeys, heldQuals(), this.baseMetals(), conditionRequirements(this.src?.job, stage, this.src?.wf().fabricationData));
   }
 
   private isOffList(stage: WorkflowStage, key: string): boolean {

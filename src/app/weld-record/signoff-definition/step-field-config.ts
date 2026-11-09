@@ -6,6 +6,7 @@ import { repairCodesVersion } from '../../data/repair-codes';
    localStorage and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
 import { migrateRepairConfirmationForm } from './repair-confirmation-migration';
+import { migrateConditionClauses } from './condition-catalog-migration';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from './field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
@@ -82,8 +83,8 @@ const ndtRootInspection: FieldCondition = { all: [{ source: 'jointDetail', key: 
    material traceability (virtual keys in joint-facts.ts) */
 const tackFiller: FieldCondition = {
   all: [
-    { source: 'jointDetail', key: 'consumableInsertRequired', equals: '' },
-    { source: 'jointDetail', key: 'materialTraceability', equals: 'yes' },
+    { source: 'jointDetail', key: 'consumableInsertRequired', equals: 'No' },
+    { source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' },
   ]
 };
 
@@ -225,7 +226,7 @@ export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? (JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? migrateConditionClauses(JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }

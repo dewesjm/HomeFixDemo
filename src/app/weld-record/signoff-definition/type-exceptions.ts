@@ -1,6 +1,7 @@
 /* Ordered replacements apply once to the original Type; replacements never chain. */
 import { Job } from '../../data/jobs';
-import { ConditionRule, conditionsMatch, JOINT_DETAIL_FIELDS } from '../routing/step-conditions';
+import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
+import { JOINT_DETAIL_FIELDS } from '../routing/condition-catalog';
 
 export interface TypeException {
   from: string;

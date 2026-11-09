@@ -2,7 +2,8 @@
    Applies when). Rules are OR; clauses within a rule are AND. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConditionRule, JOINT_DETAIL_FIELDS, StepConditionField } from '../../routing/step-conditions';
+import { ConditionRule } from '../../routing/step-conditions';
+import { JOINT_DETAIL_FIELDS, ConditionCatalogField } from '../../routing/condition-catalog';
 
 const BLANK = 'Blank';
 
@@ -47,7 +48,7 @@ export class TypeEnableConditionsComponent {
   rules = input.required<ConditionRule[]>();
   listId = input.required<string>();
   changed = output<ConditionRule[]>();
-  fields = input<Pick<StepConditionField, 'key' | 'label' | 'values'>[]>([...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }]);
+  fields = input<Pick<ConditionCatalogField, 'key' | 'label' | 'values'>[]>([...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }]);
   /* suggestions for the value box; an empty value is shown and typed as Blank */
   values(field: string) {
     return [...new Set((this.fields().find(f => f.key === field)?.values ?? []).map(v => v || BLANK)), BLANK];

@@ -50,22 +50,21 @@
           </select>
         } @else if (c.source === 'jointDetail') {
           <select class="select select-bordered select-xs w-64" aria-label="Joint detail"
-                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: isJointFact($event) ? 'yes' : '' })">
+                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: jointYesNo($event) ? 'Yes' : '' })">
             <option value="" disabled>Select a joint detail</option>
             @if (unlistedJointKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
-            <optgroup label="Joint facts">
-              @for (f of jointFacts; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
-            </optgroup>
-            <optgroup label="Joint Details">
-              @for (f of jointFields; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
-            </optgroup>
+            @for (g of jointGroups; track g.name) {
+              <optgroup [label]="g.name">
+                @for (f of g.fields; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
+              </optgroup>
+            }
           </select>
-          @if (isJointFact(c.key)) {
+          @if (jointYesNo(c.key)) {
             <span class="text-xs">is</span>
-            <select class="select select-bordered select-xs w-20" aria-label="Joint fact is"
+            <select class="select select-bordered select-xs w-20" aria-label="Joint detail is"
                     [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
-              <option value="yes">Yes</option>
-              <option value="">No</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
             </select>
           } @else if (c.key) {
             <span class="text-xs">=</span>
@@ -77,12 +76,19 @@
           }
         } @else if (c.source === 'field') {
           <select class="select select-bordered select-xs w-64" aria-label="Form field"
-                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: '' })">
+                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: fieldYesNo($event) ? 'yes' : '' })">
             <option value="" disabled>Select a field</option>
             @if (unlistedFieldKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
             @for (f of stepFields(); track f.key) { <option [value]="f.key">{{ f.label }}</option> }
           </select>
-          @if (c.key) {
+          @if (fieldYesNo(c.key)) {
+            <span class="text-xs">is</span>
+            <select class="select select-bordered select-xs w-20" aria-label="Form field is"
+                    [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })">
+              <option value="yes">Yes</option>
+              <option value="">No</option>
+            </select>
+          } @else if (c.key) {
             <span class="text-xs">=</span>
             <input type="text" class="input input-bordered input-xs w-32" placeholder="Value" [attr.list]="valuesListId(i)"
                    [ngModel]="c.equals" (ngModelChange)="updateClause(i, { equals: $event })" />

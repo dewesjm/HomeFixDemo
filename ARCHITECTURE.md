@@ -132,6 +132,8 @@ src/app/
                           Rules are plain functions (no Angular), in the folder of the concern they belong to:
     model/workflow-types.ts  The workflow data model: a joint's routings, what's recorded on them, its History
     routing/               Everything that decides where a joint is and where it goes (see ROUTING.md):
+                           condition-catalog (the one list of fields every admin condition editor offers a part of:
+                           Joint Details, Fabrication 'fab.<key>', routing answers 'step.<stageId>.<key>', This routing 'self.<key>'),
                            build-stages (which routings a joint gets, from the templates + Included when),
                            step-conditions (Included when / reject rules: the model and matching),
                            stage-templates (built-in routings merged with Admin > Routing Settings edits),

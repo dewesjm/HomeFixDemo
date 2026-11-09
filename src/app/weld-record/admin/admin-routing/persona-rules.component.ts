@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Job } from '../../../data/jobs';
 import { ROLES, StageTemplate } from '../../model/workflow-types';
 import { getTemplates, updateStageTemplate } from '../../routing/stage-templates';
-import { ConditionClause, STEP_CONDITION_FIELDS, describeConditions } from '../../routing/step-conditions';
+import { ConditionClause, describeConditions } from '../../routing/step-conditions';
+import { JOINT_DETAIL_FIELDS } from '../../routing/condition-catalog';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './condition-editing';
 
 @Component({
@@ -72,7 +73,7 @@ export class PersonaRulesComponent {
   trade = input.required<Job['trade']>();
   closed = output<void>();
   saved = output<void>();
-  fields = STEP_CONDITION_FIELDS.filter(field => !field.stepAnswer);
+  fields = JOINT_DETAIL_FIELDS;
   roles: string[] = [...ROLES];
   rules: NonNullable<StageTemplate['roleRules']> = [];
   fallbackRole = '';

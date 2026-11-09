@@ -2,6 +2,7 @@ import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdditionalSignoff, getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { FIELD_CATALOG } from '../../signoff-definition/field-catalog';
+import { formFieldValues } from '../../routing/condition-catalog';
 import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
 import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-type-definition/condition-work';
 import { FieldCondition } from '../../signoff-definition/field-conditions';
@@ -37,7 +38,7 @@ export class AdditionalSignoffsEditorComponent {
   routings = input.required<{ id: string; label: string }[]>();
   changed = output<AdditionalSignoff[]>();
   types = getRoutingSignoffTypes();
-  fields = FIELD_CATALOG.filter(f => !f.ownComponent).map(f => ({ key: f.key, label: f.label, values: f.options ?? [] }));
+  fields = FIELD_CATALOG.filter(f => !f.ownComponent).map(f => ({ key: f.key, label: f.label, values: formFieldValues(f), yesNo: f.type === 'checkbox' }));
   /* Keep unfinished clauses in the editor; only complete clauses belong in saved rules. */
   private readonly drafts = new WeakMap<FieldCondition, WorkGroup>();
   toWork(condition: FieldCondition | undefined): WorkGroup {

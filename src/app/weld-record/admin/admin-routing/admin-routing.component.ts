@@ -39,10 +39,8 @@ import {
 } from '../../routing/stage-templates';
 import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
-import {
-  ConditionClause, ConditionRule, RejectRule, StepConditionField, STEP_CONDITION_FIELDS, DEFAULT_STEP_CONDITIONS,
-  describeConditions, stageConditionFields, stepAnswerFieldsBefore
-} from '../../routing/step-conditions';
+import { ConditionClause, ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, describeConditions } from '../../routing/step-conditions';
+import { ConditionCatalogField, ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore } from '../../routing/condition-catalog';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
 } from './condition-editing';
@@ -124,7 +122,7 @@ export class AdminRoutingComponent {
   newRowId = signal<string | null>(null);  // highlights the newly added row
 
   // ── Included when dialog ──
-  condFields = signal<StepConditionField[]>([]);
+  condFields = signal<ConditionCatalogField[]>([]);
   condRow = signal<RoutingRow | null>(null);
   condRules = signal<ConditionRule[]>([]);
 
@@ -429,7 +427,7 @@ export class AdminRoutingComponent {
 
   openConditions(row: RoutingRow) {
     const stage = getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
-    this.condFields.set([...STEP_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])]);
+    this.condFields.set([...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])]);
     this.condRules.set((stage?.includeWhen ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
     this.condRow.set(row);
   }
@@ -492,16 +490,16 @@ export class AdminRoutingComponent {
   rejRow = signal<RoutingRow | null>(null);
   rejRules = signal<RejectRule[]>([]);
   rejDefaultTarget = signal('');
-  rejFields = signal<StepConditionField[]>([]);
+  rejFields = signal<ConditionCatalogField[]>([]);
 
   private templateFor(row: RoutingRow) {
     return getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
   }
 
   /* this step's own answers, Joint Details, then earlier steps' answers */
-  private rejectFieldsFor(row: RoutingRow): StepConditionField[] {
+  private rejectFieldsFor(row: RoutingRow): ConditionCatalogField[] {
     const t = this.templateFor(row);
-    return [...(t ? stageConditionFields(t) : []), ...STEP_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])];
+    return [...(t ? stageConditionFields(t) : []), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])];
   }
 
   private rejectRuleLines(row: RoutingRow): string[] {

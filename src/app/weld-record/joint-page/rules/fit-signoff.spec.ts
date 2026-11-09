@@ -47,7 +47,7 @@ describe('joint-form fit-signoff', () => {
     try {
       setStepFieldConfig(fitFields([
         { key: 'consumableInsertType', required: false },
-        { key: 'consumableInsertSize', disabledIf: { all: [{ source: 'jointDetail', key: 'titanium', equals: '' }] } },
+        { key: 'consumableInsertSize', disabledIf: { all: [{ source: 'jointDetail', key: 'material.titanium', equals: 'No' }] } },
         { key: 'deferTack' },
       ]));
       const shown = visibleSignoffFields(fitOf(both), both, {});

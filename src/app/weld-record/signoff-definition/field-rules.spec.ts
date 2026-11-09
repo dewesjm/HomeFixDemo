@@ -5,8 +5,8 @@ import { conditionText, effectiveShowIf, showIfToStore, showRuleText, disabledRu
 
 describe('field rules', () => {
   it('falls back to the catalog condition when the step sets none', () => {
-    expect(showRuleText({ key: 'probationaryInspector' })).toBe('Shown when Has Probationary Inspector is checked');
-    expect(showRuleText({ key: 'portionInspected' })).toBe('Shown when Partial is checked');
+    expect(showRuleText({ key: 'probationaryInspector' })).toBe('Shown when Has Probationary Inspector is Yes');
+    expect(showRuleText({ key: 'portionInspected' })).toBe('Shown when Partial is Yes');
     expect(showRuleText({ key: 'defectCode' })).toBe('Shown when Result is unsat');
     expect(showRuleText({ key: 'hasProbationary' })).toBe('Always shown');
   });
@@ -43,7 +43,7 @@ describe('field rules', () => {
     expect(disabledIfToStore('actualPhMin', { all: [] })).toEqual({ all: [] });
     expect(disabledIfToStore('wtn', { all: [] })).toBeUndefined();
     expect(disabledIfToStore('wtn', { all: phNc })).toEqual({ all: phNc });
-    const def = [{ source: 'jointDetail' as const, key: 'materialTraceability', equals: 'yes' }];
+    const def = [{ source: 'jointDetail' as const, key: 'controlledMaterial', equals: 'Yes' }];
     expect(requiredIfToStore('consumableInsertId', { all: def })).toBeUndefined();
     const cleared = requiredIfToStore('consumableInsertId', { all: [] });
     expect(cleared).toEqual({ all: [] });
@@ -82,7 +82,7 @@ describe('field rules', () => {
   it('prepopulate rule: catalog default for the filler, stored only when it differs, null when cleared', () => {
     const label = (id: string) => id === 'fit' ? 'Fit' : id;
     expect(fillRuleText({ key: 'fillerMetalType' }, label))
-      .toBe('Prepopulated from Fit\'s Consumable Insert Type when Only Consumable Insert used as filler is checked');
+      .toBe('Prepopulated from Fit\'s Consumable Insert Type when Only Consumable Insert used as filler is Yes');
     expect(fillRuleText({ key: 'wtn' }, label)).toBe('Not prepopulated');
     const def = defaultFill('fillerMetalType');
     expect(fillToStore('fillerMetalType', def && { ...def })).toBeUndefined();
@@ -107,8 +107,8 @@ describe('field rules', () => {
 describe('field rules: Tack filler wording', () => {
   it('words the virtual joint facts', () => {
     const text = showRuleText({ key: 'fillerMetalType', showIf: { all: [
-      { source: 'jointDetail', key: 'consumableInsertRequired', equals: '' },
-      { source: 'jointDetail', key: 'materialTraceability', equals: 'yes' },
+      { source: 'jointDetail', key: 'consumableInsertRequired', equals: 'No' },
+      { source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' },
     ] } });
     expect(text).toBe('Shown when the joint design doesn\'t need a consumable insert and either part requires material traceability');
   });

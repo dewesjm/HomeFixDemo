@@ -2,7 +2,7 @@ import { thenRuleSummary } from './then-rule-summary';
 
 describe('Then go to summaries', () => {
   it('separates the thickness condition from its destination without repeating the inspection requirement', () => {
-    const text = thenRuleSummary({ when: [{ field: 'self.allowableThicknessExceededN1', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' }, [{
+    const text = thenRuleSummary({ when: [{ field: 'self.allowableThicknessExceededN1', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' }, [{ group: 'This routing',
       key: 'self.allowableThicknessExceededN1',
       label: 'This routing: Allowable thickness has been exceeded (Nuclear Indicator 1) - Volumetric inspection (UT/RT) is required',
       values: ['yes'], valueLabel: () => 'Yes', get: () => 'yes',

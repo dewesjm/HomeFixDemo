@@ -9,7 +9,7 @@ import { initialInspectionType, typeValues } from '../signoff-definition/stage-r
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-step-rules';
 
-export function buildStages(job: Job): WorkflowStage[] {
+export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
   const tradeStages = (getTemplates()['Welding'] ?? []).filter(t => !isAddedTemplateId(t.id));
   /* Admin > Routing Settings step conditions: Joint Details rules decide here whether the joint gets the step;
@@ -25,7 +25,7 @@ export function buildStages(job: Job): WorkflowStage[] {
   const hasO63Data = tradeStages.some(t => t.id === 'review-o63' && included(t));
 
   const toStage = (t: StageTemplate): WorkflowStage => {
-    const required = addedByCode(t) || (routingIncluded(t) && baseRequired(t, job));
+    const required = addedByCode(t) || (routingIncluded(t) && baseRequired(t, job, [], fab));
     const { typeOptions: exceptionOptions, attributeRules } = attributeTypeSettings(t.id, job);
     const typeOptions = exceptionOptions ?? t.typeOptions;
     const inputs: Record<string, string> = startsReleasedToWelding(t.id) ? { releaseToWelding: 'yes' } : {};
@@ -54,21 +54,22 @@ export function buildStages(job: Job): WorkflowStage[] {
 
 /* required before any attribute code exception: a step with step-answer rules is required while they
    match (blank until signed), any other by its template */
-export function baseRequired(t: StageTemplate, job: Job, stages: WorkflowStage[] = []): boolean {
-  if (usesStepAnswers(t.includeWhen)) return conditionsMatch(t.includeWhen, job, stages);
+export function baseRequired(t: StageTemplate, job: Job, stages: WorkflowStage[] = [], fab?: Record<string, string>): boolean {
+  if (usesStepAnswers(t.includeWhen)) return conditionsMatch(t.includeWhen, job, stages, undefined, fab);
   return typeof t.required === 'function' ? t.required(job) : t.required;
 }
 
 /* a joint with nothing signed yet; Fabrication is pre-filled for the demo */
 export function newWorkflow(job: Job): JobWorkflow {
+  const fabricationData = seedFabricationData(job);
   return {
     jobId: job.id,
     technician: job.technician,
-    stages: buildStages(job),
+    stages: buildStages(job, fabricationData),
     references: [],
     conditionCode: '',
     conditionCount: 0,
     history: [],
-    fabricationData: seedFabricationData(job),
+    fabricationData,
   };
 }

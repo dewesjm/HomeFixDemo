@@ -7,7 +7,7 @@ import { JobWorkflow } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { shopOptions } from '../../data/shops';
 import { jointDesignOptions } from '../../data/joint-designs';
-import { StepConditionField, allStepAnswerFields } from '../routing/step-conditions';
+import { ConditionCatalogField, allStepAnswerFields } from '../routing/condition-catalog';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { Condition, FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import { NDT_LABELS } from '../../data/ndt-labels';
@@ -84,7 +84,7 @@ const fabFields = (): SearchField[] => FABRICATION_FIELDS.map(f => ({
 }));
 
 /* "Root Weld: Weld Process" -> group "Step: Root Weld" */
-const stepGroup = (f: StepConditionField) => `Routing: ${f.label.split(': ')[0]}`;
+const stepGroup = (f: ConditionCatalogField) => `Routing: ${f.label.split(': ')[0]}`;
 
 /* every field Advanced Search offers, as filters and as columns. Built when the screen opens, since
    step fields come from the (admin-editable) Welding step templates. */
@@ -111,7 +111,7 @@ function fabValue(fab: Record<string, string>, key: string, hull: string): strin
 
 /* one row per job: the Job's own fields, Routing, and UT/VT as Joint Details shows them, plus any fabrication / step-answer
    fields in `extraKeys` (only the ones in use are worked out; there are a lot of step fields) */
-export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepFields: Map<string, StepConditionField>): SearchRow {
+export function buildRow(j: Job, wf: JobWorkflow, extraKeys: string[], stepFields: Map<string, ConditionCatalogField>): SearchRow {
   const row: SearchRow = { ...j, currentRouting: currentRoutingLabel(wf.stages), ut: jointDetailsUt(j), vt: jointDetailsVt(j) };
   for (const key of extraKeys) {
     if (key.startsWith(FAB_KEY)) row[key] = fabValue(wf.fabricationData ?? {}, key.slice(FAB_KEY.length), j.hull);

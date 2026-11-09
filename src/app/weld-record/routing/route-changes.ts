@@ -1,11 +1,11 @@
 /* Moving a joint's routing: going back (never un-sign, see ROUTING.md), Routing Override, Deprogress, and
    discarding unsigned edits */
 import { Job } from '../../data/jobs';
-import { conditionsMatch, usesStepAnswers } from './step-conditions';
+import { conditionsMatch, usesFabrication, usesStepAnswers } from './step-conditions';
 import { JobWorkflow, SignoffUndo, WorkflowStage } from '../model/workflow-types';
 import { getTemplates } from './stage-templates';
 import { baseRequired, buildStages } from './build-stages';
-import { attributeTypeSettings, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../attribute-codes/exception-effects';
+import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../attribute-codes/exception-effects';
 import { blankFabricationData } from '../fabrication/fabrication-fields';
 import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
@@ -38,12 +38,12 @@ export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record
     const laterRows = hasLaterAnswerRows(s.id, job);
     if (!usesStepAnswers(t.includeWhen) && !laterRows) return s;
     if (!laterRows) {
-      const required = conditionsMatch(t.includeWhen, job, stages);
+      const required = conditionsMatch(t.includeWhen, job, stages, undefined, fab);
       return required === s.required ? s : { ...s, required };
     }
     const effect = routingEffect(s.id, job, stages, fab);
     const included = usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);
-    const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job, templates)) || (included && baseRequired(t, job, stages)));
+    const required = !effect?.drop && ((!!effect?.add && isJointsTwin(t, job, templates)) || (included && baseRequired(t, job, stages, fab)));
     const { typeOptions, attributeRules } = attributeTypeSettings(s.id, job, stages, fab, s.inputs);
     const sameTypes = JSON.stringify(typeOptions) === JSON.stringify(s.typeOptions);
     if (required === s.required && sameTypes && JSON.stringify(attributeRules) === JSON.stringify(s.attributeRules)) return s;
@@ -53,6 +53,13 @@ export function applySignedFlags(stages: WorkflowStage[], job: Job, fab?: Record
       ...(sameTypes ? {} : typeValues(initialInspectionType({ typeOptions }))),
     };
   });
+}
+
+/* a Fabrication value changed: rules that read one are re-checked right away; joints with no such rule are untouched */
+export function recheckFabricationRules(stages: WorkflowStage[], job: Job, fab: Record<string, string>): WorkflowStage[] {
+  const templates = getTemplates()[job.trade] ?? [];
+  const reads = templates.some(t => usesFabrication(t.includeWhen)) || hasFabricationRows(job);
+  return reads ? applySignedFlags(stages, job, fab) : stages;
 }
 
 /* Set the current routing back to `targetId`: every stage from there on comes up as on a new joint

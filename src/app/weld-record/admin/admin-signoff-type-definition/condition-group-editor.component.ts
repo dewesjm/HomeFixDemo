@@ -3,8 +3,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideX } from '@lucide/angular';
-import { VIRTUAL_JOINT_DETAILS } from '../../signoff-definition/joint-facts';
-import { JOINT_DETAIL_FIELDS } from '../../routing/step-conditions';
+import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS } from '../../routing/condition-catalog';
 import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
 
 /* a field of the step a clause can test, with its suggested values */
@@ -12,6 +11,8 @@ export interface StepFieldChoice {
   key: string;
   label: string;
   values: { value: string; label: string }[];
+  /* a checkbox: picked as Yes or No */
+  yesNo?: boolean;
 }
 
 @Component({
@@ -29,9 +30,9 @@ export class ConditionGroupEditorComponent {
   changed = output<WorkGroup>();
   removed = output<void>();
 
-  /* the Joint detail picker: yes/no joint facts, then the Joint Details fields */
-  readonly jointFacts = Object.entries(VIRTUAL_JOINT_DETAILS).map(([key, f]) => ({ key, label: f.label }));
-  readonly jointFields = JOINT_DETAIL_FIELDS.map(f => ({ key: f.key, label: f.label, values: f.values }));
+  /* the Joint detail picker: the condition catalog's Joint Details and Fabrication */
+  readonly jointGroups: { name: string; fields: ConditionCatalogField[] }[] = ['Joint Details', 'Fabrication']
+    .map(name => ({ name, fields: JOINT_AND_FABRICATION_FIELDS.filter(f => f.group === name) }));
 
   asGroup(t: WorkTerm): WorkGroup | null {
     return isWorkGroup(t) ? t : null;
@@ -41,18 +42,27 @@ export class ConditionGroupEditorComponent {
     return isWorkGroup(t) ? blankClause() : t;
   }
 
-  isJointFact(key: string): boolean {
-    return key in VIRTUAL_JOINT_DETAILS;
+  private jointField(key: string) {
+    return JOINT_AND_FABRICATION_FIELDS.find(f => f.key === key);
+  }
+
+  /* a Joint Details or Fabrication field that is only ever Yes or No */
+  jointYesNo(key: string): boolean {
+    return this.jointField(key)?.values.join() === 'Yes,No';
+  }
+
+  fieldYesNo(key: string): boolean {
+    return !!this.stepFields().find(f => f.key === key)?.yesNo;
   }
 
   /* suggested values for a Joint Details field (typed values stay allowed) */
   jointValues(key: string): string[] {
-    return this.jointFields.find(f => f.key === key)?.values ?? [];
+    return this.jointField(key)?.values ?? [];
   }
 
   /* a saved key a picker doesn't list (typed before it existed) still shows */
   unlistedJointKey(key: string): boolean {
-    return !!key && !this.isJointFact(key) && !this.jointFields.some(f => f.key === key);
+    return !!key && !this.jointField(key);
   }
 
   unlistedFieldKey(key: string): boolean {

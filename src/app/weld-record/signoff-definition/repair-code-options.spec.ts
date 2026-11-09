@@ -1,7 +1,7 @@
 import { getRepairCodes, setRepairCodes } from '../../data/repair-codes';
 import { repairCodeOptions } from './repair-code-options';
 import { lookupCatalogField } from './field-catalog';
-import { stageConditionFields } from '../routing/step-conditions';
+import { stageConditionFields } from '../routing/condition-catalog';
 import { stageFieldOptions } from '../joint-page/rules/stage-form';
 import { stageFromTemplate, nextRepairStage } from '../routing/added-steps';
 import { conditionText } from './field-rules';

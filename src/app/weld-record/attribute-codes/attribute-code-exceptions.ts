@@ -3,6 +3,7 @@
    and routing. A regular routing and its NQC row are separate routings with separate rows. Stored in
    localStorage. */
 import { STORAGE } from '../../data/storage-keys';
+import { SHIPBOARD_FIELD } from '../routing/condition-catalog';
 import { ConditionRule } from '../routing/step-conditions';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../routing/step-ids';
 
@@ -35,7 +36,6 @@ export interface AttributeStageRules {
 }
 
 /* Field condition clause ids the Applies when editor offers beyond Joint Details */
-export const SHIPBOARD_FIELD = 'fabricationShipboard';
 export const ROOT_WELD_PROCESS = 'step.root-weld.weldProcess';
 export const FINAL_WELD_PROCESS = 'step.final-weld.weldProcess';
 
