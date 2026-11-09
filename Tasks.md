@@ -9,6 +9,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 - [ ] **Remaining Repair / Excavation configuration:** summarize Repair/Excavation destinations across settings. General original/performed inspection facts have replaced the PT-to-5X marker. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
+- [ ] **One field catalog:** merge the form and condition catalogs into one list with a Source on each entry. Decided, not built. [Plan](FIELD-CATALOG-PLAN.md).
 
 ## Deferred testing packages
 

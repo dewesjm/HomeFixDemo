@@ -6,7 +6,9 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-No queued build work. Completed plans are references, not instructions to start another feature.
+1. One field catalog: [FIELD-CATALOG-PLAN.md](FIELD-CATALOG-PLAN.md). Planned, not built. Ask its open question first.
+
+Completed plans are references, not instructions to start another feature.
 
 Read [Tasks.md](Tasks.md) for the master backlog of deferred requirements, gaps, ideas and production integration boundaries. Keep it current as work changes. No queued work does not mean no outstanding work.
 
