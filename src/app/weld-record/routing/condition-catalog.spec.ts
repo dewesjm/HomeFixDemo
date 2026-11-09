@@ -107,9 +107,9 @@ describe('Qualifications', () => {
   it('offers Fabrication and matches only once it is filled in', () => {
     expect(conditionField('fab.id1')?.group).toBe('Fabrication');
     const require = { op: 'all' as const, items: ['Q1'] };
-    setQualConditions([{ when: { op: 'all', items: [{ field: 'fab.id1', op: 'isNot', values: ['X'] }] }, require, types: [] }]);
-    expect(conditionRequirements(job(), {}, {}).length).toBe(0);
-    expect(conditionRequirements(job(), {}, { id1: 'MIC-1' }).length).toBe(1);
+    setQualConditions([{ when: { op: 'all', items: [{ field: 'fab.id1', op: 'isNot', values: ['X'] }] }, require, type: 'vt' }]);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}).length).toBe(0);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, { id1: 'MIC-1' }).length).toBe(1);
   });
 
   it('offers the same catalog as Routing Settings, each field once', () => {
@@ -121,17 +121,17 @@ describe('Qualifications', () => {
 
   it('matches a routing answer once that routing is signed', () => {
     const require = { op: 'all' as const, items: ['Q1'] };
-    setQualConditions([{ when: { op: 'all', items: [{ field: 'step.root-weld.weldProcess', op: 'isNot', values: ['smaw'] }] }, require, types: [] }]);
+    setQualConditions([{ when: { op: 'all', items: [{ field: 'step.root-weld.weldProcess', op: 'isNot', values: ['smaw'] }] }, require, type: 'vt' }]);
     const root = (signed: boolean, weldProcess: string) => [{ id: 'root-weld', signed, inputs: { weldProcess }, signoffInputs: {} }];
-    expect(conditionRequirements(job(), {}, {}, root(false, 'gtaw')).length).toBe(0);
-    expect(conditionRequirements(job(), {}, {}, root(true, 'gtaw')).length).toBe(1);
-    expect(conditionRequirements(job(), {}, {}, root(true, 'smaw')).length).toBe(0);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}, root(false, 'gtaw')).length).toBe(0);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}, root(true, 'gtaw')).length).toBe(1);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}, root(true, 'smaw')).length).toBe(0);
   });
 
   it('reads the shipboard entry once Fit is signed', () => {
     const require = { op: 'all' as const, items: ['Q1'] };
-    setQualConditions([{ when: { op: 'all', items: [{ field: 'fabricationShipboard', op: 'isNot', values: ['Yes'] }] }, require, types: [] }]);
-    expect(conditionRequirements(job(), {}, {}, []).length).toBe(0);
-    expect(conditionRequirements(job(), {}, {}, [{ id: 'fit', signed: true, inputs: {}, signoffInputs: {} }]).length).toBe(1);
+    setQualConditions([{ when: { op: 'all', items: [{ field: 'fabricationShipboard', op: 'isNot', values: ['Yes'] }] }, require, type: 'vt' }]);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}, []).length).toBe(0);
+    expect(conditionRequirements(job(), { inspectionType: 'vt' }, {}, [{ id: 'fit', signed: true, inputs: {}, signoffInputs: {} }]).length).toBe(1);
   });
 });

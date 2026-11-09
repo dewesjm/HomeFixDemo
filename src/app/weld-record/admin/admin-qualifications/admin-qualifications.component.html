@@ -17,7 +17,7 @@
       <thead>
         <tr>
           <th appSortHeader [table]="table" field="when" label="When"></th>
-          <th appSortHeader [table]="table" field="typesText" label="Signoff Type"></th>
+          <th appSortHeader [table]="table" field="typeText" label="Signoff Type"></th>
           <th appSortHeader [table]="table" field="require" label="Require"></th>
           <th class="min-w-11"></th>
         </tr>
@@ -33,24 +33,11 @@
                 @if (r.userRow) {
                   -
                 } @else {
-                  <div class="flex flex-wrap items-center gap-2">
-                    @for (t of r.c.types ?? []; track t) {
-                      <span class="badge badge-lg gap-2">
-                        {{ typeLabel(t) }}
-                        <button type="button" (click)="removeType(r, t)"
-                                [attr.aria-label]="'Remove ' + typeLabel(t)"><svg lucideX class="size-3"></svg></button>
-                      </span>
-                    } @empty {
-                      <span>All</span>
-                    }
-                    @if (addableTypes(r).length) {
-                      <select class="select select-bordered select-sm w-auto" aria-label="Add a signoff type"
-                              (change)="addType(r, $any($event.target).value); $any($event.target).value = ''">
-                        <option value="">Add type…</option>
-                        @for (o of addableTypes(r); track o.value) { <option [value]="o.value">{{ o.label }}</option> }
-                      </select>
-                    }
-                  </div>
+                  <select class="select select-bordered select-sm w-auto" aria-label="Signoff type"
+                          [ngModel]="r.c.type ?? ''" (ngModelChange)="setType(r.uid, $event)">
+                    <option value="">Select a type…</option>
+                    @for (o of typeOptions(r); track o.value) { <option [value]="o.value">{{ o.label }}</option> }
+                  </select>
                 }
               </td>
               <td>
@@ -62,7 +49,7 @@
                 {{ r.when || '-' }}
                 @if (r.notOnForm) { <div class="text-sm text-warning">Not on any form with a Qualification Check: {{ r.notOnForm }}</div> }
               </td>
-              <td class="align-top">{{ r.userRow ? '-' : r.typesText }}</td>
+              <td class="align-top">{{ r.userRow ? '-' : r.typeText }}</td>
               <td class="align-top">{{ r.require || '-' }}</td>
             }
             <td class="align-top">

@@ -1,9 +1,10 @@
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
-   - "when <clauses>, signoff type <types>, require <group>": the clauses are an AND/OR group compared
+   - "when <clauses>, signoff type <type>, require <group>": the clauses are an AND/OR group compared
      like Routing Settings (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
-     Signoff Type is the Types the row applies to (none = all of them). Joint Details fields are checked
-     on every step with a Qualification Check as soon as it opens; Fabrication and routing answers
+     Each row applies to exactly one Signoff Type, so a requirement on several Types is one row each,
+     and nothing applies until the step's Type is picked. Joint Details fields are checked
+     on every step of that Type with a Qualification Check; Fabrication and routing answers
      apply once entered or signed, as in Routing Settings; sign-off fields are read from the step
      being checked, so they apply once they're filled in. Only fields on a form with a Qualification
      Check are offered as sign-off fields; a saved clause on any other one never matches.
@@ -22,7 +23,7 @@ import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatche
 export interface QualCondition {
   when: WhenGroup;
   require: QualGroup;   /* on a User row: the quals held (always an 'all' list) */
-  types?: string[];     /* Signoff Type values the row applies to; none = all. Not used on a User row */
+  type?: string;        /* the Signoff Type value the row applies to. Not used on a User row */
 }
 
 /* the step being checked; its fields are blank until filled in */
@@ -156,20 +157,16 @@ function clauseText(c: WhenClause): string {
   return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${values}`;
 }
 
-/* an empty When with Signoff Types set applies to every joint of those types */
+/* an empty When applies to every joint of the row's Type */
 export const conditionWhenText = (c: QualCondition) =>
-  c.when.items.length ? whenText(c.when, clauseText) : c.types?.length ? 'Always' : '';
+  c.when.items.length ? whenText(c.when, clauseText) : c.type ? 'Always' : '';
 
-/* every Signoff Type a row can be limited to */
+/* every Signoff Type a row can apply to */
 export const signoffTypeChoices = (): ConditionOption[] => conditionField(TYPE_FIELD)?.options() ?? [];
 
 export const signoffTypeLabel = (value: string) => conditionField(TYPE_FIELD)?.valueLabel(value) ?? value;
 
-/* e.g. "VT, 5X"; "All" when the row isn't limited */
-export function conditionTypesText(c: QualCondition): string {
-  if (!c.types?.length) return 'All';
-  return c.types.map(signoffTypeLabel).join(', ');
-}
+export const conditionTypeText = (c: QualCondition) => c.type ? signoffTypeLabel(c.type) : '';
 
 /* what a saved row uses that no form with a Qualification Check has, so that part can never match */
 export function notOnCheckForm(c: QualCondition): string[] {
@@ -179,15 +176,14 @@ export function notOnCheckForm(c: QualCondition): string[] {
     const f = conditionField(t.field);
     return !f || f.unavailable ? [f?.label ?? t.field] : [];
   });
-  const offered = signoffTypeChoices().map(o => o.value);
-  return [...new Set([...fields(c.when), ...(c.types ?? []).filter(t => !offered.includes(t)).map(signoffTypeLabel)])];
+  const offered = signoffTypeChoices().some(o => o.value === c.type);
+  return [...new Set([...fields(c.when), ...(c.type && !offered ? [signoffTypeLabel(c.type)] : [])])];
 }
 
-/* the When must match (an empty one only counts with Signoff Types set) and the step's Type must be one of the row's */
+/* the step's Type must be the row's, and the When must match (an empty one always does) */
 function applies(c: QualCondition, valueOf: (field: string) => string | undefined): boolean {
-  const types = c.types ?? [];
-  if (types.length && !types.includes(valueOf(TYPE_FIELD) ?? '')) return false;
-  return c.when.items.length ? whenMatches(c.when, valueOf) : types.length > 0;
+  if (!c.type || c.type !== valueOf(TYPE_FIELD)) return false;
+  return !c.when.items.length || whenMatches(c.when, valueOf);
 }
 
 const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, op: 'is', values: [value] }] });
@@ -195,12 +191,13 @@ const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [
 /* SELF holds the seed quals except CNTRLMTL2, so every seed requirement passes (controlled material
    through the OR); one requirement per kind of check: joint flags, the step's Type, the base material */
 function defaultConditions(): QualCondition[] {
+  const perType = (w: WhenGroup, require: QualGroup): QualCondition[] => signoffTypeChoices().map(o => ({ when: w, type: o.value, require }));
   return [
     { when: when(USER_FIELD, SELF), require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
-    { when: when('controlledMaterial', 'Yes'), require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
-    { when: when('ss', 'Yes'), require: { op: 'all', items: ['SSWELD1'] } },
-    { when: { op: 'all', items: [] }, types: ['vt'], require: { op: 'all', items: ['VTINSP1'] } },
-    { when: when('material.titanium', 'Yes'), require: { op: 'all', items: ['TIWELD1'] } },
+    ...perType(when('controlledMaterial', 'Yes'), { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] }),
+    ...perType(when('ss', 'Yes'), { op: 'all', items: ['SSWELD1'] }),
+    { when: { op: 'all', items: [] }, type: 'vt', require: { op: 'all', items: ['VTINSP1'] } },
+    ...perType(when('material.titanium', 'Yes'), { op: 'all', items: ['TIWELD1'] }),
   ];
 }
 
@@ -208,10 +205,13 @@ function defaultConditions(): QualCondition[] {
 const PREVIOUS_KEY = 'welding:qual-conditions:v4';
 type PreviousCondition = { field: string; value: string; require: QualGroup };
 
+/* rows saved before each row had one Signoff Type: types lists several, and none meant all of them */
+type SavedCondition = QualCondition & { types?: string[] };
+
 /* rows saved before the Signoff Type column (no types): a top-level "Type is X" moves into it when
    that means the same thing (one Type clause in an All of, or an Any of only Type clauses); any other
    Type clause stays in the When, where it still matches */
-export function liftTypes(c: QualCondition): QualCondition {
+export function liftTypes(c: SavedCondition): SavedCondition {
   if (c.types) return c;
   const isType = (t: WhenTerm): t is WhenClause => !isWhenGroup(t) && t.field === TYPE_FIELD && t.op === 'is';
   const typeItems = c.when.items.filter(isType);
@@ -223,12 +223,26 @@ export function liftTypes(c: QualCondition): QualCondition {
   return { ...c, types: [] };
 }
 
+/* one row per Signoff Type: a row saved with several gets one each, and one saved as all of them gets
+   one per offered Type. A row with an empty When and no Types matched nothing, so it's dropped rather
+   than starting to apply. */
+export function rowsFromSaved(saved: SavedCondition[]): QualCondition[] {
+  return saved.flatMap((row): QualCondition[] => {
+    if (row.type) return [row];
+    const c = liftTypes(row);
+    const base = { when: c.when, require: c.require };
+    if (userOf(c) !== null) return [base];
+    const types = c.types?.length ? c.types : c.when.items.length ? signoffTypeChoices().map(o => o.value) : [];
+    return types.map(type => ({ ...base, type }));
+  });
+}
+
 function load(): QualCondition[] {
   try {
     const raw = localStorage.getItem(STORAGE.qualConditions);
-    if (raw) return (JSON.parse(raw) as QualCondition[]).map(c => liftTypes({ ...c, when: normalizeWhen(c.when) }));
+    if (raw) return rowsFromSaved((JSON.parse(raw) as SavedCondition[]).map(c => ({ ...c, when: normalizeWhen(c.when) })));
     const prev = localStorage.getItem(PREVIOUS_KEY);
-    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => liftTypes({ when: normalizeWhen(when(c.field, c.value)), require: c.require }));
+    if (prev) return rowsFromSaved((JSON.parse(prev) as PreviousCondition[]).map(c => ({ when: normalizeWhen(when(c.field, c.value)), require: c.require })));
   } catch { /* ignore */ }
   return defaultConditions();
 }
@@ -267,10 +281,12 @@ export function conditionRequirements(job: Job | undefined | null, step: Conditi
 }
 
 /* the requirement of every condition a step with this WTN matches on the WTN alone, joined by AND;
-   '' when there's none */
+   '' when there's none. A procedure has no Signoff Type, so the row's Type isn't compared, and a
+   requirement repeated across Types is named once. */
 export function wtnRequirementText(wtn: string): string {
   const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : undefined;
-  const groups = qualConditions().filter(c => c.require.items.length && userOf(c) === null && applies(c, valueOf));
+  const matched = qualConditions().filter(c => c.require.items.length && userOf(c) === null && c.when.items.length && whenMatches(c.when, valueOf));
+  const groups = [...new Map(matched.map(c => [requirementText(c.require), c])).values()];
   if (groups.length === 1) return requirementText(groups[0].require);
   return groups.map(c => requirementText(c.require, true)).join(' AND ');
 }
