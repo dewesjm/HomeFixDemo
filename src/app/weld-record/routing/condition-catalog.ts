@@ -4,7 +4,8 @@
      stepAnswerFieldsBefore), plus This routing on Reject routes to and Then go to (stageConditionFields)
    - Signoff Type Forms: Joint Details and Fabrication (JOINT_AND_FABRICATION_FIELDS); its own form's
      fields use formFieldValues
-   - Qualifications: Joint Details and Fabrication, with Sign-off fields from Qualification Check forms
+   - Qualifications: Joint Details, Fabrication and every routing's answers (allStepAnswerFields), with
+     Sign-off fields from Qualification Check forms
    - Attribute Code Exceptions: exceptionConditionFields
    - Signoff Type to Routing and personas: Joint Details only (JOINT_DETAIL_FIELDS), because they are
      decided as a routing is built, before Fabrication values exist */

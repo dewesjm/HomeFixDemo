@@ -8,7 +8,7 @@ import { LucideX } from '@lucide/angular';
 import { ConditionField, ConditionOption, USER_FIELD, conditionField, conditionFields } from '../../qualifications/qual-conditions';
 import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, newWhenClause } from '../../qualifications/qual-when';
 
-const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Fabrication', 'Sign-off', 'User'];
+const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Fabrication', 'Routing answers', 'Sign-off', 'User'];
 
 @Component({
   selector: 'app-when-group-editor',

@@ -1,12 +1,12 @@
 import { JOBS, Job } from '../../data/jobs';
-import { conditionField, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
+import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { evaluateCondition } from '../signoff-definition/field-conditions';
 import { migrateConditionClauses } from '../signoff-definition/condition-catalog-migration';
 import { conditionText } from '../signoff-definition/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from './build-stages';
-import { FABRICATION_CONDITION_FIELDS, JOINT_AND_FABRICATION_FIELDS, ROUTING_CONDITION_FIELDS, catalogField, formFieldValues, jointOrFabricationField, stageConditionFields } from './condition-catalog';
+import { FABRICATION_CONDITION_FIELDS, JOINT_AND_FABRICATION_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, jointOrFabricationField, stageConditionFields } from './condition-catalog';
 import { recheckFabricationRules } from './route-changes';
 import { getTemplates, updateStageTemplate } from './stage-templates';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from './step-conditions';
@@ -106,10 +106,32 @@ describe('Qualifications', () => {
 
   it('offers Fabrication and matches only once it is filled in', () => {
     expect(conditionField('fab.id1')?.group).toBe('Fabrication');
-    expect(conditionField('fabricationShipboard')).toBeUndefined();
     const require = { op: 'all' as const, items: ['Q1'] };
     setQualConditions([{ when: { op: 'all', items: [{ field: 'fab.id1', op: 'isNot', values: ['X'] }] }, require, types: [] }]);
     expect(conditionRequirements(job(), {}, {}).length).toBe(0);
     expect(conditionRequirements(job(), {}, { id1: 'MIC-1' }).length).toBe(1);
+  });
+
+  it('offers the same catalog as Routing Settings, each field once', () => {
+    const keys = conditionFields().map(f => f.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    for (const f of [...ROUTING_CONDITION_FIELDS, ...allStepAnswerFields('Welding')]) expect(keys).toContain(f.key);
+    expect(conditionField('step.root-weld.weldProcess')?.group).toBe('Routing answers');
+  });
+
+  it('matches a routing answer once that routing is signed', () => {
+    const require = { op: 'all' as const, items: ['Q1'] };
+    setQualConditions([{ when: { op: 'all', items: [{ field: 'step.root-weld.weldProcess', op: 'isNot', values: ['smaw'] }] }, require, types: [] }]);
+    const root = (signed: boolean, weldProcess: string) => [{ id: 'root-weld', signed, inputs: { weldProcess }, signoffInputs: {} }];
+    expect(conditionRequirements(job(), {}, {}, root(false, 'gtaw')).length).toBe(0);
+    expect(conditionRequirements(job(), {}, {}, root(true, 'gtaw')).length).toBe(1);
+    expect(conditionRequirements(job(), {}, {}, root(true, 'smaw')).length).toBe(0);
+  });
+
+  it('reads the shipboard entry once Fit is signed', () => {
+    const require = { op: 'all' as const, items: ['Q1'] };
+    setQualConditions([{ when: { op: 'all', items: [{ field: 'fabricationShipboard', op: 'isNot', values: ['Yes'] }] }, require, types: [] }]);
+    expect(conditionRequirements(job(), {}, {}, []).length).toBe(0);
+    expect(conditionRequirements(job(), {}, {}, [{ id: 'fit', signed: true, inputs: {}, signoffInputs: {} }]).length).toBe(1);
   });
 });

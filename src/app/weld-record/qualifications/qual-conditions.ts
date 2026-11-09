@@ -3,9 +3,10 @@ import { stepFieldConfigVersion } from '../signoff-definition/step-field-config'
    - "when <clauses>, signoff type <types>, require <group>": the clauses are an AND/OR group compared
      like Routing Settings (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
      Signoff Type is the Types the row applies to (none = all of them). Joint Details fields are checked
-     on every step with a Qualification Check as soon as it opens; sign-off fields are read from the
-     step being checked, so they apply once they're filled in. Only fields on a form with a
-     Qualification Check are offered; a saved clause on any other field never matches.
+     on every step with a Qualification Check as soon as it opens; Fabrication and routing answers
+     apply once entered or signed, as in Routing Settings; sign-off fields are read from the step
+     being checked, so they apply once they're filled in. Only fields on a form with a Qualification
+     Check are offered as sign-off fields; a saved clause on any other one never matches.
    - "when User is <person>, holds <quals>" (a When of just that one clause): the quals that person holds. There's no login, so the
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
@@ -14,7 +15,7 @@ import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
-import { JOINT_AND_FABRICATION_FIELDS, SHIPBOARD_FIELD, tradeSteps, routingAnswerFields } from '../routing/condition-catalog';
+import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS, StageAnswers, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../routing/condition-catalog';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatches, whenText } from './qual-when';
 
@@ -32,14 +33,14 @@ export interface ConditionStep {
   inspectionType?: string;
 }
 
-interface ConditionSubject { job: Job; step: ConditionStep; fab?: Record<string, string>; }
+interface ConditionSubject { job: Job; step: ConditionStep; fab?: Record<string, string>; stages?: StageAnswers[]; }
 
 export interface ConditionOption { value: string; label: string; }
 
 export interface ConditionField {
   key: string;
   label: string;
-  group: 'Joint Details' | 'Fabrication' | 'Sign-off' | 'User';
+  group: 'Joint Details' | 'Fabrication' | 'Routing answers' | 'Sign-off' | 'User';
   /* set in its own Signoff Type column, so not offered in the When (old clauses still match) */
   ownColumn?: boolean;
   /* not on any form with a Qualification Check, so not offered and never matched (old clauses still show) */
@@ -59,14 +60,18 @@ const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
 
-/* the condition catalog's Joint Details and Fabrication; the shipboard entry needs the joint's routings,
-   which aren't read here, and Fabrication's Location covers it */
-function jointFields(): ConditionField[] {
-  return JOINT_AND_FABRICATION_FIELDS.filter(f => f.key !== SHIPBOARD_FIELD).map((f): ConditionField => {
-    const valueLabel = (v: string) => f.valueLabel?.(v) ?? v;
-    return { key: f.key, label: f.label, group: f.group as 'Joint Details' | 'Fabrication', valueLabel,
-      options: () => f.values.map(value => ({ value, label: valueLabel(value) })), get: s => f.get(s.job, [], s.fab) };
-  });
+/* a condition catalog field as a Qualifications field */
+function fromCatalog(f: ConditionCatalogField): ConditionField {
+  const valueLabel = (v: string) => f.valueLabel?.(v) ?? v;
+  return { key: f.key, label: f.label, group: f.group as ConditionField['group'], valueLabel,
+    options: () => f.values.map(value => ({ value, label: valueLabel(value) })), get: s => f.get(s.job, s.stages ?? [], s.fab) };
+}
+
+/* the condition catalog: Joint Details, Fabrication and every routing's answers (Fit-Up Insp's Release
+   to welding is listed under both its regular and NQC routing, and offered once) */
+function catalogFields(): ConditionField[] {
+  const answers = new Map(allStepAnswerFields(TRADE).map(f => [f.key, f]));
+  return [...JOINT_AND_FABRICATION_FIELDS, ...answers.values()].map(fromCatalog);
 }
 
 const QUAL_CHECK_KEY = 'qualificationCheck';
@@ -128,7 +133,7 @@ const userField: ConditionField = {
 let cache: { steps: unknown; version: number; fields: ConditionField[] } | null = null;
 export function conditionFields(): ConditionField[] {
   const steps = tradeSteps(TRADE);
-  if (cache?.steps !== steps || cache?.version !== stepFieldConfigVersion()) cache = { steps, version: stepFieldConfigVersion(), fields: [...jointFields(), ...signoffFields(), userField] };
+  if (cache?.steps !== steps || cache?.version !== stepFieldConfigVersion()) cache = { steps, version: stepFieldConfigVersion(), fields: [...catalogFields(), ...signoffFields(), userField] };
   return cache.fields;
 }
 
@@ -243,17 +248,17 @@ export function heldBy(user: string, conditions: QualCondition[] = qualCondition
 /* the quals the Qualification Check compares against: SELF's, since there's no login */
 export const heldQuals = computed(() => heldBy(SELF));
 
-/* what a clause compares: nothing for a field off the Qualification Check forms, or a sign-off or Fabrication field not filled in yet */
+/* what a clause compares: nothing for a field off the Qualification Check forms, or anything not filled in or signed yet */
 function clauseValue(f: ConditionField | undefined, subject: ConditionSubject): string | undefined {
   if (!f || f.unavailable) return undefined;
   const value = f.get(subject);
-  return (f.group === 'Sign-off' || f.group === 'Fabrication') && !value ? undefined : value;
+  return f.group !== 'Joint Details' && !value ? undefined : value;
 }
 
 /* the requirements of every condition the joint and step match, in table order (User rows aren't requirements) */
-export function conditionRequirements(job: Job | undefined | null, step: ConditionStep = {}, fab: Record<string, string> = {}): QualGroup[] {
+export function conditionRequirements(job: Job | undefined | null, step: ConditionStep = {}, fab: Record<string, string> = {}, stages: StageAnswers[] = []): QualGroup[] {
   if (!job) return [];
-  const subject: ConditionSubject = { job, step, fab };
+  const subject: ConditionSubject = { job, step, fab, stages };
   const fields = new Map(conditionFields().map(f => [f.key, f]));
   const valueOf = (key: string) => clauseValue(fields.get(key), subject);
   return qualConditions()

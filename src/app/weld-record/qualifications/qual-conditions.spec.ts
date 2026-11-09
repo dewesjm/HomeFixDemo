@@ -18,7 +18,7 @@ describe('qual conditions', () => {
 
   it('offers Joint Details fields, sign-off fields and User', () => {
     const groups = new Set(conditionFields().map(f => f.group));
-    expect([...groups]).toEqual(['Joint Details', 'Fabrication', 'Sign-off', 'User']);
+    expect([...groups]).toEqual(['Joint Details', 'Fabrication', 'Routing answers', 'Sign-off', 'User']);
     const keys = conditionFields().map(f => f.key);
     ['ss', 'controlledMaterial', 'material.titanium', 'drawing', 'materialType1', 'step:id', 'step:inspectionType', 'step:wtn', 'user']
       .forEach(k => expect(keys).toContain(k));

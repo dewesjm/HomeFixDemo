@@ -52,7 +52,7 @@ export class DefinitionFieldComponent {
   }
 
   qualCheck(): QualCheckResult {
-    return qualCheck(heldQuals(), conditionRequirements(this.ctx().job, this.stage(), this.ctx().wf().fabricationData));
+    return qualCheck(heldQuals(), conditionRequirements(this.ctx().job, this.stage(), this.ctx().wf().fabricationData, this.ctx().wf().stages));
   }
 
   isPerson(): boolean { return isPersonField(this.field().key); }
