@@ -11,7 +11,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['Admin > Signoff Type to Routing: the Type Exceptions grid has a read-only Type source column showing where each routing gets its Original Type (Rejecting inspection or Options on the routing row).'],
+    changed: ['Admin > Signoff Type to Routing: the Type Exceptions grid has a read-only Type source column showing where each routing gets its Original Type (Rejecting inspection or Signoff Type Selection). The Type source choice that was worded Options on the routing row now reads Signoff Type Selection, on the page and in the export.'],
   },
   {
     date: '2026-11-06',

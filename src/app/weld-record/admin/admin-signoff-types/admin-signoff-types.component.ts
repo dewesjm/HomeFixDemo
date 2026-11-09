@@ -108,7 +108,7 @@ export class AdminSignoffTypesComponent {
   exportCsv() {
     downloadCsv('signoff-type-availability', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
-      { header: 'Type source', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Configured options' },
+      { header: 'Type source', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection' },
       { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${typeExceptionCondition(e)})`).join('; ') },
       { header: 'Options', value: (r: TypeRow) => r.typeSource === 'rejecting-inspection' ? EXCAVATION_NOTE
           : r.types.map(t => this.optionText(t)).join('; ') },

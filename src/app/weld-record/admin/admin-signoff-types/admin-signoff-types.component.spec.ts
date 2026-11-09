@@ -15,7 +15,7 @@ describe('Signoff Type to Routing admin', () => {
     component.exportCsv();
     const text = await exported!.text();
     expect(text).toContain('Routing,Type source,Type exceptions,Options');
-    expect(text).toContain('Configured options');
+    expect(text).toContain('Signoff Type Selection');
     expect(text).toContain('Fit -> VT ((N Ind. is 3))');
   });
   beforeEach(() => localStorage.clear());

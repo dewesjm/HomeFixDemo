@@ -31,7 +31,7 @@ export class TypeExceptionsComponent {
   typeSourceLabel(routing: string) {
     const row = getSignoffTypeRows().find(r => r.stepId === routing);
     if (!row) return '';
-    return row.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Options on the routing row';
+    return row.typeSource === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection';
   }
   private load(): ExceptionRow[] {
     return getSignoffTypeRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));

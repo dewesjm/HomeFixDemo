@@ -22,7 +22,7 @@ describe('Type exceptions grid', () => {
     const routing = f.componentInstance.rows[0].routing;
     setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === routing ? { ...r, typeSource: undefined } : r));
     f.detectChanges();
-    expect(sources()).toEqual(['Options on the routing row', 'Rejecting inspection']);
+    expect(sources()).toEqual(['Signoff Type Selection', 'Rejecting inspection']);
     f.componentInstance.edit(f.componentInstance.rows[0]); f.detectChanges(); await f.whenStable();
     expect(host.querySelector('[aria-label="Type source"]')).toBeNull();
   });

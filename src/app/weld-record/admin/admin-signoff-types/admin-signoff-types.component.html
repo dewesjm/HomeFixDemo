@@ -34,7 +34,7 @@
             } @else if (editingUid() === row.uid) {
               <div class="flex flex-col gap-1">
                 <label>Type source <select class="select select-sm select-bordered" aria-label="Type source" [(ngModel)]="row.typeSource">
-                  <option [ngValue]="undefined">Options on the routing row</option>
+                  <option [ngValue]="undefined">Signoff Type Selection</option>
                   @if (canInherit(row)) { <option value="rejecting-inspection">Rejecting inspection</option> }
                 </select></label>
                 @for (opt of row.types; track $index; let i = $index) {
