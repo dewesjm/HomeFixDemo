@@ -1,9 +1,9 @@
-import { FormField } from './field-catalog';
+import { FormField } from './form-field-catalog';
 /* Turning a step's recorded values into what History and the joint page show */
 import { SignoffInput, WorkflowStage } from '../model/workflow-types';
 import { isUserEditable } from './field-locks';
 import { hasDecision, showsType } from './stage-rules';
-import { lookupCatalogField } from './field-catalog';
+import { lookupCatalogField } from './form-field-catalog';
 
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
   const v = raw ?? '';

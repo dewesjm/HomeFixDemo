@@ -35,7 +35,7 @@ import {
   definitionFields,
   type VerifyAgainst,
 } from '../../signoff-definition/step-field-config';
-import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../signoff-definition/field-catalog';
+import { FIELD_CATALOG, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../signoff-definition/form-field-catalog';
 import { getTemplates } from '../../routing/stage-templates';
 import {
   defaultShowIf,

@@ -4,7 +4,7 @@
 import { FieldActivation } from '../../signoff-definition/step-field-config';
 import { disabledIfToStore, fillToStore, requiredIfToStore, showIfToStore } from '../../signoff-definition/field-rules';
 import type { FieldCondition } from '../../signoff-definition/field-conditions';
-import type { FieldFill } from '../../signoff-definition/field-catalog';
+import type { FieldFill } from '../../signoff-definition/form-field-catalog';
 import { WorkGroup, workToCondition } from './condition-work';
 import type { SearchChoice } from './searchable-select.component';
 

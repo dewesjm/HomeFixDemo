@@ -1,10 +1,10 @@
 import { formSignoffFields } from './form-fields';
-import { FormField } from './field-catalog';
+import { FormField } from './form-field-catalog';
 /* Fields shown by the selected Type form, resolved from the catalog at read time. The joint page adds runtime options on top (joint-form/stage-form.ts);
    History and Correct use these as they are, so all three list the same fields. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { lookupCatalogField } from './field-catalog';
+import { lookupCatalogField } from './form-field-catalog';
 import { ConditionContext, evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { getActivationForStep, DECISION_KEY } from './step-field-config';

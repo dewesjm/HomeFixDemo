@@ -87,7 +87,7 @@ const ifNc = (requirement: string): FieldCondition => ({ all: [{ source: 'field'
 const ncFrom = (requirement: string): FieldFill => ({ from: 'thisStep', fieldKey: requirement, when: ifNc(requirement) });
 
 const showIfNuclear: FieldCondition = { all: [{ source: 'jointDetail', key: 'nInd', equals: '1' }] };
-/* virtual Joint Details keys (joint-facts.ts) */
+/* Yes/No fields worked out by the condition catalog (routing/condition-catalog.ts) */
 const showIfInsert: FieldCondition = { all: [{ source: 'jointDetail', key: 'consumableInsertRequired', equals: 'Yes' }] };
 const showIfRing: FieldCondition = { all: [{ source: 'jointDetail', key: 'backingRingRequired', equals: 'Yes' }] };
 const ifTraceability: FieldCondition = { all: [{ source: 'jointDetail', key: 'controlledMaterial', equals: 'Yes' }] };

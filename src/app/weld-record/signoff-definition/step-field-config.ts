@@ -8,7 +8,7 @@ import { STORAGE } from '../../data/storage-keys';
 import { migrateRepairConfirmationForm } from './repair-confirmation-migration';
 import { migrateConditionClauses } from './condition-catalog-migration';
 import { FieldCondition } from './field-conditions';
-import { type FieldFill } from './field-catalog';
+import { type FieldFill } from './form-field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
 import { FILLER_KEYS } from './weld-fields';
 import { signoffTypeOptions } from './signoff-types';
@@ -80,7 +80,7 @@ export interface TypeDefinition {
 /* ── Condition shorthands ── */
 const ndtRootInspection: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', anyOf: ['5X', 'VT'] }] };
 /* Tack's filler is hidden when a consumable insert is used, and when neither part requires
-   material traceability (virtual keys in joint-facts.ts) */
+   material traceability (Yes/No fields in routing/condition-catalog.ts) */
 const tackFiller: FieldCondition = {
   all: [
     { source: 'jointDetail', key: 'consumableInsertRequired', equals: 'No' },

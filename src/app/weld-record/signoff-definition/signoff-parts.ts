@@ -3,7 +3,7 @@
 import { baseStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 import { StepRef } from './step-field-config';
-import { lookupCatalogField } from './field-catalog';
+import { lookupCatalogField } from './form-field-catalog';
 
 /* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the
    step: Affected Item, References, Signoff History, Comments and the signoff section's fields on any step, and

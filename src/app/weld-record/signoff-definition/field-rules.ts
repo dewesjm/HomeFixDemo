@@ -3,7 +3,7 @@
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
 import { jointOrFabricationField } from '../routing/condition-catalog';
 import { FieldActivation } from './step-field-config';
-import { FieldFill, isVerifyRow, lookupCatalogField } from './field-catalog';
+import { FieldFill, isVerifyRow, lookupCatalogField } from './form-field-catalog';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './condition-context';
 
 /* Fields whose visibility is decided in code, not by a condition: Type, which picks the form these

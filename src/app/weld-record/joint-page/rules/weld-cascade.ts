@@ -1,5 +1,5 @@
 import { formInputFields } from '../../signoff-definition/form-fields';
-import { FormField } from '../../signoff-definition/field-catalog';
+import { FormField } from '../../signoff-definition/form-field-catalog';
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, and a
    WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
    their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right

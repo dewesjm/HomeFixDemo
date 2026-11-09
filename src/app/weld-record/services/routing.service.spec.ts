@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/field-catalog';
+import { FormField } from '../signoff-definition/form-field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { addTestJob, Job } from '../../data/jobs';
 

@@ -1,5 +1,5 @@
-/* Facts about a joint that field conditions read as virtual Joint Details keys ('yes' or ''),
-   and how Admin > Signoff Type Forms words them */
+/* Facts worked out from a joint and its Fabrication values. The condition catalog
+   (routing/condition-catalog.ts) offers them to rules as Yes/No fields. */
 import { Job } from '../../data/jobs';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { getJointDesign } from '../../data/joint-designs';

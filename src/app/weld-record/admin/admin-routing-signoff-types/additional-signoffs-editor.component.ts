@@ -1,7 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdditionalSignoff, getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
-import { FIELD_CATALOG } from '../../signoff-definition/field-catalog';
+import { FIELD_CATALOG } from '../../signoff-definition/form-field-catalog';
 import { formFieldValues } from '../../routing/condition-catalog';
 import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
 import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-type-definition/condition-work';

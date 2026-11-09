@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/field-catalog';
+import { FormField } from '../signoff-definition/form-field-catalog';
 /* A step's verify-grid rows (Fit-Up Insp's fitting values, Records Review's record fields) as one
    table: each row's value beside a Verified checkbox. Its definition says what the values are
    checked against (verifyAgainst). */

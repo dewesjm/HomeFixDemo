@@ -1,4 +1,4 @@
-import { FormField } from '../signoff-definition/field-catalog';
+import { FormField } from '../signoff-definition/form-field-catalog';
 /* A step's form, drawn from its Signoff Type Form: its fields in definition order, on the lines
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
@@ -11,7 +11,7 @@ import { LayoutSection, layoutSections } from '../signoff-definition/definition-
 import { WorkflowStage } from '../model/workflow-types';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { drawnFieldRule } from '../signoff-definition/shown-fields';
-import { isVerifyRow } from '../signoff-definition/field-catalog';
+import { isVerifyRow } from '../signoff-definition/form-field-catalog';
 import { showsType } from '../signoff-definition/stage-rules';
 import { ReferencesComponent } from '../references/references.component';
 import { AffectedItemComponent } from './affected-item.component';

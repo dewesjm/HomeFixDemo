@@ -1,4 +1,4 @@
-import { FormField } from '../../signoff-definition/field-catalog';
+import { FormField } from '../../signoff-definition/form-field-catalog';
 /* Pre-Fit and Fit's sign-off fields that must be filled in before signing (the fields shown are
    visibleSignoffFields(), workflow/shown-fields.ts) */
 import { Job } from '../../../data/jobs';
