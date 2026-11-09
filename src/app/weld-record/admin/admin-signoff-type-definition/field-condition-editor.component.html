@@ -2,20 +2,7 @@
   @if (kind() === 'fill') {
     <div class="text-xs font-semibold mb-1">Prepopulated from (Nothing = not prepopulated)</div>
     <div class="flex flex-wrap items-center gap-1 mb-2">
-      <input type="text" class="input input-bordered input-xs w-44" placeholder="Search fields" aria-label="Search Prepopulated from fields"
-             [ngModel]="fillSearch()" (ngModelChange)="fillSearch.set($event)" />
-      @if (fillSearch()) {
-        <button type="button" class="btn btn-ghost btn-xs" aria-label="Clear Prepopulated from search" (click)="fillSearch.set('')">
-          <svg lucideX class="size-3"></svg>
-        </button>
-      }
-      <select class="select select-bordered select-xs w-96 max-w-full" aria-label="Prepopulated from"
-              [ngModel]="selectedChoiceId()" (ngModelChange)="pick($event)">
-        <option value="">Nothing</option>
-        @for (c of shownChoices(); track choiceId(c.stepId, c.key)) {
-          <option [value]="choiceId(c.stepId, c.key)">{{ c.label }}</option>
-        }
-      </select>
+      <app-searchable-select name="Prepopulated from" [choices]="fillChoices()" [value]="selectedChoiceId()" (picked)="pick($event)" />
     </div>
     <div class="text-xs font-semibold mb-1">when this form's fields match (no clauses = always)</div>
   } @else {

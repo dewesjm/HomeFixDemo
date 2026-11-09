@@ -6,6 +6,7 @@ import { disabledIfToStore, fillToStore, requiredIfToStore, showIfToStore } from
 import type { FieldCondition } from '../../signoff-definition/field-conditions';
 import type { FieldFill } from '../../signoff-definition/field-catalog';
 import { WorkGroup, workToCondition } from './condition-work';
+import type { SearchChoice } from './searchable-select.component';
 
 /* which of a field's conditions the editor is changing */
 export type CondKind = 'show' | 'disabled' | 'fill' | 'required';
@@ -44,26 +45,20 @@ export interface FillSource {
 }
 
 /* one entry of the Prepopulated from list, e.g. "Root Weld: Weld Process" */
-export interface FillChoice {
+export interface FillChoice extends SearchChoice {
   stepId: string;
   key: string;
-  label: string;
 }
 
 export const fillChoiceId = (stepId: string, key: string) => `${stepId}|${key}`;
 
 /* every source's fields as one list; a saved pick no source lists any more stays in it, first */
 export function fillChoices(sources: FillSource[], selected: { stepId: string; key: string }, fieldLabel: (key: string) => string): FillChoice[] {
-  const choices = sources.flatMap(s => s.fields.map(f => ({ stepId: s.stepId, key: f.key, label: `${s.stepLabel}: ${f.label}` })));
+  const entry = (stepId: string, key: string, label: string) => ({ id: fillChoiceId(stepId, key), stepId, key, label });
+  const choices = sources.flatMap(s => s.fields.map(f => entry(s.stepId, f.key, `${s.stepLabel}: ${f.label}`)));
   if (!selected.stepId || !selected.key || choices.some(c => c.stepId === selected.stepId && c.key === selected.key)) return choices;
   const source = sources.find(s => s.stepId === selected.stepId)?.stepLabel ?? selected.stepId;
-  return [{ ...selected, label: `${source}: ${fieldLabel(selected.key)}` }, ...choices];
-}
-
-/* the entries matching the search, always keeping the current pick so the list still shows it */
-export function matchingFillChoices(choices: FillChoice[], search: string, selectedId: string): FillChoice[] {
-  const text = search.trim().toLowerCase();
-  return text ? choices.filter(c => c.label.toLowerCase().includes(text) || fillChoiceId(c.stepId, c.key) === selectedId) : choices;
+  return [entry(selected.stepId, selected.key, `${source}: ${fieldLabel(selected.key)}`), ...choices];
 }
 
 /* the fields with the open editor's condition written to its field; a condition the same as the

@@ -10,8 +10,8 @@ describe('Prepopulated from picker', () => {
     fixture.componentRef.setInput('group', conditionToWork(undefined));
     fixture.componentRef.setInput('stepFields', []);
     fixture.componentRef.setInput('fillChoices', [
-      { stepId: WTN, key: 'weldProcess', label: 'WTN: Weld Process' },
-      { stepId: 'root-weld', key: 'weldProcess', label: 'Root Weld: Weld Process' },
+      { id: fillChoiceId(WTN, 'weldProcess'), stepId: WTN, key: 'weldProcess', label: 'WTN: Weld Process' },
+      { id: fillChoiceId('root-weld', 'weldProcess'), stepId: 'root-weld', key: 'weldProcess', label: 'Root Weld: Weld Process' },
     ]);
     fixture.detectChanges();
     const el: HTMLElement = fixture.nativeElement;
@@ -39,7 +39,9 @@ describe('Prepopulated from picker', () => {
     const { fixture, el, options } = setup();
     const clear = () => el.querySelector('[aria-label="Clear Prepopulated from search"]') as HTMLButtonElement | null;
     expect(clear()).toBeNull();
-    fixture.componentInstance.fillSearch.set('root');
+    const search = el.querySelector('[aria-label="Search Prepopulated from"]') as HTMLInputElement;
+    search.value = 'root';
+    search.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(options()).toEqual(['Nothing', 'Root Weld: Weld Process']);
     clear()!.click();

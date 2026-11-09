@@ -23,17 +23,8 @@
     } @else {
       @let c = asClause(t);
       <div class="flex flex-wrap items-center gap-1 mb-1">
-        <select class="select select-bordered select-xs w-52" aria-label="Condition on"
-                [ngModel]="c.source"
-                (ngModelChange)="updateClause(i, { source: $event, key: '', equals: $event === 'rejectedUtrt' ? 'yes' : '' })">
-          <option value="field">This form's field</option>
-          @if (!stepOnly()) {
-            <option value="jointDetail">Joint detail</option>
-            <option value="stepId">Routing ID matches</option>
-            <option value="rejectedUtrt">Rejected phase has RT/UT</option>
-          }
-          <option value="engineering">Engineering override</option>
-        </select>
+        <app-searchable-select name="Condition on" emptyLabel="Select a field" [emptyPickable]="false"
+                               [choices]="choicesFor(c)" [value]="choiceId(c)" (picked)="pickClause(i, $event)" />
         @if (c.source === 'engineering') {
           <span class="text-xs">is</span>
           <select class="select select-bordered select-xs w-24" aria-label="Engineering override is"
@@ -49,16 +40,6 @@
             <option value="">No</option>
           </select>
         } @else if (c.source === 'jointDetail') {
-          <select class="select select-bordered select-xs w-64" aria-label="Joint detail"
-                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: jointYesNo($event) ? 'Yes' : '' })">
-            <option value="" disabled>Select a joint detail</option>
-            @if (unlistedJointKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
-            @for (g of jointGroups; track g.name) {
-              <optgroup [label]="g.name">
-                @for (f of g.fields; track f.key) { <option [value]="f.key">{{ f.label }}</option> }
-              </optgroup>
-            }
-          </select>
           @if (jointYesNo(c.key)) {
             <span class="text-xs">is</span>
             <select class="select select-bordered select-xs w-20" aria-label="Joint detail is"
@@ -75,12 +56,6 @@
             </datalist>
           }
         } @else if (c.source === 'field') {
-          <select class="select select-bordered select-xs w-64" aria-label="Form field"
-                  [ngModel]="c.key" (ngModelChange)="updateClause(i, { key: $event, equals: fieldYesNo($event) ? 'yes' : '' })">
-            <option value="" disabled>Select a field</option>
-            @if (unlistedFieldKey(c.key)) { <option [value]="c.key">{{ c.key }}</option> }
-            @for (f of stepFields(); track f.key) { <option [value]="f.key">{{ f.label }}</option> }
-          </select>
           @if (fieldYesNo(c.key)) {
             <span class="text-xs">is</span>
             <select class="select select-bordered select-xs w-20" aria-label="Form field is"

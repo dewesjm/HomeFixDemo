@@ -1,10 +1,12 @@
 /* Edits one AND/OR group of a field condition on Admin > Signoff Type Forms (condition-work.ts).
    Items are clauses or nested groups, which render this same editor. Edits are emitted as a new group. */
-import { Component, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideX } from '@lucide/angular';
-import { ConditionCatalogField, JOINT_AND_FABRICATION_FIELDS } from '../../routing/condition-catalog';
+import { JOINT_AND_FABRICATION_FIELDS } from '../../routing/condition-catalog';
+import { clauseChoiceId, clauseChoices, withSavedChoice } from './condition-choices';
 import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
+import { SearchableSelectComponent } from './searchable-select.component';
 
 /* a field of the step a clause can test, with its suggested values */
 export interface StepFieldChoice {
@@ -18,7 +20,7 @@ export interface StepFieldChoice {
 @Component({
   selector: 'app-condition-group-editor',
   standalone: true,
-  imports: [FormsModule, LucidePlus, LucideX],
+  imports: [FormsModule, LucidePlus, LucideX, SearchableSelectComponent],
   templateUrl: './condition-group-editor.component.html',
 })
 export class ConditionGroupEditorComponent {
@@ -30,9 +32,19 @@ export class ConditionGroupEditorComponent {
   changed = output<WorkGroup>();
   removed = output<void>();
 
-  /* the Joint detail picker: the condition catalog's Joint Details and Fabrication */
-  readonly jointGroups: { name: string; fields: ConditionCatalogField[] }[] = ['Joint Details', 'Fabrication']
-    .map(name => ({ name, fields: JOINT_AND_FABRICATION_FIELDS.filter(f => f.group === name) }));
+  private readonly choices = computed(() => clauseChoices(this.stepFields(), this.stepOnly()));
+  readonly choiceId = clauseChoiceId;
+
+  /* the clause list, with a saved clause it doesn't offer still showing */
+  choicesFor(c: WorkClause) {
+    return withSavedChoice(this.choices(), c);
+  }
+
+  /* picking from the list starts that clause over */
+  pickClause(i: number, id: string) {
+    const picked = this.choicesFor(this.asClause(this.group().items[i])).find(c => c.id === id);
+    if (picked) this.setItem(i, picked.clause);
+  }
 
   asGroup(t: WorkTerm): WorkGroup | null {
     return isWorkGroup(t) ? t : null;
@@ -58,15 +70,6 @@ export class ConditionGroupEditorComponent {
   /* suggested values for a Joint Details field (typed values stay allowed) */
   jointValues(key: string): string[] {
     return this.jointField(key)?.values ?? [];
-  }
-
-  /* a saved key a picker doesn't list (typed before it existed) still shows */
-  unlistedJointKey(key: string): boolean {
-    return !!key && !this.jointField(key);
-  }
-
-  unlistedFieldKey(key: string): boolean {
-    return !!key && !this.stepFields().some(f => f.key === key);
   }
 
   /* suggested values for a step field (typed values stay allowed) */
