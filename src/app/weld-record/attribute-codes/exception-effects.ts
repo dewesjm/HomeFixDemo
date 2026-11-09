@@ -28,7 +28,7 @@ function applies(row: AttributeCodeException, job: Job, stages: WorkflowStage[],
 }
 
 /* conditions known only once something on the joint is signed */
-export function readsLaterAnswers(rules: ConditionRule[] | undefined): boolean {
+function readsLaterAnswers(rules: ConditionRule[] | undefined): boolean {
   return usesStepAnswers(rules);
 }
 
@@ -87,7 +87,7 @@ export function isJointsTwin(t: Pick<StageTemplate, 'id' | 'includeWhen'>, job: 
 }
 
 /* the routing's Types after the matching rows: only = just those, add = those as well */
-export function withExceptionTypes(options: StageOption[] | undefined, effect: RoutingEffect | null): StageOption[] | undefined {
+function withExceptionTypes(options: StageOption[] | undefined, effect: RoutingEffect | null): StageOption[] | undefined {
   if (!effect || (!effect.only && !effect.added.length)) return options;
   const catalog = getRoutingSignoffTypes();
   const option = (value: string): StageOption[] => {
@@ -101,7 +101,7 @@ export function withExceptionTypes(options: StageOption[] | undefined, effect: R
   return result;
 }
 
-export function stageRules(effect: RoutingEffect | null): AttributeStageRules | undefined {
+function stageRules(effect: RoutingEffect | null): AttributeStageRules | undefined {
   return effect ? {
     codes: effect.codes, accessible: effect.accessible,
     ...(effect.askAccessible ? { askAccessible: true } : {}), ...(effect.minRt ? { minRt: effect.minRt } : {}),

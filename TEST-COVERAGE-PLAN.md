@@ -30,7 +30,7 @@ The counts, coverage percentages, and file inventory below are a historical snap
   cover behavior, failures, templates or interactions.
 
 The generated HTML report is local and ignored by Git:
-`coverage/primeng-search-demo/index.html`. The file-level snapshot below is committed so
+`coverage/welding/index.html`. The file-level snapshot below is committed so
 this scope remains available after that report is deleted.
 
 ## Existing protection to preserve

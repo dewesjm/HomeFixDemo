@@ -51,7 +51,7 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'typeOptions'>)
    Keyed by stage id since these are only special on the stage that actually branches on them.
    Decision/Type aren't in here because Correct never touches
    `result`/`inspectionType`/`signoffType` at all -- only `inputs`/`signoffInputs`. */
-export const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
+const ROUTING_LOCKED_FIELD_KEYS: Record<string, string[]> = {
   repair: ['repairType', 'allowableThicknessExceededN1', 'allowableThicknessExceededN23'],
   'fitup-insp': ['releaseToWelding'],
   fit: ['deferTack'],

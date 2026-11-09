@@ -1,8 +1,8 @@
 /* Fixed-width layout of the vendor file: each field's position on a line. A generic stand-in
    for the real layout spec, which would be kept as data so a layout change is a data edit. */
-export type FieldType = 'text' | 'date' | 'number';
+type FieldType = 'text' | 'date' | 'number';
 
-export interface LayoutField {
+interface LayoutField {
   key: FieldKey;
   label: string;
   /* 1-based character position where the field starts */

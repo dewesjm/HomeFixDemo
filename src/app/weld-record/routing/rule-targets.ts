@@ -12,7 +12,7 @@ export const RULE_TARGETS = [
   { id: 'own-repair', label: 'Own Repair' },
 ];
 export const isAddTarget = (id: string) => !!insertionDefinitionId(id) || ['repair', 'add-excavation-ndt', 'engineering-hold'].includes(id);
-export function originRepair(stages: WorkflowStage[], stage: WorkflowStage): WorkflowStage | undefined {
+function originRepair(stages: WorkflowStage[], stage: WorkflowStage): WorkflowStage | undefined {
   return isExcavationNdtStageId(stage.id) ? stages.find(s => s.id === repairIdForExcavation(stage.id)) : stage;
 }
 export function resolveRuleTarget(stages: WorkflowStage[], stage: WorkflowStage, target: string): string {

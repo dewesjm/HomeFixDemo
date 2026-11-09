@@ -15,7 +15,7 @@ export interface MakeupGrant {
 }
 
 /* Each person gets this many makeup days per calendar year, across all their grants. */
-export const ANNUAL_MAKEUP_DAYS = 90;
+const ANNUAL_MAKEUP_DAYS = 90;
 
 const LS_KEY = STORAGE.makeup;
 

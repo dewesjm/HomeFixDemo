@@ -1,7 +1,7 @@
 /* Admin → Groups: the permission list and the sample groups. A group either allows a permission
    (its key is in allowed) or doesn't. */
 
-export interface Permission {
+interface Permission {
   key: string;
   label: string;
   category: string;
@@ -14,7 +14,7 @@ export interface AdminGroup {
   allowed: string[];
 }
 
-export const PERMISSIONS: Permission[] = [
+const PERMISSIONS: Permission[] = [
   { key: 'manage-routing', label: 'Manage routing', category: 'Routing' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
   { key: 'signoff-pre-fit', label: 'Pre-Fit', category: 'Sign-off' },

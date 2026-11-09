@@ -430,7 +430,7 @@ export const WTN_FILL_FIELDS = [
   { key: 'phMin', label: 'PH Min' }, { key: 'phMax', label: 'PH Max' },
   { key: 'ipMin', label: 'IP Min' }, { key: 'ipMax', label: 'IP Max' },
 ] as const;
-export type WtnFillKey = typeof WTN_FILL_FIELDS[number]['key'];
+type WtnFillKey = typeof WTN_FILL_FIELDS[number]['key'];
 
 /* one of those values for a GWP+WTN; '' when the pair matches no WPS */
 export function wtnFillValue(gwp: string, wtn: string, key: string): string {

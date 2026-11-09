@@ -27,9 +27,9 @@ export interface SignoffTypeRow {
 export const typeSourceLabel = (source: SignoffTypeRow['typeSource']) =>
   source === 'rejecting-inspection' ? 'Rejecting inspection' : 'Signoff Type Selection';
 
-export const REPAIR_TYPE_ROW = 'repair';
+const REPAIR_TYPE_ROW = 'repair';
 export const EXCAVATION_TYPE_ROW = 'excavation-ndt';
-export const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';
+const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';
 
 const only = (type: string): AvailableType[] => [{ type, default: true }];
 
@@ -92,13 +92,8 @@ export function setSignoffTypeRows(rows: SignoffTypeRow[]) {
 }
 
 /* the table row a step reads: its own, or the shared Repair / Excavation NDT row for any round */
-export function signoffTypeRowId(stageId: string): string {
+function signoffTypeRowId(stageId: string): string {
   return isRepairStageId(stageId) ? REPAIR_TYPE_ROW : isExcavationNdtStageId(stageId) ? (stageId.startsWith('nqc-') ? NQC_EXCAVATION_TYPE_ROW : EXCAVATION_TYPE_ROW) : insertedDefinitionId(stageId) ?? stageId;
-}
-
-export function hasSignoffTypeRow(stageId: string): boolean {
-  const id = signoffTypeRowId(stageId);
-  return getSignoffTypeRows().some(r => r.stepId === id);
 }
 
 /* a step's Type options, each with its Signoff Types name and settings; undefined when it

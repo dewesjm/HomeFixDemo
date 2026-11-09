@@ -51,10 +51,6 @@ export function setMaterialClassification(entries: MaterialClassificationEntry[]
   materialClassification.set(entries);
 }
 
-export function isTitanium(code: string): boolean {
-  return materialClassification().find(e => e.code === code)?.titanium ?? false;
-}
-
 /* Split saved combined flags using the known material classification. Unknown custom codes
    retain their combined eligibility as non-ferrous until classified by an administrator. */
 export function normalizeMaterialClassification(entry: Pick<MaterialClassificationEntry, 'code' | 'titanium'> & Partial<MaterialClassificationEntry> & { nonFerrousOrAustenitic?: boolean }): MaterialClassificationEntry {
@@ -66,9 +62,4 @@ export function normalizeMaterialClassification(entry: Pick<MaterialClassificati
 
 export function hasMaterialFlag(job: { materialType1: string; materialType2: string }, flag: MaterialFlag): boolean {
   return [job.materialType1, job.materialType2].some(code => materialClassification().some(e => e.code === code && e[flag]));
-}
-
-/* a titanium joint: either side's base material is flagged titanium */
-export function isTitaniumJoint(job: { materialType1: string; materialType2: string }): boolean {
-  return isTitanium(job.materialType1) || isTitanium(job.materialType2);
 }

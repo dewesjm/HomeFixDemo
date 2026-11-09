@@ -3,7 +3,7 @@
 import { ConvertedRow } from './convert';
 import { FieldKey, STATUS_LABELS } from './layout';
 
-export type ProcessOutcome = 'Included' | 'Excluded' | 'Not converted';
+type ProcessOutcome = 'Included' | 'Excluded' | 'Not converted';
 
 export interface ProcessedRow {
   lineNo: number;
@@ -15,7 +15,7 @@ export interface ProcessedRow {
 }
 
 /* statuses that keep a row out of the weld joints */
-export const EXCLUDED_STATUSES = ['CN', 'SP'];
+const EXCLUDED_STATUSES = ['CN', 'SP'];
 
 export function processRow(row: ConvertedRow): ProcessedRow {
   const base = { lineNo: row.lineNo, values: row.values };

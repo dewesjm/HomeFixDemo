@@ -2,8 +2,8 @@
    joint gets from its Joint Details */
 import { StageOption, StageTemplate } from '../model/workflow-types';
 
-export type NdtPhase = 'root' | 'layer' | 'final';
-export type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
+type NdtPhase = 'root' | 'layer' | 'final';
+type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
 
 /* Degree of RT required/performed: NA, or a number of degrees, in number order. Shared by the
    Degree of RT Performed signoff field and Job.rtRoot/rtFinal (the performed degree must be at least the

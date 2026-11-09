@@ -36,7 +36,7 @@ export interface StageAnswers {
 }
 
 export type Fabrication = Record<string, string>;
-export type ConditionFieldGroup = 'Joint Details' | 'Fabrication' | 'Routing answers' | 'This routing';
+type ConditionFieldGroup = 'Joint Details' | 'Fabrication' | 'Routing answers' | 'This routing';
 
 export interface ConditionCatalogField {
   key: string;
@@ -165,7 +165,7 @@ const FIXED_ANSWER_FIELDS: ConditionCatalogField[] = [
 export const ROUTING_CONDITION_FIELDS = [...JOINT_AND_FABRICATION_FIELDS, ...FIXED_ANSWER_FIELDS];
 
 /* a checkbox on a form stores 'yes' or blank, and reads Yes / No in every condition */
-export const CHECKBOX_VALUES = [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }];
+const CHECKBOX_VALUES = [{ label: 'Yes', value: 'yes' }, { label: 'No', value: '' }];
 export function formFieldValues(f: { type: string; options?: { label: string; value: string }[] }): { label: string; value: string }[] {
   return f.type === 'checkbox' ? CHECKBOX_VALUES : (f.options ?? []).map(o => ({ value: o.value, label: o.label }));
 }
@@ -173,14 +173,14 @@ export function formFieldValues(f: { type: string; options?: { label: string; va
 /* ── Routing answers: every routing's own fields, keyed 'step.<stageId>.<fieldKey>' ── */
 
 /* the shape of a stage template these read */
-export interface StageShape {
+interface StageShape {
   id?: string;
   classification?: 'numbered' | 'added';
   lifecycle?: string;
   insertion?: { originInspectionType?: string };
   typeOptions?: { label: string; value: string }[];
 }
-export interface StepTemplateShape extends StageShape { id: string; label: string }
+interface StepTemplateShape extends StageShape { id: string; label: string }
 
 /* Registered with templates to keep condition evaluation independent of form initialization. */
 interface RoutingField { key: string; label: string; type: string; options?: { label: string; value: string }[]; ownFormSteps?: string[]; }

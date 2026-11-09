@@ -7,7 +7,7 @@ export interface RawLine {
   text: string;
 }
 
-export interface ConversionError {
+interface ConversionError {
   field: FieldKey | 'line';
   label: string;
   value: string;

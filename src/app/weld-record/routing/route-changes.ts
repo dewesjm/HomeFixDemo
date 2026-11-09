@@ -16,7 +16,7 @@ import { initialInspectionType, typeValues } from '../signoff-definition/stage-r
 const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];
 
 /* a stage with nothing entered and not signed; `fresh` is its buildStages() copy, when it has one */
-export function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
+function blankStage(s: WorkflowStage, fresh?: WorkflowStage): WorkflowStage {
   const inputs = fresh ? { ...fresh.inputs }
     : Object.fromEntries(REPAIR_BOOKKEEPING_KEYS.filter(k => (isRepairStageId(s.id) || isExcavationNdtStageId(s.id)) && s.inputs[k]).map(k => [k, s.inputs[k]]));
   return {

@@ -13,7 +13,7 @@ import { effectiveFill } from './field-rules';
 import { wtnFillValue } from '../../data/procedures';
 
 /* the field's fill rule when it holds right now on this step */
-export function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {
+function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {
   if (!formInputFields(stage).some(f => f.key === key)) return undefined;
   const fill = effectiveFill(fieldActivation(stage, key));
   return fill && evaluateCondition(fill.when, stepOnlyContext(stage)) ? fill : undefined;

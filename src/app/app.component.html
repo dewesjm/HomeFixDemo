@@ -20,7 +20,7 @@
           @case ('Weld Engineering') {
             <li><a title="Procedure Lookup" routerLink="/weld-engineering" routerLinkActive="menu-active" [routerLinkActiveOptions]="{ exact: true }"><svg lucideSearch class="size-4"></svg><span class="nav-label"> Procedure Lookup</span></a></li>
             <li class="dropdown-wrapper">
-              <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
+              <details #flatAdminDetails (toggle)="onFlatAdminToggle()">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
                 <ul class="dropdown-menu flat-admin-menu">
                   <li><a routerLink="/weld-engineering/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Manage Procedures</a></li>
@@ -36,7 +36,7 @@
             <li><a title="Advanced Search" routerLink="/weld-planning/search" routerLinkActive="menu-active"><svg lucideSlidersHorizontal class="size-4"></svg><span class="nav-label"> Advanced Search</span></a></li>
             <li><a title="External Loads" routerLink="/weld-planning/external-loads" routerLinkActive="menu-active"><svg lucideDatabase class="size-4"></svg><span class="nav-label"> External Loads</span></a></li>
             <li class="dropdown-wrapper">
-              <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
+              <details #flatAdminDetails (toggle)="onFlatAdminToggle()">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
                 <ul class="dropdown-menu flat-admin-menu">
                   <li><a routerLink="/weld-planning/admin" routerLinkActive="menu-active"><svg lucideSettings class="size-4"></svg> Joint Designs &amp; NDT</a></li>
@@ -52,7 +52,7 @@
             <li><a title="Filler Metal Attendant" class="menu-disabled"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Filler Metal Attendant</span></a></li>
             <li><a title="History Lookup" class="menu-disabled"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History Lookup</span></a></li>
             <li class="dropdown-wrapper">
-              <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
+              <details #flatAdminDetails (toggle)="onFlatAdminToggle()">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
                 <ul class="dropdown-menu flat-admin-menu">
                   <li><a class="menu-disabled"><svg lucideSettings class="size-4"></svg> Configuration</a></li>
@@ -73,7 +73,7 @@
             <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
             <li><a title="Makeup" routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
             <li class="dropdown-wrapper">
-              <details #flatAdminDetails (toggle)="onFlatAdminToggle($event)">
+              <details #flatAdminDetails (toggle)="onFlatAdminToggle()">
                 <summary title="Admin"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin</span></summary>
                 <ul class="dropdown-menu flat-admin-menu">
                   <li><a routerLink="/admin/attribute-code-exceptions" routerLinkActive="menu-active"><svg lucideTag class="size-4"></svg> Attribute Code Exceptions</a></li>
@@ -106,7 +106,7 @@
         } @else {
         <!-- Weld Engineering group dropdown -->
         <li class="dropdown-wrapper">
-          <details #weDetails (toggle)="onWeToggle($event)">
+          <details #weDetails (toggle)="onWeToggle()">
             <summary title="Weld Engineering"><svg lucideWorkflow class="size-4"></svg><span class="nav-label"> Weld Engineering</span></summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/weld-engineering" routerLinkActive="menu-active"><svg lucideSearch class="size-4"></svg> Procedure Lookup</a></li>
@@ -127,7 +127,7 @@
 
         <!-- Weld Planning group dropdown -->
         <li class="dropdown-wrapper">
-          <details #wpDetails (toggle)="onWpToggle($event)">
+          <details #wpDetails (toggle)="onWpToggle()">
             <summary title="Weld Planning"><svg lucideLayers class="size-4"></svg><span class="nav-label"> Weld Planning</span></summary>
             <ul class="dropdown-menu">
               <li><a routerLink="/weld-planning" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Joint Search</a></li>
@@ -151,7 +151,7 @@
 
         <!-- Weld Dispatch group dropdown -->
         <li class="dropdown-wrapper">
-          <details #waDetails (toggle)="onWaToggle($event)">
+          <details #waDetails (toggle)="onWaToggle()">
             <summary title="Weld Dispatch"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> Weld Dispatch</span></summary>
             <ul class="dropdown-menu">
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Active WICCs</a></li>
@@ -174,7 +174,7 @@
 
         <!-- Weld Record (EWR) group dropdown -->
         <li class="dropdown-wrapper">
-          <details #pipeWeldingDetails (toggle)="onPipeWeldingToggle($event)">
+          <details #pipeWeldingDetails (toggle)="onPipeWeldingToggle()">
             <summary title="Weld Record"><svg lucideTable class="size-4"></svg><span class="nav-label"> Weld Record</span></summary>
             <ul class="dropdown-menu">
               @if (toggles().myAssignments) {
@@ -227,7 +227,7 @@
       <app-sync-status />
       <!-- Quick Links: admin-configurable shortcuts, demo only -->
       <div class="dropdown-wrapper">
-        <details #qlDetails (toggle)="onQlToggle($event)">
+        <details #qlDetails (toggle)="onQlToggle()">
           <summary title="Quick Links"><svg lucideExternalLink class="size-4"></svg></summary>
           <ul class="dropdown-menu">
             @for (link of quickLinks(); track link.id) {

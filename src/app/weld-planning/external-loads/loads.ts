@@ -7,7 +7,7 @@ import { FileCheck, fileChecks } from './file-checks';
 import { FieldKey, KEY_FIELDS } from './layout';
 import { PROTECTED_KEYS, SEED_FILES } from '../../data/external-load-files';
 
-export type RunStatus = 'Live' | 'Previous' | 'Failed check' | 'Replaced';
+type RunStatus = 'Live' | 'Previous' | 'Failed check' | 'Replaced';
 
 export interface LoadRun {
   id: number;
@@ -29,7 +29,7 @@ export interface LoadData {
   weldJoints: WeldJointRow[];
 }
 
-export type ErrorStage = 'File check' | 'Converted' | 'Merge';
+type ErrorStage = 'File check' | 'Converted' | 'Merge';
 
 export interface ErrorLogEntry {
   at: Date;
@@ -44,7 +44,7 @@ export interface ErrorLogEntry {
   message: string;
 }
 
-export interface ExternalLoads {
+interface ExternalLoads {
   runs: LoadRun[];
   live: LoadData;
   previous: LoadData;

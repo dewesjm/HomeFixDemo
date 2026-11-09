@@ -40,7 +40,7 @@ function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stag
   return { to: st.insertion && rule ? rule.to : usable ? rule.to : st.rejectToStage ?? '', rule: st.insertion && rule ? rule : usable ? rule : null };
 }
 
-export interface SignoffRouting {
+interface SignoffRouting {
   stages: WorkflowStage[];
   fabricationData: JobWorkflow['fabricationData'];
   /* the step this signoff is recorded on (a later step's id when the Type signs that step), as signed */

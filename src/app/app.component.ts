@@ -92,12 +92,12 @@ export class AppComponent {
     setTimeout(() => this.suppressToggle = false, 0);
   }
 
-  onPipeWeldingToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.pipeWeldingDetails)); }
-  onWpToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
-  onWaToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
-  onWeToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
-  onQlToggle(e: Event)  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.qlDetails)); }
-  onFlatAdminToggle(e: Event) { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.flatAdminDetails)); }
+  onPipeWeldingToggle() { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.pipeWeldingDetails)); }
+  onWpToggle()  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.wpDetails)); }
+  onWaToggle()  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.waDetails)); }
+  onWeToggle()  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.weDetails)); }
+  onQlToggle()  { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.qlDetails)); }
+  onFlatAdminToggle() { if (!this.suppressToggle) setTimeout(() => this.closeAll(this.flatAdminDetails)); }
 
   /* Cap a flyout submenu to the space below where it opens, so it scrolls instead of running off-screen. */
   fitSubmenu(e: Event) {

@@ -17,7 +17,7 @@ export const EXTRA_FIELD_TYPE_OPTIONS: { label: string; value: ExtraFieldType }[
   { label: 'Pick from a list', value: 'list' },
 ];
 
-export interface ExtraField {
+interface ExtraField {
   key: string;        /* set once from the label, unique across all added sections; the extraFields key */
   label: string;
   type: ExtraFieldType;
@@ -32,7 +32,7 @@ export interface ProcedureSection {
 }
 
 export interface RangeValue { min: number | null; max: number | null; }
-export type ExtraFieldValue = string | number | RangeValue | null;
+type ExtraFieldValue = string | number | RangeValue | null;
 export type ExtraFields = Record<string, ExtraFieldValue>;
 
 /* the fixed sections, in PDF/form order -- added sections are numbered after these */
@@ -55,7 +55,7 @@ export function sectionNameProblem(name: string, sections: ProcedureSection[]): 
   return '';
 }
 
-export interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; }
+interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; }
 
 export function fieldDraftProblem(draft: ExtraFieldDraft, section: ProcedureSection): string {
   const label = draft.label.trim().toLowerCase();
@@ -74,7 +74,7 @@ export function fieldKey(label: string, takenKeys: string[]): string {
 }
 
 /* ── Values on a procedure ── */
-export function emptyValue(type: ExtraFieldType): ExtraFieldValue {
+function emptyValue(type: ExtraFieldType): ExtraFieldValue {
   if (type === 'range') return { min: null, max: null };
   if (type === 'number') return null;
   return '';

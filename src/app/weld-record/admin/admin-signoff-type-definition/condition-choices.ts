@@ -6,7 +6,7 @@ import { ClauseSrc, WorkClause } from './condition-work';
 import type { SearchChoice } from './searchable-select.component';
 
 /* an entry of the list, with the clause picking it starts */
-export interface ClauseChoice extends SearchChoice {
+interface ClauseChoice extends SearchChoice {
   clause: WorkClause;
 }
 

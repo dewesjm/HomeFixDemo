@@ -13,7 +13,7 @@ export interface LookupQuery {
   joint: string;
 }
 
-export interface StageTrace {
+interface StageTrace {
   load: LoadData;
   raw?: RawLine;
   converted?: ConvertedRow;
@@ -21,7 +21,7 @@ export interface StageTrace {
   weldJoint?: WeldJointRow;
 }
 
-export interface LookupResult {
+interface LookupResult {
   key: string;
   xrefid: string;
   hull: string;
@@ -39,7 +39,7 @@ export function isBlankQuery(q: LookupQuery): boolean {
 }
 
 /* every filled-in field must match exactly (any case); blank fields match anything */
-export function matchesQuery(values: Partial<Record<FieldKey, string>>, q: LookupQuery): boolean {
+function matchesQuery(values: Partial<Record<FieldKey, string>>, q: LookupQuery): boolean {
   return !isBlankQuery(q) && QUERY_FIELDS.every(f => !norm(q[f]) || norm(values[f]) === norm(q[f]));
 }
 

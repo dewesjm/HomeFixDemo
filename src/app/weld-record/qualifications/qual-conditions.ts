@@ -26,7 +26,7 @@ export interface QualCondition {
 }
 
 /* the step being checked; its fields are blank until filled in */
-export interface ConditionStep {
+interface ConditionStep {
   id?: string;
   inputs?: Record<string, string>;
   signoffInputs?: Record<string, string>;
@@ -55,7 +55,7 @@ export const USER_FIELD = 'user';
 export const SELF = 'SELF';
 /* sign-off field keys: 'step:<field key>' ('step:inspectionType' = the step's Type, 'step:id' = the step) */
 const STEP_PREFIX = 'step:';
-export const TYPE_FIELD = `${STEP_PREFIX}inspectionType`;
+const TYPE_FIELD = `${STEP_PREFIX}inspectionType`;
 const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
@@ -148,7 +148,7 @@ export function userOf(c: QualCondition): string | null {
 }
 
 /* e.g. "Type is VT", "Weld Color is not Straw or Light Blue", worded like Routing Settings */
-export function clauseText(c: WhenClause): string {
+function clauseText(c: WhenClause): string {
   const f = conditionField(c.field);
   const label = f?.label ?? c.field;
   if (c.op === 'contains') return `${label} contains "${(c.values[0] ?? '').trim()}"`;

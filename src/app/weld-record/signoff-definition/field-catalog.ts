@@ -11,9 +11,9 @@ import { defectCodeOptions } from '../../data/defect-codes';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
 import { RT_DEGREE_OPTIONS } from '../routing/ndt';
 
-export const FIELD_TYPE_LABELS = { text: 'Text', number: 'Number', select: 'Droplist', checkbox: 'Checkbox', radio: 'Radio' } as const;
+const FIELD_TYPE_LABELS = { text: 'Text', number: 'Number', select: 'Droplist', checkbox: 'Checkbox', radio: 'Radio' } as const;
 
-export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
+type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 
 /* "Prepopulated from ... when": when `when` starts holding (checked against this step's own fields
    and whether an engineering override has it), or its source changes while it holds, the field
@@ -23,7 +23,7 @@ export type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
 export type FieldFill = { fieldKey: string; when: FieldCondition }
   & ({ from?: 'step'; stepId: string } | { from: 'thisStep' } | { from: 'wtn' });
 
-export interface CatalogField {
+interface CatalogField {
   key: string;
   label: string;
   type: FieldType;
@@ -80,7 +80,7 @@ const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableIn
 const fillFromFit = (fieldKey: string): FieldFill => ({ stepId: 'fit', fieldKey, when: insertOnly });
 /* Weld Process and the PH/IP requirements come from the WTN's WPS, except under an engineering
    override (no WTN on file, the values are typed) */
-export const ENGINEERING_OVERRIDE_OFF: FieldCondition = { all: [{ source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: '' }] };
+const ENGINEERING_OVERRIDE_OFF: FieldCondition = { all: [{ source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: '' }] };
 const fillFromWtn = (fieldKey: string): FieldFill => ({ from: 'wtn', fieldKey, when: ENGINEERING_OVERRIDE_OFF });
 /* an actual is NC while its requirement is NC */
 const ifNc = (requirement: string): FieldCondition => ({ all: [{ source: 'field', key: requirement, equals: 'NC' }] });

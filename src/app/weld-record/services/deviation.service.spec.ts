@@ -34,12 +34,11 @@ describe('DeviationService', () => {
 
   it('records an open deviation, logs it to history and holds the joint', () => {
     const job = addTestJob();
-    expect(service.isOnHold(store.workflowFor(job)())).toBeFalse();
+    expect(service.openDeviations(store.workflowFor(job)())).toEqual([]);
     service.record(job, 'tack', [{ kind: 'out-of-range', label: 'Actual PH Min', entered: '40', required: '50 to 300' }], 'Heater failed');
     const wf = store.workflowFor(job)();
     expect(service.openDeviations(wf).length).toBe(1);
     expect(wf.deviations![0]).toEqual(jasmine.objectContaining({ stageId: 'tack', reason: 'Heater failed', status: 'open' }));
-    expect(service.isOnHold(wf)).toBeTrue();
     const h = wf.history.at(-1)!;
     expect(h.section).toBe('Deviation');
     expect(h.inputs?.[0]).toEqual({ label: 'Reason', value: 'Heater failed' });
@@ -48,7 +47,7 @@ describe('DeviationService', () => {
   it('records nothing when there are no items', () => {
     const job = addTestJob();
     service.record(job, 'tack', [], 'n/a');
-    expect(service.isOnHold(store.workflowFor(job)())).toBeFalse();
+    expect(service.openDeviations(store.workflowFor(job)())).toEqual([]);
   });
 });
 
@@ -104,7 +103,7 @@ describe('Engineering Hold (deviations)', () => {
     expect(wf.history.at(-2)?.action).toBe('Tack - Deviation dispositioned');
     expect(wf.history.at(-1)?.action).toBe('Routing set to Fit-Up Insp (Engineering)');
     expect(wf.history.at(-1)?.routing).toBe('Engineering Hold');
-    expect(deviations.isOnHold(wf)).toBeFalse();
+    expect(deviations.openDeviations(wf)).toEqual([]);
   });
 
   it('Engineering setting the routing back: that step comes up blank, records and the hold stay', () => {

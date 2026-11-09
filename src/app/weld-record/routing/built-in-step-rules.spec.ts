@@ -1,6 +1,6 @@
 import { WorkflowStage } from '../model/workflow-types';
 import {
-  blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel, isPhaseNdtId,
+  blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel,
   needsFabricationComplete,
 } from './built-in-step-rules';
 
@@ -21,11 +21,6 @@ describe('built-in step rules', () => {
     expect(goesBackPastFabrication(stages, 1)).toBeTrue();
     expect(goesBackPastFabrication(stages, 2)).toBeFalse();
     expect(goesBackPastFabrication([st('tack')], 0)).toBeFalse();
-  });
-
-  it('NDT steps: phase NDT ids, and UNSAT adds a Repair except on Excavation NDT', () => {
-    expect(isPhaseNdtId('nqc-root-ndt-vt5x')).toBeTrue();
-    expect(isPhaseNdtId('excavation-ndt')).toBeFalse();
   });
 
   it('names what an inspection step inspects', () => {

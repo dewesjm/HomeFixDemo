@@ -45,11 +45,6 @@ export class DeviationService {
     return (wf.deviations ?? []).filter(d => d.status === 'open');
   }
 
-  /* the joint holds while any deviation is open */
-  isOnHold(wf: JobWorkflow): boolean {
-    return this.openDeviations(wf).length > 0;
-  }
-
   /* Engineering's release: every open deviation is dispositioned with the comments, each unsigned
      Engineering Hold is signed (by Engineering, with the comments and the routing chosen), and the
      current routing is set to `targetId` the same way Admin > Routing Override does it. A hold a reject

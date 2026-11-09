@@ -98,10 +98,6 @@ const REGULAR_SEEDS: AttributeCodeException[] = [
 ];
 export const SEED_EXCEPTIONS: AttributeCodeException[] = REGULAR_SEEDS.flatMap(withNqcCopy);
 
-/* bumped on every save, so stage templates and routing reads know the table changed */
-let version = 0;
-export const attributeCodeExceptionsVersion = () => version;
-
 export function getAttributeCodeExceptions(): AttributeCodeException[] {
   try {
     const raw = localStorage.getItem(STORAGE.attributeCodeExceptions);
@@ -111,7 +107,6 @@ export function getAttributeCodeExceptions(): AttributeCodeException[] {
 
 export function setAttributeCodeExceptions(rows: AttributeCodeException[]) {
   localStorage.setItem(STORAGE.attributeCodeExceptions, JSON.stringify(rows));
-  version++;
 }
 
 /* the codes with a row for a routing, for the other admin tables' notes */

@@ -5,7 +5,7 @@ import type { FieldActivation } from './step-field-config';
 import { DECISION_KEY, isHeadingItem } from './step-field-config';
 import { isVerifyRow } from './field-catalog';
 
-export type LayoutPart = { kind: 'heading'; text: string } | { kind: 'line'; keys: string[] };
+type LayoutPart = { kind: 'heading'; text: string } | { kind: 'line'; keys: string[] };
 
 export interface LayoutSection {
   box: boolean;

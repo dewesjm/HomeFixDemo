@@ -4,7 +4,7 @@
 import { ProcessedRow } from './rules';
 import { FieldKey, LAYOUT, fieldLabel, recordKey } from './layout';
 
-export type MergeAction = 'Added' | 'Updated' | 'Unchanged' | 'Removed' | 'Kept';
+type MergeAction = 'Added' | 'Updated' | 'Unchanged' | 'Removed' | 'Kept';
 
 export interface WeldJointRow {
   key: string;

@@ -1,6 +1,6 @@
 /* Procedure -> pdfmake document definition. Pure data transform, no rendering/DOM -- keeps this
    trivially unit-testable. The only place that touches the actual pdfmake renderer is
-   procedure-pdf-actions.ts (openProcedurePdf/downloadProcedurePdf).
+   procedure-pdf-actions.ts (procedurePdfDataUrl/downloadProcedurePdf).
 
    Layout: Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position, 4. Filler Metal,
    5. Welder Qualifications, 6. Preheat & Interpass Temperatures, 7. Equipment, 8. Gas, 9. Heat Input,

@@ -54,7 +54,7 @@ export const DECISION_KEY = 'decision';
 export const COMMENTS_KEY = 'comments';
 
 /* a Layout list item that isn't a field: a heading */
-export function isLayoutOnlyItem(a: FieldActivation): boolean {
+function isLayoutOnlyItem(a: FieldActivation): boolean {
   return isHeadingItem(a);
 }
 

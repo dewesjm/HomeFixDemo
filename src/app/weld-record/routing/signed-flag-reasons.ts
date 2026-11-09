@@ -6,7 +6,7 @@ import { RoutingEffect, hasLaterAnswerRows, routingEffect } from '../attribute-c
 import { getTemplates } from './stage-templates';
 import { describeConditions } from './step-conditions';
 
-export interface SignedFlagChange { id: string; required: boolean; types: string; reason: string }
+interface SignedFlagChange { id: string; required: boolean; types: string; reason: string }
 
 const typesKey = (s: WorkflowStage) => (s.typeOptions ?? []).map(o => o.value).join(',');
 const codeText = (e: RoutingEffect) => `attribute code${e.codes.length > 1 ? 's' : ''} ${e.codes.join(', ')}`;

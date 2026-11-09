@@ -19,11 +19,6 @@ async function pdfMake() {
   return pm;
 }
 
-export async function openProcedurePdf(p: Procedure): Promise<void> {
-  const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p, procedureSections(), wtnRequirementText(p.wtn))).open();
-}
-
 export async function downloadProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
   pm.createPdf(procedureDocDefinition(p, procedureSections(), wtnRequirementText(p.wtn))).download(`${p.id}.pdf`);

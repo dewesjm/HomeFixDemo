@@ -5,8 +5,8 @@ import { computed, signal } from '@angular/core';
 
 type SortOrder = 1 | -1;
 /* a column filter is typed text, or the values picked in a multiselect */
-export type ColumnFilterValue = string | string[];
-export type FilterPredicate<T> = (rowValue: unknown, filterValue: ColumnFilterValue, row: T) => boolean;
+type ColumnFilterValue = string | string[];
+type FilterPredicate<T> = (rowValue: unknown, filterValue: ColumnFilterValue, row: T) => boolean;
 
 const cell = (row: unknown, field: string) => (row as Record<string, unknown>)[field];
 

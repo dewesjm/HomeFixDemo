@@ -27,7 +27,7 @@ describe('ForemanOverrideService', () => {
       { label: 'Override', value: 'Used a different GWP' },
       { label: 'GWP', value: 'X1 (allowed: A1, A2)' },
     ]);
-    expect(TestBed.inject(DeviationService).isOnHold(wf)).toBeFalse();
+    expect(TestBed.inject(DeviationService).openDeviations(wf)).toEqual([]);
   });
 
   it('records nothing when there are no overrides', () => {

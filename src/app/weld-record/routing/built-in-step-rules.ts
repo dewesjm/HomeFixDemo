@@ -46,9 +46,6 @@ export const namedAfterType = (stageId: string) => stageId === 'root-layer';
 
 /* ── NDT ── */
 
-/* a Root / Layer / Final NDT step (either row) */
-export const isPhaseNdtId = (stageId: string) => /^(root|layer|final)-ndt-/.test(baseStepId(stageId));
-
 /* Inspecting on an inspection step: what's being inspected (Fit on Fit-Up Insp; Root, Layer, Final,
    or the Excavation of a Weld Repair on NDT); '' for any other step */
 export function inspectingLabel(stageId: string): string {

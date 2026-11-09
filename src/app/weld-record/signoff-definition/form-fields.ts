@@ -5,7 +5,7 @@ import { signoffTypeOptions } from './signoff-types';
 import { baseStepId } from '../routing/step-ids';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 
-export function formFields(step: StepRef): FormField[] {
+function formFields(step: StepRef): FormField[] {
   return getActivationForStep(step).fields.flatMap(a => {
     const cat = lookupCatalogField(a.key);
     return cat ? [{ ...cat, required: a.required ?? !!cat.defaultRequired }] : [];

@@ -3,7 +3,7 @@ import { WorkflowStage } from '../model/workflow-types';
 import { activeStageId } from './current-routing';
 import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
 
-export interface RoutingBarStep {
+interface RoutingBarStep {
   stageIndex: number;
   label: string;
 }
