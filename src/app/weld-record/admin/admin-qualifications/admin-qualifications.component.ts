@@ -14,7 +14,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { ALL_QUALS } from '../../qualifications/qualifications';
 import {
-  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, heldBy, notOnCheckForm, qualConditions, setQualConditions,
+  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, distinctRequirements, heldBy, notOnCheckForm, qualConditions, setQualConditions,
   signoffTypeChoices, signoffTypeLabel, userOf,
 } from '../../qualifications/qual-conditions';
 import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications/qual-requirements';
@@ -56,8 +56,9 @@ export class AdminQualificationsComponent {
 
   /* SELF's quals and the requirements they don't meet, as saved */
   selfHeld = computed(() => heldBy(SELF));
-  requirementCount = computed(() => qualConditions().filter(c => userOf(c) === null).length);
-  failingCount = computed(() => qualConditions().filter(c => userOf(c) === null && !termMet(c.require, this.selfHeld())).length);
+  private requirements = computed(() => distinctRequirements());
+  requirementCount = computed(() => this.requirements().length);
+  failingCount = computed(() => this.requirements().filter(c => !termMet(c.require, this.selfHeld())).length);
 
   constructor() {
     effect(() => this.table.setRows(this.rows()));

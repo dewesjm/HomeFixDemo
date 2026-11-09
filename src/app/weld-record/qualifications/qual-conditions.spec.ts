@@ -1,7 +1,7 @@
 import { addTestJob } from '../../data/jobs';
 import '../routing/stage-templates';
 import {
-  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, heldBy, heldQuals, liftTypes,
+  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals, liftTypes,
   notOnCheckForm, qualConditions, rowsFromSaved, setQualConditions, signoffTypeChoices, wtnRequirementText,
 } from './qual-conditions';
 import { WhenClause, WhenGroup, normalizeWhen, whenComplete } from './qual-when';
@@ -205,6 +205,17 @@ describe('qual conditions', () => {
     ]);
     expect(wtnRequirementText('01.1-1')).toBe('(WELD427 OR WELD403) AND WELD412');
     expect(wtnRequirementText('02.2-2')).toBe('');
+  });
+
+  it('counts a requirement repeated across Signoff Types once, and leaves out User rows', () => {
+    const rows: QualCondition[] = [
+      { when: w('user', SELF), require: REQ },
+      { when: w('ss', 'Yes'), type: 'vt', require: REQ },
+      { when: w('ss', 'Yes'), type: 'mt', require: REQ },
+      { when: w('ss', 'No'), type: 'vt', require: REQ },
+      { when: w('ss', 'Yes'), type: 'rt', require: { op: 'all', items: ['SSWELD1'] } },
+    ];
+    expect(distinctRequirements(rows).length).toBe(3);
   });
 
   it('reads a WTN requirement whatever the row\'s Signoff Type, naming one repeated across Types once', () => {

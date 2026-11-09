@@ -254,6 +254,12 @@ export function setQualConditions(conditions: QualCondition[]) {
   try { localStorage.setItem(STORAGE.qualConditions, JSON.stringify(conditions)); } catch { /* ignore */ }
 }
 
+/* the requirement rows, counting rows with the same When and Require once, however many Types they're on */
+export function distinctRequirements(conditions: QualCondition[] = qualConditions()): QualCondition[] {
+  const rows = conditions.filter(c => userOf(c) === null);
+  return [...new Map(rows.map(c => [`${conditionWhenText({ ...c, type: 'any' })}|${requirementText(c.require)}`, c])).values()];
+}
+
 /* every qual the User rows give this person */
 export function heldBy(user: string, conditions: QualCondition[] = qualConditions()): string[] {
   return qualsIn({ op: 'all', items: conditions.filter(c => userOf(c) === user).map(c => c.require) });

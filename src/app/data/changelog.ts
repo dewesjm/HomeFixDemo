@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['The theme picker moved under a new avatar icon at the top right of the page. Click the icon and pick a Theme from the droplist.',
+    changed: ['Admin > Qualifications: the count at the top of the page counts each requirement once, however many signoff types it is on.',
+      'The theme picker moved under a new avatar icon at the top right of the page. Click the icon and pick a Theme from the droplist.',
       'Admin > Qualifications: each row now applies to one Signoff Type, picked from a required droplist. All is gone, because it did not say which types it meant. To require something on several types, add a row for each. Existing rows convert automatically: an All row becomes one row per type, and a row with several types becomes one row each. A row applies once the signoff\'s Type is picked.',
       'The app now installs under the name Welding.',
       'My Assignments is hidden by default. Admin > Feature Toggles > My Assignments page brings it back in the Weld Record menu.',
