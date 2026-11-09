@@ -234,7 +234,7 @@ export const FIELD_CATALOG: CatalogField[] = [
   /* verify-grid rows: shown when the Fabrication value they check applies; Required = must be checked */
   { key: 'verifyMic1', label: 'Joining Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart1Traceability },
   { key: 'verifyMic2', label: 'Join To Item MIC verified', type: 'checkbox', defaultRequired: true, defaultShowIf: ifPart2Traceability },
-  { key: 'verifyDrawingRev', label: 'Drawing Rev (Execution) verified', type: 'checkbox', defaultRequired: true },
+  { key: 'verifyDrawingRev', label: 'Drawing Rev Execution verified', type: 'checkbox', defaultRequired: true },
   { key: 'verifyActualThickness', label: 'Actual Thickness verified', type: 'checkbox', defaultRequired: true },
   { key: 'verifyRevisedJointDesign', label: 'Revised Joint Design verified', type: 'checkbox', defaultRequired: true,
     defaultShowIf: ifRevisedJointDesign },

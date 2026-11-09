@@ -35,8 +35,8 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   // weld-record/fabrication/fabrication-form.ts fabricationFieldsShown()) unless that joint member's MCL requires traceability
   { key: 'id1', label: 'Joining Item MIC', type: 'text', row: 3, required: true },
   { key: 'id2', label: 'Join To Item MIC', type: 'text', row: 3, required: true },
-  // Line 4: Drawing Rev (Execution) and Actual Thickness
-  { key: 'drawingRev', label: 'Drawing Rev (Execution)', type: 'text', row: 4, required: true },
+  // Line 4: Drawing Rev Execution and Actual Thickness
+  { key: 'drawingRev', label: 'Drawing Rev Execution', type: 'text', row: 4, required: true },
   { key: 'actualThickness', label: 'Actual Thickness', type: 'text', unit: 'in', row: 4, required: true },
   // Line 5: W.E. Memo, Revised Joint Design, and Change Number
   { key: 'weldMemo', label: 'W.E. Memo', type: 'text', row: 5 },
@@ -87,4 +87,9 @@ export function fabricationChanges(before: SignoffInput[], after: SignoffInput[]
 /* every Fabrication field blank: a joint sent back to Fit or earlier starts its fit-up data over */
 export function blankFabricationData(): Record<string, string> {
   return Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, '']));
+}
+
+/* History saved before the field was renamed: fabricationChanges compares snapshots by label */
+export function renameSavedFabricationLabels(history: { fabInputs?: SignoffInput[] }[]) {
+  for (const e of history) for (const i of e.fabInputs ?? []) if (i.label === 'Drawing Rev (Execution)') i.label = 'Drawing Rev Execution';
 }

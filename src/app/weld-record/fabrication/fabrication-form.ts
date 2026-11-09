@@ -70,7 +70,7 @@ export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean
 
 /* fabrication values that must be present before Fit can be signed */
 const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  location: 'Location', id1: 'Joining Item MIC', id2: 'Join To Item MIC', drawingRev: 'Drawing Rev', actualThickness: 'Actual Thickness',
+  location: 'Location', id1: 'Joining Item MIC', id2: 'Join To Item MIC', drawingRev: 'Drawing Rev Execution', actualThickness: 'Actual Thickness',
 };
 
 /* labels of the Fit-required fabrication values still blank */

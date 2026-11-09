@@ -11,7 +11,7 @@ import { seededWorkflow } from '../../data/seeded-workflow';
 import { newWorkflow, buildStages } from '../routing/build-stages';
 import { getTemplates } from '../routing/stage-templates';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
+import { fabricationSnapshot, renameSavedFabricationLabels } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
 
@@ -122,6 +122,7 @@ export class WorkflowStore {
         wf.references ??= saved.attachments ?? [];
         delete saved.attachments;
         wf.history ??= [];
+        renameSavedFabricationLabels(wf.history);
         wf.fabricationData ??= {};
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);

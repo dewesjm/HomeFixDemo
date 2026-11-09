@@ -1,5 +1,6 @@
 import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
 import { historyRows } from './history-rows';
+import { renameSavedFabricationLabels } from '../fabrication/fabrication-fields';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { JOBS } from '../../data/jobs';
 
@@ -14,14 +15,14 @@ const rowsFor = (history: HistoryEntry[]) =>
 describe('historyRows fabrication changes', () => {
   it('lists the filled fields on the first sign-off and only changed fields after that', () => {
     const rows = rowsFor([
-      entry('2026-01-01', 'Sign-off', { 'W.E. Memo': 'M-1', 'Drawing Rev (Execution)': '' }),
-      entry('2026-01-02', 'Sign-off', { 'W.E. Memo': 'M-1', 'Drawing Rev (Execution)': '' }),
-      entry('2026-01-03', 'Sign-off', { 'W.E. Memo': 'M-2', 'Drawing Rev (Execution)': 'C' }),
+      entry('2026-01-01', 'Sign-off', { 'W.E. Memo': 'M-1', 'Drawing Rev Execution': '' }),
+      entry('2026-01-02', 'Sign-off', { 'W.E. Memo': 'M-1', 'Drawing Rev Execution': '' }),
+      entry('2026-01-03', 'Sign-off', { 'W.E. Memo': 'M-2', 'Drawing Rev Execution': 'C' }),
     ]);
     expect(rows[0].fabChanges).toEqual([{ label: 'W.E. Memo', from: '', to: 'M-1' }]);
     expect(rows[1].fabChanges).toBeUndefined();
     expect(rows[2].fabChanges).toEqual([
-      { label: 'Drawing Rev (Execution)', from: '', to: 'C' },
+      { label: 'Drawing Rev Execution', from: '', to: 'C' },
       { label: 'W.E. Memo', from: 'M-1', to: 'M-2' },
     ]);
   });
@@ -41,5 +42,13 @@ describe('historyRows fabrication changes', () => {
       entry('2026-01-03', 'Sign-off', { 'W.E. Memo': 'M-1' }),
     ]);
     expect(rows[2].fabChanges).toEqual([{ label: 'W.E. Memo', from: '', to: 'M-1' }]);
+  });
+});
+
+describe('renameSavedFabricationLabels', () => {
+  it('moves saved History onto the current Drawing Rev Execution label', () => {
+    const history = [{ fabInputs: [{ label: 'Drawing Rev (Execution)', value: 'C' }, { label: 'Location', value: 'Bay' }] }, {}];
+    renameSavedFabricationLabels(history);
+    expect(history[0].fabInputs!.map(i => i.label)).toEqual(['Drawing Rev Execution', 'Location']);
   });
 });

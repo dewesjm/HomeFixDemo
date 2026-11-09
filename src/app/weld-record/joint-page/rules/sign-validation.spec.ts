@@ -30,7 +30,7 @@ describe('joint-form sign-validation', () => {
   it('Fit: blank fabrication values are listed as one reason', () => {
     const j = job();
     const fit = stageOf(j, 'fit');
-    expect(signProblems(fit, ctxFor(j, fit))).toEqual(['Fabrication: Location, Drawing Rev, Actual Thickness']);
+    expect(signProblems(fit, ctxFor(j, fit))).toEqual(['Fabrication: Location, Drawing Rev Execution, Actual Thickness']);
     expect(signProblems(fit, ctxFor(j, fit, FULL_FAB))).toEqual([]);
   });
 
