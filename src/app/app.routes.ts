@@ -58,7 +58,10 @@ export const routes: Routes = [
      is on; kept so it can be turned back on without a rewrite */
   { path: 'pipe-search-classic', component: PipeSearchComponent, title: 'EWR - Pipe Welding (Classic)',
     canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-search')] },
-  { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments' },
+  /* switched off unless Admin > Feature Toggles > My Assignments page is on; kept so it can be turned
+     back on without a rewrite */
+  { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments',
+    canActivate: [() => featureToggles().myAssignments || inject(Router).parseUrl('/pipe-search')] },
   { path: 'history', component: WorkHistoryComponent, title: 'EWR - History' },
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing Settings' },

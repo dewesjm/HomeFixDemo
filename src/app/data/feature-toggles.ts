@@ -5,9 +5,10 @@ import { STORAGE } from './storage-keys';
 export interface FeatureToggles {
   routingPreview: boolean;       /* "Demo only - On signoff, this routes to ..." under each step's Signoff button */
   classicPipeWelding: boolean;   /* the old Pipe Welding table at /pipe-search-classic, with its own menu entry */
+  myAssignments: boolean;        /* the My Assignments page at /assignments and its Weld Record menu entry */
 }
 
-const DEFAULT_TOGGLES: FeatureToggles = { routingPreview: true, classicPipeWelding: false };
+const DEFAULT_TOGGLES: FeatureToggles = { routingPreview: true, classicPipeWelding: false, myAssignments: false };
 
 function load(): FeatureToggles {
   try {

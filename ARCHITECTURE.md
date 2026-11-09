@@ -368,7 +368,7 @@ src/app/
 | `/history` | History (`?job=<id>` deep-link) |
 | `/adaptive` | Redirects to `/pipe-search` (kept so old links still work) |
 | `/jobs/:hull/:drawing/:joint` | Joint Details, keyed by the unique hull + drawing + joint (never XREFID, which can be blank; `jointRoute()` in `joint-page/joint-route.ts`) (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
-| `/assignments` | My Assignments |
+| `/assignments` | My Assignments; redirects to `/pipe-search` unless Admin > Feature Toggles > My Assignments page is on |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
 | `/admin/routing`, `/admin/set-routing`, `/admin/routing-signoff-types`, `/admin/signoff-types` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, ship-locations (+ /import), weld-positions, banner, joint-designs, groups, qualifications, material-traceability, inspection-procedures, defect-codes) |
@@ -621,7 +621,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 
 ### My Assignments, History, Weld Planning
 
-- My Assignments is **first** in the Weld Record nav dropdown (it's the most common thing a tech opens).
+- My Assignments is switched off by default: the page and its menu entry need the `myAssignments` feature toggle (`data/feature-toggles.ts`). When on, it is **first** in the Weld Record nav dropdown.
   - Column widths: Routing fixed at 8rem, Specific Location `1fr`.
   - Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR).
   - Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet).
