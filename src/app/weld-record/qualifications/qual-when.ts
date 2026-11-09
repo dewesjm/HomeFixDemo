@@ -1,12 +1,14 @@
-/* When a qual condition applies (Admin > Qualifications): a group of "field is value" clauses joined
-   by AND (all of) or OR (any of), where an item can itself be a group, e.g. Type is VT AND
-   (Weld Color is Straw OR Weld Color is Light Blue). An empty group matches nothing, so a row with no
-   clauses requires nothing. */
+/* When a qual condition applies (Admin > Qualifications): a group of clauses joined by AND (all of)
+   or OR (any of), where an item can itself be a group, e.g. Type is VT AND (Weld Color is Straw OR
+   Weld Color is Light Blue). A clause is Routing Settings's ConditionClause; its field is a
+   conditionFields() key (qual-conditions.ts). An empty group matches nothing, so a row with no clauses
+   requires nothing. */
+import { ConditionClause } from '../routing/step-conditions';
 
-export interface WhenClause {
-  field: string;   /* conditionFields() key (qual-conditions.ts) */
-  value: string;
-}
+export type WhenClause = ConditionClause;
+
+/* starts on "is" with nothing picked, like a new Routing Settings clause */
+export const newWhenClause = (field: string): WhenClause => ({ field, op: 'is', values: [] });
 
 export type WhenTerm = WhenClause | WhenGroup;
 
@@ -17,16 +19,27 @@ export interface WhenGroup {
 
 export const isWhenGroup = (t: WhenTerm): t is WhenGroup => 'items' in t;
 
-/* a clause matches when the field has a value and it's the clause's value (any case) */
-export function whenMatches(g: WhenGroup, valueOf: (field: string) => string): boolean {
-  if (!g.items.length) return false;
-  const m = (t: WhenTerm): boolean => isWhenGroup(t)
-    ? whenMatches(t, valueOf)
-    : !!t.value && same(valueOf(t.field), t.value);
-  return g.op === 'all' ? g.items.every(m) : g.items.some(m);
+const same = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
+/* compares like Routing Settings (any case); undefined = the field has no value to test, so no
+   comparison matches, is not included */
+function clauseMatches(c: WhenClause, value: string | undefined): boolean {
+  if (value === undefined || !c.values.length) return false;
+  if (c.op === 'contains') {
+    const text = c.values[0].trim().toLowerCase();
+    return !!text && value.toLowerCase().includes(text);
+  }
+  /* Has attribute code reads every slot, joined by commas */
+  const actual = c.field === 'attributeCodes' ? value.split(',') : [value];
+  const hit = c.values.some(v => actual.some(a => same(a, v)));
+  return c.op === 'isNot' ? !hit : hit;
 }
 
-const same = (a: string, b: string) => !!a && a.trim().toLowerCase() === b.trim().toLowerCase();
+export function whenMatches(g: WhenGroup, valueOf: (field: string) => string | undefined): boolean {
+  if (!g.items.length) return false;
+  const m = (t: WhenTerm): boolean => isWhenGroup(t) ? whenMatches(t, valueOf) : clauseMatches(t, valueOf(t.field));
+  return g.op === 'all' ? g.items.every(m) : g.items.some(m);
+}
 
 /* e.g. "Type is VT AND (Weld Color is Straw OR Weld Color is Light Blue)"; nested groups of 2+ get parentheses */
 export function whenText(g: WhenGroup, clauseText: (c: WhenClause) => string, nested = false): string {
@@ -44,5 +57,23 @@ export function pruneWhen(g: WhenGroup): WhenGroup {
 }
 
 export function cloneWhen(g: WhenGroup): WhenGroup {
-  return { op: g.op, items: g.items.map(t => isWhenGroup(t) ? cloneWhen(t) : { ...t }) };
+  return { op: g.op, items: g.items.map(t => isWhenGroup(t) ? cloneWhen(t) : { ...t, values: [...t.values] }) };
+}
+
+/* every clause has a value to compare */
+export function whenComplete(g: WhenGroup): boolean {
+  return g.items.every(t => isWhenGroup(t) ? whenComplete(t) : t.values.length > 0);
+}
+
+/* rows saved as { field, value } before a clause had a comparison and several values; Titanium was
+   Qualifications's own field before it used the shared material flag */
+type SavedClause = Partial<WhenClause> & { field: string; value?: string };
+const RENAMED_FIELDS: Record<string, string> = { titanium: 'material.titanium' };
+
+export function normalizeWhen(g: WhenGroup): WhenGroup {
+  return { op: g.op, items: g.items.map(t => {
+    if (isWhenGroup(t)) return normalizeWhen(t);
+    const c = t as SavedClause;
+    return { field: RENAMED_FIELDS[c.field] ?? c.field, op: c.op ?? 'is', values: c.values ?? (c.value ? [c.value] : []) };
+  }) };
 }

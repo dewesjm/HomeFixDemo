@@ -13,7 +13,7 @@
       <app-when-group-editor [group]="g" [nested]="true" (changed)="setItem(i, $event)" (removed)="removeItem(i)" />
     } @else {
       @let c = asClause(t);
-      <span class="flex flex-wrap items-center gap-1">
+      <div class="flex flex-wrap items-center gap-1 max-w-2xl">
         <select class="select select-bordered select-sm w-52" [ngModel]="c.field" (ngModelChange)="setField(i, $event)"
                 aria-label="Field">
           @for (fg of fieldGroupsFor(c.field); track fg.name) {
@@ -22,23 +22,44 @@
             </optgroup>
           }
         </select>
-        <span>is</span>
-        @let opts = options(c.field);
-        @if (opts.length) {
-          <select class="select select-bordered select-sm w-44" [ngModel]="c.value" (ngModelChange)="setValue(i, $event)"
+        @if (c.field === userField) {
+          <span>is</span>
+          <select class="select select-bordered select-sm w-44" [ngModel]="c.values[0] ?? ''" (ngModelChange)="setUser(i, $event)"
                   aria-label="Value">
-            @for (o of opts; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+            @for (o of options(c.field); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
           </select>
         } @else {
-          <input type="text" class="input input-bordered input-sm w-44" placeholder="Type a value" aria-label="Value"
-                 [ngModel]="c.value" (change)="setValue(i, $any($event.target).value)" />
+          <select class="select select-bordered select-sm w-28" [ngModel]="c.op" (ngModelChange)="setComparison(i, $event)"
+                  aria-label="Comparison">
+            <option ngValue="is">is</option>
+            <option ngValue="isNot">is not</option>
+            <option ngValue="contains">contains</option>
+          </select>
+          @if (typed(c)) {
+            <input type="text" class="input input-bordered input-sm w-44" aria-label="Value"
+                   [placeholder]="c.op === 'contains' ? 'Text to look for' : 'Value'"
+                   [ngModel]="c.values[0] ?? ''" (change)="setText(i, $any($event.target).value)" />
+          }
         }
         @if (group().items.length > 1 || nested()) {
           <button type="button" class="btn btn-ghost btn-sm" (click)="removeItem(i)" aria-label="Remove clause">
             <svg lucideX class="size-4"></svg>
           </button>
         }
-      </span>
+        @if (c.field !== userField) {
+          @if (!typed(c)) {
+            <div class="flex flex-wrap gap-x-4 gap-y-1 mt-1 ml-1 basis-full">
+              @for (o of options(c.field); track o.value) {
+                <label class="flex items-center gap-1">
+                  <input type="checkbox" class="checkbox checkbox-sm" [checked]="c.values.includes(o.value)" (change)="toggleValue(i, o.value)" />
+                  {{ o.label }}
+                </label>
+              }
+            </div>
+          }
+          @if (!c.values.length) { <div class="text-error mt-1 basis-full">{{ typed(c) ? 'Type a value.' : 'Pick at least one value.' }}</div> }
+        }
+      </div>
     }
   }
 

@@ -14,16 +14,16 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { ALL_QUALS } from '../../qualifications/qualifications';
 import {
-  QualCondition, SELF, conditionFields, conditionTypesText, conditionWhenText, heldBy, qualConditions, setQualConditions,
-  signoffTypeChoices, userOf,
+  QualCondition, SELF, conditionFields, conditionTypesText, conditionWhenText, heldBy, notOnCheckForm, qualConditions, setQualConditions,
+  signoffTypeChoices, signoffTypeLabel, userOf,
 } from '../../qualifications/qual-conditions';
 import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications/qual-requirements';
-import { WhenGroup, cloneWhen, pruneWhen } from '../../qualifications/qual-when';
+import { WhenGroup, cloneWhen, newWhenClause, pruneWhen, whenComplete } from '../../qualifications/qual-when';
 import { QualGroupEditorComponent } from './qual-group-editor.component';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
 
 interface StoredRow { uid: string; c: QualCondition; isNew: boolean; }
-interface ConditionRow extends StoredRow { userRow: boolean; when: string; typesText: string; require: string; }
+interface ConditionRow extends StoredRow { userRow: boolean; when: string; typesText: string; require: string; notOnForm: string; }
 
 const copy = (c: QualCondition): QualCondition => ({ when: cloneWhen(c.when), require: cloneGroup(c.require), types: [...c.types ?? []] });
 
@@ -50,7 +50,7 @@ export class AdminQualificationsComponent {
   rows = computed(() => this.conditions().map((r): ConditionRow => {
     const userRow = userOf(r.c) !== null;
     return { ...r, userRow, when: conditionWhenText(r.c), typesText: userRow ? '' : conditionTypesText(r.c),
-      require: (userRow ? 'Holds ' : '') + requirementText(r.c.require) };
+      require: (userRow ? 'Holds ' : '') + requirementText(r.c.require), notOnForm: notOnCheckForm(r.c).join(', ') };
   }));
   table = new TableState<ConditionRow>(['when', 'typesText', 'require']);
 
@@ -74,8 +74,7 @@ export class AdminQualificationsComponent {
   /* added at the top, with the search cleared, so the new row is in view */
   addCondition() {
     this.closeOpenEdit();
-    const f = conditionFields()[0];
-    const when: WhenGroup = { op: 'all', items: [{ field: f.key, value: f.options()[0]?.value ?? '' }] };
+    const when: WhenGroup = { op: 'all', items: [newWhenClause(conditionFields()[0].key)] };
     const uid = `new-${++this.seq}`;
     this.conditions.update(cs => [{ uid, c: { when, require: { op: 'all', items: [] }, types: [] }, isNew: true }, ...cs]);
     this.table.clearFilters();
@@ -91,6 +90,10 @@ export class AdminQualificationsComponent {
 
   saveEdit(row: ConditionRow) {
     const c: QualCondition = { when: pruneWhen(row.c.when), require: pruneGroup(row.c.require), types: row.userRow ? [] : row.c.types ?? [] };
+    if (!whenComplete(c.when)) {
+      this.messages.add({ severity: 'warn', summary: 'Pick or type a value for every clause', life: 3000 });
+      return;
+    }
     this.conditions.update(cs => cs.map(x => x.uid === row.uid ? { ...x, c, isNew: false } : x));
     delete this.cloned[row.uid];
     this.editingId.set(null);
@@ -130,7 +133,7 @@ export class AdminQualificationsComponent {
   }
 
   typeLabel(value: string): string {
-    return this.typeChoices.find(o => o.value === value)?.label ?? value;
+    return signoffTypeLabel(value);
   }
 
   addableTypes(row: ConditionRow) {

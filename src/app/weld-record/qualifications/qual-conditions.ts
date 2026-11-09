@@ -1,10 +1,11 @@
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
-   - "when <clauses>, signoff type <types>, require <group>": the clauses are an AND/OR group of
-     "field is value" (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
+   - "when <clauses>, signoff type <types>, require <group>": the clauses are an AND/OR group compared
+     like Routing Settings (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
      Signoff Type is the Types the row applies to (none = all of them). Joint Details fields are checked
      on every step with a Qualification Check as soon as it opens; sign-off fields are read from the
-     step being checked, so they apply once they're filled in.
+     step being checked, so they apply once they're filled in. Only fields on a form with a
+     Qualification Check are offered; a saved clause on any other field never matches.
    - "when User is <person>, holds <quals>" (a When of just that one clause): the quals that person holds. There's no login, so the
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
@@ -13,10 +14,9 @@ import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
-import { isTitaniumJoint } from '../../data/material-classification';
 import { STEP_CONDITION_FIELDS, tradeSteps, routingAnswerFields } from '../routing/step-conditions';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
-import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, whenMatches, whenText } from './qual-when';
+import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatches, whenText } from './qual-when';
 
 export interface QualCondition {
   when: WhenGroup;
@@ -42,8 +42,11 @@ export interface ConditionField {
   group: 'Joint Details' | 'Sign-off' | 'User';
   /* set in its own Signoff Type column, so not offered in the When (old clauses still match) */
   ownColumn?: boolean;
-  /* none = the value is typed (compared whole, any case) */
+  /* not on any form with a Qualification Check, so not offered and never matched (old clauses still show) */
+  unavailable?: boolean;
+  /* the values to offer; none = the value is typed (compared whole, any case) */
   options: () => ConditionOption[];
+  valueLabel: (value: string) => string;
   get: (s: ConditionSubject) => string;
 }
 
@@ -56,40 +59,53 @@ const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
 
-/* Admin > Routing Settings's Joint Details fields (step-conditions.ts), plus Titanium */
+/* Admin > Routing Settings's Joint Details fields (step-conditions.ts) */
 function jointFields(): ConditionField[] {
-  const fields = STEP_CONDITION_FIELDS.filter(f => !f.stepAnswer).map((f): ConditionField => ({
-    key: f.key, label: f.label, group: 'Joint Details', options: () => plain(f.values), get: s => f.get(s.job, []),
-  }));
-  fields.push({ key: 'titanium', label: 'Titanium', group: 'Joint Details', options: () => plain(['Yes', 'No']),
-    get: s => isTitaniumJoint({ materialType1: s.job.materialType1 ?? '', materialType2: s.job.materialType2 ?? '' }) ? 'Yes' : 'No' });
-  return fields;
+  return STEP_CONDITION_FIELDS.filter(f => !f.stepAnswer).map((f): ConditionField => {
+    const valueLabel = (v: string) => f.valueLabel?.(v) ?? v;
+    return { key: f.key, label: f.label, group: 'Joint Details', valueLabel,
+      options: () => f.values.map(value => ({ value, label: valueLabel(value) })), get: s => f.get(s.job, []) };
+  });
 }
 
+const QUAL_CHECK_KEY = 'qualificationCheck';
+/* not on a Qualification Check form, but Weld Engineering shows each WTN's quals (wtnRequirementText) */
+const OFF_FORM_FIELDS = new Set(['wtn']);
 
 /* the step itself, then every field any step has (Type, fields, sign-off fields), once per key with
-   the first label and the options of every step that has it */
+   the first label. What's offered comes from the steps with a Qualification Check, the only place
+   these rows are checked; labels come from every step so old clauses still read properly. */
 function signoffFields(): ConditionField[] {
   const steps = tradeSteps(TRADE);
+  const hasCheck = (t: typeof steps[number]) => routingAnswerFields(t).some(f => f.key === QUAL_CHECK_KEY);
+  const toOptions = (m: Map<string, string>) => [...m].map(([value, label]) => ({ value, label }));
   const out: ConditionField[] = [{
     key: `${STEP_PREFIX}id`, label: 'Routing', group: 'Sign-off',
-    options: () => steps.map(t => ({ value: t.id, label: t.label })),
+    options: () => steps.filter(hasCheck).map(t => ({ value: t.id, label: t.label })),
+    valueLabel: v => steps.find(t => t.id === v)?.label ?? v,
     get: s => s.step.id ?? '',
   }];
-  const byKey = new Map<string, { label: string; checkbox: boolean; options: Map<string, string> }>();
-  const add = (key: string, label: string, type: string, opts: ConditionOption[] = []) => {
-    const e = byKey.get(key) ?? { label, checkbox: type === 'checkbox', options: new Map<string, string>() };
+  const byKey = new Map<string, { label: string; checkbox: boolean; onForm: boolean; options: Map<string, string>; offered: Map<string, string> }>();
+  const add = (key: string, label: string, type: string, onForm: boolean, opts: ConditionOption[] = []) => {
+    const e = byKey.get(key) ?? { label, checkbox: type === 'checkbox', onForm: false, options: new Map<string, string>(), offered: new Map<string, string>() };
     byKey.set(key, e);
-    for (const o of opts) if (!e.options.has(o.value)) e.options.set(o.value, o.label);
+    e.onForm ||= onForm;
+    for (const o of opts) {
+      if (!e.options.has(o.value)) e.options.set(o.value, o.label);
+      if (onForm && !e.offered.has(o.value)) e.offered.set(o.value, o.label);
+    }
   };
   for (const t of steps) {
-    if (t.typeOptions?.length) add('inspectionType', 'Type', 'select', t.typeOptions);
-    for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, f.options);
+    const onForm = hasCheck(t);
+    if (t.typeOptions?.length) add('inspectionType', 'Type', 'select', onForm, t.typeOptions);
+    for (const f of routingAnswerFields(t)) add(f.key, f.label, f.type, onForm, f.options);
   }
   for (const [key, e] of byKey) {
     out.push({
       key: STEP_PREFIX + key, label: e.label, group: 'Sign-off', ownColumn: key === 'inspectionType',
-      options: () => e.checkbox ? plain(['Yes', 'No']) : [...e.options].map(([value, label]) => ({ value, label })),
+      unavailable: key === QUAL_CHECK_KEY || (!e.onForm && !OFF_FORM_FIELDS.has(key)),
+      options: () => e.checkbox ? plain(['Yes', 'No']) : toOptions(e.onForm ? e.offered : e.options),
+      valueLabel: v => e.options.get(v) ?? v,
       get: s => {
         if (key === 'inspectionType') return s.step.inspectionType ?? '';
         const v = s.step.inputs?.[key] ?? s.step.signoffInputs?.[key] ?? '';
@@ -103,6 +119,7 @@ function signoffFields(): ConditionField[] {
 const userField: ConditionField = {
   key: USER_FIELD, label: 'User', group: 'User',
   options: () => plain([SELF, ...new Set(PEOPLE.map(p => `${p.first} ${p.last}`))]),
+  valueLabel: v => v,
   get: () => SELF,
 };
 
@@ -121,13 +138,16 @@ export function conditionField(key: string): ConditionField | undefined {
 /* the person a User row is for; null on a requirement row */
 export function userOf(c: QualCondition): string | null {
   const [t] = c.when.items;
-  return c.when.items.length === 1 && !isWhenGroup(t) && t.field === USER_FIELD ? t.value : null;
+  return c.when.items.length === 1 && !isWhenGroup(t) && t.field === USER_FIELD ? t.values[0] ?? '' : null;
 }
 
-/* e.g. "Type is VT" */
+/* e.g. "Type is VT", "Weld Color is not Straw or Light Blue", worded like Routing Settings */
 export function clauseText(c: WhenClause): string {
   const f = conditionField(c.field);
-  return `${f?.label ?? c.field} is ${f?.options().find(o => o.value === c.value)?.label ?? c.value}`;
+  const label = f?.label ?? c.field;
+  if (c.op === 'contains') return `${label} contains "${(c.values[0] ?? '').trim()}"`;
+  const values = c.values.length ? c.values.map(v => f?.valueLabel(v) ?? v).join(' or ') : '(nothing)';
+  return `${label} ${c.op === 'isNot' ? 'is not' : 'is'} ${values}`;
 }
 
 /* an empty When with Signoff Types set applies to every joint of those types */
@@ -137,21 +157,34 @@ export const conditionWhenText = (c: QualCondition) =>
 /* every Signoff Type a row can be limited to */
 export const signoffTypeChoices = (): ConditionOption[] => conditionField(TYPE_FIELD)?.options() ?? [];
 
+export const signoffTypeLabel = (value: string) => conditionField(TYPE_FIELD)?.valueLabel(value) ?? value;
+
 /* e.g. "VT, 5X"; "All" when the row isn't limited */
 export function conditionTypesText(c: QualCondition): string {
   if (!c.types?.length) return 'All';
-  const opts = signoffTypeChoices();
-  return c.types.map(t => opts.find(o => o.value === t)?.label ?? t).join(', ');
+  return c.types.map(signoffTypeLabel).join(', ');
+}
+
+/* what a saved row uses that no form with a Qualification Check has, so that part can never match */
+export function notOnCheckForm(c: QualCondition): string[] {
+  if (userOf(c) !== null) return [];
+  const fields = (g: WhenGroup): string[] => g.items.flatMap(t => {
+    if (isWhenGroup(t)) return fields(t);
+    const f = conditionField(t.field);
+    return !f || f.unavailable ? [f?.label ?? t.field] : [];
+  });
+  const offered = signoffTypeChoices().map(o => o.value);
+  return [...new Set([...fields(c.when), ...(c.types ?? []).filter(t => !offered.includes(t)).map(signoffTypeLabel)])];
 }
 
 /* the When must match (an empty one only counts with Signoff Types set) and the step's Type must be one of the row's */
-function applies(c: QualCondition, valueOf: (field: string) => string): boolean {
+function applies(c: QualCondition, valueOf: (field: string) => string | undefined): boolean {
   const types = c.types ?? [];
-  if (types.length && !types.includes(valueOf(TYPE_FIELD))) return false;
+  if (types.length && !types.includes(valueOf(TYPE_FIELD) ?? '')) return false;
   return c.when.items.length ? whenMatches(c.when, valueOf) : types.length > 0;
 }
 
-const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, value }] });
+const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, op: 'is', values: [value] }] });
 
 /* SELF holds the seed quals except CNTRLMTL2, so every seed requirement passes (controlled material
    through the OR); one requirement per kind of check: joint flags, the step's Type, the base material */
@@ -161,7 +194,7 @@ function defaultConditions(): QualCondition[] {
     { when: when('controlledMaterial', 'Yes'), require: { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] } },
     { when: when('ss', 'Yes'), require: { op: 'all', items: ['SSWELD1'] } },
     { when: { op: 'all', items: [] }, types: ['vt'], require: { op: 'all', items: ['VTINSP1'] } },
-    { when: when('titanium', 'Yes'), require: { op: 'all', items: ['TIWELD1'] } },
+    { when: when('material.titanium', 'Yes'), require: { op: 'all', items: ['TIWELD1'] } },
   ];
 }
 
@@ -174,12 +207,12 @@ type PreviousCondition = { field: string; value: string; require: QualGroup };
    Type clause stays in the When, where it still matches */
 export function liftTypes(c: QualCondition): QualCondition {
   if (c.types) return c;
-  const isType = (t: WhenTerm): t is WhenClause => !isWhenGroup(t) && t.field === TYPE_FIELD;
+  const isType = (t: WhenTerm): t is WhenClause => !isWhenGroup(t) && t.field === TYPE_FIELD && t.op === 'is';
   const typeItems = c.when.items.filter(isType);
   const rest = c.when.items.filter(t => !isType(t));
   if (userOf(c) === null && typeItems.length) {
-    if (c.when.op === 'all' && typeItems.length === 1) return { when: { op: 'all', items: rest }, require: c.require, types: [typeItems[0].value] };
-    if (c.when.op === 'any' && !rest.length) return { when: { op: 'all', items: [] }, require: c.require, types: typeItems.map(t => t.value) };
+    if (c.when.op === 'all' && typeItems.length === 1) return { when: { op: 'all', items: rest }, require: c.require, types: typeItems[0].values };
+    if (c.when.op === 'any' && !rest.length) return { when: { op: 'all', items: [] }, require: c.require, types: typeItems.flatMap(t => t.values) };
   }
   return { ...c, types: [] };
 }
@@ -187,9 +220,9 @@ export function liftTypes(c: QualCondition): QualCondition {
 function load(): QualCondition[] {
   try {
     const raw = localStorage.getItem(STORAGE.qualConditions);
-    if (raw) return (JSON.parse(raw) as QualCondition[]).map(liftTypes);
+    if (raw) return (JSON.parse(raw) as QualCondition[]).map(c => liftTypes({ ...c, when: normalizeWhen(c.when) }));
     const prev = localStorage.getItem(PREVIOUS_KEY);
-    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => liftTypes({ when: when(c.field, c.value), require: c.require }));
+    if (prev) return (JSON.parse(prev) as PreviousCondition[]).map(c => liftTypes({ when: normalizeWhen(when(c.field, c.value)), require: c.require }));
   } catch { /* ignore */ }
   return defaultConditions();
 }
@@ -209,12 +242,19 @@ export function heldBy(user: string, conditions: QualCondition[] = qualCondition
 /* the quals the Qualification Check compares against: SELF's, since there's no login */
 export const heldQuals = computed(() => heldBy(SELF));
 
+/* what a clause compares: nothing for a field off the Qualification Check forms or a sign-off field not filled in yet */
+function clauseValue(f: ConditionField | undefined, subject: ConditionSubject): string | undefined {
+  if (!f || f.unavailable) return undefined;
+  const value = f.get(subject);
+  return f.group === 'Sign-off' && !value ? undefined : value;
+}
+
 /* the requirements of every condition the joint and step match, in table order (User rows aren't requirements) */
 export function conditionRequirements(job: Job | undefined | null, step: ConditionStep = {}): QualGroup[] {
   if (!job) return [];
   const subject: ConditionSubject = { job, step };
   const fields = new Map(conditionFields().map(f => [f.key, f]));
-  const valueOf = (key: string) => fields.get(key)?.get(subject) ?? '';
+  const valueOf = (key: string) => clauseValue(fields.get(key), subject);
   return qualConditions()
     .filter(c => userOf(c) === null && applies(c, valueOf))
     .map(c => cloneGroup(c.require));
@@ -223,7 +263,7 @@ export function conditionRequirements(job: Job | undefined | null, step: Conditi
 /* the requirement of every condition a step with this WTN matches on the WTN alone, joined by AND;
    '' when there's none */
 export function wtnRequirementText(wtn: string): string {
-  const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : '';
+  const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : undefined;
   const groups = qualConditions().filter(c => c.require.items.length && userOf(c) === null && applies(c, valueOf));
   if (groups.length === 1) return requirementText(groups[0].require);
   return groups.map(c => requirementText(c.require, true)).join(' AND ');

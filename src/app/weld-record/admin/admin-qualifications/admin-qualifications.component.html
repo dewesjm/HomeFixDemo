@@ -58,7 +58,10 @@
                                        (changed)="setRequire(r.uid, $event)" />
               </td>
             } @else {
-              <td class="align-top">{{ r.when || '-' }}</td>
+              <td class="align-top">
+                {{ r.when || '-' }}
+                @if (r.notOnForm) { <div class="text-sm text-warning">Not on any form with a Qualification Check: {{ r.notOnForm }}</div> }
+              </td>
               <td class="align-top">{{ r.userRow ? '-' : r.typesText }}</td>
               <td class="align-top">{{ r.require || '-' }}</td>
             }

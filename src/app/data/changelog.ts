@@ -14,7 +14,9 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     changed: ['Admin > Signoff Type to Routing: the Type Exceptions grid has a read-only Type source column showing where each routing gets its Original Type (Rejecting inspection or Signoff Type Selection). The Type source choice that was worded Options on the routing row now reads Signoff Type Selection, on the page and in the export.',
       'Admin > Signoff Type to Routing: Type source is now read-only when editing a routing. Excavation NDT and NQC Excavation NDT stay on Rejecting inspection, and other routings use their Signoff Type Selection.',
       'Admin > Groups: the Force routing override permission now reads Routing Override, matching the Admin menu.',
-      'Admin > Routing Settings, Joint Designs and Attribute Codes: the Save and Cancel buttons are no longer green and red, matching the other admin pages.'],
+      'Admin > Routing Settings, Joint Designs and Attribute Codes: the Save and Cancel buttons are no longer green and red, matching the other admin pages.',
+      'Admin > Qualifications: conditions now use is, is not and contains with one or several values, like Routing Settings. Existing rows keep working.',
+      'Admin > Qualifications: Sign-off fields and Signoff Types list only what is on a form with a Qualification Check, plus WTN for the procedure pages. The extra Titanium field is replaced by Either material is titanium. A saved row using something no longer offered shows a warning and does not apply.'],
   },
   {
     date: '2026-11-06',
