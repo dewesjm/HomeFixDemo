@@ -11,6 +11,15 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 - [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
 - [x] **One field catalog:** merged the form and condition catalogs into one list with a Source on each entry. [Plan](FIELD-CATALOG-PLAN.md).
 
+## Cleanup
+
+Queued in AGENTS.md, in this order.
+
+- [ ] **Remove old migrations:** code that converts saved data from an older shape, once saved data no longer needs it: `routing/repair-confirmation-migration.ts`, `signoff-definition/repair-confirmation-migration.ts`, `routing/inspection-context-migration.ts`, `signoff-definition/condition-catalog-migration.ts`, `renameSavedFabricationLabels` in `fabrication/fabrication-fields.ts`, and the older load-time conversions in `services/workflow-store.service.ts` and `qualifications/qual-conditions.ts`.
+- [ ] **Leftovers evaluation:** a larger pass over the app for leftovers and code that isn't needed. Report findings before removing anything.
+- [ ] **File purpose:** check that every file states its purpose at the top, and add it where it's missing.
+- [ ] **Routing folder size:** `weld-record/routing/` has grown very large. Review it and propose how to break it up.
+
 ## Deferred testing packages
 
 Implement one package at a time only when requested, commit and stop for review. [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md) retains the detailed scenarios, acceptance criteria, checkboxes and historical inventory. Historical percentages are not current whole-project coverage.

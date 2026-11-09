@@ -6,7 +6,10 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-None.
+1. Remove old migrations: see "Cleanup" in [Tasks.md](Tasks.md).
+2. Evaluate the app for leftovers and code that isn't needed; report findings before removing anything.
+3. Check that every file states its purpose at the top, and add it where it's missing.
+4. Review the size of `weld-record/routing/` and propose how to break it up.
 
 Completed plans are references, not instructions to start another feature.
 
@@ -41,5 +44,7 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
   starts handling several separate things, split it along those lines rather than adding another branch.
 - Comments describe what the code does now. Dates, "used to", and who asked for what go in git
   history and the Change Log (`data/changelog.ts`), not in comments.
+- Code that converts saved data to a new shape (`*-migration.ts`, load-time renames) is temporary. Whenever you add
+  some, add an item to "Cleanup" in Tasks.md to remove it, and remove it in the next cleanup pass.
 - Delete dead code. The exception is a feature deliberately switched off by a flag: keep it working,
   with a comment saying it is switched off and kept so it can be turned back on without a rewrite.
