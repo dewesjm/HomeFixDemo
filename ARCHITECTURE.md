@@ -139,8 +139,8 @@ src/app/
     routing/               Everything that decides where a joint is and where it goes (see ROUTING.md).
                            Top level, a joint's routing: build-stages (which routings a joint gets, from the
                            templates + Included when), routing-conditions (Included when / reject rules: the model
-                           and matching), routing-templates (built-in routings merged with Admin > Routing Settings
-                           edits), current-routing (the current routing, locking), routing-ids (what routing ids look
+                           and matching), routing-settings-rules (the live Routing Settings rows with Type options,
+                           and the checks before a Routing Settings save), current-routing (the current routing, locking), routing-ids (what routing ids look
                            like: NQC twins, repair rounds), built-in-routing-rules (every fixed rule tied to one
                            built-in routing), ndt (which NDT routings a joint gets), routing-persona (persona),
                            inspection-context
@@ -149,8 +149,7 @@ src/app/
                            Override, Deprogress), type-routing (a Type that signs a later routing),
                            rule-targets (relative destinations), repair-code-rules
       inserted/            Routings added while a joint is worked: added-routings (Repair / Excavation NDT /
-                           Engineering Hold), added-routing-templates (editable added-routing seeds),
-                           added-routing-configuration, generic-insertion, excavation-definition,
+                           Engineering Hold), added-routing-configuration, generic-insertion, excavation-definition,
                            insertion-target-options, insertion-validation, instance-identity,
                            routing-configuration-error
       preview/             route-preview (the demo "On signoff, this routes to" line), signed-flag-reasons
@@ -214,7 +213,7 @@ src/app/
       admin-routing/         Admin → Routing Settings (stage templates per trade): Order (drag), Included when
                              and reject rules (weld-record/routing/routing-conditions.ts; clause ops is / is not / contains,
                              compared trimmed, any case; fields = Joint Details + 'step.<stageId>.<key>'
-                             routing answers of earlier routings, built from the templates routing/routing-templates.ts
+                             routing answers of earlier routings, built from the templates routing/routing-settings-rules.ts
                              registers via registerStepTemplates(); 'self.<key>' in reject rules),
                              Fabrication editable, Role. Clause editing rules shared by both rule
                              dialogs: weld-record/admin/admin-routing/condition-editing.ts. A routing's fields aren't editable or
@@ -323,7 +322,10 @@ src/app/
                          exports MATERIAL_TYPES (base metal codes) reused by
                          Weld Engineering's procedures.ts for baseMetal1Type/baseMetal2Type
     seeded-workflow.ts, seed-fabrication.ts   Each job's workflow with a deterministic run of routings already signed
-    welding-steps.ts     The built-in Welding routings, in order (Admin > Routing Settings edits merge onto these)
+    welding-steps.ts     Admin > Routing Settings starting rows: the built-in Welding routings in order, their
+                         starting Included when / Reject routes to / Then go to rules, and the added routings
+                         (Repair, Excavation NDT, Engineering Hold)
+    routing-settings.ts  Routing Settings rows: starting rows with saved changes applied, and saving them
     assignments.ts       Assignment model + seeded generator (36)
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     weld-assignment.ts   Stand-in for the external system that sets GWP / WTN / Filler Metal (see "External assignment")
@@ -402,7 +404,7 @@ src/app/
 ## Data flow
 
 1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). Internal `id` is 5-char alphanumeric (`makeJobId()`), always populated, unique; `xrefid` mirrors it except on ~25% of rows where it's blank (imperfect source data). Hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees the identity rule of unique hull + drawing + joint (the true key when XREFID is blank).
-2. **Stage templates** — `weld-record/routing/routing-templates.ts` (built-in routings in `data/welding-steps.ts`). Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
+2. **Stage templates** — `weld-record/routing/routing-settings-rules.ts` (starting rows in `data/welding-steps.ts`, saved rows in `data/routing-settings.ts`). Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
    Added templates (Repair, Excavation NDT, Engineering Hold) are stored and edited with numbered templates, but `buildStages()` excludes them. Runtime factories read their shared settings using `getAddedTemplate()`; `routingTemplateId()` maps numbered rounds to their shared row. Then go to / Reject targets support insertion and relative destinations. Repair #, Refit #, insertion and route-back bookkeeping remain in code; repair destination choices are table rules.
 3. **Per-job workflow** — `WorkflowStore`, keyed by job id, exposed as signals; `RoutingService`/`SignoffService`/`ReferenceService`/`FabricationDataService` mutate it (see "Weld Record services" below). Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
 4. **Assignments** — 36 seeded, assigned to "John Johnson".
@@ -759,7 +761,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
   - Code that reads the phase or method from a routing id uses `baseStepId()`; code that jumps to a built-in routing (`${phase}-ndt-utrt`, reject targets) goes through `stepOnJoint()`, which finds whichever twin the joint has.
   - Excavation NDT's NQC Inspector role is still set in code (`excavationNdtStageFor()`).
   - **Display Name** (`StageTemplate.displayName`, Routing Settings column): `buildStages()` sets the joint's `label` to `displayName || label`, so the joint, routing bar, Pipe Welding and History show it; the Routing name (`label` on the template) is what rules and condition fields use.
-- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (routing inclusion rules in `routing-conditions.ts` and Type enable rules in `signoff-definition/signoff-types.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
+- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `routing-conditions.ts`, and Type enable rules in `signoff-definition/signoff-types.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
   - The general `job.ndt` field doesn't drive routing.
   - Root and Final, in 5X/VT, MT/PT, RT/UT order: **VT is always required**, or 5X instead when the NDT value is 5X; MT, PT or UT adds that routing offering only that method; MT/PT adds the MT/PT routing with a choice; an **RT degree** (10/100/360/60/75, not blank or NA) adds the RT/UT routing offering only RT.
   - Layer gets one routing selected by `ndtEach`: VT/5X or MT/PT, with no additional VT. Layer has no RT/UT routing (`PHASE_NDT_KINDS`, `routing-ids.ts`), so NDT Each takes no UT (`NDT_EACH_VALUES`). Blank NDT Each Layer means no Layer NDT.
@@ -871,7 +873,7 @@ Routing Settings draft placement is separate from sequence numbering (admin/admi
 
 ## Inserted routing definition configuration
 
-StageTemplate persists classification (numbered/added), supported lifecycle and draft/active/inactive status through routing-templates.ts. Built-in inserted definitions declare their specialized lifecycle; custom inserted definitions use ordinary lifecycle and begin as drafts. isAddedTemplateId reads persisted classification, so custom inserted definitions are excluded by buildStages. Legacy saves infer built-in classification from static definitions.
+StageTemplate persists classification (numbered/added), supported lifecycle and draft/active/inactive status through data/routing-settings.ts. Built-in inserted definitions declare their specialized lifecycle; custom inserted definitions use ordinary lifecycle and begin as drafts. isAddedTemplateId reads persisted classification, so custom inserted definitions are excluded by buildStages. Legacy saves infer built-in classification from static definitions.
 
 added-routing-configuration.ts owns name/readiness validation using the existing Type/form configuration owners. Routing Settings reuses its condition/persona/destination editors and keeps Type setup readiness in validation and exports; routing-name cells show only the name. Inserted definitions are retained, with custom deactivation instead of deletion. Package 1 supplies configuration only; generic insertion targets, runtime instances, applicability resolution and preview are deferred in ADDED-ROUTINGS-PLAN.md. Version 2.10.55 resets demo caches through the standard version mechanism.
 

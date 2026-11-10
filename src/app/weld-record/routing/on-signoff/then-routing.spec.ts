@@ -3,7 +3,7 @@ import { STORAGE } from '../../../data/storage-keys';
 import { buildStages, newWorkflow } from '../build-stages';
 import { activeStageId, isStageLocked, setRoutingFrom } from '../current-routing';
 import { routeSignoff } from './signoff-routing';
-import { getTemplates, updateStageTemplate } from '../routing-templates';
+import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { typeValues } from '../../signoff-definition/stage-rules';
 import { RejectRule } from '../routing-conditions';

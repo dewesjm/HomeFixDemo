@@ -1,6 +1,6 @@
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
-// Persists to localStorage via the weld-record/routing/routing-templates.ts edit functions.
+// Persists to localStorage via the weld-record/routing/routing-settings-rules.ts edit functions (rows stored by data/routing-settings.ts).
 import { insertionRelativeTargets } from '../../routing/inserted/insertion-target-options';
 import { thenRuleSummary } from './then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
@@ -12,7 +12,7 @@ import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-r
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
 import { addedRoutingSetup, routingNameError } from '../../routing/inserted/added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
-import { isAddedTemplateId } from '../../routing/routing-templates';
+import { isAddedTemplateId } from '../../routing/routing-settings-rules';
 import { RULE_TARGETS, availableRuleTargets } from '../../routing/on-signoff/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -36,10 +36,11 @@ import {
   reorderStageTemplates,
   allStageIds,
   getTemplates,
-} from '../../routing/routing-templates';
+} from '../../routing/routing-settings-rules';
 import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
-import { ConditionClause, ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, describeConditions } from '../../routing/routing-conditions';
+import { ConditionClause, ConditionRule, RejectRule, describeConditions } from '../../routing/routing-conditions';
+import { DEFAULT_STEP_CONDITIONS } from '../../../data/welding-steps';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';
 import {

@@ -20,7 +20,7 @@ import {
 } from '../routing-ids';
 import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
-import { getTemplates, routingTemplateId } from '../routing-templates';
+import { getTemplates, routingTemplateId } from '../routing-settings-rules';
 import { CUT_RESTARTS_AT } from '../built-in-routing-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../routing-conditions';

@@ -2,7 +2,7 @@
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in routing-ids.ts. */
 import { excavationDefinition } from './excavation-definition';
-import { getAddedTemplate } from '../routing-templates';
+import { getAddedTemplate } from '../routing-settings-rules';
 import { routingRole } from '../routing-persona';
 import { Job } from '../../../data/jobs';
 import { RejectRule, describeClauses } from '../routing-conditions';

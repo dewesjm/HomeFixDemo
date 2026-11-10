@@ -27,7 +27,7 @@ import {
   typeSourceLabel,
 } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes, typeLabel } from '../../signoff-definition/routing-signoff-types';
-import { getTemplates } from '../../routing/routing-templates';
+import { getTemplates } from '../../routing/routing-settings-rules';
 
 interface TypeRow extends SignoffTypeRow {
   uid: string;

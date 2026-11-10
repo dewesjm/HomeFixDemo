@@ -12,7 +12,7 @@ import { exceptionConditionFields } from '../attribute-codes/exception-text';
 import { clauseChoices } from '../admin/admin-signoff-type-definition/condition-choices';
 import { conditionFieldGroups } from '../admin/admin-routing/condition-editing';
 import { recheckFabricationRules } from '../routing/on-signoff/route-changes';
-import { getTemplates, updateStageTemplate } from '../routing/routing-templates';
+import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/routing-conditions';
 
 const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], trade: 'Welding', ...more });

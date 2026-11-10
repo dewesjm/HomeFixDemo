@@ -3,7 +3,7 @@
 import { Job } from '../../../data/jobs';
 import { conditionsMatch, usesFabrication, usesStepAnswers } from '../routing-conditions';
 import { JobWorkflow, SignoffUndo, WorkflowStage } from '../../model/workflow-types';
-import { getTemplates } from '../routing-templates';
+import { getTemplates } from '../routing-settings-rules';
 import { baseRequired, buildStages } from '../build-stages';
 import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../../attribute-codes/exception-effects';
 import { blankFabricationData } from '../../fabrication/fabrication-fields';

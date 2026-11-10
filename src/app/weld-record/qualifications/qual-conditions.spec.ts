@@ -1,5 +1,5 @@
 import { JOBS, Job } from '../../data/jobs';
-import '../routing/routing-templates';
+import '../routing/routing-settings-rules';
 import {
   QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
   notOnCheckForm, qualConditions, setQualConditions, signoffTypeChoices, wtnRequirementText,

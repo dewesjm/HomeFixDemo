@@ -1,7 +1,7 @@
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { TestBed } from '@angular/core/testing';
 import { PersonaRulesComponent } from './persona-rules.component';
-import { getAddedTemplate, updateStageTemplate } from '../../routing/routing-templates';
+import { getAddedTemplate, updateStageTemplate } from '../../routing/routing-settings-rules';
 import { JOBS } from '../../../data/jobs';
 import { excavationNdtStageFor } from '../../routing/inserted/added-routings';
 

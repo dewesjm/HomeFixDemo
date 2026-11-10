@@ -6,7 +6,7 @@ import { FormField } from '../weld-record/catalogs/field-catalog';
 import { Job } from './jobs';
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { inspectionProcedureOptions } from './inspection-procedures';
-import { DEFAULT_REJECT_RULES } from '../weld-record/routing/routing-conditions';
+import { DEFAULT_REJECT_RULES } from './welding-steps';
 import { DeviationItem, JobWorkflow, StageResult, WorkflowStage } from '../weld-record/model/workflow-types';
 import { hasDecision, typeValues } from '../weld-record/signoff-definition/stage-rules';
 import { labelFor, snapshotInputs } from '../weld-record/signoff-definition/stage-display';

@@ -75,7 +75,7 @@ let fieldsVersion: () => number = () => 0;
 export function registerRoutingFields(fn: typeof routingFields, version: () => number) { routingFields = fn; fieldsVersion = version; }
 export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
 
-/* routing-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
+/* routing-settings-rules.ts registers its templates at load (it imports this file, so it can't be imported back) */
 let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
 export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
 

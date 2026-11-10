@@ -3,7 +3,7 @@ import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../../data/jobs';
 import { StageTemplate } from '../../model/workflow-types';
-import { updateStageTemplate } from '../../routing/routing-templates';
+import { updateStageTemplate } from '../../routing/routing-settings-rules';
 
 @Component({
   selector: 'app-routing-description', standalone: true, imports: [FormsModule],

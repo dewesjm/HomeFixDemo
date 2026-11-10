@@ -5,7 +5,7 @@ import { insertionTarget } from '../../routing/inserted/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';
-import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/routing-templates';
+import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/routing-settings-rules';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { buildStages } from '../../routing/build-stages';
 import { JOBS } from '../../../data/jobs';

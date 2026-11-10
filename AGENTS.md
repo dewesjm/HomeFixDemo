@@ -6,7 +6,11 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
+1. Admin table data in `data/`: every admin page's rows (starting rows, load, save) live in `data/`; the rules that use
+   them stay in their feature folder. One admin page per commit. Done: Routing Settings. Left: Signoff Types
+   (`routing-signoff-types.ts`), Signoff Type to Routing (`signoff-types.ts`), Signoff Type Forms (`step-field-config.ts`),
+   Qualifications (`qual-conditions.ts`), Attribute Code Exceptions (`attribute-code-exceptions.ts`).
+2. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
    (see Tasks.md Cleanup). Propose before building.
 
 Completed plans are references, not instructions to start another feature.

@@ -11,7 +11,7 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { RoutingSignoffType, getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
-import { getTemplates } from '../../routing/routing-templates';
+import { getTemplates } from '../../routing/routing-settings-rules';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
 import { conditionText } from '../../signoff-definition/field-rules';
 

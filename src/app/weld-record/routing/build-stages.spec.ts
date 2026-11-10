@@ -1,5 +1,5 @@
 import { buildStages } from './build-stages';
-import { getTemplates, updateStageTemplate } from './routing-templates';
+import { getTemplates, updateStageTemplate } from './routing-settings-rules';
 import { stepOnJoint } from './routing-ids';
 import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';

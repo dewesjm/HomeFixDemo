@@ -6,7 +6,6 @@
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
-import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './routing-ids';
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';
@@ -27,102 +26,8 @@ export interface RejectRule {
   to: string;             /* stage id; 'repair' on an NDT step adds a Repair */
 }
 
-const RT_TAKEN = ['10', '100', '360', '60', '75'];
-const utrtRule = (ndtKey: string, rtKey: string): ConditionRule[] => [
-  [{ field: ndtKey, op: 'is', values: ['UT'] }],
-  [{ field: rtKey, op: 'is', values: RT_TAKEN }],
-];
-const mtptRule = (ndtKey: string): ConditionRule[] => [[{ field: ndtKey, op: 'is', values: ['MT', 'PT', 'MT/PT'] }]];
-
-/* the rules the app was built with, before the NQC split below */
-const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
-  'pre-fit': [
-    [{ field: 'nInd', op: 'is', values: ['1', '2'] }],
-    [{ field: 'jdInsert', op: 'is', values: ['Yes'] }],
-    [{ field: 'jdRing', op: 'is', values: ['Yes'] }],
-  ],
-  'tack': [[{ field: 'fitDeferTack', op: 'isNot', values: ['Yes'] }]],
-  'fitup-release': [[{ field: 'inspReleaseToWelding', op: 'is', values: ['No'] }]],
-  'deferred-tack': [[{ field: 'fitDeferTack', op: 'is', values: ['Yes'] }]],
-  'root-ndt-mtpt': mtptRule('ndtRoot'),
-  'root-ndt-utrt': utrtRule('ndtRoot', 'rtRoot'),
-  /* Layer NDT comes up only when NDT Each is set */
-  'layer-ndt-vt5x': [[{ field: 'ndtEach', op: 'is', values: ['VT', '5X'] }]],
-  'layer-ndt-mtpt': mtptRule('ndtEach'),
-  'final-ndt-mtpt': mtptRule('ndtFinal'),
-  'final-ndt-utrt': utrtRule('ndtFinal', 'rtFinal'),
-  'review-o63': [
-    [{ field: 'sfff', op: 'is', values: ['Yes'] }],
-    [{ field: 'dssAaa', op: 'is', values: ['Yes'] }],
-    [{ field: 'ss', op: 'is', values: ['Yes'] }],
-  ],
-  'review-o04': [[
-    { field: 'sfff', op: 'is', values: ['No'] },
-    { field: 'dssAaa', op: 'is', values: ['No'] },
-    { field: 'ss', op: 'is', values: ['No'] },
-  ]],
-};
-
-/* every rule of `rules` (or the one rule, when it has none) gets an "N Ind. is <values>" clause added */
-const withNInd = (rules: ConditionRule[] | undefined, values: string[]): ConditionRule[] => {
-  const clause: ConditionClause = { field: 'nInd', op: 'is', values };
-  return rules?.length ? rules.map(r => [...r, clause]) : [[clause]];
-};
-
-/* the rules the app was built with; Admin > Routing Settings can change any of them. An NQC row
-   (routing-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
-   step's own rules */
-export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
-  ...BUILT_IN_CONDITIONS,
-  ...Object.fromEntries(NQC_SPLIT_STEP_IDS.flatMap(id => [
-    [id, withNInd(BUILT_IN_CONDITIONS[id], ['3'])],
-    [nqcStepId(id), withNInd(BUILT_IN_CONDITIONS[id], ['1', '2'])],
-  ])),
-};
-
 /* reject target that puts the joint on Engineering Hold instead (routing/inserted/added-routings.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
-
-/* built-in reject rules (Admin > Routing Settings can change them): a PT failure on a GTAW weld goes to
-   Engineering Hold instead of Repair; the weld that counts is that phase's own weld step */
-const gtawPtHold = (weldStepId: string): RejectRule[] => [{
-  when: [
-    { field: 'self.inspectionType', op: 'is', values: ['pt'] },
-    { field: `step.${weldStepId}.weldProcess`, op: 'is', values: ['gtaw'] },
-  ],
-  to: ENGINEERING_HOLD_TARGET,
-}];
-const BUILT_IN_REJECT_RULES: Record<string, RejectRule[]> = {
-  'root-ndt-mtpt': gtawPtHold('root-weld'),
-  'layer-ndt-mtpt': gtawPtHold('root-layer'),
-  'final-ndt-mtpt': gtawPtHold('final-weld'),
-};
-/* an NQC row starts with its regular row's reject rules */
-export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
-  ...BUILT_IN_REJECT_RULES,
-  ...Object.fromEntries(Object.entries(BUILT_IN_REJECT_RULES).map(([id, rules]) => [nqcStepId(id), rules])),
-};
-
-/* Starting accepted-signoff rules, editable in Routing Settings. Attribute code IA can add Layer MT/PT
-   (Admin > Attribute Code Exceptions), so Layer and Layer VT/5X go back to Layer only without IA and
-   Layer MT/PT does it after them. */
-const NOT_IA: ConditionClause = { field: 'attributeCodes', op: 'isNot', values: ['IA'] };
-export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
-  fit: [{ when: [{ field: 'self.inspectionType', op: 'is', values: ['weld-buildup'] }], to: 'fit' }],
-  'root-layer': [{ when: [
-    { field: 'self.inspectionType', op: 'is', values: ['interim'] },
-    { field: 'ndtEach', op: 'is', values: [''] },
-    NOT_IA,
-  ], to: 'root-layer' }],
-  ...Object.fromEntries(PHASE_NDT_KINDS.layer.flatMap(kind => {
-    const id = `layer-ndt-${kind}`;
-    const rules: RejectRule[] = [{ when: [
-      { field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] },
-      ...(kind === 'vt5x' ? [NOT_IA] : []),
-    ], to: 'root-layer' }];
-    return [[id, rules], [nqcStepId(id), rules]];
-  })),
-};
 
 /* The first accepted-signoff rule whose conditions match. */
 export function matchingThenRule(rules: RejectRule[] | undefined, job: Job, stages: StageAnswers[], self: StageAnswers, fab?: Fabrication): RejectRule | undefined {

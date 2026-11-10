@@ -1,7 +1,7 @@
 import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
 import { JOBS, Job } from '../../data/jobs';
 import { routingRole } from './routing-persona';
-import { getAddedTemplate, updateStageTemplate } from './routing-templates';
+import { getAddedTemplate, updateStageTemplate } from './routing-settings-rules';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted/added-routings';
 import { buildStages } from './build-stages';
 

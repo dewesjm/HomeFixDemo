@@ -145,7 +145,7 @@ export interface StageOption {
   signsStep?: string;
 }
 
-/* the definition a joint's step is built from (routing-templates.ts) */
+/* the definition a joint's step is built from (data/routing-settings.ts, data/welding-steps.ts) */
 export interface StageTemplate {
   description?: string; /* Plain-English reference text maintained in Routing Settings. */
   classification?: 'numbered' | 'added';

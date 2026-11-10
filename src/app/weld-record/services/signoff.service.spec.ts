@@ -8,7 +8,7 @@ import { activeStageId } from '../routing/current-routing';
 import { discardUnsignedEdits } from '../routing/on-signoff/route-changes';
 import { routingBarSteps } from '../routing-bar/routing-bar-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
-import { updateStageTemplate } from '../routing/routing-templates';
+import { updateStageTemplate } from '../routing/routing-settings-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
 

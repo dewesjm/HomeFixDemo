@@ -9,7 +9,7 @@ import { newWorkflow } from '../build-stages';
 import { activeStage } from '../current-routing';
 import { excavationNdtStageFor } from './added-routings';
 import { excavationDefinition } from './excavation-definition';
-import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-templates';
+import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-settings-rules';
 import { routingBarSteps } from '../../routing-bar/routing-bar-steps';
 import { routeBack } from '../on-signoff/route-changes';
 import { isExcavationNdtStageId } from '../routing-ids';

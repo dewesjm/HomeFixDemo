@@ -4,7 +4,7 @@ import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } f
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './routing-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { isAddedTemplateId, getTemplates } from './routing-templates';
+import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-routing-rules';
