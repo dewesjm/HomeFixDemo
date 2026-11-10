@@ -138,12 +138,12 @@ A Cut means the joint is redone from scratch:
 
 Each field’s label, type and options come from the field catalog. Its Signoff Type Form selects the fields and their rules; routings carry only recorded values. Defer Tack on Fit is a checkbox. A custom routing needs an offered Type and Type form to show fields.
 
-Required fields are marked with a red `*`. Signoff is always clickable: a failed attempt highlights everything still missing.
+Required fields are marked with a red `*`. Signoff is always clickable: a failed attempt shows everything still missing, each problem red on its field. A problem with no field on the sign-off form shows as a line under Signoff and stays until fixed: on Fit and Fit-Up Insp, "Fix the Fabrication fields marked in red" while the Fabrication panel has a blank required value (the page scrolls to it). A routing configuration problem shows as a message when Signoff is pressed.
 
 **Pre-Fit and Fit**
 - **Consumable insert:** Type and Size when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is **MC-I**.
 - **Backing ring:** Type when the joint design calls for one. The MIC too when MCL 1 or MCL 2 is MC-I.
-- **Fit only, fit-up data:** Location, Drawing Rev and Actual Thickness, and no Fabrication errors. Fit-Up Insp can't be signed while a Fabrication value has an error. Some Locations add more location fields (Level/Deck, Frame, P/S/CL, Usage; S and D hulls have no Usage). Joining Item MIC and Join To Item MIC are needed only when that member's MCL is MC-I (otherwise the field is disabled).
+- **Fit and Fit-Up Insp, fit-up data:** every required Fabrication value filled in (Location, Drawing Rev and Actual Thickness, and any more a Location adds). Some Locations add more location fields (Level/Deck, Frame, P/S/CL, Usage; S and D hulls have no Usage). Joining Item MIC and Join To Item MIC are needed only when that member's MCL is MC-I (otherwise the field is disabled).
 
 **Fit as Weld Build up**
 - The weld fields below, plus at least one **Affected Item**.

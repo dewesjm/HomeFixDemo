@@ -6,8 +6,7 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
-   (see Tasks.md Cleanup). Proposal written: SIGNOFF-VALIDATION-PLAN.md; build after the user answers its questions.
+No queued work.
 
 Completed plans are references, not instructions to start another feature.
 

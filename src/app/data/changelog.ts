@@ -12,6 +12,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
+    fixed: ['Signoff on Fit and Fit-Up Insp no longer does nothing when a Fabrication value is missing: "Fix the Fabrication fields marked in red" shows under Signoff and the page scrolls to the Fabrication panel.',
+      'A wrong ID accessibility answer for the chosen Type now shows its message on the ID accessibility field when Signoff is pressed.'],
     changed: ['Refactor Signoff Type Forms.',
       'Refactor Qualifications.',
       'Refactor Attribute Code Exceptions.',

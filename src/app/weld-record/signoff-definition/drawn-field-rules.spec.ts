@@ -1,5 +1,5 @@
 import { JOBS } from '../../data/jobs';
-import { signProblems, stageFieldErrors, SignContext } from '../joint-page/rules/sign-validation';
+import { stageFieldErrors, SignContext } from '../joint-page/rules/sign-validation';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';
@@ -43,16 +43,15 @@ describe('form rules on the fields drawn their own way', () => {
     expect(comments()?.required).toBeFalse();
     onField('comments', { required: true });
     expect(comments()?.required).toBeTrue();
-    expect(signProblems(stage, signCtx([stage])).join()).toContain('Comments');
+    expect(stageFieldErrors(stage, signCtx([stage]))[`${stage.id}:comments`]).toBe('Comments is required');
     onField('comments', { showIf: NEVER });
     expect(comments()).toBeUndefined();
   });
 
   it('Inspection Results is required by default, and not while hidden', () => {
     const { stage } = fixture('fitup-insp');
-    expect(signProblems(stage, signCtx([stage]))).toContain('Choose SAT or UNSAT');
+    expect(stageFieldErrors(stage, signCtx([stage]))[`${stage.id}:__decision`]).toBe('Choose SAT or UNSAT');
     onField('decision', { showIf: NEVER });
-    expect(signProblems(stage, signCtx([stage]))).not.toContain('Choose SAT or UNSAT');
     expect(stageFieldErrors(stage, signCtx([stage]))[`${stage.id}:__decision`]).toBeUndefined();
   });
 

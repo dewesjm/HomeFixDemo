@@ -50,7 +50,7 @@ import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
 import { StageFormContext, visibleStageFields } from './rules/stage-form';
-import { SignContext, signProblems, stageFieldErrors } from './rules/sign-validation';
+import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
 import { routePreviewLabel } from '../routing/preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
@@ -264,6 +264,7 @@ export class JointPageComponent implements OnDestroy {
       setType: (s, v) => edits.setType(s, v),
       setStageResult: (s, r) => edits.setStageResult(s, r),
       signStage: (s) => this.signStage(s),
+      signBlockers: (s) => this.signBlockers(s),
       deprogress: (reason) => this.deprogress(reason),
       addReferences: (files) => this.addReferences(files),
       removeReference: (id) => this.removeReference(id),
@@ -301,15 +302,15 @@ export class JointPageComponent implements OnDestroy {
     return { job: this.job, fab: this.fab(), fabErrors: this.fabErrors(), visibleFields: this.visibleFields(stage), stages: this.wf?.().stages, referenceCount: this.wf?.().references?.length ?? 0 };
   }
 
-  /* Everything currently preventing this stage from being signed, in reader-friendly wording. */
-  signBlockers(stage: WorkflowStage): string[] {
-    if (this.heldAt(stage)) return ['On hold for an open deviation'];
+  /* what stops this stage being signed that has no field on its sign-off form */
+  private generalBlockers(stage: WorkflowStage): string[] {
     if (!this.editable(stage)) return ['Earlier routing must be signed off first'];
-    return signProblems(stage, this.signCtx(stage));
+    return generalSignProblems(stage, this.signCtx(stage));
   }
 
-  canSignStage(stage: WorkflowStage): boolean {
-    return this.signBlockers(stage).length === 0;
+  /* the lines beside Signoff: shown once Signoff has been pressed on the stage, live until fixed */
+  signBlockers(stage: WorkflowStage): string[] {
+    return this.formErrors.signAttempted(stage.id) ? this.generalBlockers(stage) : [];
   }
 
   /* ── Signing ── */
@@ -330,9 +331,10 @@ export class JointPageComponent implements OnDestroy {
 
   signStage(stage: WorkflowStage) {
     if (!this.job || this.heldAt(stage)) return;
-    /* validate required fields + range constraints */
-    if (this.formErrors.showSigningErrors(stageFieldErrors(stage, this.signCtx(stage)))) return;
-    if (!this.canSignStage(stage)) return;
+    /* every problem shows: red on its field, or a line beside Signoff */
+    const general = this.generalBlockers(stage);
+    if (this.formErrors.showSigningErrors(stage.id, stageFieldErrors(stage, this.signCtx(stage)), general.length > 0,
+      general.includes(FABRICATION_PROBLEM))) return;
     const problem = this.wf && this.signoffService.previewSignoff(this.wf(), this.job, stage.id).blocked;
     if (problem) {
       this.signoffService.signStage(this.job, stage.id);

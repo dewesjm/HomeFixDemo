@@ -50,6 +50,8 @@ export interface SignoffContext {
   setType: (stage: WorkflowStage, value: string) => void;
   setStageResult: (stage: WorkflowStage, result: StageResult) => void;
   signStage: (stage: WorkflowStage) => void;
+  /* what stops Signoff that has no field on the form, once Signoff has been pressed */
+  signBlockers: (stage: WorkflowStage) => string[];
   addReferences: (files: FileList) => void;
   removeReference: (id: string) => void;
   /* undo the joint's most recent sign-off (Records Review's Deprogress) */

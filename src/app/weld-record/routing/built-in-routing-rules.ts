@@ -8,8 +8,8 @@ import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './routing-ids
 
 const FIT = 'fit';
 
-/* Fit can't be signed until the required Fabrication values are filled in and free of errors */
-export const needsFabricationComplete = (stageId: string) => stageId === FIT;
+/* Fit and Fit-Up Insp can't be signed while the Fabrication panel has errors (a required value blank) */
+export const checksFabrication = (stageId: string) => stageId === FIT || isFitupInspId(stageId);
 
 /* once Fit is signed the Fabrication values are its record: leaving the page doesn't undo them */
 export const fabricationSigned = (stages: WorkflowStage[]) => stages.find(s => s.id === FIT)?.signed ?? false;
@@ -24,9 +24,6 @@ export function goesBackPastFabrication(stages: WorkflowStage[], idx: number): b
 export const CUT_RESTARTS_AT = FIT;
 
 /* ── Fit-Up Insp (either row) ── */
-
-/* can't be signed while the Fabrication values have errors (blanks don't block it) */
-export const blocksOnFabricationErrors = isFitupInspId;
 
 /* Fabrication stays editable up to and including this step, and is locked once it's signed */
 export const lastFabricationEditStep = isFitupInspId;

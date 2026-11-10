@@ -1,18 +1,17 @@
 import { WorkflowStage } from '../model/workflow-types';
 import {
-  blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel,
-  needsFabricationComplete,
+  closesJoint, closingRole, goesBackPastFabrication, inspectingLabel,
+  checksFabrication,
 } from './built-in-routing-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
 
 describe('built-in step rules', () => {
-  it('Fit needs complete Fabrication; Fit-Up Insp (either row) blocks only on its errors', () => {
-    expect(needsFabricationComplete('fit')).toBeTrue();
-    expect(needsFabricationComplete('fitup-insp')).toBeFalse();
-    expect(blocksOnFabricationErrors('fitup-insp')).toBeTrue();
-    expect(blocksOnFabricationErrors('nqc-fitup-insp')).toBeTrue();
-    expect(blocksOnFabricationErrors('fit')).toBeFalse();
+  it('Fit and Fit-Up Insp (either row) check the Fabrication panel', () => {
+    expect(checksFabrication('fit')).toBeTrue();
+    expect(checksFabrication('fitup-insp')).toBeTrue();
+    expect(checksFabrication('nqc-fitup-insp')).toBeTrue();
+    expect(checksFabrication('tack')).toBeFalse();
   });
 
   it('going back to Fit or earlier blanks Fabrication', () => {

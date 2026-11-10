@@ -45,7 +45,7 @@
           <div class="w-full"><app-engineering-release [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
         } @else if (!st.signed) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
-               to trigger validation and see what's missing. signStage() won't sign with errors or blockers. -->
+               to trigger validation and see what's missing. signStage() shows what stops it. -->
           <button type="button" class="btn btn-primary" [disabled]="!!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
@@ -72,6 +72,13 @@
           <span class="meta">Signed by {{ st.signoffInputs['inspectorName'] || '-' }} on {{ st.signedAt | appDateTime }}</span>
         }
       </div>
+
+      <!-- what stops Signoff that has no field on the form (e.g. Fabrication), after Signoff is pressed -->
+      @if (!st.signed) {
+        @for (b of ctx().signBlockers(st); track b) {
+          <div class="field-error">{{ b }}</div>
+        }
+      }
 
       @if (!st.signed && ctx().reportedDeviations(st).length) {
         <div class="mt-sm">

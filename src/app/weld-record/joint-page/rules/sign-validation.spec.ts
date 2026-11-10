@@ -4,7 +4,9 @@ import { buildStages } from '../../routing/build-stages';
 import { inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { WorkflowStage } from '../../model/workflow-types';
 import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
-import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
+import { FABRICATION_PROBLEM, signProblems, generalSignProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
+import { visibleSignoffFields } from '../../signoff-definition/shown-fields';
+import { fabricationErrors } from '../../fabrication/fabrication-form';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 
@@ -23,22 +25,27 @@ describe('joint-form sign-validation', () => {
     expect(inspectionTypeRequired(stageOf(j, 'tack'))).toBeFalse();
   });
 
-  it('Fit: blank fabrication values are listed as one reason', () => {
+  it('Fit and Fit-Up Insp: Fabrication panel errors are one line beside Signoff', () => {
     const j = job();
     const fit = stageOf(j, 'fit');
-    expect(signProblems(fit, ctxFor(j, fit))).toEqual(['Fabrication: Location, Drawing Rev Execution, Actual Thickness']);
-    expect(signProblems(fit, ctxFor(j, fit, FULL_FAB))).toEqual([]);
+    expect(generalSignProblems(fit, ctxFor(j, fit, {}, fabricationErrors(j, {})))).toEqual([FABRICATION_PROBLEM]);
+    expect(generalSignProblems(fit, ctxFor(j, fit, FULL_FAB))).toEqual([]);
+    const insp = stageOf(j, 'fitup-insp');
+    expect(generalSignProblems(insp, ctxFor(j, insp, FULL_FAB, { location: 'x' }))).toEqual([FABRICATION_PROBLEM]);
+    const tack = stageOf(j, 'tack');
+    expect(generalSignProblems(tack, ctxFor(j, tack, {}, { location: 'x' }))).toEqual([]);
   });
 
-  it('Fit-Up Insp needs SAT/UNSAT, every value verified and no fabrication errors', () => {
+  it('Fit-Up Insp needs SAT/UNSAT and every value verified, each on its field', () => {
     const j = job();
     const insp = stageOf(j, 'fitup-insp');
-    expect(signProblems(insp, ctxFor(j, insp, FULL_FAB, { location: 'x' })))
-      .toEqual(['Choose SAT or UNSAT', 'Verify every fitting value', 'Fix the fabrication errors']);
+    const fields = signProblems(insp, ctxFor(j, insp, FULL_FAB)).map(p => p.field);
+    expect(fields).toContain('__decision');
+    expect(fields).toContain('verifyDrawingRev');
+    expect(fields).toContain('verifyActualThickness');
+    expect(generalSignProblems(insp, ctxFor(j, insp, FULL_FAB))).toEqual([]);
     const verified = { ...insp, result: 'sat' as const, inputs: Object.fromEntries(formInputFields(insp).map(f => [f.key, 'yes'])) };
     expect(signProblems(verified, ctxFor(j, verified, FULL_FAB))).toEqual([]);
-    /* blank Fabrication values block Fit only */
-    expect(signProblems(verified, ctxFor(j, verified))).toEqual([]);
   });
 
   it('Fit-Up Insp shows MIC rows only for parts needing traceability, Revised Joint Design only when entered', () => {
@@ -54,7 +61,7 @@ describe('joint-form sign-validation', () => {
     const insp = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
     expect(signProblems(insp, ctxFor(j, insp, FULL_FAB))).toEqual([]);
     const review = stageOf(j, 'review-o63');
-    expect(signProblems(review, ctxFor(j, review))).not.toContain('Verify every required record field');
+    expect(signProblems(review, ctxFor(j, review)).some(p => isVerifyRow(p.field ?? ''))).toBeFalse();
   });
 
   it('a required field the definition adds to a step is checked on signing; other fields on a verify grid are not verify rows', () => {
@@ -68,7 +75,7 @@ describe('joint-form sign-validation', () => {
     const t = stageOf(j, 'tack');
     expect(stageFieldErrors(t, ctxFor(j, t))['tack:repairType']).toBe('Repair Code is required');
     const i = { ...stageOf(j, 'fitup-insp'), result: 'sat' as const, inputs: { verifyDrawingRev: 'yes', verifyActualThickness: 'yes' } };
-    expect(signProblems(i, ctxFor(j, i, FULL_FAB))).toEqual([]);
+    expect(generalSignProblems(i, ctxFor(j, i, FULL_FAB))).toEqual([]);
     expect(stageFieldErrors(i, ctxFor(j, i))['fitup-insp:repairType']).toBe('Repair Code is required');
     resetStepFieldConfig();
   });
@@ -78,13 +85,12 @@ describe('joint-form sign-validation', () => {
     const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');
     if (!rt) { pending('seed job has no Root RT/UT step'); return; }
     const stage = { ...rt, inspectionType: 'rt', signoffType: 'rt', inputs: { degreeRt: '60' } };
-    expect(signProblems(stage, ctxFor(j, stage))).toContain('Degree of RT Performed must be at least 360');
     expect(stageFieldErrors(stage, ctxFor(j, stage))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
     expect(errorsAfterSelect({}, stage, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
     const matched = { ...stage, inputs: { degreeRt: '360' } };
     expect(errorsAfterSelect({ 'root-ndt-utrt:degreeRt': 'x' }, matched, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBeUndefined();
     const na = { ...stage, inputs: { degreeRt: 'NA' } };
-    expect(signProblems(na, ctxFor(j, na))).toContain('Degree of RT Performed must be at least 360');
+    expect(stageFieldErrors(na, ctxFor(j, na))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
   });
 
   it('RT NDT accepts more than the required degree', () => {
@@ -143,7 +149,6 @@ describe('joint-form sign-validation', () => {
     setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'tack'
       ? { ...a, fields: a.fields.map(f => f.key === 'comments' ? { ...f, required: true } : f) } : a));
     const tack = stageOf(j, 'tack');
-    expect(signProblems(tack, ctxFor(j, tack))).toContain('Fill in Comments');
     expect(stageFieldErrors(tack, ctxFor(j, tack))['tack:comments']).toBe('Comments is required');
     resetStepFieldConfig();
   });
@@ -158,5 +163,17 @@ describe('joint-form sign-validation', () => {
     expect(errorsAfterBlur(before, tack, 'tack', min)['tack:actualPhMax']).toBeUndefined();
     const flipped = { ...tack, inputs: { ...tack.inputs, actualPhMin: '300' } };
     expect(errorsAfterBlur({}, flipped, 'tack', min)['tack:actualPhMax']).toBe('Actual PH Max is below Actual PH Min');
+  });
+
+  it('every field problem is on a field the sign-off form draws, so none is invisible', () => {
+    const drawnByComponents = ['__decision', '__inspectionType', 'affectedItem', 'references'];
+    for (const j of JOBS.filter(x => x.trade === 'Welding').slice(0, 25)) {
+      const stages = buildStages(j);
+      for (const st of stages) {
+        const ctx = { ...ctxFor(j, st), stages };
+        const drawn = new Set([...drawnByComponents, ...ctx.visibleFields.map(f => f.key), ...visibleSignoffFields(st, j, {}).map(f => f.key)]);
+        for (const p of signProblems(st, ctx)) if (p.field) expect(drawn.has(p.field)).withContext(`${j.id} ${st.id}: ${p.field}`).toBeTrue();
+      }
+    }
   });
 });

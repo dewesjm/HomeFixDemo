@@ -1,22 +1,21 @@
-/* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
-   highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
-   Type use synthetic keys (__decision, __inspectionType). */
+/* What stops a step from being signed. Every problem shows somewhere: a red message on a field of the
+   sign-off form (after a sign attempt or on blur), or, with no field, a line beside Signoff. Field
+   errors are keyed `${stageId}:${fieldKey}`; Decision and Type use synthetic keys (__decision,
+   __inspectionType). */
 import { FormField } from '../../catalogs/field-catalog';
 import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
-import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-routing-rules';
+import { checksFabrication } from '../../routing/built-in-routing-rules';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { rtDegrees } from '../../routing/ndt';
 import { DECISION_KEY } from '../../../data/signoff-type-forms';
-import { verifyAgainst } from '../../signoff-definition/signoff-type-form-rules';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 import { standardRequiredMessage } from '../../signoff-definition/field-rules';
 import { DrawnFieldRule, drawnFieldRule, visibleSignoffFields } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
-import { missingFitFabrication } from '../../fabrication/fabrication-form';
 import { typedRequirementError } from './stage-form';
 
 export interface SignContext {
@@ -62,38 +61,31 @@ function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
     && (f.type === 'checkbox' ? stage.signoffInputs[f.key] !== 'yes' : (stage.signoffInputs[f.key] ?? '').trim().length === 0));
 }
 
-/* One thing stopping a signoff: a red message on a field (`field`, the key after `${stageId}:`), a
-   line in the reasons list (`reason`), or both */
-interface SignProblem { field?: string; message: string; reason?: string }
+/* the line beside Signoff while the Fabrication panel has errors on a step that checks it */
+export const FABRICATION_PROBLEM = 'Fix the Fabrication fields marked in red';
 
-/* Every check on the step itself, run once; signProblems() and stageFieldErrors() each read their part.
-   Holds and locked earlier steps are the caller's to check first. On a field, a later problem replaces
-   an earlier one. */
-function stageProblems(stage: WorkflowStage, ctx: SignContext): SignProblem[] {
+/* One thing stopping a signoff: a red message on a drawn field of the sign-off form (`field`, the key
+   after `${stageId}:`), or with no `field`, a line beside Signoff */
+export interface SignProblem { field?: string; message: string }
+
+/* Every check on the step itself, run once; stageFieldErrors() and generalSignProblems() each read
+   their part. Holds and locked earlier steps are the caller's to check first. On a field, a later
+   problem replaces an earlier one. */
+export function signProblems(stage: WorkflowStage, ctx: SignContext): SignProblem[] {
   const out: SignProblem[] = [];
-  const both = (field: string, message: string) => out.push({ field, message, reason: message });
   const onField = (field: string, message: string) => out.push({ field, message });
-  const listed = (reason: string) => out.push({ message: reason, reason });
 
   const accessError = attributeAccessError(stage);
-  if (accessError) both('__attributes', accessError);
+  if (accessError) onField('idAccessible', accessError);
   const decision = drawnRule(stage, ctx, DECISION_KEY);
-  if (decision.required && !stage.result) both('__decision', decision.requiredMessage || 'Choose SAT or UNSAT');
-  if (decision.shown && unsatWithoutRejectTarget(stage)) both('__decision', UNSAT_NO_TARGET);
-  if (inspectionTypeRequired(stage) && !stage.inspectionType) both('__inspectionType', 'Select the inspection performed');
+  if (decision.required && !stage.result) onField('__decision', decision.requiredMessage || 'Choose SAT or UNSAT');
+  if (decision.shown && unsatWithoutRejectTarget(stage)) onField('__decision', UNSAT_NO_TARGET);
+  if (inspectionTypeRequired(stage) && !stage.inspectionType) onField('__inspectionType', 'Select the inspection performed');
 
-  /* Fabrication: the values themselves are highlighted on the Fabrication panel (always live). Fit
-     lists its missing required values and stops on any panel error; Fit-Up Insp lists the panel's errors */
-  const fabHasErrors = Object.keys(ctx.fabErrors).length > 0;
-  if (needsFabricationComplete(stage.id)) {
-    const missing = missingFitFabrication(ctx.job, ctx.fab);
-    if (missing.length) listed(`Fabrication: ${missing.join(', ')}`);
-    if (fabHasErrors) onField('__fabrication', 'Fix the fabrication errors');
-  }
-  /* a verify grid: one reason, and each unchecked required row gets its own message */
+  /* Fabrication: its fields are red on the Fabrication panel all the time; a step that checks it
+     stops on any of them, with a line beside Signoff */
+  if (checksFabrication(stage.id) && Object.keys(ctx.fabErrors).length) out.push({ message: FABRICATION_PROBLEM });
   const unverified = unverifiedRows(stage, ctx);
-  if (unverified.length) listed(verifyAgainst(stage) === 'fabrication' ? 'Verify every fitting value' : 'Verify every required record field');
-  if (blocksOnFabricationErrors(stage.id) && fabHasErrors) listed('Fix the fabrication errors');
 
   /* the shown fields, required as their rules say now (a definition's field need not be in the template).
      Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
@@ -132,23 +124,21 @@ function stageProblems(stage: WorkflowStage, ctx: SignContext): SignProblem[] {
   if (references.required && !ctx.referenceCount) onField('references', references.requiredMessage || standardRequiredMessage('references', 'References'));
 
   const rt = rtDegreeError(ctx.job, stage);
-  if (rt) both('degreeRt', rt);
-  const missingSignoff = missingSignoffFields(stage, ctx);
-  for (const f of missingSignoff) onField(f.key, requiredError(f));
-  if (missingSignoff.length) listed(`Fill in ${missingSignoff.map(f => f.label).join(', ')}`);
+  if (rt) onField('degreeRt', rt);
+  for (const f of missingSignoffFields(stage, ctx)) onField(f.key, requiredError(f));
   return out;
-}
-
-/* Everything on the step itself preventing it from being signed, in reader-friendly wording */
-export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
-  return stageProblems(stage, ctx).flatMap(p => (p.reason ? [p.reason] : []));
 }
 
 /* every field error on the step, for highlighting after a sign attempt; empty = no field errors */
 export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record<string, string> {
   const errors: Record<string, string> = {};
-  for (const p of stageProblems(stage, ctx)) if (p.field) errors[`${stage.id}:${p.field}`] = p.message;
+  for (const p of signProblems(stage, ctx)) if (p.field) errors[`${stage.id}:${p.field}`] = p.message;
   return errors;
+}
+
+/* the problems with no field on the sign-off form, for the lines beside Signoff */
+export function generalSignProblems(stage: WorkflowStage, ctx: SignContext): string[] {
+  return signProblems(stage, ctx).filter(p => !p.field).map(p => p.message);
 }
 
 /* `errors` after a select field changes: its error is cleared, except a Degree of RT Performed that

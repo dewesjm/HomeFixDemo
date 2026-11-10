@@ -1,7 +1,7 @@
 import { JOBS, Job } from '../../data/jobs';
 import { FABRICATION_FIELDS } from './fabrication-fields';
 import {
-  micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired, missingFitFabrication,
+  micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired,
 } from './fabrication-form';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', ...over });
@@ -72,12 +72,5 @@ describe('joint-form fabrication-form', () => {
     const changeNumber = FABRICATION_FIELDS.find(f => f.key === 'changeNumber')!;
     expect(fabricationFieldRequired(changeNumber, {})).toBeFalse();
     expect(fabricationFieldRequired(changeNumber, { revisedJointDesign: 'c-18' })).toBeTrue();
-  });
-
-  it('lists the Fit-required fabrication values still blank', () => {
-    expect(missingFitFabrication(job(), {})).toEqual(['Location', 'Drawing Rev Execution', 'Actual Thickness']);
-    expect(missingFitFabrication(job({ mcl1: 'MC-I', mcl2: 'MC-I' }), { location: 'ship', drawingRev: 'A' }))
-      .toEqual(['Joining Item MIC', 'Join To Item MIC', 'Actual Thickness']);
-    expect(missingFitFabrication(job(), { location: 'ship', drawingRev: 'A', actualThickness: ' 0.2 ' })).toEqual([]);
   });
 });

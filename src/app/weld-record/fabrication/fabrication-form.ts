@@ -67,16 +67,3 @@ export function fabricationErrors(job: Job | undefined, fab: Fab): Record<string
 export function fabricationFieldRequired(f: FabricationField, fab: Fab): boolean {
   return !!f.showIf && !!f.required && fabricationFieldVisible(f, fab);
 }
-
-/* fabrication values that must be present before Fit can be signed */
-const FIT_REQUIRED_FABRICATION: Record<string, string> = {
-  location: 'Location', id1: 'Joining Item MIC', id2: 'Join To Item MIC', drawingRev: 'Drawing Rev Execution', actualThickness: 'Actual Thickness',
-};
-
-/* labels of the Fit-required fabrication values still blank */
-export function missingFitFabrication(job: Job | undefined, fab: Fab): string[] {
-  return Object.entries(FIT_REQUIRED_FABRICATION)
-    .filter(([k]) => (k !== 'id1' && k !== 'id2') || micApplies(job, k))
-    .filter(([k]) => !fab[k]?.trim())
-    .map(([, label]) => label);
-}

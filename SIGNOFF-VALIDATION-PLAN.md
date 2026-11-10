@@ -1,6 +1,6 @@
 # Common sign-off validation: proposal
 
-Status: PROPOSED 2026-11-09. Answers so far: 1a, 3a, 5 dropped (user: a routing the joint hasn't reached can't be signed, not a concern; no change there). 2 leaning a, re-explained; 4 re-explained. Waiting on 2 and 4. Nothing built.
+Status: BUILT 2026-11-09. Answers: 1a (required fields red after click/blur, as before), 2a (lines under Signoff after the first click, live until fixed; the page scrolls to the Fabrication panel), 3a ("Fix the Fabrication fields marked in red"), 4: no change, the toast stays (user: not a real concern, don't build), 5: no change (user: can't happen). The "Earlier routing must be signed off first" check stays as a line under Signoff (existing wording). Everything below is the proposal as written.
 
 ## How it works today
 
