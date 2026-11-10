@@ -108,7 +108,7 @@ Calculated rows show under Joint Details or Fabrication today. They move to thei
 - **Name collision:** `FIELD_CATALOG` means form fields only today. In the new file it means all four Sources. Its two callers outside `catalogs/` (`admin-signoff-type-definition.component.ts`, `additional-signoffs-editor.component.ts`) need the Signoff Form rows, and `lookupCatalogField` (11 files) must keep returning only Signoff Form rows. Export a separate `FORM_FIELDS`.
 - **Circular import:** today's form catalog reads `ENGINEERING_OVERRIDE_KEY` and `REJECTED_PHASE_UTRT_KEY` from `signoff-definition/condition-context.ts` while its list is being created, and that file reads the condition catalog. Merged, this becomes a cycle that can leave those values undefined. Move the two constants to a small file of their own first.
 - **Registered functions:** `registerRoutingFields` and `registerStepTemplates` exist to avoid import cycles with `stage-templates.ts`. Keep them working.
-- **Saved settings:** keep every existing key, including the `fab.` prefix, so no stored data converts. `drawingRev` (Joint Details) and `fab.drawingRev` are different fields and stay distinct through that prefix. `condition-catalog-migration.ts` stays in `signoff-definition/`.
+- **Saved settings:** keep every existing key, including the `fab.` prefix, so no stored data converts. `drawingRev` (Joint Details) and `fab.drawingRev` are different fields and stay distinct through that prefix.
 - **`source: 'jointDetail'`** on saved conditions (`field-conditions.ts`) is also used for Fabrication-dependent facts such as `consumableInsertRequired`. The name is misleading, but changing it touches saved data. Not part of this work unless the user asks.
 
 ## Build order

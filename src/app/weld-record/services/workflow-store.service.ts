@@ -11,7 +11,7 @@ import { seededWorkflow } from '../../data/seeded-workflow';
 import { newWorkflow, buildStages } from '../routing/build-stages';
 import { getTemplates } from '../routing/stage-templates';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { fabricationSnapshot, renameSavedFabricationLabels } from '../fabrication/fabrication-fields';
+import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
 
@@ -21,7 +21,7 @@ const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.69';
+const CURRENT_VERSION = '2.10.70';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -119,7 +119,6 @@ export class WorkflowStore {
       for (const wf of Object.values(parsed)) {
         wf.references ??= [];
         wf.history ??= [];
-        renameSavedFabricationLabels(wf.history);
         wf.fabricationData ??= {};
         wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);

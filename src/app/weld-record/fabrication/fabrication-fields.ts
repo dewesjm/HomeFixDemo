@@ -88,8 +88,3 @@ export function fabricationChanges(before: SignoffInput[], after: SignoffInput[]
 export function blankFabricationData(): Record<string, string> {
   return Object.fromEntries(FABRICATION_FIELDS.map(f => [f.key, '']));
 }
-
-/* History saved before the field was renamed: fabricationChanges compares snapshots by label */
-export function renameSavedFabricationLabels(history: { fabInputs?: SignoffInput[] }[]) {
-  for (const e of history) for (const i of e.fabInputs ?? []) if (i.label === 'Drawing Rev (Execution)') i.label = 'Drawing Rev Execution';
-}

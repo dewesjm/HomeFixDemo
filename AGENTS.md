@@ -6,10 +6,9 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Remove old migrations: see "Cleanup" in [Tasks.md](Tasks.md).
-2. Evaluate the app for leftovers and code that isn't needed; report findings before removing anything.
-3. Check that every file states its purpose at the top, and add it where it's missing.
-4. Review the size of `weld-record/routing/` and propose how to break it up.
+1. Evaluate the app for leftovers and code that isn't needed; report findings before removing anything.
+2. Check that every file states its purpose at the top, and add it where it's missing.
+3. Review the size of `weld-record/routing/` and propose how to break it up.
 
 Completed plans are references, not instructions to start another feature.
 

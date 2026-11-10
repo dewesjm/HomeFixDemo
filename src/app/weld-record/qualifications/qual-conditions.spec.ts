@@ -1,10 +1,10 @@
 import { addTestJob } from '../../data/jobs';
 import '../routing/stage-templates';
 import {
-  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals, liftTypes,
-  notOnCheckForm, qualConditions, rowsFromSaved, setQualConditions, signoffTypeChoices, wtnRequirementText,
+  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
+  notOnCheckForm, qualConditions, setQualConditions, signoffTypeChoices, wtnRequirementText,
 } from './qual-conditions';
-import { WhenClause, WhenGroup, normalizeWhen, whenComplete } from './qual-when';
+import { WhenClause, WhenGroup, whenComplete } from './qual-when';
 
 const c = (field: string, value: string): WhenClause => ({ field, op: 'is', values: [value] });
 const w = (field: string, value: string): WhenGroup => ({ op: 'all', items: [c(field, value)] });
@@ -80,30 +80,6 @@ describe('qual conditions', () => {
     expect(conditionRequirements(job, { inspectionType: 'rt' }).length).toBe(1);
     expect(conditionRequirements(job).length).toBe(0);
     expect(conditionTypeText(qualConditions()[0])).toBe('VT');
-  });
-
-  it('moves a saved top-level Type clause into the Signoff Type column', () => {
-    const req = { op: 'all' as const, items: ['VTINSP1'] };
-    expect(liftTypes({ when: { op: 'all', items: [c('step:inspectionType', 'vt'), c('ss', 'Yes')] }, require: req }))
-      .toEqual({ when: w('ss', 'Yes'), require: req, types: ['vt'] });
-    expect(liftTypes({ when: { op: 'any', items: [c('step:inspectionType', 'vt'), c('step:inspectionType', '5x')] }, require: req }))
-      .toEqual({ when: { op: 'all', items: [] }, require: req, types: ['vt', '5x'] });
-    const mixed: QualCondition = { when: { op: 'any', items: [c('step:inspectionType', 'vt'), c('ss', 'Yes')] }, require: req };
-    expect(liftTypes(mixed)).toEqual({ ...mixed, types: [] });
-  });
-
-  it('splits saved rows into one row per Signoff Type', () => {
-    const when = w('ss', 'Yes');
-    const offered = signoffTypeChoices().map(o => o.value);
-    const typesOf = (row: Parameters<typeof rowsFromSaved>[0][number]) => rowsFromSaved([row]).map(r => r.type);
-    expect(typesOf({ when, require: REQ, types: ['vt', 'mt'] })).toEqual(['vt', 'mt']);
-    expect(typesOf({ when, require: REQ, types: [] })).toEqual(offered);
-    expect(typesOf({ when, require: REQ })).toEqual(offered);
-    expect(rowsFromSaved([{ when, require: REQ, types: ['vt'] }])).toEqual([{ when, require: REQ, type: 'vt' }]);
-    expect(rowsFromSaved([{ when, require: REQ, type: 'vt' }])).toEqual([{ when, require: REQ, type: 'vt' }]);
-    expect(rowsFromSaved([{ when: w('user', SELF), require: REQ, types: [] }])).toEqual([{ when: w('user', SELF), require: REQ }]);
-    /* it matched nothing, and must not start applying */
-    expect(rowsFromSaved([{ when: { op: 'all', items: [] }, require: REQ, types: [] }])).toEqual([]);
   });
 
   it('matches a When of AND and OR clauses, with nested groups', () => {
@@ -182,13 +158,6 @@ describe('qual conditions', () => {
   it('a WTN row reads only the WTN, so another field is not leaving it on every WTN', () => {
     setQualConditions([{ when: clause({ field: 'ss', op: 'isNot', values: ['Yes'] }), require: REQ }]);
     expect(wtnRequirementText('01.1-1')).toBe('');
-  });
-
-  it('converts rows saved as field and value, and the old Titanium field', () => {
-    const old = { op: 'all', items: [{ field: 'titanium', value: 'Yes' }, { op: 'any', items: [{ field: 'ss', value: 'No' }, { field: 'drawing', value: '' }] }] } as unknown as WhenGroup;
-    expect(normalizeWhen(old)).toEqual({ op: 'all', items: [c('material.titanium', 'Yes'), { op: 'any', items: [c('ss', 'No'), { field: 'drawing', op: 'is', values: [] }] }] });
-    const current = clause({ field: 'nInd', op: 'isNot', values: ['1'] });
-    expect(normalizeWhen(current)).toEqual(current);
   });
 
   it('needs a value on every clause, including nested ones', () => {

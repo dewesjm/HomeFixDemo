@@ -2,7 +2,6 @@ import { JOBS, Job } from '../../data/jobs';
 import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { evaluateCondition } from '../signoff-definition/field-conditions';
-import { migrateConditionClauses } from '../signoff-definition/condition-catalog-migration';
 import { conditionText } from '../signoff-definition/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
@@ -165,25 +164,6 @@ describe('condition catalog', () => {
     expect(conditionText(cond)).toBe('the joint is not titanium');
     const fab = { all: [{ source: 'jointDetail' as const, key: 'fab.location', equals: 'SHOP-1' }] };
     expect(evaluateCondition(fab, buildConditionContext(stage, job(), [], { location: 'SHOP-1' }))).toBeTrue();
-  });
-});
-
-describe('saved form conditions', () => {
-  it('convert to the catalog entries and Yes / No', () => {
-    const saved = [{ typeId: 'x', fields: [{ key: 'a', showIf: { all: [
-      { source: 'jointDetail', key: 'titanium', equals: 'yes' },
-      { any: [{ source: 'jointDetail', key: 'materialTraceability', equals: '' }, { source: 'jointDetail', key: 'backingRingRequired' }] },
-      { source: 'jointDetail', key: 'ndtRoot', anyOf: ['5X', 'VT'] },
-      { source: 'field', key: 'titanium', equals: 'yes' },
-    ] } }] }];
-    const converted = migrateConditionClauses(saved);
-    expect(converted[0].fields[0].showIf.all).toEqual([
-      { source: 'jointDetail', key: 'material.titanium', equals: 'Yes' },
-      { any: [{ source: 'jointDetail', key: 'controlledMaterial', equals: 'No' }, { source: 'jointDetail', key: 'backingRingRequired', equals: 'Yes' }] },
-      { source: 'jointDetail', key: 'ndtRoot', anyOf: ['5X', 'VT'] },
-      { source: 'field', key: 'titanium', equals: 'yes' },
-    ] as typeof converted[0]['fields'][0]['showIf']['all']);
-    expect(migrateConditionClauses(converted)).toEqual(converted);
   });
 });
 

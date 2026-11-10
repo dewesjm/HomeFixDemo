@@ -1,6 +1,5 @@
 import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
 import { historyRows } from './history-rows';
-import { renameSavedFabricationLabels } from '../fabrication/fabrication-fields';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { JOBS } from '../../data/jobs';
 
@@ -42,13 +41,5 @@ describe('historyRows fabrication changes', () => {
       entry('2026-01-03', 'Sign-off', { 'W.E. Memo': 'M-1' }),
     ]);
     expect(rows[2].fabChanges).toEqual([{ label: 'W.E. Memo', from: '', to: 'M-1' }]);
-  });
-});
-
-describe('renameSavedFabricationLabels', () => {
-  it('moves saved History onto the current Drawing Rev Execution label', () => {
-    const history = [{ fabInputs: [{ label: 'Drawing Rev (Execution)', value: 'C' }, { label: 'Location', value: 'Bay' }] }, {}];
-    renameSavedFabricationLabels(history);
-    expect(history[0].fabInputs!.map(i => i.label)).toEqual(['Drawing Rev Execution', 'Location']);
   });
 });

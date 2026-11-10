@@ -19,7 +19,7 @@ import { PEOPLE } from '../../data/people';
 import { ConditionCatalogField, StageAnswers } from '../catalogs/field-catalog';
 import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/field-choices';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
-import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, normalizeWhen, whenMatches, whenText } from './qual-when';
+import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
 
 export interface QualCondition {
   when: WhenGroup;
@@ -204,48 +204,10 @@ function defaultConditions(): QualCondition[] {
   ];
 }
 
-/* rows saved before a When could have several clauses ({ field, value, require }) */
-const PREVIOUS_KEY = 'welding:qual-conditions:v4';
-type PreviousCondition = { field: string; value: string; require: QualGroup };
-
-/* rows saved before each row had one Signoff Type: types lists several, and none meant all of them */
-type SavedCondition = QualCondition & { types?: string[] };
-
-/* rows saved before the Signoff Type column (no types): a top-level "Type is X" moves into it when
-   that means the same thing (one Type clause in an All of, or an Any of only Type clauses); any other
-   Type clause stays in the When, where it still matches */
-export function liftTypes(c: SavedCondition): SavedCondition {
-  if (c.types) return c;
-  const isType = (t: WhenTerm): t is WhenClause => !isWhenGroup(t) && t.field === TYPE_FIELD && t.op === 'is';
-  const typeItems = c.when.items.filter(isType);
-  const rest = c.when.items.filter(t => !isType(t));
-  if (userOf(c) === null && typeItems.length) {
-    if (c.when.op === 'all' && typeItems.length === 1) return { when: { op: 'all', items: rest }, require: c.require, types: typeItems[0].values };
-    if (c.when.op === 'any' && !rest.length) return { when: { op: 'all', items: [] }, require: c.require, types: typeItems.flatMap(t => t.values) };
-  }
-  return { ...c, types: [] };
-}
-
-/* one row per Signoff Type: a row saved with several gets one each, and one saved as all of them gets
-   one per offered Type. A row with an empty When and no Types matched nothing, so it's dropped rather
-   than starting to apply. */
-export function rowsFromSaved(saved: SavedCondition[]): QualCondition[] {
-  return saved.flatMap((row): QualCondition[] => {
-    if (row.type) return [row];
-    const c = liftTypes(row);
-    const base = { when: c.when, require: c.require };
-    if (userOf(c) !== null) return [base];
-    const types = c.types?.length ? c.types : c.when.items.length ? signoffTypeChoices().map(o => o.value) : [];
-    return types.map(type => ({ ...base, type }));
-  });
-}
-
 function load(): QualCondition[] {
   try {
     const raw = localStorage.getItem(STORAGE.qualConditions);
-    if (raw) return rowsFromSaved((JSON.parse(raw) as SavedCondition[]).map(c => ({ ...c, when: normalizeWhen(c.when) })));
-    const prev = localStorage.getItem(PREVIOUS_KEY);
-    if (prev) return rowsFromSaved((JSON.parse(prev) as PreviousCondition[]).map(c => ({ when: normalizeWhen(when(c.field, c.value)), require: c.require })));
+    if (raw) return JSON.parse(raw) as QualCondition[];
   } catch { /* ignore */ }
   return defaultConditions();
 }

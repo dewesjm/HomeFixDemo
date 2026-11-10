@@ -64,16 +64,3 @@ export function cloneWhen(g: WhenGroup): WhenGroup {
 export function whenComplete(g: WhenGroup): boolean {
   return g.items.every(t => isWhenGroup(t) ? whenComplete(t) : t.values.length > 0);
 }
-
-/* rows saved as { field, value } before a clause had a comparison and several values; Titanium was
-   Qualifications's own field before it used the shared material flag */
-type SavedClause = Partial<WhenClause> & { field: string; value?: string };
-const RENAMED_FIELDS: Record<string, string> = { titanium: 'material.titanium' };
-
-export function normalizeWhen(g: WhenGroup): WhenGroup {
-  return { op: g.op, items: g.items.map(t => {
-    if (isWhenGroup(t)) return normalizeWhen(t);
-    const c = t as SavedClause;
-    return { field: RENAMED_FIELDS[c.field] ?? c.field, op: c.op ?? 'is', values: c.values ?? (c.value ? [c.value] : []) };
-  }) };
-}
