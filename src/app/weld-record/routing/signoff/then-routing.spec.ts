@@ -1,12 +1,12 @@
-import { JOBS, Job } from '../../data/jobs';
-import { STORAGE } from '../../data/storage-keys';
-import { buildStages, newWorkflow } from './build-stages';
-import { activeStageId, isStageLocked, setRoutingFrom } from './current-routing';
+import { JOBS, Job } from '../../../data/jobs';
+import { STORAGE } from '../../../data/storage-keys';
+import { buildStages, newWorkflow } from '../build-stages';
+import { activeStageId, isStageLocked, setRoutingFrom } from '../current-routing';
 import { routeSignoff } from './signoff-routing';
-import { getTemplates, updateStageTemplate } from './stage-templates';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
-import { typeValues } from '../signoff-definition/stage-rules';
-import { RejectRule } from './step-conditions';
+import { getTemplates, updateStageTemplate } from '../stage-templates';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { typeValues } from '../../signoff-definition/stage-rules';
+import { RejectRule } from '../step-conditions';
 
 const rule = (to: string, value = 'tack'): RejectRule => ({
   when: [{ field: 'self.inspectionType', op: 'is', values: [value] }], to,

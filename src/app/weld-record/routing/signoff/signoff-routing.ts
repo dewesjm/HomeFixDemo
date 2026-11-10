@@ -1,33 +1,33 @@
 /* Signoff routing decisions; SignoffService owns saving and History. */
 import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
-import { attributeAccessError } from '../attribute-codes/attribute-validation';
-import { attributeTypeSettings } from '../attribute-codes/exception-effects';
-import { resolveInsertion } from './generic-insertion';
-import { RoutingConfigurationError } from './routing-configuration-error';
-import { insertionConfigurationErrors } from './insertion-validation';
-import { insertionDefinitionId } from './instance-identity';
-import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
-import { setRoutingFrom } from './current-routing';
+import { attributeAccessError } from '../../attribute-codes/attribute-validation';
+import { attributeTypeSettings } from '../../attribute-codes/exception-effects';
+import { resolveInsertion } from '../inserted/generic-insertion';
+import { RoutingConfigurationError } from '../inserted/routing-configuration-error';
+import { insertionConfigurationErrors } from '../inserted/insertion-validation';
+import { insertionDefinitionId } from '../inserted/instance-identity';
+import { Job } from '../../../data/jobs';
+import { SignoffInput, WorkflowStage, JobWorkflow } from '../../model/workflow-types';
+import { setRoutingFrom } from '../current-routing';
 import { applySignedFlags, routeBack, moveRouting } from './route-changes';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
-import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from './added-steps';
+import { fabricationSnapshot } from '../../fabrication/fabrication-fields';
+import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted/added-steps';
 import {
   isRepairStageId,
   isExcavationNdtStageId,
   baseStepId,
   stepOnJoint,
-} from './step-ids';
-import { hasDecision, initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
-import { withoutHiddenAnswers } from '../signoff-definition/shown-fields';
-import { getTemplates, routingTemplateId } from './stage-templates';
-import { CUT_RESTARTS_AT } from './built-in-step-rules';
+} from '../step-ids';
+import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
+import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
+import { getTemplates, routingTemplateId } from '../stage-templates';
+import { CUT_RESTARTS_AT } from '../built-in-step-rules';
 import { signedAsStep, signAsStep } from './type-routing';
-import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from './step-conditions';
-import { stageConditionFields } from '../catalogs/field-choices';
+import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../step-conditions';
+import { stageConditionFields } from '../../catalogs/field-choices';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
-import { usesReturningInspectionType } from '../signoff-definition/signoff-types';
-import { lastingReasons, signedFlagChanges } from './signed-flag-reasons';
+import { usesReturningInspectionType } from '../../signoff-definition/signoff-types';
+import { lastingReasons, signedFlagChanges } from '../preview/signed-flag-reasons';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 

@@ -1,10 +1,10 @@
 /* The routing preview's "Why" for routings a signoff turned on or off or whose Types changed: an
    Admin > Attribute Code Exceptions row names its code, otherwise the Routing Settings Included when is named. */
-import { Job } from '../../data/jobs';
-import { WorkflowStage } from '../model/workflow-types';
-import { RoutingEffect, hasLaterAnswerRows, routingEffect } from '../attribute-codes/exception-effects';
-import { getTemplates } from './stage-templates';
-import { describeConditions } from './step-conditions';
+import { Job } from '../../../data/jobs';
+import { WorkflowStage } from '../../model/workflow-types';
+import { RoutingEffect, hasLaterAnswerRows, routingEffect } from '../../attribute-codes/exception-effects';
+import { getTemplates } from '../stage-templates';
+import { describeConditions } from '../step-conditions';
 
 interface SignedFlagChange { id: string; required: boolean; types: string; reason: string }
 

@@ -1,7 +1,7 @@
 import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
-import { excavationNdtStage, nextRepairStage } from '../routing/added-steps';
+import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-steps';
 import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions, usesReturningInspectionType } from './signoff-types';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signoff-types';

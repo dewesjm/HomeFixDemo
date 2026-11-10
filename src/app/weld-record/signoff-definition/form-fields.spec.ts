@@ -1,6 +1,6 @@
 import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
-import { stageFromTemplate } from '../routing/added-steps';
+import { stageFromTemplate } from '../routing/inserted/added-steps';
 import { getTemplates } from '../routing/stage-templates';
 import { conditionsMatch } from '../routing/step-conditions';
 import { stageConditionFields, stepAnswerFieldsBefore } from '../catalogs/field-choices';

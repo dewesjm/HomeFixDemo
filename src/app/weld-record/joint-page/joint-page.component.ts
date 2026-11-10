@@ -43,7 +43,7 @@ import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../s
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
-import { discardUnsignedEdits } from '../routing/route-changes';
+import { discardUnsignedEdits } from '../routing/signoff/route-changes';
 import { isEngineeringHoldId } from '../routing/step-ids';
 import { closesJoint } from '../routing/built-in-step-rules';
 import { featureToggles } from '../../data/feature-toggles';
@@ -52,7 +52,7 @@ import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } f
 import { StageFormContext, visibleStageFields } from './rules/stage-form';
 import { SignContext, signProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
-import { routePreviewLabel } from '../routing/route-preview';
+import { routePreviewLabel } from '../routing/preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 
 @Component({

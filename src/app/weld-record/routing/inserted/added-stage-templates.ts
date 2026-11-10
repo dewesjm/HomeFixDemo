@@ -1,5 +1,5 @@
 /* Definitions and editable routing rules for routings inserted during work. */
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../../model/workflow-types';
 
 const REPAIR_STAGE: StageTemplate = {
   classification: 'added', lifecycle: 'repair', status: 'active', id: 'repair', label: 'Repair', required: true, role: 'Foreman',

@@ -2,7 +2,7 @@ import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/si
 import { JOBS, Job } from '../../data/jobs';
 import { routingRole } from './routing-role';
 import { getAddedTemplate, updateStageTemplate } from './stage-templates';
-import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './added-steps';
+import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted/added-steps';
 import { buildStages } from './build-stages';
 
 describe('Configured routing personas', () => {

@@ -2,7 +2,7 @@
 import { StageTemplate } from '../../model/workflow-types';
 import { describeConditions } from '../../routing/step-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';
-import { insertionDefinitionId } from '../../routing/instance-identity';
+import { insertionDefinitionId } from '../../routing/inserted/instance-identity';
 
 export interface InsertionTrigger {
   sourceId?: string;

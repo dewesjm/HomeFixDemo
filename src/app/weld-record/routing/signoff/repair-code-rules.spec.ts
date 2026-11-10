@@ -1,15 +1,15 @@
-import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
+import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { TestBed } from '@angular/core/testing';
-import { JOBS, Job } from '../../data/jobs';
-import { getRepairCodes, setRepairCodes } from '../../data/repair-codes';
-import { WorkflowStore } from '../services/workflow-store.service';
-import { SignoffService } from '../services/signoff.service';
-import { RoutingService } from '../services/routing.service';
-import { newWorkflow } from './build-stages';
-import { activeStage } from './current-routing';
-import { getTemplates, updateStageTemplate } from './stage-templates';
-import { repairCodeError } from '../admin/admin-repair-codes/repair-code-validation';
-import { conditionText } from '../signoff-definition/field-rules';
+import { JOBS, Job } from '../../../data/jobs';
+import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
+import { WorkflowStore } from '../../services/workflow-store.service';
+import { SignoffService } from '../../services/signoff.service';
+import { RoutingService } from '../../services/routing.service';
+import { newWorkflow } from '../build-stages';
+import { activeStage } from '../current-routing';
+import { getTemplates, updateStageTemplate } from '../stage-templates';
+import { repairCodeError } from '../../admin/admin-repair-codes/repair-code-validation';
+import { conditionText } from '../../signoff-definition/field-rules';
 
 describe('Configured Repair Code routing', () => {
   let store: WorkflowStore;

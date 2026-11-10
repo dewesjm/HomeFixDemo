@@ -1,14 +1,14 @@
 /* per-stage sign-off: signing a step (where it routes is routing/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
-import { RoutingConfigurationError } from '../routing/routing-configuration-error';
+import { RoutingConfigurationError } from '../routing/inserted/routing-configuration-error';
 import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { activeStage } from '../routing/current-routing';
-import { signoffUndo } from '../routing/route-changes';
-import { routeSignoff } from '../routing/signoff-routing';
+import { signoffUndo } from '../routing/signoff/route-changes';
+import { routeSignoff } from '../routing/signoff/signoff-routing';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { hasDecision, isRoutingLockedField } from '../signoff-definition/stage-rules';
 import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/stage-display';
@@ -17,7 +17,7 @@ import { isUserEditable } from '../signoff-definition/field-locks';
 import { isOwnType } from '../signoff-definition/signoff-types';
 import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
 import { WorkflowStore } from './workflow-store.service';
-import { additionalSignoffs } from '../routing/additional-signoffs';
+import { additionalSignoffs } from '../routing/signoff/additional-signoffs';
 import { typeValues } from '../signoff-definition/stage-rules';
 
 /* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim

@@ -1,8 +1,8 @@
 /* Destinations a routing rule can name besides a routing (Add Repair, Rejecting NDT, Own Repair, ...)
    and which routing each resolves to. Relative targets resolve against this repair round, never another round. */
-import { insertionDefinitionId } from './instance-identity';
-import { WorkflowStage } from '../model/workflow-types';
-import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from './step-ids';
+import { insertionDefinitionId } from '../inserted/instance-identity';
+import { WorkflowStage } from '../../model/workflow-types';
+import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from '../step-ids';
 export const RULE_TARGETS = [
   { id: 'repair', label: 'Add Repair' },
   { id: 'add-excavation-ndt', label: 'Add Excavation NDT' },

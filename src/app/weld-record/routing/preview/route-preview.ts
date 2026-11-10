@@ -1,11 +1,11 @@
 /* Routing preview: run the real routing rules without saving and explain their outcome. */
-import { Job } from '../../data/jobs';
-import { WorkflowStage } from '../model/workflow-types';
-import { DECISION_KEY } from '../signoff-definition/step-field-config';
-import { buildConditionContext } from '../signoff-definition/condition-context';
-import { drawnFieldRule } from '../signoff-definition/shown-fields';
-import { isEngineeringHoldId } from './step-ids';
-import { closesJoint } from './built-in-step-rules';
+import { Job } from '../../../data/jobs';
+import { WorkflowStage } from '../../model/workflow-types';
+import { DECISION_KEY } from '../../signoff-definition/step-field-config';
+import { buildConditionContext } from '../../signoff-definition/condition-context';
+import { drawnFieldRule } from '../../signoff-definition/shown-fields';
+import { isEngineeringHoldId } from '../step-ids';
+import { closesJoint } from '../built-in-step-rules';
 
 export type SignoffPreview = (result?: WorkflowStage['result']) => { target: WorkflowStage | undefined; reasons: string[] };
 

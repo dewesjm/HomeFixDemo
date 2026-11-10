@@ -5,7 +5,7 @@ import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
 import { activeStageId } from '../routing/current-routing';
-import { discardUnsignedEdits } from '../routing/route-changes';
+import { discardUnsignedEdits } from '../routing/signoff/route-changes';
 import { routingBarSteps } from '../routing/routing-bar';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/stage-templates';

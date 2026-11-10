@@ -615,21 +615,21 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 
 | Source file | Direct spec | Measured lines |
 |---|---|---|
-| [added-stage-templates.ts](src/app/weld-record/routing/added-stage-templates.ts) | No | 100% |
-| [added-steps.ts](src/app/weld-record/routing/added-steps.ts) | No | 100% |
+| [added-stage-templates.ts](src/app/weld-record/routing/inserted/added-stage-templates.ts) | No | 100% |
+| [added-steps.ts](src/app/weld-record/routing/inserted/added-steps.ts) | No | 100% |
 | [build-stages.ts](src/app/weld-record/routing/build-stages.ts) | No | 100% |
 | [built-in-step-rules.ts](src/app/weld-record/routing/built-in-step-rules.ts) | Yes | 100% |
 | [current-routing.ts](src/app/weld-record/routing/current-routing.ts) | No | 88.88% |
 | [ndt.ts](src/app/weld-record/routing/ndt.ts) | No | 100% |
-| [route-changes.ts](src/app/weld-record/routing/route-changes.ts) | No | 100% |
-| [route-preview.ts](src/app/weld-record/routing/route-preview.ts) | Yes | 100% |
+| [route-changes.ts](src/app/weld-record/routing/signoff/route-changes.ts) | No | 100% |
+| [route-preview.ts](src/app/weld-record/routing/preview/route-preview.ts) | Yes | 100% |
 | [routing-bar.ts](src/app/weld-record/routing/routing-bar.ts) | No | 100% |
-| [rule-targets.ts](src/app/weld-record/routing/rule-targets.ts) | Yes | 100% |
-| [signoff-routing.ts](src/app/weld-record/routing/signoff-routing.ts) | Yes | 100% |
+| [rule-targets.ts](src/app/weld-record/routing/signoff/rule-targets.ts) | Yes | 100% |
+| [signoff-routing.ts](src/app/weld-record/routing/signoff/signoff-routing.ts) | Yes | 100% |
 | [stage-templates.ts](src/app/weld-record/routing/stage-templates.ts) | No | 84.37% |
 | [step-conditions.ts](src/app/weld-record/routing/step-conditions.ts) | Yes | 97.56% |
 | [step-ids.ts](src/app/weld-record/routing/step-ids.ts) | No | 100% |
-| [type-routing.ts](src/app/weld-record/routing/type-routing.ts) | No | 100% |
+| [type-routing.ts](src/app/weld-record/routing/signoff/type-routing.ts) | No | 100% |
 
 ### weld-record/routing-bar
 

@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { PersonaRulesComponent } from './persona-rules.component';
 import { getAddedTemplate, updateStageTemplate } from '../../routing/stage-templates';
 import { JOBS } from '../../../data/jobs';
-import { excavationNdtStageFor } from '../../routing/added-steps';
+import { excavationNdtStageFor } from '../../routing/inserted/added-steps';
 
 describe('Persona rules editor', () => {
   beforeEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });

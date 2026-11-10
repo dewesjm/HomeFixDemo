@@ -1,5 +1,5 @@
 import { availableRuleTargets, resolveRuleTarget } from './rule-targets';
-import { stageFromTemplate, nextRepairStage, excavationNdtStage } from './added-steps';
+import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../inserted/added-steps';
 
 describe('Round-relative routing targets', () => {
   it('resolves a later Excavation round through its own Repair', () => {

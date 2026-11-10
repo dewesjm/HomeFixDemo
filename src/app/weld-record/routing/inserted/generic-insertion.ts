@@ -1,15 +1,15 @@
 /* One resolver builds ordinary inserted work for execution, seeds and preview. */
 import { RoutingConfigurationError } from './routing-configuration-error';
-import { getStepFieldConfig } from '../signoff-definition/step-field-config';
-import { Job } from '../../data/jobs';
-import { WorkflowStage, StageTemplate } from '../model/workflow-types';
-import { signoffTypeOptions } from '../signoff-definition/signoff-types';
+import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { Job } from '../../../data/jobs';
+import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
+import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-steps';
-import { conditionsMatch } from './step-conditions';
-import { routingRole } from './routing-role';
+import { conditionsMatch } from '../step-conditions';
+import { routingRole } from '../routing-role';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
-import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from './step-ids';
+import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../step-ids';
 
 export function resolveInsertion(templates: StageTemplate[], stages: WorkflowStage[], job: Job,
   source: WorkflowStage, target: string, recordedIds: string[] = [], fab?: Record<string, string>): WorkflowStage {

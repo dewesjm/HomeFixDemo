@@ -2,16 +2,16 @@
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in step-ids.ts. */
 import { excavationDefinition } from './excavation-definition';
-import { getAddedTemplate } from './stage-templates';
-import { routingRole } from './routing-role';
-import { Job } from '../../data/jobs';
-import { RejectRule, describeClauses } from './step-conditions';
-import { stageConditionFields } from '../catalogs/field-choices';
-import { StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from './step-ids';
-import { setRoutingFrom } from './current-routing';
-import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
-import { excavationTypeOptions, signoffTypeOptions } from '../signoff-definition/signoff-types';
+import { getAddedTemplate } from '../stage-templates';
+import { routingRole } from '../routing-role';
+import { Job } from '../../../data/jobs';
+import { RejectRule, describeClauses } from '../step-conditions';
+import { stageConditionFields } from '../../catalogs/field-choices';
+import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
+import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../step-ids';
+import { setRoutingFrom } from '../current-routing';
+import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
+import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definition/signoff-types';
 
 /* ── Repair ── */
 

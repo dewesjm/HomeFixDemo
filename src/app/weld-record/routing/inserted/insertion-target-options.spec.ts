@@ -1,4 +1,4 @@
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../../model/workflow-types';
 import { insertionRelativeTargets } from './insertion-target-options';
 import { insertionTarget } from './instance-identity';
 

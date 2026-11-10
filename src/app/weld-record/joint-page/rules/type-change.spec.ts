@@ -1,6 +1,6 @@
 import { formInputFields } from '../../signoff-definition/form-fields';
 import { typeChange } from './type-change';
-import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/added-steps';
+import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted/added-steps';
 
 describe('Repair round Type changes', () => {
   it('clears entered Repair values but retains the round’s rejecting inspection', () => {

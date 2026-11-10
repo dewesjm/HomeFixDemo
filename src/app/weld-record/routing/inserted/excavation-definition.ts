@@ -1,7 +1,7 @@
 /* The logical Excavation target selects exactly one configured specialized definition. */
-import { Job } from '../../data/jobs';
-import { conditionsMatch } from './step-conditions';
-import { getTemplates } from './stage-templates';
+import { Job } from '../../../data/jobs';
+import { conditionsMatch } from '../step-conditions';
+import { getTemplates } from '../stage-templates';
 import { RoutingConfigurationError } from './routing-configuration-error';
 
 export function excavationDefinition(job: Job) {

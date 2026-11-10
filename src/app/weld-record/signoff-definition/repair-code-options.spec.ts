@@ -3,7 +3,7 @@ import { repairCodeOptions } from './repair-code-options';
 import { lookupCatalogField } from '../catalogs/field-catalog';
 import { stageConditionFields } from '../catalogs/field-choices';
 import { stageFieldOptions } from '../joint-page/rules/stage-form';
-import { stageFromTemplate, nextRepairStage } from '../routing/added-steps';
+import { stageFromTemplate, nextRepairStage } from '../routing/inserted/added-steps';
 import { conditionText } from './field-rules';
 
 describe('Repair Code form and condition options', () => {

@@ -1,5 +1,5 @@
 /* Configuration validation is independent of execution and persistence. */
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../../model/workflow-types';
 import { insertionDefinitionId } from './instance-identity';
 
 export function insertionConfigurationErrors(templates: StageTemplate[]): string[] {

@@ -4,7 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { show } from '../signoff-definition/stage-display';
 import { SHIP_LOCATION_DEPENDENTS, shipLocationOptions } from '../../data/ship-locations';
-import { recheckFabricationRules } from '../routing/route-changes';
+import { recheckFabricationRules } from '../routing/signoff/route-changes';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })

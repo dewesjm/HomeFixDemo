@@ -1,18 +1,18 @@
-import { originalInspectionType } from './inspection-context';
+import { originalInspectionType } from '../inspection-context';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { JOBS, Job } from '../../data/jobs';
-import { WorkflowStore } from '../services/workflow-store.service';
-import { SignoffService } from '../services/signoff.service';
-import { RoutingService } from '../services/routing.service';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
-import { newWorkflow } from './build-stages';
-import { activeStage } from './current-routing';
+import { JOBS, Job } from '../../../data/jobs';
+import { WorkflowStore } from '../../services/workflow-store.service';
+import { SignoffService } from '../../services/signoff.service';
+import { RoutingService } from '../../services/routing.service';
+import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { newWorkflow } from '../build-stages';
+import { activeStage } from '../current-routing';
 import { excavationNdtStageFor } from './added-steps';
 import { excavationDefinition } from './excavation-definition';
-import { getTemplates, routingTemplateId, updateStageTemplate } from './stage-templates';
-import { routingBarSteps } from './routing-bar';
-import { routeBack } from './route-changes';
-import { isExcavationNdtStageId } from './step-ids';
+import { getTemplates, routingTemplateId, updateStageTemplate } from '../stage-templates';
+import { routingBarSteps } from '../routing-bar';
+import { routeBack } from '../signoff/route-changes';
+import { isExcavationNdtStageId } from '../step-ids';
 
 describe('Configured regular and NQC Excavation', () => {
   let store: WorkflowStore;

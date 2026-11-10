@@ -1,11 +1,11 @@
 /* Additional routings signed by the same signoff, without skipping intervening work. */
-import { Job } from '../../data/jobs';
-import { WorkflowStage } from '../model/workflow-types';
-import { routingSignoffType } from '../signoff-definition/routing-signoff-types';
-import { evaluateCondition } from '../signoff-definition/field-conditions';
-import { buildConditionContext } from '../signoff-definition/condition-context';
-import { signoffTypeOptions } from '../signoff-definition/signoff-types';
-import { stepOnJoint } from './step-ids';
+import { Job } from '../../../data/jobs';
+import { WorkflowStage } from '../../model/workflow-types';
+import { routingSignoffType } from '../../signoff-definition/routing-signoff-types';
+import { evaluateCondition } from '../../signoff-definition/field-conditions';
+import { buildConditionContext } from '../../signoff-definition/condition-context';
+import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
+import { stepOnJoint } from '../step-ids';
 
 export function additionalSignoffs(source: WorkflowStage, stages: WorkflowStage[], job: Job, fab: Record<string, string>): { stage: WorkflowStage; type: string }[] {
   if (source.result === 'unsat') return [];

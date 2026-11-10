@@ -1,19 +1,19 @@
 // Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
-import { insertionRelativeTargets } from '../../routing/insertion-target-options';
+import { insertionRelativeTargets } from '../../routing/inserted/insertion-target-options';
 import { thenRuleSummary } from './then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
 import { AttributeCodeNoteComponent } from '../admin-attribute-code-exceptions/attribute-code-note.component';
 import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
-import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
-import { insertionConfigurationErrors } from '../../routing/insertion-validation';
+import { insertionTarget, insertionDefinitionId } from '../../routing/inserted/instance-identity';
+import { insertionConfigurationErrors } from '../../routing/inserted/insertion-validation';
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
-import { addedRoutingSetup, routingNameError } from '../../routing/added-routing-configuration';
+import { addedRoutingSetup, routingNameError } from '../../routing/inserted/added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { isAddedTemplateId } from '../../routing/stage-templates';
-import { RULE_TARGETS, availableRuleTargets } from '../../routing/rule-targets';
+import { RULE_TARGETS, availableRuleTargets } from '../../routing/signoff/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

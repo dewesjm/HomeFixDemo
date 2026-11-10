@@ -1,8 +1,8 @@
 /* Relative destinations are offered only when every configured insertion source supplies context. */
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../../model/workflow-types';
 import { insertionDefinitionId } from './instance-identity';
-import { baseStepId, isRepairStageId, isExcavationNdtStageId } from './step-ids';
-import { RULE_TARGETS } from './rule-targets';
+import { baseStepId, isRepairStageId, isExcavationNdtStageId } from '../step-ids';
+import { RULE_TARGETS } from '../signoff/rule-targets';
 
 export function insertionRelativeTargets(id: string, templates: StageTemplate[]): { id: string; label: string }[] {
   function hasContext(id: string, parentRepair: boolean, seen = new Set<string>()): boolean {
