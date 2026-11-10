@@ -43,7 +43,12 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
   starts handling several separate things, split it along those lines rather than adding another branch.
 - Comments describe what the code does now. Dates, "used to", and who asked for what go in git
   history and the Change Log (`data/changelog.ts`), not in comments.
-- Code that converts saved data to a new shape (`*-migration.ts`, load-time renames) is temporary. Whenever you add
-  some, add an item to "Cleanup" in Tasks.md to remove it, and remove it in the next cleanup pass.
+- Saved data in this demo is disposable. When a data shape changes, bump the version or storage key instead of
+  writing a conversion, unless the user asks to keep saved data.
+- Code that converts saved data to a new shape is temporary. It goes in its own `*-migration.ts` file, never inline
+  in a store, loader or rule file, so it can be found and deleted on its own. The load path only calls it.
+- Whenever you add a conversion, add an item to "Cleanup" in Tasks.md naming the file.
+- Clean up as you go: whenever `CURRENT_VERSION` or a storage key changes, delete any conversion for data that
+  change discards, in the same commit, and check off its Cleanup item.
 - Delete dead code. The exception is a feature deliberately switched off by a flag: keep it working,
   with a comment saying it is switched off and kept so it can be turned back on without a rewrite.
