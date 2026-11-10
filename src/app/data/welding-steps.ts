@@ -5,7 +5,8 @@ import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ndtStage } from '../weld-record/routing/ndt';
 import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
 import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
-import { RejectRule, ENGINEERING_HOLD_TARGET } from '../weld-record/routing/route-to-rules';
+import { RouteToRule } from '../weld-record/routing/route-to-rules';
+import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing/on-signoff/rule-targets';
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },
@@ -89,20 +90,20 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
 
 /* built-in reject rules (Admin > Routing Settings can change them): a PT failure on a GTAW weld goes to
    Engineering Hold instead of Repair; the weld that counts is that phase's own weld step */
-const gtawPtHold = (weldStepId: string): RejectRule[] => [{
+const gtawPtHold = (weldStepId: string): RouteToRule[] => [{
   when: [
     { field: 'self.inspectionType', op: 'is', values: ['pt'] },
     { field: `step.${weldStepId}.weldProcess`, op: 'is', values: ['gtaw'] },
   ],
   to: ENGINEERING_HOLD_TARGET,
 }];
-const BUILT_IN_REJECT_RULES: Record<string, RejectRule[]> = {
+const BUILT_IN_REJECT_RULES: Record<string, RouteToRule[]> = {
   'root-ndt-mtpt': gtawPtHold('root-weld'),
   'layer-ndt-mtpt': gtawPtHold('root-layer'),
   'final-ndt-mtpt': gtawPtHold('final-weld'),
 };
 /* an NQC row starts with its regular row's reject rules */
-export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
+export const DEFAULT_REJECT_RULES: Record<string, RouteToRule[]> = {
   ...BUILT_IN_REJECT_RULES,
   ...Object.fromEntries(Object.entries(BUILT_IN_REJECT_RULES).map(([id, rules]) => [nqcStepId(id), rules])),
 };
@@ -111,7 +112,7 @@ export const DEFAULT_REJECT_RULES: Record<string, RejectRule[]> = {
    (Admin > Attribute Code Exceptions), so Layer and Layer VT/5X go back to Layer only without IA and
    Layer MT/PT does it after them. */
 const NOT_IA: ConditionClause = { field: 'attributeCodes', op: 'isNot', values: ['IA'] };
-export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
+export const DEFAULT_THEN_RULES: Record<string, RouteToRule[]> = {
   fit: [{ when: [{ field: 'self.inspectionType', op: 'is', values: ['weld-buildup'] }], to: 'fit' }],
   'root-layer': [{ when: [
     { field: 'self.inspectionType', op: 'is', values: ['interim'] },
@@ -120,7 +121,7 @@ export const DEFAULT_THEN_RULES: Record<string, RejectRule[]> = {
   ], to: 'root-layer' }],
   ...Object.fromEntries(PHASE_NDT_KINDS.layer.flatMap(kind => {
     const id = `layer-ndt-${kind}`;
-    const rules: RejectRule[] = [{ when: [
+    const rules: RouteToRule[] = [{ when: [
       { field: 'step.root-layer.inspectionType', op: 'is', values: ['interim'] },
       ...(kind === 'vt5x' ? [NOT_IA] : []),
     ], to: 'root-layer' }];

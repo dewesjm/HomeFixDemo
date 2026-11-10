@@ -6,9 +6,9 @@ import { routeSignoff } from './signoff-routing';
 import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { typeValues } from '../../signoff-definition/stage-rules';
-import { RejectRule } from '../route-to-rules';
+import { RouteToRule } from '../route-to-rules';
 
-const rule = (to: string, value = 'tack'): RejectRule => ({
+const rule = (to: string, value = 'tack'): RouteToRule => ({
   when: [{ field: 'self.inspectionType', op: 'is', values: [value] }], to,
 });
 const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], nInd: '3',

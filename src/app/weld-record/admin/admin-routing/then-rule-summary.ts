@@ -1,9 +1,9 @@
 /** Describe the condition separately from the destination in Routing Settings. */
 import { describeClauses } from '../../conditions/condition-text';
-import { RejectRule } from '../../routing/route-to-rules';
+import { RouteToRule } from '../../routing/route-to-rules';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 
-export function thenRuleSummary(rule: RejectRule, fields: ConditionCatalogField[], destination: string): string {
+export function thenRuleSummary(rule: RouteToRule, fields: ConditionCatalogField[], destination: string): string {
   const summaryFields = fields.map(field => ({
     ...field,
     label: field.label.replace(/ - Volumetric inspection \(UT\/RT\) is required$/, ''),

@@ -1,7 +1,7 @@
 /* The workflow data model: a joint's steps, what's recorded on them, and its history */
 import { Job } from '../../data/jobs';
 import { ConditionRule } from '../conditions/joint-conditions';
-import { RejectRule } from '../routing/route-to-rules';
+import { RouteToRule } from '../routing/route-to-rules';
 import type { AttributeStageRules } from '../attribute-codes/exception-effects';
 
 /* roles a step routes to; Pipe Welding filters its queue by these */
@@ -169,9 +169,9 @@ export interface StageTemplate {
   /* when a joint gets this step (conditions/joint-conditions.ts); none = always */
   includeWhen?: ConditionRule[];
   /* on UNSAT, the first matching rule picks the target instead of rejectToStage (routing/route-to-rules.ts) */
-  rejectRules?: RejectRule[];
+  rejectRules?: RouteToRule[];
   /* On accepted signoff, the first matching rule selects the next routing. */
-  thenRules?: RejectRule[];
+  thenRules?: RouteToRule[];
   /* set once Admin > Routing Settings saves this step's reject rules; until then the built-in ones apply */
   rejectRulesEdited?: boolean;
   /* Admin > Routing Settings "Fabrication editable": the Fabrication fields can be changed while this is the current step */

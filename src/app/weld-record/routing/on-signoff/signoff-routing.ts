@@ -24,9 +24,9 @@ import { getTemplates, routingTemplateId } from '../routing-settings-rules';
 import { CUT_RESTARTS_AT } from '../built-in-routing-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions } from '../../conditions/condition-text';
-import { matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../route-to-rules';
+import { firstMatchingRule } from '../route-to-rules';
 import { stageConditionFields } from '../../catalogs/field-choices';
-import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
+import { RULE_TARGETS, ENGINEERING_HOLD_TARGET, isAddTarget, resolveRuleTarget } from './rule-targets';
 import { usesReturningInspectionType } from '../../signoff-definition/signoff-type-routing-rules';
 import { lastingReasons, signedFlagChanges } from '../preview/signed-flag-reasons';
 
@@ -34,7 +34,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* The first matching reject rule wins; otherwise use the routing's reject destination. */
 function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string, fab: Record<string, string>) {
-  const rule = matchingRejectRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
+  const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
   const at = stages.findIndex(s => s.id === stageId);
   const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
   const targetAt = stages.findIndex(s => s.id === stepOnJoint(stages, targetId)?.id);
@@ -202,7 +202,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
   }
   if (st.result !== 'unsat') {
-    const rule = matchingThenRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
+    const rule = firstMatchingRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
     if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
       reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);
@@ -212,8 +212,8 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   if (st.insertion) {
     const definition = st.insertion.definition;
     const matched = st.result === 'unsat'
-      ? matchingRejectRule(definition.rejectRules, job, stages, signing, fabricationData)
-      : matchingThenRule(definition.thenRules, job, stages, signing, fabricationData);
+      ? firstMatchingRule(definition.rejectRules, job, stages, signing, fabricationData)
+      : firstMatchingRule(definition.thenRules, job, stages, signing, fabricationData);
     if (!matched && !(st.result === 'unsat' && st.rejectToStage)) executeTarget('continue');
   }
 

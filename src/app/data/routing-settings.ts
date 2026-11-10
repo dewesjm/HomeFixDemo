@@ -5,7 +5,7 @@ import { STORAGE } from './storage-keys';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
 import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
-import { RejectRule } from '../weld-record/routing/route-to-rules';
+import { RouteToRule } from '../weld-record/routing/route-to-rules';
 import { lastFabricationEditStep } from '../weld-record/routing/built-in-routing-rules';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
@@ -36,8 +36,8 @@ interface SerializedStage {
   role?: string;
   roleRules?: StageTemplate['roleRules'];
   includeWhen?: ConditionRule[];
-  rejectRules?: RejectRule[];
-  thenRules?: RejectRule[];
+  rejectRules?: RouteToRule[];
+  thenRules?: RouteToRule[];
   rejectRulesEdited?: boolean;
   fabricationEditable?: boolean;
 }

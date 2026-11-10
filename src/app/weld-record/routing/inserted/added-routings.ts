@@ -6,7 +6,7 @@ import { getAddedTemplate } from '../routing-settings-rules';
 import { routingRole } from '../routing-persona';
 import { Job } from '../../../data/jobs';
 import { describeClauses } from '../../conditions/condition-text';
-import { RejectRule } from '../route-to-rules';
+import { RouteToRule } from '../route-to-rules';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../routing-ids';
@@ -58,7 +58,7 @@ export function nextEngineeringHoldId(stages: { id: string }[]): string {
 
 /* why a reject rule sent `stage`'s UNSAT to Engineering Hold (the hold's holdReason), e.g.
    "Final NDT MT/PT was UNSAT (Type is PT, and Final Weld: Weld Process is GTAW)" */
-export function rejectHoldReason(stage: WorkflowStage, rule: RejectRule): string {
+export function rejectHoldReason(stage: WorkflowStage, rule: RouteToRule): string {
   return `${stage.label} was UNSAT (${describeClauses(rule.when, stageConditionFields(stage)).join(', and ')})`;
 }
 

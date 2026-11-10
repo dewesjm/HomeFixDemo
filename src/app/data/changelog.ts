@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor Routing Settings.',
+      'Refactor Reject routes to and Then go to rules.',
       'Refactor Fabrication ship location droplists.',
       'Refactor procedure droplists (GWP, WTN and filler).',
       'Refactor weld assignment (GWP, WTN and filler set by the outside system).',

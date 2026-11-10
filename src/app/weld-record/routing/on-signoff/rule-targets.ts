@@ -3,16 +3,18 @@
 import { insertionDefinitionId } from '../inserted/instance-identity';
 import { WorkflowStage } from '../../model/workflow-types';
 import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from '../routing-ids';
+/* the target that puts the joint on Engineering Hold (routing/inserted/added-routings.ts insertEngineeringHold) */
+export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 export const RULE_TARGETS = [
   { id: 'repair', label: 'Add Repair' },
   { id: 'add-excavation-ndt', label: 'Add Excavation NDT' },
-  { id: 'engineering-hold', label: 'Add Engineering Hold' },
+  { id: ENGINEERING_HOLD_TARGET, label: 'Add Engineering Hold' },
   { id: 'rejecting-ndt', label: 'Rejecting NDT' },
   { id: 'rejecting-utrt', label: "Rejecting phase’s UT/RT" },
   { id: 'rejecting-vt5x', label: "Rejecting phase’s VT/5X" },
   { id: 'own-repair', label: 'Own Repair' },
 ];
-export const isAddTarget = (id: string) => !!insertionDefinitionId(id) || ['repair', 'add-excavation-ndt', 'engineering-hold'].includes(id);
+export const isAddTarget = (id: string) => !!insertionDefinitionId(id) || ['repair', 'add-excavation-ndt', ENGINEERING_HOLD_TARGET].includes(id);
 function originRepair(stages: WorkflowStage[], stage: WorkflowStage): WorkflowStage | undefined {
   return isExcavationNdtStageId(stage.id) ? stages.find(s => s.id === repairIdForExcavation(stage.id)) : stage;
 }

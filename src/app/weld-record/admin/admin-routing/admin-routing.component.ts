@@ -40,7 +40,7 @@ import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { ConditionClause, ConditionRule } from '../../conditions/joint-conditions';
 import { describeConditions } from '../../conditions/condition-text';
-import { RejectRule } from '../../routing/route-to-rules';
+import { RouteToRule } from '../../routing/route-to-rules';
 import { DEFAULT_STEP_CONDITIONS } from '../../../data/welding-steps';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';
@@ -477,7 +477,7 @@ export class AdminRoutingComponent {
   /* ── Reject rules dialog ── */
   ruleMode = signal<'reject' | 'then'>('reject');
   rejRow = signal<RoutingRow | null>(null);
-  rejRules = signal<RejectRule[]>([]);
+  rejRules = signal<RouteToRule[]>([]);
   rejDefaultTarget = signal('');
   rejFields = signal<ConditionCatalogField[]>([]);
 
