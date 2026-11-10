@@ -1,7 +1,7 @@
 /* Ordered Joint Details rules selecting a routing's persona, with its base persona as fallback. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ROLES } from '../../model/roles';
+import { ROLES } from '../../../data/roles';
 import { StageTemplate } from '../../model/stage-template';
 import { getTemplates, updateStageTemplate } from '../../routing/routing-settings-rules';
 import { ConditionClause } from '../../conditions/joint-conditions';

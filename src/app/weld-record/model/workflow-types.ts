@@ -1,5 +1,5 @@
 /* a joint's workflow: its steps and what's recorded on them. History is history.ts, deviations
-   deviation.ts, Routing Settings rows stage-template.ts, roles roles.ts */
+   deviation.ts, Routing Settings rows stage-template.ts; the persona list is data/roles.ts */
 import type { HistoryEntry, SignoffUndo } from './history';
 import type { Deviation } from './deviation';
 import type { StageTemplate, StageOption } from './stage-template';
@@ -66,8 +66,6 @@ export interface JobWorkflow {
   technician: string;
   stages: WorkflowStage[];
   references: Reference[];
-  conditionCode: string;     /* always '': leftover, nothing sets or reads it */
-  conditionCount: number;    /* always 0, same leftover as conditionCode */
   history: HistoryEntry[];
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */

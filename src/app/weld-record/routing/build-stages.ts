@@ -69,8 +69,6 @@ export function newWorkflow(job: Job): JobWorkflow {
     technician: job.technician,
     stages: buildStages(job, fabricationData),
     references: [],
-    conditionCode: '',
-    conditionCount: 0,
     history: [],
     fabricationData,
   };

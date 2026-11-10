@@ -12,7 +12,7 @@ function entry(when: string, section: HistoryEntry['section'], action: string, s
 function workflow(history: HistoryEntry[], signed: string[], undoWhen?: string): JobWorkflow {
   const stages = ['pre-fit', 'fit', 'tack'].map(id => ({ id, label: id, signed: signed.includes(id) }) as WorkflowStage);
   return {
-    jobId: job.id, technician: '', stages, references: [], conditionCode: '', conditionCount: 0,
+    jobId: job.id, technician: '', stages, references: [],
     history, fabricationData: {},
     undo: undoWhen ? [{ stageId: 'fit', historyWhen: undoWhen, stages: [], fabricationData: {}, refitNumber: '', repairNumber: '' }] : [],
   };

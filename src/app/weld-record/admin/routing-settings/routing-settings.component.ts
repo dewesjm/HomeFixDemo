@@ -36,7 +36,7 @@ import {
   allStageIds,
   getTemplates,
 } from '../../routing/routing-settings-rules';
-import { ROLES, type Role } from '../../model/roles';
+import { ROLES, type Role } from '../../../data/roles';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { ConditionClause, ConditionRule } from '../../conditions/joint-conditions';
 import { describeConditions } from '../../conditions/condition-text';
