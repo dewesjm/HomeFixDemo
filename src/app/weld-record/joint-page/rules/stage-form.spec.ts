@@ -73,31 +73,31 @@ describe('joint-form stage-form', () => {
 
   it('another Type carries its definition\'s fields (Affected Item is drawn by its form); switching back restores the step\'s own', () => {
     const fit = stageOf(job(), 'fit');
-    const buildup = typeChange('Welding', fit, 'weld-buildup');
+    const buildup = typeChange(fit, 'weld-buildup');
     expect(buildup).toEqual(jasmine.objectContaining({ inspectionType: 'weld-buildup', signoffType: 'weld-buildup' }));
     const keys = formInputFields({ ...fit, ...buildup }).map(f => f.key);
     expect(keys).toContain('weldProcedure');
     expect(keys).toContain('fillerMetalMic');
     expect(keys).not.toContain('affectedItem');
-    const back = typeChange('Welding', { ...fit, ...buildup }, 'fit');
+    const back = typeChange({ ...fit, ...buildup }, 'fit');
     expect(formInputFields({ ...fit, ...back })).toEqual([]);
     expect(formSignoffFields({ ...fit, ...back }).map(f => f.key)).toContain('deferTack');
   });
 
   it('picking a Type clears the form: Layer\'s Final Weld and an NDT Type both blank what was typed', () => {
     const j = job();
-    const layer = typeChange('Welding', stageOf(j, 'root-layer', { inputs: { wtn: 'x' }, signoffInputs: { comments: 'c' } }), 'final-weld');
+    const layer = typeChange(stageOf(j, 'root-layer', { inputs: { wtn: 'x' }, signoffInputs: { comments: 'c' } }), 'final-weld');
     expect(layer).toEqual(jasmine.objectContaining({ signoffType: 'final-weld', inputs: {}, signoffInputs: {} }));
     const ndt = buildStages(j).find(s => /-ndt-/.test(s.id) && !!s.typeOptions?.length)!;
     const v = ndt.typeOptions![0].value;
-    const change = typeChange('Welding', { ...ndt, inputs: { procedureUsed: 'p' } }, v);
+    const change = typeChange({ ...ndt, inputs: { procedureUsed: 'p' } }, v);
     expect(change).toEqual(jasmine.objectContaining({ inspectionType: v, signoffType: v, inputs: {} }));
     expect(formInputFields({ ...ndt, ...change }).map(f => f.key)).toContain('procedureUsed');
   });
 
   it('Fit as Weld Build-Up shows the fields its own Signoff Type Form lists', () => {
     const j = job({ nInd: '1' });
-    const fit = { ...stageOf(j, 'fit'), ...typeChange('Welding', stageOf(j, 'fit'), 'weld-buildup') };
+    const fit = { ...stageOf(j, 'fit'), ...typeChange(stageOf(j, 'fit'), 'weld-buildup') };
     expect(visibleStageFields(fit, ctxFor(j)).map(f => f.key)).toContain('weldPosition');
     const def = DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === 'weld-buildup')!;
     setStepFieldConfig([{ ...def, fields: def.fields.filter(f => f.key !== 'weldPosition') }]);

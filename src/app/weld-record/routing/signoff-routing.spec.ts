@@ -33,7 +33,7 @@ describe('Inserted routing table decisions', () => {
   function weldRepair() { sign('repair', { inputs: { ...stage(wf, 'repair').inputs, repairType: 'weld-repair' } }); }
   function selectExcavation(type: string) {
     const exc = stage(wf, 'excavation-ndt');
-    Object.assign(exc, typeChange(job.trade, exc, type));
+    Object.assign(exc, typeChange(exc, type));
   }
   it('Defer Tack names the routings it turns on and off by routing name', () => {
     const fit = stage(wf, 'fit');

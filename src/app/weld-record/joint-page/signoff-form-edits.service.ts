@@ -152,7 +152,7 @@ export class SignoffFormEditsService {
     if (!this.src || value === stage.signoffType || !stage.typeOptions?.some(o => o.value === value)) return;
     const { job } = this.src;
     this.errors.clearStageErrors(stage.id);
-    const patch = typeChange(job.trade, stage, value);
+    const patch = typeChange(stage, value);
     const name = stage.typeOptions?.find(o => o.value === value)?.label ?? value;
     this.signoffService.updateStageSignoff(job, stage.id, patch, { action: `${stage.label} - Type changed to ${name}` });
     if (isAssignedStage({ ...stage, ...patch })) this.weldAssignment.apply(job, stage.id);
@@ -164,7 +164,7 @@ export class SignoffFormEditsService {
     const after = { ...stage, inputs: { ...stage.inputs, idAccessible: answer } };
     if (typesForAccessibleAnswer(after).some(o => o.value === stage.inspectionType)) return;
     this.errors.clearStageErrors(stage.id);
-    this.signoffService.updateStageSignoff(this.src.job, stage.id, typeChange(this.src.job.trade, after, ''), { action: `${stage.label} - Type cleared` });
+    this.signoffService.updateStageSignoff(this.src.job, stage.id, typeChange(after, ''), { action: `${stage.label} - Type cleared` });
   }
 
   setStageResult(stage: WorkflowStage, result: StageResult) {

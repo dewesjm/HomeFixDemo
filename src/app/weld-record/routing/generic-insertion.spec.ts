@@ -202,7 +202,7 @@ describe('Ordinary insertion execution and preview', () => {
     rule('root-ndt-vt5x', insertionTarget('extra'));
     sign('root-ndt-vt5x');
     expect(current().insertion?.originPhase).toBe('root');
-    const selected = { ...current(), ...typeChange(job.trade, current(), 'extra-type') };
+    const selected = { ...current(), ...typeChange(current(), 'extra-type') };
     expect(selected.insertion?.originStageId).toBe('root-ndt-vt5x');
     sign(); expect(current().id).toBe('root-ndt-vt5x');
     expect(wf().stages.find(s => s.insertion)?.signed).toBeTrue();
