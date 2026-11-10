@@ -17,6 +17,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'History CSV export is now named history-<person>.csv (history-all.csv for everyone).',
       'Refactor the routing ids.',
       'Refactor the avatar menu.',
+      'Refactor the Signoff Type Forms conditions.',
       'Refactor the external GWP/WTN/filler assignment.',
       'Refactor where page rules live (Admin pages, Fabrication, History, Joint Details, routing bar, Signoff panel).',
       'Refactor the switched-off pages (Pipe Welding Classic, My Assignments).',

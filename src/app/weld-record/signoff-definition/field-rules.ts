@@ -1,6 +1,6 @@
 /* A field's effective rules on a step (its own setting, else the catalog default) and their
    plain-language text for Admin > Signoff Type Forms */
-import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
+import { FieldCondition, FormConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from '../conditions/form-conditions';
 import { jointOrFabricationField } from '../catalogs/field-choices';
 import { FieldActivation } from '../../data/signoff-type-forms';
 import { FieldFill, isVerifyRow, lookupCatalogField } from '../catalogs/field-catalog';
@@ -155,7 +155,7 @@ function labelOf(key: string): string {
   return lookupCatalogField(key)?.label ?? EXTRA_LABELS[key] ?? key;
 }
 
-function clauseText(c: ConditionClause): string {
+function clauseText(c: FormConditionClause): string {
   if (c.source === 'stepId') return `step ID matches ${c.matches}`;
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return `Engineering override is ${c.equals ? 'on' : 'off'}`;
   if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return c.equals ? 'the rejected phase has an RT/UT routing' : 'the rejected phase has no RT/UT routing';

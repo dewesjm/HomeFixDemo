@@ -2,7 +2,7 @@
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { findSignoffType } from '../../data/signoff-types';
-import { evaluateCondition } from './field-conditions';
+import { evaluateCondition } from '../conditions/form-conditions';
 import { buildConditionContext } from './condition-context';
 import { signoffTypeOptions } from './signoff-type-routing-rules';
 import { stepOnJoint } from '../../data/welding-step-ids';

@@ -1,8 +1,9 @@
-/* Condition model for field visibility, disabled state, and required state.
-   Used by the field catalog, per-step activations, and the stage renderer. */
+/* Form conditions: the nested AND/OR condition behind Signoff Type Forms (when a field is shown, disabled
+   or required) and Additional Signoffs. Used by the field catalog, per-step activations, and the stage
+   renderer. Routing Settings and the other admin tables use joint-conditions.ts instead. */
 
 /* A single condition clause. For "one of" several values within one clause, use anyOf. */
-export type ConditionClause =
+export type FormConditionClause =
   /* A field in this step's inputs, e.g. hasProbationary === 'yes' */
   | { source: 'field'; key: string; equals?: string; anyOf?: string[] }
   /* A property on the Job (joint details), e.g. nInd === '1' or materialType1 === 'Titanium' */
@@ -17,7 +18,7 @@ export type ConditionClause =
 /* A group of clauses and nested groups: every one must pass (all, AND) or at least one (any, OR),
    e.g. Type is VT and (Weld Color is Straw or Weld Color is Light Blue). An empty group = always. */
 export type FieldCondition = { all: ConditionTerm[] } | { any: ConditionTerm[] };
-export type ConditionTerm = ConditionClause | FieldCondition;
+export type ConditionTerm = FormConditionClause | FieldCondition;
 
 export const isConditionGroup = (t: ConditionTerm): t is FieldCondition => !('source' in t);
 
@@ -34,7 +35,7 @@ export function hasClauses(c: FieldCondition | undefined): c is FieldCondition {
 }
 
 /* every clause in the condition, nested groups included */
-export function conditionClauses(c: FieldCondition): ConditionClause[] {
+export function conditionClauses(c: FieldCondition): FormConditionClause[] {
   return conditionTerms(c).flatMap(t => isConditionGroup(t) ? conditionClauses(t) : [t]);
 }
 
@@ -49,7 +50,7 @@ export interface ConditionContext {
   priorInput: (stepId: string, fieldKey: string) => string;
 }
 
-function clausePasses(clause: ConditionClause, ctx: ConditionContext): boolean {
+function clausePasses(clause: FormConditionClause, ctx: ConditionContext): boolean {
   if (clause.source === 'stepId') return new RegExp(clause.matches).test(ctx.stageId);
 
   let val: string;

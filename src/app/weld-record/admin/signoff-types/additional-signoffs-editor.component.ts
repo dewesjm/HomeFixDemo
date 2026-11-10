@@ -7,7 +7,7 @@ import { FORM_FIELDS } from '../../catalogs/field-catalog';
 import { formFieldValues } from '../../catalogs/field-choices';
 import { ConditionGroupEditorComponent } from '../signoff-type-forms/condition-group-editor.component';
 import { conditionToWork, workToCondition, WorkGroup } from '../signoff-type-forms/rules/condition-work';
-import { FieldCondition } from '../../signoff-definition/field-conditions';
+import { FieldCondition } from '../../conditions/form-conditions';
 
 @Component({
   selector: 'app-additional-signoffs-editor', standalone: true,

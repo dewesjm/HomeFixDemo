@@ -3,14 +3,14 @@
    an actual while its requirement is NC */
 import { formInputFields } from './form-fields';
 import { WorkflowStage } from '../model/workflow-types';
-import { ConditionClause, conditionClauses, evaluateCondition } from './field-conditions';
+import { FormConditionClause, conditionClauses, evaluateCondition } from '../conditions/form-conditions';
 import { ACTUAL_REQUIREMENT } from './weld-fields';
 import { fieldActivation } from './signoff-type-form-rules';
 import { effectiveDisabledIf } from './field-rules';
 import { stepOnlyContext } from './condition-context';
 
 /* clauses that read only the step itself (its fields, its id, the engineering override) */
-const readsStepOnly = (c: ConditionClause) => c.source === 'field' || c.source === 'stepId' || c.source === 'stageProperty';
+const readsStepOnly = (c: FormConditionClause) => c.source === 'field' || c.source === 'stepId' || c.source === 'stageProperty';
 
 /* Disabled by a rule that reads only the step, so it can be checked from the step alone. A rule
    that reads the joint or another step is checked where the fields are built (definedFields sets

@@ -3,7 +3,7 @@
    conditions reads "Always | Show"; a Required with its own error message quotes it. Never-required, never-disabled and not-prepopulated add no line. */
 import { FieldActivation } from '../../data/signoff-type-forms';
 import { lookupCatalogField } from '../catalogs/field-catalog';
-import { FieldCondition, hasClauses } from './field-conditions';
+import { FieldCondition, hasClauses } from '../conditions/form-conditions';
 import {
   builtInShowCondition, conditionText, effectiveShowIf, effectiveFill, effectiveDisabledIf, effectiveRequired,
   effectiveRequiredIf, hasFixedRules, isAlwaysReadOnly, fillSourceText,

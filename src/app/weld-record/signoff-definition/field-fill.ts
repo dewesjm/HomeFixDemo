@@ -5,7 +5,7 @@
 import { formInputFields } from './form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { FieldFill } from '../catalogs/field-catalog';
-import { evaluateCondition } from './field-conditions';
+import { evaluateCondition } from '../conditions/form-conditions';
 import { stepOnlyContext } from './condition-context';
 import { isDisabledByOwnRule } from './field-locks';
 import { fieldActivation } from './signoff-type-form-rules';

@@ -5,7 +5,7 @@ import { FormField } from '../catalogs/field-catalog';
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { lookupCatalogField } from '../catalogs/field-catalog';
-import { ConditionContext, evaluateCondition } from './field-conditions';
+import { ConditionContext, evaluateCondition } from '../conditions/form-conditions';
 import { buildConditionContext } from './condition-context';
 import { DECISION_KEY } from '../../data/signoff-type-forms';
 import { getActivationForStep } from './signoff-type-form-rules';

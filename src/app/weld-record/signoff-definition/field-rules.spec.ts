@@ -1,4 +1,4 @@
-import { ConditionContext, FieldCondition, evaluateCondition } from './field-conditions';
+import { ConditionContext, FieldCondition, evaluateCondition } from '../conditions/form-conditions';
 import { conditionText, effectiveShowIf, showIfToStore, showRuleText, disabledRuleText, effectiveRequired, disabledIfToStore, requiredToStore,
   defaultFill, effectiveFill, fillToStore, fillRuleText, requiredRuleText, requiredIfToStore, effectiveRequiredIf,
   requiredMode, withRequiredMode, withRequiredMessage, standardRequiredMessage } from './field-rules';

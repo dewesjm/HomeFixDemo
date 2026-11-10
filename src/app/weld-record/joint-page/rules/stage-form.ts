@@ -8,7 +8,7 @@ import { WorkflowStage } from '../../model/workflow-types';
 import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
-import { evaluateCondition, conditionClauses } from '../../signoff-definition/field-conditions';
+import { evaluateCondition, conditionClauses } from '../../conditions/form-conditions';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { fieldActivation } from '../../signoff-definition/signoff-type-form-rules';
 import { effectiveShowIf } from '../../signoff-definition/field-rules';

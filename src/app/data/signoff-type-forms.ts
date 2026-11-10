@@ -7,7 +7,7 @@
 import { repairCodesVersion } from './repair-codes';
 import { STORAGE } from './storage-keys';
 import { WELD_BUILDUP_TYPE } from './signoff-types';
-import { FieldCondition } from '../weld-record/signoff-definition/field-conditions';
+import { FieldCondition } from '../weld-record/conditions/form-conditions';
 import { type FieldFill } from '../weld-record/catalogs/field-catalog';
 import { FILLER_KEYS } from '../weld-record/signoff-definition/weld-fields';
 

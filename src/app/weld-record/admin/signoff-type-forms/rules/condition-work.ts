@@ -1,14 +1,14 @@
 /* The condition editor's working copy of a field condition: AND/OR groups of clauses as the admin
-   edits them, and the conversion to and from the stored FieldCondition (weld-record/signoff-definition/field-conditions.ts) */
+   edits them, and the conversion to and from the stored FieldCondition (weld-record/conditions/form-conditions.ts) */
 import {
-  ConditionClause,
+  FormConditionClause,
   ConditionTerm,
   FieldCondition,
   conditionGroup,
   conditionOp,
   conditionTerms,
   isConditionGroup,
-} from '../../../signoff-definition/field-conditions';
+} from '../../../conditions/form-conditions';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-definition/stage-property-keys';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
@@ -33,7 +33,7 @@ export const isWorkGroup = (t: WorkTerm): t is WorkGroup => 'items' in t;
 export const blankClause = (): WorkClause => ({ source: 'field', key: '', equals: '' });
 
 /* "one of" values (anyOf) are edited as a comma-separated list, e.g. "mt, pt" */
-function clauseToWork(c: ConditionClause): WorkClause {
+function clauseToWork(c: FormConditionClause): WorkClause {
   if (c.source === 'stepId') return { source: 'stepId', key: '', equals: c.matches };
   if (c.source === 'stageProperty' && c.key === ENGINEERING_OVERRIDE_KEY) return { source: 'engineering', key: '', equals: c.equals ?? '' };
   if (c.source === 'stageProperty' && c.key === REJECTED_PHASE_UTRT_KEY) return { source: 'rejectedUtrt', key: '', equals: c.equals ?? '' };
@@ -41,7 +41,7 @@ function clauseToWork(c: ConditionClause): WorkClause {
   return blankClause();
 }
 
-function workToClause(w: WorkClause): ConditionClause {
+function workToClause(w: WorkClause): FormConditionClause {
   if (w.source === 'stepId') return { source: 'stepId', matches: w.equals };
   if (w.source === 'engineering') return { source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: w.equals };
   if (w.source === 'rejectedUtrt') return { source: 'stageProperty', key: REJECTED_PHASE_UTRT_KEY, equals: w.equals };

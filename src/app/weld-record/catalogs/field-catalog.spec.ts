@@ -1,7 +1,7 @@
 import { JOBS, Job } from '../../data/jobs';
 import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
 import { buildConditionContext } from '../signoff-definition/condition-context';
-import { evaluateCondition } from '../signoff-definition/field-conditions';
+import { evaluateCondition } from '../conditions/form-conditions';
 import { conditionText } from '../signoff-definition/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';

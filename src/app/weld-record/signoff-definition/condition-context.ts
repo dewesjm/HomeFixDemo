@@ -3,7 +3,7 @@
    so field-source conditions can reach them. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { ConditionContext } from './field-conditions';
+import { ConditionContext } from '../conditions/form-conditions';
 import { jointOrFabricationField } from '../catalogs/field-choices';
 import { stepOnJoint } from '../../data/welding-step-ids';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
