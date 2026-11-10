@@ -6,11 +6,10 @@ import { insertionConfigurationErrors } from './inserted/insertion-validation';
 import { addedRoutingSetup, routingNameError } from './inserted/added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
-import { NDT_KINDS } from '../../data/welding-steps';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/workflow-types';
-import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
+import { excavationPossibleTypes, signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { signoffTypeRoutingVersion } from '../../data/signoff-type-routing';
 
 /* ── The live rows ── */
@@ -22,7 +21,11 @@ let _mergedTypesVersion = -1;
 export function getTemplates(): StageTemplate[] {
   if (_merged && _mergedTypesVersion === signoffTypeRoutingVersion()) return _merged;
   _mergedTypesVersion = signoffTypeRoutingVersion();
-  _merged = loadRoutingSettings().map(s => ({ ...s, typeOptions: s.lifecycle === 'excavation' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
+  const rows = loadRoutingSettings();
+  /* an Excavation can follow any routing whose rejection adds a Repair */
+  const repairSources = rows.filter(s => s.rejectToStage === 'repair').map(s => s.id);
+  _merged = rows.map(s => ({ ...s, typeOptions: s.lifecycle === 'excavation'
+    ? excavationPossibleTypes(s.id, repairSources) : signoffTypeOptions(s.id) }));
   return _merged;
 }
 

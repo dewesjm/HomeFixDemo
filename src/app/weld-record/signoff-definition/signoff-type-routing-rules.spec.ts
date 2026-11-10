@@ -2,12 +2,26 @@ import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
 import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-routings';
-import { signoffTypeOptions, usesReturningInspectionType } from './signoff-type-routing-rules';
+import { excavationPossibleTypes, signoffTypeOptions, usesReturningInspectionType } from './signoff-type-routing-rules';
+import { getTemplates } from '../routing/routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
 
 describe('Signoff Type to Routing', () => {
+  it('offers the Excavation template every Type the Repair-adding routings offer, from the table', () => {
+    localStorage.removeItem(STORAGE.signoffTypeRouting);
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());   /* the starting rows, and a fresh template cache */
+    const excavation = getTemplates().find(t => t.id === 'excavation-ndt')!;
+    expect(excavation.typeOptions?.map(o => o.value).sort()).toEqual(['5x', 'mt', 'pt', 'rt', 'ut', 'vt']);
+    localStorage.removeItem(STORAGE.signoffTypeRouting);
+  });
+  it('adds an Excavation exception target to the possible Types', () => {
+    setSignoffTypeRoutingRows([{ stepId: 'root-ndt-vt5x', types: [{ type: 'vt' }] },
+      { stepId: 'excavation-ndt', types: [], typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'vt', to: '5x' }] }]);
+    expect(excavationPossibleTypes('excavation-ndt', ['root-ndt-vt5x']).map(o => o.value)).toEqual(['vt', '5x']);
+    localStorage.removeItem(STORAGE.signoffTypeRouting);
+  });
   it('retains return context when an exception condition needs the performed inspection Type', () => {
     setSignoffTypeRoutingRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
       { from: 'vt', to: '5x', when: [[{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]] }] }]);

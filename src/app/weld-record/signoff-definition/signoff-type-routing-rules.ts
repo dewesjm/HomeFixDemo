@@ -75,6 +75,21 @@ export function isOwnType(stageId: string, type: string): boolean {
   return !def || def.value === type;
 }
 
+/* every Type an Excavation NDT routing can be signed as, for the admin pickers: what the routings
+   whose rejection adds a Repair (`sourceStepIds`) offer, plus what its exceptions switch to. A joint's
+   Excavation narrows this to the rejecting Type (excavationTypeOptions). */
+export function excavationPossibleTypes(definitionId: string, sourceStepIds: string[]): StageOption[] {
+  const rows = getSignoffTypeRoutingRows();
+  const exceptions = rows.find(r => r.stepId === definitionId)?.typeExceptions ?? [];
+  const values = [...rows.filter(r => sourceStepIds.includes(r.stepId)).flatMap(r => r.types.map(t => t.type)),
+    ...exceptions.map(e => e.to)];
+  const catalog = getSignoffTypes();
+  return [...new Set(values)].flatMap(value => {
+    const type = catalog.find(t => t.value === value);
+    return type ? [{ value, label: type.label, ...(type.signsStep ? { signsStep: type.signsStep } : {}) }] : [];
+  });
+}
+
 /* The routing's configured Type source and first matching material exception. */
 export function excavationTypeOptions(job: Job | undefined, rejectingType: string, definitionId = EXCAVATION_TYPE_ROW): StageOption[] | undefined {
   const row = getSignoffTypeRoutingRows().find(r => r.stepId === definitionId);
