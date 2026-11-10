@@ -13,7 +13,7 @@ import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-r
 import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
 import { AdminAttributeCodeExceptionsComponent } from './weld-record/admin/admin-attribute-code-exceptions/admin-attribute-code-exceptions.component';
 import { AdminRoutingOverrideComponent } from './weld-record/admin/admin-routing-override/admin-routing-override.component';
-import { AdminPenetrantComponent } from './weld-record/admin/admin-penetrant/admin-penetrant.component';
+import { AdminPenetrantTypesComponent } from './weld-record/admin/admin-penetrant-types/admin-penetrant-types.component';
 import { AdminDefectCodesComponent } from './weld-record/admin/admin-defect-codes/admin-defect-codes.component';
 import { AdminInspectionProceduresComponent } from './weld-record/admin/admin-inspection-procedures/admin-inspection-procedures.component';
 import { AdminLocationsComponent } from './weld-record/admin/admin-locations/admin-locations.component';
@@ -68,7 +68,7 @@ export const routes: Routes = [
   { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/attribute-code-exceptions', component: AdminAttributeCodeExceptionsComponent, title: 'EWR - Attribute Code Exceptions' },
   { path: 'admin/routing-override', component: AdminRoutingOverrideComponent, title: 'EWR - Routing Override' },
-  { path: 'admin/penetrant', component: AdminPenetrantComponent, title: 'EWR - Penetrant Types' },
+  { path: 'admin/penetrant-types', component: AdminPenetrantTypesComponent, title: 'EWR - Penetrant Types' },
   { path: 'admin/inspection-procedures', component: AdminInspectionProceduresComponent, title: 'EWR - Inspection Procedures' },
   { path: 'admin/defect-codes', component: AdminDefectCodesComponent, title: 'EWR - Defect Codes' },
   { path: 'admin/locations',    component: AdminLocationsComponent,       title: 'EWR - Locations' },

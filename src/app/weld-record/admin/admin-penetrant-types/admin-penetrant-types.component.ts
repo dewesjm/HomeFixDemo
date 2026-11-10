@@ -23,15 +23,15 @@ function toRow(e: PenetrantEntry, i: number): PenRow {
 }
 
 @Component({
-  selector: 'app-admin-penetrant',
+  selector: 'app-admin-penetrant-types',
   standalone: true,
   imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
     LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
-  templateUrl: './admin-penetrant.component.html'
+  templateUrl: './admin-penetrant-types.component.html'
 })
-export class AdminPenetrantComponent {
+export class AdminPenetrantTypesComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private seq = 0;
