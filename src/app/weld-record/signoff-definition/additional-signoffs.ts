@@ -1,7 +1,7 @@
 /* Additional routings signed by the same signoff, without skipping intervening work. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { routingSignoffType } from '../../data/routing-signoff-types';
+import { findSignoffType } from '../../data/signoff-types';
 import { evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { signoffTypeOptions } from './signoff-type-routing-rules';
@@ -11,7 +11,7 @@ export function additionalSignoffs(source: WorkflowStage, stages: WorkflowStage[
   if (source.result === 'unsat') return [];
   const context = buildConditionContext(source, job, stages, fab);
   const found = new Map<string, { stage: WorkflowStage; type: string }>();
-  for (const rule of routingSignoffType(source.signoffType)?.alsoSigns ?? []) {
+  for (const rule of findSignoffType(source.signoffType)?.alsoSigns ?? []) {
     if (!evaluateCondition(rule.when, context)) continue;
     const target = stepOnJoint(stages, rule.stepId);
     if (!target || target.signed || !target.required || stages.indexOf(target) <= stages.findIndex(s => s.id === source.id)) continue;

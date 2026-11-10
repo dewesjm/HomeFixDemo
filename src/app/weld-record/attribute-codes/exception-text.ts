@@ -3,7 +3,7 @@
 import { describeConditions } from '../routing/routing-conditions';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields, FABRICATION_DEPENDENT_FIELDS, JOINT_DETAIL_FIELDS } from '../catalogs/field-choices';
-import { typeLabel } from '../../data/routing-signoff-types';
+import { typeLabel } from '../../data/signoff-types';
 import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from './attribute-code-exceptions';
 
 /* what an Applies when condition can read: Joint Details, Fabrication,

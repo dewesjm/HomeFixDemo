@@ -11,7 +11,7 @@ import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
 import { activeStage } from '../current-routing';
 import { addStageTemplate, getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { routeBack } from '../on-signoff/route-changes';
 import { insertionTarget } from './instance-identity';
@@ -43,7 +43,7 @@ describe('Ordinary insertion execution and preview', () => {
     signoff = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'insertion-test', joint: 'IN-00001', _fresh: true }, { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', sfff: '', dssAaa: '', ss: '', refitNumber: '', repairNumber: '' });
     JOBS.push(job);
-    setRoutingSignoffTypes([...getRoutingSignoffTypes(), { value: 'extra-type', label: 'Extra check' }]);
+    setSignoffTypes([...getSignoffTypes(), { value: 'extra-type', label: 'Extra check' }]);
     setStepFieldConfig([...getStepFieldConfig(), { typeId: 'extra-type', fields: [{ key: 'comments' }] }]);
     store.update(job, () => newWorkflow(job));
   });

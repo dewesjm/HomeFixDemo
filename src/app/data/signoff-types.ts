@@ -18,7 +18,7 @@ const ROOT_ADDITIONAL_SIGNOFFS: AdditionalSignoff[] = ['5X', 'VT'].map(method =>
   ] },
 }));
 
-export interface RoutingSignoffType {
+export interface SignoffType {
   label: string;
   /* the stored value: what a step's signoffType holds and what its definition is keyed by */
   value: string;
@@ -30,10 +30,10 @@ export interface RoutingSignoffType {
 
 export const WELD_BUILDUP_TYPE = 'weld-buildup';
 
-const type = (label: string, value: string, more: Partial<RoutingSignoffType> = {}): RoutingSignoffType => ({ label, value, ...more });
+const type = (label: string, value: string, more: Partial<SignoffType> = {}): SignoffType => ({ label, value, ...more });
 
 /* the Types named after a step use that step's id as their value */
-const SEED_TYPES: RoutingSignoffType[] = [
+const SEED_TYPES: SignoffType[] = [
   type('Pre-Fit', 'pre-fit'),
   type('Fit', 'fit'),
   type('Weld Build-Up', WELD_BUILDUP_TYPE),
@@ -58,19 +58,19 @@ const SEED_TYPES: RoutingSignoffType[] = [
 
 /* bumped on every save, so getTemplates() knows its cached options are out of date */
 let version = 0;
-export const routingSignoffTypesVersion = () => version;
+export const signoffTypesVersion = () => version;
 
-export function getRoutingSignoffTypes(): RoutingSignoffType[] {
+export function getSignoffTypes(): SignoffType[] {
   try {
-    const raw = localStorage.getItem(STORAGE.routingSignoffTypes);
-    return raw ? JSON.parse(raw) as RoutingSignoffType[] : SEED_TYPES;
+    const raw = localStorage.getItem(STORAGE.signoffTypes);
+    return raw ? JSON.parse(raw) as SignoffType[] : SEED_TYPES;
   } catch { return SEED_TYPES; }
 }
 
 /* an added Type's stored value is made from its name (e.g. "Weld Build-Up" -> "weld-build-up") */
-export function setRoutingSignoffTypes(types: RoutingSignoffType[]) {
+export function setSignoffTypes(types: SignoffType[]) {
   const filled = types.map(t => ({ ...t, value: t.value || valueFromName(t.label) }));
-  localStorage.setItem(STORAGE.routingSignoffTypes, JSON.stringify(filled));
+  localStorage.setItem(STORAGE.signoffTypes, JSON.stringify(filled));
   version++;
 }
 
@@ -78,11 +78,11 @@ function valueFromName(name: string): string {
   return name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 
-export function routingSignoffType(value: string): RoutingSignoffType | undefined {
-  return getRoutingSignoffTypes().find(t => t.value === value);
+export function findSignoffType(value: string): SignoffType | undefined {
+  return getSignoffTypes().find(t => t.value === value);
 }
 
 /* a Type's name, or its value when the Type has been removed */
 export function typeLabel(value: string): string {
-  return routingSignoffType(value)?.label ?? value;
+  return findSignoffType(value)?.label ?? value;
 }

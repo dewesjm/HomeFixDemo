@@ -1,7 +1,7 @@
 import { JOBS, Job } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { WorkflowStage } from '../model/workflow-types';
-import { WELD_BUILDUP_TYPE } from '../../data/routing-signoff-types';
+import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
 import { DEFAULT_TYPE_DEFINITIONS, FieldActivation, definitionHas, resetStepFieldConfig, setStepFieldConfig } from './step-field-config';
 import { fieldsShown, visibleSignoffFields } from './shown-fields';
 import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../catalogs/field-catalog';

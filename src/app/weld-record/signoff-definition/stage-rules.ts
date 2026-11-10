@@ -2,7 +2,7 @@
 import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId, isRepairStageId } from '../routing/routing-ids';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
-import { WELD_BUILDUP_TYPE } from '../../data/routing-signoff-types';
+import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
 
 /* SAT/UNSAT is offered only when the selected Type form lists Inspection Results. */
 export function hasDecision(stage: Pick<WorkflowStage, 'id' | 'signoffType' | 'rejectToStage'>): boolean {

@@ -2,7 +2,7 @@
    which Type, and when). */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdditionalSignoff, getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { AdditionalSignoff, getSignoffTypes } from '../../../data/signoff-types';
 import { FORM_FIELDS } from '../../catalogs/field-catalog';
 import { formFieldValues } from '../../catalogs/field-choices';
 import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
@@ -39,7 +39,7 @@ export class AdditionalSignoffsEditorComponent {
   rules = input<AdditionalSignoff[]>([]);
   routings = input.required<{ id: string; label: string }[]>();
   changed = output<AdditionalSignoff[]>();
-  types = getRoutingSignoffTypes();
+  types = getSignoffTypes();
   fields = FORM_FIELDS.filter(f => !f.ownComponent).map(f => ({ key: f.key, label: f.label, values: formFieldValues(f), yesNo: f.type === 'checkbox' }));
   /* Keep unfinished clauses in the editor; only complete clauses belong in saved rules. */
   private readonly drafts = new WeakMap<FieldCondition, WorkGroup>();

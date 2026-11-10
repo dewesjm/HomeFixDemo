@@ -156,7 +156,7 @@ src/app/
     signoff-definition/    What each routing's sign-off shows, requires and locks (Admin > Signoff
                            Types / Signoff Type to Routing / Signoff Type Forms):
                            additional-signoffs (other routings a Type also signs; the Types themselves are
-                           data/routing-signoff-types), signoff-type-routing-rules (the Type options a routing
+                           data/signoff-types), signoff-type-routing-rules (the Type options a routing
                            offers; its rows are data/signoff-type-routing),
                            step-field-config (one definition per Type, defaults, localStorage), field-rules,
                            field-rule-lines, field-conditions, condition-context, stage-property-keys, field-fill,
@@ -220,7 +220,7 @@ src/app/
                              dialogs: weld-record/admin/admin-routing/condition-editing.ts. A routing's fields aren't editable or
                              saved here; they come from the built-in routing definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
-      admin-routing-signoff-types/ Admin → Signoff Types (every Type: name, Signs routing)
+      admin-signoff-types/ Admin → Signoff Types (every Type: name, Signs routing)
       admin-signoff-type-routing/ Admin → Signoff Type to Routing (seeded table: which routings have a Type droplist, and which Types it offers)
       admin-signoff-type-definition/  Admin → Signoff Type Forms (/admin/signoff-fields): configure which
                              catalog fields are active on each Type; live configuration stored in
@@ -327,7 +327,7 @@ src/app/
                          starting Included when / Reject routes to / Then go to rules, and the added routings
                          (Repair, Excavation NDT, Engineering Hold)
     routing-settings.ts  Routing Settings rows: starting rows with saved changes applied, and saving them
-    routing-signoff-types.ts  Admin > Signoff Types rows: every Type (name, stored value, Signs routing, also signs),
+    signoff-types.ts     Admin > Signoff Types rows: every Type (name, stored value, Signs routing, also signs),
                          the starting Types, load/save and lookup by value
     signoff-type-routing.ts  Admin > Signoff Type to Routing rows: which Types each routing offers, its default,
                          starting Enable when conditions and Excavation Type exceptions; load/save
@@ -387,7 +387,7 @@ src/app/
 | `/jobs/:hull/:drawing/:joint` | Joint Details, keyed by the unique hull + drawing + joint (never XREFID, which can be blank; `jointRoute()` in `joint-page/joint-route.ts`) (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
 | `/assignments` | My Assignments; redirects to `/pipe-search` unless Admin > Feature Toggles > My Assignments page is on |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
-| `/admin/routing`, `/admin/set-routing`, `/admin/routing-signoff-types`, `/admin/signoff-types` | Routing admin |
+| `/admin/routing`, `/admin/set-routing`, `/admin/signoff-types`, `/admin/signoff-type-routing` | Routing admin |
 | `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, ship-locations (+ /import), weld-positions, banner, joint-designs, groups, qualifications, material-traceability, inspection-procedures, defect-codes) |
 | `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |
 | `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — the older pattern of Weld Record's search, before stacked conditions; scoped to `WeldJoint`) |
@@ -493,7 +493,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - UNSAT on a routing with no reject target is a sign error (`unsatWithoutRejectTarget()`, "UNSAT needs a Reject routes to target in Admin > Routing Settings").
   - Seeds tick Type on the Types whose routing showed a Type droplist (not Pre-Fit, Fit-Up Insp, Fit-Up Release, Records Review or Sold), Inspection Results on Types whose routing has a reject target, and Comments everywhere but Sold.
 - **Comments**: one optional Comments box: the catalog's `comments` field, on a form when its Signoff Type's definition lists it, following Show when, Disabled when and Required like any other field. It's saved in `signoffInputs.comments`.
-- **Types**: Admin > Signoff Types (`data/routing-signoff-types.ts`) lists every Type (name, stored value, Signs routing); a Type is added there first. The Types named after a routing (Pre-Fit, Fit, Tack, Fit-Up Insp, Fit-Up Release, Repair, the Records Reviews, Sold) use that routing's id as their value, so rules keyed by routing id (`isRoutingLockedField()`, `drawnByOwnForm()`) read the same on the Type's definition. A routing is a status; its Types are what can be signed in it.
+- **Types**: Admin > Signoff Types (`data/signoff-types.ts`) lists every Type (name, stored value, Signs routing); a Type is added there first. The Types named after a routing (Pre-Fit, Fit, Tack, Fit-Up Insp, Fit-Up Release, Repair, the Records Reviews, Sold) use that routing's id as their value, so rules keyed by routing id (`isRoutingLockedField()`, `drawnByOwnForm()`) read the same on the Type's definition. A routing is a status; its Types are what can be signed in it.
 - **Type dropdown** for stages with `typeOptions`, which come only from Admin > Signoff Type to Routing (rows in `data/signoff-type-routing.ts`, options from `signoff-definition/signoff-type-routing-rules.ts`): a seeded table the admin adds rows to and removes them from, each row naming the Types a routing offers (by value) and its default; `signoffTypeOptions()` joins them with their name and settings, leaving out a Type deleted from Signoff Types. A routing with no row has no Type. Every built-in routing has a row (the ones without a choice offer one Type, named after the routing).
   - Every Repair round reads the Repair row. Excavation NDT reads its configured Type source and ordered material exceptions on Signoff Type to Routing (`excavationTypeOptions()`); the default source is the rejecting inspection, with PT to 5X for either non-ferrous/austenitic member.
   - A routing whose options have **no default** starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired()` in `weld-record/signoff-definition/stage-rules.ts`), even with one option; a default pre-fills it.

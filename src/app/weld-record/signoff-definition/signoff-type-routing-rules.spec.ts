@@ -5,7 +5,7 @@ import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-r
 import { signoffTypeOptions, usesReturningInspectionType } from './signoff-type-routing-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../data/routing-signoff-types';
+import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
 
 describe('Signoff Type to Routing', () => {
   it('retains return context when an exception condition needs the performed inspection Type', () => {
@@ -28,7 +28,7 @@ describe('Signoff Type to Routing', () => {
       { type: '5x', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }],
       typeExceptions: [{ from: 'vt', to: '5x' }] }]);
     expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([]);
-    setRoutingSignoffTypes(getRoutingSignoffTypes().filter(t => t.value !== '5x'));
+    setSignoffTypes(getSignoffTypes().filter(t => t.value !== '5x'));
     expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '1' })).toEqual([]);
   });
 
@@ -39,7 +39,7 @@ describe('Signoff Type to Routing', () => {
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
   });
-  afterEach(() => { localStorage.removeItem(STORAGE.signoffTypeRouting); localStorage.removeItem(STORAGE.routingSignoffTypes); });
+  afterEach(() => { localStorage.removeItem(STORAGE.signoffTypeRouting); localStorage.removeItem(STORAGE.signoffTypes); });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
     const job = { ...JOBS[0], ndtFinal: 'VT' };
@@ -104,12 +104,12 @@ describe('Signoff Type to Routing', () => {
       { label: 'Interim Layer', value: 'interim', default: true },
       { label: 'Final Weld', value: 'final-weld', signsStep: 'final-weld' },
     ]);
-    setRoutingSignoffTypes(getRoutingSignoffTypes().map(t => t.value === 'interim' ? { ...t, label: 'Layer Pass' } : t).filter(t => t.value !== 'final-weld'));
+    setSignoffTypes(getSignoffTypes().map(t => t.value === 'interim' ? { ...t, label: 'Layer Pass' } : t).filter(t => t.value !== 'final-weld'));
     expect(signoffTypeOptions('root-layer')?.map(o => o.label)).toEqual(['Layer Pass']);
   });
 
   it('an added Type gets a value from its name', () => {
-    setRoutingSignoffTypes([{ label: 'Weld Build-Up', value: '' }]);
-    expect(getRoutingSignoffTypes()[0].value).toBe('weld-build-up');
+    setSignoffTypes([{ label: 'Weld Build-Up', value: '' }]);
+    expect(getSignoffTypes()[0].value).toBe('weld-build-up');
   });
 });

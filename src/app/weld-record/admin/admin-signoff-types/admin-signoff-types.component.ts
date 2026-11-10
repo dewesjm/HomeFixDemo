@@ -10,22 +10,22 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { RoutingSignoffType, getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { SignoffType, getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
 import { conditionText } from '../../signoff-definition/field-rules';
 
-interface TypeRow extends RoutingSignoffType {
+interface TypeRow extends SignoffType {
   uid: string;
 }
 
 @Component({
-  selector: 'app-admin-routing-signoff-types',
+  selector: 'app-admin-signoff-types',
   standalone: true,
   imports: [AdditionalSignoffsEditorComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucidePencil, LucideCheck, LucideX, LucideTrash2],
-  templateUrl: './admin-routing-signoff-types.component.html'
+  templateUrl: './admin-signoff-types.component.html'
 })
-export class AdminRoutingSignoffTypesComponent {
+export class AdminSignoffTypesComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private seq = 0;
@@ -33,7 +33,7 @@ export class AdminRoutingSignoffTypesComponent {
   /* what Signs routing can name: the Routing Settings routings */
   readonly routings = (getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label }));
 
-  rows = signal<TypeRow[]>(getRoutingSignoffTypes().map(t => this.toRow(t)));
+  rows = signal<TypeRow[]>(getSignoffTypes().map(t => this.toRow(t)));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['label']);
@@ -42,7 +42,7 @@ export class AdminRoutingSignoffTypesComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  private toRow(t: RoutingSignoffType): TypeRow {
+  private toRow(t: SignoffType): TypeRow {
     return { ...t, uid: `rst-${++this.seq}` };
   }
 
@@ -52,7 +52,7 @@ export class AdminRoutingSignoffTypesComponent {
   }
 
   exportCsv() {
-    downloadCsv('routing-signoff-types', [
+    downloadCsv('signoff-types', [
       { header: 'Type', value: (r: TypeRow) => r.label },
       { header: 'Signs routing', value: (r: TypeRow) => this.signsStepLabel(r) },
       { header: 'Additional Signoffs', value: (r: TypeRow) => this.alsoSignsLabel(r) },
@@ -125,14 +125,14 @@ export class AdminRoutingSignoffTypesComponent {
 
   private persist() {
     const editing = this.editingUid();
-    setRoutingSignoffTypes(this.rows().flatMap(r => {
+    setSignoffTypes(this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
       if (!saved) return [];
       const { uid: _, ...type } = saved;
       return [type];
     }));
-    this.rows.set(getRoutingSignoffTypes().map(t => this.toRow(t)));
+    this.rows.set(getSignoffTypes().map(t => this.toRow(t)));
   }
 }
 

@@ -56,7 +56,7 @@ import {
   fillRuleText,
 } from '../../signoff-definition/field-rules';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
-import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../../data/signoff-types';
 import { isDefinitionLockedField } from '../../signoff-definition/stage-rules';
 import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
@@ -117,7 +117,7 @@ export class AdminSignoffTypeDefinitionComponent {
   /* Routing sources for Prepopulated from, and the Types whose forms can be edited. */
   private readonly routingSteps = (getTemplates()['Welding'] ?? []).map(s => ({ stepId: s.id, stepLabel: s.label }));
   private readonly types = [
-    ...getRoutingSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
+    ...getSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
   ];
 
   rows = signal<DefRow[]>([]);

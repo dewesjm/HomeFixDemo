@@ -20,7 +20,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { typeSourceLabel } from '../../signoff-definition/signoff-type-routing-rules';
 import { AvailableType, SignoffTypeRoutingRow, EXCAVATION_TYPE_ROW, getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { getRoutingSignoffTypes, typeLabel } from '../../../data/routing-signoff-types';
+import { getSignoffTypes, typeLabel } from '../../../data/signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 
 interface TypeRow extends SignoffTypeRoutingRow {
@@ -53,7 +53,7 @@ export class AdminSignoffTypeRoutingComponent {
     ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
   ];
   /* what an option can be: the Types in Admin > Signoff Types */
-  readonly typeChoices = getRoutingSignoffTypes();
+  readonly typeChoices = getSignoffTypes();
 
   rows = signal<TypeRow[]>(getSignoffTypeRoutingRows().map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
   editingUid = signal<string | null>(null);

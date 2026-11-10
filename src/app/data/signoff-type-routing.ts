@@ -7,7 +7,7 @@ import { TypeException } from '../weld-record/signoff-definition/type-exceptions
 import { ConditionRule } from '../weld-record/routing/routing-conditions';
 import { NDT_KINDS } from '../weld-record/routing/ndt';
 import { PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
-import { WELD_BUILDUP_TYPE, routingSignoffTypesVersion } from './routing-signoff-types';
+import { WELD_BUILDUP_TYPE, signoffTypesVersion } from './signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
 export interface AvailableType {
@@ -72,7 +72,7 @@ const SEED_ROWS: SignoffTypeRoutingRow[] = [
 /* bumped on every save of this table or of Signoff Types, so getTemplates() knows its cached
    options are out of date */
 let version = 0;
-export const signoffTypeRoutingVersion = () => version * 1000 + routingSignoffTypesVersion();
+export const signoffTypeRoutingVersion = () => version * 1000 + signoffTypesVersion();
 
 export function getSignoffTypeRoutingRows(): SignoffTypeRoutingRow[] {
   try {

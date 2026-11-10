@@ -9,7 +9,7 @@
    - Qualifications and Advanced Search: allStepAnswerFields
    - Attribute Code Exceptions: exceptionConditionFields, built from these */
 import { Job } from '../../data/jobs';
-import { getRoutingSignoffTypes } from '../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../data/signoff-types';
 import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
 import { ConditionCatalogField, FIELD_CATALOG, FORM_FIELDS, RuleEntry, StageAnswers } from './field-catalog';
 
@@ -155,7 +155,7 @@ export function stageConditionFields(stage: StageShape): ConditionCatalogField[]
   for (const f of routingAnswerFields(stage)) add(f.key, f.label, formFieldValues(f));   /* no options = a typed value */
   const repair = isRepairStageId(stage.id ?? '');
   if (repair || isExcavationNdtStageId(stage.id ?? '') || stage.insertion || (stage.classification === 'added' && stage.lifecycle === 'ordinary')) {
-    const types = [{ label: 'Blank', value: '' }, ...getRoutingSignoffTypes().map(t => ({ label: t.label, value: t.value }))];
+    const types = [{ label: 'Blank', value: '' }, ...getSignoffTypes().map(t => ({ label: t.label, value: t.value }))];
     add('originalInspectionType', 'Original rejecting inspection Type', types);
     if (!repair) add('performedInspectionType', 'Performed inspection Type', types);
   }

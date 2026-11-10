@@ -9,7 +9,7 @@ import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTe
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { buildStages } from '../../routing/build-stages';
 import { JOBS } from '../../../data/jobs';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 
 describe('Routing Settings rules editor', () => {
   it('shows the seeded Pre-Fit description with older saved settings and preserves an explicitly cleared description', fakeAsync(() => {
@@ -86,11 +86,11 @@ describe('Routing Settings rules editor', () => {
   let component: AdminRoutingComponent;
   beforeEach(() => {
     localStorage.clear();
-    setRoutingSignoffTypes(getRoutingSignoffTypes());
+    setSignoffTypes(getSignoffTypes());
     TestBed.configureTestingModule({ imports: [AdminRoutingComponent], providers: [provideRouter([])] });
     component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
   });
-  afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
+  afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setSignoffTypes(getSignoffTypes()); });
 
 
   it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
@@ -200,7 +200,7 @@ describe('Routing Settings rules editor', () => {
     expect(host.textContent).not.toContain('Added routings');
     expect(host.querySelector('a[href="/admin/signoff-fields"]')).toBeNull();
     expect(host.querySelector('a[href="/admin/signoff-type-routing"]')).toBeNull();
-    expect(host.querySelector('a[href="/admin/routing-signoff-types"]')).toBeNull();
+    expect(host.querySelector('a[href="/admin/signoff-types"]')).toBeNull();
     const saved = fixture.componentInstance.rows().find(r => r.routing === 'Rendered inspection')!;
     fixture.componentInstance.startEdit(saved);
     fixture.componentInstance.updateField(saved, 'routing', 'Discard me');

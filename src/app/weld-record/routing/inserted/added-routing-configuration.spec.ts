@@ -1,7 +1,7 @@
 import { addedRoutingSetup } from './added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 
 describe('ordinary inserted routing setup', () => {
@@ -13,7 +13,7 @@ describe('ordinary inserted routing setup', () => {
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Offer at least one');
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'unknown' }] }]);
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Unknown Type');
-    setRoutingSignoffTypes([...getRoutingSignoffTypes(), { value: 'unknown', label: 'Extra Type' }]);
+    setSignoffTypes([...getSignoffTypes(), { value: 'unknown', label: 'Extra Type' }]);
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Configure a form');
     setStepFieldConfig([...getStepFieldConfig(), { typeId: 'unknown', fields: [{ key: 'comments' }] }]);
     expect(addedRoutingSetup(template).errors).toEqual([]);

@@ -4,7 +4,7 @@ import { buildStages, newWorkflow } from '../build-stages';
 import { activeStageId, isStageLocked, setRoutingFrom } from '../current-routing';
 import { routeSignoff } from './signoff-routing';
 import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { typeValues } from '../../signoff-definition/stage-rules';
 import { RejectRule } from '../routing-conditions';
 
@@ -23,11 +23,11 @@ const workflowAt = (j: Job, id: string) => {
 describe('Then go to routing', () => {
   beforeEach(() => {
     localStorage.clear();
-    setRoutingSignoffTypes(getRoutingSignoffTypes());
+    setSignoffTypes(getSignoffTypes());
   });
   afterEach(() => {
     localStorage.clear();
-    setRoutingSignoffTypes(getRoutingSignoffTypes());
+    setSignoffTypes(getSignoffTypes());
   });
 
   it('uses the first matching rule and passes intervening routings without signing them', () => {
@@ -130,12 +130,12 @@ describe('Then go to routing', () => {
     updateStageTemplate('Welding', 'tack', { thenRules: rules });
     const saved = JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!);
     expect(saved.Welding.find((s: { id: string }) => s.id === 'tack').thenRules).toEqual(rules);
-    setRoutingSignoffTypes(getRoutingSignoffTypes());
+    setSignoffTypes(getSignoffTypes());
     expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules).toEqual(rules);
     updateStageTemplate('Welding', 'tack', { thenRules: [...rules].reverse() });
     expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules![0].to).toBe('fit');
     updateStageTemplate('Welding', 'tack', { thenRules: [] });
-    setRoutingSignoffTypes(getRoutingSignoffTypes());
+    setSignoffTypes(getSignoffTypes());
     expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules).toEqual([]);
   });
 });

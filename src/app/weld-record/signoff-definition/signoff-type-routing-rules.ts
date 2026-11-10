@@ -7,7 +7,7 @@ import { replacedType } from './type-exceptions';
 import { StageOption } from '../model/workflow-types';
 import { conditionsMatch } from '../routing/routing-conditions';
 import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
-import { getRoutingSignoffTypes } from '../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../data/signoff-types';
 import {
   AvailableType, SignoffTypeRoutingRow, getSignoffTypeRoutingRows, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, NQC_EXCAVATION_TYPE_ROW,
 } from '../../data/signoff-type-routing';
@@ -32,7 +32,7 @@ export function signoffTypeOptions(stageId: string, job?: Job, inputs: Record<st
 /* Resolve configured or contextual candidates through the same ordered replacement rules. */
 function resolveTypeOptions(row: SignoffTypeRoutingRow, stageId: string, job?: Job,
   inputs: Record<string, string> = {}, rejectingType?: string): StageOption[] {
-  const catalog = getRoutingSignoffTypes();
+  const catalog = getSignoffTypes();
   const enabled = (a: AvailableType) => !job || conditionsMatch(a.enableWhen, job, [],
     { id: stageId, signed: false, inputs, signoffInputs: {} });
   const candidates: AvailableType[] = row.typeSource === 'rejecting-inspection'
@@ -63,7 +63,7 @@ const option = (stageId: string, type: string) => signoffTypeOptions(stageId)?.f
 
 /* the routing step signing `stageId` with Type `type` signs (StageOption.signsStep); '' = itself */
 export function typeSignsStep(stageId: string, type: string): string {
-  return option(stageId, type)?.signsStep ?? getRoutingSignoffTypes().find(t => t.value === type)?.signsStep ?? '';
+  return option(stageId, type)?.signsStep ?? getSignoffTypes().find(t => t.value === type)?.signsStep ?? '';
 }
 
 /* whether `type` is the step's own: its default Type, or any of its Types when it has no default (the

@@ -2,7 +2,7 @@
 import { describeConditions } from '../routing-conditions';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../../data/signoff-types';
 import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
 
 export function routingNameError(name: string, id: string, templates: StageTemplate[]): string {
@@ -19,7 +19,7 @@ export function addedRoutingSetup(template: StageTemplate): { errors: string[]; 
   if (template.lifecycle !== 'ordinary') return { errors: [], summary: 'Built-in lifecycle; configure its Types in Signoff Type to Routing.' };
   if (!row || (!row.typeSource && !row.types.length)) errors.push('Offer at least one Signoff Type.');
   if ((row?.types.filter(t => t.default).length ?? 0) > 1) errors.push('Choose at most one default Type.');
-  const types = getRoutingSignoffTypes();
+  const types = getSignoffTypes();
   const forms = getStepFieldConfig();
   const labels = [...(row?.types ?? []), ...(row?.typeExceptions ?? []).map(r => ({ type: r.to, default: false, enableWhen: r.when }))].map(option => {
     const type = types.find(t => t.value === option.type);

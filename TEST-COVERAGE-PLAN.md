@@ -473,11 +473,11 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [admin-routing.component.ts](src/app/weld-record/admin/admin-routing/admin-routing.component.ts) | Yes | 36.93% |
 | [condition-editing.ts](src/app/weld-record/admin/admin-routing/condition-editing.ts) | Yes | 100% |
 
-### weld-record/admin/admin-routing-signoff-types
+### weld-record/admin/admin-signoff-types
 
 | Source file | Direct spec | Measured lines |
 |---|---|---|
-| [admin-routing-signoff-types.component.ts](src/app/weld-record/admin/admin-routing-signoff-types/admin-routing-signoff-types.component.ts) | Yes | 60.37% |
+| [admin-signoff-types.component.ts](src/app/weld-record/admin/admin-signoff-types/admin-signoff-types.component.ts) | Yes | 60.37% |
 
 ### weld-record/admin/admin-set-routing
 
@@ -665,7 +665,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [field-rule-lines.ts](src/app/weld-record/signoff-definition/field-rule-lines.ts) | Yes | 100% |
 | [field-rules.ts](src/app/weld-record/signoff-definition/field-rules.ts) | Yes | 96.05% |
 | [form-fields.ts](src/app/weld-record/signoff-definition/form-fields.ts) | Yes | 100% |
-| [routing-signoff-types.ts](src/app/data/routing-signoff-types.ts) | No | 80% |
+| [signoff-types.ts](src/app/data/signoff-types.ts) | No | 80% |
 | [shown-fields.ts](src/app/weld-record/signoff-definition/shown-fields.ts) | Yes | 100% |
 | [signoff-parts.ts](src/app/weld-record/signoff-definition/signoff-parts.ts) | Yes | 100% |
 | [signoff-type-routing-rules.ts](src/app/weld-record/signoff-definition/signoff-type-routing-rules.ts) | Yes | 93.33% |

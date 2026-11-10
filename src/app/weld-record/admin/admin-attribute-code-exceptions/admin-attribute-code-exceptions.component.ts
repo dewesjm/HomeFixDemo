@@ -14,7 +14,7 @@ import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { ConditionRule } from '../../routing/routing-conditions';
-import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../../data/signoff-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,
@@ -47,7 +47,7 @@ export class AdminAttributeCodeExceptionsComponent {
   readonly routings = (getTemplates()['Welding'] ?? [])
     .filter(t => t.classification !== 'added')
     .map(t => ({ id: t.id, label: t.label }));
-  readonly typeChoices = getRoutingSignoffTypes();
+  readonly typeChoices = getSignoffTypes();
   readonly conditionFields = exceptionConditionFields();
   readonly text = { appliesWhenText, routingChangeText, typesText, accessibleText, minRtText };
 

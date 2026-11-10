@@ -6,7 +6,7 @@ import { Job } from '../../data/jobs';
 import { StageOption, StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/routing-conditions';
 import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/routing-ids';
-import { getRoutingSignoffTypes } from '../../data/routing-signoff-types';
+import { getSignoffTypes } from '../../data/signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { jointCodeSlots } from './attribute-context';
 import { AttributeCodeException, AttributeStageRules, getAttributeCodeExceptions } from './attribute-code-exceptions';
@@ -89,7 +89,7 @@ export function isJointsTwin(t: Pick<StageTemplate, 'id' | 'includeWhen'>, job: 
 /* the routing's Types after the matching rows: only = just those, add = those as well */
 function withExceptionTypes(options: StageOption[] | undefined, effect: RoutingEffect | null): StageOption[] | undefined {
   if (!effect || (!effect.only && !effect.added.length)) return options;
-  const catalog = getRoutingSignoffTypes();
+  const catalog = getSignoffTypes();
   const option = (value: string): StageOption[] => {
     const own = options?.find(o => o.value === value);
     if (own) return [own];
