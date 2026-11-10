@@ -1,7 +1,7 @@
 /* top-bar coloured dot for synced / pending / offline; the status text shows on hover, or on tap
    for touch screens (tapping anywhere else hides it) */
 import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
-import { SyncService } from '../services/sync.service';
+import { SyncService } from './sync.service';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 
 @Component({

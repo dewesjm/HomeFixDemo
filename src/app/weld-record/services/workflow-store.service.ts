@@ -3,7 +3,7 @@
    their mutations on top of this — it owns no domain logic of its own. */
 import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
 import { Injectable, WritableSignal, inject, signal } from '@angular/core';
-import { SyncService } from './sync.service';
+import { SyncService } from '../sync-status/sync.service';
 import { JOBS, Job } from '../../data/jobs';
 import { stampWho } from '../../data/people';
 import { JobWorkflow, HistoryEntry } from '../model/workflow-types';
