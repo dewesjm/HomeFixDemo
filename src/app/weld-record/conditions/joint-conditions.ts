@@ -6,7 +6,7 @@
    leave it out isn't on the joint at all. Routing-answer clauses (any routing's own fields, e.g. Fit's
    Defer Tack or an NDT routing's Weld Color) are blank until that routing is signed, so a routing that
    uses one is always on the joint and turns required on or off as those routings are signed
-   (routing/on-signoff/route-changes.ts applySignedFlags). */
+   (routing/route-changes.ts applySignedFlags). */
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { Fabrication, StageAnswers } from '../catalogs/field-catalog';

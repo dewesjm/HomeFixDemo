@@ -1,16 +1,16 @@
 /* Moving a joint's routing: going back (never un-sign, see docs/ROUTING.md), Routing Override, Deprogress, and
    discarding unsigned edits */
-import { Job } from '../../../data/jobs';
-import { conditionsMatch, usesFabrication, usesStepAnswers } from '../../conditions/joint-conditions';
-import { JobWorkflow, SignoffUndo, WorkflowStage } from '../../model/workflow-types';
-import { getTemplates } from '../routing-settings-rules';
-import { baseRequired, buildStages } from '../build-stages';
-import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../../attribute-codes/exception-effects';
-import { blankFabricationData } from '../../fabrication/fabrication-fields';
-import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from '../routing-ids';
-import { activeStageId, setRoutingFrom } from '../current-routing';
-import { fabricationSigned, goesBackPastFabrication } from '../../fabrication/fabrication-steps';
-import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
+import { Job } from '../../data/jobs';
+import { conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
+import { JobWorkflow, SignoffUndo, WorkflowStage } from '../model/workflow-types';
+import { getTemplates } from './routing-settings-rules';
+import { baseRequired, buildStages } from './build-stages';
+import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../attribute-codes/exception-effects';
+import { blankFabricationData } from '../fabrication/fabrication-fields';
+import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './routing-ids';
+import { activeStageId, setRoutingFrom } from './current-routing';
+import { fabricationSigned, goesBackPastFabrication } from '../fabrication/fabrication-steps';
+import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
 const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];

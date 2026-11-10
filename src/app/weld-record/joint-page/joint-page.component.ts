@@ -43,7 +43,7 @@ import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../s
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
-import { discardUnsignedEdits } from '../routing/on-signoff/route-changes';
+import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId } from '../routing/routing-ids';
 import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';

@@ -11,7 +11,7 @@ import { excavationNdtStageFor } from './added-routings';
 import { excavationDefinition } from './excavation-definition';
 import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-settings-rules';
 import { routingBarSteps } from '../../routing-bar/routing-bar-steps';
-import { routeBack } from '../on-signoff/route-changes';
+import { routeBack } from '../route-changes';
 import { isExcavationNdtStageId } from '../routing-ids';
 
 describe('Configured regular and NQC Excavation', () => {

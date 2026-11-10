@@ -3,7 +3,7 @@ import { getLocations, locationValue } from '../../data/locations';
 import { WorkflowStage } from '../model/workflow-types';
 import { buildStages, newWorkflow } from '../routing/build-stages';
 import { activeStageId, setRoutingFrom } from '../routing/current-routing';
-import { applySignedFlags } from '../routing/on-signoff/route-changes';
+import { applySignedFlags } from '../routing/route-changes';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';
 import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
 import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';

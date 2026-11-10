@@ -11,7 +11,7 @@ import { RECORDED_SCREENS } from './field-catalog.recording';
 import { exceptionConditionFields } from '../attribute-codes/exception-text';
 import { clauseChoices } from '../admin/admin-signoff-type-definition/condition-choices';
 import { conditionFieldGroups } from '../admin/admin-routing/condition-editing';
-import { recheckFabricationRules } from '../routing/on-signoff/route-changes';
+import { recheckFabricationRules } from '../routing/route-changes';
 import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
 
