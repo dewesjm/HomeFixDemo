@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
-import { JointDetailsComponent } from './joint-details.component';
+import { JointDetailsPanelComponent } from './joint-details-panel.component';
 
 describe('Joint details attribute messages', () => {
   it('exposes supplied messages on focusable badges and expanded details', () => {
-    const fixture = TestBed.createComponent(JointDetailsComponent);
+    const fixture = TestBed.createComponent(JointDetailsPanelComponent);
     fixture.componentRef.setInput('job', { ...JOBS[0], attributeCode1: 'LR', attributeCode2: 'SI', attributeCode3: '', attributeCode4: '' });
     fixture.componentRef.setInput('currentRouting', 'Fit');
     fixture.detectChanges();

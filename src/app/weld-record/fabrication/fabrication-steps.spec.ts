@@ -1,4 +1,4 @@
-import { WorkflowStage } from '../../model/workflow-types';
+import { WorkflowStage } from '../model/workflow-types';
 import { checksFabrication, goesBackPastFabrication } from './fabrication-steps';
 
 const st = (id: string) => ({ id }) as WorkflowStage;

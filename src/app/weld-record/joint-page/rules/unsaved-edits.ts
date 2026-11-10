@@ -1,7 +1,7 @@
 /* What the joint page loaded with, and whether anything typed since then would be lost by leaving
    (the leave-page guard). Signing commits; leaving discards (discardUnsignedEdits). */
 import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
-import { fabricationSigned } from '../../fabrication/rules/fabrication-steps';
+import { fabricationSigned } from '../../fabrication/fabrication-steps';
 
 export interface LoadedJoint {
   fabricationData: Record<string, string>;

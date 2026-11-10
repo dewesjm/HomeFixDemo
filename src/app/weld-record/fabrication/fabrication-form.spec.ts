@@ -1,4 +1,4 @@
-import { JOBS, Job } from '../../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { FABRICATION_FIELDS } from './fabrication-fields';
 import {
   micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired,

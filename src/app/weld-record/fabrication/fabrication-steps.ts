@@ -1,7 +1,7 @@
 /* Which routings own the joint's Fabrication values: Fit records them, and Fit and Fit-Up Insp check
    them. Fixed to those steps, so they aren't offered in Admin. */
-import { WorkflowStage } from '../../model/workflow-types';
-import { isFitupInspId } from '../../routing/routing-ids';
+import { WorkflowStage } from '../model/workflow-types';
+import { isFitupInspId } from '../routing/routing-ids';
 
 const FIT = 'fit';
 

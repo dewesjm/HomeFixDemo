@@ -3,15 +3,15 @@ import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBox } from '@lucide/angular';
-import { FabricationField } from './rules/fabrication-fields';
+import { FabricationField } from '../fabrication/fabrication-fields';
 
 @Component({
-  selector: 'app-fabrication',
+  selector: 'app-fabrication-panel',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideBox],
-  templateUrl: './fabrication.component.html'
+  templateUrl: './fabrication-panel.component.html'
 })
-export class FabricationComponent {
+export class FabricationPanelComponent {
   fabricationData = input.required<Record<string, string>>();
   fields = input.required<FabricationField[]>();
   fabLocked = input<boolean>(false);

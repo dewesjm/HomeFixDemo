@@ -1,10 +1,10 @@
 /* The joint page's Fabrication panel: which fields show, their options, and what's missing */
-import { Job } from '../../../data/jobs';
+import { Job } from '../../data/jobs';
 import { FabricationField, fabricationFieldVisible, fabricationFields } from './fabrication-fields';
-import { requiresTraceability } from '../../../data/mcl-traceability';
-import { locationOptions } from '../../../data/locations';
+import { requiresTraceability } from '../../data/mcl-traceability';
+import { locationOptions } from '../../data/locations';
 import { SHIP_LOCATION_KEYS, shipLocationOptions } from './ship-location-options';
-import { jointDesignOptions } from '../../../data/joint-designs';
+import { jointDesignOptions } from '../../data/joint-designs';
 
 type Fab = Record<string, string>;
 

@@ -6,7 +6,7 @@ import { WorkflowStage } from '../../model/workflow-types';
 import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
 import { FABRICATION_PROBLEM, signProblems, generalSignProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleSignoffFields } from '../../signoff-definition/shown-fields';
-import { fabricationErrors } from '../../fabrication/rules/fabrication-form';
+import { fabricationErrors } from '../../fabrication/fabrication-form';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 

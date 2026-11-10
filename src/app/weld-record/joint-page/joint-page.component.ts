@@ -10,8 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
-import { JointDetailsComponent } from '../joint-details/joint-details.component';
-import { FabricationComponent } from '../fabrication/fabrication.component';
+import { JointDetailsPanelComponent } from '../joint-details-panel/joint-details-panel.component';
+import { FabricationPanelComponent } from '../fabrication-panel/fabrication-panel.component';
 import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
 import { SignoffContext } from '../signoff-panel/signoff-context';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
@@ -38,7 +38,7 @@ import {
   fabricationEditable,
 } from '../routing/current-routing';
 import { routingBarSteps } from '../routing-bar/rules/routing-bar-steps';
-import { FabricationField } from '../fabrication/rules/fabrication-fields';
+import { FabricationField } from '../fabrication/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';
@@ -49,7 +49,7 @@ import { isEngineeringHoldId } from '../routing/routing-ids';
 import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
-import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/rules/fabrication-form';
+import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
 import { StageFormContext, visibleStageFields } from './rules/stage-form';
 import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
@@ -60,7 +60,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RoutingBarComponent, JointDetailsComponent, FabricationComponent, SignoffPanelComponent,
+    CommonModule, FormsModule, RoutingBarComponent, JointDetailsPanelComponent, FabricationPanelComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
   providers: [JointOverridesService, SignoffFormEditsService, SignoffFormErrorsService],

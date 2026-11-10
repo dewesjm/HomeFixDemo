@@ -13,7 +13,7 @@ import { isRoutingLockedField } from '../signoff-definition/stage-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
-import { ReferencesComponent } from '../references/references.component';
+import { ReferencesPanelComponent } from '../references-panel/references-panel.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
 /* fields the live signoff panel already gives a person-search assist to (see weld-record/routing/ndt.ts's
@@ -25,7 +25,7 @@ export interface CorrectTarget { job: Job; stageId: string }
 @Component({
   selector: 'app-correct-stage-dialog',
   standalone: true,
-  imports: [FormsModule, ReferencesComponent, PersonSearchInputComponent],
+  imports: [FormsModule, ReferencesPanelComponent, PersonSearchInputComponent],
   templateUrl: './correct-stage-dialog.component.html'
 })
 export class CorrectStageDialogComponent {

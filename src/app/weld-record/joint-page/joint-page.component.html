@@ -12,9 +12,9 @@
 
   <app-routing-bar [stages]="routingModel()" [selectedRouting]="selectedRouting()" />
 
-  <app-joint-details [job]="j" [currentRouting]="currentRouting()" />
+  <app-joint-details-panel [job]="j" [currentRouting]="currentRouting()" />
 
-  <app-fabrication [fabricationData]="w.fabricationData" [fields]="fabFields()" [fabLocked]="fabLocked()" [jobComplete]="jobComplete()" [fabErrors]="fabErrors()" [fabFieldRequired]="fabFieldRequired" (inputBlur)="fabInputBlur($event.key, $event.value)" (selectChange)="fabSelectChange($event.key, $event.value)" />
+  <app-fabrication-panel [fabricationData]="w.fabricationData" [fields]="fabFields()" [fabLocked]="fabLocked()" [jobComplete]="jobComplete()" [fabErrors]="fabErrors()" [fabFieldRequired]="fabFieldRequired" (inputBlur)="fabInputBlur($event.key, $event.value)" (selectChange)="fabSelectChange($event.key, $event.value)" />
 
   <!-- 5 ───────── Signoff (current stage) ───────── -->
   @if (signoffCtx(); as ctx) {

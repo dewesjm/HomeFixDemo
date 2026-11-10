@@ -12,14 +12,14 @@ import { closesJoint } from '../routing/current-routing';
 import { inspectingLabel } from './rules/inspecting-label';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
-import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';
+import { EngineeringReleasePanelComponent } from '../engineering-release-panel/engineering-release-panel.component';
 import { SignoffContext } from './signoff-context';
 
 @Component({
   selector: 'app-signoff-panel',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, FormsModule, LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX,
-    DefinitionFormComponent, EngineeringReleaseComponent],
+    DefinitionFormComponent, EngineeringReleasePanelComponent],
   templateUrl: './signoff-panel.component.html'
 })
 export class SignoffPanelComponent {

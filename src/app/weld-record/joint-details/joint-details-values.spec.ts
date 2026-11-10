@@ -1,4 +1,4 @@
-import { JOBS, Job } from '../../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { jointDetailsUt, jointDetailsVt } from './joint-details-values';
 
 const job = (ndt: string): Job => ({ ...JOBS[0], ndt });

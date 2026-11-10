@@ -9,7 +9,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideUpload } from '
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
 import { ShipLocationEntry, PSCL_OPTIONS, getShipLocations, setShipLocations } from '../../../data/ship-locations';
-import { hullHasUsage } from '../../fabrication/rules/ship-location-options';
+import { hullHasUsage } from '../../fabrication/ship-location-options';
 import { HULLS, JOBS } from '../../../data/jobs';
 import { isShipboardLocation } from '../../../data/locations';
 import { WorkflowStore } from '../../services/workflow-store.service';

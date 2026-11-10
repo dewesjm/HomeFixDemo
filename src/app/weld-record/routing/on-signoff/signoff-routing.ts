@@ -11,7 +11,7 @@ import { SignoffInput } from '../../model/history';
 import { WorkflowStage, JobWorkflow } from '../../model/workflow-types';
 import { setRoutingFrom } from '../current-routing';
 import { applySignedFlags, routeBack, moveRouting } from '../route-changes';
-import { fabricationSnapshot } from '../../fabrication/rules/fabrication-fields';
+import { fabricationSnapshot } from '../../fabrication/fabrication-fields';
 import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted-routing/added-routings';
 import {
   isRepairStageId,

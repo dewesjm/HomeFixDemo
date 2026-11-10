@@ -5,17 +5,17 @@ import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular'
 import { Job, N_IND_MEANINGS } from '../../data/jobs';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 import { attributeCodeLabel } from '../../data/attribute-codes';
-import { jointDetailsUt, jointDetailsVt } from './rules/joint-details-values';
+import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 
 @Component({
-  selector: 'app-joint-details',
+  selector: 'app-joint-details-panel',
   standalone: true,
   imports: [CommonModule, LucideInfo, LucideChevronDown, LucideChevronUp, TooltipDirective],
-  templateUrl: './joint-details.component.html'
+  templateUrl: './joint-details-panel.component.html'
 })
-export class JointDetailsComponent {
+export class JointDetailsPanelComponent {
   job = input.required<Job>();
   currentRouting = input.required<string>();
 

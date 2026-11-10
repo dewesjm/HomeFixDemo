@@ -1,4 +1,4 @@
-import { setShipLocations } from '../../../data/ship-locations';
+import { setShipLocations } from '../../data/ship-locations';
 import { shipLocationOptions } from './ship-location-options';
 
 describe('ship location options', () => {

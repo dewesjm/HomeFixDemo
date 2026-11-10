@@ -79,7 +79,7 @@ export class SignoffFormErrorsService {
     if (!onFields && !general) return false;
     if (!onFields && !fabrication) return true;
     setTimeout(() => {
-      const err = document.querySelector(onFields ? '.signoff-panel .field-error' : 'app-fabrication .field-error');
+      const err = document.querySelector(onFields ? '.signoff-panel .field-error' : 'app-fabrication-panel .field-error');
       if (!err) return;
       err.scrollIntoView({ behavior: 'smooth', block: 'center' });
       (err.parentElement?.querySelector('input, select') as HTMLElement | null)?.focus({ preventScroll: true });

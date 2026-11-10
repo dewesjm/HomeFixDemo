@@ -14,7 +14,7 @@ import { buildConditionContext } from '../signoff-definition/condition-context';
 import { drawnFieldRule } from '../signoff-definition/shown-fields';
 import { isVerifyRow } from '../catalogs/field-catalog';
 import { showsType } from '../signoff-definition/stage-rules';
-import { ReferencesComponent } from '../references/references.component';
+import { ReferencesPanelComponent } from '../references-panel/references-panel.component';
 import { AffectedItemComponent } from './affected-item.component';
 import { DefinitionFieldComponent } from './definition-field.component';
 import { SignoffContext } from './signoff-context';
@@ -33,7 +33,7 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
 @Component({
   selector: 'app-definition-form',
   standalone: true,
-  imports: [AffectedItemComponent, DefinitionFieldComponent, ReferencesComponent, SignoffHistoryComponent, SignoffTypeComponent,
+  imports: [AffectedItemComponent, DefinitionFieldComponent, ReferencesPanelComponent, SignoffHistoryComponent, SignoffTypeComponent,
     StageDecisionComponent, VerifyGridComponent],
   host: { class: 'block' },
   template: `
@@ -64,7 +64,7 @@ type Cell = { kind: 'stage'; field: FormField } | { kind: 'signoff'; field: Form
                   } @else if (cell.kind === 'history') {
                     <app-signoff-history class="w-full" [ctx]="ctx()" />
                   } @else if (cell.kind === 'references') {
-                    <app-references class="w-full" [card]="true" [references]="ctx().references()" [disabled]="ctx().jobComplete() || referencesDisabled()"
+                    <app-references-panel class="w-full" [card]="true" [references]="ctx().references()" [disabled]="ctx().jobComplete() || referencesDisabled()"
                                     (add)="ctx().addReferences($event); ctx().clearFieldError(st.id, 'references')" (remove)="ctx().removeReference($event)" />
                     @if (ctx().fieldError(st.id, 'references'); as err) { <div class="field-error w-full">{{ err }}</div> }
                   } @else if (cell.kind === 'type') {

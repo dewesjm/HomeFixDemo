@@ -15,12 +15,12 @@ import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
 
 @Component({
-  selector: 'app-engineering-release',
+  selector: 'app-engineering-release-panel',
   standalone: true,
   imports: [FormsModule, AppDateTimePipe, LucideCheck],
-  templateUrl: './engineering-release.component.html',
+  templateUrl: './engineering-release-panel.component.html',
 })
-export class EngineeringReleaseComponent {
+export class EngineeringReleasePanelComponent {
   job = input.required<Job>();
   /* the hold was signed: the page goes back to its list, as after any signoff */
   signedOff = output<void>();

@@ -6,12 +6,12 @@ import { AppDateTimePipe } from '../../shared/date-format';
 import { Reference } from '../model/workflow-types';
 
 @Component({
-  selector: 'app-references',
+  selector: 'app-references-panel',
   standalone: true,
   imports: [AppDateTimePipe, CommonModule, LucidePaperclip, LucideFile, LucideTrash2],
-  templateUrl: './references.component.html'
+  templateUrl: './references-panel.component.html'
 })
-export class ReferencesComponent {
+export class ReferencesPanelComponent {
   references = input.required<Reference[]>();
   disabled = input<boolean>(false);
   /* drawn as a box inside the sign-off form rather than as a panel of its own */

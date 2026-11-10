@@ -49,7 +49,7 @@ export function excavationNdtStageFor(job: Job, inspectionType: string, repairId
 /* ── Engineering Hold ── */
 
 /* Signing a step with accepted deviations adds this right after it, and the joint waits there until
-   Engineering enters comments and sets the routing on that step (EngineeringReleaseComponent,
+   Engineering enters comments and sets the routing on that step (EngineeringReleasePanelComponent,
    DeviationService.disposition); Pipe Welding's Engineering role lists the joints waiting. Its
    Signoff button never shows. */
 export function nextEngineeringHoldId(stages: { id: string }[]): string {
