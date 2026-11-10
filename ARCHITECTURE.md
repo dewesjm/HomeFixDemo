@@ -334,7 +334,7 @@ src/app/
     assignments.ts       Assignment model + seeded generator (36)
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     weld-assignment.ts   Stand-in for the external system that sets GWP / WTN / Filler Metal (see "External assignment")
-    shops.ts, weld-positions.ts, penetrants.ts, ship-locations.ts, defect-codes.ts, inspection-procedures.ts,
+    locations.ts, weld-positions.ts, penetrants.ts, ship-locations.ts, defect-codes.ts, inspection-procedures.ts,
     joint-designs.ts, characteristics.ts, mcl-traceability.ts, material-classification.ts, admin-groups.ts,
     quick-links.ts       Admin lookup tables
     banner.ts            Admin banner load/save/bannerFor(page)

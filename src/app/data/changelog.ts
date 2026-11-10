@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['Admin > Signoff Types now opens at /admin/signoff-types, and its Excel export is named signoff-types. Saved changes on this page were reset to the starting Types.',
+    changed: ['Admin > Locations: saved changes to the list were reset to the starting locations.',
+      'Admin > Signoff Types now opens at /admin/signoff-types, and its Excel export is named signoff-types. Saved changes on this page were reset to the starting Types.',
       'Admin > Signoff Type to Routing now opens at /admin/signoff-type-routing, and its Excel export is named signoff-type-routing. Saved changes on this page were reset to the starting rows.',
       'Admin condition droplists: every field now starts with where it comes from, for example Joint Details: N Ind. or Calculated: Controlled Material, on Routing Settings, Qualifications, Signoff Type to Routing, personas and Attribute Code Exceptions. Each droplist is now wide enough for its full names.',
       'Admin > Signoff Type Forms: the search box beside the condition and Prepopulated from droplists is gone.',

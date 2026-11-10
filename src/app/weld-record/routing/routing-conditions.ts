@@ -5,7 +5,7 @@
    leave it out isn't on the joint at all. Step-answer clauses (any step's own fields, e.g. Fit's
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
-   (workflow/route-changes.ts applySignedFlags). */
+   (on-signoff/route-changes.ts applySignedFlags). */
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';

@@ -11,7 +11,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
-import { isShipboardShop } from '../../data/shops';
+import { isShipboardLocationName } from '../../data/locations';
 import { hullHasUsage } from '../../data/ship-locations';
 import { TableState } from '../../shared/table-state';
 import { TableToolbarComponent } from '../../shared/table-toolbar.component';
@@ -46,7 +46,7 @@ export class MyAssignmentsComponent {
   }
 
   /* a Shipboard assignment's Level/Deck/Frame/P-S-CL/Usage (no Usage on S and D hulls) are the joint's own Fabrication values, live */
-  isShipboard = (a: Assignment) => isShipboardShop(a.location);
+  isShipboard = (a: Assignment) => isShipboardLocationName(a.location);
   /* S and D hulls have no Usage */
   hasUsage = (a: Assignment) => hullHasUsage(this.jobFor(a)?.hull ?? '');
 

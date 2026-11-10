@@ -1,6 +1,6 @@
 /* Fabrication: the cross-step data section on a Welding joint (location, MICs, drawing rev...) */
 import { jointDesignOptions } from '../../data/joint-designs';
-import { isShipboardLocation, shopOptions } from '../../data/shops';
+import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { hullHasUsage } from '../../data/ship-locations';
 import { SignoffInput } from '../model/workflow-types';
 
@@ -22,7 +22,7 @@ export interface FabricationField {
 
 export const FABRICATION_FIELDS: FabricationField[] = [
   // Line 1: Location and Specific Location
-  { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: shopOptions() },
+  { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: locationOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Level/Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
   // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts).
@@ -65,7 +65,7 @@ export function fabricationSnapshot(fab: Record<string, string>, hull: string): 
   return fabricationFields(hull)
     .filter(f => fabricationFieldVisible(f, fab))
     .map(f => {
-      const options = f.key === 'location' ? shopOptions()
+      const options = f.key === 'location' ? locationOptions()
         : f.key === 'revisedJointDesign' ? jointDesignOptions()
         : f.options;
       const raw = fab[f.key] ?? '';

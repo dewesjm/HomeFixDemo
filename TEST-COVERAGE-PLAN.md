@@ -256,7 +256,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [seed-fabrication.ts](src/app/data/seed-fabrication.ts) | No | 100% |
 | [seeded-workflow.ts](src/app/data/seeded-workflow.ts) | Yes | 100% |
 | [ship-locations.ts](src/app/data/ship-locations.ts) | Yes | 93.93% |
-| [shops.ts](src/app/data/shops.ts) | Yes | 90% |
+| [locations.ts](src/app/data/locations.ts) | Yes | 90% |
 | [storage-keys.ts](src/app/data/storage-keys.ts) | No | 100% |
 | [weld-assignment.ts](src/app/data/weld-assignment.ts) | No | 100% |
 | [weld-planning.ts](src/app/data/weld-planning.ts) | No | 71.26% |

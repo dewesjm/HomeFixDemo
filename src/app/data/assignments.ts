@@ -3,7 +3,7 @@ import { JOBS } from './jobs';
 import { seededWorkflow } from './seeded-workflow';
 import { currentRoutingLabel } from '../weld-record/routing/current-routing';
 import { seedFabricationData } from './seed-fabrication';
-import { getShops, isShipboardLocation } from './shops';
+import { getLocations, isShipboardLocation } from './locations';
 import { allWtns } from './procedures';
 
 export interface Assignment {
@@ -74,9 +74,9 @@ function generateAssignments(): Assignment[] {
   const rand = seeded(42);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const assignments: Assignment[] = [];
-  const shops = getShops();
-  const ashore = shops.filter(s => !s.shipboard);
-  const shipboard = shops.find(s => s.shipboard);
+  const locations = getLocations();
+  const ashore = locations.filter(s => !s.shipboard);
+  const shipboard = locations.find(s => s.shipboard);
 
   /* one or more real routing labels a role's assignments draw from, for variety within the role's
      own block -- role is assigned directly per entry below, not derived from the routing label, so
@@ -154,7 +154,7 @@ function generateAssignments(): Assignment[] {
       trade: job.trade,
       /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
          like any other assignment; only a couple of examples get the shipboard treatment below */
-      location: pick(ashore.length ? ashore : shops)?.name ?? '',
+      location: pick(ashore.length ? ashore : locations)?.name ?? '',
       specificLocation: pick(SPECIFIC_LOCATIONS),
       assignedRoles,
       source: nextSource(primaryRole),

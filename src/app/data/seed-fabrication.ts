@@ -1,7 +1,7 @@
 /* Demo data: deterministic Fabrication values for a joint, and the helpers the seeded workflows share */
 import { Job } from './jobs';
 import { DEFAULT_SHIP_LOCATIONS } from './ship-locations';
-import { getShops, shopValue } from './shops';
+import { getLocations, locationValue } from './locations';
 import { requiresTraceability } from './mcl-traceability';
 
 /* deterministic PRNG, stable per seed across reloads (mirrors jobs.ts) */
@@ -28,11 +28,11 @@ const seedWeMemo = (rand: () => number) => (rand() < 0.3 ? '' : `M-${10 + Math.f
 export function seedFabricationData(job: Job): Record<string, string> {
   const rand = seeded(job.id.charCodeAt(0) * 131 + job.id.charCodeAt(1) * 17 + job.id.charCodeAt(3));
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
-  const shops = getShops();
-  const ship = shops.find(s => s.shipboard);
-  const ashore = shops.filter(s => !s.shipboard);
+  const locations = getLocations();
+  const ship = locations.find(s => s.shipboard);
+  const ashore = locations.filter(s => !s.shipboard);
   const onShip = !!ship && (rand() < 0.3 || !ashore.length);
-  const location = shopValue(onShip ? ship!.name : pick(ashore).name);
+  const location = locationValue(onShip ? ship!.name : pick(ashore).name);
   /* a real row from the hull's sample Ship Locations, so every droplist shows the saved value */
   const shipRows = DEFAULT_SHIP_LOCATIONS.filter(e => e.hull === job.hull);
   const shipRow = onShip && shipRows.length ? pick(shipRows) : undefined;

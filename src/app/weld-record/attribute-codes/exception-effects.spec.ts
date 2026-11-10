@@ -1,5 +1,5 @@
 import { JOBS, Job } from '../../data/jobs';
-import { getShops, shopValue } from '../../data/shops';
+import { getLocations, locationValue } from '../../data/locations';
 import { WorkflowStage } from '../model/workflow-types';
 import { buildStages, newWorkflow } from '../routing/build-stages';
 import { activeStageId, setRoutingFrom } from '../routing/current-routing';
@@ -108,19 +108,19 @@ describe('Attribute Code Exceptions', () => {
     expect(dropped.some(r => r.startsWith('Root NDT 5X/VT now offers 5X') && r.endsWith('(attribute code GV)'))).toBeTrue();
 
     const si = job('SI', { rtRoot: '100' });
-    const ashore = getShops().find(s => !s.shipboard)!;
+    const ashore = getLocations().find(s => !s.shipboard)!;
     const wf = newWorkflow(si);
-    const fit = { ...wf, stages: setRoutingFrom(wf.stages, 'fit'), fabricationData: { location: shopValue(ashore.name) } };
+    const fit = { ...wf, stages: setRoutingFrom(wf.stages, 'fit'), fabricationData: { location: locationValue(ashore.name) } };
     const offered = routeSignoff(fit, si, 'fit').reasons;
     expect(offered.some(r => r.startsWith('Root NDT ') && r.includes(' now offers ') && r.includes('VT') && r.endsWith('(attribute code SI)'))).toBeTrue();
   });
 
   it('SI offers VT on Root UT/RT once Fit is signed with a shop Fabrication Location', () => {
     const j = job('SI', { rtRoot: '100' });
-    const ashore = getShops().find(s => !s.shipboard)!;
+    const ashore = getLocations().find(s => !s.shipboard)!;
     let stages = buildStages(j);
     expect(types(stage(stages, 'root-ndt-utrt'))).not.toContain('vt');
-    stages = applySignedFlags(signed(stages, 'fit'), j, { location: shopValue(ashore.name) });
+    stages = applySignedFlags(signed(stages, 'fit'), j, { location: locationValue(ashore.name) });
     expect(types(stage(stages, 'root-ndt-utrt'))).toContain('vt');
   });
 

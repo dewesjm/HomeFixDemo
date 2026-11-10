@@ -10,7 +10,7 @@ import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
 import { ShipLocationEntry, PSCL_OPTIONS, getShipLocations, hullHasUsage, setShipLocations } from '../../../data/ship-locations';
 import { HULLS, JOBS } from '../../../data/jobs';
-import { isShipboardLocation } from '../../../data/shops';
+import { isShipboardLocation } from '../../../data/locations';
 import { WorkflowStore } from '../../services/workflow-store.service';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';

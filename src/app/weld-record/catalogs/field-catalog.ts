@@ -13,7 +13,7 @@ import { requiresTraceability } from '../../data/mcl-traceability';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
 import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { isShipboardLocation, shopOptions } from '../../data/shops';
+import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { weldColorOptions } from '../../data/weld-colors';
 import { weldPositionOptions } from '../../data/weld-positions';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
@@ -230,7 +230,7 @@ const CALCULATED: RuleEntry[] = inSection('Calculated', [
 
 /* Location and Revised Joint Design read their admin-edited lists each time they're asked */
 function fabricationOptions(key: string, own?: { label: string; value: string }[]): { label: string; value: string }[] {
-  if (key === 'location') return shopOptions();
+  if (key === 'location') return locationOptions();
   if (key === 'revisedJointDesign') return jointDesignOptions();
   return own ?? [];
 }

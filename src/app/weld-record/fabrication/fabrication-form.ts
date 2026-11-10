@@ -2,7 +2,7 @@
 import { Job } from '../../data/jobs';
 import { FabricationField, fabricationFieldVisible, fabricationFields } from './fabrication-fields';
 import { requiresTraceability } from '../../data/mcl-traceability';
-import { shopOptions } from '../../data/shops';
+import { locationOptions } from '../../data/locations';
 import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../../data/ship-locations';
 import { jointDesignOptions } from '../../data/joint-designs';
 
@@ -26,7 +26,7 @@ export function fabricationFieldsShown(job: Job | undefined, fab: Fab): Fabricat
 /* Location, Ship Location and Revised Joint Design get their options at runtime (admin lists); the
    static field definition has none. Anything that shows a fabrication value's label must go through this. */
 function withFabricationOptions(f: FabricationField, job: Job | undefined, fab: Fab): FabricationField {
-  if (f.key === 'location') return { ...f, options: shopOptions() };
+  if (f.key === 'location') return { ...f, options: locationOptions() };
   if (SHIP_LOCATION_KEYS.includes(f.key) && job) {
     const options = shipLocationOptions(f.key, job.hull, fab);
     /* a saved value that's no longer on the list still shows, rather than a blank box */

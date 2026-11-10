@@ -6,13 +6,13 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angula
 
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
-import { Shop, getShops, setShops } from '../../../data/shops';
+import { LocationEntry, getLocations, setLocations } from '../../../data/locations';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 
-interface LocRow extends Shop {
+interface LocRow extends LocationEntry {
   uid: string;
 }
 
@@ -30,7 +30,7 @@ export class AdminLocationsComponent {
   private confirm = inject(ConfirmService);
   private seq = 0;
 
-  rows = signal<LocRow[]>(getShops().map((s, i) => ({ ...s, uid: `l-${i}` })));
+  rows = signal<LocRow[]>(getLocations().map((s, i) => ({ ...s, uid: `l-${i}` })));
   editingId = signal<string | null>(null);
   private cloned: Record<string, LocRow> = {};
   table = new TableState<LocRow>(['name']);
@@ -92,7 +92,7 @@ export class AdminLocationsComponent {
   }
 
   private persist() {
-    setShops(this.rows()
+    setLocations(this.rows()
       .filter(r => r.name.trim())
       .map(r => ({ name: r.name.trim(), shipboard: r.shipboard })));
   }

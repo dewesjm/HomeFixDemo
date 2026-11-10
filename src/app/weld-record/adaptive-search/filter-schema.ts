@@ -5,7 +5,7 @@ import { Job } from '../../data/jobs';
 import { FABRICATION_FIELDS, fabricationFieldVisible, fabricationFields } from '../fabrication/fabrication-fields';
 import { JobWorkflow } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
-import { shopOptions } from '../../data/shops';
+import { locationOptions } from '../../data/locations';
 import { jointDesignOptions } from '../../data/joint-designs';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields } from '../catalogs/field-choices';
@@ -105,7 +105,7 @@ function fabValue(fab: Record<string, string>, key: string, hull: string): strin
   const f = fabricationFields(hull).find(x => x.key === key);
   if (!f) return '';
   if (!fabricationFieldVisible(f, fab)) return '';
-  const options = key === 'location' ? shopOptions() : key === 'revisedJointDesign' ? jointDesignOptions() : f.options;
+  const options = key === 'location' ? locationOptions() : key === 'revisedJointDesign' ? jointDesignOptions() : f.options;
   const raw = fab[key] ?? '';
   return options?.find(o => o.value === raw)?.label ?? raw;
 }

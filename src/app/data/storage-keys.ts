@@ -12,7 +12,7 @@ export const STORAGE = {
   repairCodes: 'welding:repair-codes:v1',
   weldColors: 'welding:weld-colors:v1',
   weldPositions: 'welding:weld-positions:v1',
-  shops: 'welding:shops:v3',
+  locations: 'welding:locations:v1',
   jointDesigns: 'welding:joint-designs:v3',
   mclTraceability: 'welding:mcl-traceability:v2',
   materialClassification: 'welding:material-classification:v5',
