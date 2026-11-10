@@ -23,6 +23,7 @@ Queued in AGENTS.md, in this order.
 - [ ] **Common sign-off validation:** every routing should decide and show what blocks Signoff the same way. Today a problem can surface three ways: a line in the reasons list (and Signoff disabled), a red message on a field shown only after clicking Signoff, or neither. Example: on Fit, an invalid Fabrication value blocks Signoff through a hidden `__fabrication` field error nothing draws, while Fit-Up Insp lists "Fix the fabrication errors" and disables the button. Also: ordinary required fields block only on click, not in the reasons list. Propose one approach (where checks live: `joint-page/rules/sign-validation.ts`; what shows where) before building.
 - [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
 - [ ] **Review the .md files for leftovers:** go through the repo's Markdown docs for stale, completed or duplicated content. Report findings before removing anything. Not queued in AGENTS.md.
+- [ ] **Rename `work-history/`:** the folder holds the History page (and `history-table`, which Records Review also uses), but its name doesn't say so. Look at renaming it; propose names before changing anything. Not queued in AGENTS.md.
 
 ## Deferred testing packages
 
