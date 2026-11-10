@@ -61,53 +61,54 @@ function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
     && (f.type === 'checkbox' ? stage.signoffInputs[f.key] !== 'yes' : (stage.signoffInputs[f.key] ?? '').trim().length === 0));
 }
 
-/* Everything on the step itself preventing it from being signed, in reader-friendly wording (holds
-   and locked earlier steps are the caller's to check first) */
-export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
-  const reasons: string[] = [];
+/* One thing stopping a signoff: a red message on a field (`field`, the key after `${stageId}:`), a
+   line in the reasons list (`reason`), or both */
+interface SignProblem { field?: string; message: string; reason?: string }
+
+/* Every check on the step itself, run once; signProblems() and stageFieldErrors() each read their part.
+   Holds and locked earlier steps are the caller's to check first. On a field, a later problem replaces
+   an earlier one. */
+function stageProblems(stage: WorkflowStage, ctx: SignContext): SignProblem[] {
+  const out: SignProblem[] = [];
+  const both = (field: string, message: string) => out.push({ field, message, reason: message });
+  const onField = (field: string, message: string) => out.push({ field, message });
+  const listed = (reason: string) => out.push({ message: reason, reason });
+
   const accessError = attributeAccessError(stage);
-  if (accessError) reasons.push(accessError);
+  if (accessError) both('__attributes', accessError);
   const decision = drawnRule(stage, ctx, DECISION_KEY);
-  if (decision.required && !stage.result) reasons.push(decision.requiredMessage || 'Choose SAT or UNSAT');
-  if (decision.shown && unsatWithoutRejectTarget(stage)) reasons.push(UNSAT_NO_TARGET);
-  if (inspectionTypeRequired(stage) && !stage.inspectionType) reasons.push('Select the inspection performed');
-  /* Fit needs the required Fabrication values; Fit-Up Insp needs Fabrication free of errors (below) */
+  if (decision.required && !stage.result) both('__decision', decision.requiredMessage || 'Choose SAT or UNSAT');
+  if (decision.shown && unsatWithoutRejectTarget(stage)) both('__decision', UNSAT_NO_TARGET);
+  if (inspectionTypeRequired(stage) && !stage.inspectionType) both('__inspectionType', 'Select the inspection performed');
+
+  /* Fabrication: the values themselves are highlighted on the Fabrication panel (always live). Fit
+     lists its missing required values and stops on any panel error; Fit-Up Insp lists the panel's errors */
+  const fabHasErrors = Object.keys(ctx.fabErrors).length > 0;
   if (needsFabricationComplete(stage.id)) {
     const missing = missingFitFabrication(ctx.job, ctx.fab);
-    if (missing.length) reasons.push(`Fabrication: ${missing.join(', ')}`);
+    if (missing.length) listed(`Fabrication: ${missing.join(', ')}`);
+    if (fabHasErrors) onField('__fabrication', 'Fix the fabrication errors');
   }
-  if (unverifiedRows(stage, ctx).length) {
-    reasons.push(verifyAgainst(stage) === 'fabrication' ? 'Verify every fitting value' : 'Verify every required record field');
-  }
-  if (blocksOnFabricationErrors(stage.id) && Object.keys(ctx.fabErrors).length > 0) reasons.push('Fix the fabrication errors');
-  const rt = rtDegreeError(ctx.job, stage);
-  if (rt) reasons.push(rt);
-  const missingSignoff = missingSignoffFields(stage, ctx).map(f => f.label);
-  if (missingSignoff.length) reasons.push(`Fill in ${missingSignoff.join(', ')}`);
-  return reasons;
-}
+  /* a verify grid: one reason, and each unchecked required row gets its own message */
+  const unverified = unverifiedRows(stage, ctx);
+  if (unverified.length) listed(verifyAgainst(stage) === 'fabrication' ? 'Verify every fitting value' : 'Verify every required record field');
+  if (blocksOnFabricationErrors(stage.id) && fabHasErrors) listed('Fix the fabrication errors');
 
-/* every field error on the step, for highlighting after a sign attempt; empty = can be signed */
-export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record<string, string> {
-  const errors: Record<string, string> = {};
-  const key = (k: string) => `${stage.id}:${k}`;
-  const accessError = attributeAccessError(stage);
-  if (accessError) errors[key('__attributes')] = accessError;
-  const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
-  /* the shown fields, required as their rules say now (a definition's field need not be in the template) */
+  /* the shown fields, required as their rules say now (a definition's field need not be in the template).
+     Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
   for (const f of ctx.visibleFields) {
     const val = stage.inputs?.[f.key];
-    if (f.required && (f.type === 'checkbox' ? val !== 'yes' : val === undefined || val === null || val === '')) errors[key(f.key)] = requiredError(f);
+    if (f.required && (f.type === 'checkbox' ? val !== 'yes' : val === undefined || val === null || val === '')) onField(f.key, requiredError(f));
     const typed = typedRequirementError(stage, f);
-    if (typed) errors[key(f.key)] = typed;
-    /* Actual PH/IP out of range isn't an error: it's a deviation (fieldWarning, detectDeviations) */
+    if (typed) onField(f.key, typed);
   }
+  const visibleKeys = new Set(ctx.visibleFields.map(f => f.key));
   for (const pair of ACTUAL_MIN_MAX) {
     const err = visibleKeys.has(pair.max) ? actualOrderError(stage.inputs ?? {}, pair) : '';
-    if (err && !errors[key(pair.max)]) errors[key(pair.max)] = err;
+    if (err && !out.some(p => p.field === pair.max)) onField(pair.max, err);
   }
-  /* each unchecked required verify-grid row gets its own error (the blockers give one summary reason) */
-  for (const f of unverifiedRows(stage, ctx)) errors[key(f.key)] = requiredError(f);
+  for (const f of unverified) onField(f.key, requiredError(f));
+
   /* Weld Build-Up's Affected Item, while it's shown: at least one while required, and each picked
      member's MIC verified row checked while its rule makes it required */
   const affected = drawnRule(stage, ctx, 'affectedItem');
@@ -116,27 +117,36 @@ export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record
     const items = raw ? raw.split(',') : [];
     const job = ctx.job;
     const condCtx = buildConditionContext(stage, job, ctx.stages ?? [], ctx.fab);
-    if (affected.required && !items.length) errors[key('affectedItem')] = affected.requiredMessage || 'Select at least one Affected Item';
+    if (affected.required && !items.length) onField('affectedItem', affected.requiredMessage || 'Select at least one Affected Item');
     const mic1 = drawnFieldRule(stage, condCtx, 'affectedMicVerified1');
     if (items.includes('joiningItem') && mic1.required && stage.inputs?.['micVerified1'] !== 'yes') {
-      errors[key('affectedItem')] = mic1.requiredMessage || 'Please verify MIC for ' + (job?.joiningItem || 'item');
+      onField('affectedItem', mic1.requiredMessage || 'Please verify MIC for ' + (job?.joiningItem || 'item'));
     }
     const mic2 = drawnFieldRule(stage, condCtx, 'affectedMicVerified2');
     if (items.includes('joinToItem') && mic2.required && stage.inputs?.['micVerified2'] !== 'yes') {
-      errors[key('affectedItem')] = mic2.requiredMessage || 'Please verify MIC for ' + (job?.joinToItem || 'item');
+      onField('affectedItem', mic2.requiredMessage || 'Please verify MIC for ' + (job?.joinToItem || 'item'));
     }
   }
-  const decision = drawnRule(stage, ctx, DECISION_KEY);
-  if (decision.required && !stage.result) errors[key('__decision')] = decision.requiredMessage || 'Choose SAT or UNSAT';
-  if (decision.shown && unsatWithoutRejectTarget(stage)) errors[key('__decision')] = UNSAT_NO_TARGET;
   const references = drawnRule(stage, ctx, 'references');
-  if (references.required && !ctx.referenceCount) errors[key('references')] = references.requiredMessage || standardRequiredMessage('references', 'References');
-  if (inspectionTypeRequired(stage) && !stage.inspectionType) errors[key('__inspectionType')] = 'Select the inspection performed';
-  /* the fabrication values are highlighted on the Fabrication panel itself (always live); this only blocks signing */
-  if (needsFabricationComplete(stage.id) && Object.keys(ctx.fabErrors).length > 0) errors[key('__fabrication')] = 'Fix the fabrication errors';
-  for (const f of missingSignoffFields(stage, ctx)) errors[key(f.key)] = requiredError(f);
+  if (references.required && !ctx.referenceCount) onField('references', references.requiredMessage || standardRequiredMessage('references', 'References'));
+
   const rt = rtDegreeError(ctx.job, stage);
-  if (rt) errors[key('degreeRt')] = rt;
+  if (rt) both('degreeRt', rt);
+  const missingSignoff = missingSignoffFields(stage, ctx);
+  for (const f of missingSignoff) onField(f.key, requiredError(f));
+  if (missingSignoff.length) listed(`Fill in ${missingSignoff.map(f => f.label).join(', ')}`);
+  return out;
+}
+
+/* Everything on the step itself preventing it from being signed, in reader-friendly wording */
+export function signProblems(stage: WorkflowStage, ctx: SignContext): string[] {
+  return stageProblems(stage, ctx).flatMap(p => (p.reason ? [p.reason] : []));
+}
+
+/* every field error on the step, for highlighting after a sign attempt; empty = no field errors */
+export function stageFieldErrors(stage: WorkflowStage, ctx: SignContext): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const p of stageProblems(stage, ctx)) if (p.field) errors[`${stage.id}:${p.field}`] = p.message;
   return errors;
 }
 
