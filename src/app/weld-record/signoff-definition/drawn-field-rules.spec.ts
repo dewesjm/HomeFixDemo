@@ -1,5 +1,5 @@
 import { JOBS } from '../../data/jobs';
-import { stageFieldErrors, SignContext } from '../joint-page/rules/sign-validation';
+import { stageFieldErrors, SignContext } from '../signoff/sign-validation';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';

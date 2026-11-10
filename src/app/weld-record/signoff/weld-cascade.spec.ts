@@ -1,12 +1,12 @@
-import { formInputFields } from '../../signoff-definition/form-fields';
-import { JOBS } from '../../../data/jobs';
-import { buildStages } from '../../routing/build-stages';
-import { WorkflowStage } from '../../model/workflow-types';
-import { fillChanges } from '../../signoff-definition/field-fill';
-import { isFieldLocked } from '../../signoff-definition/field-locks';
-import { setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
-import { getActivationForStep } from '../../signoff-definition/signoff-type-form-rules';
-import { procedures } from '../../../data/procedures';
+import { formInputFields } from '../signoff-definition/form-fields';
+import { JOBS } from '../../data/jobs';
+import { buildStages } from '../routing/build-stages';
+import { WorkflowStage } from '../model/workflow-types';
+import { fillChanges } from '../signoff-definition/field-fill';
+import { isFieldLocked } from '../signoff-definition/field-locks';
+import { setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
+import { getActivationForStep } from '../signoff-definition/signoff-type-form-rules';
+import { procedures } from '../../data/procedures';
 import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
 const job = JOBS[0];

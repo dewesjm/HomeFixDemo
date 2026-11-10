@@ -1,14 +1,14 @@
-import { formInputFields } from '../../signoff-definition/form-fields';
-import { JOBS, Job } from '../../../data/jobs';
-import { buildStages } from '../../routing/build-stages';
-import { inspectionTypeRequired } from '../../signoff-definition/stage-rules';
-import { WorkflowStage } from '../../model/workflow-types';
-import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
+import { formInputFields } from '../signoff-definition/form-fields';
+import { JOBS, Job } from '../../data/jobs';
+import { buildStages } from '../routing/build-stages';
+import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
+import { WorkflowStage } from '../model/workflow-types';
+import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
 import { FABRICATION_PROBLEM, signProblems, generalSignProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
-import { visibleSignoffFields } from '../../signoff-definition/shown-fields';
-import { fabricationErrors } from '../../fabrication/fabrication-form';
+import { visibleSignoffFields } from '../signoff-definition/shown-fields';
+import { fabricationErrors } from '../fabrication/fabrication-form';
 import { visibleStageFields } from './stage-form';
-import { isVerifyRow } from '../../catalogs/field-catalog';
+import { isVerifyRow } from '../catalogs/field-catalog';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });

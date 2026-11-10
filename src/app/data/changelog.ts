@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor page and panel folder names (Pipe Welding, History, Makeup, My Assignments, Fabrication, Joint Details, References, Engineering Release, Routing).',
+      'Refactor the sign-off form rules into their own folder.',
       'Admin pages: shorter descriptions under each title, saying what the page is for and what it changes.',
       'Saved Routing Settings were reset (persona settings renamed).',
       'Pipe Welding now opens at /pipe-welding (Classic at /pipe-welding-classic).',

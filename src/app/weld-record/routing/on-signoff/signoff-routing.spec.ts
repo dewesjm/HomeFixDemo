@@ -6,7 +6,7 @@ import { newWorkflow } from '../build-stages';
 import { activeStageId } from '../current-routing';
 import { updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { typeChange } from '../../joint-page/rules/type-change';
+import { typeChange } from '../../signoff/type-change';
 import { setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
 import { getActivationForStep } from '../../signoff-definition/signoff-type-form-rules';
 

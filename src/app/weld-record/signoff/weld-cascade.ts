@@ -2,13 +2,13 @@
    WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
    their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right
    now is left alone here. */
-import { formInputFields } from '../../signoff-definition/form-fields';
-import { FormField } from '../../catalogs/field-catalog';
-import { WorkflowStage } from '../../model/workflow-types';
-import { SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
-import { isFilledByRule } from '../../signoff-definition/field-fill';
-import { getProcedureByGwpWtn } from '../../../data/procedures';
-import { hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../../weld-engineering/procedure-options';
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../catalogs/field-catalog';
+import { WorkflowStage } from '../model/workflow-types';
+import { SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
+import { isFilledByRule } from '../signoff-definition/field-fill';
+import { getProcedureByGwpWtn } from '../../data/procedures';
+import { hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../weld-engineering/procedure-options';
 
 export interface FieldChange { field: FormField; value: string }
 

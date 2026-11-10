@@ -97,7 +97,7 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
    6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
    Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
    metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
-   weld-engineering/procedure-options.ts gwpOptionsForMaterials, weld-record/joint-page/rules/stage-form.ts). */
+   weld-engineering/procedure-options.ts gwpOptionsForMaterials, weld-record/signoff/stage-form.ts). */
 export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
   '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
@@ -128,7 +128,7 @@ export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 export const NDT_EACH_VALUES = NDT_REQUIREMENT_VALUES.filter(v => v !== 'UT');
 /* Degree of RT: NA, or a number of degrees, in number order. The values of RT Degree Root/Final
    (required) and of the Degree of RT Performed signoff field, which must be at least the required one
-   before its RT NDT routing can be signed (signProblems() in weld-record/joint-page/rules/sign-validation.ts). */
+   before its RT NDT routing can be signed (signProblems() in weld-record/signoff/sign-validation.ts). */
 export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
   ['NA', '10', '60', '75', '100', '360'].map(v => ({ label: v, value: v }));
 /* RT Degree Root/Final seeds, with real-data proportions (other valid degrees exist but aren't used in practice):

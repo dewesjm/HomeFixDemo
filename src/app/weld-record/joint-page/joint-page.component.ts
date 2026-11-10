@@ -16,8 +16,8 @@ import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component'
 import { SignoffContext } from '../signoff-panel/signoff-context';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
 import { JointOverridesService } from './joint-overrides.service';
-import { SignoffFormEditsService } from './signoff-form-edits.service';
-import { SignoffFormErrorsService } from './signoff-form-errors.service';
+import { SignoffFormEditsService } from '../signoff/signoff-form-edits.service';
+import { SignoffFormErrorsService } from '../signoff/signoff-form-errors.service';
 
 import { Job } from '../../data/jobs';
 import { findJointByRoute } from './joint-route';
@@ -50,9 +50,9 @@ import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
-import { StageFormContext, visibleStageFields } from './rules/stage-form';
-import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from './rules/sign-validation';
-import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
+import { StageFormContext, visibleStageFields } from '../signoff/stage-form';
+import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from '../signoff/sign-validation';
+import { fitupVerifyValue, reviewVerifyValue } from '../signoff/verify-values';
 import { routePreviewLabel } from '../routing/routing-preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 

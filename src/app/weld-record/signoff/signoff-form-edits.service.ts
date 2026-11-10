@@ -14,12 +14,12 @@ import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { isAssignedStage } from '../weld-assignment/weld-assignment-rules';
 import { show } from '../signoff-definition/stage-display';
 import { fillChanges } from '../signoff-definition/field-fill';
-import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './rules/stage-form';
-import { requiredError } from './rules/sign-validation';
-import { selectChangeCascade, typedRequirementChanges } from './rules/weld-cascade';
-import { typeChange } from './rules/type-change';
+import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './stage-form';
+import { requiredError } from './sign-validation';
+import { selectChangeCascade, typedRequirementChanges } from './weld-cascade';
+import { typeChange } from './type-change';
 import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
-import { JointOverridesService } from './joint-overrides.service';
+import { JointOverridesService } from '../joint-page/joint-overrides.service';
 import { SignoffFormErrorsService } from './signoff-form-errors.service';
 
 /* what the page hands over: its joint and live workflow */

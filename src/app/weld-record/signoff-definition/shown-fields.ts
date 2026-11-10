@@ -1,4 +1,4 @@
-/* Fields shown by the selected Type form, resolved from the catalog at read time. The joint page adds runtime options on top (joint-page/rules/stage-form.ts);
+/* Fields shown by the selected Type form, resolved from the catalog at read time. The joint page adds runtime options on top (signoff/stage-form.ts);
    History and Correct use these as they are, so all three list the same fields. */
 import { formSignoffFields } from './form-fields';
 import { FormField } from '../catalogs/field-catalog';

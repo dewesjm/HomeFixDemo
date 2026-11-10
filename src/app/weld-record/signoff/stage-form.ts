@@ -1,23 +1,23 @@
 /* A step's fields on the joint page: which show, and the options each offers */
-import { repairCodeOptions } from '../../signoff-definition/repair-code-options';
-import { weldPositionOptions } from '../../../data/weld-positions';
-import { formInputFields } from '../../signoff-definition/form-fields';
-import { FormField } from '../../catalogs/field-catalog';
-import { Job } from '../../../data/jobs';
-import { WorkflowStage } from '../../model/workflow-types';
-import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
-import { isFilledByRule } from '../../signoff-definition/field-fill';
-import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
-import { evaluateCondition, conditionClauses } from '../../conditions/form-conditions';
-import { buildConditionContext } from '../../signoff-definition/condition-context';
-import { fieldActivation } from '../../signoff-definition/signoff-type-form-rules';
-import { effectiveShowIf } from '../../signoff-definition/field-rules';
-import { definedFields } from '../../signoff-definition/shown-fields';
-import { inspectionProcedureOptions } from '../../../data/inspection-procedures';
-import { defectCodeOptions } from '../../../data/defect-codes';
-import { ASSIGNED_KEYS } from '../../weld-assignment/weld-assignment-rules';
-import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
-import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../../weld-engineering/procedure-options';
+import { repairCodeOptions } from '../signoff-definition/repair-code-options';
+import { weldPositionOptions } from '../../data/weld-positions';
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../catalogs/field-catalog';
+import { Job } from '../../data/jobs';
+import { WorkflowStage } from '../model/workflow-types';
+import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
+import { isFilledByRule } from '../signoff-definition/field-fill';
+import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
+import { evaluateCondition, conditionClauses } from '../conditions/form-conditions';
+import { buildConditionContext } from '../signoff-definition/condition-context';
+import { fieldActivation } from '../signoff-definition/signoff-type-form-rules';
+import { effectiveShowIf } from '../signoff-definition/field-rules';
+import { definedFields } from '../signoff-definition/shown-fields';
+import { inspectionProcedureOptions } from '../../data/inspection-procedures';
+import { defectCodeOptions } from '../../data/defect-codes';
+import { ASSIGNED_KEYS } from '../weld-assignment/weld-assignment-rules';
+import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../weld-engineering/procedure-options';
 
 /* what the field rules need besides the step itself */
 export interface StageFormContext {

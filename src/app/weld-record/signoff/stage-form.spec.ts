@@ -1,22 +1,22 @@
-import { isRoutingLockedField } from '../../signoff-definition/stage-rules';
-import { setDefectCodes } from '../../../data/defect-codes';
-import { setWeldPositions } from '../../../data/weld-positions';
-import { STORAGE } from '../../../data/storage-keys';
-import { snapshotInputs } from '../../signoff-definition/stage-display';
-import { formInputFields, formSignoffFields } from '../../signoff-definition/form-fields';
-import { JOBS, Job } from '../../../data/jobs';
-import { buildStages } from '../../routing/build-stages';
-import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted-routing/added-routings';
-import { WorkflowStage } from '../../model/workflow-types';
-import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../../data/signoff-type-forms';
-import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
-import { gwpOptionsForMaterials } from '../../../weld-engineering/procedure-options';
+import { isRoutingLockedField } from '../signoff-definition/stage-rules';
+import { setDefectCodes } from '../../data/defect-codes';
+import { setWeldPositions } from '../../data/weld-positions';
+import { STORAGE } from '../../data/storage-keys';
+import { snapshotInputs } from '../signoff-definition/stage-display';
+import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
+import { JOBS, Job } from '../../data/jobs';
+import { buildStages } from '../routing/build-stages';
+import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routing/inserted-routing/added-routings';
+import { WorkflowStage } from '../model/workflow-types';
+import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
+import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { gwpOptionsForMaterials } from '../../weld-engineering/procedure-options';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
 } from './stage-form';
 import { typeChange } from './type-change';
-import { typeValues } from '../../signoff-definition/stage-rules';
+import { typeValues } from '../signoff-definition/stage-rules';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
