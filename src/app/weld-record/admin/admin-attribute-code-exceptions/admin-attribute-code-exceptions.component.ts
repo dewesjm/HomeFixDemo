@@ -1,5 +1,5 @@
 /* Admin > Attribute Code Exceptions: what each attribute code changes on a joint's routing
-   (weld-record/attribute-codes/attribute-code-exceptions.ts); rows are added, edited and removed here */
+   (data/attribute-code-exceptions.ts); rows are added, edited and removed here */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
