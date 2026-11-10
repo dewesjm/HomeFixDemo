@@ -4,8 +4,13 @@
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId } from '../routing/routing-ids';
-import { rtDegrees } from '../routing/ndt';
 import { fieldActivation } from './signoff-type-form-rules';
+
+/* a Degree of RT as a number; NA or blank is 0 */
+export function rtDegrees(value: string | undefined): number {
+  const n = Number(value);
+  return value && Number.isFinite(n) ? n : 0;
+}
 
 function jointRtDegree(job: Job | undefined, stageId: string): string {
   const phase = /^(root|final)-ndt-/.exec(baseStepId(stageId))?.[1];

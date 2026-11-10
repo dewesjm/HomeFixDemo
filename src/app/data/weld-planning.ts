@@ -5,11 +5,10 @@
 import { STORAGE } from './storage-keys';
 import {
   jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES,
-  NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
+  NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_DEGREE_OPTIONS, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from './jobs';
 import { CHARACTERISTIC_CODES } from './characteristics';
-import { RT_DEGREE_OPTIONS } from '../weld-record/routing/ndt';
 import { signal } from '@angular/core';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';

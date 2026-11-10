@@ -1,12 +1,33 @@
 /* Admin > Routing Settings starting rows: the built-in Welding routing in order, its starting Included when,
    Reject routes to and Then go to rules, and the added routings (Repair, Excavation NDT, Engineering Hold).
    Saved changes are in routing-settings.ts. Type options are in signoff-type-routing.ts. */
-import { StageTemplate } from '../weld-record/model/workflow-types';
-import { ndtStage } from '../weld-record/routing/ndt';
+import { StageOption, StageTemplate } from '../weld-record/model/workflow-types';
 import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
 import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';
 import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing/on-signoff/rule-targets';
+
+type NdtPhase = 'root' | 'layer' | 'final';
+type NdtKind = 'utrt' | 'mtpt' | 'vt5x';
+
+/* each NDT routing's method pair, and the Types it starts with on Signoff Type to Routing */
+export const NDT_KINDS: Record<NdtKind, { label: string; options: StageOption[] }> = {
+  utrt: { label: 'RT/UT', options: [{ label: 'RT', value: 'rt' }, { label: 'UT', value: 'ut' }] },
+  mtpt: { label: 'MT/PT', options: [{ label: 'MT', value: 'mt' }, { label: 'PT', value: 'pt' }] },
+  vt5x: { label: '5X/VT', options: [{ label: 'VT', value: 'vt' }, { label: '5X', value: '5x' }] },
+};
+
+/* one NDT routing: a phase (root/layer/final) x method pair */
+function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
+  return {
+    id: `${phase}-ndt-${kind}`,
+    label: `${phase[0].toUpperCase()}${phase.slice(1)} NDT ${NDT_KINDS[kind].label}`,
+    required: true,
+    role: 'Inspector',
+    rejectToStage: 'repair',
+    decisionLabel: 'Inspection Results',
+  };
+}
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },

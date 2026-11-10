@@ -10,7 +10,7 @@ import { checksFabrication } from '../../routing/built-in-routing-rules';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';
-import { rtDegrees } from '../../routing/ndt';
+import { rtDegrees } from '../../signoff-definition/rt-degree-minimum';
 import { DECISION_KEY } from '../../../data/signoff-type-forms';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 import { standardRequiredMessage } from '../../signoff-definition/field-rules';

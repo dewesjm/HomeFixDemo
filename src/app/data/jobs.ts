@@ -126,10 +126,12 @@ const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* NDT Each Layer has no UT: Layer has no RT/UT routing */
 export const NDT_EACH_VALUES = NDT_REQUIREMENT_VALUES.filter(v => v !== 'UT');
-/* degree of RT required for Root/Final's RT NDT -- must be duplicated (not imported) from
-   weld-record/routing/ndt.ts's RT_DEGREE_OPTIONS to avoid a circular import (the workflow files import
-   Job from this file); the Degree of RT Performed signoff field must be at least this to sign off.
-   Seeded with real-data proportions (other valid degrees exist but aren't used in practice):
+/* Degree of RT: NA, or a number of degrees, in number order. The values of RT Degree Root/Final
+   (required) and of the Degree of RT Performed signoff field, which must be at least the required one
+   before its RT NDT routing can be signed (signProblems() in weld-record/joint-page/rules/sign-validation.ts). */
+export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
+  ['NA', '10', '60', '75', '100', '360'].map(v => ({ label: v, value: v }));
+/* RT Degree Root/Final seeds, with real-data proportions (other valid degrees exist but aren't used in practice):
    Root is only NA/360/60, mostly NA or 360; Final is mostly 360/60/NA with a rare 10. */
 export const RT_ROOT_WEIGHTS: [string, number][] = [['NA', 45], ['360', 40], ['60', 15]];
 export const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['NA', 29], ['10', 3]];

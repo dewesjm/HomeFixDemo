@@ -6,7 +6,7 @@ import { insertionConfigurationErrors } from './inserted/insertion-validation';
 import { addedRoutingSetup, routingNameError } from './inserted/added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
-import { NDT_KINDS } from './ndt';
+import { NDT_KINDS } from '../../data/welding-steps';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/workflow-types';
