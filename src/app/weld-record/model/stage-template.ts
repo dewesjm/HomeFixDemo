@@ -3,8 +3,8 @@ import { Job } from '../../data/jobs';
 import { ConditionRule } from '../conditions/joint-conditions';
 import { RouteToRule } from '../routing/route-to-rules';
 
-/* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT), with its Admin > Routing Signoff
-   Types name and settings */
+/* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT): named on Admin > Signoff Types,
+   offered by Admin > Signoff Type to Routing */
 export interface StageOption {
   label: string;
   value: string;

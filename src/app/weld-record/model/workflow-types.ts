@@ -66,8 +66,8 @@ export interface JobWorkflow {
   technician: string;
   stages: WorkflowStage[];
   references: Reference[];
-  conditionCode: string;     /* see conditions.ts, '' if none */
-  conditionCount: number;    /* pairs with conditionCode */
+  conditionCode: string;     /* always '': leftover, nothing sets or reads it */
+  conditionCount: number;    /* always 0, same leftover as conditionCode */
   history: HistoryEntry[];
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
