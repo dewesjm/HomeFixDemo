@@ -1,8 +1,8 @@
 # Welding — Architecture & Component Reference
 
-Welding is a **welding work-order & inspection manager** (prototype). Single-page Angular app with **no backend** — all data is in-memory or `localStorage`.
+Welding is a **welding work-order & inspection manager** (prototype). Angular app that runs entirely in the browser, with **no backend** — all data is in-memory or `localStorage`.
 
-For the routing rules in plain language (every routing, NDT, repairs, Cut, and what's required to sign each routing), see **[ROUTING.md](ROUTING.md)**. Keep it in routing with any routing change.
+For the routing rules in plain language (every routing, NDT, repairs, Cut, and what's required to sign each routing), see **[ROUTING.md](ROUTING.md)**. Keep it in sync with any routing change.
 
 **Routing rule for all code: never un-sign a stage.** Anything that sends a joint back sets the current routing to the target via `routeBack()` (`weld-record/routing/on-signoff/route-changes.ts`): every stage from there on gets a fresh copy from `buildStages(job)` (blank inputs, not signed, default `required` flags, then `applySignedFlags()` re-applies Defer Tack / Fit-Up Release from signed stages before the target); the joint then proceeds normally (its earlier sign-offs stay in History).
 - Other Repair/Excavation NDT rounds stay as records (unsigned ones stop being required); a Repair target's own round comes up blank (bookkeeping inputs kept, its Excavation NDT not required until Weld Repair is chosen again).
@@ -105,7 +105,7 @@ adding a method, ask:
 
 `routing/inserted/generic-insertion.ts` resolves active ordinary definitions into blank instances for execution, seeds and preview. `instance-identity.ts` separates definition destinations from instance IDs; `insertion-validation.ts` rejects invalid definition targets and unconditional insertion cycles; `insertion-target-options.ts` limits relative destination choices to incoming context. `routeSignoff()` executes the first matching destination. Configuration errors block signoff before History/undo changes and appear in preview and a toast.
 
-`WorkflowStage.insertion` persists frozen definition settings, sequence, source, continuation and optional inspection/Repair context. Future configuration edits do not replace existing open/signed instance settings, personas or enabled Types; shared Type form field definitions remain live. Nested insertion inherits the original continuation. Route-back retains signed ordinary records and retires other unsigned instances. Deprogress restores the pre-signoff path. History participates in allocating sequences to avoid reusing signed record IDs. Workflow version 2.10.56 uses the existing first-load demo cache reset; subsequent reloads preserve inserted stages instead of treating them as missing numbered templates. See ROUTING.md and ADDED-ROUTINGS-PLAN.md for behavior and package boundaries.
+`WorkflowStage.insertion` persists frozen definition settings, sequence, source, continuation and optional inspection/Repair context. Future configuration edits do not replace existing open/signed instance settings, personas or enabled Types; shared Type form field definitions remain live. Nested insertion inherits the original continuation. Route-back retains signed ordinary records and retires other unsigned instances. Deprogress restores the pre-signoff path. History participates in allocating sequences to avoid reusing signed record IDs. Reloads keep inserted stages. See ROUTING.md for behavior.
 
 ## Testing
 
@@ -116,8 +116,8 @@ This is a deferred backlog; implement one package at a time when requested.
 Karma + Jasmine (`npm test` / `npx ng test --watch=false --browsers=ChromeHeadless`), spec files colocated
 next to their source (`*.spec.ts`). The tests cover the rules: most of them are in `weld-record/services/` (routing, repairs, Cut, NDT routings in
 `signoff.service.spec.ts`), `weld-record/routing/`, `weld-record/signoff-definition/`, `data/procedures.spec.ts`, `weld-record/joint-page/rules/*.spec.ts` (one per rule file) and
-the filter engine (`shared/filter-engine.spec.ts`, `weld-planning-filter-schema.spec.ts`); most other modules
-(admin CRUD, the screen components) still have none. When you touch a module that
+the filter engine (`shared/filter-engine.spec.ts`, `weld-planning-filter-schema.spec.ts`); about half the admin
+pages and a few screen components have specs (96 spec files in all). When you touch a module that
 lacks a spec file, adding one is in scope for that change, not a separate task.
 
 ## Folder map
@@ -215,13 +215,15 @@ src/app/
       fabrication-data.service.ts  setFabricationData (cross-stage Welding fields).
       deviation.service.ts  Accepted deviations + the hold they put on the joint.
       sync.service.ts      Online/offline + pending-sync count (stubbed)
+      weld-assignment.service.ts  Applies the external system's GWP/WTN/filler (see "External assignment")
+      engineering-override.service.ts, foreman-override.service.ts  Record the overrides' History entries (Foreman Override is switched off)
     admin/
       admin-routing/         Admin → Routing Settings (stage templates per trade): Order (drag), Included when
                              and reject rules (weld-record/conditions/joint-conditions.ts; clause ops is / is not / contains,
                              compared trimmed, any case; fields = Joint Details + 'step.<stageId>.<key>'
                              routing answers of earlier routings, built from the templates routing/routing-settings-rules.ts
                              registers via registerStepTemplates(); 'self.<key>' in reject rules),
-                             Fabrication editable, Role. Clause editing rules shared by both rule
+                             Fabrication editable, Persona. Clause editing rules shared by both rule
                              dialogs: weld-record/admin/admin-routing/condition-editing.ts. A routing's fields aren't editable or
                              saved here; they come from the built-in routing definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
@@ -351,7 +353,7 @@ src/app/
     external-load-files.ts  The External Loads page's three sample vendor files
     procedures.ts         Weld Engineering Procedure model (one row per GWP+WTN pair, 11 WPS sections +
                           revisionHistory) + seeded generator (one GWP per Material Type 1 x 2 combination,
-                          imported from jobs.ts's MATERIALS_1/MATERIALS_2), CRUD, GWP/WTN cascade helpers
+                          imported from jobs.ts's MATERIAL_TYPES), CRUD, GWP/WTN cascade helpers
                           (allGwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, getProcedureByGwpWtn,
                           hasOverride, allWtns), Filler Metal Type/Size cascade helpers
                           (fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure) and their
@@ -393,10 +395,12 @@ src/app/
 | `/assignments` | My Assignments; redirects to `/pipe-search` unless Admin > Feature Toggles > My Assignments page is on |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
 | `/admin/routing`, `/admin/set-routing`, `/admin/signoff-types`, `/admin/signoff-type-routing` | Routing admin |
-| `/admin/*` | Other admin pages (signoff-fields, characteristics, ndt, locations, ship-locations (+ /import), weld-positions, banner, joint-designs, groups, qualifications, material-traceability, inspection-procedures, defect-codes) |
+| `/makeup` | Makeup |
+| `/admin/*` | Other admin pages (signoff-fields, characteristics, attribute-code-exceptions, penetrant, inspection-procedures, defect-codes, locations, ship-locations (+ /import), repair-codes, weld-colors, weld-positions, banner, joint-designs, groups, qualifications, material-traceability, material-classification, quick-links, feature-toggles) |
 | `/weld-planning`, `/weld-planning/new`, `/weld-planning/:id`, `/weld-planning/:id/edit` | Weld Planning joint list/create/detail/edit |
 | `/weld-planning/search` | Weld Planning Advanced Search (schema-driven filter bar, saved variants, column picker — the older pattern of Weld Record's search, before stacked conditions; scoped to `WeldJoint`) |
 | `/weld-planning/import` | Weld Planning mass import/edit |
+| `/weld-planning/external-loads` | External Loads (read-only demo of the vendor file load) |
 | `/weld-planning/admin` | Weld Planning admin (Joint Designs & NDT) |
 | `/weld-engineering`, `/weld-engineering/procedures/:id` | Procedure Lookup list + PDF detail |
 | `/weld-engineering/admin`, `/weld-engineering/admin/new`, `/weld-engineering/admin/:id/edit` | Manage Procedures list/create/edit |
@@ -409,15 +413,15 @@ src/app/
 
 `form-fields.ts` derives fields for the selected Type when needed. `formInputFields()` reads ordinary inputs; `formSignoffFields()` reads Pre-Fit/Fit's signoff-stored insert, ring and Defer Tack values. `routingFormFields()` unions all offered Types for routing and qualification condition pickers. Picker caches refresh when forms change. `shown-fields.ts` applies visibility, required and disabled conditions to catalog definitions. Defer Tack is therefore a checkbox everywhere, including History and validation.
 
-`WorkflowStage`, `StageTemplate` and undo snapshots have no `fields` or `signoffFields` properties. They carry routing state, Type choices and recorded values. The store drops legacy copied definitions (including those on undo snapshots) on load and keeps recorded values and History snapshots. There is no template-field fallback, including for a custom routing without a Type form. Engineering Hold retains its dedicated release form.
+`WorkflowStage`, `StageTemplate` and undo snapshots have no `fields` or `signoffFields` properties. They carry routing state, Type choices and recorded values. There is no template-field fallback, including for a custom routing without a Type form. Engineering Hold retains its dedicated release form.
 
 ## Data flow
 
 1. **Jobs** — 480 seeded Welding jobs in `jobs.ts` sharing 48 hulls (3–18 jobs per hull). Internal `id` is 5-char alphanumeric (`makeJobId()`), always populated, unique; `xrefid` mirrors it except on ~25% of rows where it's blank (imperfect source data). Hull is letter + 4 digits (`makeHull()`). `generateJobs()` guarantees the identity rule of unique hull + drawing + joint (the true key when XREFID is blank).
-2. **Stage templates** — `weld-record/routing/routing-settings-rules.ts` (starting rows in `data/welding-steps.ts`, saved rows in `data/routing-settings.ts`). Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The nine NDT stages come from one `ndtStage(phase, kind)` factory.
+2. **Stage templates** — `weld-record/routing/routing-settings-rules.ts` (starting rows in `data/welding-steps.ts`, saved rows in `data/routing-settings.ts`). Admin CRUD persists to localStorage; `getTemplates()` returns the merged view. The eight NDT stages (Root 3, Layer 2, Final 3, `PHASE_NDT_KINDS`) come from one `ndtStage(phase, kind)` factory.
    Added templates (Repair, Excavation NDT, Engineering Hold) are stored and edited with numbered templates, but `buildStages()` excludes them. Runtime factories read their shared settings using `getAddedTemplate()`; `routingTemplateId()` maps numbered rounds to their shared row. Then go to / Reject targets support insertion and relative destinations. Repair #, Refit #, insertion and route-back bookkeeping remain in code; repair destination choices are table rules.
-3. **Per-job workflow** — `WorkflowStore`, keyed by job id, exposed as signals; `RoutingService`/`SignoffService`/`ReferenceService`/`FabricationDataService` mutate it (see "Weld Record services" below). Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
-4. **Assignments** — 36 seeded, assigned to "John Johnson".
+3. **Per-job workflow** — `WorkflowStore`, keyed by job id, exposed as signals; `RoutingService`/`SignoffService`/`ReferenceService`/`FabricationDataService` mutate it (see "Weld Record services" above). Seeded jobs start mid-stream with pre-signed stages (inspection stages get a chosen type).
+4. **Assignments** — seeded per role (5-10 each, `generateAssignments()`), filtered by role on My Assignments.
 5. **History** — aggregates `WorkflowStore.allWorkflows()` into a filterable timeline.
 
 ### Welding stages (in order)
@@ -472,7 +476,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 
 - **Routing bar** — numbered pills, horizontal scroll, auto-centers the selected stage. Active = `--color-success`, done = `--color-info`. Which routings it shows is `routingBarSteps()` (`weld-record/routing-bar/routing-bar-steps.ts`): signed, required or current routings, except a repair round (Repair + its Excavation NDT) shows only while open, unnumbered.
 - **Joint details** — 3 columns (stack on mobile): job info (XREFID, **Ship** (3-digit, right above Hull), Hull, ...), joining/join-to (MCL 1/2, Material Type 1/2, Joining/Join To Item — 1 letter + 8 digits + hyphen + 2 digits, e.g. `S12341001-14` (seed values are invented), NDT data (RT Root/Final and NDT Root/Each/Final shown exactly as stored; UT/VT still shown as `X`/`5X` derived from `job.ndt`'s free text by `ndtLabel()`); "Show more" reveals additional data and attribute codes. Attribute codes show as `code description` (`attrCodeDisplay()`, looked up via `characteristicLabel()` in `data/characteristics.ts`, the same table Admin > Attribute Codes manages; that page is not in the menus because attribute codes belong to another system, and the route `/admin/characteristics` and table stay for the code -> description lookup). `ATTR_CODES` in `jobs.ts` reuses the numeric (informational) `CHARACTERISTIC_CODES` so seeded descriptions resolve; progression codes appear only on the AC001-AC013 examples. Progression codes also show as focusable badges above the details with their message on hover/focus, plus any conflict or not-applicable notes; see ROUTING.md for their routing effects.
-- **Fabrication** (cross-stage) — Location, Joining Item MIC / Join To Item MIC (`id1`/`id2`), Drawing Rev, Actual Thickness (all required with red `*`; Ship adds Level/Deck (key `deck`)/Frame/P-S-CL/Usage, also required with red `*`; S and D hulls have no Usage, via `fabricationFields(hull)` and `hullHasUsage()`), WTN, Revised Joint Design. Location/the MICs/Drawing Rev/Actual Thickness are enforced before Fit can sign off (`FIT_REQUIRED_FABRICATION`); each MIC only when that joint member's MCL requires traceability (`micApplies()`). A MIC that doesn't apply is always shown, but disabled, not required, with no red `*` (`notApplicable`, set by `fabricationFieldsShown()`); seeded joints have no MIC there (`seedFabricationData()`).
+- **Fabrication** (cross-stage) — Location, Joining Item MIC / Join To Item MIC (`id1`/`id2`), Drawing Rev, Actual Thickness (all required with red `*`; Ship adds Level/Deck (key `deck`)/Frame/P-S-CL/Usage, also required with red `*`; S and D hulls have no Usage, via `fabricationFields(hull)` and `hullHasUsage()`), WTN, Revised Joint Design. Fit and Fit-Up Insp can't be signed while a shown required Fabrication value is blank (`fabricationErrors()`); each MIC only when that joint member's MCL requires traceability (`micApplies()`). A MIC that doesn't apply is always shown, but disabled, not required, with no red `*` (`notApplicable`, set by `fabricationFieldsShown()`); seeded joints have no MIC there (`seedFabricationData()`).
 - **Signoff panel** (below).
 - **Top nav menus** — one open at a time; they close on outside click or when a real (non-disabled) link is chosen, and collapse their nested Admin submenu (`closeAll()` in `app.component.ts`). Each group's Admin submenu (`.submenu` in `app.component.scss`) caps at `max-height: calc(100vh - 5rem)` with `overflow-y: auto` so a long Admin submenu scrolls; all four nav groups share the class.
 - **Flatten button** (list/tree icon next to the system name) — one global on/off (`flatNav` in `app.component.ts`).
@@ -481,7 +485,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - So a route in a new system needs a line there, or it'll be treated as Weld Record. Navigating across systems while flattened (e.g. Quick Links > Manage Quick Links) flattens the new system instead.
   - Procedure Lookup and Joint Search use `exact: true` link matching, so they don't highlight while you're on their Admin pages (or their detail pages).
 - **Records Retention Review** (`review-o63` / `review-o04` stages, see "Welding stages" above; roles **O63 Records** / **O04 Records**, since O63 and O04 are reviewed by different groups of people; `sold` follows whichever track the job went through) — verification grid + the joint's History (the History screen's table without the joint columns, with Deprogress, Correct, sort and column filters).
-- **Sold** — once signed all stages lock; only deprogress is allowed (Work History, most recent signoff per job).
+- **Sold** — once signed all stages lock; only deprogress is allowed (History, most recent signoff per job).
 - **Unsigned edits are discarded on leaving, with a warning if there are any** — `canDeactivateGuard` (`shared/can-deactivate.guard.ts`) calls `JointPageComponent.canDeactivate()`, which compares the live workflow against a snapshot taken on load (`loadSnapshot`, `hasUnsavedEdits()` in `weld-record/joint-page/rules/unsaved-edits.ts`) covering *every* unsigned stage's inputs/signoffInputs/signoffType **and** `fabricationData` — not just the one stage the user last touched.
   - `ngOnDestroy()` reverts all of that back to the snapshot for any stage that's still unsigned (and Fab data, unless the Fit stage got signed this visit) once the route actually changes, whether the user confirmed the warning or there was nothing to warn about.
 
@@ -533,7 +537,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 - A routing without a Type form has no fields; there is no routing-template field or layout fallback.
 - **Layout from the definition**: a definition's `fields` list is also its layout.
   - Each item has a `line` number (one count for the whole form, headings included); items with the same number sit side by side in list order, and the list is kept sorted by it (`inLineOrder()`; the Layout list's arrows only reorder within a line).
-  - Inspection Results, verify-grid rows and Signoff History always get a line of their own. The seeds' `same()` shorthand and saves from before line numbers (`sameLine`) are numbered by `numberLines()` (data/signoff-type-forms.ts) on load, so nothing moves. A newly ticked field gets a new line at the end (`withNewField()`).
+  - Inspection Results, verify-grid rows and Signoff History always get a line of their own. The seeds' `same()` shorthand is turned into line numbers by `numberLines()` (data/signoff-type-forms.ts). A newly ticked field gets a new line at the end (`withNewField()`).
   - Heading items (`heading` text, key prefixed `heading:`, `newBox` = starts a box) sit in the list and are skipped everywhere else (`definitionFields()` drops them).
   - Inspection Results (`DECISION_KEY` 'decision') is a field the admin ticks: the routing's SAT/UNSAT (`stage-decision` component), drawn where the list places it on a required routing.
   - `width` (pixels) is the most a field is drawn wide; it narrows to min(width, 160px) before its line wraps; unset = shares the line.
@@ -585,7 +589,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - Admin page shows "Used by N joints" per row and refuses edit/delete of an in-use row (toast); its Import page (`/admin/ship-locations/import`, BulkImport + app-import-grid, CSV parsing reused from weld-planning.data) rejects unknown hulls, P/S/CL other than P/S/CL, blanks and rows already on the list.
   - Sample data: one layout per hull letter (S/D/T/N), each line one Deck + Frame with its P | S | CL usages (S and D lines list just the P/S/CL numbers), about half the sides with 2-3 usages (`LAYOUTS`); `seedFabricationData()` picks a real row for the joint's hull. Usage values are the admin text.
   - My Assignments' two Ship assignments are ones whose joint is on the Ship and show the joint's live Level/Deck/Frame/P-S-CL/Usage (`fabFor()`; no Usage on S and D hulls); `Assignment` doesn't store them.
-- **References panel** (`weld-record/references/`, `ReferenceService`, `wf.references`): which routings show it is one rule, `showsReferences()` in `weld-record/signoff-definition/stage-rules.ts`; `definition-form` draws it inside the sign-off form where the Layout list places References. The Work History Correct dialog shows References on every routing, not gated by this rule. By default it shows only on the RT and UT Types and Repair; not on VT, 5X, MT, PT or Excavation NDT. History entries say `References` / `Reference added`. Saved workflows with the older `attachments` field are migrated on load.
+- **References panel** (`weld-record/references/`, `ReferenceService`, `wf.references`): which routings show it is one rule, `showsReferences()` in `weld-record/signoff-definition/stage-rules.ts`; `definition-form` draws it inside the sign-off form where the Layout list places References. The History Correct dialog shows References on every routing, not gated by this rule. By default it shows only on the RT and UT Types and Repair; not on VT, 5X, MT, PT or Excavation NDT. History entries say `References` / `Reference added`.
 - **Repair routing on signoff** (`routeSignoff()`, routing/on-signoff/signoff-routing.ts) — checked in this priority order: **Allowable thickness exceeded** (checkbox) → goes back to that phase's NDT RT/UT stage (`${phase}-ndt-utrt`); else **Grind Only** → goes back to the NDT stage that failed (`originStageId`); else **Weld Repair** → inserts a new **Excavation NDT** stage (see below); else **Cut** → the joint **starts over from Fit** (nothing is reopened): every stage from Fit on is rebuilt fresh from `buildStages(job)` as on a new joint, its past sign-offs staying in History (no deprogress entries written); earlier repair rounds stay as signed records; **Refit #** goes up by one (`JobWorkflow.refitNumber`, copied onto the job by `WorkflowStore.load()` since job records aren't saved) and a History row in the new **Refit** section records it ("Cut — routed back to Fit", to "Refit 01").
   - Fit-up (fabrication) data is reset to blank, and the Refit History entry keeps what it was (`fabInputs`, shown as "Fabrication before the Cut").
   - The **Allowable thickness exceeded** checkbox only shows when the joint has a RT/UT stage for that phase (`visibleFields()`).
@@ -595,15 +599,15 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - `stageFromTemplate()` (`weld-record/routing/inserted/added-routings.ts`) builds a live `WorkflowStage` from a `StageTemplate` for both Repair and Excavation NDT.
 - **Excavation NDT** loads the selected inspection Type's shared Signoff Type Form (`definitionId()`), including its layout, conditions and required fields. There is no separate combined Excavation form. `excavationNdtStageFor()` builds the round’s shell and selects its persona from the configured Persona rules.
   - `excavationTypeOptions()` in `signoff-type-routing-rules.ts` resolves the configured source and first matching material exception. The seeded PT to 5X exception tests Material Type 1 or 2 using Admin > Material Classification. No material exception is embedded in routing code.
-  - At insertion, `inputs.typeChangedFromPtTo5x` records whether PT was replaced by 5X. Type changes and route-back blanking preserve this internal value, just as Repair preserves `originPhase`, `originStageId` and `originInspectionType`.
-  - The added-routing template's accepted rules route a PT to 5X replacement to Rejecting phase's VT/5X, otherwise to Rejecting NDT; Reject routes to = Own Repair. `rule-targets.ts` resolves the current round and the joint's regular/NQC row. Returning to VT/5X after the exception enables 5X on that routing.
+  - Repair keeps `originPhase`, `originStageId` and `originInspectionType` through Type changes and route-back blanking; Excavation reads the original inspection Type from its own Repair round (see "General inspection routing facts").
+  - The added-routing template's accepted rules route original PT AND performed 5X to Rejecting phase's VT/5X, otherwise to Rejecting NDT; Reject routes to = Own Repair. `rule-targets.ts` resolves the current round and the joint's regular/NQC row. Returning to VT/5X after the exception enables 5X on that routing.
   - `route-preview.ts` uses the real dry run for every routing, including Repair and Excavation NDT, so admin changes affect both the explanation and the actual routing. `routing/preview/signed-flag-reasons.ts` explains routings a signoff turned on or off or whose Types changed: an Attribute Code Exceptions row names its code, otherwise the Routing Settings Included when; after an UNSAT route-back only changes still true are listed.
 - **Gotcha**: a standalone component that uses `routerLink` must import `RouterLink`; without it Angular silently treats it as a plain attribute and the link never navigates.
 - **Repair** (inserted automatically after any NDT stage that comes back UNSAT, `routeSignoff()`; **no limit on repairs** (any NDT failure goes to Repair): each round is its own stage, `repair` then `repair-2`, `repair-3`… labeled "Repair 2" etc., with its own paired `excavation-ndt[-n]` whose UNSAT goes back to that round's Repair (`isRepairStageId()`/`nextRepairStage()`/`repairIdForExcavation()` in `weld-record/routing/routing-ids.ts`); a new round never changes earlier rounds, and Cut leaves them as signed records; Excavation NDT's own UNSAT does not add a new round): a **Type** droplist from the Repair row of Admin > Signoff Type to Routing (seeded with one option, "Repair", as the default, so it is pre-filled), Repair Code (droplist: Grind Only/Weld Repair/Cut), (**no Affected Item**: only needed for base metal repairs, which this product doesn't cover since that's effectively a new joint), Allowable Thickness (disabled text) and its "exceeded" checkbox.
   - **Allowable thickness confirmations** are distinct catalog checkbox fields for Nuclear Indicator 1 (3/8 inch or 20%, whichever is less) and indicators 2/3 (3/16 inch or 20%, whichever is less). The Repair Type Form controls visibility and layout. Either answer routes through configured Then go to rules; History retains the specific limit label.
 - **NDT common fields (all NDT stages)**: **Probationary Inspector**/**Oversight Inspector** are required (red `*`) when **Has Probationary Inspector** is checked; **Portion of Weld Inspected** is required when **Partial** is checked (catalog defaults and Signoff Type Forms).
-  - **Search assist** (`shared/person-search-input.component.ts`): both fields render as `app-person-search-input` instead of a plain text box — a typeahead over `PEOPLE` matching name, PERN or id (`searchPeople()`, same matching rules as Work History's/Makeup's own person filters), but the underlying value stays plain free text; picking a suggestion fills `"First Last · PERN"` and commits immediately, typing a name not in the directory and blurring commits the raw text.
-  - `Person.pern` is an 8-digit personnel number seeded alongside `id`. Work History and Makeup have their own copies of the same typeahead pattern, not yet moved onto this component.
+  - **Search assist** (`shared/person-search-input.component.ts`): both fields render as `app-person-search-input` instead of a plain text box — a typeahead over `PEOPLE` matching name, PERN or id (`searchPeople()`, same matching rules as History's/Makeup's own person filters), but the underlying value stays plain free text; picking a suggestion fills `"First Last · PERN"` and commits immediately, typing a name not in the directory and blurring commits the raw text.
+  - `Person.pern` is an 8-digit personnel number seeded alongside `id`. History and Makeup have their own copies of the same typeahead pattern, not yet moved onto this component.
 - **Degree of RT Performed** (`degreeRt`, RT/UT stage, shown when inspection type = RT) is a **required** droplist (`required: true`, red `*`) over `RT_DEGREE_OPTIONS` (`weld-record/routing/ndt.ts`: blank, NA, 10, 60, 75, 100, 360) that **must be at least the required degree** (plain number of degrees, NA = none, `rtDegrees()`) before the stage can be signed off: `rtDegreeRequired()` (`signoff-definition/rt-degree-minimum.ts`) takes the highest of the RT form's `minimum: 'jointRtDegree'` rule (Signoff Type Forms, editable; `Job.rtRoot` on Root NDT routings, `Job.rtFinal` on Final, none on Layer) and the stage's `attributeRules.minRt` (Attribute Code Exceptions).
   - A field problem in `signProblems()`: red on the field itself, like every other signoff requirement.
   - The field's label gets `(Required: <value>)` appended at render time (`stageFieldOptions()`) when a requirement applies.
@@ -623,13 +627,13 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - Scope is the stage's own `fields`/`signoffFields` (via `fieldsShown()`/`isUserEditable()`, same filters the live signoff panel uses) plus the job's References (`app-references`) — never `result`/`inspectionType`/`signoffType`/Decision, which the dialog doesn't render at all.
   - Individual field keys that fed a routing decision at the original signoff are shown **disabled with an explanation** rather than omitted: `ROUTING_LOCKED_FIELD_KEYS`/`isRoutingLockedField()` (`weld-record/signoff-definition/stage-rules.ts`) is the single source of truth — Repair's `repairType` and both thickness-exceeded confirmation fields, Fit-Up Insp's `releaseToWelding`, Fit's `deferTack` — enforced both in the dialog and again in `SignoffService.correctStage()` (defense in depth).
   - Requires a reason; logs a `HistoryEntry` "<Routing> - Corrected <fields>" carrying the reason and a `from`/`to` diff per changed field, alongside the normal full-field snapshot.
-  - `HistoryEntry.stageId` (set by `signStage()`/`deprogress()`/`correctStage()` and by `seededWorkflow()`) lets Correct find the live stage a Work History row belongs to.
+  - `HistoryEntry.stageId` (set by `signStage()`/`deprogress()`/`correctStage()` and by `seededWorkflow()`) lets Correct find the live stage a History row belongs to.
   - A select field offers a blank "Select" option only when it's empty, so a correction can't blank a required field.
   - `HistoryEntry.changes`/`reason` (formatted with `displayValue()`) let the action text name the changed fields (e.g. "Root NDT 5X/VT — Corrected Weld Color"), and the expanded row leads with an old → new line per change before the full snapshot.
   - **Person-search assist**: Probationary/Oversight Inspector use `app-person-search-input` (text mode) in the Correct dialog too, not just the live signoff panel — `PERSON_SEARCH_FIELDS` in `correct-stage-dialog.component.ts` is the (currently 2-entry) list of which field keys get it.
 - **Makeup** (`weld-record/makeup/`, `weld-record/makeup/makeup-grants.ts`) — `noMike` joke toggle, currently `false` (real page shown); see [Demo toggles](#demo-toggles-flipped-often). someone **below** the foreman level granted temporary "makeup" (acting-foreman) status for a set period: `MakeupGrant { personId, startDate, endDate }`.
   - Its own nav entry in the Weld Record menu (not under Admin — routine foreman use, not admin config) and its own flat, inline-editable grid, not Admin > Groups' list-into-detail: the audience setting makeup is different from the one managing Groups' permission matrix and is used to a grid, and there's nothing per row to justify a detail panel.
-  - Person picker is a search typeahead (`searchPeople`, same pattern as Work History's person filter) filtered to exclude anyone already titled `'Foreman'` — deliberately `PEOPLE`/`title` (AD-sourced identity in the real system), not the app's own `Role` type, which is per-stage routing, not who someone is.
+  - Person picker is a search typeahead (`searchPeople`, same pattern as History's person filter) filtered to exclude anyone already titled `'Foreman'` — deliberately `PEOPLE`/`title` (AD-sourced identity in the real system), not the app's own `Role` type, which is per-stage routing, not who someone is.
   - **Each person gets `ANNUAL_MAKEUP_DAYS` (90) makeup days per calendar year**, tracked by summing `daySpan()` (inclusive day count) across their grants whose start date falls in that year; `daysRemaining()` is checked both on add and on every inline date edit (`confirmEdit()`), rejecting a span that would exceed what's left — the grid's own "Days remaining" column and the add-row's live preview both call the same function so the number can't drift from what's actually enforced.
   - **UI-only, explicitly not wired to anything**: the app has no concept of "who's logged in as which specific person" (only a role *filter*, e.g. Pipe Search's `selectedRole`), and there's no time-boxed AD group membership at this org to hang real enforcement off of — so this is set up and reviewable but doesn't grant any actual access, same demo-aid honesty as Admin > Groups' permission matrix (also unenforced, mocking what AD groups would really do).
   - **Search + sort, not hide-inactive**: a name/id/title search box filters the grid, and active grants sort to the top (the `rows` computed in `makeup.component.ts`) — inactive ones stay in the list, sorted below, so search can still reach them rather than disappearing once expired. ~20 seed grants (`DEFAULT_GRANTS`) so the list/search/sort actually has something to exercise.
@@ -645,7 +649,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 
 - My Assignments is switched off by default: the page and its menu entry need the `myAssignments` feature toggle (`data/feature-toggles.ts`). When on, it is **first** in the Weld Record nav dropdown.
   - Column widths: Routing fixed at 8rem, Specific Location `1fr`.
-  - Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`getShops()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR).
+  - Expandable list (XREFID, Hull, Drawing, Joint, Routing, **Location** = shop (`locationOptions()`, same pool as Fabrication's Location) — or **'Ship'** for the couple of records below, **Specific Location** = bay/rack within it, Assignment # (6-digit, no prefix), WICC Date, **Source** — demo-only, which upstream system the assignment came from, keyed off role via `SOURCES_BY_ROLE` in `assignments.ts`: Fitting SWIMS, Welding EWICC, Foreman EWR, Inspector/NQC Inspector a random mix of SAIL/NCS, O63/O04 Records EWR).
   - Row click toggles an expanded panel below it (chevron indicator) showing Assigned By, Assigned Date, Job Description, and — for Welding assignments only — Filler Metal Type/Size and WTN (`Assignment.details`, demo-only stand-ins for fields eWICC would actually hand off; not built out for other roles yet).
   - A Charge field renders as a real **Code 39 (3 of 9) barcode** (`barcodeElements()` in `my-assignments.component.ts`: narrow/wide bar-and-space patterns per the ISO/IEC 16388 character set, wrapped in `*` start/stop characters), centered with the charge number underneath it.
   - The separate "Details" button still navigates to the job page.
@@ -656,7 +660,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - Only **two** assignments (`assignments.ts`, `toShip()`) get the shipboard-location treatment (picked among assignments whose joint is on the Ship; Level/Deck/Frame/P-S-CL/Usage are read live from the joint, see Ship Locations above): Location = 'Ship', and the expanded row shows **Level/Deck / Frame / P/S/CL / Usage** instead of Specific Location, on its own second line (`class="w-full ..."`) below Assigned By/Date/Job Description/details/Charge, which always ends the first line since it's unconditional and Deck/Frame/etc. only render for these two records.
   - One is guaranteed to be the earliest-due Welding assignment (so it's visible near the top of the default view); the other is picked from elsewhere among the blank-XREFID records for variety.
   - **Per-column filters**: the table uses `th[appSortHeader]` with `filter="text"` on each data column, same as the other tables.
-- **Assignment generation** (`generateAssignments()` in `assignments.ts`): role is assigned directly per entry (`ROLE_ROUTINGS`, one or more real routing labels per role for variety) with a fixed `PER_ROLE = 7` count for every role. Source (`SOURCES_BY_ROLE`) is assigned by `nextSource()`, cycling deterministically through a role's source pool instead of a random pick, so a role with more than one upstream system (Inspector/NQC Inspector: SAIL and NCS) is guaranteed at least one assignment from each rather than leaving it to chance.
+- **Assignment generation** (`generateAssignments()` in `assignments.ts`): role is assigned directly per entry (`ROLE_ROUTINGS`, one or more real routing labels per role for variety) with a random 5-10 count per role (deterministic). Source (`SOURCES_BY_ROLE`) is assigned by `nextSource()`, cycling deterministically through a role's source pool instead of a random pick, so a role with more than one upstream system (Inspector/NQC Inspector: SAIL and NCS) is guaranteed at least one assignment from each rather than leaving it to chance.
 - History: leftmost icon-only chevron column (expand/collapse), then **Routing, Action**, When, Who, **Value**, XREFID, Hull, Drawing, Joint, Order, **Deprogress**, then a trailing details-button column (small primary icon button, same pattern as My Assignments'; XREFID is plain text, not a link, to avoid accidental clicks; opening it sets `?from=history` so Back/sign-off returns to History instead of the Pipe Welding table, via `backDestination()` in `joint-page.component.ts`).
   - Identity columns (XREFID/Hull/Drawing/Joint/Order) are sized to their real fixed-length content in `ch` units, not a blanket rem width.
   - Every column has its own filter via `appSortHeader` (text, or a multiselect for Routing) alongside the top-bar Person/XREFID/search filters — the filter inputs show a small filter icon instead of placeholder text, which would clip in the narrow identity columns.
@@ -668,7 +672,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - **No Old value column**: the entries that set `from` (Stages/Fabrication) are filtered out of `allActivity()`.
   - **Routing filter sorts by workflow order**, not alphabetically (`routingOrder` in `work-history.component.ts`: each stage's first-appearance index across every trade's `getTemplates()`); anything not a real stage (e.g. `'All stages complete'`) sorts to the end.
   - **Deprogress is offered only on a job's last sign-off still in effect** (`deprogressable`: whole history, independent of filter/sort; a deprogress cancels the sign-off before it; a job with undo entries instead offers it on the sign-off its newest `SignoffUndo.historyWhen` belongs to; must match the live workflow's last signed stage, when the live workflow has a signed stage to compare against). Clicking it opens the shared **confirm modal** (`ConfirmService.textInput`) for the required reason.
-  - **Seeded history**: Work History reads every joint's own seeded history via `WorkflowStore.everyWorkflow()`; `signedStageCount()` seeds 0 signed routings only for joints still on their first routing (Pre-Fit, or Fit when there is no Pre-Fit).
+  - **Seeded history**: History reads every joint's own seeded history via `WorkflowStore.everyWorkflow()`; `signedStageCount()` seeds 0 signed routings only for joints still on their first routing (Pre-Fit, or Fit when there is no Pre-Fit).
 - Weld Planning: separate weld-joint data (`WeldJoint`; list/form/detail/mass edit/advanced search; the admin page has only Joint Designs) with its own `hull` field.
   The create/edit form has no title, WPS, PWHT, assignee, estimated hours, description or notes (the data fields still exist and show on the detail page & CSV for seeded joints).
   - Joint is a free-text field in system-joint format (e.g. `ST-10005`, see Terminology), not a dropdown.
@@ -769,7 +773,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 - **Nuclear Indicator** '1'/'2'/'3' drives weld-position visibility, pre-fit visibility and who signs Fit-Up Insp and NDT, through **NQC rows** (`weld-record/routing/routing-ids.ts`): each `NQC_SPLIT_STEP_IDS` routing has a twin template `nqc-<id>` (`WELDING_STEPS` in `welding-steps.ts`, label `NQC <label>`, displayName = the regular label, role NQC Inspector).
   - `DEFAULT_STEP_CONDITIONS` adds `N Ind. is 1 or 2` to the NQC row's rules and `is not 1 or 2` to the regular row's; `DEFAULT_REJECT_RULES` copies the regular row's to the NQC row; `data/signoff-type-routing.ts` seeds an NQC row per NDT row.
   - Code that reads the phase or method from a routing id uses `baseStepId()`; code that jumps to a built-in routing (`${phase}-ndt-utrt`, reject targets) goes through `stepOnJoint()`, which finds whichever twin the joint has.
-  - Excavation NDT's NQC Inspector role is still set in code (`excavationNdtStageFor()`).
+  - Excavation NDT has its own NQC twin definition (`nqc-excavation-ndt`); see "Excavation variants".
   - **Display Name** (`StageTemplate.displayName`, Routing Settings column): `buildStages()` sets the joint's `label` to `displayName || label`, so the joint, routing bar, Pipe Welding and History show it; the Routing name (`label` on the template) is what rules and condition fields use.
 - **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `conditions/joint-conditions.ts`, and starting Type enable rules in `data/signoff-type-routing.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
   - The general `job.ndt` field doesn't drive routing.
@@ -812,9 +816,9 @@ Rules in plain language: ROUTING.md "Deviations".
 - **Release** (`DeviationService.disposition(job, comments, targetId)`, from `weld-record/engineering-release/engineering-release.component.ts`, which the signoff panel shows on an unsigned hold routing instead of Signoff; Pipe Welding's role droplist has `Engineering` (in `ROLES`) to list held joints): signs every unsigned hold (who Engineering, inputs `comments`/`routeTo`), sets open deviations `dispositioned` with `disposition`, writes a 'Deviation' History entry, then `RoutingService.moveWithHistory()` (shared with Admin > Routing Override; `moveRouting()` in weld-record/routing/on-signoff/route-changes.ts: back = `routeBack()`, forward = `setRoutingFrom()`, clears undo).
   - Both entries record routing "Engineering Hold" (`withHistory()`'s optional `routing`).
 - **Reject-rule hold**: reject target `ENGINEERING_HOLD_TARGET` ('engineering-hold', routing/route-to-rules.ts) makes `routeSignoff()` call `insertEngineeringHold(stages, id, rejectHoldReason(st, rule))` instead of Repair/route-back; the hold's `inputs.holdReason` drives `holdNote()` when no deviation is open, and `disposition()` releases it without one ('Sign-off' History entry).
-  - Built-in `DEFAULT_REJECT_RULES` on the three NDT MT/PT routings (PT + that phase's weld routing GMAW); `rejectRulesEdited` on a saved template says Admin > Routing Settings saved its rules, otherwise the built-in ones apply (so older saves pick them up).
+  - Built-in `DEFAULT_REJECT_RULES` on the three NDT MT/PT routings (PT + that phase's weld routing GMAW); `rejectRulesEdited` on a saved template says Admin > Routing Settings saved its rules, otherwise the built-in ones apply.
 - **Seeds**: `seededWorkflow()` puts ~5 joints (`SEEDED_HOLD_EVERY`, last signed routing a welding routing) on hold via `seededDeviation()`: Actual PH Max = PH Max + 15.
-- Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.
+- Not covered: History's Correct can still change an Actual PH/IP after signing without a deviation.
 
 ## External assignment
 
@@ -822,7 +826,7 @@ Emulates an external system that sets a welding routing's **GWP, WTN, Filler Met
 - **Picks** (`data/weld-assignment.ts`, `assignedInputs()`): one GWP per joint from those qualified for its base metals; WTN per routing, preferring one whose quals the SELF holds; filler type/size per routing from the WPS's allowed lists. Chosen by a hash of job id + stage id, so they're stable across visits. Also sets what the WPS drives (Weld Process, PH/IP, NC actuals), same as picking by hand. Filler is skipped while "Only Consumable Insert used as filler" owns it.
 - **When**: `JointPageComponent.assignAndSnapshot()` runs `WeldAssignmentService.applyAll()` on every unsigned routing with a GWP field before the load snapshot (so it isn't an unsaved edit), overwriting whatever was there. Also re-applied when Fit switches to Weld Build-Up, when the Consumable Insert checkbox is unchecked (no override), and when a routing's last Foreman Override is removed. Routings blanked by a route-back fill again on the next visit.
 - **Locked**: `assignedLocked()` (joint page) → signoff panel `isLocked()` shows the four as disabled droplists, like Weld Process (GWP/WTN descriptions still show under them). A Foreman Override on the routing enables them with the full lists.
-- **Engineering override**: `isEngineeringEntryJoint(job)` = the system sends nothing (hash of job id, 1 in 5, plus joints with no GWP qualified for their base metals; 126 of 509 seeded).
+- **Engineering override**: `isEngineeringEntryJoint(job)` = the system sends nothing (hash of job id, 1 in 5, plus joints with no GWP qualified for their base metals).
   - `applyAll()` sets `WorkflowStage.engineeringEntry` on their unsigned welding routings, the first time blanking `ENGINEERING_ENTRY_KEYS` (GWP, WTN, Weld Process, PH/IP Min/Max, Filler Type/Size; filler kept while Consumable Insert owns it) and NC actuals.
   - On such a routing `stageFieldOptions()` makes GWP/WTN/filler plain text inputs, and the "Filled from the WTN" rules don't hold, so Weld Process can be picked and PH/IP typed (text boxes taking a number or NC: `typedRequirementBlur()` normalizes nc->NC and the actuals' NC fill rule sets/clears them, `typedRequirementError()` flags anything else), `assignedLocked()` is false, and `detectDeviations()` skips off-list checks.
   - History and Correct include those fields (`isUserEditable()`). Seeded routings signed before the flag keep their droplist display.
@@ -833,7 +837,7 @@ Emulates an external system that sets a welding routing's **GWP, WTN, Filler Met
   - `recordOverrides()` (before every sign) records it too. The leave-page guard (`hasUnsavedEdits()`) ignores them.
   - `assignedLocked()` on an engineeringEntry routing = `engineeringLocked()`: saved (snapshot) non-blank value and no reason this visit; `engineeringOverrideAvailable()` shows the panel's Engineering Override button, which asks for a reason and unlocks.
 - **Foreman Override switched off**: `FOREMAN_OVERRIDE_ENABLED = false` hides the button; the service and joint-page code are kept so it can be turned back on.
-- Not covered: Work History's Correct can still change them after signing.
+- Not covered: History's Correct can still change them after signing.
 
 ## Gotchas
 
@@ -859,13 +863,13 @@ Returning inspection Type is available in Enable when conditions. It records the
 of the routing that sent work back. The default 5X option also enables when the returning Type is
 5X, covering the excavation material exception without overriding the configured Type list.
 Repair creation and seeded Excavation NDT use the same configured availability/source resolver as
-live routing. The old NDT method-filter helpers and the hardcoded return-to-5X option override are removed.
+live routing.
 
 ### Admin page introductions
 
 Every admin page has a brief explanation directly below its title. Keep it to one short sentence
-(or two when a related setup action matters). Signoff Types reminds admins to update Signoff Types
-By Routing and Signoff Type Forms after adding or changing Types.
+(or two when a related setup action matters). Signoff Types reminds admins to update Signoff Type
+to Routing and Signoff Type Forms after adding or changing Types.
 
 ### Weld Colors
 
@@ -878,14 +882,14 @@ Repair offers distinct catalog fields allowableThicknessExceededN1 and allowable
 
 routing/routing-persona.ts resolves ordered StageTemplate.roleRules from Joint Details, falling back to role. Routing Settings's separate persona-rules.component.ts owns editing these rules, and template serialization persists them. Numbered stage creation and runtime Repair, Excavation and Engineering Hold creation use the resolver. The Excavation default selects NQC Inspector for Nuclear Indicator 1/2 and Inspector otherwise. Saved changes apply when stages are created or rebuilt; existing stage personas are retained.
 
-Routing Settings draft placement is separate from sequence numbering (admin/admin-routing/routing-row-order.ts). Unsaved new routings stay pinned at the top and display the next numbered position. Saving returns them to routing order; cancel removes the draft. Added runtime definitions do not consume numbered positions. Planned creation and configured insertion of custom runtime definitions, including potential NQC Excavation variants, are documented in docs/ADDED-ROUTINGS-PLAN.md.
+Routing Settings draft placement is separate from sequence numbering (admin/admin-routing/routing-row-order.ts). Unsaved new routings stay pinned at the top and display the next numbered position. Saving returns them to routing order; cancel removes the draft. Added runtime definitions do not consume numbered positions.
 
 
 ## Inserted routing definition configuration
 
-StageTemplate persists classification (numbered/added), supported lifecycle and draft/active/inactive status through data/routing-settings.ts. Built-in inserted definitions declare their specialized lifecycle; custom inserted definitions use ordinary lifecycle and begin as drafts. isAddedTemplateId reads persisted classification, so custom inserted definitions are excluded by buildStages. Legacy saves infer built-in classification from static definitions.
+StageTemplate persists classification (numbered/added), supported lifecycle and draft/active/inactive status through data/routing-settings.ts. Built-in inserted definitions declare their specialized lifecycle; custom inserted definitions use ordinary lifecycle and begin as drafts. isAddedTemplateId reads persisted classification, so custom inserted definitions are excluded by buildStages.
 
-added-routing-configuration.ts owns name/readiness validation using the existing Type/form configuration owners. Routing Settings reuses its condition/persona/destination editors and keeps Type setup readiness in validation and exports; routing-name cells show only the name. Inserted definitions are retained, with custom deactivation instead of deletion. Package 1 supplies configuration only; generic insertion targets, runtime instances, applicability resolution and preview are deferred in ADDED-ROUTINGS-PLAN.md. Version 2.10.55 resets demo caches through the standard version mechanism.
+added-routing-configuration.ts owns name/readiness validation using the existing Type/form configuration owners. Routing Settings reuses its condition/persona/destination editors and keeps Type setup readiness in validation and exports; routing-name cells show only the name. Inserted definitions are retained, with custom deactivation instead of deletion. Insertion and runtime instances are under "Ordinary inserted routing instances" above.
 
 
 ## Routing Settings editor ownership and compatibility
@@ -894,19 +898,19 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 
 ### Excavation variants
 
-`routing/inserted/excavation-definition.ts` resolves Add Excavation NDT using active specialized definitions and their Included when conditions. Exactly one must match: indicators 1/2 select `nqc-excavation-ndt`, indicator 3 selects `excavation-ndt` by default. Both have independent persona, destination and Type-source/exception settings. Runtime IDs preserve the definition prefix and parent Repair round; round helpers, route-back and persistence support both. History retains the NQC label; the bar uses the configured display name. Workflow version 2.10.57 resets demo caches on first upgrade load.
+`routing/inserted/excavation-definition.ts` resolves Add Excavation NDT using active specialized definitions and their Included when conditions. Exactly one must match: indicators 1/2 select `nqc-excavation-ndt`, indicator 3 selects `excavation-ndt` by default. Both have independent persona, destination and Type-source/exception settings. Runtime IDs preserve the definition prefix and parent Repair round; round helpers, route-back and persistence support both. History retains the NQC label; the bar uses the configured display name.
 
 
 ## Shared Type Exceptions
 
-`signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-type-routing-rules.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-type-routing/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance. Workflow version 2.10.58 applies the documented first-load demo cache reset policy.
+`signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-type-routing-rules.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-type-routing/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance.
 
 
 ## Repair Code lookup configuration
 
 Admin > Repair Codes (`/admin/repair-codes`) maintains stable values, names and active/inactive status in `data/repair-codes.ts`, using `STORAGE.repairCodes`. `signoff-definition/repair-code-options.ts` maps that lookup to active form choices and retained condition choices. The field catalog reads those options dynamically; the joint form filters active choices and retains a recorded inactive selection for display. Condition editors include inactive records to preserve saved references. Lookup saves invalidate field/qualification condition caches through the field-definition version.
 
-`routing/on-signoff/repair-code-rules.ts` validates selected codes and requires a matching existing destination rule for custom codes. `routeSignoff()` shares this validation with preview and rejects invalid custom destinations before saving. Existing built-in IDs and Cut/Refit semantics remain specialized. Version 2.10.59 applies the existing demo cache-reset policy; the Repair Code lookup itself survives subsequent resets. Field identities/types/mappings remain code controlled.
+`routing/on-signoff/repair-code-rules.ts` validates selected codes and requires a matching existing destination rule for custom codes. `routeSignoff()` shares this validation with preview and rejects invalid custom destinations before saving. Existing built-in IDs and Cut/Refit semantics remain specialized. The Repair Code lookup survives demo cache resets. Field identities/types/mappings remain code controlled.
 
 
 ## Admin table presentation
@@ -914,15 +918,13 @@ Admin > Repair Codes (`/admin/repair-codes`) maintains stable values, names and 
 The content wrapper uses `shared/admin-table-scope.directive.ts` to apply the admin table scope for routes containing an `admin` path segment (Weld Record, Planning and Engineering). `shared/admin-tables.css`, imported by the global stylesheet, gives every table in that scope collapsed one-pixel cell outlines and top-aligned contents using the Routing Settings border contrast. Nested editors and shared import grids inherit the same presentation. Navigation out of admin removes the scope. Future admin tables use this standard without individual border styling; AGENTS.md records the convention.
 
 
-Verified the shared admin grid with 506 passing ChromeHeadless tests, production build and the no-unused TypeScript check. `shared/admin-table-scope.directive.spec.ts` checks actual computed cell borders/alignment on all three systems, nested tables, direct entry and navigation out of admin; `shared/admin-table-scope.spec.ts` checks route boundaries and query/fragment exclusions. Existing build warnings remain.
-
 
 ## General inspection routing facts
 
-`conditions/inspection-types.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `conditions/joint-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
+`conditions/inspection-types.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `conditions/joint-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly.
 
 Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
 
 Type Exceptions is a combined inline-edit grid with a Routing column. Exception ordering is per routing; left arrows and grip-only drag persist that order. Type source is stored on the routing row and is read-only in both Signoff Type to Routing grids; no admin control changes it, and a re-added Excavation row starts on Rejecting inspection. Exception saves preserve each routing's source and available Types.
 
-Material Classification stores separate Non-Ferrous, Austenitic and Titanium flags. Conditions expose each as Either material is ... with Yes/No values through the common AND/OR rule engine. Regular and NQC Excavation seed PT to 5X when either material is non-ferrous OR either material is austenitic. Saved combined exception guards expand into equivalent OR groups retaining existing AND conditions. Legacy classifications split by known seed classification; unknown custom codes retain combined eligibility as Non-Ferrous pending administrator review. Version 2.10.61 uses the standard demo cache reset; saved material classifications survive and migrate on load.
+Material Classification stores separate Non-Ferrous, Austenitic and Titanium flags. Conditions expose each as Either material is ... with Yes/No values through the common AND/OR rule engine. Regular and NQC Excavation seed PT to 5X when either material is non-ferrous OR either material is austenitic. Saved material classifications survive demo cache resets.
