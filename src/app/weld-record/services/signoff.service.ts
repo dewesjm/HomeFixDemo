@@ -15,7 +15,10 @@ import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/st
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { isOwnType } from '../signoff-definition/signoff-type-routing-rules';
-import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-routing-rules';
+import { namedAfterType } from '../signoff-definition/stage-display';
+
+/* signed by the Release to Welding button, not a sign-off form */
+const FITUP_RELEASE = 'fitup-release';
 import { WorkflowStore } from './workflow-store.service';
 import { additionalSignoffs } from '../signoff-definition/additional-signoffs';
 import { typeValues } from '../signoff-definition/stage-rules';

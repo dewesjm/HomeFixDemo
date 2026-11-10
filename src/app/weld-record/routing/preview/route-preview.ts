@@ -5,7 +5,7 @@ import { DECISION_KEY } from '../../../data/signoff-type-forms';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { drawnFieldRule } from '../../signoff-definition/shown-fields';
 import { isEngineeringHoldId } from '../routing-ids';
-import { closesJoint } from '../built-in-routing-rules';
+import { closesJoint } from '../current-routing';
 
 export type SignoffPreview = (result?: WorkflowStage['result']) => { target: WorkflowStage | undefined; reasons: string[] };
 

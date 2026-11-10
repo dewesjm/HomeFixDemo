@@ -6,11 +6,11 @@ import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_T
 import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';
-import { lastFabricationEditStep } from '../weld-record/routing/built-in-routing-rules';
+import { isFitupInspId } from '../weld-record/routing/routing-ids';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
-  const fitupAt = list.reduce((at, s, i) => lastFabricationEditStep(s.id) ? i : at, -1);
+  const fitupAt = list.reduce((at, s, i) => isFitupInspId(s.id) ? i : at, -1);
   return list.map((s, i) => ({ ...s, fabricationEditable: fitupAt < 0 || i <= fitupAt }));
 }
 

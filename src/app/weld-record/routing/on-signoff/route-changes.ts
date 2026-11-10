@@ -9,7 +9,7 @@ import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJoints
 import { blankFabricationData } from '../../fabrication/fabrication-fields';
 import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from '../routing-ids';
 import { activeStageId, setRoutingFrom } from '../current-routing';
-import { fabricationSigned, goesBackPastFabrication } from '../built-in-routing-rules';
+import { fabricationSigned, goesBackPastFabrication } from '../../fabrication/fabrication-steps';
 import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */

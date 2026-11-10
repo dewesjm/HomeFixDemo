@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor Routing Settings.',
+      'Refactor the fixed rules for Fit, Fit-Up Insp, Layer and Sold.',
       'Admin condition droplists: the fields offered for Excavation NDT now follow the Types set for the NDT routings on Admin > Signoff Type to Routing, instead of a fixed list.',
       'Refactor NDT routings and Degree of RT values.',
       'Refactor Reject routes to and Then go to rules.',

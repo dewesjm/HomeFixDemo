@@ -4,6 +4,9 @@ import { getRepairCodes } from '../../../data/repair-codes';
 import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
 import { firstMatchingRule } from '../route-to-rules';
 
+/* a Repair coded Cut starts the joint over from this step (when the joint has it) */
+export const CUT_RESTARTS_AT = 'fit';
+
 export function isCustomRepairCode(code: string): boolean {
   return !!code && !['grind', 'weld-repair', 'cut'].includes(code);
 }

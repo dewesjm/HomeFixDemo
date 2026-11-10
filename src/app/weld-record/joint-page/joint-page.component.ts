@@ -45,7 +45,7 @@ import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/on-signoff/route-changes';
 import { isEngineeringHoldId } from '../routing/routing-ids';
-import { closesJoint } from '../routing/built-in-routing-rules';
+import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';

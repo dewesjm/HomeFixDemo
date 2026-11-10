@@ -21,7 +21,7 @@ import {
 import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
 import { getTemplates, routingTemplateId } from '../routing-settings-rules';
-import { CUT_RESTARTS_AT } from '../built-in-routing-rules';
+import { CUT_RESTARTS_AT } from './repair-code-rules';
 import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions } from '../../conditions/condition-text';
 import { firstMatchingRule } from '../route-to-rules';

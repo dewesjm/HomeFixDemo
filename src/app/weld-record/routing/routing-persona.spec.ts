@@ -1,9 +1,18 @@
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { JOBS, Job } from '../../data/jobs';
-import { routingRole } from './routing-persona';
+import { closingRole, routingRole } from './routing-persona';
+import { closesJoint } from './current-routing';
 import { getAddedTemplate, updateStageTemplate } from './routing-settings-rules';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted/added-routings';
 import { buildStages } from './build-stages';
+
+describe('Sold', () => {
+  it('closes the joint and its persona follows the Records Review', () => {
+    expect(closesJoint('sold')).toBeTrue();
+    expect(closingRole(true)).toBe('O63 Records');
+    expect(closingRole(false)).toBe('O04 Records');
+  });
+});
 
 describe('Configured routing personas', () => {
   const job = (nInd: string): Job => ({ ...JOBS[0], nInd });

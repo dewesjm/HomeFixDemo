@@ -5,6 +5,9 @@ import { isUserEditable } from './field-locks';
 import { hasDecision, showsType } from './stage-rules';
 import { lookupCatalogField } from '../catalogs/field-catalog';
 
+/* History names Layer's signoff after its Type (Interim Layer / Final Weld) rather than "Layer" */
+export const namedAfterType = (stageId: string) => stageId === 'root-layer';
+
 export function displayValue(f: { type: string; options?: { label: string; value: string }[]; unit?: string }, raw: string | undefined): string {
   const v = raw ?? '';
   if (f.type === 'checkbox') return v === 'yes' ? 'Yes' : 'No';

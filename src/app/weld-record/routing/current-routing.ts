@@ -33,6 +33,10 @@ export function activeStage(stages: WorkflowStage[]): WorkflowStage | undefined 
   return stages.slice(routingStart(stages)).find(s => s.required && !s.signed);
 }
 
+/* Sold is the end of the path: nobody signs it (no sign-off form, Comments box or route preview), and
+   the joint is closed once it gets there */
+export const closesJoint = (stageId: string) => stageId === 'sold';
+
 export function currentRoutingLabel(stages: WorkflowStage[]): string {
   return activeStage(stages)?.label ?? stages[stages.length - 1]?.label ?? 'Complete';
 }

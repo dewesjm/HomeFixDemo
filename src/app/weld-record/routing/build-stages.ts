@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { routingRole } from './routing-persona';
+import { closingRole, routingRole } from './routing-persona';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes/exception-effects';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from '../conditions/joint-conditions';
@@ -7,7 +7,8 @@ import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-typ
 import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-routing-rules';
+import { closesJoint } from './current-routing';
+import { isFitupInspId } from './routing-ids';
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
@@ -28,7 +29,7 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
     const required = addedByCode(t) || (routingIncluded(t) && baseRequired(t, job, [], fab));
     const { typeOptions: exceptionOptions, attributeRules } = attributeTypeSettings(t.id, job);
     const typeOptions = exceptionOptions ?? t.typeOptions;
-    const inputs: Record<string, string> = startsReleasedToWelding(t.id) ? { releaseToWelding: 'yes' } : {};
+    const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};   /* Fit-Up Insp starts released to welding */
     const role = closesJoint(t.id) ? closingRole(hasO63Data) : routingRole(t, job);
     return {
       id: t.id,
