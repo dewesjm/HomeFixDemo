@@ -35,6 +35,7 @@ Queued in AGENTS.md, in this order.
     - Signoff panel and related objects: consider a standalone folder for doing actual signoffs.
     - Theme picker: should it be under `shared/`?
     - `weld-record/fabrication/`: rename to `fabrication-panel/` or something else? Propose names first.
+    - `weld-record/model/workflow-types.ts`: what is this model, and is the name right?
 - [ ] **More .md files in .gitignore (later, not queued in AGENTS.md):** add more of the repo's Markdown docs to `.gitignore`; ask which ones first. Note: `AGENTS.md` and `Tasks.md` are already listed there but are still tracked by git, so the ignore has no effect on them until they are removed from the index (`git rm --cached`, which keeps the file on disk).
 - [ ] **Rename `work-history/`:** the folder holds the History page (and `history-table`, which Records Review also uses), but its name doesn't say so. Look at renaming it; propose names before changing anything. Not queued in AGENTS.md.
 
