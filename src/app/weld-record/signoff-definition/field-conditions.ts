@@ -38,12 +38,6 @@ export function conditionClauses(c: FieldCondition): ConditionClause[] {
   return conditionTerms(c).flatMap(t => isConditionGroup(t) ? conditionClauses(t) : [t]);
 }
 
-/* both conditions must hold */
-export function andConditions(a: FieldCondition, b: FieldCondition): FieldCondition {
-  const terms = (c: FieldCondition) => conditionOp(c) === 'all' ? conditionTerms(c) : [c];
-  return { all: [...terms(a), ...terms(b)] };
-}
-
 export interface ConditionContext {
   stageId: string;
   inputs: Record<string, string>;

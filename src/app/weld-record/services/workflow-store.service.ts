@@ -1,4 +1,4 @@
-/* per-job workflow state: signals, localStorage persistence, migration, and history stamping.
+/* per-job workflow state: signals, localStorage persistence, and history stamping.
    Domain services (RoutingService, SignoffService, ReferenceService, FabricationDataService) build
    their mutations on top of this — it owns no domain logic of its own. */
 import { STORAGE, clearStaleCaches } from '../../data/storage-keys';
@@ -10,18 +10,16 @@ import { JobWorkflow, HistoryEntry } from '../model/workflow-types';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { newWorkflow, buildStages } from '../routing/build-stages';
 import { getTemplates } from '../routing/stage-templates';
-import { seedFabricationData } from '../../data/seed-fabrication';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/step-ids';
 
-/* v2: stage model changed to a 5..15 run, ignore older saved workflows */
 const LS_KEY = STORAGE.workflows;
 const APP_VERSION_KEY = STORAGE.appVersion;
 // IMPORTANT: Bump this version whenever you change stage definitions, field names,
 // or any data model that is persisted in localStorage. The app auto-clears stale
 // caches when this version changes.
-const CURRENT_VERSION = '2.10.70';
+const CURRENT_VERSION = '2.10.71';
 
 @Injectable({ providedIn: 'root' })
 export class WorkflowStore {
@@ -115,39 +113,18 @@ export class WorkflowStore {
     try {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
-      /* backfill old/partial records so reads don't throw */
       for (const wf of Object.values(parsed)) {
-        wf.references ??= [];
-        wf.history ??= [];
-        wf.fabricationData ??= {};
-        wf.stages ??= [];
         const job = JOBS.find(j => j.id === wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
 
-        /* backfill empty fabrication data */
-        if (job && Object.keys(wf.fabricationData).length === 0) {
-          wf.fabricationData = seedFabricationData(job);
-        }
-
-        wf.stages.forEach(s => {
-          s.inputs ??= {};
-          s.signoffInputs ??= {};
-          s.result ??= null;
-          s.rejectToStage ??= '';
-          s.signed ??= false;
-          s.signedAt ??= null;
-          delete (s as unknown as { status?: unknown }).status;
-          s.signoffType ??= 'standard';
-          s.role ??= '';
-        });
         /* rebuild the stages if the joint has one its templates no longer do */
         if (job) {
-          /* a stage id the trade's templates no longer have; Repair, Excavation NDT and Repeat copies
-             are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
+          /* a stage id the trade's templates no longer have; Repair, Excavation NDT, Engineering Hold
+             and inserted routings are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
           const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
-            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion && !/-r\d+$/.test(s.id));
+            && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion);
           if (missingStages) {
             const oldStages = wf.stages;
             const newStages = buildStages(job);
@@ -166,7 +143,7 @@ export class WorkflowStore {
           }
         }
       }
-      /* persist rebuilt stages so migration only runs once */
+      /* persist rebuilt stages so the rebuild only runs once */
       localStorage.setItem(LS_KEY, JSON.stringify(parsed));
       return parsed;
     } catch {

@@ -80,7 +80,7 @@ All `localStorage` keys live in `data/storage-keys.ts` (`STORAGE.*`, all prefixe
 
 | Service | Owns |
 |---|---|
-| `WorkflowStore` | Per-job state (signals), localStorage persistence/migration, history-entry stamping (`withHistory`). No domain logic — every service below builds on it. |
+| `WorkflowStore` | Per-job state (signals), localStorage persistence, history-entry stamping (`withHistory`). No domain logic — every service below builds on it. |
 | `RoutingService` | Filling in a stage's own fields (`setStageInput(s)`); Admin > Routing Override (`setRouting`); Deprogress (`deprogress`). |
 | `SignoffService` | Locking a stage's sign-off (`signStage`, `updateStageSignoff`, `correctStage`) and Fit-Up release, saving each with its History entries and undo. Where a signoff sends the joint is `routeSignoff()` in `weld-record/routing/signoff-routing.ts`: defer-tack, fit-up-release activation, Then go to rules for accepted signoffs and an UNSAT whose Reject routes to is the routing itself staying put (Records Review's default), NDT reject adding a Repair round (Repair #), Repair's own routing (Grind Only, Weld Repair → Excavation NDT, Cut → start over from Fit with Refit #), and Excavation NDT's routing. See ROUTING.md for the rules. |
 | `ReferenceService` | `addReference`/`removeReference` (the References panel). |
@@ -96,7 +96,7 @@ adding a method, ask:
 - Is it a genuinely new concern (e.g. a future "Components installed" or "Job comments" feature)? Give it its
   own service, built on `WorkflowStore` the same way the others are — inject `WorkflowStore`, use
   `store.update(job, mutator)` + `store.withHistory(prev, next, entry)`, don't reinvent persistence.
-- Never add state, persistence, or migration logic outside `WorkflowStore` — it's the single place that
+- Never add state or persistence outside `WorkflowStore` — it's the single place that
   touches `localStorage` for workflows and the only place `CURRENT_VERSION` lives.
 - Write the new service's spec file alongside it (see "Testing" below) in the same change, not as follow-up
   work.
@@ -192,7 +192,7 @@ src/app/
     sync-status/           Online/offline dot in the top bar (app.component), status text on hover (stubbed)
     services/             A shared store + one service per concern. See "Weld Record services" above for
                           what each owns and the rule for adding new ones.
-      workflow-store.service.ts  Per-job workflow state (signals), localStorage persistence + migration,
+      workflow-store.service.ts  Per-job workflow state (signals), localStorage persistence,
                                  history-entry stamping (`withHistory`). The shared primitive every other
                                  service here builds on — owns no domain logic itself.
       routing.service.ts   Stage-progression routing: filling in a stage's own fields (setStageInput(s)),
@@ -370,7 +370,6 @@ src/app/
 | `/pipe-search` | Pipe Welding (default) = `AdaptiveSearchComponent` |
 | `/pipe-search-classic` | Pipe Welding (Classic) = `PipeSearchComponent`; redirects to `/pipe-search` unless Admin > Feature Toggles > Classic Pipe Welding page is on |
 | `/history` | History (`?job=<id>` deep-link) |
-| `/adaptive` | Redirects to `/pipe-search` (kept so old links still work) |
 | `/jobs/:hull/:drawing/:joint` | Joint Details, keyed by the unique hull + drawing + joint (never XREFID, which can be blank; `jointRoute()` in `joint-page/joint-route.ts`) (`?from=assignments` or `?from=history` returns there after Back/signoff; default is Pipe Welding — `backDestination()` in `joint-page.component.ts`) |
 | `/assignments` | My Assignments; redirects to `/pipe-search` unless Admin > Feature Toggles > My Assignments page is on |
 | `/changelog` | Change Log (Quick Links menu): plain-language list of changes, newest first, data in `data/changelog.ts`. **Add an entry with every user-facing change.** |
@@ -442,7 +441,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 - **Variants = layouts**: a variant saves filter bar fields + conditions, columns, column-heading filters, keyword, sort and role (`SearchLayout`).
   - Built-in **Standard** variant (first in the droplist, can't be deleted or overwritten) = Pipe Welding's columns (XREFID, Hull, Drawing, Joint, Order, Sequence, Current routing), filter bar **empty** (the column headings already filter those; the bar only shows once Adapt filters adds a field), role View All.
   - **Default variant** (per user, not global): "Make this my default" in the View menu makes the chosen variant this browser's default (`STORAGE.advancedSearchDefault`; the app has no logins, so per browser = per user, same as variants themselves); the droplist marks it "(default)"; "Stop using as my default" goes back to Standard; deleting the default variant clears it.
-  - Variants saved in an older one-value-per-field format are converted on load (`loadVariants()`). The page's own state (layout + chosen variant + page/page size) is saved to `STORAGE.advancedSearchState` in both sessionStorage and localStorage.
+  - The page's own state (layout + chosen variant + page/page size) is saved to `STORAGE.advancedSearchState` in both sessionStorage and localStorage.
   - Opening the page: this tab's state if any (refresh, back from a joint), else a new visit opens on the default variant (the starred one, else Standard), with the filter bar hidden; only page size carries over from the last visit.
 - **Compact filter bar + Hide/Show**: one line per condition (operator box sized to the chosen operator's label, value box beside it; every line has an x "Remove this condition" except a field's only line while it is still empty (`canRemoveCondition()`), and the last line also ends in a + "Add condition" button); fields are 19rem wide. The "Filters (n)" toggle in the header folds the bar away (chips still show active filters); kept for this tab (`filtersHidden`), not saved in variants; a new visit starts hidden; Adapt filters adding fields shows the bar.
 - Routing fields: Fit's Defer Tack and Fit-Up Insp's Release to welding sit under their own routing, so groups follow routing order.
@@ -487,7 +486,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - The pick is stored in both `inspectionType` and `signoffType` (`typeValues()`, stage-rules.ts); one handler (`typeChange()`, `weld-record/joint-page/rules/type-change.ts`) sets them on every routing, **clears the form** (inputs, sign-off inputs and the routing's red messages) and loads the new Type's definition; it's recorded in History. Every Type reads its own form at render, validation, fill and History time. No fields are copied onto the routing. Type changes keep only Repair-round origin and inspection-exception bookkeeping.
   - The NDT rows are seeded with no default, so NDT Type starts on "Select the inspection performed…"; when the Joint Details values allow only some methods the droplist lists just those, and a default outside them leaves it blank.
   - Excavation NDT and the 5X/VT routing a PT excavation routes back to start blank too.
-- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up): their seeded definitions (`weldFields()`, routing-field-config.ts) draw four boxes (only "Preheat/Interpass" has a header; the other three are untitled); PH/IP requirements and actuals share one box:
+- **Weld stages** (Tack, Root, Layer, Final Weld, Fit weld build-up): their seeded definitions (`weldFields()`, step-field-config.ts) draw four boxes (only "Preheat/Interpass" has a header; the other three are untitled); PH/IP requirements and actuals share one box:
   1. **Signoffs** (untitled) — GWP / WTN / Weld Process, **Consumable Insert checkbox** (Root only; unchecking clears filler type/size/MIC) directly above **Filler Metal**, the fields it affects.
      - GWP/WTN/Weld Process/PH-IP/override values cascade from Weld Engineering's procedures data (`data/procedures.ts` + `weld-record/joint-page/rules/stage-form.ts`): the GWP droplist (`stageFieldOptions()`, `weld-record/joint-page/rules/stage-form.ts`) is filtered to GWPs matching the job's Material Type 1/2 (`gwpOptionsForMaterials()`); picking a GWP narrows WTN's droplist to that GWP's WTNs (`wtnOptionsForGwp()`); picking a WTN fills Weld Process and PH Min/Max, IP Min/Max from the matching WPS by their fill rules ("Filled from the WTN", `wtnFillValue()` in `data/procedures.ts`, applied by `fillChanges()`; locked, not under an engineering override), and `selectChangeCascade()` (`weld-record/joint-page/rules/weld-cascade.ts`) sets the override fields (blank unless that WPS has `hasOverride()` true).
      - An actual is NC and locked while its requirement is NC (its "Filled from this routing's requirement" rule).
@@ -515,7 +514,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 - A routing without a Type form has no fields; there is no routing-template field or layout fallback.
 - **Layout from the definition**: a definition's `fields` list is also its layout.
   - Each item has a `line` number (one count for the whole form, headings included); items with the same number sit side by side in list order, and the list is kept sorted by it (`inLineOrder()`; the Layout list's arrows only reorder within a line).
-  - Inspection Results, verify-grid rows and Signoff History always get a line of their own. The seeds' `same()` shorthand and saves from before line numbers (`sameLine`) are numbered by `numberLines()` (routing-field-config.ts) on load, so nothing moves. A newly ticked field gets a new line at the end (`withNewField()`).
+  - Inspection Results, verify-grid rows and Signoff History always get a line of their own. The seeds' `same()` shorthand and saves from before line numbers (`sameLine`) are numbered by `numberLines()` (step-field-config.ts) on load, so nothing moves. A newly ticked field gets a new line at the end (`withNewField()`).
   - Heading items (`heading` text, key prefixed `heading:`, `newBox` = starts a box) sit in the list and are skipped everywhere else (`definitionFields()` drops them).
   - Inspection Results (`DECISION_KEY` 'decision') is a field the admin ticks: the routing's SAT/UNSAT (`stage-decision` component), drawn where the list places it on a required routing.
   - `width` (pixels) is the most a field is drawn wide; it narrows to min(width, 160px) before its line wraps; unset = shares the line.
@@ -775,7 +774,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 
 ## Layout & styling
 
-- `html { font-size: 112.5% }` in `styles.scss` scales everything (all sizes are rem). Small Tailwind/DaisyUI sizes and dimmed/disabled contrast are overridden at the end of `styles.scss` ("Readability overrides").
+- `html { font-size: 112.5% }` in `styles.css` scales everything (all sizes are rem). Small Tailwind/DaisyUI sizes and dimmed/disabled contrast are overridden at the end of `styles.css` ("Readability overrides").
 - `.signoff-panel` uses one text size (`--signoff-text`) for everything except bold headings.
 - `.layout` — `height: 100vh; flex column`; `.topnav` sticky, 3rem, `z-index: 50`; `.content-body` scrolls; `.table-page-wrap` fixes the header/filters and scrolls the table.
 - Theming: 32 DaisyUI themes; default `light`; app tokens (`--app-bg`, `--app-surface`, `--app-border`, `--app-text-muted`) track the active theme. `--app-border` is a mix of the theme's text colour (25%), not `base-300`, because `base-300` is nearly the panel colour in dark themes and borders vanished; change it in one place to retune every border. Toasts use `color-mix()` with theme variables.
@@ -793,7 +792,7 @@ Rules in plain language: ROUTING.md "Deviations".
   - `deprogressWorkflow()` marks an open deviation `withdrawn` when its hold stage is gone.
 - **Release** (`DeviationService.disposition(job, comments, targetId)`, from `weld-record/engineering-release/engineering-release.component.ts`, which the signoff panel shows on an unsigned hold routing instead of Signoff; Pipe Welding's role droplist has `Engineering` (in `ROLES`) to list held joints): signs every unsigned hold (who Engineering, inputs `comments`/`routeTo`), sets open deviations `dispositioned` with `disposition`, writes a 'Deviation' History entry, then `RoutingService.moveWithHistory()` (shared with Admin > Routing Override; `moveRouting()` in weld-record/routing/route-changes.ts: back = `routeBack()`, forward = `setRoutingFrom()`, clears undo).
   - Both entries record routing "Engineering Hold" (`withHistory()`'s optional `routing`).
-- **Reject-rule hold**: reject target `ENGINEERING_HOLD_TARGET` ('engineering-hold', routing-conditions.ts) makes `routeSignoff()` call `insertEngineeringHold(stages, id, rejectHoldReason(st, rule))` instead of Repair/route-back; the hold's `inputs.holdReason` drives `holdNote()` when no deviation is open, and `disposition()` releases it without one ('Sign-off' History entry).
+- **Reject-rule hold**: reject target `ENGINEERING_HOLD_TARGET` ('engineering-hold', step-conditions.ts) makes `routeSignoff()` call `insertEngineeringHold(stages, id, rejectHoldReason(st, rule))` instead of Repair/route-back; the hold's `inputs.holdReason` drives `holdNote()` when no deviation is open, and `disposition()` releases it without one ('Sign-off' History entry).
   - Built-in `DEFAULT_REJECT_RULES` on the three NDT MT/PT routings (PT + that phase's weld routing GMAW); `rejectRulesEdited` on a saved template says Admin > Routing Settings saved its rules, otherwise the built-in ones apply (so older saves pick them up).
 - **Seeds**: `seededWorkflow()` puts ~5 joints (`SEEDED_HOLD_EVERY`, last signed routing a welding routing) on hold via `seededDeviation()`: Actual PH Max = PH Max + 15.
 - Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.

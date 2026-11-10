@@ -4,7 +4,7 @@
    Storage keys live in data/storage-keys.ts. */
 import { STORAGE } from './storage-keys';
 import {
-  jointNumbers, WELD_TYPES, PIPE_SIZES, decimalPipeSize, WALL_THICKNESSES, MATERIAL_TYPES,
+  jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES,
   NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from './jobs';
@@ -235,28 +235,9 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
 const LS_KEY = STORAGE.weldJoints;
 
 function loadWeldJoints(): WeldJoint[] {
-  const hullPool = [...HULLS];
-  const jointPool = [...JOINTS_POOL];
-  const pickFrom = <T>(arr: T[], idx: number): T => arr[idx % arr.length];
-
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const statusMap: Record<string, JointStatus> = {
-        'planned': 'development', 'in-progress': 'development', 'completed': 'unlocked',
-        'on-hold': 'locked', 'cancelled': 'locked',
-      };
-      return parsed.map((j: any, i: number) => ({
-        ...blankJointExtras(),
-        ...j,
-        jointType: j.jointType || 'pipe',
-        hull: j.hull || pickFrom(hullPool, i),
-        joint: j.joint || pickFrom(jointPool, i),
-        pipeSize: decimalPipeSize(j.pipeSize ?? ''),
-        status: statusMap[j.status] || j.status || 'development',
-      }));
-    }
+    if (raw) return JSON.parse(raw) as WeldJoint[];
   } catch { /* ignore */ }
   const seeded = generateSeededJoints();
   persistWeldJoints(seeded);

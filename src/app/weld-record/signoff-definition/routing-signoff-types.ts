@@ -63,9 +63,7 @@ export const routingSignoffTypesVersion = () => version;
 export function getRoutingSignoffTypes(): RoutingSignoffType[] {
   try {
     const raw = localStorage.getItem(STORAGE.routingSignoffTypes);
-    const types: RoutingSignoffType[] = raw ? JSON.parse(raw) as RoutingSignoffType[] : SEED_TYPES;
-    return types.map(t => t.value === 'root' && t.alsoSigns === undefined
-      ? { ...t, alsoSigns: structuredClone(ROOT_ADDITIONAL_SIGNOFFS) } : t);
+    return raw ? JSON.parse(raw) as RoutingSignoffType[] : SEED_TYPES;
   } catch { return SEED_TYPES; }
 }
 

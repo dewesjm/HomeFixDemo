@@ -2,7 +2,7 @@ import { insertedDefinitionId } from '../routing/instance-identity';
 /* Signoff Type to Routing stores available Types and defaults. Every Repair round reads
    the Repair row; Excavation reads its configured Type source and ordered material exceptions. */
 import { Job } from '../../data/jobs';
-import { TypeException, replacedType, normalizeTypeException } from './type-exceptions';
+import { TypeException, replacedType } from './type-exceptions';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
@@ -81,8 +81,7 @@ export const signoffTypesVersion = () => version * 1000 + routingSignoffTypesVer
 export function getSignoffTypeRows(): SignoffTypeRow[] {
   try {
     const raw = localStorage.getItem(STORAGE.signoffTypes);
-    return raw ? (JSON.parse(raw) as SignoffTypeRow[]).map(row => ({ ...row,
-      typeExceptions: row.typeExceptions?.map(normalizeTypeException) })) : SEED_ROWS;
+    return raw ? JSON.parse(raw) as SignoffTypeRow[] : SEED_ROWS;
   } catch { return SEED_ROWS; }
 }
 

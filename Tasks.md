@@ -19,6 +19,7 @@ Queued in AGENTS.md, in this order.
 - [ ] **Leftovers evaluation:** a larger pass over the app for leftovers and code that isn't needed. Report findings before removing anything.
 - [ ] **File purpose:** check that every file states its purpose at the top, and add it where it's missing.
 - [ ] **Routing folder size:** `weld-record/routing/` has grown very large. Review it and propose how to break it up.
+- [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
 
 ## Deferred testing packages
 

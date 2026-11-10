@@ -51,9 +51,8 @@ import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-s
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-search' },
-  /* Pipe Welding is the Advanced Search page; /adaptive was its address before the two merged */
+  /* Pipe Welding is the Advanced Search page */
   { path: 'pipe-search', component: AdaptiveSearchComponent, title: 'EWR - Pipe Welding' },
-  { path: 'adaptive', redirectTo: 'pipe-search' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
   { path: 'pipe-search-classic', component: PipeSearchComponent, title: 'EWR - Pipe Welding (Classic)',

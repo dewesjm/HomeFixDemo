@@ -12,7 +12,7 @@ export interface Job {
                            serialNumber is blank too, since neither was captured for that record. */
   ship: string;         /* 3-digit ship number, e.g. '692'; stable per hull, same idea as hull below */
   hull: string;        /* S, T, D or N + 4 digits, e.g. S7234; not unique, many jobs share a hull */
-  trade: string;  /* dynamic — admin can add new trades */
+  trade: string;  /* always 'Welding' */
   technician: string;
   drawing: string;           /* drawing number */
   drawingRev: string;        /* drawing revision */
@@ -91,9 +91,6 @@ const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
 export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', 'Transition', 'Overlay', 'Boss', 'Socket'];
 /* exported so Weld Planning's Create Joint offers the same options */
 export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
-/* older saved joints hold fractional sizes; map them to the decimal form */
-const FRACTION_PIPE_SIZES: Record<string, string> = { '1/2"': '0.5"', '3/4"': '0.75"', '1-1/4"': '1.25"', '1-1/2"': '1.5"', '2-1/2"': '2.5"' };
-export function decimalPipeSize(size: string): string { return FRACTION_PIPE_SIZES[size] ?? size; }
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
 /* Base material codes, the one list both Material Type 1 and Material Type 2 pick from (the two
    sides of a joint, same or different). Filler metal is a separate list (procedures.ts). An internal

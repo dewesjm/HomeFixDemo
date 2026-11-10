@@ -15,7 +15,6 @@ describe('Signoff Types settings', () => {
     component.setSignsStep(row, 'root-layer');
     component.saveEdit(component.rows().find(t => t.value === 'final-weld')!);
     expect(getRoutingSignoffTypes().find(t => t.value === 'final-weld')!.signsStep).toBe('root-layer');
-    expect(getRoutingSignoffTypes().every(t => !('repeatable' in t))).toBeTrue();
   });
 
   it('saves and removes conditional additional signoffs without changing Signs routing', () => {

@@ -10,7 +10,7 @@ import { jointDesignOptions } from '../../data/joint-designs';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
-import { Condition, FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
+import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import { NDT_LABELS } from '../../data/ndt-labels';
 
 export interface SearchField extends MatchField {
@@ -158,40 +158,10 @@ export function standardLayout(): SearchLayout {
   };
 }
 
-/* the old XREFID key */
-const renameKey = (k: string) => (k === 'id' ? 'xrefid' : k);
-
-/* variants saved before stacked conditions held one value per field and no columns */
-function migrateOldValues(old: Record<string, any>): FilterValues {
-  const out: FilterValues = {};
-  const cond = (c: Partial<Condition>): Condition => ({ op: 'contains', value: '', to: '', values: [], ...c });
-  for (const [k, v] of Object.entries(old ?? {})) {
-    const key = renameKey(k);
-    if (v == null) continue;
-    if (typeof v === 'string') { if (v) out[key] = [cond({ value: v })]; }
-    else if (typeof v === 'object' && 'text' in v) {
-      if (v.text) out[key] = [cond({ op: v.negate ? 'notContains' : 'contains', value: v.text })];
-    }
-    else if (Array.isArray(v) && v.length) {
-      if (typeof v[0] === 'number') {
-        if (key === 'estimatedHours' && v[0] === 0 && v[1] === 500) continue;
-        out[key] = [cond({ op: 'between', value: String(v[0]), to: String(v[1]) })];
-      } else out[key] = [cond({ op: 'is', values: v.map(String) })];
-    }
-  }
-  return out;
-}
-
 export function loadVariants(): FilterVariant[] {
   try {
     const raw = localStorage.getItem(STORAGE.filterVariants);
-    if (!raw) return [];
-    return (JSON.parse(raw) as any[]).map(v => v.columnKeys ? v as FilterVariant : {
-      ...standardLayout(),
-      name: v.name,
-      filterKeys: (v.visibleKeys ?? []).map(renameKey),
-      values: migrateOldValues(v.values),
-    });
+    return raw ? JSON.parse(raw) as FilterVariant[] : [];
   } catch {
     return [];
   }

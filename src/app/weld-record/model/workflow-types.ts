@@ -104,7 +104,7 @@ export interface Deviation {
   /* open = the joint is on Engineering Hold; dispositioned = Engineering set the routing;
      withdrawn = the sign-off that accepted it was deprogressed */
   status: 'open' | 'dispositioned' | 'withdrawn';
-  /* the Engineering Hold step this deviation's sign-off added (absent on older saves) */
+  /* the Engineering Hold step this deviation's sign-off added */
   holdStageId?: string;
   disposition?: { comments: string; routeTo: string; routeToLabel: string; who: string; when: string };
 }
@@ -120,7 +120,7 @@ export interface JobWorkflow {
   fabricationData: Record<string, string>; /* cross-stage fields (Welding fabrication section) */
   refitNumber?: string;      /* set by each Cut; job records aren't saved, so WorkflowStore copies it onto the job on load */
   repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
-  deviations?: Deviation[];  /* accepted at sign-off; absent on older saved workflows */
+  deviations?: Deviation[];  /* accepted at sign-off */
   undo?: SignoffUndo[];      /* one per sign-off, newest last: what Deprogress restores */
 }
 

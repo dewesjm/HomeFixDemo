@@ -317,8 +317,7 @@ const LS_KEY = STORAGE.procedures;
 function loadProcedures(): Procedure[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    /* rows saved before added sections existed have no extraFields */
-    if (raw) return (JSON.parse(raw) as Procedure[]).map(p => ({ ...p, extraFields: p.extraFields ?? {} }));
+    if (raw) return JSON.parse(raw) as Procedure[];
   } catch { /* ignore */ }
   const seededList = generateProcedures();
   persistProcedures(seededList);

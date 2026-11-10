@@ -38,5 +38,4 @@ npx ng test --watch=false --browsers=ChromeHeadless
 - [ARCHITECTURE.md](ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
 - [ADMIN-CONFIGURATION-IDEAS.md](ADMIN-CONFIGURATION-IDEAS.md): deferred Weld Record ideas and requirements
 - [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
-- [ROUTING-RULES-PLAN.md](ROUTING-RULES-PLAN.md) and [FIELD-DEFINITIONS-PLAN.md](FIELD-DEFINITIONS-PLAN.md): completed implementation summaries, not queued work
 - Change Log (Quick Links > Change Log in the app, data in `src/app/data/changelog.ts`): user-facing changes, newest first

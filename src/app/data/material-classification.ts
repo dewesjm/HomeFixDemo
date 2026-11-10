@@ -35,7 +35,7 @@ const DEFAULT_ENTRIES: MaterialClassificationEntry[] = [
 function load(): MaterialClassificationEntry[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw).map(normalizeMaterialClassification);
+    if (raw) return JSON.parse(raw) as MaterialClassificationEntry[];
   } catch { /* ignore */ }
   return [...DEFAULT_ENTRIES];
 }
@@ -49,15 +49,6 @@ export const materialClassification = signal<MaterialClassificationEntry[]>(load
 export function setMaterialClassification(entries: MaterialClassificationEntry[]) {
   save(entries);
   materialClassification.set(entries);
-}
-
-/* Split saved combined flags using the known material classification. Unknown custom codes
-   retain their combined eligibility as non-ferrous until classified by an administrator. */
-export function normalizeMaterialClassification(entry: Pick<MaterialClassificationEntry, 'code' | 'titanium'> & Partial<MaterialClassificationEntry> & { nonFerrousOrAustenitic?: boolean }): MaterialClassificationEntry {
-  const known = DEFAULT_ENTRIES.find(e => e.code === entry.code);
-  const legacy = entry.nonFerrousOrAustenitic ?? false;
-  return { code: entry.code, nonFerrous: entry.nonFerrous ?? (legacy && !known?.austenitic),
-    austenitic: entry.austenitic ?? (legacy && !!known?.austenitic), titanium: entry.titanium };
 }
 
 export function hasMaterialFlag(job: { materialType1: string; materialType2: string }, flag: MaterialFlag): boolean {

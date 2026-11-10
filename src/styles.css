@@ -35,23 +35,6 @@ html, body {
   color: var(--app-text);
 }
 
-.app-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem;
-}
-
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-
-  h1 { margin: 0; font-size: 1.5rem; }
-  nav { display: flex; gap: 0.5rem; }
-}
-
 .section-title {
   margin: 0 0 0.75rem;
   font-size: 1.25rem;
@@ -111,20 +94,6 @@ html, body {
 .field-col { display: flex; flex-direction: column; min-width: 12rem; }
 .field-label { font-size: 0.875rem; color: var(--app-text-muted); }
 .required-mark { color: var(--color-error); }
-.chip-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
-.match-count { font-size: 0.9rem; color: var(--app-text-muted); }
-.tag-list > * { margin-right: 0.25rem; }
-.note-area {                          /* multi-line text inputs styled to match the rest of the form controls */
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid var(--app-border);
-  border-radius: 6px;
-  font: inherit;
-}
-.field-block { margin-top: 0.85rem; }
-.card-link { text-decoration: none; color: inherit; display: block; }
-.mt-xs { margin-top: 0.4rem; }
-.mb-md { margin-bottom: 1rem; }
 .fw-normal { font-weight: 400; }
 
 /* Column min-widths for the work-orders table */
@@ -134,15 +103,11 @@ html, body {
 .min-w-13 { min-width: 13rem; }
 .min-w-14 { min-width: 14rem; }
 .search-input { width: 25rem; max-width: 100%; }   /* fits the longest placeholder plus the clear button */
-.slider-value { font-size: 0.875rem; color: var(--app-text-muted); margin-top: 0.5rem; }
 
 /* Adaptive-search filter bar + adapt dialog */
 .fw-bold { font-weight: 600; }
 .flex-1 { flex: 1; }
-.my-sm { margin: 0.5rem 0; }
 .mb-sm { margin-bottom: 0.75rem; }
-.range-value { font-size: 0.875rem; }
-.tag-left { margin-left: 0.25rem; }
 .dialog-hint { margin-top: 0; color: var(--app-text-muted); font-size: 0.9rem; }
 .field-scroll { max-height: 360px; overflow-y: auto; padding-right: 0.25rem; }
 .group-head {
@@ -154,26 +119,20 @@ html, body {
   margin-bottom: 0.5rem;
 }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.25rem 0.75rem; }
-.field-check { display: flex; align-items: center; gap: 0.5rem; padding: 0.25rem 0; }
 .required-tag { color: var(--color-error); font-size: 0.875rem; }
 
 /* Job detail page helpers */
 .mt-sm { margin-top: 0.5rem; }
-.mb-xs { margin-bottom: 0.5rem; }
 .mb-0 { margin-bottom: 0; }
 .mr-xs { margin-right: 0.4rem; }
-.col-span-all { grid-column: 1 / -1; }
 .w-3r { width: 3rem; }
 .w-5r { width: 5rem; }
-.f-160 { flex: 0 1 160px; }
-.f-200 { flex: 1 1 200px; }
 .signoff-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-top: 1rem; }
 /* legend / icon colors */
 .c-green { color: var(--color-success); }
 .c-amber { color: var(--color-warning); }
 .c-red { color: var(--color-error); }
 .c-muted { color: var(--app-text-muted); }
-.c-surface-400 { color: color-mix(in oklch, var(--color-base-content) 45%, transparent); }
 /* ───────── Job detail page ───────── */
 .panel {
   background: var(--app-surface);
@@ -235,13 +194,6 @@ html, body {
   margin-bottom: 0.75rem;
   span { display: inline-flex; align-items: center; gap: 0.3rem; }
 }
-.stage-pipeline {
-  display: flex;
-  align-items: stretch;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-}
-.stage-arrow { align-self: center; color: color-mix(in oklch, var(--color-base-content) 45%, transparent); }
 .stage {
   flex: 1 1 150px;
   min-width: 150px;
@@ -249,14 +201,10 @@ html, body {
   border-radius: 8px;
   padding: 0.6rem 0.7rem;
   background: var(--app-surface);
-  .stage-head { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; font-size: 0.95rem; }
-  .stage-sub { font-size: 0.85rem; color: var(--app-text-muted); margin: 0.2rem 0 0.4rem; }
-  .stage-actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
 }
 
 .stage-inputs { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .stage-field { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 160px; }
-.stage-field-break { flex-basis: 100%; height: 0; }   /* forces a wrap so a trigger field starts a fresh row */
 .stage-field-label { color: var(--app-text-muted); }
 .stage-field input:not([type="checkbox"]):not([type="radio"]) { width: 100%; }
 
@@ -344,9 +292,6 @@ html, body {
 
 /* Signoff fields: one per row, normal width */
 .signoff-fields { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem; }
-.signoff-field-row { display: flex; flex-direction: column; gap: 0.15rem; }
-.signoff-fit-row { display: flex; gap: 0.75rem; margin-bottom: 0.5rem; }
-.signoff-fit-row > * { display: flex; flex-direction: column; gap: 0.15rem; flex: 1 1 0; min-width: 0; }
 
 /* Signoff panel: one consistent text size for everything except bold headings */
 .signoff-panel { --signoff-text: 1rem; font-size: var(--signoff-text); }
@@ -375,16 +320,6 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 input[type="number"] { -moz-appearance: textfield; }
 
-/* Stat boxes for dashboards */
-.stat-box {
-  padding: 0.75rem 1.25rem;
-  border: 1px solid var(--app-border);
-  border-radius: 8px;
-  background: var(--app-surface);
-  min-width: 5rem;
-  text-align: center;
-}
-
 /* Themed toast alerts */
 .app-toast-host { bottom: 1.5rem; }
 .app-toast-host .alert {
@@ -408,7 +343,7 @@ input[type="number"] { -moz-appearance: textfield; }
 .text-xs { font-size: 0.875rem; line-height: 1.25rem; }
 .text-sm { font-size: 0.95rem; line-height: 1.375rem; }
 .table-sm, .table.table-sm { font-size: 0.95rem; }
-.btn-xs, .badge-xs, .input-xs, .select-xs { font-size: 0.875rem; }
+.btn-xs, .input-xs, .select-xs { font-size: 0.875rem; }
 .btn-sm, .badge-sm, .input-sm, .select-sm { font-size: 0.95rem; }
 
 /* Dropdowns always get a visible border: DaisyUI's default select border color can end up
