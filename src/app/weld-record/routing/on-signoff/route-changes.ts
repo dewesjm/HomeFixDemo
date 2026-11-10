@@ -1,4 +1,4 @@
-/* Moving a joint's routing: going back (never un-sign, see ROUTING.md), Routing Override, Deprogress, and
+/* Moving a joint's routing: going back (never un-sign, see docs/ROUTING.md), Routing Override, Deprogress, and
    discarding unsigned edits */
 import { Job } from '../../../data/jobs';
 import { conditionsMatch, usesFabrication, usesStepAnswers } from '../../conditions/joint-conditions';

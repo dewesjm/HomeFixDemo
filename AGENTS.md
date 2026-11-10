@@ -2,7 +2,7 @@
 
 Commit completed work locally when the requested changes are finished and verified. Do not push unless explicitly requested.
 
-Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
+Read docs/ARCHITECTURE.md first, and docs/ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
@@ -10,12 +10,12 @@ No queued work.
 
 Completed plans are references, not instructions to start another feature.
 
-Read [Tasks.md](Tasks.md) for the master backlog of deferred requirements, gaps, ideas and production integration boundaries. Keep it current as work changes. No queued work does not mean no outstanding work.
+Read [docs/Tasks.md](docs/Tasks.md) for the master backlog of deferred requirements, gaps, ideas and production integration boundaries. Keep it current as work changes. No queued work does not mean no outstanding work.
 
-Deferred testing backlog: see TEST-COVERAGE-PLAN.md for the full audit and implementation scope.
+Deferred testing backlog: see docs/TEST-COVERAGE-PLAN.md for the full audit and implementation scope.
 Do not start it automatically; when requested, implement one package at a time and stop for review.
 
-Remove an item here once it is built and committed. Keep deferred ideas in ADMIN-CONFIGURATION-IDEAS.md.
+Remove an item here once it is built and committed. Keep deferred ideas in docs/ADMIN-CONFIGURATION-IDEAS.md.
 
 ## Consistent search and pagination
 
@@ -47,7 +47,7 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
   writing a conversion, unless the user asks to keep saved data.
 - Code that converts saved data to a new shape is temporary. It goes in its own `*-migration.ts` file, never inline
   in a store, loader or rule file, so it can be found and deleted on its own. The load path only calls it.
-- Whenever you add a conversion, add an item to "Cleanup" in Tasks.md naming the file.
+- Whenever you add a conversion, add an item to "Cleanup" in docs/Tasks.md naming the file.
 - Clean up as you go: whenever `CURRENT_VERSION` or a storage key changes, delete any conversion for data that
   change discards, in the same commit, and check off its Cleanup item.
 - Delete dead code. The exception is a feature deliberately switched off by a flag: keep it working,

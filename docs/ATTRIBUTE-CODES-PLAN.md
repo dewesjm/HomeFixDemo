@@ -165,7 +165,7 @@ Each question asked while reviewing the gaps above, with the options offered and
 14. **Gap 7, conflicting codes:** (1) Blocked when rules per routing; (2) one list of conflicting pairs. Answer: neither; assume no such scenario exists, document it and confirm.
 15. **Gap 8, attribute-only protections (forward rules can't skip, Additional Signoffs can't sign):** (1) drop them; (2) apply to all routings. Answer: 1; that hard-coding should not exist in the first place.
 
-## Code-by-code review (started 2026-10-27, NEXT TASK)
+## Code-by-code review (done 2026-10-28; open points go to end users)
 
 Go through every code, work out together what we think it means (reading the message, real joint data and how the routing works), then take the open points back to the end users to confirm. Record each conclusion here and change its seeded rows to match.
 

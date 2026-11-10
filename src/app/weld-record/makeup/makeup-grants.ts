@@ -1,6 +1,6 @@
 /* Makeup status — someone below the foreman level temporarily granted authority to act as the
    foreman. UI-only for now: nothing else in the app reads this to actually change what a person
-   can do (see ARCHITECTURE.md/[[project-no-identity-session-model]]) — this just lets it be set up
+   can do (see docs/ARCHITECTURE.md/[[project-no-identity-session-model]]) — this just lets it be set up
    and reviewed, the same demo-aid honesty as Admin > Groups (AD groups/permissions are also just
    mocked there, not enforced). Same load/save/add/remove shape as material-classification.ts. */
 import { STORAGE } from '../../data/storage-keys';

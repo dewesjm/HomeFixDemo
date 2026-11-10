@@ -238,8 +238,8 @@ src/app/
                              Settings and Signoff Type to Routing rows naming the codes that change them)
       admin-material-traceability/, admin-material-classification/, admin-penetrant/, admin-locations/, admin-ship-locations/,
       admin-weld-positions/, admin-joint-designs/, admin-banner/, admin-groups/, admin-quick-links/,
-      admin-qualifications/, admin-inspection-procedures/,
-      admin-defect-codes/    Other admin pages
+      admin-qualifications/, admin-inspection-procedures/, admin-repair-codes/, admin-weld-colors/,
+      admin-feature-toggles/, admin-defect-codes/    Other admin pages
       Admin page conventions: table pages edit one row at a time (pencil, then check or cancel; opening
       another row cancels the open one; a never-saved new row goes away on cancel). Banner is one form
       with Save, Feature Toggles save on change, Routing Override is an action form. Every delete asks
@@ -878,7 +878,7 @@ Repair offers distinct catalog fields allowableThicknessExceededN1 and allowable
 
 routing/routing-persona.ts resolves ordered StageTemplate.roleRules from Joint Details, falling back to role. Routing Settings's separate persona-rules.component.ts owns editing these rules, and template serialization persists them. Numbered stage creation and runtime Repair, Excavation and Engineering Hold creation use the resolver. The Excavation default selects NQC Inspector for Nuclear Indicator 1/2 and Inspector otherwise. Saved changes apply when stages are created or rebuilt; existing stage personas are retained.
 
-Routing Settings draft placement is separate from sequence numbering (admin/admin-routing/routing-row-order.ts). Unsaved new routings stay pinned at the top and display the next numbered position. Saving returns them to routing order; cancel removes the draft. Added runtime definitions do not consume numbered positions. Planned creation and configured insertion of custom runtime definitions, including potential NQC Excavation variants, are documented in ADDED-ROUTINGS-PLAN.md.
+Routing Settings draft placement is separate from sequence numbering (admin/admin-routing/routing-row-order.ts). Unsaved new routings stay pinned at the top and display the next numbered position. Saving returns them to routing order; cancel removes the draft. Added runtime definitions do not consume numbered positions. Planned creation and configured insertion of custom runtime definitions, including potential NQC Excavation variants, are documented in docs/ADDED-ROUTINGS-PLAN.md.
 
 
 ## Inserted routing definition configuration
@@ -923,6 +923,6 @@ Verified the shared admin grid with 506 passing ChromeHeadless tests, production
 
 Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
 
-Type Exceptions is a combined inline-edit grid with a Routing column. Exception ordering is per routing; left arrows and grip-only drag persist that order. Type source is stored on the routing row and is read-only in both Signoff Type to Routing grids; no admin control changes it, and a re-added Excavation row starts on Rejecting inspection. Exception saves preserve each routing’s source and available Types.
+Type Exceptions is a combined inline-edit grid with a Routing column. Exception ordering is per routing; left arrows and grip-only drag persist that order. Type source is stored on the routing row and is read-only in both Signoff Type to Routing grids; no admin control changes it, and a re-added Excavation row starts on Rejecting inspection. Exception saves preserve each routing's source and available Types.
 
 Material Classification stores separate Non-Ferrous, Austenitic and Titanium flags. Conditions expose each as Either material is ... with Yes/No values through the common AND/OR rule engine. Regular and NQC Excavation seed PT to 5X when either material is non-ferrous OR either material is austenitic. Saved combined exception guards expand into equivalent OR groups retaining existing AND conditions. Legacy classifications split by known seed classification; unknown custom codes retain combined eligibility as Non-Ferrous pending administrator review. Version 2.10.61 uses the standard demo cache reset; saved material classifications survive and migrate on load.

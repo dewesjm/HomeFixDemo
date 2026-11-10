@@ -1,6 +1,6 @@
 # One field catalog plan
 
-**Status: BUILT 2026-11-09.** Kept as a record of the decisions; `catalogs/field-catalog.ts` and `catalogs/field-choices.ts` are the current implementation.
+**Status: BUILT 2026-11-09.** Kept as a record of the decisions; `catalogs/field-catalog.ts` and `catalogs/field-choices.ts` are the current implementation. File names below (`form-field-catalog.ts`, `condition-catalog.ts`, `joint-facts.ts`, `stage-templates.ts`) are from before the build and no longer exist.
 
 Starting point: commits `7f25026` and `5fb296f`, which put `form-field-catalog.ts` and `condition-catalog.ts` side by side in `src/app/weld-record/catalogs/` and folded `joint-facts.ts` into the condition catalog. Baseline is 599 passing tests.
 

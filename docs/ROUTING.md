@@ -2,7 +2,7 @@
 
 This is the plain-language version of how a Welding joint moves through its routing and what has to be filled in at each routing. It describes how the demo behaves today. The code references are in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-Last updated 2026-10-24.
+Last updated 2026-11-09.
 
 ## Terms
 

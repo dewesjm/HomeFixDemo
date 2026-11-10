@@ -49,7 +49,7 @@ function withNqcCopy(row: AttributeCodeException): AttributeCodeException[] {
   return [row, { ...row, routing: nqcStepId(row.routing), ...(when ? { when } : {}) }];
 }
 
-/* the demo's reading of each code (ATTRIBUTE-CODES-PLAN.md); every row is an assumption to confirm */
+/* the demo's reading of each code (docs/ATTRIBUTE-CODES-PLAN.md); every row is an assumption to confirm */
 const REGULAR_SEEDS: AttributeCodeException[] = [
   /* PR, confirmed 2026-10-27: Final PT of the weld root from the inside replaces Final RT */
   { code: 'PR', routing: 'final-ndt-mtpt', askAccessible: true },

@@ -31,11 +31,13 @@ npx ng test --watch=false --browsers=ChromeHeadless
 
 ## Documentation
 
-- [ADDED-ROUTINGS-PLAN.md](ADDED-ROUTINGS-PLAN.md): proposed configurable runtime routing creation/insertion, including NQC Excavation
-- [Tasks.md](Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
-- [AGENTS.md](AGENTS.md): shared development rules and UI conventions
-- [ROUTING.md](ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
-- [ARCHITECTURE.md](ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
-- [ADMIN-CONFIGURATION-IDEAS.md](ADMIN-CONFIGURATION-IDEAS.md): deferred Weld Record ideas and requirements
-- [TEST-COVERAGE-PLAN.md](TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
+Rules for AI tools are in [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md). Everything else is in [docs/](docs/):
+
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
+- [ROUTING.md](docs/ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
+- [Tasks.md](docs/Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
+- [ADMIN-CONFIGURATION-IDEAS.md](docs/ADMIN-CONFIGURATION-IDEAS.md): deferred Weld Record ideas and requirements
+- [ATTRIBUTE-CODES-PLAN.md](docs/ATTRIBUTE-CODES-PLAN.md): attribute code assumptions and open questions for end users
+- [TEST-COVERAGE-PLAN.md](docs/TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
+- Built plans, kept as records: [ADDED-ROUTINGS-PLAN.md](docs/ADDED-ROUTINGS-PLAN.md), [FIELD-CATALOG-PLAN.md](docs/FIELD-CATALOG-PLAN.md), [SIGNOFF-VALIDATION-PLAN.md](docs/SIGNOFF-VALIDATION-PLAN.md)
 - Change Log (Quick Links > Change Log in the app, data in `src/app/data/changelog.ts`): user-facing changes, newest first

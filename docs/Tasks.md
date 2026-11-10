@@ -1,6 +1,6 @@
 # Project backlog
 
-Master index of outstanding requirements, gaps and ideas, audited against repository plans, architecture notes and explicit source comments on 2026-10-24. No automatically queued build work. [AGENTS.md](AGENTS.md) defines the review boundary. Update this index whenever work is added or completed. Detailed specifications remain in the linked plans. This audit covers repository evidence, not requirements in other chats.
+Master index of outstanding requirements, gaps and ideas, audited against repository plans, architecture notes and explicit source comments on 2026-10-24. No automatically queued build work. [AGENTS.md](../AGENTS.md) defines the review boundary. Update this index whenever work is added or completed. Detailed specifications remain in the linked plans. This audit covers repository evidence, not requirements in other chats.
 
 ## Deferred requirements and identified gaps
 
@@ -13,7 +13,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Cleanup
 
-Queued in AGENTS.md, in this order.
+Nothing here is queued in AGENTS.md; start an item only on request.
 
 - [x] **Remove old migrations:** every listed conversion removed; saved data reset with a version bump and new form and Qualifications storage keys.
 - [x] **Leftovers evaluation:** dead code and the remaining saved-data conversions removed; `addTestJob` removed, specs copy a seeded joint.
@@ -23,7 +23,7 @@ Queued in AGENTS.md, in this order.
 - [x] **Admin table data in `data/`:** six admin pages kept their rows next to the code that uses them. Each is split: rows (starting values, load, save) to `data/`, rules stay in the feature folder. Routing Settings DONE (`data/welding-steps.ts` starting rows and rules, `data/routing-settings.ts` saved rows, `routing/routing-settings-rules.ts` rules). Signoff Types DONE (moved whole to `data/signoff-types.ts`; it held no rules). Signoff Type to Routing DONE (`data/signoff-type-routing.ts` rows, `signoff-definition/signoff-type-routing-rules.ts` rules). Signoff Type Forms DONE (`data/signoff-type-forms.ts` model, starting definitions, load/save; `signoff-definition/signoff-type-form-rules.ts` rules). Qualifications DONE (`data/qualifications.ts` model, starting rows, load/save; live rows and rules stay in `qualifications/qual-conditions.ts`). Attribute Code Exceptions DONE (moved to `data/attribute-code-exceptions.ts`; the per-routing rules shape and `codesChangingRouting` moved to `attribute-codes/exception-effects.ts`).
 - [x] **Common sign-off validation:** BUILT, see [SIGNOFF-VALIDATION-PLAN.md](SIGNOFF-VALIDATION-PLAN.md). Every problem is red on its field, or a line under Signoff (Fabrication); a test fails if a check points at a field nothing draws. Original note: Every routing should decide and show what blocks Signoff the same way. Today a problem is either a red message on a field shown after clicking Signoff, or a reasons-list line that is no longer drawn anywhere, so Signoff silently does nothing. Example: on Fit, an invalid Fabrication value blocks Signoff through a hidden `__fabrication` field error nothing draws, while Fit-Up Insp lists "Fix the fabrication errors" and disables the button. Also: ordinary required fields block only on click, not in the reasons list. Propose one approach (where checks live: `joint-page/rules/sign-validation.ts`; what shows where) before building.
 - [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
-- [ ] **Review the .md files for leftovers:** go through the repo's Markdown docs for stale, completed or duplicated content. Report findings before removing anything. Not queued in AGENTS.md. User chose (2026-11-09) to do this on 2026-11-10, then untrack every .md except README.md (see next item).
+- [x] **Review the .md files for leftovers:** reviewed; docs moved into `docs/` (CLAUDE.md, AGENTS.md and README.md stay at the root, where the tools look for them) and stale lines fixed. Still open: whether to delete the built plans and trim the duplicated "Implemented"/completed sections; then untrack every .md except README.md (next item).
 - [ ] **Organization sweep:** look across the app for files whose location doesn't make sense: data mixed into rule files (or rules in `data/`), admin table rows kept next to the code that uses them beyond the six pages already queued, files in a folder that doesn't match their concern, and folder names that don't say what's inside. Report findings and proposed moves before changing anything. Not queued in AGENTS.md.
   Notes for this sweep (2026-11-09):
     - `weld-record/services/`: needs a similar organization pass.
@@ -124,6 +124,6 @@ Groups export was dropped from scope. O63/O04 selection already exists; no chang
 
 Engineering Override is implemented for joints without an external welding assignment; Foreman Override remains disabled. See [ROUTING.md](ROUTING.md) for current behavior. The original task also mentioned preview and reason-screen wording; revisit any remaining wording only when specifically requested.
 
-- [x] Type Exceptions grid consistency: show every routing’s exceptions together, identify routing per row, use header Add and inline pencil/check/X controls, and reorder within routing with left arrows or grip-only dragging. Type source remains configurable in the upper routing grid.
+- [x] Type Exceptions grid consistency: show every routing's exceptions together, identify routing per row, use header Add and inline pencil/check/X controls, and reorder within routing with left arrows or grip-only dragging. Type source remains configurable in the upper routing grid.
 
 - [x] Separate Non-Ferrous and Austenitic material flags, use AND/OR conditions in Type Exceptions, and seed both Excavations with Non-Ferrous OR Austenitic.

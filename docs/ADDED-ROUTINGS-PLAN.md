@@ -1,6 +1,6 @@
 # Configurable inserted routing definitions and insertion
 
-Status: packages 1-4 implemented; stopped for review. Select this work explicitly and deliver one agreed package at a time, with a local commit and review after each. [Tasks.md](Tasks.md) is the master backlog.
+Status: BUILT (packages 1-4). Kept as a record of the decisions; file names and test counts below are from when each package was built. Current behavior is in [ROUTING.md](ROUTING.md) and [ARCHITECTURE.md](ARCHITECTURE.md). [Tasks.md](Tasks.md) is the master backlog.
 
 ## Intended result
 
