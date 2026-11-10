@@ -10,7 +10,7 @@ import { activeStage } from '../current-routing';
 import { excavationNdtStageFor } from './added-routings';
 import { excavationDefinition } from './excavation-definition';
 import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-settings-rules';
-import { routingBarSteps } from '../../routing-bar/rules/routing-bar-steps';
+import { routingPanelSteps } from '../../routing-panel/rules/routing-panel-steps';
 import { routeBack } from '../route-changes';
 import { isExcavationNdtStageId } from '../routing-ids';
 
@@ -66,7 +66,7 @@ describe('Configured regular and NQC Excavation', () => {
       expect(current().typeOptions?.map(o => o.value)).toEqual(['5x']);
       expect(originalInspectionType(current(), wf().stages)).toBe('pt');
       expect(wf().stages.find(s => s.id === 'repair')!.inputs['originStageId']).toBe(source);
-      expect(routingBarSteps(wf().stages).filter(s => s.label === 'Excavation NDT').length).toBe(1);
+      expect(routingPanelSteps(wf().stages).filter(s => s.label === 'Excavation NDT').length).toBe(1);
       patch(id, {}, 'unsat', '5x');
       expect(signoff.signStage(job, id)).toBeTrue();
       expect(current().id).toBe('repair');

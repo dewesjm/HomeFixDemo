@@ -51,7 +51,7 @@ import {
 interface RoutingRow {
   id: string;
   routing: string;        /* the name rules use (Included when, reject rules) */
-  displayName: string;    /* shown on the joint and the routing bar; blank = routing */
+  displayName: string;    /* shown on the joint and the Routing panel; blank = routing */
   sequence: number;
   added?: boolean;
   status?: StageTemplate['status'];

@@ -7,7 +7,7 @@ import { HistoryEntry } from '../model/history';
 import { JobWorkflow } from '../model/workflow-types';
 import { activeStageId } from '../routing/current-routing';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { routingBarSteps } from '../routing-bar/rules/routing-bar-steps';
+import { routingPanelSteps } from '../routing-panel/rules/routing-panel-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
@@ -259,10 +259,10 @@ describe('SignoffService', () => {
       expect(stage(job, 'repair').signed).toBeTrue();
     });
 
-    describe('routing bar', () => {
+    describe('Routing panel', () => {
       /* the bar's labels from Root NDT up to Layer */
       const bar = (job: Job) => {
-        const labels = routingBarSteps(store.workflowFor(job)().stages).map(s => s.label);
+        const labels = routingPanelSteps(store.workflowFor(job)().stages).map(s => s.label);
         return labels.slice(labels.indexOf('Root NDT RT/UT'), labels.indexOf('Layer'));
       };
 
@@ -531,7 +531,7 @@ describe('SignoffService', () => {
       expect(stage(job, 'layer-ndt-vt5x').required).toBeFalse();
       expect(activeStageId(wf.stages)).toBe('final-ndt-vt5x');
       expect(signoffEntries(wf, 'final-weld').at(-1)?.action).toBe('Final Weld - Signed off');
-      const bar = routingBarSteps(wf.stages).map(b => wf.stages[b.stageIndex].id);
+      const bar = routingPanelSteps(wf.stages).map(b => wf.stages[b.stageIndex].id);
       expect(bar).not.toContain('root-layer');
       expect(bar).toContain('final-weld');
     });
@@ -549,7 +549,7 @@ describe('SignoffService', () => {
       expect(stage(job, 'final-weld').signed).toBeTrue();
       expect(stage(job, 'layer-ndt-vt5x').required).toBeFalse();
       expect(activeStageId(wf.stages)).toBe('final-ndt-vt5x');
-      expect(routingBarSteps(wf.stages).map(b => wf.stages[b.stageIndex].id)).toContain('root-layer');
+      expect(routingPanelSteps(wf.stages).map(b => wf.stages[b.stageIndex].id)).toContain('root-layer');
     });
 
     it('Weld Build-Up is recorded, Fit stays the current routing and starts blank; signing as Fit moves on', () => {

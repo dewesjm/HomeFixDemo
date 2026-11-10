@@ -1,9 +1,9 @@
-/* Which steps the routing bar on the joint page shows, and their labels */
+/* Which steps the Routing panel on the joint page shows, and their labels */
 import { WorkflowStage } from '../../model/workflow-types';
 import { activeStageId } from '../../routing/current-routing';
 import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from '../../routing/routing-ids';
 
-interface RoutingBarStep {
+interface RoutingPanelStep {
   stageIndex: number;
   label: string;
 }
@@ -13,7 +13,7 @@ const isOpen = (s: WorkflowStage | undefined) => !!s && s.required && !s.signed;
 /* A repair (its Repair step, plus Excavation NDT after a Weld Repair) is shown only while it is open,
    until Excavation NDT passes or the Repair is signed some other way, and always as plain "Repair" /
    "Excavation NDT". Every other step shows when it's signed, required or current. */
-export function routingBarSteps(stages: WorkflowStage[]): RoutingBarStep[] {
+export function routingPanelSteps(stages: WorkflowStage[]): RoutingPanelStep[] {
   const activeId = activeStageId(stages);
   const byId = new Map(stages.map(s => [s.id, s]));
   const repairOpen = (repair: WorkflowStage | undefined) =>

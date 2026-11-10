@@ -1,15 +1,15 @@
-/* The joint page's routing bar: numbered routing pills, scrolled to the selected one. */
+/* The joint page's Routing panel: numbered routing pills, scrolled to the selected one. */
 import { Component, effect, ElementRef, input, untracked, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideWorkflow } from '@lucide/angular';
 
 @Component({
-  selector: 'app-routing-bar',
+  selector: 'app-routing-panel',
   standalone: true,
   imports: [CommonModule, LucideWorkflow],
-  templateUrl: './routing-bar.component.html'
+  templateUrl: './routing-panel.component.html'
 })
-export class RoutingBarComponent {
+export class RoutingPanelComponent {
   stages = input.required<{ label: string; disabled: boolean; stageIndex: number }[]>();
   selectedRouting = input.required<number>();
 

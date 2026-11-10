@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmService } from '../../shared/confirm.service';
-import { RoutingBarComponent } from '../routing-bar/routing-bar.component';
+import { RoutingPanelComponent } from '../routing-panel/routing-panel.component';
 import { JointDetailsPanelComponent } from '../joint-details-panel/joint-details-panel.component';
 import { FabricationPanelComponent } from '../fabrication-panel/fabrication-panel.component';
 import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component';
@@ -37,7 +37,7 @@ import {
   allRequiredSigned,
   fabricationEditable,
 } from '../routing/current-routing';
-import { routingBarSteps } from '../routing-bar/rules/routing-bar-steps';
+import { routingPanelSteps } from '../routing-panel/rules/routing-panel-steps';
 import { FabricationField } from '../fabrication/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
@@ -60,7 +60,7 @@ import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } f
   selector: 'app-joint-page',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, RoutingBarComponent, JointDetailsPanelComponent, FabricationPanelComponent, SignoffPanelComponent,
+    CommonModule, FormsModule, RoutingPanelComponent, JointDetailsPanelComponent, FabricationPanelComponent, SignoffPanelComponent,
     DeviationAcceptDialogComponent
   ],
   providers: [JointOverridesService, SignoffFormEditsService, SignoffFormErrorsService],
@@ -122,9 +122,9 @@ export class JointPageComponent implements OnDestroy {
 
   /* ── Page state ── */
 
-  /* the routing bar's steps (routing-bar/routing-bar-steps.ts) */
+  /* the Routing panel's steps (routing-panel/rules/routing-panel-steps.ts) */
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() =>
-    this.wf ? routingBarSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
+    this.wf ? routingPanelSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
   /* which stage's sign-off shows; defaults to active */
   selectedRouting = signal<number>(this.indexOfActive());
 

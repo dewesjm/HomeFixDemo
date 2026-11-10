@@ -14,7 +14,7 @@ export function signedAsStep(stages: WorkflowStage[], stage: WorkflowStage): str
 
 /* sign `stageId` as the later step `targetId`: the target takes the values and is signed, and the
    steps between are passed. The step itself shows signed when it had an earlier signoff,
-   else it's passed too (left off the routing bar). */
+   else it's passed too (left off the Routing panel). */
 export function signAsStep(stages: WorkflowStage[], stageId: string, targetId: string, signedAt: string, hadSignoff = false): WorkflowStage[] {
   const from = stages.findIndex(s => s.id === stageId);
   const to = stages.findIndex(s => s.id === targetId);
