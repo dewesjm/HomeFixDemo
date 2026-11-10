@@ -16,10 +16,8 @@ import { definedFields } from '../../signoff-definition/shown-fields';
 import { inspectionProcedureOptions } from '../../../data/inspection-procedures';
 import { defectCodeOptions } from '../../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../../weld-assignment/weld-assignment-rules';
-import {
-  gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
-  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
-} from '../../../data/procedures';
+import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
+import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../../weld-engineering/procedure-options';
 
 /* what the field rules need besides the step itself */
 export interface StageFormContext {

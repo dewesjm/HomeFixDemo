@@ -7,9 +7,8 @@ import { FormField } from '../../catalogs/field-catalog';
 import { WorkflowStage } from '../../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
-import {
-  getProcedureByGwpWtn, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure
-} from '../../../data/procedures';
+import { getProcedureByGwpWtn } from '../../../data/procedures';
+import { hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../../weld-engineering/procedure-options';
 
 export interface FieldChange { field: FormField; value: string }
 

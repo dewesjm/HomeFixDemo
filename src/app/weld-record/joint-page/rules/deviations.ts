@@ -10,10 +10,8 @@ import { ACTUAL_REQUIREMENT } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { labelFor } from '../../signoff-definition/stage-display';
 import { QualGroup, missingText, requirementText } from '../../qualifications/qual-requirements';
-import {
-  getProcedureByGwpWtn, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
-  FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS, gwpOptionsForMaterials
-} from '../../../data/procedures';
+import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
+import { fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, gwpOptionsForMaterials } from '../../../weld-engineering/procedure-options';
 
 export interface BaseMetals { type1: string; type2: string }
 

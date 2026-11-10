@@ -8,7 +8,8 @@
    weld-engineering/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure, hasOverride, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { Procedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { hasOverride } from '../procedure-options';
 import { extraValueText, sectionNumber, type ProcedureSection } from '../procedure-sections';
 import { formatDate } from '../../shared/date-format';
 

@@ -9,7 +9,8 @@ import { buildStages } from '../../routing/build-stages';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted/added-routings';
 import { WorkflowStage } from '../../model/workflow-types';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../../data/signoff-type-forms';
-import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
+import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
+import { gwpOptionsForMaterials } from '../../../weld-engineering/procedure-options';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,

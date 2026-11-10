@@ -10,10 +10,8 @@ import { SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
 import { isFilledByRule } from '../signoff-definition/field-fill';
 import { requirementsMet } from '../qualifications/qualifications';
 import { conditionRequirements } from '../qualifications/qual-conditions';
-import {
-  Procedure, procedures, gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure,
-  fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride,
-} from '../../data/procedures';
+import { Procedure, procedures } from '../../data/procedures';
+import { gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride } from '../../weld-engineering/procedure-options';
 
 function hash(s: string): number {
   let h = 0;

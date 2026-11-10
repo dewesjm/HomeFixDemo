@@ -55,7 +55,7 @@ import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
 import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
 import type { RequiredMode } from '../../signoff-definition/field-rules';
-import { WTN_FILL_FIELDS } from '../../../data/procedures';
+import { WTN_FILL_FIELDS } from '../../../weld-engineering/procedure-options';
 import { WorkGroup, conditionToWork } from './condition-work';
 import { StepFieldChoice } from './condition-group-editor.component';
 import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillChoices, fillSourceId } from './definition-edits';
