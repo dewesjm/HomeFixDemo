@@ -10,7 +10,7 @@
    - Attribute Code Exceptions: exceptionConditionFields, built from these */
 import { Job } from '../../data/jobs';
 import { getSignoffTypes } from '../../data/signoff-types';
-import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
+import { isExcavationNdtStageId, isRepairStageId } from '../../data/welding-step-ids';
 import { ConditionCatalogField, FIELD_CATALOG, FORM_FIELDS, RuleEntry, StageAnswers } from './field-catalog';
 
 const YES_NO = ['Yes', 'No'];

@@ -8,7 +8,7 @@ import { getTemplates } from './routing-settings-rules';
 import { baseRequired, buildStages } from './build-stages';
 import { attributeTypeSettings, hasFabricationRows, hasLaterAnswerRows, isJointsTwin, routingEffect } from '../attribute-codes/exception-effects';
 import { blankFabricationData } from '../fabrication/fabrication-fields';
-import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from './routing-ids';
+import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from '../../data/welding-step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
 import { fabricationSigned, goesBackPastFabrication } from '../fabrication/fabrication-steps';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';

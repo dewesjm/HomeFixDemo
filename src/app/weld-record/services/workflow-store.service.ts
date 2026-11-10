@@ -13,7 +13,7 @@ import { newWorkflow, buildStages } from '../routing/build-stages';
 import { getTemplates } from '../routing/routing-settings-rules';
 import { fabricationSnapshot } from '../fabrication/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
-import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/routing-ids';
+import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../../data/welding-step-ids';
 
 const LS_KEY = STORAGE.workflows;
 const APP_VERSION_KEY = STORAGE.appVersion;

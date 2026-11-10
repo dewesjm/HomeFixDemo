@@ -1,6 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isRepairStageId } from '../routing/routing-ids';
+import { baseStepId, isRepairStageId } from '../../data/welding-step-ids';
 import { DECISION_KEY, TYPE_KEY } from '../../data/signoff-type-forms';
 import { definitionHas, hasStepActivation } from './signoff-type-form-rules';
 import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';

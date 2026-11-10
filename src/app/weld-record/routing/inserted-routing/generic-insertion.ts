@@ -10,7 +10,7 @@ import { stageFromTemplate } from './added-routings';
 import { conditionsMatch } from '../../conditions/joint-conditions';
 import { routingRole } from '../routing-persona';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
-import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../routing-ids';
+import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../../../data/welding-step-ids';
 
 export function resolveInsertion(templates: StageTemplate[], stages: WorkflowStage[], job: Job,
   source: WorkflowStage, target: string, recordedIds: string[] = [], fab?: Record<string, string>): WorkflowStage {

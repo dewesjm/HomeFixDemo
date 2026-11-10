@@ -3,7 +3,7 @@
    definitions are in data/signoff-type-forms.ts. */
 import type { WorkflowStage } from '../model/workflow-types';
 import { signoffTypeOptions } from './signoff-type-routing-rules';
-import { isExcavationNdtStageId } from '../routing/routing-ids';
+import { isExcavationNdtStageId } from '../../data/welding-step-ids';
 import {
   DEFAULT_TYPE_DEFINITIONS, FieldActivation, TYPE_KEY, TypeDefinition, VerifyAgainst, getStepFieldConfig,
 } from '../../data/signoff-type-forms';

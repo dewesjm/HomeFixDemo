@@ -1,7 +1,7 @@
 /* Admin → Signoff Type to Routing: the seeded table of routing steps that have a Type droplist and
    which Types (Admin > Signoff Types) they offer (data/signoff-type-routing.ts);
    rows are added and removed here */
-import { isExcavationNdtStageId } from '../../routing/routing-ids';
+import { isExcavationNdtStageId } from '../../../data/welding-step-ids';
 import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';

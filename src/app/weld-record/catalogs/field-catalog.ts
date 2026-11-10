@@ -21,7 +21,7 @@ import { FABRICATION_FIELDS } from '../fabrication/fabrication-fields';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
 import { WorkflowStage } from '../model/workflow-types';
 import { fabricationSigned } from '../fabrication/fabrication-steps';
-import { nqcStepId } from '../routing/routing-ids';
+import { nqcStepId } from '../../data/welding-step-ids';
 import { FieldCondition } from '../signoff-definition/field-conditions';
 import { repairCodeOptions } from '../signoff-definition/repair-code-options';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-definition/stage-property-keys';

@@ -14,7 +14,7 @@ import { labelFor, snapshotInputs } from '../weld-record/signoff-definition/stag
 import { fieldsShown, visibleSignoffFields } from '../weld-record/signoff-definition/shown-fields';
 import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing/inserted-routing/added-routings';
 import { setRoutingFrom } from '../weld-record/routing/current-routing';
-import { baseStepId, isFitupInspId } from '../weld-record/routing/routing-ids';
+import { baseStepId, isFitupInspId } from './welding-step-ids';
 import { newWorkflow } from '../weld-record/routing/build-stages';
 import { fabricationSnapshot } from '../weld-record/fabrication/fabrication-fields';
 import { seeded, seededMic } from './seed-fabrication';

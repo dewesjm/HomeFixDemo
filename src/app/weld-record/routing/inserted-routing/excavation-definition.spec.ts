@@ -12,7 +12,7 @@ import { excavationDefinition } from './excavation-definition';
 import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-settings-rules';
 import { routingPanelSteps } from '../../routing-panel/rules/routing-panel-steps';
 import { routeBack } from '../route-changes';
-import { isExcavationNdtStageId } from '../routing-ids';
+import { isExcavationNdtStageId } from '../../../data/welding-step-ids';
 
 describe('Configured regular and NQC Excavation', () => {
   let store: WorkflowStore;

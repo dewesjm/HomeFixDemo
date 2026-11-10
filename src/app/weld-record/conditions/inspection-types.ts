@@ -1,7 +1,7 @@
 /* The two inspection Types a routing rule can test: the one that originally failed (recorded when its
    Repair was added) and the one performed here (this routing's Type). Read from what was recorded,
    never a separate flag. */
-import { isExcavationNdtStageId, repairIdForExcavation } from '../routing/routing-ids';
+import { isExcavationNdtStageId, repairIdForExcavation } from '../../data/welding-step-ids';
 
 export interface InspectionContextStage {
   id: string;

@@ -2,7 +2,7 @@
    and which routing each resolves to. Relative targets resolve against this repair round, never another round. */
 import { insertionDefinitionId } from '../inserted-routing/instance-identity';
 import { WorkflowStage } from '../../model/workflow-types';
-import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from '../routing-ids';
+import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from '../../../data/welding-step-ids';
 /* the target that puts the joint on Engineering Hold (routing/inserted-routing/added-routings.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 export const RULE_TARGETS = [

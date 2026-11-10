@@ -18,7 +18,7 @@ import {
   isExcavationNdtStageId,
   baseStepId,
   stepOnJoint,
-} from '../routing-ids';
+} from '../../../data/welding-step-ids';
 import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
 import { getTemplates, routingTemplateId } from '../routing-settings-rules';

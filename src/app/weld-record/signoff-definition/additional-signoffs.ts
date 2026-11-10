@@ -5,7 +5,7 @@ import { findSignoffType } from '../../data/signoff-types';
 import { evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { signoffTypeOptions } from './signoff-type-routing-rules';
-import { stepOnJoint } from '../routing/routing-ids';
+import { stepOnJoint } from '../../data/welding-step-ids';
 
 export function additionalSignoffs(source: WorkflowStage, stages: WorkflowStage[], job: Job, fab: Record<string, string>): { stage: WorkflowStage; type: string }[] {
   if (source.result === 'unsat') return [];

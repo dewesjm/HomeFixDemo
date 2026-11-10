@@ -1,6 +1,6 @@
 import { buildStages } from './build-stages';
 import { getTemplates, updateStageTemplate } from './routing-settings-rules';
-import { stepOnJoint } from './routing-ids';
+import { stepOnJoint } from '../../data/welding-step-ids';
 import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 

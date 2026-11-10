@@ -6,7 +6,7 @@ import { Job } from '../../data/jobs';
 import { replacedType } from './type-exceptions';
 import { StageOption } from '../model/stage-template';
 import { conditionsMatch } from '../conditions/joint-conditions';
-import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
+import { isExcavationNdtStageId, isRepairStageId } from '../../data/welding-step-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
 import {
   AvailableType, SignoffTypeRoutingRow, getSignoffTypeRoutingRows, REPAIR_TYPE_ROW, EXCAVATION_TYPE_ROW, NQC_EXCAVATION_TYPE_ROW,

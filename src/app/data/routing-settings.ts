@@ -6,7 +6,7 @@ import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_T
 import { StageTemplate } from '../weld-record/model/stage-template';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';
-import { isFitupInspId } from '../weld-record/routing/routing-ids';
+import { isFitupInspId } from './welding-step-ids';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {

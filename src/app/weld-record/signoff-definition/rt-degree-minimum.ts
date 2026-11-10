@@ -3,7 +3,7 @@
    minimum on the routing. NA or blank counts as none. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId } from '../routing/routing-ids';
+import { baseStepId } from '../../data/welding-step-ids';
 import { fieldActivation } from './signoff-type-form-rules';
 
 /* a Degree of RT as a number; NA or blank is 0 */

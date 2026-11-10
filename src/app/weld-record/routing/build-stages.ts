@@ -9,7 +9,7 @@ import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { closesJoint } from './current-routing';
-import { isFitupInspId } from './routing-ids';
+import { isFitupInspId } from '../../data/welding-step-ids';
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */

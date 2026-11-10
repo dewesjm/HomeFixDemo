@@ -5,7 +5,7 @@ import { fabricationEditable, activeStageId } from './current-routing';
 import { JOBS, Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { getJointDesign } from '../../data/joint-designs';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from './routing-ids';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../../data/welding-step-ids';
 import { conditionsMatch } from '../conditions/joint-conditions';
 import { describeConditions } from '../conditions/condition-text';
 import { DEFAULT_STEP_CONDITIONS } from '../../data/welding-steps';

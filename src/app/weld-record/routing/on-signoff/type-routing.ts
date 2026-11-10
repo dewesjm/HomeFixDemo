@@ -2,7 +2,7 @@
 import { WorkflowStage } from '../../model/workflow-types';
 import { typeSignsStep } from '../../signoff-definition/signoff-type-routing-rules';
 import { typeValues } from '../../signoff-definition/stage-rules';
-import { baseStepId } from '../routing-ids';
+import { baseStepId } from '../../../data/welding-step-ids';
 
 /* the later step a stage's Type signs (the Type's Signs step), or '' */
 export function signedAsStep(stages: WorkflowStage[], stage: WorkflowStage): string {

@@ -6,7 +6,7 @@
 import { STORAGE } from './storage-keys';
 import { SHIPBOARD_FIELD } from '../weld-record/catalogs/field-catalog';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../weld-record/routing/routing-ids';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from './welding-step-ids';
 
 export type AccessibleAnswer = 'yes' | 'no';
 

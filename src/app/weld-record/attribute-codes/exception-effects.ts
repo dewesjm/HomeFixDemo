@@ -6,7 +6,7 @@ import { Job } from '../../data/jobs';
 import { StageOption, StageTemplate } from '../model/stage-template';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
-import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/routing-ids';
+import { NQC_SPLIT_STEP_IDS, baseStepId } from '../../data/welding-step-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { jointCodeSlots } from './attribute-context';

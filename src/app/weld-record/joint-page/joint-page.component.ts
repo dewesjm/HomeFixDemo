@@ -45,7 +45,7 @@ import { buildConditionContext } from '../signoff-definition/condition-context';
 import { HistoryRow, historyRows } from '../history-page/rules/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { isEngineeringHoldId } from '../routing/routing-ids';
+import { isEngineeringHoldId } from '../../data/welding-step-ids';
 import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';

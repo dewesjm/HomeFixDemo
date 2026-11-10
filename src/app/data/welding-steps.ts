@@ -2,7 +2,7 @@
    Reject routes to and Then go to rules, and the added routings (Repair, Excavation NDT, Engineering Hold).
    Saved changes are in routing-settings.ts. Type options are in signoff-type-routing.ts. */
 import { StageOption, StageTemplate } from '../weld-record/model/stage-template';
-import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
+import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from './welding-step-ids';
 import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';
 import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing/on-signoff/rule-targets';
@@ -98,7 +98,7 @@ const withNInd = (rules: ConditionRule[] | undefined, values: string[]): Conditi
 };
 
 /* the rules the app was built with; Admin > Routing Settings can change any of them. An NQC row
-   (routing-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
+   (welding-step-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
    step's own rules */
 export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ...BUILT_IN_CONDITIONS,

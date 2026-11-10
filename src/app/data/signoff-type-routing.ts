@@ -6,7 +6,7 @@ import { STORAGE } from './storage-keys';
 import { TypeException } from '../weld-record/signoff-definition/type-exceptions';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { NDT_KINDS } from './welding-steps';
-import { PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
+import { PHASE_NDT_KINDS, nqcStepId } from './welding-step-ids';
 import { WELD_BUILDUP_TYPE, signoffTypesVersion } from './signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
@@ -30,7 +30,7 @@ export const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';
 const only = (type: string): AvailableType[] => [{ type, default: true }];
 
 /* NDT rows have no default: the inspector picks the inspection performed. Each NDT step's NQC row
-   (routing-ids.ts) gets its own row too. */
+   (welding-step-ids.ts) gets its own row too. */
 const ndtRows = (phase: 'root' | 'layer' | 'final'): SignoffTypeRoutingRow[] => PHASE_NDT_KINDS[phase]
   .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)]
     .map(stepId => ({ stepId, types: NDT_KINDS[kind].options.map(o => ({ type: o.value, enableWhen: inspectionEnableWhen(phase, o.value) })) })));

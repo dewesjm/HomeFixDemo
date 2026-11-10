@@ -5,7 +5,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionContext } from './field-conditions';
 import { jointOrFabricationField } from '../catalogs/field-choices';
-import { stepOnJoint } from '../routing/routing-ids';
+import { stepOnJoint } from '../../data/welding-step-ids';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
 
 /* the step's own fields, its id and whether an engineering override has it, without the joint or
