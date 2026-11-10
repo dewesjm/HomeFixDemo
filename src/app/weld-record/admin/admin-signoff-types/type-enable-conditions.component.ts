@@ -2,7 +2,7 @@
    Applies when). Rules are OR; clauses within a rule are AND. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ConditionRule } from '../../routing/step-conditions';
+import { ConditionRule } from '../../routing/routing-conditions';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 

@@ -5,7 +5,7 @@ import { FormField } from '../../catalogs/field-catalog';
 import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
-import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-step-rules';
+import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-routing-rules';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../../signoff-definition/weld-fields';
 import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../../signoff-definition/stage-rules';

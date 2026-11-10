@@ -2,12 +2,12 @@
 import { routingRole } from './routing-role';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes/exception-effects';
 import { Job } from '../../data/jobs';
-import { conditionsMatch, usesStepAnswers } from './step-conditions';
+import { conditionsMatch, usesStepAnswers } from './routing-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { isAddedTemplateId, getTemplates } from './stage-templates';
+import { isAddedTemplateId, getTemplates } from './routing-templates';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
-import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-step-rules';
+import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-routing-rules';
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */

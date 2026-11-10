@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import '../../routing/stage-templates';
+import '../../routing/routing-templates';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
 import { WhenClause, WhenGroup } from '../../qualifications/qual-when';
 

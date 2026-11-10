@@ -1,5 +1,5 @@
 import { buildStages } from './build-stages';
-import { excavationNdtStageFor } from './inserted/added-steps';
+import { excavationNdtStageFor } from './inserted/added-routings';
 import { JOBS, Job } from '../../data/jobs';
 
 /* every NDT step's Type starts blank so the inspector has to pick what was performed, even when

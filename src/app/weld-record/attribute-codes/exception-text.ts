@@ -1,6 +1,6 @@
 /* Admin > Attribute Code Exceptions rows in plain words, for the table, its export and the notes on
    Routing Settings and Signoff Type to Routing */
-import { describeConditions } from '../routing/step-conditions';
+import { describeConditions } from '../routing/routing-conditions';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields, FABRICATION_DEPENDENT_FIELDS, JOINT_DETAIL_FIELDS } from '../catalogs/field-choices';
 import { typeLabel } from '../signoff-definition/routing-signoff-types';

@@ -1,6 +1,6 @@
 /* Readable insertion sources link back to the routing rule that owns each condition. */
 import { StageTemplate } from '../../model/workflow-types';
-import { describeConditions } from '../../routing/step-conditions';
+import { describeConditions } from '../../routing/routing-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { insertionDefinitionId } from '../../routing/inserted/instance-identity';
 

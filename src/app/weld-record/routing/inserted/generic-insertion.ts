@@ -5,11 +5,11 @@ import { Job } from '../../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
 import { addedRoutingSetup } from './added-routing-configuration';
-import { stageFromTemplate } from './added-steps';
-import { conditionsMatch } from '../step-conditions';
+import { stageFromTemplate } from './added-routings';
+import { conditionsMatch } from '../routing-conditions';
 import { routingRole } from '../routing-role';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
-import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../step-ids';
+import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../routing-ids';
 
 export function resolveInsertion(templates: StageTemplate[], stages: WorkflowStage[], job: Job,
   source: WorkflowStage, target: string, recordedIds: string[] = [], fab?: Record<string, string>): WorkflowStage {

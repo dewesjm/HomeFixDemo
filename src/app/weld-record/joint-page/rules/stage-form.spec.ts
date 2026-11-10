@@ -6,7 +6,7 @@ import { snapshotInputs } from '../../signoff-definition/stage-display';
 import { formInputFields, formSignoffFields } from '../../signoff-definition/form-fields';
 import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
-import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted/added-steps';
+import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted/added-routings';
 import { WorkflowStage } from '../../model/workflow-types';
 import {
   setStepFieldConfig,

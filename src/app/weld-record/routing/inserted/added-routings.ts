@@ -1,14 +1,14 @@
 /* Steps added to a joint while it's worked, not part of the built-in routing: Repair (after an NDT
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
-   reject rule). Ids and round numbers are in step-ids.ts. */
+   reject rule). Ids and round numbers are in routing-ids.ts. */
 import { excavationDefinition } from './excavation-definition';
-import { getAddedTemplate } from '../stage-templates';
+import { getAddedTemplate } from '../routing-templates';
 import { routingRole } from '../routing-role';
 import { Job } from '../../../data/jobs';
-import { RejectRule, describeClauses } from '../step-conditions';
+import { RejectRule, describeClauses } from '../routing-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
-import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../step-ids';
+import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../routing-ids';
 import { setRoutingFrom } from '../current-routing';
 import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definition/signoff-types';

@@ -3,7 +3,7 @@
    minimum on the routing. NA or blank counts as none. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId } from '../routing/step-ids';
+import { baseStepId } from '../routing/routing-ids';
 import { rtDegrees } from '../routing/ndt';
 import { fieldActivation } from './step-field-config';
 

@@ -1,6 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isRepairStageId } from '../routing/step-ids';
+import { baseStepId, isRepairStageId } from '../routing/routing-ids';
 import { DECISION_KEY, TYPE_KEY, definitionHas, hasStepActivation } from './step-field-config';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 

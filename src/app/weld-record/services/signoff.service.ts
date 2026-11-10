@@ -15,7 +15,7 @@ import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/st
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
 import { isOwnType } from '../signoff-definition/signoff-types';
-import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-step-rules';
+import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-routing-rules';
 import { WorkflowStore } from './workflow-store.service';
 import { additionalSignoffs } from '../routing/signoff/additional-signoffs';
 import { typeValues } from '../signoff-definition/stage-rules';

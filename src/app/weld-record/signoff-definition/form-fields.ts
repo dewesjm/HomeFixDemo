@@ -2,7 +2,7 @@
 import { FormField, lookupCatalogField } from '../catalogs/field-catalog';
 import { getActivationForStep, StepRef } from './step-field-config';
 import { signoffTypeOptions } from './signoff-types';
-import { baseStepId } from '../routing/step-ids';
+import { baseStepId } from '../routing/routing-ids';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 
 function formFields(step: StepRef): FormField[] {

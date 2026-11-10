@@ -6,16 +6,16 @@ import { insertionConfigurationErrors } from './inserted/insertion-validation';
 import { addedRoutingSetup, routingNameError } from './inserted/added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
-import { ADDED_STAGE_TEMPLATES } from './inserted/added-stage-templates';
+import { ADDED_STAGE_TEMPLATES } from './inserted/added-routing-templates';
 import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
-import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule } from './step-conditions';
+import { DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ConditionRule, RejectRule } from './routing-conditions';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
 import { WELDING_STEPS } from '../../data/welding-steps';
-import { lastFabricationEditStep } from './built-in-step-rules';
+import { lastFabricationEditStep } from './built-in-routing-rules';
 
 /* built-in: Fabrication is editable up to and including Fit-Up Insp (either row), locked after it signs */
 function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {

@@ -1,8 +1,8 @@
 /* Rules that belong to one built-in step by its id rather than to a setting. Each is fixed: it
    doesn't change per joint or per site, so it isn't offered in Admin. What the ids look like (NQC
-   twins, repair rounds) is step-ids.ts. */
+   twins, repair rounds) is routing-ids.ts. */
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './step-ids';
+import { baseStepId, isExcavationNdtStageId, isFitupInspId } from './routing-ids';
 
 /* ── Fit: owns the joint's Fabrication values ── */
 

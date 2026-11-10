@@ -12,8 +12,8 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
-import { getTemplates } from '../../routing/stage-templates';
-import { ConditionRule } from '../../routing/step-conditions';
+import { getTemplates } from '../../routing/routing-templates';
+import { ConditionRule } from '../../routing/routing-conditions';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import {

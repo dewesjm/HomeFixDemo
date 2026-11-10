@@ -3,7 +3,7 @@
    Weld Color is Light Blue). A clause is Routing Settings's ConditionClause; its field is a
    conditionFields() key (qual-conditions.ts). An empty group matches nothing, so a row with no clauses
    requires nothing. */
-import { ConditionClause } from '../routing/step-conditions';
+import { ConditionClause } from '../routing/routing-conditions';
 
 export type WhenClause = ConditionClause;
 

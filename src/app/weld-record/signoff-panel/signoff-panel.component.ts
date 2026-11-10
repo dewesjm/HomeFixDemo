@@ -7,8 +7,8 @@ import { LucideBadgeCheck, LucideCheck, LucideTriangleAlert, LucideX } from '@lu
 import { WorkflowStage } from '../model/workflow-types';
 import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
 import { hasDecision } from '../signoff-definition/stage-rules';
-import { isEngineeringHoldId } from '../routing/step-ids';
-import { closesJoint, inspectingLabel } from '../routing/built-in-step-rules';
+import { isEngineeringHoldId } from '../routing/routing-ids';
+import { closesJoint, inspectingLabel } from '../routing/built-in-routing-rules';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';

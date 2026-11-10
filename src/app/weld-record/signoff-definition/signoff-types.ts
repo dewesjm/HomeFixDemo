@@ -5,9 +5,9 @@ import { Job } from '../../data/jobs';
 import { TypeException, replacedType } from './type-exceptions';
 import { STORAGE } from '../../data/storage-keys';
 import { StageOption } from '../model/workflow-types';
-import { ConditionRule, conditionsMatch } from '../routing/step-conditions';
+import { ConditionRule, conditionsMatch } from '../routing/routing-conditions';
 import { NDT_KINDS } from '../routing/ndt';
-import { PHASE_NDT_KINDS, isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/step-ids';
+import { PHASE_NDT_KINDS, isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/routing-ids';
 import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from './routing-signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
@@ -34,7 +34,7 @@ const NQC_EXCAVATION_TYPE_ROW = 'nqc-excavation-ndt';
 const only = (type: string): AvailableType[] => [{ type, default: true }];
 
 /* NDT rows have no default: the inspector picks the inspection performed. Each NDT step's NQC row
-   (step-ids.ts) gets its own row too. */
+   (routing-ids.ts) gets its own row too. */
 const ndtRows = (phase: 'root' | 'layer' | 'final'): SignoffTypeRow[] => PHASE_NDT_KINDS[phase]
   .flatMap(kind => [`${phase}-ndt-${kind}`, nqcStepId(`${phase}-ndt-${kind}`)]
     .map(stepId => ({ stepId, types: NDT_KINDS[kind].options.map(o => ({ type: o.value, enableWhen: inspectionEnableWhen(phase, o.value) })) })));

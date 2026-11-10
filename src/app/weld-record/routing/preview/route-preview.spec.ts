@@ -1,6 +1,6 @@
 import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../build-stages';
-import { nextRepairStage, excavationNdtStage, stageFromTemplate } from '../inserted/added-steps';
+import { nextRepairStage, excavationNdtStage, stageFromTemplate } from '../inserted/added-routings';
 import { WorkflowStage } from '../../model/workflow-types';
 import { routePreviewLabel, SignoffPreview } from './route-preview';
 

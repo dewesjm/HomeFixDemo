@@ -10,7 +10,7 @@
    - Attribute Code Exceptions: exceptionConditionFields, built from these */
 import { Job } from '../../data/jobs';
 import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
-import { isExcavationNdtStageId, isRepairStageId } from '../routing/step-ids';
+import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
 import { ConditionCatalogField, FIELD_CATALOG, FORM_FIELDS, RuleEntry, StageAnswers } from './field-catalog';
 
 const YES_NO = ['Yes', 'No'];
@@ -75,7 +75,7 @@ let fieldsVersion: () => number = () => 0;
 export function registerRoutingFields(fn: typeof routingFields, version: () => number) { routingFields = fn; fieldsVersion = version; }
 export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
 
-/* stage-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
+/* routing-templates.ts registers its templates at load (it imports this file, so it can't be imported back) */
 let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
 export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
 

@@ -4,7 +4,7 @@ import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
 import { routeSignoff } from './signoff-routing';
 import { newWorkflow } from '../build-stages';
 import { activeStageId } from '../current-routing';
-import { updateStageTemplate } from '../stage-templates';
+import { updateStageTemplate } from '../routing-templates';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { typeChange } from '../../joint-page/rules/type-change';
 import { getActivationForStep, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';

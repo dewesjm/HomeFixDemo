@@ -6,7 +6,7 @@
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
-import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
+import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './routing-ids';
 import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';
@@ -70,7 +70,7 @@ const withNInd = (rules: ConditionRule[] | undefined, values: string[]): Conditi
 };
 
 /* the rules the app was built with; Admin > Routing Settings can change any of them. An NQC row
-   (step-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
+   (routing-ids.ts) is included when N Ind is 1 or 2, its regular row when N Ind is 3, each on top of the
    step's own rules */
 export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ...BUILT_IN_CONDITIONS,
@@ -80,7 +80,7 @@ export const DEFAULT_STEP_CONDITIONS: Record<string, ConditionRule[]> = {
   ])),
 };
 
-/* reject target that puts the joint on Engineering Hold instead (workflow/added-steps.ts insertEngineeringHold) */
+/* reject target that puts the joint on Engineering Hold instead (routing/inserted/added-routings.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 
 /* built-in reject rules (Admin > Routing Settings can change them): a PT failure on a GTAW weld goes to

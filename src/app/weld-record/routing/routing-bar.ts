@@ -1,7 +1,7 @@
 /* Which steps the routing bar on the joint page shows, and their labels */
 import { WorkflowStage } from '../model/workflow-types';
 import { activeStageId } from './current-routing';
-import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './step-ids';
+import { isExcavationNdtStageId, isRepairStageId, repairIdForExcavation } from './routing-ids';
 
 interface RoutingBarStep {
   stageIndex: number;

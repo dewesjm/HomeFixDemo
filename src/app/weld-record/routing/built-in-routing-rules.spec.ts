@@ -2,7 +2,7 @@ import { WorkflowStage } from '../model/workflow-types';
 import {
   blocksOnFabricationErrors, closesJoint, closingRole, goesBackPastFabrication, inspectingLabel,
   needsFabricationComplete,
-} from './built-in-step-rules';
+} from './built-in-routing-rules';
 
 const st = (id: string, extra: Partial<WorkflowStage> = {}) => ({ id, ...extra }) as WorkflowStage;
 

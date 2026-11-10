@@ -1,12 +1,12 @@
 import { buildStages } from './build-stages';
 import { applySignedFlags } from './signoff/route-changes';
-import { updateStageTemplate, reorderStageTemplates, getTemplates } from './stage-templates';
+import { updateStageTemplate, reorderStageTemplates, getTemplates } from './routing-templates';
 import { fabricationEditable, activeStageId } from './current-routing';
 import { JOBS, Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { getJointDesign } from '../../data/joint-designs';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
-import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch } from './step-conditions';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from './routing-ids';
+import { DEFAULT_STEP_CONDITIONS, describeConditions, conditionsMatch } from './routing-conditions';
 import { stepAnswerFieldsBefore } from '../catalogs/field-choices';
 
 /* the step list buildStages() produced before the rules moved to Admin > Routing Settings */

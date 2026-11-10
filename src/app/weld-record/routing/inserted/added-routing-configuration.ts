@@ -1,5 +1,5 @@
 /* Readiness of ordinary inserted definitions; Type/form configuration stays with its existing owners. */
-import { describeConditions } from '../step-conditions';
+import { describeConditions } from '../routing-conditions';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';

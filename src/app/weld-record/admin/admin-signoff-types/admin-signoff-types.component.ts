@@ -1,7 +1,7 @@
 /* Admin → Signoff Type to Routing: the seeded table of routing steps that have a Type droplist and
    which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
    rows are added and removed here */
-import { isExcavationNdtStageId } from '../../routing/step-ids';
+import { isExcavationNdtStageId } from '../../routing/routing-ids';
 import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';
@@ -27,7 +27,7 @@ import {
   typeSourceLabel,
 } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes, typeLabel } from '../../signoff-definition/routing-signoff-types';
-import { getTemplates } from '../../routing/stage-templates';
+import { getTemplates } from '../../routing/routing-templates';
 
 interface TypeRow extends SignoffTypeRow {
   uid: string;

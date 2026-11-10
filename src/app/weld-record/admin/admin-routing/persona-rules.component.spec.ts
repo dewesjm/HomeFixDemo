@@ -1,9 +1,9 @@
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { TestBed } from '@angular/core/testing';
 import { PersonaRulesComponent } from './persona-rules.component';
-import { getAddedTemplate, updateStageTemplate } from '../../routing/stage-templates';
+import { getAddedTemplate, updateStageTemplate } from '../../routing/routing-templates';
 import { JOBS } from '../../../data/jobs';
-import { excavationNdtStageFor } from '../../routing/inserted/added-steps';
+import { excavationNdtStageFor } from '../../routing/inserted/added-routings';
 
 describe('Persona rules editor', () => {
   beforeEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });

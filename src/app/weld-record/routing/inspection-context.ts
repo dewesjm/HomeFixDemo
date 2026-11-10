@@ -1,5 +1,5 @@
 /* Inspection facts are derived from recorded context and the current Type, never a replacement flag. */
-import { isExcavationNdtStageId, repairIdForExcavation } from './step-ids';
+import { isExcavationNdtStageId, repairIdForExcavation } from './routing-ids';
 
 export interface InspectionContextStage {
   id: string;

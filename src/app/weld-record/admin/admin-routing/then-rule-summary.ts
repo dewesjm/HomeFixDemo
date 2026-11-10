@@ -1,5 +1,5 @@
 /** Describe the condition separately from the destination in Routing Settings. */
-import { RejectRule, describeClauses } from '../../routing/step-conditions';
+import { RejectRule, describeClauses } from '../../routing/routing-conditions';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 
 export function thenRuleSummary(rule: RejectRule, fields: ConditionCatalogField[], destination: string): string {

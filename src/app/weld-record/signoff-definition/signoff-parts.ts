@@ -1,6 +1,6 @@
 /* Whether a field is drawn besides a step's ordinary fields. The form (definition-form) places Type,
    Comments and References where the Layout list says. */
-import { baseStepId } from '../routing/step-ids';
+import { baseStepId } from '../routing/routing-ids';
 import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
 import { StepRef } from './step-field-config';
 import { lookupCatalogField } from '../catalogs/field-catalog';

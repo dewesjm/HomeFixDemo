@@ -11,19 +11,19 @@ import { SignoffInput, WorkflowStage, JobWorkflow } from '../../model/workflow-t
 import { setRoutingFrom } from '../current-routing';
 import { applySignedFlags, routeBack, moveRouting } from './route-changes';
 import { fabricationSnapshot } from '../../fabrication/fabrication-fields';
-import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted/added-steps';
+import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted/added-routings';
 import {
   isRepairStageId,
   isExcavationNdtStageId,
   baseStepId,
   stepOnJoint,
-} from '../step-ids';
+} from '../routing-ids';
 import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
 import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
-import { getTemplates, routingTemplateId } from '../stage-templates';
-import { CUT_RESTARTS_AT } from '../built-in-step-rules';
+import { getTemplates, routingTemplateId } from '../routing-templates';
+import { CUT_RESTARTS_AT } from '../built-in-routing-rules';
 import { signedAsStep, signAsStep } from './type-routing';
-import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../step-conditions';
+import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../routing-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
 import { usesReturningInspectionType } from '../../signoff-definition/signoff-types';

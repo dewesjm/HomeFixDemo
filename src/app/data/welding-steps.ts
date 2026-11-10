@@ -1,8 +1,8 @@
 /* The built-in Welding routing, in order. Admin > Routing Settings can reorder, edit and add to these
-   (stage-templates.ts keeps those changes). Type options are in signoff-types.ts. */
+   (routing-templates.ts keeps those changes). Type options are in signoff-types.ts. */
 import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ndtStage } from '../weld-record/routing/ndt';
-import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/step-ids';
+import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },
@@ -23,7 +23,7 @@ const BUILT_IN_STEPS: StageTemplate[] = [
 ];
 
 /* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown
-   under the same Display Name (its Included when, seeded in step-conditions.ts, splits them by N Ind) */
+   under the same Display Name (its Included when, seeded in routing-conditions.ts, splits them by N Ind) */
 export const WELDING_STEPS: StageTemplate[] = BUILT_IN_STEPS.flatMap(t => NQC_SPLIT_STEP_IDS.includes(t.id)
   ? [t, { ...t, id: nqcStepId(t.id), label: `NQC ${t.label}`, displayName: t.displayName ?? t.label, role: 'NQC Inspector' }]
   : [t]);

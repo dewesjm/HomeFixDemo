@@ -11,7 +11,7 @@ import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { JOBS, Job } from '../../data/jobs';
 import { HistoryRow, correctableKeys, deprogressableKey, historyRowHasDetail, historyRows } from './history-rows';
-import { getTemplates } from '../routing/stage-templates';
+import { getTemplates } from '../routing/routing-templates';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';
 import { HistoryTableState } from './history-table-state';

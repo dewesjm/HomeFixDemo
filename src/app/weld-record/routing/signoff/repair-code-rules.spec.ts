@@ -7,7 +7,7 @@ import { SignoffService } from '../../services/signoff.service';
 import { RoutingService } from '../../services/routing.service';
 import { newWorkflow } from '../build-stages';
 import { activeStage } from '../current-routing';
-import { getTemplates, updateStageTemplate } from '../stage-templates';
+import { getTemplates, updateStageTemplate } from '../routing-templates';
 import { repairCodeError } from '../../admin/admin-repair-codes/repair-code-validation';
 import { conditionText } from '../../signoff-definition/field-rules';
 

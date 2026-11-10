@@ -1,7 +1,7 @@
 /* Where a joint is in its routing: the current step, and which steps are locked */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { getTemplates } from './stage-templates';
+import { getTemplates } from './routing-templates';
 
 /* index the current routing is counted from: the routingFrom stage, else the first stage */
 function routingStart(stages: WorkflowStage[]): number {
