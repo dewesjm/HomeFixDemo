@@ -319,7 +319,7 @@ src/app/
                               panel shows the definitions and one procedure's extraFields as JSON.
 
   avatar-menu/            Top-right avatar button and its panel (holds the theme picker)
-  theme-picker/           DaisyUI theme switcher droplist (32 themes, default: Light); applies the saved theme when created, so the avatar panel stays in the page while closed
+    theme-picker.component.ts  DaisyUI theme switcher droplist (32 themes, default: Light); applies the saved theme when created, so the avatar panel stays in the page while closed
 
   data/                   Seed data and stored lookup tables only: the app's stand-in for a backend. Each
                           file is records, their model, and load/save (localStorage); rules that use them

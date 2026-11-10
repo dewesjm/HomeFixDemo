@@ -3,7 +3,7 @@
    elsewhere or pressing Escape closes it; picking a theme doesn't, so themes can be tried in turn. */
 import { Component, ElementRef, inject, signal } from '@angular/core';
 import { LucideUser } from '@lucide/angular';
-import { ThemePickerComponent } from '../theme-picker/theme-picker.component';
+import { ThemePickerComponent } from './theme-picker.component';
 
 @Component({
   selector: 'app-avatar-menu',

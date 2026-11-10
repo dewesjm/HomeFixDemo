@@ -291,11 +291,11 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [toast.service.ts](src/app/shared/toast.service.ts) | No | 100% |
 | [tooltip.directive.ts](src/app/shared/tooltip.directive.ts) | No | 50% |
 
-### theme-picker
+### avatar-menu (theme picker)
 
 | Source file | Direct spec | Measured lines |
 |---|---|---|
-| [theme-picker.component.ts](src/app/theme-picker/theme-picker.component.ts) | No | 75% |
+| [theme-picker.component.ts](src/app/avatar-menu/theme-picker.component.ts) | No | 75% |
 
 ### weld-engineering/admin/load-procedures
 
