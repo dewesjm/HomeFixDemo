@@ -1,0 +1,94 @@
+/* Admin > Joint Designs: the Joint Design lookup table (data/joint-designs.ts), one row edited at a time. */
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angular';
+
+import { ToastService } from '../../../shared/toast.service';
+import { ConfirmService } from '../../../shared/confirm.service';
+import { TableState } from '../../../shared/table-state';
+import { downloadCsv } from '../../../shared/export-csv';
+import { JointDesignEntry, jointDesigns, setJointDesigns } from '../../../data/joint-designs';
+import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+
+@Component({
+  selector: 'app-admin-joint-designs',
+  standalone: true,
+  imports: [TableToolbarComponent, SortHeaderComponent, 
+    CommonModule, FormsModule,
+    LucidePencil, LucideCheck, LucideX, LucideTrash2
+  ],
+  templateUrl: './joint-designs.component.html'
+})
+export class AdminJointDesignsComponent {
+  rows = signal<JointDesignEntry[]>(jointDesigns().map(j => ({ ...j })));
+
+  table = new TableState<JointDesignEntry>(['code', 'label', 'description']);
+  visibleRows = computed(() => this.table.sorted());
+
+  private messages = inject(ToastService);
+  private confirm = inject(ConfirmService);
+  private clonedRows: Record<string, JointDesignEntry> = {};
+  private seq = 0;
+
+  editingId = signal<string | null>(null);
+
+  constructor() {
+    effect(() => this.table.setRows(this.rows()));
+  }
+
+  addRow() {
+    const row: JointDesignEntry = { code: `new-${++this.seq}`, label: '', description: '', requiresConsumableInsert: false, requiresBackingRing: false };
+    this.table.clearFilters();
+    this.rows.update(r => [row, ...r]);
+    this.editingId.set(row.code);
+  }
+
+  deleteRow(row: JointDesignEntry) {
+    this.confirm.confirmDelete(row.label, () => {
+      this.rows.update(r => r.filter(x => x.code !== row.code));
+      this.persist();
+      this.messages.add({ severity: 'info', summary: 'Joint design deleted', life: 3000 });
+    });
+  }
+
+  startEdit(row: JointDesignEntry) {
+    this.clonedRows[row.code] = { ...row };
+    this.editingId.set(row.code);
+  }
+
+  saveEdit(row: JointDesignEntry) {
+    delete this.clonedRows[row.code];
+    this.persist();
+    this.editingId.set(null);
+    this.messages.add({ severity: 'success', summary: 'Joint design saved', detail: row.label, life: 3000 });
+  }
+
+  cancelEdit(row: JointDesignEntry) {
+    const original = this.clonedRows[row.code];
+    if (original) {
+      this.rows.update(r => r.map(x => (x.code === row.code ? original : x)));
+      delete this.clonedRows[row.code];
+    }
+    this.editingId.set(null);
+  }
+
+  updateField(row: JointDesignEntry, field: keyof JointDesignEntry, value: string | boolean) {
+    this.rows.update(r => r.map(x => (x.code === row.code ? { ...x, [field]: value } : x)));
+  }
+
+  private persist() {
+    setJointDesigns(this.rows().map(r => ({ ...r })));
+  }
+
+  exportCsv() {
+    downloadCsv('joint-designs', [
+      { header: 'Code', value: (r: JointDesignEntry) => r.code },
+      { header: 'Label', value: (r: JointDesignEntry) => r.label },
+      { header: 'Description', value: (r: JointDesignEntry) => r.description ?? '' },
+      { header: 'Consumable Insert Required', value: (r: JointDesignEntry) => r.requiresConsumableInsert ? 'Yes' : 'No' },
+      { header: 'Backing Ring Required', value: (r: JointDesignEntry) => r.requiresBackingRing ? 'Yes' : 'No' },
+    ], this.visibleRows());
+  }
+}
