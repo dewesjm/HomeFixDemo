@@ -12,7 +12,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Refactor added routings (Repair, Excavation NDT, Engineering Hold) and the routing preview.',
+    changed: ['Refactor the Routing Settings error that blocks a signoff.',
+      'Refactor added routings (Repair, Excavation NDT, Engineering Hold) and the routing preview.',
       'Refactor Routing Override and Deprogress.',
       'Refactor Routing Settings.',
       'Refactor the fixed rules for Fit, Fit-Up Insp, Layer and Sold.',

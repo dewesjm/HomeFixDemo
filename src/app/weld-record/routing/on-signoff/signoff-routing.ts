@@ -3,7 +3,7 @@ import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules'
 import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 import { attributeTypeSettings } from '../../attribute-codes/exception-effects';
 import { resolveInsertion } from '../inserted-routing/generic-insertion';
-import { RoutingConfigurationError } from '../inserted-routing/routing-configuration-error';
+import { RoutingConfigurationError } from '../routing-configuration-error';
 import { insertionConfigurationErrors } from '../inserted-routing/insertion-validation';
 import { insertionDefinitionId } from '../inserted-routing/instance-identity';
 import { Job } from '../../../data/jobs';
