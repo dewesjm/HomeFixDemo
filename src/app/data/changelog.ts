@@ -25,7 +25,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Refactor Fabrication ship location droplists.',
       'Refactor procedure droplists (GWP, WTN and filler).',
       'Refactor weld assignment (GWP, WTN and filler set by the outside system).',
-      'Admin > Routing Settings: saved changes were reset to the starting routings.'],
+      'Admin > Routing Settings: saved changes were reset to the starting routings.',
+      'Admin page addresses now match their menu names: Routing Override.'],
   },
   {
     date: '2026-11-09',

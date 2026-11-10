@@ -15,12 +15,12 @@ import { WorkflowStore } from '../../services/workflow-store.service';
 import { currentRoutingLabel, activeStageId } from '../../routing/current-routing';
 
 @Component({
-  selector: 'app-admin-set-routing',
+  selector: 'app-admin-routing-override',
   standalone: true,
   imports: [CommonModule, FormsModule, LucideRoute],
-  templateUrl: './admin-set-routing.component.html'
+  templateUrl: './admin-routing-override.component.html'
 })
-export class AdminSetRoutingComponent {
+export class AdminRoutingOverrideComponent {
   private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private confirm = inject(ConfirmService);
