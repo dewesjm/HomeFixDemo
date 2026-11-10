@@ -30,11 +30,12 @@ Queued in AGENTS.md, in this order.
     - `routing/inserted/`: probably rename to `inserted-routing/`.
     - `routing/on-signoff/`: take a look at what's in it.
     - `routing/preview/`: rename to `routing-preview/`.
-    - `built-in-routing-rules`, `current-routing`, `inspection-context`: unclear what they are; explain or rename.
+    - `built-in-routing-rules`, `current-routing`: unclear what they are; explain or rename. (`inspection-context` DONE: explained, moved to `conditions/inspection-types.ts`.)
     - `ndt-type-blank.spec.ts`: a standalone spec; probably belongs inside another test file.
     - Signoff panel and related objects: consider a standalone folder for doing actual signoffs.
     - Theme picker: should it be under `shared/`?
     - `weld-record/fabrication/`: rename to `fabrication-panel/` or something else? Propose names first.
+    - `weld-record/routing-bar/`: user note, possibly `routing-panel/`, to match `signoff-panel/` (and `fabrication-panel/` if that rename happens).
     - `weld-record/model/workflow-types.ts`: what is this model, and is the name right?
     - Conditions, step 2 (user chose to do later): move `signoff-definition/field-conditions.ts` into `conditions/` as `form-conditions.ts`, and rename one of the two `ConditionClause` types (joint-conditions and field-conditions both export one) so they no longer share a name. Step 1 (split of routing-conditions into `conditions/` and `routing/route-to-rules.ts`) is done.
     - Folder grouping: either group the joint page's UI together (fabrication, joint-details, signoff-panel), or group by concern (everything about signoffs together: panel, signoff-definition, services). Pick one direction before moving anything.

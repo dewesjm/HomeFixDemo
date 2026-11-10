@@ -138,15 +138,15 @@ src/app/
                            builds its own fields from fabrication/fabrication-fields.ts; the catalog only maps them in
     conditions/            The "any rule, all clauses" joint condition shared by Routing Settings, Signoff Type to
                            Routing, Attribute Code Exceptions and Qualifications: joint-conditions (the model and
-                           conditionsMatch()), condition-text (the plain-words summaries)
+                           conditionsMatch()), condition-text (the plain-words summaries), inspection-types (the
+                           original failed and performed inspection Types a rule can test)
     routing/               Everything that decides where a joint is and where it goes (see ROUTING.md).
                            Top level, a joint's routing: build-stages (which routings a joint gets, from the
                            templates + Included when), route-to-rules (Reject routes to / Then go to: first matching
                            rule picks the destination), routing-settings-rules (the live Routing Settings rows with Type options,
                            and the checks before a Routing Settings save), current-routing (the current routing, locking), routing-ids (what routing ids look
                            like: NQC twins, repair rounds), built-in-routing-rules (every fixed rule tied to one
-                           built-in routing), ndt (which NDT routings a joint gets), routing-persona (persona),
-                           inspection-context
+                           built-in routing), ndt (which NDT routings a joint gets), routing-persona (persona)
       on-signoff/          Where a signoff sends the joint: signoff-routing (reject targets, Repair, Cut,
                            Excavation NDT, Then go to rules, Engineering Hold), route-changes (route back, Routing
                            Override, Deprogress), type-routing (a Type that signs a later routing),
@@ -919,7 +919,7 @@ Verified the shared admin grid with 506 passing ChromeHeadless tests, production
 
 ## General inspection routing facts
 
-`routing/inspection-context.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `conditions/joint-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
+`conditions/inspection-types.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `conditions/joint-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
 
 Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
 

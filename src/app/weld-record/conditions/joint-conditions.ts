@@ -11,7 +11,7 @@ import { Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { Fabrication, StageAnswers } from '../catalogs/field-catalog';
 import { catalogField, readsFabrication } from '../catalogs/field-choices';
-import { originalInspectionType, performedInspectionType } from '../routing/inspection-context';
+import { originalInspectionType, performedInspectionType } from './inspection-types';
 
 export interface ConditionClause {
   field: string;          /* a field-catalog.ts or field-choices.ts key */

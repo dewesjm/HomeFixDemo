@@ -1,4 +1,4 @@
-import { originalInspectionType, performedInspectionType } from '../inspection-context';
+import { originalInspectionType, performedInspectionType } from '../../conditions/inspection-types';
 import { JOBS, Job } from '../../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
 import { routeSignoff } from './signoff-routing';

@@ -1,4 +1,4 @@
-import { originalInspectionType } from '../inspection-context';
+import { originalInspectionType } from '../../conditions/inspection-types';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { JOBS, Job } from '../../../data/jobs';
 import { WorkflowStore } from '../../services/workflow-store.service';
