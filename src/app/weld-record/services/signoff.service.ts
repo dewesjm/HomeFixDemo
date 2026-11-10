@@ -39,7 +39,7 @@ export class SignoffService {
   private messages = inject(ToastService);
 
   /* patch a stage's sign-off fields (decision, Type, signoff inputs) before it's signed; logged under
-     'Stages' like other field edits, which Work History hides -- the Signed off entry records them all */
+     'Stages' like other field edits, which History hides -- the Signed off entry records them all */
   updateStageSignoff(job: Job, stageId: string, patch: Partial<WorkflowStage>,
                      meta: { action: string; from?: string; to?: string }) {
     this.store.update(job, wf => {
@@ -136,7 +136,7 @@ export class SignoffService {
     return { wf: signed, signedLabel, refitNumber, repairNumber, reasons };
   }
 
-  /* Correct a signed stage's already-recorded field values without deprogressing it (Work History —
+  /* Correct a signed stage's already-recorded field values without deprogressing it (History —
      distinct from Deprogress, which undoes the sign-off itself and everything it triggered). Only `inputs`/`signoffInputs` are touched, never `result`/`inspectionType`/
      `signoffType`/Decision -- those drive routing directly and are never offered here. Individual
      field keys that fed a routing decision at the original signoff (see ROUTING_LOCKED_FIELD_KEYS)
@@ -166,7 +166,7 @@ export class SignoffService {
       const stages = wf.stages.map(s => (s.id === stageId ? updated : s));
       const inputsSnapshot = snapshotInputs(updated, fieldsShown(updated, job, stages, wf.fabricationData).filter(f => isUserEditable(updated, f)), visibleSignoffFields(updated, job, wf.fabricationData));
       /* display-formatted (option labels, not raw values) so it matches inputsSnapshot's own
-         convention -- Work History reads this to show exactly what changed, not just the reason */
+         convention -- History reads this to show exactly what changed, not just the reason */
       const fieldDefFor = (key: string) => formInputFields(updated).find(f => f.key === key) ?? formSignoffFields(updated).find(f => f.key === key);
       const historyChanges = changes.map(c => {
         const fd = fieldDefFor(c.key);

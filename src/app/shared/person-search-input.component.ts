@@ -4,7 +4,7 @@
      plain free text (e.g. Probationary/Oversight Inspector), not a hard link to a Person record,
      so a name not in the directory can still be typed and saved. Picking a suggestion fills
      "First Last · PERNR" and commits immediately; blurring commits whatever's in the box.
-   - 'picker': choose an actual Person (Work History's/Makeup's person filters) -- shows a cleared
+   - 'picker': choose an actual Person (History's/Makeup's person filters) -- shows a cleared
      search box until one is picked, then a chip (name + title, clearable) in its place. Caller
      owns the selected Person as its own state and passes it back in via `selected`. */
 import { Component, computed, effect, input, output, signal } from '@angular/core';

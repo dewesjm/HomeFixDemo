@@ -12,7 +12,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Refactor the Pipe Welding pages.',
+    changed: ['Refactor the History page.',
+      'Refactor the Pipe Welding pages.',
       'Refactor the Admin pages.',
       'Refactor the joint data model.',
       'Refactor the sync status dot.',

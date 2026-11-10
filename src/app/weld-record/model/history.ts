@@ -25,7 +25,7 @@ export interface HistoryEntry {
    triggered. Field definitions aren't kept here. */
 export interface SignoffUndo {
   stageId: string;
-  historyWhen: string;       /* the sign-off's History entry, so Work History knows which row it is */
+  historyWhen: string;       /* the sign-off's History entry, so History knows which row it is */
   stages: WorkflowStage[];
   fabricationData: Record<string, string>;
   refitNumber: string;

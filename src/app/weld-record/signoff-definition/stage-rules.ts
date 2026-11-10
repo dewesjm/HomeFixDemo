@@ -45,7 +45,7 @@ export function initialInspectionType(stage: Pick<WorkflowStage, 'typeOptions'>)
 }
 
 
-/* Fields the "Correct" action (Work History — edit a signed stage's recorded values in place,
+/* Fields the "Correct" action (History — edit a signed stage's recorded values in place,
    distinct from Deprogress) must never touch: SignoffService.signStage() reads these once, at the
    moment a stage is signed, to decide what to insert or route back to. Changing the stored value afterward
    doesn't re-run that decision, so the record and the actual stage list would silently diverge.

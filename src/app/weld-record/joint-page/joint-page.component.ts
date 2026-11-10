@@ -42,7 +42,7 @@ import { FabricationField } from '../fabrication/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';
-import { HistoryRow, historyRows } from '../work-history/history-rows';
+import { HistoryRow, historyRows } from '../history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId } from '../routing/routing-ids';

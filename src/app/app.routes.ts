@@ -6,7 +6,7 @@ import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { featureToggles } from './data/feature-toggles';
 import { PipeWeldingClassicComponent } from './weld-record/pipe-welding-classic/pipe-welding-classic.component';
-import { WorkHistoryComponent } from './weld-record/work-history/work-history.component';
+import { HistoryComponent } from './weld-record/history/history.component';
 import { PipeWeldingComponent } from './weld-record/pipe-welding/pipe-welding.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingSettingsComponent } from './weld-record/admin/routing-settings/routing-settings.component';
@@ -61,7 +61,7 @@ export const routes: Routes = [
      back on without a rewrite */
   { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments',
     canActivate: [() => featureToggles().myAssignments || inject(Router).parseUrl('/pipe-search')] },
-  { path: 'history', component: WorkHistoryComponent, title: 'EWR - History' },
+  { path: 'history', component: HistoryComponent, title: 'EWR - History' },
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings' },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
