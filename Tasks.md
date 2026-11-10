@@ -35,6 +35,7 @@ Queued in AGENTS.md, in this order.
     - `ndt-type-blank.spec.ts`: DONE, split into `build-stages.spec.ts` and `inserted/excavation-definition.spec.ts`.
     - Signoff panel and related objects: consider a standalone folder for doing actual signoffs.
     - Theme picker: DONE, moved into `avatar-menu/` (only the avatar menu uses it; may move to `shared/` later with the avatar menu).
+    - Avatar menu (future task, user 2026-11-09): move `avatar-menu/` (with the theme picker inside it) into `shared/`, since the top bar is shared by every section of the app.
     - `weld-record/fabrication/`: rename to `fabrication-panel/` or something else? Propose names first.
     - `weld-record/routing-bar/`: user note, possibly `routing-panel/`, to match `signoff-panel/` (and `fabrication-panel/` if that rename happens).
     - `weld-record/model/workflow-types.ts`: what is this model, and is the name right?
