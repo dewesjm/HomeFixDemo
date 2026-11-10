@@ -25,6 +25,17 @@ Queued in AGENTS.md, in this order.
 - [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
 - [ ] **Review the .md files for leftovers:** go through the repo's Markdown docs for stale, completed or duplicated content. Report findings before removing anything. Not queued in AGENTS.md.
 - [ ] **Organization sweep:** look across the app for files whose location doesn't make sense: data mixed into rule files (or rules in `data/`), admin table rows kept next to the code that uses them beyond the six pages already queued, files in a folder that doesn't match their concern, and folder names that don't say what's inside. Report findings and proposed moves before changing anything. Not queued in AGENTS.md.
+  Notes for this sweep (2026-11-09):
+    - `weld-record/services/`: needs a similar organization pass.
+    - `routing/inserted/`: probably rename to `inserted-routing/`.
+    - `routing/on-signoff/`: take a look at what's in it.
+    - `routing/preview/`: rename to `routing-preview/`.
+    - `built-in-routing-rules`, `current-routing`, `inspection-context`: unclear what they are; explain or rename.
+    - `ndt-type-blank.spec.ts`: a standalone spec; probably belongs inside another test file.
+    - Signoff panel and related objects: consider a standalone folder for doing actual signoffs.
+    - Theme picker: should it be under `shared/`?
+    - `weld-record/fabrication/`: rename to `fabrication-panel/` or something else? Propose names first.
+- [ ] **More .md files in .gitignore (later, not queued in AGENTS.md):** add more of the repo's Markdown docs to `.gitignore`; ask which ones first. Note: `AGENTS.md` and `Tasks.md` are already listed there but are still tracked by git, so the ignore has no effect on them until they are removed from the index (`git rm --cached`, which keeps the file on disk).
 - [ ] **Rename `work-history/`:** the folder holds the History page (and `history-table`, which Records Review also uses), but its name doesn't say so. Look at renaming it; propose names before changing anything. Not queued in AGENTS.md.
 
 ## Deferred testing packages
