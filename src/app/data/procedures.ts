@@ -10,7 +10,7 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { type ExtraFields } from '../weld-engineering/procedure-sections';
+import { type ExtraFields } from '../future/weld-engineering/procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -126,7 +126,7 @@ export interface Procedure {
 
   rules: string[];
   conditions: string[];
-  /* values for the fields of sections added after 11 (weld-engineering/procedure-sections.ts), keyed by field key */
+  /* values for the fields of sections added after 11 (future/weld-engineering/procedure-sections.ts), keyed by field key */
   extraFields: ExtraFields;
   /* required whenever a change is saved to a procedure that is (or was) Active -- see
      requiresRevisionNote() in procedure-form.component.ts. Shown at the top of the PDF as "Revision Record". */

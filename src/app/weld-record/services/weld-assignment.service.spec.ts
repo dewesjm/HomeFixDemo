@@ -2,7 +2,7 @@ import { formInputFields } from '../signoff-definition/form-fields';
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { getProcedureByGwpWtn } from '../../data/procedures';
-import { gwpOptionsForMaterials } from '../../weld-engineering/procedure-options';
+import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-options';
 import { isFilledByRule } from '../signoff-definition/field-fill';
 import { isEngineeringEntryJoint } from '../weld-assignment/weld-assignment-mock';
 import { detectDeviations } from '../joint-page/rules/deviations';

@@ -34,19 +34,19 @@ import { ChangelogComponent } from './changelog/changelog.component';
 import { AdminQualificationsComponent } from './weld-record/admin/qualifications/qualifications.component';
 import { MakeupPageComponent } from './weld-record/makeup-page/makeup-page.component';
 import { MyAssignmentsPageComponent } from './future/weld-record/my-assignments-page/my-assignments-page.component';
-import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
-import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
-import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detail.component';
-import { WeldPlanningAdminComponent } from './weld-planning/weld-planning-admin.component';
-import { WeldPlanningMassEditComponent } from './weld-planning/weld-planning-mass-edit.component';
-import { WeldPlanningSearchComponent } from './weld-planning/weld-planning-search.component';
-import { ExternalLoadsComponent } from './weld-planning/external-loads/external-loads.component';
-import { ProcedureLookupComponent } from './weld-engineering/procedure-lookup/procedure-lookup.component';
-import { ProcedureDetailComponent } from './weld-engineering/procedure-detail/procedure-detail.component';
-import { ManageProceduresComponent } from './weld-engineering/admin/manage-procedures/manage-procedures.component';
-import { ProcedureFormComponent } from './weld-engineering/admin/manage-procedures/procedure-form.component';
-import { LoadProceduresComponent } from './weld-engineering/admin/load-procedures/load-procedures.component';
-import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-sections/procedure-sections.component';
+import { WeldPlanningListComponent } from './future/weld-planning/weld-planning-list.component';
+import { WeldPlanningFormComponent } from './future/weld-planning/weld-planning-form.component';
+import { WeldPlanningDetailComponent } from './future/weld-planning/weld-planning-detail.component';
+import { WeldPlanningAdminComponent } from './future/weld-planning/weld-planning-admin.component';
+import { WeldPlanningMassEditComponent } from './future/weld-planning/weld-planning-mass-edit.component';
+import { WeldPlanningSearchComponent } from './future/weld-planning/weld-planning-search.component';
+import { ExternalLoadsComponent } from './future/weld-planning/external-loads/external-loads.component';
+import { ProcedureLookupComponent } from './future/weld-engineering/procedure-lookup/procedure-lookup.component';
+import { ProcedureDetailComponent } from './future/weld-engineering/procedure-detail/procedure-detail.component';
+import { ManageProceduresComponent } from './future/weld-engineering/admin/manage-procedures/manage-procedures.component';
+import { ProcedureFormComponent } from './future/weld-engineering/admin/manage-procedures/procedure-form.component';
+import { LoadProceduresComponent } from './future/weld-engineering/admin/load-procedures/load-procedures.component';
+import { ProcedureSectionsComponent } from './future/weld-engineering/admin/procedure-sections/procedure-sections.component';
 
 
 export const routes: Routes = [

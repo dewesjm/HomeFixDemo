@@ -10,7 +10,7 @@ import { stepOnlyContext } from './condition-context';
 import { isDisabledByOwnRule } from './field-locks';
 import { fieldActivation } from './signoff-type-form-rules';
 import { effectiveFill } from './field-rules';
-import { wtnFillValue } from '../../weld-engineering/procedure-options';
+import { wtnFillValue } from '../../future/weld-engineering/procedure-options';
 
 /* the field's fill rule when it holds right now on this step */
 function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {

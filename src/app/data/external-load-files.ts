@@ -5,8 +5,8 @@
      live     - two new joints, two updated, one removed, one protected joint missing, two status
                 changes, one truncated line and one bad number */
 import { HULLS, MATERIAL_TYPES, PIPE_SIZES, jointNumbers } from './jobs';
-import { FieldKey, LAYOUT, LINE_WIDTH, USED_WIDTH, recordKey } from '../weld-planning/external-loads/layout';
-import { RawLine } from '../weld-planning/external-loads/convert';
+import { FieldKey, LAYOUT, LINE_WIDTH, USED_WIDTH, recordKey } from '../future/weld-planning/external-loads/layout';
+import { RawLine } from '../future/weld-planning/external-loads/convert';
 
 type SeedRecord = Record<FieldKey, string>;
 

@@ -1,0 +1,222 @@
+/* Weld Planning - Joint Search: the list of Weld Planning joints. */
+import { bannerFor } from '../../data/banner';
+import { Component, effect, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideListFilter, LucideX } from '@lucide/angular';
+
+import { TablePagerComponent } from '../../shared/table-pager.component';
+import { TableState, inArray } from '../../shared/table-state';
+import { downloadCsv } from '../../shared/export-csv';
+import { ToastService } from '../../shared/toast.service';
+import { ConfirmService } from '../../shared/confirm.service';
+import {
+  weldJoints, deleteWeldJoint,
+  JOINT_STATUS_OPTIONS, type WeldJoint
+} from '../../data/weld-planning';
+import { WELD_JOINT_CSV_COLUMNS } from './weld-joint-files';
+import { BannerPillComponent } from '../../shared/banner-pill.component';
+
+type Row = WeldJoint;
+
+@Component({
+  selector: 'app-weld-planning-list',
+  standalone: true,
+  imports: [BannerPillComponent, 
+    CommonModule, FormsModule, RouterLink,
+    TablePagerComponent,
+    LucideSearch, LucideFileSpreadsheet, LucidePlus, LucidePencil, LucideTrash2, LucideArrowUpRight, LucideUpload, LucideFileEdit, LucideListFilter, LucideX
+  ],
+  template: `
+    <div style="max-width: 100%">
+        <div class="page-header flex-wrap items-center gap-3">
+          <h2 class="section-title">Joint Search</h2>
+          <app-banner-pill [banner]="banner()" />
+        </div>
+        <app-banner-pill [banner]="banner()" placement="below" />
+
+        <div class="facet-row">
+          <button class="btn btn-sm btn-outline" (click)="clearFilters()">
+            <svg lucideListFilter class="size-4"></svg> Clear filters
+          </button>
+
+          <select class="select select-sm" [(ngModel)]="statusFilter" (ngModelChange)="onStatusFilterChange($event)">
+            <option value="">All Statuses</option>
+            @for (opt of statusOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+
+          <button class="btn btn-sm btn-primary" (click)="createNew()">
+            <svg lucidePlus class="size-4"></svg> Create
+          </button>
+          <button class="btn btn-sm" (click)="importFile()">
+            <svg lucideUpload class="size-4"></svg> Import
+          </button>
+          <button class="btn btn-sm" (click)="massEdit()">
+            <svg lucideFileEdit class="size-4"></svg> Mass Edit
+          </button>
+          <button class="btn btn-sm" (click)="exportCsv()">
+            <svg lucideFileSpreadsheet class="size-4"></svg> Export
+          </button>
+
+          <span class="spacer"></span>
+
+          <label class="input input-sm input-bordered flex items-center gap-2 search-input">
+            <svg lucideSearch class="size-4 opacity-60"></svg>
+            <input type="text" class="grow" placeholder="Search joints…"
+                   [ngModel]="table.globalFilter()" (ngModelChange)="table.setGlobalFilter($event)" />
+            @if (table.globalFilter()) {
+              <button type="button" class="btn btn-ghost btn-xs p-0" (click)="table.setGlobalFilter('')">
+                <svg lucideX class="size-3.5 opacity-60"></svg>
+              </button>
+            }
+          </label>
+        </div>
+
+        <div style="overflow-x: auto">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th (click)="table.toggleSort('id')" style="cursor: pointer; min-width: 5rem">
+                  XREFID {{ sortIcon('id') }}
+                </th>
+                <th (click)="table.toggleSort('hull')" style="cursor: pointer; min-width: 6rem">
+                  Hull {{ sortIcon('hull') }}
+                </th>
+                <th (click)="table.toggleSort('joint')" style="cursor: pointer; min-width: 5rem">
+                  Joint {{ sortIcon('joint') }}
+                </th>
+                <th (click)="table.toggleSort('jointType')" style="cursor: pointer; min-width: 6rem">
+                  Type {{ sortIcon('jointType') }}
+                </th>
+                <th (click)="table.toggleSort('drawing')" style="cursor: pointer; min-width: 6rem">
+                  Drawing {{ sortIcon('drawing') }}
+                </th>
+                <th (click)="table.toggleSort('jointDesign')" style="cursor: pointer; min-width: 6rem">
+                  Design {{ sortIcon('jointDesign') }}
+                </th>
+                <th (click)="table.toggleSort('weldType')" style="cursor: pointer; min-width: 5rem">
+                  Weld {{ sortIcon('weldType') }}
+                </th>
+                <th (click)="table.toggleSort('status')" style="cursor: pointer; min-width: 7rem">
+                  Status {{ sortIcon('status') }}
+                </th>
+                <th style="min-width: 7rem">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of table.paged(); track row.id) {
+                <tr>
+                  <td class="mono fw-bold">{{ row.id }}</td>
+                  <td>{{ row.hull }}</td>
+                  <td>{{ row.joint }}</td>
+                  <td>{{ row.jointType === 'pipe' ? 'Pipe' : 'Structural' }}</td>
+                  <td class="mono">{{ row.drawing }}</td>
+                  <td class="mono">{{ row.jointDesign }}</td>
+                  <td>{{ row.weldType }}</td>
+                  <td>{{ statusLabel(row.status) }}</td>
+                  <td>
+                    <div class="row-tight">
+                      <a [routerLink]="['/weld-planning', row.id]"
+                         class="btn btn-xs btn-ghost"
+                         title="View details">
+                        <svg lucideArrowUpRight class="size-3"></svg>
+                      </a>
+                      <button class="btn btn-xs btn-ghost" (click)="editRow(row)" title="Edit">
+                        <svg lucidePencil class="size-3"></svg>
+                      </button>
+                      <button class="btn btn-xs btn-ghost text-error" (click)="deleteRow(row)" title="Delete">
+                        <svg lucideTrash2 class="size-3"></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="empty">No joints match your filters.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+      <app-table-pager [state]="table" />
+    </div>
+  `
+})
+export class WeldPlanningListComponent {
+  private router = inject(Router);
+  private toast = inject(ToastService);
+  private confirm = inject(ConfirmService);
+
+  statusOptions = JOINT_STATUS_OPTIONS;
+  private statusMap: Record<string, string> = Object.fromEntries(JOINT_STATUS_OPTIONS.map(o => [o.value, o.label]));
+
+  statusFilter = '';
+
+  banner = signal(bannerFor('weld-planning'));
+
+  statusLabel(value: string): string {
+    return this.statusMap[value] ?? value;
+  }
+
+  table = new TableState<Row>(
+    ['id', 'hull', 'joint', 'jointType', 'drawing', 'jointDesign', 'weldType'],
+    {
+      status: inArray,
+    }
+  );
+
+  constructor() {
+    effect(() => this.table.setRows(weldJoints()));
+  }
+
+  sortIcon(field: string): string {
+    if (this.table.sortField() !== field) return '';
+    return this.table.sortOrder() === 1 ? '\u25B2' : '\u25BC';
+  }
+
+  onStatusFilterChange(val: string) {
+    this.table.setColumnFilter('status', val ? [val] : []);
+  }
+
+  clearFilters() {
+    this.statusFilter = '';
+    this.table.clearFilters();
+  }
+
+  createNew() {
+    this.router.navigate(['/weld-planning/new']);
+  }
+
+  importFile() {
+    this.router.navigate(['/weld-planning/import']);
+  }
+
+  massEdit() {
+    this.router.navigate(['/weld-planning/import'], { queryParams: { mode: 'edit' } });
+  }
+
+  editRow(row: WeldJoint) {
+    this.router.navigate(['/weld-planning', row.id, 'edit']);
+  }
+
+  deleteRow(row: WeldJoint) {
+    this.confirm.confirm({
+      header: 'Delete Joint',
+      message: `Delete ${row.joint}?`,
+      acceptLabel: 'Delete',
+      accept: () => {
+        deleteWeldJoint(row.id);
+        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${row.joint} deleted` });
+      }
+    });
+  }
+
+  exportCsv() {
+    downloadCsv('weld-planning-export', WELD_JOINT_CSV_COLUMNS, this.table.sorted());
+    this.toast.add({ severity: 'info', summary: 'Exported', detail: 'CSV download started' });
+  }
+}

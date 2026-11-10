@@ -1,0 +1,62 @@
+/* Weld Planning - one joint's read-only details, with Edit. */
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
+import { LucidePencil, LucideArrowLeft } from '@lucide/angular';
+
+import {
+  getWeldJoint, NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_EXTRA_GROUPS, jointExtraDisplay,
+  type WeldJoint, type JointExtraField, type JointExtraGroup
+} from '../../data/weld-planning';
+import { formatDateTime } from '../../shared/date-format';
+
+@Component({
+  selector: 'app-weld-planning-detail',
+  standalone: true,
+  imports: [CommonModule, LucidePencil, LucideArrowLeft],
+  templateUrl: './weld-planning-detail.component.html'
+})
+export class WeldPlanningDetailComponent implements OnInit {
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  ndtFields = NDT_FIELDS;
+  extraGroups = JOINT_EXTRA_GROUPS;
+
+  extraFields(group: JointExtraGroup) {
+    return JOINT_EXTRA_FIELDS.filter(f => f.group === group);
+  }
+
+  extraDisplay(f: JointExtraField, value: string) {
+    return jointExtraDisplay(f, value);
+  }
+  joint = signal<WeldJoint | null>(null);
+  isLocked = computed(() => this.joint()?.status === 'locked');
+
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      const found = getWeldJoint(id);
+      if (found) {
+        this.joint.set(found);
+      } else {
+        this.router.navigate(['/weld-planning']);
+      }
+    }
+  }
+
+  goBack() {
+    this.router.navigate(['/weld-planning']);
+  }
+
+  edit() {
+    const j = this.joint();
+    if (j && j.status !== 'locked') {
+      this.router.navigate(['/weld-planning', j.id, 'edit']);
+    }
+  }
+
+  formatDate(iso: string): string {
+    return formatDateTime(iso) || '-';
+  }
+}

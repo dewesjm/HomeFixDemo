@@ -11,7 +11,7 @@ import { isFilledByRule } from '../signoff-definition/field-fill';
 import { requirementsMet } from '../qualifications/qualifications';
 import { conditionRequirements } from '../qualifications/qual-conditions';
 import { Procedure, procedures } from '../../data/procedures';
-import { gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride } from '../../weld-engineering/procedure-options';
+import { gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride } from '../../future/weld-engineering/procedure-options';
 
 function hash(s: string): number {
   let h = 0;
