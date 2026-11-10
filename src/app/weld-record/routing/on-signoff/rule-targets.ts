@@ -1,9 +1,9 @@
 /* Destinations a routing rule can name besides a routing (Add Repair, Rejecting NDT, Own Repair, ...)
    and which routing each resolves to. Relative targets resolve against this repair round, never another round. */
-import { insertionDefinitionId } from '../inserted/instance-identity';
+import { insertionDefinitionId } from '../inserted-routing/instance-identity';
 import { WorkflowStage } from '../../model/workflow-types';
 import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation } from '../routing-ids';
-/* the target that puts the joint on Engineering Hold (routing/inserted/added-routings.ts insertEngineeringHold) */
+/* the target that puts the joint on Engineering Hold (routing/inserted-routing/added-routings.ts insertEngineeringHold) */
 export const ENGINEERING_HOLD_TARGET = 'engineering-hold';
 export const RULE_TARGETS = [
   { id: 'repair', label: 'Add Repair' },

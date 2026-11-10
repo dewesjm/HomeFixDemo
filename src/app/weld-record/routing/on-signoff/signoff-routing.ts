@@ -2,16 +2,16 @@
 import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
 import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 import { attributeTypeSettings } from '../../attribute-codes/exception-effects';
-import { resolveInsertion } from '../inserted/generic-insertion';
-import { RoutingConfigurationError } from '../inserted/routing-configuration-error';
-import { insertionConfigurationErrors } from '../inserted/insertion-validation';
-import { insertionDefinitionId } from '../inserted/instance-identity';
+import { resolveInsertion } from '../inserted-routing/generic-insertion';
+import { RoutingConfigurationError } from '../inserted-routing/routing-configuration-error';
+import { insertionConfigurationErrors } from '../inserted-routing/insertion-validation';
+import { insertionDefinitionId } from '../inserted-routing/instance-identity';
 import { Job } from '../../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../../model/workflow-types';
 import { setRoutingFrom } from '../current-routing';
 import { applySignedFlags, routeBack, moveRouting } from '../route-changes';
 import { fabricationSnapshot } from '../../fabrication/fabrication-fields';
-import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted/added-routings';
+import { nextRepairStage, excavationNdtStageFor, stageFromTemplate, insertEngineeringHold, rejectHoldReason } from '../inserted-routing/added-routings';
 import {
   isRepairStageId,
   isExcavationNdtStageId,
@@ -28,7 +28,7 @@ import { firstMatchingRule } from '../route-to-rules';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { RULE_TARGETS, ENGINEERING_HOLD_TARGET, isAddTarget, resolveRuleTarget } from './rule-targets';
 import { usesReturningInspectionType } from '../../signoff-definition/signoff-type-routing-rules';
-import { lastingReasons, signedFlagChanges } from '../preview/signed-flag-reasons';
+import { lastingReasons, signedFlagChanges } from '../routing-preview/signed-flag-reasons';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;
 

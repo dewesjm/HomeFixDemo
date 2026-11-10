@@ -12,7 +12,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Refactor Routing Override and Deprogress.',
+    changed: ['Refactor added routings (Repair, Excavation NDT, Engineering Hold) and the routing preview.',
+      'Refactor Routing Override and Deprogress.',
       'Refactor Routing Settings.',
       'Refactor the fixed rules for Fit, Fit-Up Insp, Layer and Sold.',
       'Admin condition droplists: the fields offered for Excavation NDT now follow the Types set for the NDT routings on Admin > Signoff Type to Routing, instead of a fixed list.',

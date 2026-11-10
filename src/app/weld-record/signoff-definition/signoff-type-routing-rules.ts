@@ -1,7 +1,7 @@
 /* Admin > Signoff Type to Routing rules: the Type options a routing offers on a joint, read from the
    rows in data/signoff-type-routing.ts. Every Repair round reads the Repair row; Excavation reads its
    configured Type source and ordered material exceptions. */
-import { insertedDefinitionId } from '../routing/inserted/instance-identity';
+import { insertedDefinitionId } from '../routing/inserted-routing/instance-identity';
 import { Job } from '../../data/jobs';
 import { replacedType } from './type-exceptions';
 import { StageOption } from '../model/workflow-types';

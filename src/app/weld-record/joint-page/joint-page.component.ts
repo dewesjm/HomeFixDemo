@@ -52,7 +52,7 @@ import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } f
 import { StageFormContext, visibleStageFields } from './rules/stage-form';
 import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
-import { routePreviewLabel } from '../routing/preview/route-preview';
+import { routePreviewLabel } from '../routing/routing-preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 
 @Component({

@@ -1,9 +1,9 @@
 /* Rules for the Admin > Routing Settings rows (stored in data/routing-settings.ts): the live rows joints are
    built from, each with its Type options from Admin > Signoff Type to Routing (signoff-type-routing-rules.ts), and the
    checks a Routing Settings change must pass before it is saved. */
-import { insertedDefinitionId } from './inserted/instance-identity';
-import { insertionConfigurationErrors } from './inserted/insertion-validation';
-import { addedRoutingSetup, routingNameError } from './inserted/added-routing-configuration';
+import { insertedDefinitionId } from './inserted-routing/instance-identity';
+import { insertionConfigurationErrors } from './inserted-routing/insertion-validation';
+import { addedRoutingSetup, routingNameError } from './inserted-routing/added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';

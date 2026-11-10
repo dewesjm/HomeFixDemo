@@ -1,6 +1,6 @@
 /* per-stage sign-off: signing a step (where it routes is routing/on-signoff/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
-import { RoutingConfigurationError } from '../routing/inserted/routing-configuration-error';
+import { RoutingConfigurationError } from '../routing/inserted-routing/routing-configuration-error';
 import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';

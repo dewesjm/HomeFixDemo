@@ -1,7 +1,7 @@
 import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
-import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-routings';
+import { excavationNdtStage, nextRepairStage } from '../routing/inserted-routing/added-routings';
 import { excavationPossibleTypes, signoffTypeOptions, usesReturningInspectionType } from './signoff-type-routing-rules';
 import { getTemplates } from '../routing/routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';

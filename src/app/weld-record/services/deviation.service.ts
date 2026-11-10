@@ -8,7 +8,7 @@ import { Job } from '../../data/jobs';
 import { Deviation, DeviationItem, JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isEngineeringHoldId } from '../routing/routing-ids';
-import { nextEngineeringHoldId } from '../routing/inserted/added-routings';
+import { nextEngineeringHoldId } from '../routing/inserted-routing/added-routings';
 import { WorkflowStore } from './workflow-store.service';
 import { RoutingService } from './routing.service';
 

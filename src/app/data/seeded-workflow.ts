@@ -11,7 +11,7 @@ import { DeviationItem, JobWorkflow, StageResult, WorkflowStage } from '../weld-
 import { hasDecision, typeValues } from '../weld-record/signoff-definition/stage-rules';
 import { labelFor, snapshotInputs } from '../weld-record/signoff-definition/stage-display';
 import { fieldsShown, visibleSignoffFields } from '../weld-record/signoff-definition/shown-fields';
-import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing/inserted/added-routings';
+import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing/inserted-routing/added-routings';
 import { setRoutingFrom } from '../weld-record/routing/current-routing';
 import { baseStepId, isFitupInspId } from '../weld-record/routing/routing-ids';
 import { newWorkflow } from '../weld-record/routing/build-stages';

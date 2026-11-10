@@ -1,7 +1,7 @@
 import { setRepairCodes } from '../../../data/repair-codes';
 import { DefinitionFieldComponent } from '../../signoff-panel/definition-field.component';
 import { SignoffContext } from '../../signoff-panel/signoff-context';
-import { stageFromTemplate, nextRepairStage } from '../../routing/inserted/added-routings';
+import { stageFromTemplate, nextRepairStage } from '../../routing/inserted-routing/added-routings';
 import { stageFieldOptions } from '../../joint-page/rules/stage-form';
 import { lookupCatalogField } from '../../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';

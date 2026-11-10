@@ -1,7 +1,7 @@
 import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
 import { STORAGE } from '../../../data/storage-keys';
 import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
-import { insertionTarget } from '../../routing/inserted/instance-identity';
+import { insertionTarget } from '../../routing/inserted-routing/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';

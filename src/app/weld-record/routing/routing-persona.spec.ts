@@ -3,7 +3,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { closingRole, routingRole } from './routing-persona';
 import { closesJoint } from './current-routing';
 import { getAddedTemplate, updateStageTemplate } from './routing-settings-rules';
-import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted/added-routings';
+import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from './inserted-routing/added-routings';
 import { buildStages } from './build-stages';
 
 describe('Sold', () => {
