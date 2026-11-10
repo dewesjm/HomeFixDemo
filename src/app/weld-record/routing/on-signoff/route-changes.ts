@@ -1,7 +1,7 @@
 /* Moving a joint's routing: going back (never un-sign, see ROUTING.md), Routing Override, Deprogress, and
    discarding unsigned edits */
 import { Job } from '../../../data/jobs';
-import { conditionsMatch, usesFabrication, usesStepAnswers } from '../routing-conditions';
+import { conditionsMatch, usesFabrication, usesStepAnswers } from '../../conditions/joint-conditions';
 import { JobWorkflow, SignoffUndo, WorkflowStage } from '../../model/workflow-types';
 import { getTemplates } from '../routing-settings-rules';
 import { baseRequired, buildStages } from '../build-stages';

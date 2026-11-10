@@ -4,7 +4,7 @@
    localStorage. */
 import { STORAGE } from '../../data/storage-keys';
 import { SHIPBOARD_FIELD } from '../catalogs/field-catalog';
-import { ConditionRule } from '../routing/routing-conditions';
+import { ConditionRule } from '../conditions/joint-conditions';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../routing/routing-ids';
 
 export type AccessibleAnswer = 'yes' | 'no';

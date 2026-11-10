@@ -2,7 +2,7 @@
 import { Job } from '../../../data/jobs';
 import { getRepairCodes } from '../../../data/repair-codes';
 import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
-import { matchingThenRule } from '../routing-conditions';
+import { matchingThenRule } from '../route-to-rules';
 
 export function isCustomRepairCode(code: string): boolean {
   return !!code && !['grind', 'weld-repair', 'cut'].includes(code);

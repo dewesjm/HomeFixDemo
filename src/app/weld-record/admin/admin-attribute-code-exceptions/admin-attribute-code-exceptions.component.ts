@@ -13,7 +13,7 @@ import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { getTemplates } from '../../routing/routing-settings-rules';
-import { ConditionRule } from '../../routing/routing-conditions';
+import { ConditionRule } from '../../conditions/joint-conditions';
 import { getSignoffTypes } from '../../../data/signoff-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import {

@@ -6,7 +6,7 @@ import { routeSignoff } from './signoff-routing';
 import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { typeValues } from '../../signoff-definition/stage-rules';
-import { RejectRule } from '../routing-conditions';
+import { RejectRule } from '../route-to-rules';
 
 const rule = (to: string, value = 'tack'): RejectRule => ({
   when: [{ field: 'self.inspectionType', op: 'is', values: [value] }], to,

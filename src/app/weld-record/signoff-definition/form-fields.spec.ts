@@ -2,7 +2,7 @@ import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { stageFromTemplate } from '../routing/inserted/added-routings';
 import { getTemplates } from '../routing/routing-settings-rules';
-import { conditionsMatch } from '../routing/routing-conditions';
+import { conditionsMatch } from '../conditions/joint-conditions';
 import { stageConditionFields, stepAnswerFieldsBefore } from '../catalogs/field-choices';
 import { conditionFields } from '../qualifications/qual-conditions';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';

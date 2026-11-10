@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Job } from '../../../data/jobs';
 import { ROLES, StageTemplate } from '../../model/workflow-types';
 import { getTemplates, updateStageTemplate } from '../../routing/routing-settings-rules';
-import { ConditionClause, describeConditions } from '../../routing/routing-conditions';
+import { ConditionClause } from '../../conditions/joint-conditions';
+import { describeConditions } from '../../conditions/condition-text';
 import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './condition-editing';
 

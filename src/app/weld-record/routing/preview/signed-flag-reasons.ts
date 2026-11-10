@@ -4,7 +4,7 @@ import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { RoutingEffect, hasLaterAnswerRows, routingEffect } from '../../attribute-codes/exception-effects';
 import { getTemplates } from '../routing-settings-rules';
-import { describeConditions } from '../routing-conditions';
+import { describeConditions } from '../../conditions/condition-text';
 
 interface SignedFlagChange { id: string; required: boolean; types: string; reason: string }
 

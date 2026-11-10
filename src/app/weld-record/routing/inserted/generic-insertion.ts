@@ -6,7 +6,7 @@ import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-routings';
-import { conditionsMatch } from '../routing-conditions';
+import { conditionsMatch } from '../../conditions/joint-conditions';
 import { routingRole } from '../routing-persona';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
 import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../routing-ids';

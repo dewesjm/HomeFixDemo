@@ -4,7 +4,8 @@
 import { StageTemplate } from '../weld-record/model/workflow-types';
 import { ndtStage } from '../weld-record/routing/ndt';
 import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
-import { ConditionClause, ConditionRule, RejectRule, ENGINEERING_HOLD_TARGET } from '../weld-record/routing/routing-conditions';
+import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
+import { RejectRule, ENGINEERING_HOLD_TARGET } from '../weld-record/routing/route-to-rules';
 
 const BUILT_IN_STEPS: StageTemplate[] = [
   { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },

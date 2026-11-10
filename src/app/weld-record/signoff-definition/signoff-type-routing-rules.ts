@@ -5,7 +5,7 @@ import { insertedDefinitionId } from '../routing/inserted/instance-identity';
 import { Job } from '../../data/jobs';
 import { replacedType } from './type-exceptions';
 import { StageOption } from '../model/workflow-types';
-import { conditionsMatch } from '../routing/routing-conditions';
+import { conditionsMatch } from '../conditions/joint-conditions';
 import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
 import {

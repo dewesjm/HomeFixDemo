@@ -627,7 +627,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [rule-targets.ts](src/app/weld-record/routing/on-signoff/rule-targets.ts) | Yes | 100% |
 | [signoff-routing.ts](src/app/weld-record/routing/on-signoff/signoff-routing.ts) | Yes | 100% |
 | [routing-templates.ts](src/app/weld-record/routing/routing-templates.ts) | No | 84.37% |
-| [routing-conditions.ts](src/app/weld-record/routing/routing-conditions.ts) | Yes | 97.56% |
+| [joint-conditions.ts](src/app/weld-record/conditions/joint-conditions.ts), [condition-text.ts](src/app/weld-record/conditions/condition-text.ts), [route-to-rules.ts](src/app/weld-record/routing/route-to-rules.ts) (was routing-conditions.ts) | Yes | 97.56% |
 | [routing-ids.ts](src/app/weld-record/routing/routing-ids.ts) | No | 100% |
 | [type-routing.ts](src/app/weld-record/routing/on-signoff/type-routing.ts) | No | 100% |
 

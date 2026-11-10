@@ -136,10 +136,13 @@ src/app/
                            field-choices: which of those each admin screen offers, and the fields generated per routing
                            (routing answers 'step.<stageId>.<key>', This routing 'self.<key>', a routing's Type). The Fabrication form
                            builds its own fields from fabrication/fabrication-fields.ts; the catalog only maps them in
+    conditions/            The "any rule, all clauses" joint condition shared by Routing Settings, Signoff Type to
+                           Routing, Attribute Code Exceptions and Qualifications: joint-conditions (the model and
+                           conditionsMatch()), condition-text (the plain-words summaries)
     routing/               Everything that decides where a joint is and where it goes (see ROUTING.md).
                            Top level, a joint's routing: build-stages (which routings a joint gets, from the
-                           templates + Included when), routing-conditions (Included when / reject rules: the model
-                           and matching), routing-settings-rules (the live Routing Settings rows with Type options,
+                           templates + Included when), route-to-rules (Reject routes to / Then go to: first matching
+                           rule picks the destination), routing-settings-rules (the live Routing Settings rows with Type options,
                            and the checks before a Routing Settings save), current-routing (the current routing, locking), routing-ids (what routing ids look
                            like: NQC twins, repair rounds), built-in-routing-rules (every fixed rule tied to one
                            built-in routing), ndt (which NDT routings a joint gets), routing-persona (persona),
@@ -212,7 +215,7 @@ src/app/
       sync.service.ts      Online/offline + pending-sync count (stubbed)
     admin/
       admin-routing/         Admin → Routing Settings (stage templates per trade): Order (drag), Included when
-                             and reject rules (weld-record/routing/routing-conditions.ts; clause ops is / is not / contains,
+                             and reject rules (weld-record/conditions/joint-conditions.ts; clause ops is / is not / contains,
                              compared trimmed, any case; fields = Joint Details + 'step.<stageId>.<key>'
                              routing answers of earlier routings, built from the templates routing/routing-settings-rules.ts
                              registers via registerStepTemplates(); 'self.<key>' in reject rules),
@@ -419,7 +422,7 @@ src/app/
 
 Pre-Fit (conditional) → Fit → Tack → Fit-Up Insp → Fit-Up Release (conditional) → Deferred Tack (conditional) → Root → Root NDT → Layer → Layer NDT → Final Weld → Final NDT → **O63 Records Review** *or* **O04 Records Review** → Sold. Repair (and Excavation NDT) rounds are inserted at runtime after a failed NDT stage.
 
-Each phase's NDT is 1–3 stages from the `ndtStage(phase, kind)` templates, in 5X/VT → MT/PT → RT/UT order, chosen per job by each routing's Included when rules (`weld-record/routing/routing-conditions.ts`; see "NDT routing" under Data patterns, and ROUTING.md's chart).
+Each phase's NDT is 1–3 stages from the `ndtStage(phase, kind)` templates, in 5X/VT → MT/PT → RT/UT order, chosen per job by each routing's Included when rules (`weld-record/conditions/joint-conditions.ts`; see "NDT routing" under Data patterns, and ROUTING.md's chart).
 
 Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-record/routing/build-stages.ts`, via each Review's Admin > Routing Settings condition) from the job's own data — never both: **O63** (`review-o63`) when any of `job.sfff`, `job.dssAaa`, `job.ss` is set; **O04** (`review-o04`) otherwise.
 - Both share identical fields/behavior — only the id/label differ. Their `rejectToStage: 'final-ndt-vt5x'` is kept so UNSAT can be signed (an UNSAT with no reject target is a sign error); UNSAT doesn't route anywhere (see "NDT routing").
@@ -440,7 +443,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
 - **Is Pipe Welding**: route `/pipe-search`, menu entry Pipe Welding, heading Pipe Welding, banner target `pipe-welding` (a banner saved for `advanced-search` loads as `pipe-welding`), CSV `pipe-welding.csv`. Code names (`adaptive-search`, `AdaptiveSearchComponent`, `STORAGE.advancedSearchState`) are unchanged.
 - **Pipe Welding plus the adaptive tools**. Layout is Pipe Welding's `table-page-wrap`. Has everything Pipe Welding has: role droplist (same "current routing's role" filter, `View All`), keyword search over XREFID/hull/drawing/joint/order/sequence, `appSortHeader` sort + filter in every column heading (multiselect for list fields, text box for text, sort only for numbers/dates), checkbox select + Release to Welding (Foreman, Fit-Up Release rows), History + Details buttons, banner pill.
 - **Fields** (`searchFields()` in `weld-record/adaptive-search/filter-schema.ts`): one list used for both filters and columns.
-  - Every `Job` field (incl. Ship), Current routing, every Fabrication field (`fab.<key>`, select values shown as labels), and every Welding routing's own answers (`step.<stageId>.<key>`, from `allStepAnswerFields()` in `routing-conditions.ts`, same fields Admin > Routing Settings conditions use; blank until that routing is signed).
+  - Every `Job` field (incl. Ship), Current routing, every Fabrication field (`fab.<key>`, select values shown as labels), and every Welding routing's own answers (`step.<stageId>.<key>`, from `allStepAnswerFields()` in `catalogs/field-choices.ts`, same fields Admin > Routing Settings conditions use; blank until that routing is signed).
   - Built when the screen opens since routing templates are admin-editable. Rows are built by `buildRow()`; fabrication/routing values are only worked out for keys a column, filter or sort uses (there are a lot of routing fields).
 - **Stacked conditions**: filter values are `Record<fieldKey, Condition[]>`; each field in the bar shows its conditions (operator droplist + value) and "Add condition".
   - Operators: text `contains / does not contain / is / is not / starts with / is blank / is not blank`; list fields `is / is not` (multiselect of the values present) plus contains/does not contain/blank; numbers and dates `between / greater than (after) / less than (before)`.
@@ -766,7 +769,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
   - Code that reads the phase or method from a routing id uses `baseStepId()`; code that jumps to a built-in routing (`${phase}-ndt-utrt`, reject targets) goes through `stepOnJoint()`, which finds whichever twin the joint has.
   - Excavation NDT's NQC Inspector role is still set in code (`excavationNdtStageFor()`).
   - **Display Name** (`StageTemplate.displayName`, Routing Settings column): `buildStages()` sets the joint's `label` to `displayName || label`, so the joint, routing bar, Pipe Welding and History show it; the Routing name (`label` on the template) is what rules and condition fields use.
-- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `routing-conditions.ts`, and starting Type enable rules in `data/signoff-type-routing.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
+- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `conditions/joint-conditions.ts`, and starting Type enable rules in `data/signoff-type-routing.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
   - The general `job.ndt` field doesn't drive routing.
   - Root and Final, in 5X/VT, MT/PT, RT/UT order: **VT is always required**, or 5X instead when the NDT value is 5X; MT, PT or UT adds that routing offering only that method; MT/PT adds the MT/PT routing with a choice; an **RT degree** (10/100/360/60/75, not blank or NA) adds the RT/UT routing offering only RT.
   - Layer gets one routing selected by `ndtEach`: VT/5X or MT/PT, with no additional VT. Layer has no RT/UT routing (`PHASE_NDT_KINDS`, `routing-ids.ts`), so NDT Each takes no UT (`NDT_EACH_VALUES`). Blank NDT Each Layer means no Layer NDT.
@@ -806,7 +809,7 @@ Rules in plain language: ROUTING.md "Deviations".
   - `deprogressWorkflow()` marks an open deviation `withdrawn` when its hold stage is gone.
 - **Release** (`DeviationService.disposition(job, comments, targetId)`, from `weld-record/engineering-release/engineering-release.component.ts`, which the signoff panel shows on an unsigned hold routing instead of Signoff; Pipe Welding's role droplist has `Engineering` (in `ROLES`) to list held joints): signs every unsigned hold (who Engineering, inputs `comments`/`routeTo`), sets open deviations `dispositioned` with `disposition`, writes a 'Deviation' History entry, then `RoutingService.moveWithHistory()` (shared with Admin > Routing Override; `moveRouting()` in weld-record/routing/on-signoff/route-changes.ts: back = `routeBack()`, forward = `setRoutingFrom()`, clears undo).
   - Both entries record routing "Engineering Hold" (`withHistory()`'s optional `routing`).
-- **Reject-rule hold**: reject target `ENGINEERING_HOLD_TARGET` ('engineering-hold', routing-conditions.ts) makes `routeSignoff()` call `insertEngineeringHold(stages, id, rejectHoldReason(st, rule))` instead of Repair/route-back; the hold's `inputs.holdReason` drives `holdNote()` when no deviation is open, and `disposition()` releases it without one ('Sign-off' History entry).
+- **Reject-rule hold**: reject target `ENGINEERING_HOLD_TARGET` ('engineering-hold', routing/route-to-rules.ts) makes `routeSignoff()` call `insertEngineeringHold(stages, id, rejectHoldReason(st, rule))` instead of Repair/route-back; the hold's `inputs.holdReason` drives `holdNote()` when no deviation is open, and `disposition()` releases it without one ('Sign-off' History entry).
   - Built-in `DEFAULT_REJECT_RULES` on the three NDT MT/PT routings (PT + that phase's weld routing GMAW); `rejectRulesEdited` on a saved template says Admin > Routing Settings saved its rules, otherwise the built-in ones apply (so older saves pick them up).
 - **Seeds**: `seededWorkflow()` puts ~5 joints (`SEEDED_HOLD_EVERY`, last signed routing a welding routing) on hold via `seededDeviation()`: Actual PH Max = PH Max + 15.
 - Not covered: Work History's Correct can still change an Actual PH/IP after signing without a deviation.
@@ -914,7 +917,7 @@ Verified the shared admin grid with 506 passing ChromeHeadless tests, production
 
 ## General inspection routing facts
 
-`routing/inspection-context.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `routing-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
+`routing/inspection-context.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `conditions/joint-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
 
 Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
 

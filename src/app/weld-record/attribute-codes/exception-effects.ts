@@ -4,7 +4,7 @@
    are re-checked as the joint is signed (route-changes.ts applySignedFlags). */
 import { Job } from '../../data/jobs';
 import { StageOption, StageTemplate, WorkflowStage } from '../model/workflow-types';
-import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/routing-conditions';
+import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
 import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/routing-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';

@@ -2,7 +2,7 @@
 import { routingRole } from './routing-persona';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes/exception-effects';
 import { Job } from '../../data/jobs';
-import { conditionsMatch, usesStepAnswers } from './routing-conditions';
+import { conditionsMatch, usesStepAnswers } from '../conditions/joint-conditions';
 import { JobWorkflow, StageTemplate, WorkflowStage } from '../model/workflow-types';
 import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
 import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';

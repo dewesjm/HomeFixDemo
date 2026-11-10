@@ -6,7 +6,8 @@ import { JOBS, Job } from '../../data/jobs';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 import { getJointDesign } from '../../data/joint-designs';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from './routing-ids';
-import { describeConditions, conditionsMatch } from './routing-conditions';
+import { conditionsMatch } from '../conditions/joint-conditions';
+import { describeConditions } from '../conditions/condition-text';
 import { DEFAULT_STEP_CONDITIONS } from '../../data/welding-steps';
 import { stepAnswerFieldsBefore } from '../catalogs/field-choices';
 

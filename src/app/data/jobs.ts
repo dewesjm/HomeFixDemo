@@ -123,7 +123,7 @@ export const N_IND_MEANINGS: Record<string, string> = {
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see routing inclusion conditions and Type enable conditions in
-   weld-record/routing/routing-conditions.ts and data/signoff-type-routing.ts). Blank and NA aren't valid. */
+   weld-record/conditions/joint-conditions.ts and data/signoff-type-routing.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* NDT Each Layer has no UT: Layer has no RT/UT routing */
 export const NDT_EACH_VALUES = NDT_REQUIREMENT_VALUES.filter(v => v !== 'UT');

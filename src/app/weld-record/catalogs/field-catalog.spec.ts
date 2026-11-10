@@ -13,7 +13,7 @@ import { clauseChoices } from '../admin/admin-signoff-type-definition/condition-
 import { conditionFieldGroups } from '../admin/admin-routing/condition-editing';
 import { recheckFabricationRules } from '../routing/on-signoff/route-changes';
 import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
-import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/routing-conditions';
+import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
 
 const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], trade: 'Welding', ...more });
 const stage = { id: 'tack', signed: false, inputs: {}, signoffInputs: {}, inspectionType: '', result: null } as unknown as WorkflowStage;

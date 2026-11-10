@@ -4,7 +4,7 @@
    weld-record/signoff-definition/signoff-type-routing-rules.ts. */
 import { STORAGE } from './storage-keys';
 import { TypeException } from '../weld-record/signoff-definition/type-exceptions';
-import { ConditionRule } from '../weld-record/routing/routing-conditions';
+import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { NDT_KINDS } from '../weld-record/routing/ndt';
 import { PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
 import { WELD_BUILDUP_TYPE, signoffTypesVersion } from './signoff-types';

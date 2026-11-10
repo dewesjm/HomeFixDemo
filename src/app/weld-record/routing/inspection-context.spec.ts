@@ -1,5 +1,5 @@
 import { InspectionContextStage, originalInspectionType, performedInspectionType } from './inspection-context';
-import { conditionsMatch } from './routing-conditions';
+import { conditionsMatch } from '../conditions/joint-conditions';
 import { stageConditionFields } from '../catalogs/field-choices';
 import { JOBS } from '../../data/jobs';
 
