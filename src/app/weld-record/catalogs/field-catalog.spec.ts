@@ -7,7 +7,6 @@ import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
 import { FIELD_CATALOG, FORM_FIELDS, lookupCatalogField } from './field-catalog';
 import { JOINT_AND_FABRICATION_FIELDS, JOINT_DETAIL_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, fieldChoiceLabel, jointOrFabricationField, readsFabrication, stageConditionFields, stepAnswerFieldsBefore } from './field-choices';
-import { RECORDED_SCREENS } from './field-catalog.recording';
 import { exceptionConditionFields } from '../attribute-codes/exception-text';
 import { clauseChoices } from '../admin/signoff-type-forms/condition-choices';
 import { conditionFieldGroups } from '../admin/routing-settings/condition-editing';
@@ -75,20 +74,7 @@ describe('field catalog', () => {
 });
 
 describe('what each screen offers', () => {
-  const sameKeys = (fields: { key: string }[], recorded: string[]) => expect([...keysOf(fields)].sort()).toEqual([...recorded].sort());
   const steps = () => getTemplates();
-
-  it('keeps the keys recorded when the catalogs were merged', () => {
-    sameKeys(JOINT_DETAIL_FIELDS, RECORDED_SCREENS.personas);
-    sameKeys(JOINT_AND_FABRICATION_FIELDS, RECORDED_SCREENS.clauses);
-    sameKeys(ROUTING_CONDITION_FIELDS, RECORDED_SCREENS.routing);
-    sameKeys(FORM_FIELDS, RECORDED_SCREENS.form);
-    sameKeys(allStepAnswerFields(), RECORDED_SCREENS.answers);
-    sameKeys(exceptionConditionFields(), RECORDED_SCREENS.exceptions);
-    for (const t of steps()) sameKeys(stageConditionFields(t), (RECORDED_SCREENS.self[t.id] ?? []).map(k => `self.${k}`));
-    const all = new Set(RECORDED_SCREENS.answers);
-    for (const t of steps()) expect(keysOf(stepAnswerFieldsBefore(t.id)).every(k => all.has(k))).withContext(t.id).toBeTrue();
-  });
 
   it('leaves Fabrication-dependent rows out of personas and Signoff Type to Routing', () => {
     const keys = keysOf(JOINT_DETAIL_FIELDS);

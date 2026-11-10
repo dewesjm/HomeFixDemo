@@ -5,7 +5,7 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { featureToggles } from './data/feature-toggles';
-import { PipeWeldingClassicComponent } from './weld-record/pipe-welding-classic/pipe-welding-classic.component';
+import { PipeWeldingClassicComponent } from './weld-record/future/pipe-welding-classic/pipe-welding-classic.component';
 import { HistoryComponent } from './weld-record/history/history.component';
 import { PipeWeldingComponent } from './weld-record/pipe-welding/pipe-welding.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
@@ -33,7 +33,7 @@ import { AdminFeatureTogglesComponent } from './weld-record/admin/feature-toggle
 import { ChangelogComponent } from './changelog/changelog.component';
 import { AdminQualificationsComponent } from './weld-record/admin/qualifications/qualifications.component';
 import { MakeupComponent } from './weld-record/makeup/makeup.component';
-import { MyAssignmentsComponent } from './weld-record/my-assignments/my-assignments.component';
+import { MyAssignmentsComponent } from './weld-record/future/my-assignments/my-assignments.component';
 import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
 import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
 import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detail.component';

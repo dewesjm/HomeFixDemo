@@ -2,28 +2,28 @@
 /* Switched off: Pipe Welding is now the Advanced Search page. This classic table opens at
    /pipe-search-classic only while the Classic Pipe Welding page feature toggle is on; kept so it can
    be turned back on without a rewrite. */
-import { bannerFor } from '../../data/banner';
-import { STORAGE } from '../../data/storage-keys';
+import { bannerFor } from '../../../data/banner';
+import { STORAGE } from '../../../data/storage-keys';
 import { Component, computed, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideX } from '@lucide/angular';
 
-import { SortHeaderComponent } from '../../shared/sort-header.component';
-import { TablePagerComponent } from '../../shared/table-pager.component';
-import { TableState, inArray } from '../../shared/table-state';
-import { downloadCsv } from '../../shared/export-csv';
+import { SortHeaderComponent } from '../../../shared/sort-header.component';
+import { TablePagerComponent } from '../../../shared/table-pager.component';
+import { TableState, inArray } from '../../../shared/table-state';
+import { downloadCsv } from '../../../shared/export-csv';
 
 import {
   JOBS, Job
-} from '../../data/jobs';
-import { SignoffService } from '../services/signoff.service';
-import { WorkflowStore } from '../services/workflow-store.service';
-import { currentRoutingLabel, activeStage } from '../routing/current-routing';
-import { ROLES, DEFAULT_ROLE, type Role } from '../model/roles';
-import { BannerPillComponent } from '../../shared/banner-pill.component';
-import { jointRoute } from '../joint-page/joint-route';
+} from '../../../data/jobs';
+import { SignoffService } from '../../services/signoff.service';
+import { WorkflowStore } from '../../services/workflow-store.service';
+import { currentRoutingLabel, activeStage } from '../../routing/current-routing';
+import { ROLES, DEFAULT_ROLE, type Role } from '../../model/roles';
+import { BannerPillComponent } from '../../../shared/banner-pill.component';
+import { jointRoute } from '../../joint-page/joint-route';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
