@@ -10,7 +10,7 @@ import { JOINT_AND_FABRICATION_FIELDS, JOINT_DETAIL_FIELDS, ROUTING_CONDITION_FI
 import { RECORDED_SCREENS } from './field-catalog.recording';
 import { exceptionConditionFields } from '../attribute-codes/exception-text';
 import { clauseChoices } from '../admin/admin-signoff-type-forms/condition-choices';
-import { conditionFieldGroups } from '../admin/admin-routing/condition-editing';
+import { conditionFieldGroups } from '../admin/admin-routing-settings/condition-editing';
 import { recheckFabricationRules } from '../routing/route-changes';
 import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';

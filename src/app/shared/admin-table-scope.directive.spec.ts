@@ -21,7 +21,7 @@ describe('Admin table grid presentation', () => {
     fixture.detectChanges();
     const router = TestBed.inject(Router);
     const host: HTMLElement = fixture.nativeElement;
-    for (const url of ['/admin/routing', '/weld-planning/admin', '/weld-engineering/admin/sections']) {
+    for (const url of ['/admin/routing-settings', '/weld-planning/admin', '/weld-engineering/admin/sections']) {
       await router.navigateByUrl(url); fixture.detectChanges();
       expect(host.querySelector('main')!.classList.contains('admin-table-scope')).toBeTrue();
       for (const cell of Array.from(host.querySelectorAll('th, td'))) {

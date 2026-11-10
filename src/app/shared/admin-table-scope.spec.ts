@@ -6,7 +6,7 @@ describe('Admin table route scope', () => {
       '/weld-engineering/admin/sections', '/weld-engineering/admin/abc/edit', '/admin;mode=edit/routing?tab=2'])
       expect(isAdminTableUrl(url)).withContext(url).toBeTrue();
     for (const url of ['/pipe-search', '/jobs/abc', '/weld-planning', '/weld-engineering',
-      '/administration', '/jobs/abc?return=/admin/routing', '/history#admin'])
+      '/administration', '/jobs/abc?return=/admin/routing-settings', '/history#admin'])
       expect(isAdminTableUrl(url)).withContext(url).toBeFalse();
   });
 });

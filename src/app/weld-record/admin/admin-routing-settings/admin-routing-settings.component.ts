@@ -64,20 +64,20 @@ interface RoutingRow {
 }
 
 @Component({
-  selector: 'app-admin-routing',
+  selector: 'app-admin-routing-settings',
   standalone: true,
   imports: [RoutingDescriptionComponent, PersonaRulesComponent, AttributeCodeNoteComponent, TableToolbarComponent,
     CommonModule, FormsModule, SortHeaderComponent, TooltipDirective,
     LucidePencil, LucideCheck, LucideX,
     LucideTrash2, LucideArrowUp, LucideArrowDown, LucideFilter, LucidePlus, LucideGitBranch, LucideGripVertical
   ],
-  templateUrl: './admin-routing.component.html',
+  templateUrl: './admin-routing-settings.component.html',
   styles: [`
     tr.drop-above td { box-shadow: inset 0 2px 0 currentColor; }
     tr.drop-below td { box-shadow: inset 0 -2px 0 currentColor; }
   `]
 })
-export class AdminRoutingComponent {
+export class AdminRoutingSettingsComponent {
   roleOptions = computed(() => {
     const used = new Set<string>();
     for (const t of getTemplates()) {

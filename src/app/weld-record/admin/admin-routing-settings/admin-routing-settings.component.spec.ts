@@ -4,7 +4,7 @@ import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
 import { insertionTarget } from '../../routing/inserted-routing/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
-import { AdminRoutingComponent } from './admin-routing.component';
+import { AdminRoutingSettingsComponent } from './admin-routing-settings.component';
 import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { buildStages } from '../../routing/build-stages';
@@ -17,7 +17,7 @@ describe('Routing Settings rules editor', () => {
       { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', rejectToStage: '' },
     ]));
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
     host.querySelector<HTMLButtonElement>('[aria-label="View or edit description for Pre-Fit"]')!.click();
@@ -29,7 +29,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('starts reordering only from the grip button and disables the handle while editing', () => {
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     fixture.detectChanges();
     const editor = fixture.componentInstance;
     const host: HTMLElement = fixture.nativeElement;
@@ -53,7 +53,7 @@ describe('Routing Settings rules editor', () => {
   });
 
   it('opens descriptions from routing names, saves multiline text, cancels edits and clears saved text', fakeAsync(() => {
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
     const open = () => {
@@ -83,12 +83,12 @@ describe('Routing Settings rules editor', () => {
     expect(getTemplates().find(t => t.id === 'repair')!.description).toBe('');
     fixture.destroy();
   }));
-  let component: AdminRoutingComponent;
+  let component: AdminRoutingSettingsComponent;
   beforeEach(() => {
     localStorage.clear();
     setSignoffTypes(getSignoffTypes());
-    TestBed.configureTestingModule({ imports: [AdminRoutingComponent], providers: [provideRouter([])] });
-    component = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
+    TestBed.configureTestingModule({ imports: [AdminRoutingSettingsComponent], providers: [provideRouter([])] });
+    component = TestBed.runInInjectionContext(() => new AdminRoutingSettingsComponent());
   });
   afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setSignoffTypes(getSignoffTypes()); });
 
@@ -96,7 +96,7 @@ describe('Routing Settings rules editor', () => {
   it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
     updateStageTemplate('repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     const editor = fixture.componentInstance;
     editor.openThenRules(editor.rows().find(r => r.id === 'repair')!);
     fixture.detectChanges(); tick(); fixture.detectChanges();
@@ -110,7 +110,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('edits variant applicability with save, cancel and reopened stored settings', fakeAsync(() => {
-    const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent); fixture.detectChanges();
     const editor = fixture.componentInstance;
     const host: HTMLElement = fixture.nativeElement;
     expect(host.textContent).toContain('Inserted routings are unplanned work');
@@ -126,7 +126,7 @@ describe('Routing Settings rules editor', () => {
 
   it('shows insertion sources and opens their owning rule including its editable fallback', fakeAsync(() => {
     addStageTemplate({ id: 'test-inspection', label: 'Test inspection', role: 'Inspector', rejectToStage: 'repair' });
-    const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent); fixture.detectChanges();
     const editor = fixture.componentInstance;
     const host: HTMLElement = fixture.nativeElement;
     const button = host.querySelector<HTMLButtonElement>('[aria-label="Edit Test inspection: UNSAT"]')!;
@@ -149,7 +149,7 @@ describe('Routing Settings rules editor', () => {
     addStageTemplate({ id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
     updateStageTemplate('extra', { status: 'active' });
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     fixture.detectChanges();
     const editor = fixture.componentInstance;
     const row = editor.rows().find(r => r.id === 'fit')!;
@@ -177,7 +177,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('renders inserted routing names without setup text or cross-links, saves a draft and cancels edits', fakeAsync(() => {
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
+    const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
     const add = Array.from(host.querySelectorAll('button')).find(b => b.textContent?.trim() === 'Add inserted routing')!;
@@ -232,7 +232,7 @@ describe('Routing Settings rules editor', () => {
     component.startEdit(row);
     component.updateField(row, 'routing', 'Renamed inspection');
     component.saveEdit(component.rows().find(r => r.id === row.id)!);
-    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
+    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingSettingsComponent());
     row = reopened.rows().find(r => r.id === row.id)!;
     expect(row.routing).toBe('Renamed inspection');
     expect(row.sequence).toBe(0);
@@ -283,7 +283,7 @@ describe('Routing Settings rules editor', () => {
     const saved = component.rows().find(row => row.routing === 'Extra review')!;
     expect(saved.sequence).toBe(next);
     expect(component.sectionRows(false).at(-1)!.id).toBe(saved.id);
-    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingComponent());
+    const reopened = TestBed.runInInjectionContext(() => new AdminRoutingSettingsComponent());
     expect(reopened.rows().find(row => row.routing === 'Extra review')!.sequence).toBe(next);
     expect(reopened.rows().filter(row => !reopened.isAdded(row)).map(row => row.sequence))
       .toEqual(Array.from({ length: next }, (_, index) => index + 1));
