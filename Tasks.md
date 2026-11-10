@@ -15,7 +15,7 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 Queued in AGENTS.md, in this order.
 
-- [ ] **Remove old migrations:** code that converts saved data from an older shape, once saved data no longer needs it: `routing/repair-confirmation-migration.ts`, `signoff-definition/repair-confirmation-migration.ts`, `routing/inspection-context-migration.ts`, `signoff-definition/condition-catalog-migration.ts`, `renameSavedFabricationLabels` in `fabrication/fabrication-fields.ts`, and the older load-time conversions in `services/workflow-store.service.ts` and `qualifications/qual-conditions.ts`.
+- [ ] **Remove old migrations:** code that converts saved data from an older shape, once saved data no longer needs it: `signoff-definition/condition-catalog-migration.ts`, `renameSavedFabricationLabels` in `fabrication/fabrication-fields.ts`, and the older load-time conversions in `qualifications/qual-conditions.ts`. These stay until saved data is reset; under review with the user.
 - [ ] **Leftovers evaluation:** a larger pass over the app for leftovers and code that isn't needed. Report findings before removing anything.
 - [ ] **File purpose:** check that every file states its purpose at the top, and add it where it's missing.
 - [ ] **Routing folder size:** `weld-record/routing/` has grown very large. Review it and propose how to break it up.

@@ -874,8 +874,6 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 
 `admin/admin-routing/insertion-triggers.ts` derives insertion sources from the saved accepted/reject rules and fallback targets. The Included when cell uses this list to open the owning source editor; automatic deviation holds remain read-only. Reject fallback changes share the dialog's save/cancel boundary. PersonaRulesComponent edits the ordered rules and base persona in one transaction; parent refresh merges persona changes without losing other row edits.
 
-`routing/repair-confirmation-migration.ts` upgrades saved single-field routing conditions into indicator-specific alternatives while retaining rule order, destinations and other clauses. `signoff-definition/repair-confirmation-migration.ts` upgrades saved form fields with their customization and indicator visibility. These are load-time compatibility transforms, persisted on the next configuration save. They do not reset caches or alter historical signoff values.
-
 ### Excavation variants
 
 `routing/excavation-definition.ts` resolves Add Excavation NDT using active specialized definitions and their Included when conditions. Exactly one must match: indicators 1/2 select `nqc-excavation-ndt`, indicator 3 selects `excavation-ndt` by default. Both have independent persona, destination and Type-source/exception settings. Runtime IDs preserve the definition prefix and parent Repair round; round helpers, route-back and persistence support both. History retains the NQC label; the bar uses the configured display name. Workflow version 2.10.57 resets demo caches on first upgrade load.
@@ -905,7 +903,7 @@ Verified the shared admin grid with 506 passing ChromeHeadless tests, production
 
 `routing/inspection-context.ts` resolves original inspection Type from a Repair round or an ordinary insertion’s captured context, and performed Type from the stage’s selected Type. `step-conditions.ts` exposes these virtual facts as labeled condition choices. Excavation’s accepted destination rules use the facts directly. The PT-to-5X marker is no longer generated or kept through blanking/Type changes.
 
-`inspection-context-migration.ts` translates saved boolean exception conditions, including negative/alternative operators, while preserving priority, destinations and other clauses. `stage-templates.ts` applies that configuration compatibility alongside Repair confirmation compatibility. Version 2.10.60 follows the existing demo cache-reset policy for changed routing definitions. Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
+Existing own-Repair links provide original context after signoff, reload, route-back and Deprogress without adding another persisted fact.
 
 Type Exceptions is a combined inline-edit grid with a Routing column. Exception ordering is per routing; left arrows and grip-only drag persist that order. Type source is stored on the routing row and is read-only in both Signoff Type to Routing grids; no admin control changes it, and a re-added Excavation row starts on Rejecting inspection. Exception saves preserve each routing�s source and available Types.
 

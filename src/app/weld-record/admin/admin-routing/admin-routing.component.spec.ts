@@ -93,33 +93,6 @@ describe('Routing Settings rules editor', () => {
   afterEach(() => { resetStepFieldConfig(); localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });
 
 
-  it('opens saved inspection exception rules as original/performed conditions and saves the general facts', fakeAsync(() => {
-    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [{ id: 'excavation-ndt', label: 'Excavation NDT',
-      required: true, role: 'Inspector', rejectToStage: 'own-repair', thenRules: [
-        { when: [{ field: 'self.typeChangedFromPtTo5x', op: 'is', values: ['yes'] }], to: 'rejecting-vt5x' },
-        { when: [], to: 'rejecting-ndt' },
-      ] }] }));
-    setSignoffTypeRows(getSignoffTypeRows());
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
-    const editor = fixture.componentInstance;
-    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:excavation-ndt')!);
-    fixture.detectChanges(); tick(); fixture.detectChanges();
-    const host: HTMLElement = fixture.nativeElement;
-    const selects = Array.from(host.querySelectorAll<HTMLSelectElement>('dialog select'));
-    const selectedLabels = selects.map(s => s.selectedOptions[0]?.textContent);
-    expect(selectedLabels.some(s => s?.includes('Original rejecting inspection Type'))).toBeTrue();
-    expect(selectedLabels.some(s => s?.includes('Performed inspection Type'))).toBeTrue();
-    expect(host.textContent).not.toContain('Type was changed to 5X from PT');
-    const rule = editor.rejRules()[0];
-    expect(rule.when.map(c => c.values)).toEqual([['pt'], ['5x']]);
-    Array.from(host.querySelectorAll<HTMLButtonElement>('dialog button')).find(b => b.textContent!.trim() === 'Save Then go to rules')!.click();
-    fixture.detectChanges();
-    expect(localStorage.getItem(STORAGE.stageTemplates)).not.toContain('self.typeChangedFromPtTo5x');
-    expect(getTemplates()['Welding'].find(t => t.id === 'excavation-ndt')!.thenRules![0].when.map(c => c.field))
-      .toEqual(['self.originalInspectionType', 'self.performedInspectionType']);
-    fixture.destroy();
-  }));
-
   it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
     updateStageTemplate('Welding', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
@@ -148,26 +121,6 @@ describe('Routing Settings rules editor', () => {
     editor.toggleValue(0, 0, '2'); button('Save conditions').click(); fixture.detectChanges();
     expect(getTemplates()['Welding'].find(t => t.id === 'nqc-excavation-ndt')!.includeWhen![0][0].values).toEqual(['1']);
     open(); expect(editor.condRules()[0][0].values).toEqual(['1']);
-    fixture.destroy();
-  }));
-
-  it('opens saved thickness rules with valid selected fields rather than an empty selector', fakeAsync(() => {
-    resetStepFieldConfig();
-    localStorage.setItem(STORAGE.stepFieldConfig, JSON.stringify([{ typeId: 'repair', fields: [{ key: 'repairType' }, { key: 'allowableThicknessExceeded' }] }]));
-    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [{ id: 'repair', label: 'Repair', required: true, role: 'Foreman', rejectToStage: '', thenRules: [{ when: [{ field: 'self.allowableThicknessExceeded', op: 'is', values: ['yes'] }], to: 'rejecting-utrt' }] }] }));
-    setSignoffTypeRows(getSignoffTypeRows());
-    const fixture = TestBed.createComponent(AdminRoutingComponent);
-    const editor = fixture.componentInstance;
-    const row = editor.rows().find(r => r.id === 'Welding:repair')!;
-    expect(row.thenRules.join(' ')).toContain('Allowable thickness');
-    expect(row.thenRules.join(' ')).not.toContain('self.allowableThicknessExceeded');
-    editor.openThenRules(row); fixture.detectChanges(); tick(); fixture.detectChanges();
-    const selectedLabels = Array.from(fixture.nativeElement.querySelectorAll('dialog select') as NodeListOf<HTMLSelectElement>).map(select => select.selectedOptions[0]?.textContent);
-    expect(selectedLabels.some(label => label?.includes('Nuclear Indicator 1'))).toBeTrue();
-    expect(selectedLabels.some(label => label?.includes('Nuclear Indicators 2/3'))).toBeTrue();
-    expect(editor.rejectRulesValid()).toBeTrue();
-    editor.saveRejectRules();
-    expect(localStorage.getItem(STORAGE.stageTemplates)).not.toContain('"self.allowableThicknessExceeded"');
     fixture.destroy();
   }));
 

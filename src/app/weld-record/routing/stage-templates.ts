@@ -1,6 +1,4 @@
-import { migrateInspectionContextRules } from './inspection-context-migration';
 import { insertedDefinitionId } from './instance-identity';
-import { migrateRepairConfirmationRules } from './repair-confirmation-migration';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { addedRoutingSetup, routingNameError } from './added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
@@ -83,8 +81,8 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
     lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
     role: s.role ?? '', roleRules: s.roleRules ?? builtIn?.roleRules ?? [], includeWhen: s.includeWhen,
-    rejectRules: migrateInspectionContextRules(migrateRepairConfirmationRules(s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules)),
-    thenRules: migrateInspectionContextRules(migrateRepairConfirmationRules(s.thenRules ?? builtIn?.thenRules ?? [])),
+    rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
+    thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,
   };
 }

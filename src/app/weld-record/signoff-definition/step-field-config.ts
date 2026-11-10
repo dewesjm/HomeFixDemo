@@ -5,7 +5,6 @@ import { repairCodesVersion } from '../../data/repair-codes';
    reads the definition of the Type it is being signed as, including Excavation NDT. Live overrides are stored in
    localStorage and take effect immediately. */
 import { STORAGE } from '../../data/storage-keys';
-import { migrateRepairConfirmationForm } from './repair-confirmation-migration';
 import { migrateConditionClauses } from './condition-catalog-migration';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from '../catalogs/field-catalog';
@@ -89,7 +88,7 @@ const tackFiller: FieldCondition = {
 };
 
 /* an item that shares the line of the item before it; written by the seed shorthand `same` below and
-   by saves from before line numbers, and turned into line numbers by numberLines() */
+   turned into line numbers by numberLines() */
 type SameLineItem = FieldActivation & { sameLine?: boolean };
 
 /* every item without a line number gets one: the line of the item before when it's marked to share
@@ -213,20 +212,11 @@ export const stepFieldConfigVersion = () => version + repairCodesVersion() * 1_0
 
 let _cache: TypeDefinition[] | null = null;
 
-/* Upgrade only the previous default visibility rule; retain customized conditions. */
-function migrateRootInspectionQuestion(definition: TypeDefinition): TypeDefinition {
-  const oldRule = { all: [{ source: 'jointDetail', key: 'ndtRoot', equals: '5X' }] };
-  const fields = definition.fields.map(field =>
-    definition.typeId === 'root' && field.key === 'performed5x'
-      && JSON.stringify(field.showIf) === JSON.stringify(oldRule)
-      ? { ...field, showIf: ndtRootInspection } : field);
-  return { ...definition, fields: numberLines(fields) };
-}
 export function getStepFieldConfig(): TypeDefinition[] {
   if (_cache) return _cache;
   try {
     const saved = localStorage.getItem(STORAGE.stepFieldConfig);
-    _cache = saved ? migrateConditionClauses(JSON.parse(saved) as TypeDefinition[]).map(migrateRepairConfirmationForm).map(migrateRootInspectionQuestion) : DEFAULT_TYPE_DEFINITIONS;
+    _cache = saved ? migrateConditionClauses(JSON.parse(saved) as TypeDefinition[]) : DEFAULT_TYPE_DEFINITIONS;
   } catch {
     _cache = DEFAULT_TYPE_DEFINITIONS;
   }

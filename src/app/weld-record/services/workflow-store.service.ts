@@ -117,10 +117,7 @@ export class WorkflowStore {
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       /* backfill old/partial records so reads don't throw */
       for (const wf of Object.values(parsed)) {
-        /* saved before the field was named references */
-        const saved = wf as JobWorkflow & { attachments?: JobWorkflow['references'] };
-        wf.references ??= saved.attachments ?? [];
-        delete saved.attachments;
+        wf.references ??= [];
         wf.history ??= [];
         renameSavedFabricationLabels(wf.history);
         wf.fabricationData ??= {};
@@ -134,12 +131,6 @@ export class WorkflowStore {
           wf.fabricationData = seedFabricationData(job);
         }
 
-        for (const stage of [...wf.stages, ...(wf.undo ?? []).flatMap(u => u.stages)]) {
-          const legacy = stage as typeof stage & { fields?: unknown; signoffFields?: unknown; swapStageId?: unknown };
-          delete legacy.fields;
-          delete legacy.signoffFields;
-          delete legacy.swapStageId;
-        }
         wf.stages.forEach(s => {
           s.inputs ??= {};
           s.signoffInputs ??= {};
@@ -151,15 +142,14 @@ export class WorkflowStore {
           s.signoffType ??= 'standard';
           s.role ??= '';
         });
-        /* v3 migration: rebuild stages if they have filler IDs or are missing current template stages */
+        /* rebuild the stages if the joint has one its templates no longer do */
         if (job) {
-          const hasFillers = wf.stages.some(s => /^extra-\d+$/.test(s.id) || /^Check \d+$/.test(s.label));
           /* a stage id the trade's templates no longer have; Repair, Excavation NDT and Repeat copies
              are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
           const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
             && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion && !/-r\d+$/.test(s.id));
-          if (hasFillers || missingStages) {
+          if (missingStages) {
             const oldStages = wf.stages;
             const newStages = buildStages(job);
             const oldMap = new Map(oldStages.map(s => [s.id, s]));
