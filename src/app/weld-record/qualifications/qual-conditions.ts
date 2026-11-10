@@ -10,22 +10,17 @@
    - "when User is <person>, holds <quals>" (a When of just that one clause): the quals that person holds. There's no login, so the
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
-   This is the only place quals are required or held. */
+   This is the only place quals are required or held. The rows, their starting values, load and save
+   are in data/qualifications.ts; this file keeps the live rows and the rules that read them. */
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { computed, signal } from '@angular/core';
-import { STORAGE } from '../../data/storage-keys';
+import { QualCondition, SELF, USER_FIELD, defaultQualConditions, loadQualConditions, saveQualConditions } from '../../data/qualifications';
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
 import { ConditionCatalogField, StageAnswers } from '../catalogs/field-catalog';
 import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/field-choices';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
-
-export interface QualCondition {
-  when: WhenGroup;
-  require: QualGroup;   /* on a User row: the quals held (always an 'all' list) */
-  type?: string;        /* the Signoff Type value the row applies to. Not used on a User row */
-}
 
 /* the step being checked; its fields are blank until filled in */
 interface ConditionStep {
@@ -55,8 +50,6 @@ export interface ConditionField {
   get: (s: ConditionSubject) => string;
 }
 
-export const USER_FIELD = 'user';
-export const SELF = 'SELF';
 /* sign-off field keys: 'step:<field key>' ('step:inspectionType' = the step's Type, 'step:id' = the step) */
 const STEP_PREFIX = 'step:';
 const TYPE_FIELD = `${STEP_PREFIX}inspectionType`;
@@ -189,34 +182,13 @@ function applies(c: QualCondition, valueOf: (field: string) => string | undefine
   return !c.when.items.length || whenMatches(c.when, valueOf);
 }
 
-const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, op: 'is', values: [value] }] });
-
-/* SELF holds the seed quals except CNTRLMTL2, so every seed requirement passes (controlled material
-   through the OR); one requirement per kind of check: joint flags, the step's Type, the base material */
-function defaultConditions(): QualCondition[] {
-  const perType = (w: WhenGroup, require: QualGroup): QualCondition[] => signoffTypeChoices().map(o => ({ when: w, type: o.value, require }));
-  return [
-    { when: when(USER_FIELD, SELF), require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
-    ...perType(when('controlledMaterial', 'Yes'), { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] }),
-    ...perType(when('ss', 'Yes'), { op: 'all', items: ['SSWELD1'] }),
-    { when: { op: 'all', items: [] }, type: 'vt', require: { op: 'all', items: ['VTINSP1'] } },
-    ...perType(when('material.titanium', 'Yes'), { op: 'all', items: ['TIWELD1'] }),
-  ];
-}
-
-function load(): QualCondition[] {
-  try {
-    const raw = localStorage.getItem(STORAGE.qualConditions);
-    if (raw) return JSON.parse(raw) as QualCondition[];
-  } catch { /* ignore */ }
-  return defaultConditions();
-}
-
-export const qualConditions = signal<QualCondition[]>(load());
+/* the saved rows, else the starting rows for every Type with a Qualification Check */
+export const qualConditions = signal<QualCondition[]>(
+  loadQualConditions() ?? defaultQualConditions(signoffTypeChoices().map(o => o.value)));
 
 export function setQualConditions(conditions: QualCondition[]) {
   qualConditions.set(conditions);
-  try { localStorage.setItem(STORAGE.qualConditions, JSON.stringify(conditions)); } catch { /* ignore */ }
+  saveQualConditions(conditions);
 }
 
 /* the requirement rows, counting rows with the same When and Require once, however many Types they're on */

@@ -1,7 +1,8 @@
 import { JOBS, Job } from '../../data/jobs';
 import '../routing/routing-settings-rules';
+import { QualCondition, SELF } from '../../data/qualifications';
 import {
-  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
+  conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
   notOnCheckForm, qualConditions, setQualConditions, signoffTypeChoices, wtnRequirementText,
 } from './qual-conditions';
 import { WhenClause, WhenGroup, whenComplete } from './qual-when';

@@ -13,8 +13,9 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { ALL_QUALS } from '../../qualifications/qualifications';
+import { QualCondition, SELF } from '../../../data/qualifications';
 import {
-  QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, distinctRequirements, heldBy, notOnCheckForm, qualConditions, setQualConditions,
+  conditionFields, conditionTypeText, conditionWhenText, distinctRequirements, heldBy, notOnCheckForm, qualConditions, setQualConditions,
   signoffTypeChoices, signoffTypeLabel, userOf,
 } from '../../qualifications/qual-conditions';
 import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications/qual-requirements';

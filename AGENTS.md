@@ -8,8 +8,8 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 1. Admin table data in `data/`: every admin page's rows (starting rows, load, save) live in `data/`; the rules that use
    them stay in their feature folder. One admin page per commit. Done: Routing Settings, Signoff Types,
-   Signoff Type to Routing, Signoff Type Forms. Left:
-   Qualifications (`qual-conditions.ts`), Attribute Code Exceptions (`attribute-code-exceptions.ts`).
+   Signoff Type to Routing, Signoff Type Forms, Qualifications. Left:
+   Attribute Code Exceptions (`attribute-code-exceptions.ts`).
 2. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
    (see Tasks.md Cleanup). Propose before building.
 

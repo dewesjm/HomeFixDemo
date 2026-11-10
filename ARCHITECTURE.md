@@ -166,8 +166,9 @@ src/app/
                            field-rule-lines, field-conditions, condition-context, stage-property-keys, field-fill,
                            field-locks, shown-fields, definition-layout, signoff-parts, stage-rules,
                            stage-display, form-fields (catalog fields selected by Type), weld-fields
-    qualifications/        Qualification Check and Admin > Qualifications conditions (qual-conditions,
-                           qual-when, qual-requirements, qualifications)
+    qualifications/        Qualification Check and Admin > Qualifications conditions (qual-conditions: the live rows
+                           and their rules; the rows are data/qualifications), qual-when, qual-requirements,
+                           qualifications
     attribute-codes/       Admin > Attribute Code Exceptions (see ROUTING.md and ATTRIBUTE-CODES-PLAN.md):
                            attribute-code-exceptions (rows, seeds, storage), exception-effects (what the rows do to a
                            joint's routings: buildStages, applySignedFlags, Type list narrowing), attribute-validation
@@ -510,7 +511,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
      - An actual is NC and locked while its requirement is NC (its "Filled from this routing's requirement" rule).
      - Filler Metal Type/Size cascade the same way, filtered (not auto-filled) to the resolved WPS's valid values (see "Weld Engineering" above); a selection that's no longer valid after a GWP/WTN change is cleared.
      - While the Consumable Insert checkbox is on (fields locked, `isFieldLocked()`), `stageFieldOptions()` shows the *full* `FILLER_METAL_TYPE_OPTIONS`/`FILLER_METAL_SIZE_OPTIONS` set, since the value copied from Fit's Consumable Insert often isn't in the WPS's subset and a locked select needs a matching `<option>`.
-     - **Qualification Check** (`weld-record/qualifications/qualifications.ts`, `weld-record/qualifications/qual-conditions.ts`, `weld-record/qualifications/qual-when.ts`, `weld-record/qualifications/qual-requirements.ts`): quals are required and held only through **conditions** in **Admin > Qualifications** (route `/admin/qualifications`, folder `admin-qualifications/`, `STORAGE.qualConditions`).
+     - **Qualification Check** (`weld-record/qualifications/qualifications.ts`, `weld-record/qualifications/qual-conditions.ts`, `weld-record/qualifications/qual-when.ts`, `weld-record/qualifications/qual-requirements.ts`): quals are required and held only through **conditions** in **Admin > Qualifications** (route `/admin/qualifications`, folder `admin-qualifications/`, `STORAGE.qualConditions`; rows, starting rows, load and save in `data/qualifications.ts`).
        - A requirement row is "When <WhenGroup>, Require <QualGroup>": the When is All of (AND) / Any of (OR) of clauses with nested groups, each a Routing Settings `ConditionClause` (is, is not, contains; one or several values) (`when-group-editor.component`, recursive; `whenMatches()`), e.g. Weld Color is Straw OR Weld Color is Light Blue.
        - The When picker offers the field catalog's Joint Details, Calculated, Fabrication and every routing's answers (`step.<stageId>.<key>`, read from the joint's stages once signed), then Sign-off fields read from the step being checked (`step:<key>`, limited to forms with a Qualification Check).
        - **Signoff Type** column (`QualCondition.type`, `conditionTypeText()`): the one Type (`step:inspectionType` value, `signoffTypeChoices()`) a row applies to, required on save; a requirement on several Types is one row each, and nothing applies until the routing's Type is picked. Type isn't offered in the When picker (`ConditionField.ownColumn`).

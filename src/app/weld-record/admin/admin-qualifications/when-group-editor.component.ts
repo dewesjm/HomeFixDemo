@@ -6,7 +6,8 @@ import { Component, input, output } from '@angular/core';
 import { fieldChoiceLabel } from '../../catalogs/field-choices';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
-import { ConditionField, ConditionOption, USER_FIELD, conditionField, conditionFields } from '../../qualifications/qual-conditions';
+import { USER_FIELD } from '../../../data/qualifications';
+import { ConditionField, ConditionOption, conditionField, conditionFields } from '../../qualifications/qual-conditions';
 import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, newWhenClause } from '../../qualifications/qual-when';
 
 const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Calculated', 'Fabrication', 'Routing answers', 'Sign-off', 'User'];
