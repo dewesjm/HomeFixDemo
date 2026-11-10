@@ -12,7 +12,7 @@ import { currentRoutingLabel } from '../routing/current-routing';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { bannerFor } from '../../data/banner';
 import { isShipboardLocationName } from '../../data/locations';
-import { hullHasUsage } from '../../data/ship-locations';
+import { hullHasUsage } from '../fabrication/ship-location-options';
 import { TableState } from '../../shared/table-state';
 import { TableToolbarComponent } from '../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';

@@ -1,7 +1,7 @@
 /* Fabrication: the cross-step data section on a Welding joint (location, MICs, drawing rev...) */
 import { jointDesignOptions } from '../../data/joint-designs';
 import { isShipboardLocation, locationOptions } from '../../data/locations';
-import { hullHasUsage } from '../../data/ship-locations';
+import { hullHasUsage } from './ship-location-options';
 import { SignoffInput } from '../model/workflow-types';
 
 export interface FabricationField {
@@ -25,7 +25,7 @@ export const FABRICATION_FIELDS: FabricationField[] = [
   { key: 'location', label: 'Location', type: 'select', row: 1, required: true, options: locationOptions() },
   { key: 'specificLocation', label: 'Specific Location', type: 'text', placeholder: 'e.g. Bay 3, Rack 12', row: 1 },
   // Line 2: Level/Deck, Frame, P/S/CL, and Usage (shown when Location is marked Shipboard in Admin > Locations); options come from
-  // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-locations.ts).
+  // Admin > Ship Locations for the joint's hull at runtime (shipLocationOptions in ship-location-options.ts).
   // S and D hulls have no Usage (fabricationFields below)
   { key: 'deck', label: 'Level/Deck', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true },
   { key: 'frame', label: 'Frame', type: 'select', row: 2, showIf: { shipboardLocation: true }, required: true, placeholder: 'Pick a Level/Deck first' },

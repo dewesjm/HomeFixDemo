@@ -1,4 +1,4 @@
-import { PSCL_OPTIONS, setShipLocations, shipLocationOptions } from './ship-locations';
+import { PSCL_OPTIONS } from './ship-locations';
 
 describe('ship locations', () => {
   afterEach(() => localStorage.clear());
@@ -8,18 +8,6 @@ describe('ship locations', () => {
       { label: '0 Centerline', value: '0' },
       { label: '1 Starboard', value: '1' },
       { label: '2 Port', value: '2' },
-    ]);
-  });
-
-  it('offers only the sides set up at the Deck + Frame, labeled with their side', () => {
-    setShipLocations([
-      { hull: 'H1', deck: '1', frame: '190', pscl: '4', usage: 'L' },
-      { hull: 'H1', deck: '1', frame: '190', pscl: '0', usage: 'Q' },
-      { hull: 'H1', deck: '2', frame: '190', pscl: '3', usage: 'L' },
-    ]);
-    expect(shipLocationOptions('pscl', 'H1', { deck: '1', frame: '190' })).toEqual([
-      { label: '0 Centerline', value: '0' },
-      { label: '4 Port', value: '4' },
     ]);
   });
 });

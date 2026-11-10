@@ -3,7 +3,7 @@ import { Job } from '../../data/jobs';
 import { FabricationField, fabricationFieldVisible, fabricationFields } from './fabrication-fields';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { locationOptions } from '../../data/locations';
-import { SHIP_LOCATION_KEYS, shipLocationOptions } from '../../data/ship-locations';
+import { SHIP_LOCATION_KEYS, shipLocationOptions } from './ship-location-options';
 import { jointDesignOptions } from '../../data/joint-designs';
 
 type Fab = Record<string, string>;
