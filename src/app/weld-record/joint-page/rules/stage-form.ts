@@ -51,44 +51,36 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
   });
 }
 
+type Option = { label: string; value: string };
+
+/* Fields whose droplist comes from an admin list that can stop offering a value already saved on a
+   routing (made inactive, removed, or not offered for this Type). `all` includes inactive entries,
+   for the saved value's label. */
+function adminLists(f: FormField, stage: WorkflowStage): { offered: Option[]; all?: Option[] } | undefined {
+  switch (f.key) {
+    case 'weldPosition': return { offered: weldPositionOptions(), all: weldPositionOptions(true) };
+    case 'repairType': return { offered: repairCodeOptions(), all: repairCodeOptions(true) };
+    case 'weldColor': return { offered: f.options ?? [] };
+    /* Admin > Inspection Procedures and Admin > Defect Codes for the routing's Type */
+    case 'procedureUsed': return { offered: inspectionProcedureOptions(stage.inspectionType) };
+    case 'defectCode': return { offered: defectCodeOptions(stage.inspectionType), all: defectCodeOptions(stage.inspectionType, true) };
+    default: return undefined;
+  }
+}
+
+/* The offered list, plus the saved value when it's no longer on it, so the droplist doesn't show blank */
+function withSavedValue(offered: Option[], saved: string, all: Option[] = []): Option[] {
+  if (!saved || offered.some(o => o.value === saved)) return offered;
+  return [...offered, all.find(o => o.value === saved) ?? { label: saved, value: saved }];
+}
+
 /* A field with its runtime options and label. GWP is filtered to the GWPs qualified for this job's
    base metal pair (Material Type 1/2), WTN to the selected GWP, and Filler Metal Type/Size to the
    Procedure that GWP+WTN resolves to. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
-  if (f.key === 'weldPosition') {
-    const current = stage.inputs[f.key] ?? '';
-    const options = weldPositionOptions();
-    const recorded = weldPositionOptions(true).find(o => o.value === current);
-    return { ...f, options: current && !options.some(o => o.value === current)
-      ? [...options, recorded ?? { label: current, value: current }] : options };
-  }
-  if (f.key === 'repairType') {
-    const current = stage.inputs['repairType'] ?? '';
-    const options = repairCodeOptions();
-    const recorded = repairCodeOptions(true).find(o => o.value === current);
-    return { ...f, options: current && !options.some(o => o.value === current)
-      ? [...options, recorded ?? { value: current, label: current }] : options };
-  }
-  if (f.key === 'weldColor') {
-    const current = stage.inputs['weldColor'] ?? '';
-    const options = f.options ?? [];
-    return { ...f, options: current && !options.some(o => o.value === current)
-      ? [...options, { label: current, value: current }] : options };
-  }
-  if (f.key === 'procedureUsed') {
-    /* Admin > Inspection Procedures for the step's Type; a value no longer listed stays selectable so it doesn't show blank */
-    const cur = stage.inputs['procedureUsed'] ?? '';
-    const options = inspectionProcedureOptions(stage.inspectionType);
-    return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, { label: cur, value: cur }] : options };
-  }
-  if (f.key === 'defectCode') {
-    /* Admin > Defect Codes for the step's Type; a code no longer listed stays selectable so it doesn't show blank */
-    const cur = stage.inputs['defectCode'] ?? '';
-    const options = defectCodeOptions(stage.inspectionType);
-    const recorded = defectCodeOptions(stage.inspectionType, true).find(o => o.value === cur);
-    return { ...f, options: cur && !options.some(o => o.value === cur) ? [...options, recorded ?? { label: cur, value: cur }] : options };
-  }
+  const lists = adminLists(f, stage);
+  if (lists) return { ...f, options: withSavedValue(lists.offered, stage.inputs[f.key] ?? '', lists.all) };
   if (f.key === 'degreeRt') {
     const required = rtDegreeRequired(job, stage);
     return required ? { ...f, label: `${f.label} (Required: ${required})` } : f;
