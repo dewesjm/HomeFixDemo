@@ -2,7 +2,8 @@
 import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
 import { attributeAccessError } from '../attribute-codes/attribute-validation';
 import { attributeTypeSettings } from '../attribute-codes/exception-effects';
-import { resolveInsertion, RoutingConfigurationError } from './generic-insertion';
+import { resolveInsertion } from './generic-insertion';
+import { RoutingConfigurationError } from './routing-configuration-error';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { insertionDefinitionId } from './instance-identity';
 import { Job } from '../../data/jobs';

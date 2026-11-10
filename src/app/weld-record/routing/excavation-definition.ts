@@ -2,7 +2,7 @@
 import { Job } from '../../data/jobs';
 import { conditionsMatch } from './step-conditions';
 import { getTemplates } from './stage-templates';
-import { RoutingConfigurationError } from './generic-insertion';
+import { RoutingConfigurationError } from './routing-configuration-error';
 
 export function excavationDefinition(job: Job) {
   const matches = getTemplates()[job.trade].filter(t => t.lifecycle === 'excavation'

@@ -1,4 +1,5 @@
 /* One resolver builds ordinary inserted work for execution, seeds and preview. */
+import { RoutingConfigurationError } from './routing-configuration-error';
 import { getStepFieldConfig } from '../signoff-definition/step-field-config';
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../model/workflow-types';
@@ -9,8 +10,6 @@ import { conditionsMatch } from './step-conditions';
 import { routingRole } from './routing-role';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
 import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from './step-ids';
-
-export class RoutingConfigurationError extends Error {}
 
 export function resolveInsertion(templates: StageTemplate[], stages: WorkflowStage[], job: Job,
   source: WorkflowStage, target: string, recordedIds: string[] = [], fab?: Record<string, string>): WorkflowStage {
