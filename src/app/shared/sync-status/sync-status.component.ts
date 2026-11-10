@@ -2,7 +2,7 @@
    for touch screens (tapping anywhere else hides it) */
 import { Component, ElementRef, HostListener, computed, inject, signal } from '@angular/core';
 import { SyncService } from './sync.service';
-import { TooltipDirective } from '../../shared/tooltip.directive';
+import { TooltipDirective } from '../tooltip.directive';
 
 @Component({
   selector: 'app-sync-status',

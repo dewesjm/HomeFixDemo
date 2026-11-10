@@ -10,7 +10,7 @@ import { CompactNavDirective } from './shared/compact-nav.directive';
 import { AvatarMenuComponent } from './shared/avatar-menu/avatar-menu.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
-import { SyncStatusComponent } from './weld-record/sync-status/sync-status.component';
+import { SyncStatusComponent } from './shared/sync-status/sync-status.component';
 import {
   LucideTable, LucideHistory, LucideSlidersHorizontal, LucideSettings, LucideWorkflow, LucideTag,
   LucideStepForward, LucideCircleArrowUp, LucideRefreshCw,
