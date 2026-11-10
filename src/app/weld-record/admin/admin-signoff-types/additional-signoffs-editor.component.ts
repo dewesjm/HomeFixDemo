@@ -5,8 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { AdditionalSignoff, getSignoffTypes } from '../../../data/signoff-types';
 import { FORM_FIELDS } from '../../catalogs/field-catalog';
 import { formFieldValues } from '../../catalogs/field-choices';
-import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
-import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-type-definition/condition-work';
+import { ConditionGroupEditorComponent } from '../admin-signoff-type-forms/condition-group-editor.component';
+import { conditionToWork, workToCondition, WorkGroup } from '../admin-signoff-type-forms/condition-work';
 import { FieldCondition } from '../../signoff-definition/field-conditions';
 
 @Component({

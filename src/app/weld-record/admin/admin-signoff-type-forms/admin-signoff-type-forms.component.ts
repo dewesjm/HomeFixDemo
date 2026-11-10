@@ -85,16 +85,16 @@ interface EditState extends OpenCondition {
 let seq = 0;
 
 @Component({
-  selector: 'app-admin-signoff-type-definition',
+  selector: 'app-admin-signoff-type-forms',
   standalone: true,
   imports: [
     CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     FieldConditionEditorComponent, DefinitionLayoutListComponent,
     LucidePencil, LucideCheck, LucideTrash2, LucideChevronDown, LucideChevronRight,
   ],
-  templateUrl: './admin-signoff-type-definition.component.html',
+  templateUrl: './admin-signoff-type-forms.component.html',
 })
-export class AdminSignoffTypeDefinitionComponent {
+export class AdminSignoffTypeFormsComponent {
   private toast = inject(ToastService);
   private confirm = inject(ConfirmService);
 
@@ -495,7 +495,7 @@ export class AdminSignoffTypeDefinitionComponent {
   }
 
   exportCsv() {
-    downloadCsv('signoff-type-definition', [
+    downloadCsv('signoff-type-forms', [
       { header: 'Type', value: (r: DefRow) => r.typeLabel },
       { header: 'Fields', value: (r: DefRow) => r.fieldLabels },
     ], this.table.sorted());

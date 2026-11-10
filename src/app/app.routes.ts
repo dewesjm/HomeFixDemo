@@ -21,7 +21,7 @@ import { AdminShipLocationsComponent } from './weld-record/admin/admin-ship-loca
 import { ImportShipLocationsComponent } from './weld-record/admin/admin-ship-locations/import-ship-locations.component';
 import { AdminSignoffTypesComponent } from './weld-record/admin/admin-signoff-types/admin-signoff-types.component';
 import { AdminSignoffTypeRoutingComponent } from './weld-record/admin/admin-signoff-type-routing/admin-signoff-type-routing.component';
-import { AdminSignoffTypeDefinitionComponent } from './weld-record/admin/admin-signoff-type-definition/admin-signoff-type-definition.component';
+import { AdminSignoffTypeFormsComponent } from './weld-record/admin/admin-signoff-type-forms/admin-signoff-type-forms.component';
 import { AdminWeldPositionsComponent } from './weld-record/admin/admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './weld-record/admin/admin-banner/admin-banner.component';
 import { AdminJointDesignsComponent } from './weld-record/admin/admin-joint-designs/admin-joint-designs.component';
@@ -76,7 +76,7 @@ export const routes: Routes = [
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },
   { path: 'admin/signoff-types', component: AdminSignoffTypesComponent, title: 'EWR - Signoff Types' },
   { path: 'admin/signoff-type-routing', component: AdminSignoffTypeRoutingComponent,     title: 'EWR - Signoff Type to Routing' },
-  { path: 'admin/signoff-fields', component: AdminSignoffTypeDefinitionComponent, title: 'EWR - Signoff Type Forms' },
+  { path: 'admin/signoff-type-forms', component: AdminSignoffTypeFormsComponent, title: 'EWR - Signoff Type Forms' },
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes' },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors' },
   { path: 'admin/weld-positions', component: AdminWeldPositionsComponent, title: 'EWR - Weld Positions' },

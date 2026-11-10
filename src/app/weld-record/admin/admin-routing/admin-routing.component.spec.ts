@@ -198,7 +198,7 @@ describe('Routing Settings rules editor', () => {
     expect(nameCell?.querySelector('button')?.textContent?.trim()).toBe('Rendered inspection');
     expect(host.textContent).toContain('Inserted routings');
     expect(host.textContent).not.toContain('Added routings');
-    expect(host.querySelector('a[href="/admin/signoff-fields"]')).toBeNull();
+    expect(host.querySelector('a[href="/admin/signoff-type-forms"]')).toBeNull();
     expect(host.querySelector('a[href="/admin/signoff-type-routing"]')).toBeNull();
     expect(host.querySelector('a[href="/admin/signoff-types"]')).toBeNull();
     const saved = fixture.componentInstance.rows().find(r => r.routing === 'Rendered inspection')!;

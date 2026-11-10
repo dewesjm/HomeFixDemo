@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
-import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';
+import { ConditionGroupEditorComponent } from '../admin-signoff-type-forms/condition-group-editor.component';
 import { AdditionalSignoff } from '../../../data/signoff-types';
 
 describe('Additional Signoffs condition editor', () => {

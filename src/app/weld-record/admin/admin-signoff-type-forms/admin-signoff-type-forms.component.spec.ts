@@ -1,17 +1,17 @@
 import { TestBed } from '@angular/core/testing';
-import { AdminSignoffTypeDefinitionComponent } from './admin-signoff-type-definition.component';
+import { AdminSignoffTypeFormsComponent } from './admin-signoff-type-forms.component';
 import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
 
 describe('Shared inspection Type forms admin', () => {
   afterEach(() => resetStepFieldConfig());
   it('shows immutable catalog field types in the field choices and saved form rows', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeDefinitionComponent());
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeFormsComponent());
     expect(component.fieldChoices.find(f => f.key === 'deferTack')?.typeLabel).toBe('Checkbox');
     expect(component.fieldChoices.find(f => f.key === 'wtn')?.typeLabel).toBe('Droplist');
     expect(component.rows().find(r => r.typeId === 'fit')?.fieldRules.find(f => f.key === 'deferTack')?.typeLabel).toBe('Checkbox');
   });
   it('describes PH/IP requirements, actuals and overrides as Number or NC', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeDefinitionComponent());
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeFormsComponent());
     const keys = ['phMin', 'phMax', 'ipMin', 'ipMax', 'actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax',
       'overridePhMin', 'overridePhMax', 'overrideIpMin', 'overrideIpMax'];
     const form = component.rows().find(r => r.typeId === 'root')!;
@@ -21,7 +21,7 @@ describe('Shared inspection Type forms admin', () => {
     }
   });
   it('offers the shared inspection forms without a separate Excavation NDT form', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeDefinitionComponent());
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeFormsComponent());
     const ids = component.rows().map(r => r.typeId);
     expect(ids).toContain('pt');
     expect(ids).toContain('rt');
