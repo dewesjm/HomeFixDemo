@@ -1,6 +1,8 @@
-/* Theme droplist, in the avatar menu: switch the active DaisyUI theme at runtime, persisted. */
+/* Theme list, in the avatar menu (same look as Compass): one row per DaisyUI theme with that theme's
+   colour swatches and a check on the active one. Switches the theme at runtime, persisted. */
 import { STORAGE } from '../../data/storage-keys';
 import { Component, signal } from '@angular/core';
+import { LucideCheck } from '@lucide/angular';
 
 interface ThemeOption { name: string; label: string; dark?: boolean; }
 
@@ -44,14 +46,26 @@ const THEME_KEY = STORAGE.theme;
 @Component({
   selector: 'app-theme-picker',
   standalone: true,
-  imports: [],
+  imports: [LucideCheck],
   template: `
-    <fieldset class="fieldset">
-      <legend class="fieldset-legend">Theme</legend>
-      <select class="select w-full" aria-label="Theme" (change)="pick($any($event.target).value)">
-        @for (t of themes; track t.name) { <option [value]="t.name" [selected]="active() === t.name">{{ t.label }}</option> }
-      </select>
-    </fieldset>
+    <div role="radiogroup" aria-label="Theme">
+      <div class="px-2 pt-1 pb-2 text-xs font-semibold uppercase opacity-70">Theme</div>
+      @for (t of themes; track t.name) {
+        <button type="button" role="radio"
+                class="flex w-full items-center gap-3 rounded-field px-2 py-1.5 text-left text-sm hover:bg-base-200 focus-visible:bg-base-200"
+                [attr.aria-checked]="active() === t.name" [attr.data-theme-option]="t.name" (click)="pick(t.name)">
+          <!-- data-theme on the swatch shows that theme's own colours -->
+          <span [attr.data-theme]="t.name" class="flex shrink-0 gap-0.5 rounded-selector border border-base-300 bg-base-100 p-1" aria-hidden="true">
+            <span class="size-2.5 rounded-full bg-primary"></span>
+            <span class="size-2.5 rounded-full bg-secondary"></span>
+            <span class="size-2.5 rounded-full bg-accent"></span>
+            <span class="size-2.5 rounded-full bg-neutral"></span>
+          </span>
+          <span class="grow">{{ t.label }}</span>
+          @if (active() === t.name) { <svg lucideCheck class="size-4"></svg> }
+        </button>
+      }
+    </div>
   `
 })
 export class ThemePickerComponent {

@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Reorganized the Weld Record code: folders and files renamed and regrouped by what they are (pages, panels, logic, data shapes), top bar pieces shared by every section, and Weld Planning, Weld Engineering and switched-off pages moved to a future folder.',
+    changed: ['Theme picker (avatar icon, top right): the droplist is now a list showing the colours of each theme, with a check on the current one.',
+      'Reorganized the Weld Record code: folders and files renamed and regrouped by what they are (pages, panels, logic, data shapes), top bar pieces shared by every section, and Weld Planning, Weld Engineering and switched-off pages moved to a future folder.',
       'Refactored the Weld Record code: unused joint fields removed, duplicate routing rule code merged, fixed routing rules split by concern, and the sign-off form rules and Signoff Type Forms conditions tidied.',
       'Admin pages: shorter descriptions under each title, saying what the page is for and what it changes.',
       'Saved Routing Settings were reset (persona settings renamed).',

@@ -21,7 +21,7 @@ import { ThemePickerComponent } from './theme-picker.component';
         <svg lucideUser class="size-4"></svg>
       </div>
     </button>
-    <div class="absolute right-0 top-full z-50 mt-2 w-60 max-w-[calc(100vw-2rem)] rounded-box border border-base-content/20 bg-base-100 p-4 shadow-lg"
+    <div class="absolute right-0 top-full z-50 mt-2 max-h-[calc(100dvh-5rem)] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-box border border-base-content/20 bg-base-100 p-2 shadow-lg"
          [class.hidden]="!open()">
       <app-theme-picker />
     </div>

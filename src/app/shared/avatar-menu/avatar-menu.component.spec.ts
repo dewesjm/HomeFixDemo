@@ -31,7 +31,8 @@ describe('AvatarMenuComponent', () => {
     button.click();
     fixture.detectChanges();
     expect(panel.classList.contains('hidden')).toBeFalse();
-    expect(el.querySelector('select')!.value).toBe('nord');
+    expect(el.querySelector('[data-theme-option="nord"]')!.getAttribute('aria-checked')).toBe('true');
+    expect(el.querySelectorAll('[aria-checked="true"]').length).toBe(1);
   });
 
   it('closes on an outside click or Escape, and stays open for a click inside', () => {
@@ -50,9 +51,7 @@ describe('AvatarMenuComponent', () => {
 
   it('saves a picked theme', () => {
     const { el } = create();
-    const select = el.querySelector('select')!;
-    select.value = 'forest';
-    select.dispatchEvent(new Event('change'));
+    (el.querySelector('[data-theme-option="forest"]') as HTMLButtonElement).click();
     expect(localStorage.getItem(STORAGE.theme)).toBe('forest');
     expect(document.documentElement.getAttribute('data-theme')).toBe('forest');
   });
