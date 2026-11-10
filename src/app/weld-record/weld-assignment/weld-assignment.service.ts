@@ -1,4 +1,4 @@
-/* Writes the external system's GWP/WTN/filler assignment (data/weld-assignment.ts) onto a joint's
+/* Writes the external system's GWP/WTN/filler assignment (weld-assignment-mock.ts) onto a joint's
    unsigned welding steps. It's the system's value, not the person's edit, so no History entry.
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
 import { formInputFields } from '../signoff-definition/form-fields';
@@ -8,8 +8,9 @@ import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
 import { isFilledByRule, withFills } from '../signoff-definition/field-fill';
 import { heldQuals } from '../qualifications/qual-conditions';
-import { assignedInputs, isAssignedStage, isEngineeringEntryJoint } from '../../data/weld-assignment';
-import { WorkflowStore } from './workflow-store.service';
+import { assignedInputs, isEngineeringEntryJoint } from './weld-assignment-mock';
+import { isAssignedStage } from './weld-assignment-rules';
+import { WorkflowStore } from '../services/workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
 export class WeldAssignmentService {

@@ -26,7 +26,7 @@ import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
-import { WeldAssignmentService } from '../services/weld-assignment.service';
+import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { WorkflowStage, STAGE_RESULT_OPTIONS, SignoffInput,  } from '../model/workflow-types';
 import {

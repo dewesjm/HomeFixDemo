@@ -1,25 +1,19 @@
-/* Stand-in for the external system that sets a welding step's GWP, WTN and Filler Metal Type/Size
-   after doing its own validity checks. The person can't change them. Some joints get nothing from
-   it: those need an engineering override, where the values are typed in by hand (see
-   isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
-import { formInputFields } from '../weld-record/signoff-definition/form-fields';
-import { Job } from './jobs';
-import { WorkflowStage } from '../weld-record/model/workflow-types';
-import { SHOW_WELD_OVERRIDES } from '../weld-record/signoff-definition/weld-fields';
-import { isFilledByRule } from '../weld-record/signoff-definition/field-fill';
-import { requirementsMet } from '../weld-record/qualifications/qualifications';
-import { conditionRequirements } from '../weld-record/qualifications/qual-conditions';
+/* Mock of the external system that sets a welding step's GWP, WTN and Filler Metal Type/Size
+   after doing its own validity checks; a real connection replaces this file. Some joints get nothing
+   from it: those need an engineering override, where the values are typed in by hand (see
+   isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every
+   visit. Which fields and steps it covers is weld-assignment-rules.ts. */
+import { formInputFields } from '../signoff-definition/form-fields';
+import { Job } from '../../data/jobs';
+import { WorkflowStage } from '../model/workflow-types';
+import { SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
+import { isFilledByRule } from '../signoff-definition/field-fill';
+import { requirementsMet } from '../qualifications/qualifications';
+import { conditionRequirements } from '../qualifications/qual-conditions';
 import {
   Procedure, procedures, gwpOptionsForMaterials, fillerMetalTypeOptionsForProcedure,
   fillerMetalSizeOptionsForProcedure, hasOverride as procedureHasOverride,
-} from './procedures';
-
-export const ASSIGNED_KEYS = new Set(['weldProcedure', 'wtn', 'fillerMetalType', 'fillerMetalSize']);
-
-/* welding steps (and Fit as a Weld Build-Up) are the ones with a GWP field */
-export function isAssignedStage(stage: WorkflowStage): boolean {
-  return formInputFields(stage).some(f => f.key === 'weldProcedure');
-}
+} from '../../data/procedures';
 
 function hash(s: string): number {
   let h = 0;

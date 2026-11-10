@@ -440,7 +440,7 @@ export function wtnFillValue(gwp: string, wtn: string, key: string): string {
 
 /* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
    Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
-   On the weld record the external-system stand-in (weld-assignment.ts) picks one of these; a
+   On the weld record the external-system mock (weld-record/weld-assignment/weld-assignment-mock.ts) picks one of these; a
    Foreman Override opens the full lists. */
 export function fillerMetalTypeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
   if (!p) return [];

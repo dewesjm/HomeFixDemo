@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor Routing Settings.',
+      'Refactor weld assignment (GWP, WTN and filler set by the outside system).',
       'Admin > Routing Settings: saved changes were reset to the starting routings.'],
   },
   {

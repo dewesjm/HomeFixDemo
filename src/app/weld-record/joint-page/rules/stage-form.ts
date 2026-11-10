@@ -15,7 +15,7 @@ import { effectiveShowIf } from '../../signoff-definition/field-rules';
 import { definedFields } from '../../signoff-definition/shown-fields';
 import { inspectionProcedureOptions } from '../../../data/inspection-procedures';
 import { defectCodeOptions } from '../../../data/defect-codes';
-import { ASSIGNED_KEYS } from '../../../data/weld-assignment';
+import { ASSIGNED_KEYS } from '../../weld-assignment/weld-assignment-rules';
 import {
   gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, getProcedureByGwpWtn, hasOverride as procedureHasOverride,
   fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS

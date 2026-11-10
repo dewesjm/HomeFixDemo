@@ -8,13 +8,13 @@ import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage, DeviationItem } from '../model/workflow-types';
 import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
 import { displayValue } from '../signoff-definition/stage-display';
-import { ASSIGNED_KEYS } from '../../data/weld-assignment';
+import { ASSIGNED_KEYS } from '../weld-assignment/weld-assignment-rules';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from './rules/deviations';
 import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
-import { WeldAssignmentService } from '../services/weld-assignment.service';
+import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
 import { EngineeringOverrideService } from '../services/engineering-override.service';
 
 /* what the page hands over: its joint, live workflow, the state as loaded, and its visible fields */
