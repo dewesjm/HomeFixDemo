@@ -26,7 +26,7 @@ Deferred for a future session; review scope before implementing. Most routing de
 | Excavation inherits the failed inspection method, with ordered material exceptions such as PT to 5X | Signoff Types By Routing: Excavation Type source and exceptions; Material Classification supplies the material flags |
 | Repair fields, visibility and layout; shared inspection forms | Signoff Type Forms |
 
-Starting destination rules are in `src/app/weld-record/routing/inserted/added-routing-templates.ts`; execution reads saved templates through `routing-templates.ts`. Inspection Type source and exceptions are in `src/app/weld-record/signoff-definition/signoff-types.ts` and have an existing admin editor. Ordinary NDT inclusion and Type availability also use existing routing and Type configuration.
+Starting destination rules are in `src/app/data/welding-steps.ts`; execution reads saved templates through `routing-settings-rules.ts`. Inspection Type source and exceptions are in `src/app/data/signoff-type-routing.ts` (resolved by `signoff-definition/signoff-type-routing-rules.ts`) and have an existing admin editor. Ordinary NDT inclusion and Type availability also use existing routing and Type configuration.
 
 ### Remaining fixed business decisions
 

@@ -3,7 +3,7 @@ import { RoutingConfigurationError } from './routing-configuration-error';
 import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
-import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
+import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-routings';
 import { conditionsMatch } from '../routing-conditions';

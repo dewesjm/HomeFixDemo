@@ -15,14 +15,14 @@ import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { ConditionRule } from '../../routing/routing-conditions';
 import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
-import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,
 } from '../../attribute-codes/attribute-code-exceptions';
 import {
   accessibleText, appliesWhenText, exceptionConditionFields, minRtText, routingChangeText, typesText,
 } from '../../attribute-codes/exception-text';
-import { TypeEnableConditionsComponent } from '../admin-signoff-types/type-enable-conditions.component';
+import { TypeEnableConditionsComponent } from '../admin-signoff-type-routing/type-enable-conditions.component';
 
 interface ExceptionRow extends AttributeCodeException {
   uid: string;
@@ -74,7 +74,7 @@ export class AdminAttributeCodeExceptionsComponent {
 
   /* the Types an accessible rule can name: the row's own and the routing's (Signoff Type to Routing) */
   accessibleChoices(row: ExceptionRow): string[] {
-    const configured = getSignoffTypeRows().find(r => r.stepId === row.routing)?.types.map(t => t.type) ?? [];
+    const configured = getSignoffTypeRoutingRows().find(r => r.stepId === row.routing)?.types.map(t => t.type) ?? [];
     return [...new Set([...(row.types ?? []), ...configured, ...(row.accessible ?? []).map(a => a.type)])];
   }
 

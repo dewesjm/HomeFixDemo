@@ -10,7 +10,7 @@ import { RoutingService } from '../../services/routing.service';
 import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
 import { activeStage } from '../current-routing';
 import { addStageTemplate, getTemplates, updateStageTemplate } from '../routing-settings-rules';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { routeBack } from '../on-signoff/route-changes';
@@ -27,7 +27,7 @@ describe('Ordinary insertion execution and preview', () => {
   const wf = () => store.workflowFor(job)();
   function definition(id = 'extra', patch: Partial<StageTemplate> = {}) {
     addStageTemplate('Welding', { id, label: id, classification: 'added', role: 'Inspector', ...patch, required: true });
-    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
+    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
     updateStageTemplate('Welding', id, { status: 'active' });
   }
   function rule(source: string, to: string) {
@@ -36,7 +36,7 @@ describe('Ordinary insertion execution and preview', () => {
   function sign(id = current().id) { expect(signoff.signStage(job, id)).toBeTrue(); }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     resetStepFieldConfig();
     TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ hull: job.hull, drawing: job.drawing, joint: job.joint }), queryParamMap: convertToParamMap({}) } }) }] });
     store = TestBed.inject(WorkflowStore);
@@ -51,7 +51,7 @@ describe('Ordinary insertion execution and preview', () => {
     window.dispatchEvent(new Event('pagehide'));
     JOBS.splice(JOBS.indexOf(job), 1);
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     resetStepFieldConfig();
   });
 
@@ -98,13 +98,13 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('shares conditional replacements between preview and execution and freezes existing inserted choices', () => {
     definition(); rule('pre-fit', insertionTarget('extra'));
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r,
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r,
       typeExceptions: [{ from: 'extra-type', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] } : r));
     const preview = signoff.previewSignoff(wf(), job, 'pre-fit');
     expect(preview.target?.typeOptions?.map(o => o.value)).toEqual(['vt']);
     sign('pre-fit');
     expect(current().typeOptions).toEqual(preview.target?.typeOptions);
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r, typeExceptions: [] } : r));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, typeExceptions: [] } : r));
     expect(current().typeOptions?.map(o => o.value)).toEqual(['vt']);
     sign();
     expect(wf().stages.find(s => s.insertion)?.inspectionType).toBe('vt');
@@ -115,7 +115,7 @@ describe('Ordinary insertion execution and preview', () => {
     store.update(job, () => newWorkflow(job));
     definition();
     updateStageTemplate('Welding', 'root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r, types: [],
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: [],
       typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'pt', to: '5x' }] } : r));
     store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-mtpt'
       ? { ...s, result: 'unsat', inspectionType: 'pt', signoffType: 'pt' } : s) }));
@@ -128,7 +128,7 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('blocks contextual Type source on a source without an original inspection', () => {
     definition(); rule('pre-fit', insertionTarget('extra'));
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra'
       ? { ...r, typeSource: 'rejecting-inspection', types: [] } : r));
     const before = structuredClone(wf());
     expect(signoff.previewSignoff(wf(), job, 'pre-fit').blocked).toContain('context is missing');
@@ -141,7 +141,7 @@ describe('Ordinary insertion execution and preview', () => {
       definition(); rule('pre-fit', insertionTarget('extra'));
       if (failure === 'inactive') updateStageTemplate('Welding', 'extra', { status: 'inactive' });
       if (failure === 'applicability') updateStageTemplate('Welding', 'extra', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
-      if (failure === 'types') setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'extra' ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
+      if (failure === 'types') setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
       if (failure === 'missing') {
         const templates = getTemplates()['Welding'];
         templates.splice(templates.findIndex(t => t.id === 'extra'), 1);
@@ -166,7 +166,7 @@ describe('Ordinary insertion execution and preview', () => {
     definition(); rule('pre-fit', insertionTarget('extra')); sign('pre-fit');
     const inserted = current();
     updateStageTemplate('Welding', 'extra', { label: 'Renamed', role: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
-    setSignoffTypeRows(getSignoffTypeRows().filter(r => r.stepId !== 'extra'));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'extra'));
     expect(current()).toBe(inserted);
     expect(getTemplates()['Welding'].find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
     sign(); expect(current().id).toBe('fit');

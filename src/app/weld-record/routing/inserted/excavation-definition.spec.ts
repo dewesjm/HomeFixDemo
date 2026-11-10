@@ -4,7 +4,7 @@ import { JOBS, Job } from '../../../data/jobs';
 import { WorkflowStore } from '../../services/workflow-store.service';
 import { SignoffService } from '../../services/signoff.service';
 import { RoutingService } from '../../services/routing.service';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { newWorkflow } from '../build-stages';
 import { activeStage } from '../current-routing';
 import { excavationNdtStageFor } from './added-routings';
@@ -41,7 +41,7 @@ describe('Configured regular and NQC Excavation', () => {
   }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'excavation-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '',
@@ -53,7 +53,7 @@ describe('Configured regular and NQC Excavation', () => {
     window.dispatchEvent(new Event('pagehide'));
     JOBS.splice(JOBS.indexOf(job), 1);
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
   });
   for (const indicator of ['1', '2', '3']) {
     it(`keeps round returns, original inspection and undo for indicator ${indicator}`, () => {
@@ -86,7 +86,7 @@ describe('Configured regular and NQC Excavation', () => {
     });
   }
   it('routes another configured original/performed combination with preview parity', () => {
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'excavation-ndt'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'excavation-ndt'
       ? { ...r, typeExceptions: [{ from: 'pt', to: 'mt' }] } : r));
     updateStageTemplate('Welding', 'excavation-ndt', { thenRules: [
       { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] },
@@ -121,7 +121,7 @@ describe('Configured regular and NQC Excavation', () => {
     expect(wf()).toEqual(before);
   });
   it('uses independently saved Type options and enable conditions, and keeps existing instances', () => {
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'nqc-excavation-ndt'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'nqc-excavation-ndt'
       ? { stepId: r.stepId, types: [{ type: 'ut', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] } : r));
     expect(excavationNdtStageFor({ ...job, nInd: '1' }, 'pt', 'repair-2').typeOptions?.map(o => o.value)).toEqual(['ut']);
     expect(excavationNdtStageFor({ ...job, nInd: '2' }, 'pt', 'repair-2').typeOptions).toEqual([]);

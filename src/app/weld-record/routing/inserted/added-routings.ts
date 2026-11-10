@@ -11,7 +11,7 @@ import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../routing-ids';
 import { setRoutingFrom } from '../current-routing';
 import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
-import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definition/signoff-types';
+import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
 
 /* ── Repair ── */
 
@@ -27,7 +27,7 @@ export function nextRepairStage(stages: { id: string }[], job?: Job): StageTempl
 
 
 /* Build the round's inspection shell. Its selected Type loads the shared inspection form;
-   signoff-types.ts resolves the configured Type source and exceptions before insertion. */
+   signoff-type-routing-rules.ts resolves the configured Type source and exceptions before insertion. */
 export function excavationNdtStage(inspectionType: string, repairId = 'repair', job?: Job): StageTemplate {
   const definition = job ? excavationDefinition(job) : getAddedTemplate('excavation-ndt');
   return {

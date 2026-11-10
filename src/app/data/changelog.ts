@@ -11,7 +11,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-09',
-    changed: ['Admin condition droplists: every field now starts with where it comes from, for example Joint Details: N Ind. or Calculated: Controlled Material, on Routing Settings, Qualifications, Signoff Type to Routing, personas and Attribute Code Exceptions. Each droplist is now wide enough for its full names.',
+    changed: ['Admin > Signoff Type to Routing now opens at /admin/signoff-type-routing, and its Excel export is named signoff-type-routing. Saved changes on this page were reset to the starting rows.',
+      'Admin condition droplists: every field now starts with where it comes from, for example Joint Details: N Ind. or Calculated: Controlled Material, on Routing Settings, Qualifications, Signoff Type to Routing, personas and Attribute Code Exceptions. Each droplist is now wide enough for its full names.',
       'Admin > Signoff Type Forms: the search box beside the condition and Prepopulated from droplists is gone.',
       'Admin condition droplists: fields worked out from the joint or Fabrication, such as Controlled Material and Either material is titanium, now sit in their own Calculated group on Routing Settings and Qualifications. On Signoff Type Forms their names now start with Calculated, for example Calculated: Controlled Material.',
       'Fabrication: Drawing Rev (Execution) now reads Drawing Rev Execution, on the Fabrication panel, in History and on the Fit-Up Insp verify row.',

@@ -9,7 +9,7 @@ import { FieldCondition } from './field-conditions';
 import { type FieldFill } from '../catalogs/field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
 import { FILLER_KEYS } from './weld-fields';
-import { signoffTypeOptions } from './signoff-types';
+import { signoffTypeOptions } from './signoff-type-routing-rules';
 import { WELD_BUILDUP_TYPE } from '../../data/routing-signoff-types';
 import { isExcavationNdtStageId } from '../routing/routing-ids';
 

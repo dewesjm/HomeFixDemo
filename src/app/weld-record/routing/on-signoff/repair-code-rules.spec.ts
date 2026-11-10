@@ -1,4 +1,4 @@
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { TestBed } from '@angular/core/testing';
 import { JOBS, Job } from '../../../data/jobs';
 import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
@@ -29,7 +29,7 @@ describe('Configured Repair Code routing', () => {
   }
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     store = TestBed.inject(WorkflowStore); service = TestBed.inject(SignoffService);
     job = Object.assign({ ...JOBS[0], id: 'repair-code-test', xrefid: 'RCT01', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', rtRoot: '', rtFinal: '',
       materialType1: '12-SS304', materialType2: '02-CS', jointDesign: 'C-18', refitNumber: '', repairNumber: '' });
@@ -43,7 +43,7 @@ describe('Configured Repair Code routing', () => {
   });
   afterEach(() => {
     window.dispatchEvent(new Event('pagehide'));
-    JOBS.splice(JOBS.indexOf(job), 1); localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows());
+    JOBS.splice(JOBS.indexOf(job), 1); localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
   });
   it('blocks missing destination rules and inactive/unknown codes without History or undo mutation', () => {
     for (const code of ['extra', 'missing']) {

@@ -5,7 +5,7 @@ import { routeSignoff } from './signoff-routing';
 import { newWorkflow } from '../build-stages';
 import { activeStageId } from '../current-routing';
 import { updateStageTemplate } from '../routing-settings-rules';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { typeChange } from '../../joint-page/rules/type-change';
 import { getActivationForStep, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 
@@ -14,11 +14,11 @@ describe('Inserted routing table decisions', () => {
   let wf: JobWorkflow;
   beforeEach(() => {
     localStorage.clear();
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     job = Object.assign({ ...JOBS[0], id: 'signoff-routing-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS' });
     wf = newWorkflow(job);
   });
-  afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); resetStepFieldConfig(); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); resetStepFieldConfig(); });
   const stage = (wf: JobWorkflow, id: string) => wf.stages.find(s => s.id === id)!;
   function sign(id: string, patch: Partial<WorkflowStage> = {}) {
     wf = { ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...patch } : s) };
@@ -96,7 +96,7 @@ describe('Inserted routing table decisions', () => {
   });
   it('evaluates the Type actually selected at Excavation rather than an earlier replacement outcome', () => {
     job.materialType2 = '12-SS304';
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'excavation-ndt'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'excavation-ndt'
       ? { ...r, typeSource: undefined, types: [{ type: '5x' }, { type: 'pt' }] } : r));
     repair(); weldRepair(); selectExcavation('5x'); selectExcavation('pt');
     expect(originalInspectionType(stage(wf, 'excavation-ndt'), wf.stages)).toBe('pt');
@@ -106,13 +106,13 @@ describe('Inserted routing table decisions', () => {
   it('returning from Excavation cannot restore a Type removed in configuration', () => {
     job.materialType2 = '12-SS304';
     repair(); weldRepair(); selectExcavation('5x');
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'root-ndt-vt5x'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'root-ndt-vt5x'
       ? { ...r, types: r.types.filter(t => t.type !== '5x') } : r));
     sign('excavation-ndt', { result: 'sat' });
     expect(stage(wf, 'root-ndt-vt5x').typeOptions?.map(t => t.value)).toEqual(['vt']);
   });
   it('applies enable conditions to added Repair routings', () => {
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'repair'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'repair'
       ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
     repair();
     expect(stage(wf, 'repair').typeOptions).toEqual([]);

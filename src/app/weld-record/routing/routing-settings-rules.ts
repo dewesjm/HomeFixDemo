@@ -1,5 +1,5 @@
 /* Rules for the Admin > Routing Settings rows (stored in data/routing-settings.ts): the live rows joints are
-   built from, each with its Type options from Admin > Signoff Type to Routing (signoff-types.ts), and the
+   built from, each with its Type options from Admin > Signoff Type to Routing (signoff-type-routing-rules.ts), and the
    checks a Routing Settings change must pass before it is saved. */
 import { insertedDefinitionId } from './inserted/instance-identity';
 import { insertionConfigurationErrors } from './inserted/insertion-validation';
@@ -11,7 +11,8 @@ import { Job } from '../../data/jobs';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/workflow-types';
-import { signoffTypeOptions, signoffTypesVersion } from '../signoff-definition/signoff-types';
+import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
+import { signoffTypeRoutingVersion } from '../../data/signoff-type-routing';
 
 /* ── The live rows ── */
 
@@ -20,8 +21,8 @@ let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
 let _mergedTypesVersion = -1;
 
 export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
-  if (_merged && _mergedTypesVersion === signoffTypesVersion()) return _merged;
-  _mergedTypesVersion = signoffTypesVersion();
+  if (_merged && _mergedTypesVersion === signoffTypeRoutingVersion()) return _merged;
+  _mergedTypesVersion = signoffTypeRoutingVersion();
   const rows = loadRoutingSettings();
   for (const trade of Object.keys(rows) as Job['trade'][]) {
     rows[trade] = rows[trade].map(s => ({ ...s, typeOptions: s.lifecycle === 'excavation' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));

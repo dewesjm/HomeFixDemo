@@ -3,7 +3,8 @@
 import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';
-import { getSignoffTypeRows, setSignoffTypeRows, typeSourceLabel } from '../../signoff-definition/signoff-types';
+import { typeSourceLabel } from '../../signoff-definition/signoff-type-routing-rules';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
@@ -19,7 +20,7 @@ interface ExceptionRow { id: number; routing: string; rule: TypeException; }
 export class TypeExceptionsComponent {
   saved = output<void>();
   types = getRoutingSignoffTypes();
-  get routings() { return (getTemplates()['Welding'] ?? []).filter(t => getSignoffTypeRows().some(r => r.stepId === t.id)); }
+  get routings() { return (getTemplates()['Welding'] ?? []).filter(t => getSignoffTypeRoutingRows().some(r => r.stepId === t.id)); }
   private seq = 0;
   rows: ExceptionRow[] = this.load();
   editing: number | null = null;
@@ -30,11 +31,11 @@ export class TypeExceptionsComponent {
   label(id: string) { return this.routings.find(r => r.id === id)?.label ?? id; }
   typeLabel(id: string) { return this.types.find(t => t.value === id)?.label ?? id; }
   routingSource(routing: string) {
-    const row = getSignoffTypeRows().find(r => r.stepId === routing);
+    const row = getSignoffTypeRoutingRows().find(r => r.stepId === routing);
     return row ? typeSourceLabel(row.typeSource) : '';
   }
   private load(): ExceptionRow[] {
-    return getSignoffTypeRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
+    return getSignoffTypeRoutingRows().flatMap(r => (r.typeExceptions ?? []).map(rule => ({ id: ++this.seq, routing: r.stepId, rule: structuredClone(rule) })));
   }
   add() {
     const row = { id: ++this.seq, routing: '', rule: { from: 'pt', to: '5x' } };
@@ -79,7 +80,7 @@ export class TypeExceptionsComponent {
     this.dragId = null;
   }
   private persist() {
-    setSignoffTypeRows(getSignoffTypeRows().map(r => ({ ...r, typeExceptions: this.rows.filter(e => e.routing === r.stepId).map(e => structuredClone(e.rule)) })));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => ({ ...r, typeExceptions: this.rows.filter(e => e.routing === r.stepId).map(e => structuredClone(e.rule)) })));
     this.message = 'Type exceptions saved'; this.saved.emit();
   }
 }

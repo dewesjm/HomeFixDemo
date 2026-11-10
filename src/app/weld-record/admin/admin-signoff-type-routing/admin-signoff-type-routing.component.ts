@@ -1,5 +1,5 @@
 /* Admin → Signoff Type to Routing: the seeded table of routing steps that have a Type droplist and
-   which Types (Admin > Signoff Types) they offer (weld-record/signoff-definition/signoff-types.ts);
+   which Types (Admin > Signoff Types) they offer (data/signoff-type-routing.ts);
    rows are added and removed here */
 import { isExcavationNdtStageId } from '../../routing/routing-ids';
 import { typeExceptionCondition } from '../../signoff-definition/type-exceptions';
@@ -18,18 +18,12 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import {
-  AvailableType,
-  SignoffTypeRow,
-  EXCAVATION_TYPE_ROW,
-  getSignoffTypeRows,
-  setSignoffTypeRows,
-  typeSourceLabel,
-} from '../../signoff-definition/signoff-types';
+import { typeSourceLabel } from '../../signoff-definition/signoff-type-routing-rules';
+import { AvailableType, SignoffTypeRoutingRow, EXCAVATION_TYPE_ROW, getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getRoutingSignoffTypes, typeLabel } from '../../../data/routing-signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 
-interface TypeRow extends SignoffTypeRow {
+interface TypeRow extends SignoffTypeRoutingRow {
   uid: string;
   stepId: string;
   stepLabel: string;
@@ -39,15 +33,15 @@ interface TypeRow extends SignoffTypeRow {
 const EXCAVATION_NOTE = 'Same as the inspection that rejected the joint';
 
 @Component({
-  selector: 'app-admin-signoff-types',
+  selector: 'app-admin-signoff-type-routing',
   standalone: true,
   imports: [
     TypeEnableConditionsComponent, TypeExceptionsComponent, AttributeCodeNoteComponent, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent,
     LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideChevronUp, LucideChevronDown
   ],
-  templateUrl: './admin-signoff-types.component.html'
+  templateUrl: './admin-signoff-type-routing.component.html'
 })
-export class AdminSignoffTypesComponent {
+export class AdminSignoffTypeRoutingComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
   private seq = 0;
@@ -61,7 +55,7 @@ export class AdminSignoffTypesComponent {
   /* what an option can be: the Types in Admin > Signoff Types */
   readonly typeChoices = getRoutingSignoffTypes();
 
-  rows = signal<TypeRow[]>(getSignoffTypeRows().map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
+  rows = signal<TypeRow[]>(getSignoffTypeRoutingRows().map(r => ({ ...this.toRow(r.stepId, r.types), typeSource: r.typeSource, typeExceptions: r.typeExceptions })));
   editingUid = signal<string | null>(null);
   private cloned: Record<string, TypeRow> = {};
   table = new TableState<TypeRow>(['stepLabel']);
@@ -101,7 +95,7 @@ export class AdminSignoffTypesComponent {
   }
 
   exportCsv() {
-    downloadCsv('signoff-type-availability', [
+    downloadCsv('signoff-type-routing', [
       { header: 'Routing', value: (r: TypeRow) => r.stepLabel },
       { header: 'Type source', value: (r: TypeRow) => typeSourceLabel(r.typeSource) },
       { header: 'Type exceptions', value: (r: TypeRow) => (r.typeExceptions ?? []).map(e => `${typeLabel(e.from)} -> ${typeLabel(e.to)} (${typeExceptionCondition(e)})`).join('; ') },
@@ -185,7 +179,7 @@ export class AdminSignoffTypesComponent {
   }
 
   reloadTypeRules() {
-    const saved = getSignoffTypeRows();
+    const saved = getSignoffTypeRoutingRows();
     this.rows.update(rows => rows.map(r => {
       const row = saved.find(x => x.stepId === r.stepId);
       return { ...r, typeSource: row?.typeSource, typeExceptions: row?.typeExceptions };
@@ -194,7 +188,7 @@ export class AdminSignoffTypesComponent {
 
   private persist() {
     const editing = this.editingUid();
-    setSignoffTypeRows(this.rows().flatMap(r => {
+    setSignoffTypeRoutingRows(this.rows().flatMap(r => {
       /* a row still being edited keeps its saved version; an unsaved new row isn't stored */
       const saved = r.uid === editing ? this.cloned[r.uid] : r;
       return saved?.stepId ? [{ stepId: saved.stepId, types: saved.types, typeSource: saved.typeSource, typeExceptions: saved.typeExceptions }] : [];

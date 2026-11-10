@@ -1,5 +1,6 @@
 import { JOBS } from '../../data/jobs';
-import { getSignoffTypeRows, excavationTypeOptions } from './signoff-types';
+import { excavationTypeOptions } from './signoff-type-routing-rules';
+import { getSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { replacedType, TypeException, typeExceptionCondition } from './type-exceptions';
 
 describe('Separate material exception conditions', () => {
@@ -8,7 +9,7 @@ describe('Separate material exception conditions', () => {
   const job = (first: string, second = '02-CS', nInd = '3') => ({ ...JOBS[0], materialType1: first, materialType2: second, nInd });
   it('seeds explicit non-ferrous OR austenitic conditions for both Excavations', () => {
     for (const id of ['excavation-ndt', 'nqc-excavation-ndt']) {
-      const rule = getSignoffTypeRows().find(r => r.stepId === id)!.typeExceptions![0];
+      const rule = getSignoffTypeRoutingRows().find(r => r.stepId === id)!.typeExceptions![0];
       expect(rule.when!.map(g => g[0].field)).toEqual(['material.nonFerrous', 'material.austenitic']);
       for (const material of ['12-SS304', '63-AL10', '60-TICP']) {
         expect(excavationTypeOptions(job('02-CS', material), 'pt', id)?.[0].value).toBe('5x');

@@ -26,7 +26,7 @@ import { signedAsStep, signAsStep } from './type-routing';
 import { describeConditions, matchingRejectRule, matchingThenRule, ENGINEERING_HOLD_TARGET } from '../routing-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { RULE_TARGETS, isAddTarget, resolveRuleTarget } from './rule-targets';
-import { usesReturningInspectionType } from '../../signoff-definition/signoff-types';
+import { usesReturningInspectionType } from '../../signoff-definition/signoff-type-routing-rules';
 import { lastingReasons, signedFlagChanges } from '../preview/signed-flag-reasons';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;

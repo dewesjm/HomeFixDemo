@@ -4,7 +4,7 @@ import { WorkflowStage } from '../model/workflow-types';
 import { routingSignoffType } from '../../data/routing-signoff-types';
 import { evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
-import { signoffTypeOptions } from './signoff-types';
+import { signoffTypeOptions } from './signoff-type-routing-rules';
 import { stepOnJoint } from '../routing/routing-ids';
 
 export function additionalSignoffs(source: WorkflowStage, stages: WorkflowStage[], job: Job, fab: Record<string, string>): { stage: WorkflowStage; type: string }[] {

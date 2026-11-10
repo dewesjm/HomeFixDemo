@@ -1,4 +1,4 @@
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { TestBed } from '@angular/core/testing';
 import { PersonaRulesComponent } from './persona-rules.component';
 import { getAddedTemplate, updateStageTemplate } from '../../routing/routing-settings-rules';
@@ -6,7 +6,7 @@ import { JOBS } from '../../../data/jobs';
 import { excavationNdtStageFor } from '../../routing/inserted/added-routings';
 
 describe('Persona rules editor', () => {
-  beforeEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
   afterEach(() => localStorage.clear());
   function editor() {
     updateStageTemplate('Welding', 'nqc-excavation-ndt', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], role: 'NQC Inspector' }] });

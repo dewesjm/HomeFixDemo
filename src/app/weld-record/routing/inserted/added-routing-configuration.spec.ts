@@ -1,6 +1,6 @@
 import { addedRoutingSetup } from './added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 
@@ -11,7 +11,7 @@ describe('ordinary inserted routing setup', () => {
 
   it('requires an offered, known Type and its form', () => {
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Offer at least one');
-    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: 'extra', types: [{ type: 'unknown' }] }]);
+    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'unknown' }] }]);
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Unknown Type');
     setRoutingSignoffTypes([...getRoutingSignoffTypes(), { value: 'unknown', label: 'Extra Type' }]);
     expect(addedRoutingSetup(template).errors.join(' ')).toContain('Configure a form');
@@ -20,7 +20,7 @@ describe('ordinary inserted routing setup', () => {
   });
 
   it('rejects a Type signing another routing and multiple defaults', () => {
-    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: 'extra', types: [{ type: 'final-weld', default: true }, { type: 'vt', default: true }] }]);
+    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'final-weld', default: true }, { type: 'vt', default: true }] }]);
     const errors = addedRoutingSetup({ ...template, role: 'View' }).errors.join(' ');
     expect(errors).toContain('another routing');
     expect(errors).toContain('at most one default');

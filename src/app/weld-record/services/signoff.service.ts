@@ -14,7 +14,7 @@ import { hasDecision, isRoutingLockedField } from '../signoff-definition/stage-r
 import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/stage-display';
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { isUserEditable } from '../signoff-definition/field-locks';
-import { isOwnType } from '../signoff-definition/signoff-types';
+import { isOwnType } from '../signoff-definition/signoff-type-routing-rules';
 import { FITUP_RELEASE, namedAfterType } from '../routing/built-in-routing-rules';
 import { WorkflowStore } from './workflow-store.service';
 import { additionalSignoffs } from '../signoff-definition/additional-signoffs';

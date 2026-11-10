@@ -7,7 +7,7 @@ import { StageOption, StageTemplate, WorkflowStage } from '../model/workflow-typ
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../routing/routing-conditions';
 import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/routing-ids';
 import { getRoutingSignoffTypes } from '../../data/routing-signoff-types';
-import { signoffTypeOptions } from '../signoff-definition/signoff-types';
+import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { jointCodeSlots } from './attribute-context';
 import { AttributeCodeException, AttributeStageRules, getAttributeCodeExceptions } from './attribute-code-exceptions';
 

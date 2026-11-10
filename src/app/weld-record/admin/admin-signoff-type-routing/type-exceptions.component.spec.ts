@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { TypeExceptionsComponent } from './type-exceptions.component';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 
 describe('Type exceptions grid', () => {
   beforeEach(() => localStorage.clear());
@@ -20,7 +20,7 @@ describe('Type exceptions grid', () => {
     expect(Array.from(host.querySelectorAll('th')).map(th => th.textContent)).toContain('Type source');
     expect(sources()).toEqual(['Rejecting inspection', 'Rejecting inspection']);
     const routing = f.componentInstance.rows[0].routing;
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === routing ? { ...r, typeSource: undefined } : r));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === routing ? { ...r, typeSource: undefined } : r));
     f.detectChanges();
     expect(sources()).toEqual(['Signoff Type Selection', 'Rejecting inspection']);
     f.componentInstance.edit(f.componentInstance.rows[0]); f.detectChanges(); await f.whenStable();
@@ -40,11 +40,11 @@ describe('Type exceptions grid', () => {
   });
   it('cancels drafts and saves changes without changing another routing or its source', () => {
     const f = create(); const c = f.componentInstance; const row = c.rows[0];
-    const before = structuredClone(getSignoffTypeRows());
+    const before = structuredClone(getSignoffTypeRoutingRows());
     c.edit(row); row.rule.to = 'mt'; c.cancel(row);
     expect(c.rows[0].rule.to).toBe('5x');
     c.edit(c.rows[0]); c.rows[0].rule.to = 'ut'; c.save(c.rows[0]);
-    const after = getSignoffTypeRows();
+    const after = getSignoffTypeRoutingRows();
     expect(after.find(r => r.stepId === row.routing)!.typeExceptions![0].to).toBe('ut');
     expect(after.find(r => r.stepId === row.routing)!.typeSource).toBe('rejecting-inspection');
     for (const r of before.filter(r => r.stepId !== row.routing)) {
@@ -56,11 +56,11 @@ describe('Type exceptions grid', () => {
     const f = create(); const c = f.componentInstance;
     c.add(); const added = c.rows[0]; added.routing = 'excavation-ndt'; added.rule.to = 'mt'; c.save(added);
     c.move(added, 1);
-    expect(getSignoffTypeRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
+    expect(getSignoffTypeRoutingRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
     c.dragId = added.id;
     const other = c.rows.find(r => r.routing !== added.routing)!;
     c.drop(new Event('drop') as DragEvent, other);
-    expect(getSignoffTypeRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
+    expect(getSignoffTypeRoutingRows().find(r => r.stepId === added.routing)!.typeExceptions!.map(r => r.to)).toEqual(['5x', 'mt']);
     expect(create().componentInstance.rows.filter(r => r.routing === added.routing).map(r => r.rule.to)).toEqual(['5x', 'mt']);
   });
 });

@@ -2,20 +2,21 @@ import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { STORAGE } from '../../data/storage-keys';
 import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-routings';
-import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions, usesReturningInspectionType } from './signoff-types';
+import { signoffTypeOptions, usesReturningInspectionType } from './signoff-type-routing-rules';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../data/routing-signoff-types';
 
 describe('Signoff Type to Routing', () => {
   it('retains return context when an exception condition needs the performed inspection Type', () => {
-    setSignoffTypeRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
+    setSignoffTypeRoutingRows([{ stepId: 'final-ndt-vt5x', types: [{ type: 'vt' }], typeExceptions: [
       { from: 'vt', to: '5x', when: [[{ field: 'self.returningInspectionType', op: 'is', values: ['5x'] }]] }] }]);
     expect(usesReturningInspectionType('final-ndt-vt5x')).toBeTrue();
     expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0], { returningInspectionType: '5x' })?.[0].value).toBe('5x');
     expect(signoffTypeOptions('final-ndt-vt5x', JOBS[0])?.[0].value).toBe('vt');
   });
   it('replaces enabled configured Types once, merges duplicates and retains the default', () => {
-    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'vt', default: true }, { type: '5x' }],
+    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'vt', default: true }, { type: '5x' }],
       typeExceptions: [{ from: 'vt', to: '5x', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] },
         { from: '5x', to: 'pt', when: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
     expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([{ value: '5x', label: '5X', default: true }]);
@@ -23,7 +24,7 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('does not bypass replacement enable conditions or resurrect a deleted replacement', () => {
-    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'vt', default: true },
+    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'vt', default: true },
       { type: '5x', enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }],
       typeExceptions: [{ from: 'vt', to: '5x' }] }]);
     expect(signoffTypeOptions('fit', { ...JOBS[0], nInd: '3' })).toEqual([]);
@@ -32,13 +33,13 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('uses first matching AND/OR conditions for numbered Repair rows', () => {
-    setSignoffTypeRows([{ stepId: 'repair', types: [{ type: 'repair' }], typeExceptions: [
+    setSignoffTypeRoutingRows([{ stepId: 'repair', types: [{ type: 'repair' }], typeExceptions: [
       { from: 'repair', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }, { field: 'hull', op: 'contains', values: ['test'] }],
         [{ field: 'nInd', op: 'is', values: ['1'] }]] }, { from: 'repair', to: '5x' }] }]);
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '3', hull: 'TEST' })?.[0].value).toBe('vt');
     expect(signoffTypeOptions('repair-2', { ...JOBS[0], nInd: '2' })?.[0].value).toBe('5x');
   });
-  afterEach(() => { localStorage.removeItem(STORAGE.signoffTypes); localStorage.removeItem(STORAGE.routingSignoffTypes); });
+  afterEach(() => { localStorage.removeItem(STORAGE.signoffTypeRouting); localStorage.removeItem(STORAGE.routingSignoffTypes); });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
     const job = { ...JOBS[0], ndtFinal: 'VT' };
@@ -46,13 +47,13 @@ describe('Signoff Type to Routing', () => {
       expect(signoffTypeOptions(id, job)?.map(o => o.value)).toEqual(['vt']);
       expect(signoffTypeOptions(id, { ...job, ndtFinal: '5X' })?.map(o => o.value)).toEqual(['5x']);
     }
-    setSignoffTypeRows(getSignoffTypeRows().map(r => r.stepId === 'final-ndt-vt5x'
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'final-ndt-vt5x'
       ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [] })) } : r));
     expect(buildStages({ ...job, nInd: '3' }).find(s => s.id === 'final-ndt-vt5x')?.typeOptions?.map(o => o.value)).toEqual(['vt', '5x']);
   });
 
   it('does not select a disabled default, and no enabled Types still requires a pick', () => {
-    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'fit', default: true,
+    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'fit', default: true,
       enableWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] }] }]);
     const stage = buildStages({ ...JOBS[0], nInd: '3' }).find(s => s.id === 'fit')!;
     expect(stage.typeOptions).toEqual([]);
@@ -61,7 +62,7 @@ describe('Signoff Type to Routing', () => {
   });
 
   it('seeds the built-in steps plus Repair and Excavation NDT', () => {
-    const ids = getSignoffTypeRows().map(r => r.stepId);
+    const ids = getSignoffTypeRoutingRows().map(r => r.stepId);
     expect(ids).toContain('fit');
     expect(ids).toContain('final-ndt-utrt');
     expect(ids).toContain('repair');
@@ -70,7 +71,7 @@ describe('Signoff Type to Routing', () => {
 
   it('a step with no row has no Type', () => {
     expect(signoffTypeOptions('engineering-hold')).toBeUndefined();
-    setSignoffTypeRows(getSignoffTypeRows().filter(r => r.stepId !== 'tack'));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'tack'));
     expect(signoffTypeOptions('tack')).toBeUndefined();
   });
 
@@ -80,7 +81,7 @@ describe('Signoff Type to Routing', () => {
 
   it('Excavation NDT offers the rejecting method only while it has a row', () => {
     expect(excavationNdtStage('rt').typeOptions?.map(o => o.value)).toEqual(['rt']);
-    setSignoffTypeRows(getSignoffTypeRows().filter(r => r.stepId !== 'excavation-ndt'));
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'excavation-ndt'));
     expect(excavationNdtStage('rt').typeOptions).toBeUndefined();
   });
 

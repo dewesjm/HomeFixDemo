@@ -503,13 +503,13 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [definition-layout-list.component.ts](src/app/weld-record/admin/admin-signoff-type-definition/definition-layout-list.component.ts) | No | 5.88% |
 | [field-condition-editor.component.ts](src/app/weld-record/admin/admin-signoff-type-definition/field-condition-editor.component.ts) | No | 10% |
 
-### weld-record/admin/admin-signoff-types
+### weld-record/admin/admin-signoff-type-routing
 
 | Source file | Direct spec | Measured lines |
 |---|---|---|
-| [admin-signoff-types.component.ts](src/app/weld-record/admin/admin-signoff-types/admin-signoff-types.component.ts) | Yes | 52.23% |
-| [excavation-type-rules.component.ts](src/app/weld-record/admin/admin-signoff-types/excavation-type-rules.component.ts) | Yes | 93.33% |
-| [type-enable-conditions.component.ts](src/app/weld-record/admin/admin-signoff-types/type-enable-conditions.component.ts) | No | 7.69% |
+| [admin-signoff-type-routing.component.ts](src/app/weld-record/admin/admin-signoff-type-routing/admin-signoff-type-routing.component.ts) | Yes | 52.23% |
+| [excavation-type-rules.component.ts](src/app/weld-record/admin/admin-signoff-type-routing/excavation-type-rules.component.ts) | Yes | 93.33% |
+| [type-enable-conditions.component.ts](src/app/weld-record/admin/admin-signoff-type-routing/type-enable-conditions.component.ts) | No | 7.69% |
 
 ### weld-record/admin/admin-weld-positions
 
@@ -668,7 +668,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [routing-signoff-types.ts](src/app/data/routing-signoff-types.ts) | No | 80% |
 | [shown-fields.ts](src/app/weld-record/signoff-definition/shown-fields.ts) | Yes | 100% |
 | [signoff-parts.ts](src/app/weld-record/signoff-definition/signoff-parts.ts) | Yes | 100% |
-| [signoff-types.ts](src/app/weld-record/signoff-definition/signoff-types.ts) | Yes | 93.33% |
+| [signoff-type-routing-rules.ts](src/app/weld-record/signoff-definition/signoff-type-routing-rules.ts) | Yes | 93.33% |
 | [stage-display.ts](src/app/weld-record/signoff-definition/stage-display.ts) | No | 100% |
 | [stage-rules.ts](src/app/weld-record/signoff-definition/stage-rules.ts) | Yes | 100% |
 | [step-field-config.ts](src/app/weld-record/signoff-definition/step-field-config.ts) | Yes | 97.22% |

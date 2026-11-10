@@ -4,7 +4,7 @@ import { StepRef, definitionHas, verifyAgainst } from './step-field-config';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from '../routing/build-stages';
 import { JOBS } from '../../data/jobs';
-import { signoffTypeOptions } from './signoff-types';
+import { signoffTypeOptions } from './signoff-type-routing-rules';
 
 const hasCommentsBox = (s: StepRef) => definitionHas(s, 'comments');
 

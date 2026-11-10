@@ -1,4 +1,4 @@
-import { getSignoffTypeRows, setSignoffTypeRows } from '../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../data/signoff-type-routing';
 import { JOBS, Job } from '../../data/jobs';
 import { routingRole } from './routing-persona';
 import { getAddedTemplate, updateStageTemplate } from './routing-settings-rules';
@@ -7,8 +7,8 @@ import { buildStages } from './build-stages';
 
 describe('Configured routing personas', () => {
   const job = (nInd: string): Job => ({ ...JOBS[0], trade: 'Welding', nInd });
-  afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
-  beforeEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
+  beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
 
   for (const nInd of ['1', '2', '3']) {
     it(`defaults Excavation to the appropriate persona for indicator ${nInd}`, () => {

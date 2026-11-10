@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { AdminSignoffTypesComponent } from './admin-signoff-types.component';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { AdminSignoffTypeRoutingComponent } from './admin-signoff-type-routing.component';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 
 describe('Signoff Type to Routing admin', () => {
   it('exports readable ordered exception conditions with the routing and source', async () => {
-    setSignoffTypeRows([{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
+    setSignoffTypeRoutingRows([{ stepId: 'fit', types: [{ type: 'fit' }], typeExceptions: [
       { from: 'fit', to: 'vt', when: [[{ field: 'nInd', op: 'is', values: ['3'] }]] }] }]);
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeRoutingComponent());
     TestBed.flushEffects();
     let exported: Blob | undefined;
     spyOn(URL, 'createObjectURL').and.callFake(blob => { exported = blob as Blob; return 'blob:test'; });
@@ -20,10 +20,10 @@ describe('Signoff Type to Routing admin', () => {
     expect(text).toContain('Fit -> VT ((N Ind. is 3))');
   });
   beforeEach(() => localStorage.clear());
-  afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); });
+  afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
   it('shows Type source read-only while editing and re-adds Excavation on the rejecting inspection', async () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
-    const f = TestBed.createComponent(AdminSignoffTypesComponent); f.detectChanges(); await f.whenStable();
+    const f = TestBed.createComponent(AdminSignoffTypeRoutingComponent); f.detectChanges(); await f.whenStable();
     const c = f.componentInstance; const host: HTMLElement = f.nativeElement;
     const row = c.rows().find(r => r.stepId === 'excavation-ndt')!;
     c.startEdit(row); f.detectChanges(); await f.whenStable();
@@ -36,7 +36,7 @@ describe('Signoff Type to Routing admin', () => {
     expect(c.rows()[0].typeSource).toBeUndefined();
   });
   it('cancels nested condition edits and saves changed enable rules', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeRoutingComponent());
     const row = component.rows().find(r => r.stepId === 'final-ndt-vt5x')!;
     const original = structuredClone(row.types);
     component.startEdit(row);
@@ -47,14 +47,14 @@ describe('Signoff Type to Routing admin', () => {
     component.startEdit(restored);
     restored.types[0].enableWhen = [];
     component.saveEdit(restored);
-    expect(getSignoffTypeRows().find(r => r.stepId === row.stepId)!.types[0].enableWhen).toEqual([]);
+    expect(getSignoffTypeRoutingRows().find(r => r.stepId === row.stepId)!.types[0].enableWhen).toEqual([]);
   });
   it('retains Excavation Type rules when another routing is edited and saved', () => {
-    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypesComponent());
-    const expected = getSignoffTypeRows().find(r => r.stepId === 'excavation-ndt');
+    const component = TestBed.runInInjectionContext(() => new AdminSignoffTypeRoutingComponent());
+    const expected = getSignoffTypeRoutingRows().find(r => r.stepId === 'excavation-ndt');
     const row = component.rows().find(r => r.stepId === 'tack')!;
     component.startEdit(row); component.saveEdit(row);
-    expect(getSignoffTypeRows().find(r => r.stepId === 'excavation-ndt')).toEqual(expected);
+    expect(getSignoffTypeRoutingRows().find(r => r.stepId === 'excavation-ndt')).toEqual(expected);
     expect(component.steps.filter(s => s.id === 'repair').length).toBe(1);
   });
 });

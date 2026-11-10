@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingComponent } from './admin-routing.component';
 import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/routing-settings-rules';
-import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
+import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { buildStages } from '../../routing/build-stages';
 import { JOBS } from '../../../data/jobs';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
@@ -16,7 +16,7 @@ describe('Routing Settings rules editor', () => {
     localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [
       { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', rejectToStage: '' },
     ] }));
-    setSignoffTypeRows(getSignoffTypeRows());
+    setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
@@ -147,7 +147,7 @@ describe('Routing Settings rules editor', () => {
 
   it('renders stable insertion targets, saves their labels and rejects an unconditional cycle', fakeAsync(() => {
     addStageTemplate('Welding', { id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
-    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
+    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
     updateStageTemplate('Welding', 'extra', { status: 'active' });
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();
@@ -199,7 +199,7 @@ describe('Routing Settings rules editor', () => {
     expect(host.textContent).toContain('Inserted routings');
     expect(host.textContent).not.toContain('Added routings');
     expect(host.querySelector('a[href="/admin/signoff-fields"]')).toBeNull();
-    expect(host.querySelector('a[href="/admin/signoff-types"]')).toBeNull();
+    expect(host.querySelector('a[href="/admin/signoff-type-routing"]')).toBeNull();
     expect(host.querySelector('a[href="/admin/routing-signoff-types"]')).toBeNull();
     const saved = fixture.componentInstance.rows().find(r => r.routing === 'Rendered inspection')!;
     fixture.componentInstance.startEdit(saved);
@@ -226,7 +226,7 @@ describe('Routing Settings rules editor', () => {
     expect(component.rejectTargets(row).some(t => t.id === id)).toBeFalse();
     component.toggleStatus(row);
     expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('draft');
-    setSignoffTypeRows([...getSignoffTypeRows(), { stepId: id, types: [{ type: 'vt', default: true }] }]);
+    setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'vt', default: true }] }]);
     component.toggleStatus(row);
     expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('active');
     component.startEdit(row);
@@ -236,7 +236,7 @@ describe('Routing Settings rules editor', () => {
     row = reopened.rows().find(r => r.id === row.id)!;
     expect(row.routing).toBe('Renamed inspection');
     expect(row.sequence).toBe(0);
-    expect(getSignoffTypeRows().some(t => t.stepId === id)).toBeTrue();
+    expect(getSignoffTypeRoutingRows().some(t => t.stepId === id)).toBeTrue();
     reopened.toggleStatus(row);
     expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('inactive');
     expect(() => deleteStageTemplate('Welding', id)).toThrowError(/Deactivate/);

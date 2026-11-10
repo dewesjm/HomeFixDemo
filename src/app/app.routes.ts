@@ -20,7 +20,7 @@ import { AdminLocationsComponent } from './weld-record/admin/admin-locations/adm
 import { AdminShipLocationsComponent } from './weld-record/admin/admin-ship-locations/admin-ship-locations.component';
 import { ImportShipLocationsComponent } from './weld-record/admin/admin-ship-locations/import-ship-locations.component';
 import { AdminRoutingSignoffTypesComponent } from './weld-record/admin/admin-routing-signoff-types/admin-routing-signoff-types.component';
-import { AdminSignoffTypesComponent } from './weld-record/admin/admin-signoff-types/admin-signoff-types.component';
+import { AdminSignoffTypeRoutingComponent } from './weld-record/admin/admin-signoff-type-routing/admin-signoff-type-routing.component';
 import { AdminSignoffTypeDefinitionComponent } from './weld-record/admin/admin-signoff-type-definition/admin-signoff-type-definition.component';
 import { AdminWeldPositionsComponent } from './weld-record/admin/admin-weld-positions/admin-weld-positions.component';
 import { AdminBannerComponent } from './weld-record/admin/admin-banner/admin-banner.component';
@@ -75,7 +75,7 @@ export const routes: Routes = [
   { path: 'admin/ship-locations', component: AdminShipLocationsComponent, title: 'EWR - Ship Locations' },
   { path: 'admin/ship-locations/import', component: ImportShipLocationsComponent, title: 'EWR - Import Ship Locations' },
   { path: 'admin/routing-signoff-types', component: AdminRoutingSignoffTypesComponent, title: 'EWR - Signoff Types' },
-  { path: 'admin/signoff-types', component: AdminSignoffTypesComponent,     title: 'EWR - Signoff Type to Routing' },
+  { path: 'admin/signoff-type-routing', component: AdminSignoffTypeRoutingComponent,     title: 'EWR - Signoff Type to Routing' },
   { path: 'admin/signoff-fields', component: AdminSignoffTypeDefinitionComponent, title: 'EWR - Signoff Type Forms' },
   { path: 'admin/repair-codes', component: AdminRepairCodesComponent, title: 'EWR - Repair Codes' },
   { path: 'admin/weld-colors', component: AdminWeldColorsComponent, title: 'EWR - Weld Colors' },

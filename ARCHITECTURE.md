@@ -153,10 +153,11 @@ src/app/
                            insertion-target-options, insertion-validation, instance-identity,
                            routing-configuration-error
       preview/             route-preview (the demo "On signoff, this routes to" line), signed-flag-reasons
-    signoff-definition/    What each routing's sign-off shows, requires and locks (Admin > Routing Signoff
+    signoff-definition/    What each routing's sign-off shows, requires and locks (Admin > Signoff
                            Types / Signoff Type to Routing / Signoff Type Forms):
                            additional-signoffs (other routings a Type also signs; the Types themselves are
-                           data/routing-signoff-types), signoff-types (which routings offer which),
+                           data/routing-signoff-types), signoff-type-routing-rules (the Type options a routing
+                           offers; its rows are data/signoff-type-routing),
                            step-field-config (one definition per Type, defaults, localStorage), field-rules,
                            field-rule-lines, field-conditions, condition-context, stage-property-keys, field-fill,
                            field-locks, shown-fields, definition-layout, signoff-parts, stage-rules,
@@ -220,7 +221,7 @@ src/app/
                              saved here; they come from the built-in routing definitions
       admin-set-routing/     Admin → Routing Override (change a joint's current routing; typed Hull/Drawing/Joint + required reason)
       admin-routing-signoff-types/ Admin → Signoff Types (every Type: name, Signs routing)
-      admin-signoff-types/ Admin → Signoff Type to Routing (seeded table: which routings have a Type droplist, and which Types it offers)
+      admin-signoff-type-routing/ Admin → Signoff Type to Routing (seeded table: which routings have a Type droplist, and which Types it offers)
       admin-signoff-type-definition/  Admin → Signoff Type Forms (/admin/signoff-fields): configure which
                              catalog fields are active on each Type; live configuration stored in
                              welding:step-field-config (key in data/storage-keys.ts). Parts: definition-layout-list
@@ -328,6 +329,8 @@ src/app/
     routing-settings.ts  Routing Settings rows: starting rows with saved changes applied, and saving them
     routing-signoff-types.ts  Admin > Signoff Types rows: every Type (name, stored value, Signs routing, also signs),
                          the starting Types, load/save and lookup by value
+    signoff-type-routing.ts  Admin > Signoff Type to Routing rows: which Types each routing offers, its default,
+                         starting Enable when conditions and Excavation Type exceptions; load/save
     assignments.ts       Assignment model + seeded generator (36)
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     weld-assignment.ts   Stand-in for the external system that sets GWP / WTN / Filler Metal (see "External assignment")
@@ -491,7 +494,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - Seeds tick Type on the Types whose routing showed a Type droplist (not Pre-Fit, Fit-Up Insp, Fit-Up Release, Records Review or Sold), Inspection Results on Types whose routing has a reject target, and Comments everywhere but Sold.
 - **Comments**: one optional Comments box: the catalog's `comments` field, on a form when its Signoff Type's definition lists it, following Show when, Disabled when and Required like any other field. It's saved in `signoffInputs.comments`.
 - **Types**: Admin > Signoff Types (`data/routing-signoff-types.ts`) lists every Type (name, stored value, Signs routing); a Type is added there first. The Types named after a routing (Pre-Fit, Fit, Tack, Fit-Up Insp, Fit-Up Release, Repair, the Records Reviews, Sold) use that routing's id as their value, so rules keyed by routing id (`isRoutingLockedField()`, `drawnByOwnForm()`) read the same on the Type's definition. A routing is a status; its Types are what can be signed in it.
-- **Type dropdown** for stages with `typeOptions`, which come only from Admin > Signoff Type to Routing (`weld-record/signoff-definition/signoff-types.ts`): a seeded table the admin adds rows to and removes them from, each row naming the Types a routing offers (by value) and its default; `signoffTypeOptions()` joins them with their name and settings, leaving out a Type deleted from Signoff Types. A routing with no row has no Type. Every built-in routing has a row (the ones without a choice offer one Type, named after the routing).
+- **Type dropdown** for stages with `typeOptions`, which come only from Admin > Signoff Type to Routing (rows in `data/signoff-type-routing.ts`, options from `signoff-definition/signoff-type-routing-rules.ts`): a seeded table the admin adds rows to and removes them from, each row naming the Types a routing offers (by value) and its default; `signoffTypeOptions()` joins them with their name and settings, leaving out a Type deleted from Signoff Types. A routing with no row has no Type. Every built-in routing has a row (the ones without a choice offer one Type, named after the routing).
   - Every Repair round reads the Repair row. Excavation NDT reads its configured Type source and ordered material exceptions on Signoff Type to Routing (`excavationTypeOptions()`); the default source is the rejecting inspection, with PT to 5X for either non-ferrous/austenitic member.
   - A routing whose options have **no default** starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired()` in `weld-record/signoff-definition/stage-rules.ts`), even with one option; a default pre-fills it.
   - The pick is stored in both `inspectionType` and `signoffType` (`typeValues()`, stage-rules.ts); one handler (`typeChange()`, `weld-record/joint-page/rules/type-change.ts`) sets them on every routing, **clears the form** (inputs, sign-off inputs and the routing's red messages) and loads the new Type's definition; it's recorded in History. Every Type reads its own form at render, validation, fill and History time. No fields are copied onto the routing. Type changes keep only Repair-round origin and inspection-exception bookkeeping.
@@ -586,7 +589,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - "Which phase" (root/layer/final), the exact rejecting stage id, and its inspection method are captured on the Repair stage's own `inputs['originPhase']`/`['originStageId']`/`['originInspectionType']` when it's created (parsed off the rejecting NDT stage, e.g. `root-ndt-mtpt` + `inspectionType: 'mt'`) — internal bookkeeping, not real `StageField`s, so none of it is rendered as a field.
   - `stageFromTemplate()` (`weld-record/routing/inserted/added-routings.ts`) builds a live `WorkflowStage` from a `StageTemplate` for both Repair and Excavation NDT.
 - **Excavation NDT** loads the selected inspection Type's shared Signoff Type Form (`definitionId()`), including its layout, conditions and required fields. There is no separate combined Excavation form. `excavationNdtStageFor()` builds the round’s shell and selects its persona from the configured Persona rules.
-  - `excavationTypeOptions()` in `signoff-types.ts` resolves the configured source and first matching material exception. The seeded PT to 5X exception tests Material Type 1 or 2 using Admin > Material Classification. No material exception is embedded in routing code.
+  - `excavationTypeOptions()` in `signoff-type-routing-rules.ts` resolves the configured source and first matching material exception. The seeded PT to 5X exception tests Material Type 1 or 2 using Admin > Material Classification. No material exception is embedded in routing code.
   - At insertion, `inputs.typeChangedFromPtTo5x` records whether PT was replaced by 5X. Type changes and route-back blanking preserve this internal value, just as Repair preserves `originPhase`, `originStageId` and `originInspectionType`.
   - The added-routing template's accepted rules route a PT to 5X replacement to Rejecting phase's VT/5X, otherwise to Rejecting NDT; Reject routes to = Own Repair. `rule-targets.ts` resolves the current round and the joint's regular/NQC row. Returning to VT/5X after the exception enables 5X on that routing.
   - `route-preview.ts` uses the real dry run for every routing, including Repair and Excavation NDT, so admin changes affect both the explanation and the actual routing. `routing/preview/signed-flag-reasons.ts` explains routings a signoff turned on or off or whose Types changed: an Attribute Code Exceptions row names its code, otherwise the Routing Settings Included when; after an UNSAT route-back only changes still true are listed.
@@ -759,11 +762,11 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 - **Job identity** — hulls repeat by design. Any new seed data or import must keep `id` unique and `(hull, drawing, joint)` unique; pickers and labels should show all three, not the hull alone.
 - **Seeded workflows** are deterministic per job id and pre-sign random leading stages, each with its Sign-off History entry; only joints still on their first routing (Pre-Fit, or Fit when the joint has no Pre-Fit) start with no history.
 - **Nuclear Indicator** '1'/'2'/'3' drives weld-position visibility, pre-fit visibility and who signs Fit-Up Insp and NDT, through **NQC rows** (`weld-record/routing/routing-ids.ts`): each `NQC_SPLIT_STEP_IDS` routing has a twin template `nqc-<id>` (`WELDING_STEPS` in `welding-steps.ts`, label `NQC <label>`, displayName = the regular label, role NQC Inspector).
-  - `DEFAULT_STEP_CONDITIONS` adds `N Ind. is 1 or 2` to the NQC row's rules and `is not 1 or 2` to the regular row's; `DEFAULT_REJECT_RULES` copies the regular row's to the NQC row; `signoff-types.ts` seeds an NQC row per NDT row.
+  - `DEFAULT_STEP_CONDITIONS` adds `N Ind. is 1 or 2` to the NQC row's rules and `is not 1 or 2` to the regular row's; `DEFAULT_REJECT_RULES` copies the regular row's to the NQC row; `data/signoff-type-routing.ts` seeds an NQC row per NDT row.
   - Code that reads the phase or method from a routing id uses `baseStepId()`; code that jumps to a built-in routing (`${phase}-ndt-utrt`, reject targets) goes through `stepOnJoint()`, which finds whichever twin the joint has.
   - Excavation NDT's NQC Inspector role is still set in code (`excavationNdtStageFor()`).
   - **Display Name** (`StageTemplate.displayName`, Routing Settings column): `buildStages()` sets the joint's `label` to `displayName || label`, so the joint, routing bar, Pipe Welding and History show it; the Routing name (`label` on the template) is what rules and condition fields use.
-- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `routing-conditions.ts`, and Type enable rules in `signoff-definition/signoff-types.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
+- **NDT routing** (plain-language version with the chart: ROUTING.md) — each phase's NDT routings come from its **Joint Details** values (starting routing inclusion rules in `data/welding-steps.ts`, matched by `routing-conditions.ts`, and starting Type enable rules in `data/signoff-type-routing.ts`): **NDT Root + RT Root** → Root, **NDT Each** → Layer, **NDT Final + RT Final** → Final.
   - The general `job.ndt` field doesn't drive routing.
   - Root and Final, in 5X/VT, MT/PT, RT/UT order: **VT is always required**, or 5X instead when the NDT value is 5X; MT, PT or UT adds that routing offering only that method; MT/PT adds the MT/PT routing with a choice; an **RT degree** (10/100/360/60/75, not blank or NA) adds the RT/UT routing offering only RT.
   - Layer gets one routing selected by `ndtEach`: VT/5X or MT/PT, with no additional VT. Layer has no RT/UT routing (`PHASE_NDT_KINDS`, `routing-ids.ts`), so NDT Each takes no UT (`NDT_EACH_VALUES`). Blank NDT Each Layer means no Layer NDT.
@@ -841,10 +844,10 @@ Emulates an external system that sets a welding routing's **GWP, WTN, Filler Met
 
 ### Signoff Type availability conditions
 
-`AvailableType.enableWhen` in `signoff-definition/signoff-types.ts` stores Joint Details rules per Type
+`AvailableType.enableWhen` in `data/signoff-type-routing.ts` stores Joint Details rules per Type
 per routing. `signoffTypeOptions(stageId, job)` evaluates them using the routing condition engine;
 `buildStages()` uses the result, including an empty list, before choosing a default. The admin editor
-is `admin-signoff-types/type-enable-conditions.component.ts`. Excavation's Type source and material
+is `admin-signoff-type-routing/type-enable-conditions.component.ts`. Excavation's Type source and material
 exceptions remain separate from ordinary Type availability.
 
 Returning inspection Type is available in Enable when conditions. It records the inspection Type
@@ -891,7 +894,7 @@ added-routing-configuration.ts owns name/readiness validation using the existing
 
 ## Shared Type Exceptions
 
-`signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-types.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-types/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance. Workflow version 2.10.58 applies the documented first-load demo cache reset policy.
+`signoff-definition/type-exceptions.ts` owns ordered, non-chaining replacement matching and readable conditions. `signoff-type-routing-rules.ts` resolves configured/contextual candidates, enable conditions, replacement metadata, defaults and deduplication. `admin/admin-signoff-type-routing/type-exceptions.component.ts` edits the selected routing's source and rules using the existing condition editor. Ordinary insertion validates effective forms and retains resolved choices/context on its instance. Workflow version 2.10.58 applies the documented first-load demo cache reset policy.
 
 
 ## Repair Code lookup configuration
