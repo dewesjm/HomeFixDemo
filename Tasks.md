@@ -31,6 +31,7 @@ Queued in AGENTS.md, in this order.
     - `routing/on-signoff/`: take a look at what's in it.
     - `routing/preview/`: rename to `routing-preview/`.
     - `built-in-routing-rules`, `current-routing`: unclear what they are; explain or rename. (`inspection-context` DONE: explained, moved to `conditions/inspection-types.ts`.)
+    - `routing/ndt.ts`, `routing/route-to-rules.ts`, `routing/routing-ids.ts`: review what each holds and whether the name and location fit (user, 2026-11-09).
     - `ndt-type-blank.spec.ts`: DONE, split into `build-stages.spec.ts` and `inserted/excavation-definition.spec.ts`.
     - Signoff panel and related objects: consider a standalone folder for doing actual signoffs.
     - Theme picker: DONE, moved into `avatar-menu/` (only the avatar menu uses it; may move to `shared/` later with the avatar menu).
