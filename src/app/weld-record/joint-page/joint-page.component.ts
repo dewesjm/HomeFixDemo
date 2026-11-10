@@ -52,7 +52,6 @@ import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
 import { StageFormContext, visibleStageFields } from '../signoff/stage-form';
 import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from '../signoff/sign-validation';
-import { fitupVerifyValue, reviewVerifyValue } from '../signoff/verify-values';
 import { routePreviewLabel } from '../routing/routing-preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 
@@ -242,8 +241,6 @@ export class JointPageComponent implements OnDestroy {
       visibleSignoffFields: (s) => this.visibleSignoffFields(s),
       fieldError: (sid, fk) => errors.fieldError(sid, fk),
       clearFieldError: (sid, fk) => errors.clearFieldError(sid, fk),
-      getFabValue: (k) => fitupVerifyValue(k, job, this.fab()),
-      getReviewValue: (k) => reviewVerifyValue(k, job),
       inspectionTypeRequired: (s) => inspectionTypeRequired(s),
       routePreviewLabel: (s) => this.routePreviewLabel(s),
       holdNote: () => this.holdNote(),

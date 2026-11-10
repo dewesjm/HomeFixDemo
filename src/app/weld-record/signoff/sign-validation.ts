@@ -2,17 +2,15 @@
    sign-off form (after a sign attempt or on blur), or, with no field, a line beside Signoff. Field
    errors are keyed `${stageId}:${fieldKey}`; Decision and Type use synthetic keys (__decision,
    __inspectionType). */
-import { FormField } from '../catalogs/field-catalog';
+import { FormField, isVerifyRow } from '../catalogs/field-catalog';
 import { attributeAccessError } from '../attribute-codes/attribute-validation';
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { checksFabrication } from '../fabrication/fabrication-steps';
-import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
+import { rtDegreeRequired, rtDegrees } from '../signoff-definition/rt-degree-minimum';
 import { ACTUAL_MIN_MAX, actualOrderError } from '../signoff-definition/weld-fields';
 import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../signoff-definition/stage-rules';
-import { rtDegrees } from '../signoff-definition/rt-degree-minimum';
 import { DECISION_KEY } from '../../data/signoff-type-forms';
-import { isVerifyRow } from '../catalogs/field-catalog';
 import { standardRequiredMessage } from '../signoff-definition/field-rules';
 import { DrawnFieldRule, drawnFieldRule, visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';

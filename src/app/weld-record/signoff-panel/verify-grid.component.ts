@@ -6,6 +6,7 @@ import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
 import { verifyAgainst } from '../signoff-definition/signoff-type-form-rules';
 import { SignoffContext } from './signoff-context';
+import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
 
 @Component({
   selector: 'app-verify-grid',
@@ -28,7 +29,7 @@ import { SignoffContext } from './signoff-context';
           @for (f of rows(); track f.key) {
             <tr [class.table-error]="!!ctx().fieldError(st.id, f.key)">
               <td class="py-1 pl-0 pr-10" [class.text-error]="!!ctx().fieldError(st.id, f.key)">{{ f.label }}</td>
-              <td class="py-1 pr-14">{{ (fab ? ctx().getFabValue(f.key) : ctx().getReviewValue(f.key)) || '-' }}</td>
+              <td class="py-1 pr-14">{{ value(f.key, fab) || '-' }}</td>
               <td class="py-1 px-5 text-center bg-base-200/40">
                 <input type="checkbox" class="checkbox checkbox-sm"
                        [class.checkbox-error]="!!ctx().fieldError(st.id, f.key)"
@@ -50,6 +51,12 @@ export class VerifyGridComponent {
 
   againstFabrication(): boolean {
     return verifyAgainst(this.stage()) === 'fabrication';
+  }
+
+  /* the value a row checks: the joint's Fabrication value, or its Joint Details value */
+  value(key: string, fab: boolean): string {
+    const job = this.ctx().job;
+    return fab ? fitupVerifyValue(key, job, this.ctx().wf().fabricationData) : reviewVerifyValue(key, job);
   }
 
   check(f: FormField, checked: boolean) {

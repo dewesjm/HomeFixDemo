@@ -1,6 +1,6 @@
 /* Per-step rules about what the joint page shows and what can be changed afterwards */
 import { WorkflowStage } from '../model/workflow-types';
-import { baseStepId, isRepairStageId } from '../../data/welding-step-ids';
+import { baseStepId, isRepairStageId, isExcavationNdtStageId } from '../../data/welding-step-ids';
 import { DECISION_KEY, TYPE_KEY } from '../../data/signoff-type-forms';
 import { definitionHas, hasStepActivation } from './signoff-type-form-rules';
 import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
@@ -35,6 +35,20 @@ export function inspectionTypeRequired(stage: Pick<WorkflowStage, 'typeOptions'>
    blank); both always hold the same pick */
 export function typeValues(value: string): Pick<WorkflowStage, 'inspectionType' | 'signoffType'> {
   return { inspectionType: value, signoffType: value || 'standard' };
+}
+
+/* Picking a Type updates both stored Type values and clears the form's entered values.
+   Repair-round origin survives the change; inspection facts use the selected Type. "ID is accessible",
+   asked above the Type when Attribute Code Exceptions has accessible rules, is kept too. */
+export function typeChange(stage: WorkflowStage, value: string): Partial<WorkflowStage> {
+  const kept = isRepairStageId(stage.id) || isExcavationNdtStageId(stage.id)
+    ? ['originPhase', 'originStageId', 'originInspectionType']
+    : ['returningInspectionType', ...(stage.attributeRules?.accessible.length ? ['idAccessible'] : [])];
+  return {
+    ...typeValues(value),
+    inputs: Object.fromEntries(kept.filter(k => k in stage.inputs).map(k => [k, stage.inputs[k]])),
+    signoffInputs: {},
+  };
 }
 
 /* the Type a step starts with and keeps until someone changes it: its default option, or blank when

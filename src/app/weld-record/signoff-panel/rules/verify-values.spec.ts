@@ -1,4 +1,4 @@
-import { JOBS, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../../data/jobs';
 import { fitupVerifyValue, reviewVerifyValue } from './verify-values';
 
 const job: Job = JOBS[0];

@@ -24,8 +24,6 @@ export interface SignoffContext {
   visibleSignoffFields: (stage: WorkflowStage) => FormField[];
   fieldError: (stageId: string, fieldKey: string) => string | undefined;
   clearFieldError: (stageId: string, fieldKey: string) => void;
-  getFabValue: (fieldKey: string) => string;
-  getReviewValue: (fieldKey: string) => string;
   inspectionTypeRequired: (stage: WorkflowStage) => boolean;
   routePreviewLabel: (stage: WorkflowStage) => string;
   holdNote: () => string;

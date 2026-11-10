@@ -17,7 +17,7 @@ import { fillChanges } from '../signoff-definition/field-fill';
 import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './stage-form';
 import { requiredError } from './sign-validation';
 import { selectChangeCascade, typedRequirementChanges } from './weld-cascade';
-import { typeChange } from './type-change';
+import { typeChange } from '../signoff-definition/stage-rules';
 import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
 import { JointOverridesService } from '../joint-page/joint-overrides.service';
 import { SignoffFormErrorsService } from './signoff-form-errors.service';
