@@ -11,7 +11,7 @@ import { insertionConfigurationErrors } from '../../routing/inserted-routing/ins
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
 import { addedRoutingSetup, routingNameError } from '../../routing/inserted-routing/added-routing-configuration';
-import { StageTemplate } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { isAddedTemplateId } from '../../routing/routing-settings-rules';
 import { RULE_TARGETS, availableRuleTargets } from '../../routing/on-signoff/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -36,7 +36,7 @@ import {
   allStageIds,
   getTemplates,
 } from '../../routing/routing-settings-rules';
-import { ROLES, type Role } from '../../model/workflow-types';
+import { ROLES, type Role } from '../../model/roles';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { ConditionClause, ConditionRule } from '../../conditions/joint-conditions';
 import { describeConditions } from '../../conditions/condition-text';

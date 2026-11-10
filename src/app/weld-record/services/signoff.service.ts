@@ -5,7 +5,8 @@ import { formInputFields, formSignoffFields } from '../signoff-definition/form-f
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
-import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
+import { SignoffInput } from '../model/history';
+import { WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { activeStage } from '../routing/current-routing';
 import { signoffUndo } from '../routing/route-changes';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';

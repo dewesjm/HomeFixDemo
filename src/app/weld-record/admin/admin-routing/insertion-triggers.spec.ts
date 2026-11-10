@@ -1,5 +1,5 @@
 import { insertionTriggers } from './insertion-triggers';
-import { StageTemplate } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 
 describe('insertion condition sources', () => {
   const source: StageTemplate = { id: 'inspection', label: 'Inspection', required: true, rejectToStage: 'repair', thenRules: [{ when: [], to: 'insert:extra' }] };

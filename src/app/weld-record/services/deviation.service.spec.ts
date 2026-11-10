@@ -6,7 +6,7 @@ import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 import { activeStageId, isStageLocked } from '../routing/current-routing';
 import { seededWorkflow } from '../../data/seeded-workflow';
-import { DeviationItem } from '../model/workflow-types';
+import { DeviationItem } from '../model/deviation';
 
 function weldingJob(): Job {
   const job = { ...JOBS[0], id: 'deviation-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };

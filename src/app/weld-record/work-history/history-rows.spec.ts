@@ -1,4 +1,5 @@
-import { HistoryEntry, JobWorkflow, WorkflowStage } from '../model/workflow-types';
+import { HistoryEntry } from '../model/history';
+import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { correctableKeys, deprogressableKey, historyRows } from './history-rows';
 import { JOBS } from '../../data/jobs';
 

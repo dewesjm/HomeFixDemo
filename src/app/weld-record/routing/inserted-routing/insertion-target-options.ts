@@ -1,5 +1,5 @@
 /* Relative destinations are offered only when every configured insertion source supplies context. */
-import { StageTemplate } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { insertionDefinitionId } from './instance-identity';
 import { baseStepId, isRepairStageId, isExcavationNdtStageId } from '../routing-ids';
 import { RULE_TARGETS } from '../on-signoff/rule-targets';

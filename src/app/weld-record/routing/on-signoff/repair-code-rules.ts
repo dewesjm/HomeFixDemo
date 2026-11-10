@@ -1,7 +1,8 @@
 /* Repair choices use the existing destination rules; new labels never acquire Cut semantics. */
 import { Job } from '../../../data/jobs';
 import { getRepairCodes } from '../../../data/repair-codes';
-import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { firstMatchingRule } from '../route-to-rules';
 
 /* a Repair coded Cut starts the joint over from this step (when the joint has it) */

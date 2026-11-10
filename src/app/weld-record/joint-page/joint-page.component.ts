@@ -28,7 +28,8 @@ import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
 import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { WorkflowStage, STAGE_RESULT_OPTIONS, SignoffInput,  } from '../model/workflow-types';
+import { WorkflowStage, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
+import { SignoffInput } from '../model/history';
 import {
   isStageLocked,
   currentRoutingLabel,

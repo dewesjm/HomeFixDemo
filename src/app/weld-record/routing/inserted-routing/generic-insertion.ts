@@ -2,7 +2,8 @@
 import { RoutingConfigurationError } from '../routing-configuration-error';
 import { getStepFieldConfig } from '../../../data/signoff-type-forms';
 import { Job } from '../../../data/jobs';
-import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-routings';

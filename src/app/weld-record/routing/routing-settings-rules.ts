@@ -8,7 +8,7 @@ import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../model/stage-template';
 import { excavationPossibleTypes, signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { signoffTypeRoutingVersion } from '../../data/signoff-type-routing';
 

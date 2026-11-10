@@ -1,6 +1,7 @@
 /* Turning a step's recorded values into what History and the joint page show */
 import { FormField } from '../catalogs/field-catalog';
-import { SignoffInput, WorkflowStage } from '../model/workflow-types';
+import { SignoffInput } from '../model/history';
+import { WorkflowStage } from '../model/workflow-types';
 import { isUserEditable } from './field-locks';
 import { hasDecision, showsType } from './stage-rules';
 import { lookupCatalogField } from '../catalogs/field-catalog';

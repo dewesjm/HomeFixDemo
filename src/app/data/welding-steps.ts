@@ -1,7 +1,7 @@
 /* Admin > Routing Settings starting rows: the built-in Welding routing in order, its starting Included when,
    Reject routes to and Then go to rules, and the added routings (Repair, Excavation NDT, Engineering Hold).
    Saved changes are in routing-settings.ts. Type options are in signoff-type-routing.ts. */
-import { StageOption, StageTemplate } from '../weld-record/model/workflow-types';
+import { StageOption, StageTemplate } from '../weld-record/model/stage-template';
 import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from '../weld-record/routing/routing-ids';
 import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';

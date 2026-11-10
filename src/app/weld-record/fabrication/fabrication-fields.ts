@@ -2,7 +2,7 @@
 import { jointDesignOptions } from '../../data/joint-designs';
 import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { hullHasUsage } from './ship-location-options';
-import { SignoffInput } from '../model/workflow-types';
+import { SignoffInput } from '../model/history';
 
 export interface FabricationField {
   key: string;

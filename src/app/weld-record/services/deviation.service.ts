@@ -5,7 +5,8 @@
    deviation, the hold step and every History entry stay on record. */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { Deviation, DeviationItem, JobWorkflow, WorkflowStage } from '../model/workflow-types';
+import { Deviation, DeviationItem } from '../model/deviation';
+import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isEngineeringHoldId } from '../routing/routing-ids';
 import { nextEngineeringHoldId } from '../routing/inserted-routing/added-routings';

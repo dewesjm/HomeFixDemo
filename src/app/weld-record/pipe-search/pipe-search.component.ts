@@ -21,7 +21,7 @@ import {
 import { SignoffService } from '../services/signoff.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { currentRoutingLabel, activeStage } from '../routing/current-routing';
-import { ROLES, DEFAULT_ROLE, type Role } from '../model/workflow-types';
+import { ROLES, DEFAULT_ROLE, type Role } from '../model/roles';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 import { jointRoute } from '../joint-page/joint-route';
 

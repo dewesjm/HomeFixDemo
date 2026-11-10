@@ -1,7 +1,7 @@
 /* Admin > Routing Settings: the dialog for a routing's plain-English description (reference text only). */
 import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { StageTemplate } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { updateStageTemplate } from '../../routing/routing-settings-rules';
 
 @Component({

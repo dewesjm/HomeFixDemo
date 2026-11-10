@@ -1,7 +1,8 @@
 /* A joint's History as table rows (History screen, Records Review), and which rows offer
    Deprogress and Correct */
 import { Job } from '../../data/jobs';
-import { HistoryEntry, JobWorkflow, SignoffInput } from '../model/workflow-types';
+import { HistoryEntry, SignoffInput } from '../model/history';
+import { JobWorkflow } from '../model/workflow-types';
 import { fabricationChanges } from '../fabrication/fabrication-fields';
 
 /* one History entry with its joint's identifiers; sign-offs carry inputs (every editable field and its value at that moment) */

@@ -1,13 +1,9 @@
-/* The workflow data model: a joint's steps, what's recorded on them, and its history */
-import { Job } from '../../data/jobs';
-import { ConditionRule } from '../conditions/joint-conditions';
-import { RouteToRule } from '../routing/route-to-rules';
+/* a joint's workflow: its steps and what's recorded on them. History is history.ts, deviations
+   deviation.ts, Routing Settings rows stage-template.ts, roles roles.ts */
+import type { HistoryEntry, SignoffUndo } from './history';
+import type { Deviation } from './deviation';
+import type { StageTemplate, StageOption } from './stage-template';
 import type { AttributeStageRules } from '../attribute-codes/exception-effects';
-
-/* roles a step routes to; Pipe Welding filters its queue by these */
-export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;
-export type Role = typeof ROLES[number];
-export const DEFAULT_ROLE: Role = 'View';
 
 /* accept/reject, required to sign */
 export type StageResult = 'sat' | 'unsat';
@@ -65,51 +61,6 @@ export interface Reference {
   addedAt: string;        /* ISO string */
 }
 
-/* one editable field as it stood at sign-off; an empty value means it was left blank */
-export interface SignoffInput { label: string; value: string }
-
-export interface HistoryEntry {
-  when: string;          /* ISO string */
-  who: string;           /* person's full name */
-  whoId?: string;        /* their identifier */
-  whoTitle?: string;     /* title held at the time of the event */
-  section: 'Stages' | 'Sign-off' | 'References' | 'Fabrication' | 'Release' | 'Refit' | 'Routing' | 'Deviation' | 'Foreman Override' | 'Engineering Override';
-  action: string;        /* what was changed/done — field name or event */
-  from?: string;         /* previous value, when the action changed one */
-  to?: string;           /* new value, when the action changed one */
-  routing: string;       /* routing label at time of change */
-  inputs?: SignoffInput[];   /* sign-off entries only: every editable field and its value at that moment */
-  fabInputs?: SignoffInput[];  /* fabrication data as it stood at that moment: every sign-off entry, and a Cut's Refit entry (the data it reset) */
-  stageId?: string;      /* sign-off entries only: which live stage this recorded, so Correct can find it again */
-  changes?: { key: string; label: string; from: string; to: string }[];  /* 'corrected' entries only: just the fields that actually changed */
-  reason?: string;       /* 'corrected' entries only */
-}
-
-/* one out-of-spec value accepted at sign-off (see weld-record/joint-page/rules/deviations.ts) */
-export interface DeviationItem {
-  kind: 'out-of-range' | 'qual' | 'off-list' | 'reported';
-  label: string;
-  entered: string;
-  required: string;
-}
-
-/* the deviations accepted at one sign-off; an open one holds the joint (DeviationService) */
-export interface Deviation {
-  id: string;
-  stageId: string;
-  stageLabel: string;
-  items: DeviationItem[];
-  reason: string;
-  who: string;
-  when: string;
-  /* open = the joint is on Engineering Hold; dispositioned = Engineering set the routing;
-     withdrawn = the sign-off that accepted it was deprogressed */
-  status: 'open' | 'dispositioned' | 'withdrawn';
-  /* the Engineering Hold step this deviation's sign-off added */
-  holdStageId?: string;
-  disposition?: { comments: string; routeTo: string; routeToLabel: string; who: string; when: string };
-}
-
 export interface JobWorkflow {
   jobId: string;
   technician: string;
@@ -123,57 +74,4 @@ export interface JobWorkflow {
   repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
   deviations?: Deviation[];  /* accepted at sign-off */
   undo?: SignoffUndo[];      /* one per sign-off, newest last: what Deprogress restores */
-}
-
-/* the joint as it stood just before one sign-off, so Deprogress can undo everything that sign-off
-   triggered. Field definitions aren't kept here. */
-export interface SignoffUndo {
-  stageId: string;
-  historyWhen: string;       /* the sign-off's History entry, so Work History knows which row it is */
-  stages: WorkflowStage[];
-  fabricationData: Record<string, string>;
-  refitNumber: string;
-  repairNumber: string;
-}
-
-/* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT), with its Admin > Routing Signoff
-   Types name and settings */
-export interface StageOption {
-  label: string;
-  value: string;
-  default?: boolean;
-  /* the routing step this Type signs when picked on an earlier step (Layer's Final Weld); unset = this step */
-  signsStep?: string;
-}
-
-/* the definition a joint's step is built from (data/routing-settings.ts, data/welding-steps.ts) */
-export interface StageTemplate {
-  description?: string; /* Plain-English reference text maintained in Routing Settings. */
-  classification?: 'numbered' | 'added';
-  lifecycle?: 'ordinary' | 'repair' | 'excavation' | 'engineering-hold';
-  status?: 'draft' | 'active' | 'inactive';
-  id: string;
-  label: string;
-  displayName?: string;  /* override label shown on routing table (e.g. 'Tack' for both 'tack' and 'deferred-tack') */
-  decisionLabel?: string; /* override 'Decision' label (e.g. 'Inspection Results') */
-  /* bool or predicate keyed off the job */
-  required: boolean | ((job: Job) => boolean);
-  /* stage id to route back to when this stage is rejected (empty = no routing) */
-  rejectToStage?: string;
-  /* role that this stage routes to */
-  role?: string;
-  /* Ordered Joint Details conditions choose a persona; no match uses role. */
-  roleRules?: { when: ConditionRule; role: string }[];
-  /* admin-managed signoff type options (Admin > Signoff Type to Routing) (e.g. Fit/Weld Build-Up, MT/PT) */
-  typeOptions?: StageOption[];
-  /* when a joint gets this step (conditions/joint-conditions.ts); none = always */
-  includeWhen?: ConditionRule[];
-  /* on UNSAT, the first matching rule picks the target instead of rejectToStage (routing/route-to-rules.ts) */
-  rejectRules?: RouteToRule[];
-  /* On accepted signoff, the first matching rule selects the next routing. */
-  thenRules?: RouteToRule[];
-  /* set once Admin > Routing Settings saves this step's reject rules; until then the built-in ones apply */
-  rejectRulesEdited?: boolean;
-  /* Admin > Routing Settings "Fabrication editable": the Fabrication fields can be changed while this is the current step */
-  fabricationEditable?: boolean;
 }

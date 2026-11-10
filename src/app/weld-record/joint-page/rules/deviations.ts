@@ -5,7 +5,8 @@
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
 import { formInputFields } from '../../signoff-definition/form-fields';
-import { WorkflowStage, DeviationItem } from '../../model/workflow-types';
+import { WorkflowStage } from '../../model/workflow-types';
+import { DeviationItem } from '../../model/deviation';
 import { ACTUAL_REQUIREMENT } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { labelFor } from '../../signoff-definition/stage-display';

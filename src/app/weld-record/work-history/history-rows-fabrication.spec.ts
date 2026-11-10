@@ -1,4 +1,5 @@
-import { HistoryEntry, JobWorkflow } from '../model/workflow-types';
+import { HistoryEntry } from '../model/history';
+import { JobWorkflow } from '../model/workflow-types';
 import { historyRows } from './history-rows';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { JOBS } from '../../data/jobs';

@@ -1,6 +1,6 @@
 /* Persona selection from ordered Routing Settings rules. */
 import { Job } from '../../data/jobs';
-import { StageTemplate } from '../model/workflow-types';
+import { StageTemplate } from '../model/stage-template';
 import { conditionsMatch } from '../conditions/joint-conditions';
 
 /* Sold's persona follows whichever Records Review the joint got */

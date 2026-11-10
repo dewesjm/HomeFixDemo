@@ -1,5 +1,5 @@
 import { addedRoutingSetup } from './added-routing-configuration';
-import { StageTemplate } from '../../model/workflow-types';
+import { StageTemplate } from '../../model/stage-template';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';

@@ -3,7 +3,7 @@
    weld-record/routing/routing-settings-rules.ts. */
 import { STORAGE } from './storage-keys';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
-import { StageTemplate } from '../weld-record/model/workflow-types';
+import { StageTemplate } from '../weld-record/model/stage-template';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { RouteToRule } from '../weld-record/routing/route-to-rules';
 import { isFitupInspId } from '../weld-record/routing/routing-ids';
