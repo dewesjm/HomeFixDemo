@@ -1,8 +1,8 @@
-import { FormField } from '../../catalogs/field-catalog';
-import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 /* What stops a step from being signed: the reasons list (sign blockers) and the per-field errors
    highlighted after a sign attempt or on blur. Errors are keyed `${stageId}:${fieldKey}`; Decision,
    Type use synthetic keys (__decision, __inspectionType). */
+import { FormField } from '../../catalogs/field-catalog';
+import { attributeAccessError } from '../../attribute-codes/attribute-validation';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { blocksOnFabricationErrors, needsFabricationComplete } from '../../routing/built-in-step-rules';

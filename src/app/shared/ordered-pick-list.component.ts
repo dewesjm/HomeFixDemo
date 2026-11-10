@@ -1,3 +1,5 @@
+/* body of the column picker and Adapt Filters dialogs: what's shown, in order (drag or arrows to
+   reorder), then the rest. Native HTML drag and drop; the arrows cover touch and keyboard. */
 import { Component, computed, input, model, signal } from '@angular/core';
 import { LucideGripVertical } from '@lucide/angular';
 
@@ -8,8 +10,6 @@ interface PickItem {
   group?: string;       /* when items have groups, "Not shown" is split by group with add/remove all */
 }
 
-/* body of the column picker and Adapt Filters dialogs: what's shown, in order (drag or arrows to
-   reorder), then the rest. Native HTML drag and drop; the arrows cover touch and keyboard. */
 @Component({
   selector: 'app-ordered-pick-list',
   standalone: true,

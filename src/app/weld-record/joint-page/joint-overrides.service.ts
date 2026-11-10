@@ -1,8 +1,8 @@
-import { formInputFields } from '../signoff-definition/form-fields';
-import { FormField } from '../catalogs/field-catalog';
 /* The joint page's overrides for one visit: Foreman Override entries, the engineering override
    reason given on a step, and the deviations a sign-off would accept. Provided by JointPageComponent,
    so this state lives exactly as long as the page. */
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../catalogs/field-catalog';
 import { Injectable, inject, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage, DeviationItem } from '../model/workflow-types';

@@ -1,10 +1,10 @@
+/* Signoff routing decisions; SignoffService owns saving and History. */
 import { repairCodeRoutingError, isCustomRepairCode } from './repair-code-rules';
 import { attributeAccessError } from '../attribute-codes/attribute-validation';
 import { attributeTypeSettings } from '../attribute-codes/exception-effects';
 import { resolveInsertion, RoutingConfigurationError } from './generic-insertion';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { insertionDefinitionId } from './instance-identity';
-/* Signoff routing decisions; SignoffService owns saving and History. */
 import { Job } from '../../data/jobs';
 import { SignoffInput, WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { setRoutingFrom } from './current-routing';

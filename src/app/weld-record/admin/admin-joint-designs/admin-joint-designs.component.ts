@@ -1,3 +1,4 @@
+/* Admin > Joint Designs: the Joint Design lookup table (data/joint-designs.ts), one row edited at a time. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

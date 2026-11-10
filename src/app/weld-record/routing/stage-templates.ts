@@ -1,11 +1,11 @@
+/* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
+   saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
+   Type options come from Admin > Signoff Type to Routing (signoff-types.ts). */
 import { insertedDefinitionId } from './instance-identity';
 import { insertionConfigurationErrors } from './insertion-validation';
 import { addedRoutingSetup, routingNameError } from './added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
-/* The step templates joints are built from: the built-in Welding steps merged with Admin > Routing Settings's
-   saved changes (localStorage), and the functions Admin > Routing Settings saves through. Each step's
-   Type options come from Admin > Signoff Type to Routing (signoff-types.ts). */
 import { ADDED_STAGE_TEMPLATES } from './added-stage-templates';
 import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';

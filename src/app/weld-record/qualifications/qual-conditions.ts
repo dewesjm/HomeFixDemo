@@ -1,4 +1,3 @@
-import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 /* Qual conditions (Admin > Qualifications). Two kinds of row:
    - "when <clauses>, signoff type <type>, require <group>": the clauses are an AND/OR group compared
      like Routing Settings (qual-when.ts), the requirement an AND/OR group of quals (qual-requirements.ts).
@@ -12,6 +11,7 @@ import { stepFieldConfigVersion } from '../signoff-definition/step-field-config'
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
    This is the only place quals are required or held. */
+import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
 import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';

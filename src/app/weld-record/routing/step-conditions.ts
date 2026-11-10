@@ -1,9 +1,3 @@
-import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
-import { Job } from '../../data/jobs';
-import { jointAttributeCodes } from '../attribute-codes/attribute-context';
-import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';
-import { catalogField, readsFabrication } from '../catalogs/field-choices';
-import { originalInspectionType, performedInspectionType } from './inspection-context';
 /* Step conditions (Admin > Routing Settings, "Included when"): which routing steps a joint gets. A step's
    conditions are a list of rules; the step is included when any rule matches, and a rule matches
    when every one of its clauses does. No rules = always included.
@@ -12,6 +6,12 @@ import { originalInspectionType, performedInspectionType } from './inspection-co
    Defer Tack or an NDT step's Weld Color) are blank until that step is signed, so a step that uses
    one is always on the joint and turns required on or off as those steps are signed
    (workflow/route-changes.ts applySignedFlags). */
+import { PHASE_NDT_KINDS, NQC_SPLIT_STEP_IDS, nqcStepId } from './step-ids';
+import { Job } from '../../data/jobs';
+import { jointAttributeCodes } from '../attribute-codes/attribute-context';
+import { ConditionCatalogField, Fabrication, StageAnswers } from '../catalogs/field-catalog';
+import { catalogField, readsFabrication } from '../catalogs/field-choices';
+import { originalInspectionType, performedInspectionType } from './inspection-context';
 export interface ConditionClause {
   field: string;          /* a field-catalog.ts or field-choices.ts key */
   op: 'is' | 'isNot' | 'contains';

@@ -1,5 +1,5 @@
-import { AdminRepairCodesComponent } from './weld-record/admin/admin-repair-codes/admin-repair-codes.component';
 /* route table */
+import { AdminRepairCodesComponent } from './weld-record/admin/admin-repair-codes/admin-repair-codes.component';
 import { AdminWeldColorsComponent } from './weld-record/admin/admin-weld-colors/admin-weld-colors.component';
 import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';

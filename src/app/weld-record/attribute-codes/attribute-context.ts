@@ -1,3 +1,4 @@
+/* The joint's attribute codes: every code it carries, and the ones that can change its routing. */
 import { Job } from '../../data/jobs';
 import { PROGRESSION_ATTRIBUTE_CODES, ProgressionAttributeCode } from '../../data/attribute-codes';
 

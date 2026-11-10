@@ -1,8 +1,8 @@
-import { FormField } from '../catalogs/field-catalog';
 /* One field on a form laid out from its Signoff Type Form (definition-form): the control its
    type calls for, its error or warning, and the description under it. A step field saves to the
    step's inputs; a sign-off field (Pre-Fit/Fit's insert, backing ring and Defer Tack) to its
    sign-off inputs. */
+import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';

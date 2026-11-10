@@ -1,7 +1,7 @@
-import { excavationDefinition } from './excavation-definition';
 /* Steps added to a joint while it's worked, not part of the built-in routing: Repair (after an NDT
    UNSAT), Excavation NDT (after a Weld Repair) and Engineering Hold (after accepted deviations or a
    reject rule). Ids and round numbers are in step-ids.ts. */
+import { excavationDefinition } from './excavation-definition';
 import { getAddedTemplate } from './stage-templates';
 import { routingRole } from './routing-role';
 import { Job } from '../../data/jobs';

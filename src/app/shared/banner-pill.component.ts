@@ -1,12 +1,12 @@
+/* The admin banner message. A short one is a pill beside the page title; a long one is a
+   full-width strip under the page header. Pages place it twice: placement="inline" in the header
+   and placement="below" right after it, and only the one that fits the message shows.
+   placement="auto" (the Admin preview) shows whichever applies. */
 import { Component, computed, input } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { LucideMegaphone } from '@lucide/angular';
 import { BannerData, isLongBanner } from '../data/banner';
 
-/* The admin banner message. A short one is a pill beside the page title; a long one is a
-   full-width strip under the page header. Pages place it twice: placement="inline" in the header
-   and placement="below" right after it, and only the one that fits the message shows.
-   placement="auto" (the Admin preview) shows whichever applies. */
 @Component({
   selector: 'app-banner-pill',
   standalone: true,

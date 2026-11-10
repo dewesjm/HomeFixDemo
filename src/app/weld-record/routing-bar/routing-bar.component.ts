@@ -1,3 +1,4 @@
+/* The joint page's routing bar: numbered routing pills, scrolled to the selected one. */
 import { Component, effect, ElementRef, input, untracked, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideWorkflow } from '@lucide/angular';

@@ -1,3 +1,4 @@
+/* Admin > Repair Codes: the Repair Code list (name, active or inactive), one row edited at a time. */
 import { Component, effect, inject, signal } from '@angular/core';
 import { LucidePencil, LucideCheck, LucideX } from '@lucide/angular';
 import { FormsModule } from '@angular/forms';

@@ -1,8 +1,8 @@
-import { formInputFields } from './form-fields';
 /* Fields prepopulated from another value (a field's "Prepopulated from" rule, Admin > Signoff Type
    Forms): Weld Process and PH/IP from the WTN, an actual set to NC by its requirement, Root's
    filler from Fit's Consumable Insert while "Only Consumable Insert used as filler" is checked.
    Whether the field can then be typed into is its separate Disabled when rule (field-locks.ts). */
+import { formInputFields } from './form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { FieldFill } from '../catalogs/field-catalog';
 import { evaluateCondition } from './field-conditions';

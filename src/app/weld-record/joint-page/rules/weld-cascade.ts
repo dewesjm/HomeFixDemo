@@ -1,9 +1,9 @@
-import { formInputFields } from '../../signoff-definition/form-fields';
-import { FormField } from '../../catalogs/field-catalog';
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, and a
    WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
    their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right
    now is left alone here. */
+import { formInputFields } from '../../signoff-definition/form-fields';
+import { FormField } from '../../catalogs/field-catalog';
 import { WorkflowStage } from '../../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';
 import { isFilledByRule } from '../../signoff-definition/field-fill';

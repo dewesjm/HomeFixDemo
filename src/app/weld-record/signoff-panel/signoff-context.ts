@@ -1,6 +1,6 @@
-import { FormField } from '../catalogs/field-catalog';
 /* What the joint page hands the Signoff panel and its parts: the joint, its workflow, and the
    page's rules and actions for the current step */
+import { FormField } from '../catalogs/field-catalog';
 import { Job } from '../../data/jobs';
 import { Reference, WorkflowStage, StageResult, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
 import { HistoryRow } from '../work-history/history-rows';

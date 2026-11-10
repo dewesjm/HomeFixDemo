@@ -1,3 +1,5 @@
+/* Admin > Signoff Types: a Type's "Additional routing to sign" rules (which other routing it signs, as
+   which Type, and when). */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AdditionalSignoff, getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';

@@ -1,8 +1,8 @@
+/* A step's fields on the joint page: which show, and the options each offers */
 import { repairCodeOptions } from '../../signoff-definition/repair-code-options';
 import { weldPositionOptions } from '../../../data/weld-positions';
 import { formInputFields } from '../../signoff-definition/form-fields';
 import { FormField } from '../../catalogs/field-catalog';
-/* A step's fields on the joint page: which show, and the options each offers */
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../../signoff-definition/weld-fields';

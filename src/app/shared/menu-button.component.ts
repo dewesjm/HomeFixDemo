@@ -1,8 +1,8 @@
+/* A ⋯ button that opens a small menu of the projected buttons (each a <li><button>).
+   Clicking an item, clicking elsewhere or pressing Escape closes it. */
 import { Component, ElementRef, HostListener, inject, input, signal } from '@angular/core';
 import { LucideEllipsis } from '@lucide/angular';
 
-/* A ⋯ button that opens a small menu of the projected buttons (each a <li><button>).
-   Clicking an item, clicking elsewhere or pressing Escape closes it. */
 @Component({
   selector: 'app-menu-button',
   standalone: true,

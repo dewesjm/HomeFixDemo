@@ -1,5 +1,5 @@
-import { getStepFieldConfig } from '../signoff-definition/step-field-config';
 /* One resolver builds ordinary inserted work for execution, seeds and preview. */
+import { getStepFieldConfig } from '../signoff-definition/step-field-config';
 import { Job } from '../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../model/workflow-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-types';

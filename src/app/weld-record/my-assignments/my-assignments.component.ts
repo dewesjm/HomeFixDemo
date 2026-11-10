@@ -1,3 +1,5 @@
+/* My Assignments: the assignment list with keyword search, each row linked to its joint (switched off
+   unless its feature toggle is on). */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

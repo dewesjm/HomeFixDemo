@@ -1,3 +1,4 @@
+/* Leave-page guard for the joint page: asks before leaving while the page has unsaved signoff data. */
 import { CanDeactivateFn } from '@angular/router';
 import { inject } from '@angular/core';
 import { ConfirmService } from './confirm.service';

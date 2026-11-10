@@ -1,3 +1,4 @@
+/* The joint page's Fabrication panel: the cross-stage Welding fields (fabrication/fabrication-fields.ts). */
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

@@ -1,3 +1,4 @@
+/* Admin > Repair Codes row check, and the permanent value a new Repair Code gets. */
 import { RepairCode } from '../../../data/repair-codes';
 
 export function repairCodeError(row: RepairCode, others: RepairCode[]): string {

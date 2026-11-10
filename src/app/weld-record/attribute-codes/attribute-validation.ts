@@ -1,7 +1,7 @@
-import { WorkflowStage } from '../model/workflow-types';
-
 /* "ID is accessible" on a signoff whose routing has accessible rules or must ask it (Admin > Attribute
    Code Exceptions): it must be answered, and the picked Type must allow the answer */
+import { WorkflowStage } from '../model/workflow-types';
+
 export function attributeAccessError(stage: Pick<WorkflowStage, 'attributeRules' | 'inputs' | 'inspectionType'>): string {
   const rules = stage.attributeRules?.accessible ?? [];
   if (!rules.length && !stage.attributeRules?.askAccessible) return '';

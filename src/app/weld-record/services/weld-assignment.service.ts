@@ -1,7 +1,7 @@
-import { formInputFields } from '../signoff-definition/form-fields';
 /* Writes the external system's GWP/WTN/filler assignment (data/weld-assignment.ts) onto a joint's
    unsigned welding steps. It's the system's value, not the person's edit, so no History entry.
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
+import { formInputFields } from '../signoff-definition/form-fields';
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';

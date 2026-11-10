@@ -1,6 +1,5 @@
-import { Pipe, PipeTransform } from '@angular/core';
-
 /* One date format for the whole app: 09/26/2026 3:04 PM, or 09/26/2026 where only the date matters. */
+import { Pipe, PipeTransform } from '@angular/core';
 
 type DateInput = Date | string | number | null | undefined;
 

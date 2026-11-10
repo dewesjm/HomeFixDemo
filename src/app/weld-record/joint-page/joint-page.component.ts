@@ -1,9 +1,9 @@
-import { FormField } from '../catalogs/field-catalog';
 //This is the job details page
 
 /* The joint page: page state, wiring to the sign-off panel, and signing. A value changing on the
    sign-off form is SignoffFormEditsService, its red field messages SignoffFormErrorsService, the
    override state JointOverridesService; the form rules live in rules/. */
+import { FormField } from '../catalogs/field-catalog';
 import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

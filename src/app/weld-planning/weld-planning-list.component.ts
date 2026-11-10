@@ -1,3 +1,4 @@
+/* Weld Planning - Joint Search: the list of Weld Planning joints. */
 import { bannerFor } from '../data/banner';
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';

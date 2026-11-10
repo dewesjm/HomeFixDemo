@@ -1,6 +1,6 @@
-import { FormField } from '../catalogs/field-catalog';
 /* stage-progression routing: filling in a stage's own fields, and moving the job's current
    routing (Admin > Routing Override, Deprogress). Sign-off decisions live in SignoffService. */
+import { FormField } from '../catalogs/field-catalog';
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';

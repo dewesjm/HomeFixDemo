@@ -1,10 +1,11 @@
+/* Puts the shared admin table look (admin-tables.css) on the routed content while an admin page is
+   open. One routed content scope also covers nested editors and shared import grids. */
 import { Directive, inject, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs/operators';
 import { isAdminTableUrl } from './admin-table-scope';
 
-/* One routed content scope also covers nested editors and shared import grids. */
 @Directive({
   selector: '[appAdminTableScope]', standalone: true,
   host: { '[class.admin-table-scope]': 'adminPage()' },

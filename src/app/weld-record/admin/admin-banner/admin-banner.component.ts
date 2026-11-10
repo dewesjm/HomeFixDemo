@@ -1,3 +1,4 @@
+/* Admin > Banner: the site banner's message, type, pages and on/off, saved with Save. */
 import { BannerData, BannerPage, BANNER_PILL_MAX, loadBanner, saveBanner, clearBanner } from '../../../data/banner';
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';

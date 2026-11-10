@@ -1,3 +1,4 @@
+/* Demo data: one extra joint per attribute code (XREFID AC001 on), so every Attribute Code Exceptions row has a joint to try it on. */
 import type { Job } from './jobs';
 import { PROGRESSION_ATTRIBUTE_CODES } from './attribute-codes';
 

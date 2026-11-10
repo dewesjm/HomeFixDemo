@@ -1,7 +1,7 @@
-import { formInputFields } from './form-fields';
 /* Which fields on a step the user can't type into: a field whose Disabled when rule holds, such as
    Weld Process and PH/IP (prepopulated from the WTN) unless an engineering override has the step, or
    an actual while its requirement is NC */
+import { formInputFields } from './form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionClause, conditionClauses, evaluateCondition } from './field-conditions';
 import { ACTUAL_REQUIREMENT } from './weld-fields';

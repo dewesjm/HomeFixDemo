@@ -1,3 +1,5 @@
+/* Admin > Signoff Type to Routing: the Type Exceptions table (on a routing, one Type offered in place of
+   another when a condition holds). */
 import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';

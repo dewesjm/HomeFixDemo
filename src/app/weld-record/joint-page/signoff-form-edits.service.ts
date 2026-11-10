@@ -1,10 +1,10 @@
-import { formInputFields } from '../signoff-definition/form-fields';
-import { FormField } from '../catalogs/field-catalog';
 /* What happens when a value changes on the joint page's sign-off form, before Signoff is pressed: the
    value is saved to the step, fields it hides are blanked, fill rules and the WPS cascade run, and the
    field's red message is updated (SignoffFormErrorsService). Covers the step's fields, its sign-off
    fields, Affected Item, Type and SAT/UNSAT. The rules themselves are in rules/ and
    signoff-definition/. Provided by JointPageComponent, one per joint page. */
+import { formInputFields } from '../signoff-definition/form-fields';
+import { FormField } from '../catalogs/field-catalog';
 import { Injectable, WritableSignal, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, StageResult, WorkflowStage } from '../model/workflow-types';

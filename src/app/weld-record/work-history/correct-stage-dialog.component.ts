@@ -1,8 +1,8 @@
-import { FormField } from '../catalogs/field-catalog';
 /* Work History — "Correct" a signed stage's already-recorded field values in place, with a
    required reason, instead of deprogressing it (see SignoffService.correctStage()). Fields that fed a
    routing decision at the original signoff are shown disabled with an explanation, never editable
    here — see ROUTING_LOCKED_FIELD_KEYS / [[project-correction-feature-fields]]. */
+import { FormField } from '../catalogs/field-catalog';
 import { Component, ElementRef, computed, effect, inject, input, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';

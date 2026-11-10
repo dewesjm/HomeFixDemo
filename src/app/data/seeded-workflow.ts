@@ -1,8 +1,8 @@
-import { formInputFields, formSignoffFields } from '../weld-record/signoff-definition/form-fields';
-import { FormField } from '../weld-record/catalogs/field-catalog';
 /* Demo data: each job's workflow with a deterministic run of steps already signed, so joints sit at
    different points in their routing. A few are seeded on Fit-Up Release, Engineering Hold or Repair.
    Saved (real) workflows always replace this. */
+import { formInputFields, formSignoffFields } from '../weld-record/signoff-definition/form-fields';
+import { FormField } from '../weld-record/catalogs/field-catalog';
 import { Job } from './jobs';
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
 import { inspectionProcedureOptions } from './inspection-procedures';

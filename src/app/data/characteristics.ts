@@ -1,5 +1,5 @@
-import { PROGRESSION_ATTRIBUTE_CODES } from './attribute-codes';
 /* Attribute code lookup; a joint carries up to four codes. */
+import { PROGRESSION_ATTRIBUTE_CODES } from './attribute-codes';
 interface CharacteristicCode {
   code: string;
   description: string;   /* meaning, e.g. Hazardous */

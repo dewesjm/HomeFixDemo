@@ -1,6 +1,6 @@
-import { FormField } from '../../catalogs/field-catalog';
 /* Pre-Fit and Fit's sign-off fields that must be filled in before signing (the fields shown are
-   visibleSignoffFields(), workflow/shown-fields.ts) */
+   visibleSignoffFields(), signoff-definition/shown-fields.ts) */
+import { FormField } from '../../catalogs/field-catalog';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { visibleSignoffFields } from '../../signoff-definition/shown-fields';

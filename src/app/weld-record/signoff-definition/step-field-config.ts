@@ -1,9 +1,9 @@
-import { repairCodesVersion } from '../../data/repair-codes';
 /* Signoff Type Forms: one per Type (Admin > Signoff Types), matched by the Type's value.
    Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
    out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A routing
    reads the definition of the Type it is being signed as, including Excavation NDT. Live overrides are stored in
    localStorage and take effect immediately. */
+import { repairCodesVersion } from '../../data/repair-codes';
 import { STORAGE } from '../../data/storage-keys';
 import { FieldCondition } from './field-conditions';
 import { type FieldFill } from '../catalogs/field-catalog';

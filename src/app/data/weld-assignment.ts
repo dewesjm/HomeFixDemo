@@ -1,8 +1,8 @@
-import { formInputFields } from '../weld-record/signoff-definition/form-fields';
 /* Stand-in for the external system that sets a welding step's GWP, WTN and Filler Metal Type/Size
    after doing its own validity checks. The person can't change them. Some joints get nothing from
    it: those need an engineering override, where the values are typed in by hand (see
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every visit. */
+import { formInputFields } from '../weld-record/signoff-definition/form-fields';
 import { Job } from './jobs';
 import { WorkflowStage } from '../weld-record/model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../weld-record/signoff-definition/weld-fields';

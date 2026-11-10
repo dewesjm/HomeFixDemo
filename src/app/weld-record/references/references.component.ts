@@ -1,3 +1,4 @@
+/* References panel: the file names recorded on a joint, with add and remove. */
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucidePaperclip, LucideFile, LucideTrash2 } from '@lucide/angular';

@@ -1,3 +1,5 @@
+/* One routing's sign-off on the joint page: the frame (Type, Inspecting, Comments, Signoff, overrides)
+   around the routing's definition-form. */
 import { Component, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

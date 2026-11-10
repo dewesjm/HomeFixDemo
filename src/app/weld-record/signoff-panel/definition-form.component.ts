@@ -1,10 +1,10 @@
-import { FormField } from '../catalogs/field-catalog';
 /* A step's form, drawn from its Signoff Type Form: its fields in definition order, on the lines
    and under the headings and boxes the definition sets (layoutSections()), each field at most the
    width the definition gives it. Type, Comments, References, Inspection Results and Pre-Fit/Fit's
    sign-off fields go where the Layout list places them too, each as its Show when says; Comments,
    Inspection Results and the sign-off fields only while the step is required. The verify-grid rows are drawn
    together as one grid where the first of them is listed. A routing without a Type form has no fields. */
+import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { DECISION_KEY, FieldActivation, TYPE_KEY, getActivationForStep } from '../signoff-definition/step-field-config';
 import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';

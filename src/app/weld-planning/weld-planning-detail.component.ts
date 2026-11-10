@@ -1,3 +1,4 @@
+/* Weld Planning - one joint's read-only details, with Edit. */
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';

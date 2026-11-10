@@ -1,3 +1,6 @@
+// Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
+// field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
+// Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
 import { insertionRelativeTargets } from '../../routing/insertion-target-options';
 import { thenRuleSummary } from './then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
@@ -5,9 +8,6 @@ import { AttributeCodeNoteComponent } from '../admin-attribute-code-exceptions/a
 import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/insertion-validation';
-// Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
-// field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
-// Persists to localStorage via the weld-record/routing/stage-templates.ts edit functions.
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
 import { addedRoutingSetup, routingNameError } from '../../routing/added-routing-configuration';

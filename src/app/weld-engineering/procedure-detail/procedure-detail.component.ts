@@ -1,3 +1,4 @@
+/* Weld Engineering - one WPS: its generated PDF shown inline, with Download. */
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';

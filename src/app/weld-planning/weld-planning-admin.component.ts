@@ -1,3 +1,4 @@
+/* Weld Planning admin (Joint Designs & NDT): the joint designs Weld Planning's joint form offers. */
 import { Component, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

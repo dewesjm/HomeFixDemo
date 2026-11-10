@@ -1,3 +1,5 @@
+/* Weld Planning - Import Joints (new joints from a spreadsheet) and Mass Edit (?mode=edit, existing joints
+   as an editable grid), both on the shared BulkImport flow. */
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';

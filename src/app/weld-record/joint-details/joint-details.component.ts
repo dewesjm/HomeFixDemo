@@ -1,3 +1,4 @@
+/* The joint page's read-only Joint details panel: the joint, its NDT and its attribute codes. */
 import { Component, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
