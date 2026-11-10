@@ -35,7 +35,7 @@ describe('Admin table grid presentation', () => {
       for (const table of Array.from(host.querySelectorAll('table')))
         expect(getComputedStyle(table).borderCollapse).toBe('collapse');
     }
-    await router.navigateByUrl('/pipe-search'); fixture.detectChanges();
+    await router.navigateByUrl('/pipe-welding'); fixture.detectChanges();
     expect(host.querySelector('main')!.classList.contains('admin-table-scope')).toBeFalse();
     fixture.destroy();
   });

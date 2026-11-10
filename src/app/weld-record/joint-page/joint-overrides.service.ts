@@ -15,7 +15,7 @@ import { conditionRequirements, heldQuals } from '../qualifications/qual-conditi
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';
-import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
+import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { EngineeringOverrideService } from '../services/engineering-override.service';
 
 /* what the page hands over: its joint, live workflow, the state as loaded, and its visible fields */

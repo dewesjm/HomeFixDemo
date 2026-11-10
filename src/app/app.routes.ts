@@ -50,17 +50,17 @@ import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-s
 
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'pipe-search' },
+  { path: '', pathMatch: 'full', redirectTo: 'pipe-welding' },
   /* Pipe Welding is the Advanced Search page */
-  { path: 'pipe-search', component: PipeWeldingComponent, title: 'EWR - Pipe Welding' },
+  { path: 'pipe-welding', component: PipeWeldingComponent, title: 'EWR - Pipe Welding' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
-  { path: 'pipe-search-classic', component: PipeWeldingClassicComponent, title: 'EWR - Pipe Welding (Classic)',
-    canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-search')] },
+  { path: 'pipe-welding-classic', component: PipeWeldingClassicComponent, title: 'EWR - Pipe Welding (Classic)',
+    canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-welding')] },
   /* switched off unless Admin > Feature Toggles > My Assignments page is on; kept so it can be turned
      back on without a rewrite */
   { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments',
-    canActivate: [() => featureToggles().myAssignments || inject(Router).parseUrl('/pipe-search')] },
+    canActivate: [() => featureToggles().myAssignments || inject(Router).parseUrl('/pipe-welding')] },
   { path: 'history', component: HistoryComponent, title: 'EWR - History' },
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings' },
@@ -111,5 +111,5 @@ export const routes: Routes = [
   { path: 'weld-engineering/admin/sections', component: ProcedureSectionsComponent, title: 'EWE - Procedure Sections' },
   { path: 'weld-engineering/admin/:id/edit', component: ProcedureFormComponent, title: 'EWE - Edit Procedure' },
 
-  { path: '**', redirectTo: 'pipe-search' }
+  { path: '**', redirectTo: 'pipe-welding' }
 ];

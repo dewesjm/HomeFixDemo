@@ -4,10 +4,10 @@ import { JOBS } from '../../data/jobs';
 import { getProcedureByGwpWtn } from '../../data/procedures';
 import { gwpOptionsForMaterials } from '../../weld-engineering/procedure-options';
 import { isFilledByRule } from '../signoff-definition/field-fill';
-import { isEngineeringEntryJoint } from './weld-assignment-mock';
+import { isEngineeringEntryJoint } from '../weld-assignment/weld-assignment-mock';
 import { detectDeviations } from '../joint-page/rules/deviations';
 import { WeldAssignmentService } from './weld-assignment.service';
-import { WorkflowStore } from '../services/workflow-store.service';
+import { WorkflowStore } from './workflow-store.service';
 
 describe('WeldAssignmentService', () => {
   let service: WeldAssignmentService;

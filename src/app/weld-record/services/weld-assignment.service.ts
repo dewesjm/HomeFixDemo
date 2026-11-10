@@ -8,9 +8,9 @@ import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
 import { isFilledByRule, withFills } from '../signoff-definition/field-fill';
 import { heldQuals } from '../qualifications/qual-conditions';
-import { assignedInputs, isEngineeringEntryJoint } from './weld-assignment-mock';
-import { isAssignedStage } from './weld-assignment-rules';
-import { WorkflowStore } from '../services/workflow-store.service';
+import { assignedInputs, isEngineeringEntryJoint } from '../weld-assignment/weld-assignment-mock';
+import { isAssignedStage } from '../weld-assignment/weld-assignment-rules';
+import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })
 export class WeldAssignmentService {

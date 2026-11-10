@@ -4,7 +4,7 @@ import { STORAGE } from './storage-keys';
 
 export interface FeatureToggles {
   routingPreview: boolean;       /* "Demo only - On signoff, this routes to ..." under each step's Signoff button */
-  classicPipeWelding: boolean;   /* the old Pipe Welding table at /pipe-search-classic, with its own menu entry */
+  classicPipeWelding: boolean;   /* the old Pipe Welding table at /pipe-welding-classic, with its own menu entry */
   myAssignments: boolean;        /* the My Assignments page at /assignments and its Weld Record menu entry */
 }
 

@@ -5,7 +5,7 @@ describe('Admin table route scope', () => {
     for (const url of ['/admin/repair-codes', '/admin/signoff-type-forms', '/weld-planning/admin',
       '/weld-engineering/admin/sections', '/weld-engineering/admin/abc/edit', '/admin;mode=edit/routing?tab=2'])
       expect(isAdminTableUrl(url)).withContext(url).toBeTrue();
-    for (const url of ['/pipe-search', '/jobs/abc', '/weld-planning', '/weld-engineering',
+    for (const url of ['/pipe-welding', '/jobs/abc', '/weld-planning', '/weld-engineering',
       '/administration', '/jobs/abc?return=/admin/routing-settings', '/history#admin'])
       expect(isAdminTableUrl(url)).withContext(url).toBeFalse();
   });

@@ -10,7 +10,7 @@ import { Job } from '../../data/jobs';
 import { JobWorkflow, StageResult, WorkflowStage } from '../model/workflow-types';
 import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
-import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
+import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { isAssignedStage } from '../weld-assignment/weld-assignment-rules';
 import { show } from '../signoff-definition/stage-display';
 import { fillChanges } from '../signoff-definition/field-fill';

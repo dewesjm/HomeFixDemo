@@ -65,9 +65,9 @@
             @if (toggles().myAssignments) {
               <li><a title="My Assignments" routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg><span class="nav-label"> My Assignments</span></a></li>
             }
-            <li><a title="Pipe Welding" routerLink="/pipe-search" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
+            <li><a title="Pipe Welding" routerLink="/pipe-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding</span></a></li>
             @if (toggles().classicPipeWelding) {
-              <li><a title="Pipe Welding (Classic)" routerLink="/pipe-search-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding (Classic)</span></a></li>
+              <li><a title="Pipe Welding (Classic)" routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg><span class="nav-label"> Pipe Welding (Classic)</span></a></li>
             }
             <li><a title="Structural Welding" class="menu-disabled"><svg lucideTable class="size-4"></svg><span class="nav-label"> Structural Welding</span></a></li>
             <li><a title="History" routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg><span class="nav-label"> History</span></a></li>
@@ -180,9 +180,9 @@
               @if (toggles().myAssignments) {
                 <li><a routerLink="/assignments" routerLinkActive="menu-active"><svg lucideClipboardList class="size-4"></svg> My Assignments</a></li>
               }
-              <li><a routerLink="/pipe-search" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding</a></li>
+              <li><a routerLink="/pipe-welding" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding</a></li>
               @if (toggles().classicPipeWelding) {
-                <li><a routerLink="/pipe-search-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding (Classic)</a></li>
+                <li><a routerLink="/pipe-welding-classic" routerLinkActive="menu-active"><svg lucideTable class="size-4"></svg> Pipe Welding (Classic)</a></li>
               }
               <li><a class="menu-disabled"><svg lucideTable class="size-4"></svg> Structural Welding</a></li>
               <li><a routerLink="/history" routerLinkActive="menu-active"><svg lucideHistory class="size-4"></svg> History</a></li>

@@ -37,7 +37,7 @@ export class HistoryComponent {
   private router = inject(Router);
   private jobById = new Map<string, Job>(JOBS.map(j => [j.id, j]));
 
-  back() { this.router.navigate(['/pipe-search']); }
+  back() { this.router.navigate(['/pipe-welding']); }
 
   /* person filter: the chosen person (search assist itself is app-person-search-input) */
   person = signal<Person | null>(null);
@@ -130,7 +130,7 @@ export class HistoryComponent {
   /* export filtered rows to csv; a sign-off becomes one line per field it recorded */
   exportCsv() {
     const p = this.person();
-    const name = p ? `work-history-${fullName(p).replace(/[^a-z0-9]+/gi, '-')}` : 'work-history-all';
+    const name = p ? `history-${fullName(p).replace(/[^a-z0-9]+/gi, '-')}` : 'history-all';
     type Line = { row: HistoryRow; field: string; value: string };
     const lines: Line[] = this.table.sorted().flatMap(r =>
       r.inputs?.length

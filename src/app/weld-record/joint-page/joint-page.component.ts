@@ -26,7 +26,7 @@ import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
 import { FabricationDataService } from '../services/fabrication-data.service';
 import { DeviationService } from '../services/deviation.service';
-import { WeldAssignmentService } from '../weld-assignment/weld-assignment.service';
+import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { WorkflowStage, STAGE_RESULT_OPTIONS } from '../model/workflow-types';
 import { SignoffInput } from '../model/history';
@@ -394,7 +394,7 @@ export class JointPageComponent implements OnDestroy {
     const from = this.route.snapshot.queryParamMap.get('from');
     if (from === 'assignments') return '/assignments';
     if (from === 'history') return '/history';
-    return '/pipe-search';
+    return '/pipe-welding';
   }
 
   back() {
