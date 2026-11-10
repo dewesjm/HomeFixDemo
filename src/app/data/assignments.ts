@@ -14,7 +14,7 @@ export interface Assignment {
   drawing: string;
   joint: string;
   /* no stored routing: My Assignments shows the linked job's live current routing, so it can't drift
-     from what the joint page shows (see future/my-assignments/my-assignments.component.ts routingFor) */
+     from what the joint page shows (see future/my-assignments-page/my-assignments-page.component.ts routingFor) */
   location: string;           /* shop, same list as Fabrication's Location field; a Shipboard one for a couple of examples (see below) */
   specificLocation: string;   /* bay/rack within the shop, same idea as Fabrication's Specific Location */
   /* no stored Deck/Frame/P-S-CL/Usage either: a Shipboard assignment shows the joint's own Fabrication values */

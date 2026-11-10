@@ -12,7 +12,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Pipe Welding now opens at /pipe-welding (Classic at /pipe-welding-classic).',
+    changed: ['Refactor page folder names (Pipe Welding, History, Makeup, My Assignments).',
+      'Pipe Welding now opens at /pipe-welding (Classic at /pipe-welding-classic).',
       'History CSV export is now named history-<person>.csv (history-all.csv for everyone).',
       'Refactor the external GWP/WTN/filler assignment.',
       'Refactor where page rules live (Admin pages, Fabrication, History, Joint Details, routing bar, Signoff panel).',

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { HistoryComponent } from './history.component';
+import { HistoryPageComponent } from './history-page.component';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { RoutingService } from '../services/routing.service';
 
@@ -16,7 +16,7 @@ describe('History filter clearing', () => {
         { provide: RoutingService, useValue: {} },
       ],
     });
-    const fixture = TestBed.createComponent(HistoryComponent);
+    const fixture = TestBed.createComponent(HistoryPageComponent);
     fixture.detectChanges();
     const component = fixture.componentInstance;
     expect(component.jobQuery()).toBe('Q924Y');

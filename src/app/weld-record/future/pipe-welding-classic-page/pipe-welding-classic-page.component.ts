@@ -30,16 +30,16 @@ const SEARCH_STATE_KEY = STORAGE.searchState;
 type Row = Job & { currentRouting: string };
 
 @Component({
-  selector: 'app-pipe-welding-classic',
+  selector: 'app-pipe-welding-classic-page',
   standalone: true,
   imports: [BannerPillComponent, 
     CommonModule, FormsModule,
     SortHeaderComponent, TablePagerComponent,
     LucideSearch, LucideListFilter, LucideFileSpreadsheet, LucideHistory, LucideArrowUpRight, LucideCheck, LucideX
   ],
-  templateUrl: './pipe-welding-classic.component.html'
+  templateUrl: './pipe-welding-classic-page.component.html'
 })
-export class PipeWeldingClassicComponent {
+export class PipeWeldingClassicPageComponent {
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService) {
     // Restore saved state
     const saved = this.loadState();

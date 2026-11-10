@@ -5,9 +5,9 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { featureToggles } from './data/feature-toggles';
-import { PipeWeldingClassicComponent } from './weld-record/future/pipe-welding-classic/pipe-welding-classic.component';
-import { HistoryComponent } from './weld-record/history/history.component';
-import { PipeWeldingComponent } from './weld-record/pipe-welding/pipe-welding.component';
+import { PipeWeldingClassicPageComponent } from './weld-record/future/pipe-welding-classic-page/pipe-welding-classic-page.component';
+import { HistoryPageComponent } from './weld-record/history-page/history-page.component';
+import { PipeWeldingPageComponent } from './weld-record/pipe-welding-page/pipe-welding-page.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingSettingsComponent } from './weld-record/admin/routing-settings/routing-settings.component';
 import { AdminAttributeCodesComponent } from './weld-record/admin/attribute-codes/attribute-codes.component';
@@ -32,8 +32,8 @@ import { AdminQuickLinksComponent } from './weld-record/admin/quick-links/quick-
 import { AdminFeatureTogglesComponent } from './weld-record/admin/feature-toggles/feature-toggles.component';
 import { ChangelogComponent } from './changelog/changelog.component';
 import { AdminQualificationsComponent } from './weld-record/admin/qualifications/qualifications.component';
-import { MakeupComponent } from './weld-record/makeup/makeup.component';
-import { MyAssignmentsComponent } from './weld-record/future/my-assignments/my-assignments.component';
+import { MakeupPageComponent } from './weld-record/makeup-page/makeup-page.component';
+import { MyAssignmentsPageComponent } from './weld-record/future/my-assignments-page/my-assignments-page.component';
 import { WeldPlanningListComponent } from './weld-planning/weld-planning-list.component';
 import { WeldPlanningFormComponent } from './weld-planning/weld-planning-form.component';
 import { WeldPlanningDetailComponent } from './weld-planning/weld-planning-detail.component';
@@ -52,17 +52,17 @@ import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-s
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-welding' },
   /* Pipe Welding is the Advanced Search page */
-  { path: 'pipe-welding', component: PipeWeldingComponent, title: 'EWR - Pipe Welding' },
+  { path: 'pipe-welding', component: PipeWeldingPageComponent, title: 'EWR - Pipe Welding' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
-  { path: 'pipe-welding-classic', component: PipeWeldingClassicComponent, title: 'EWR - Pipe Welding (Classic)',
+  { path: 'pipe-welding-classic', component: PipeWeldingClassicPageComponent, title: 'EWR - Pipe Welding (Classic)',
     canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-welding')] },
   /* switched off unless Admin > Feature Toggles > My Assignments page is on; kept so it can be turned
      back on without a rewrite */
-  { path: 'assignments', component: MyAssignmentsComponent, title: 'EWR - My Assignments',
+  { path: 'assignments', component: MyAssignmentsPageComponent, title: 'EWR - My Assignments',
     canActivate: [() => featureToggles().myAssignments || inject(Router).parseUrl('/pipe-welding')] },
-  { path: 'history', component: HistoryComponent, title: 'EWR - History' },
-  { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
+  { path: 'history', component: HistoryPageComponent, title: 'EWR - History' },
+  { path: 'makeup', component: MakeupPageComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing-settings', component: AdminRoutingSettingsComponent, title: 'EWR - Routing Settings' },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
   { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes' },

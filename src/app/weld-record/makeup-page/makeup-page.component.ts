@@ -37,13 +37,13 @@ interface GrantRow {
 const STATUS_ORDER: Record<GrantStatus, number> = { Active: 0, Upcoming: 1, Inactive: 2 };
 
 @Component({
-  selector: 'app-makeup',
+  selector: 'app-makeup-page',
   standalone: true,
   imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, PersonSearchInputComponent, TableToolbarComponent, SortHeaderComponent,
     LucideTrash2, LucidePencil, LucideCheck, LucideX, LucideArrowLeft],
-  templateUrl: './makeup.component.html'
+  templateUrl: './makeup-page.component.html'
 })
-export class MakeupComponent {
+export class MakeupPageComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
 

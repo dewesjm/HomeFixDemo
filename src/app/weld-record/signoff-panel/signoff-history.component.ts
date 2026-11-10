@@ -1,8 +1,8 @@
 /* Signoff History on a step whose definition lists it (Records Review): the joint's History with the
    History screen's sort and column filters, every entry, no pager */
 import { Component, computed, effect, input } from '@angular/core';
-import { HistoryTableComponent } from '../history/history-table.component';
-import { HistoryTableState } from '../history/history-table-state';
+import { HistoryTableComponent } from '../history-page/history-table.component';
+import { HistoryTableState } from '../history-page/history-table-state';
 import { SignoffContext } from './signoff-context';
 
 @Component({

@@ -25,12 +25,12 @@ import { jointRoute } from '../../joint-page/joint-route';
 type AssignmentRow = Assignment & { routing: string };
 
 @Component({
-  selector: 'app-my-assignments',
+  selector: 'app-my-assignments-page',
   standalone: true,
   imports: [BannerPillComponent, AppDatePipe, CommonModule, FormsModule, TableToolbarComponent, SortHeaderComponent, LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDown],
-  templateUrl: './my-assignments.component.html',
+  templateUrl: './my-assignments-page.component.html',
 })
-export class MyAssignmentsComponent {
+export class MyAssignmentsPageComponent {
   private router = inject(Router);
   private store = inject(WorkflowStore);
 
@@ -136,11 +136,11 @@ export class MyAssignmentsComponent {
     const chars = `*${charge.toUpperCase()}*`;
     const out: { bar: boolean; width: number }[] = [];
     for (let i = 0; i < chars.length; i++) {
-      const pattern = MyAssignmentsComponent.CODE39_PATTERNS[chars[i]] ?? MyAssignmentsComponent.CODE39_PATTERNS['*'];
+      const pattern = MyAssignmentsPageComponent.CODE39_PATTERNS[chars[i]] ?? MyAssignmentsPageComponent.CODE39_PATTERNS['*'];
       for (let j = 0; j < pattern.length; j++) {
-        out.push({ bar: j % 2 === 0, width: pattern[j] === '1' ? MyAssignmentsComponent.WIDE_PX : MyAssignmentsComponent.NARROW_PX });
+        out.push({ bar: j % 2 === 0, width: pattern[j] === '1' ? MyAssignmentsPageComponent.WIDE_PX : MyAssignmentsPageComponent.NARROW_PX });
       }
-      if (i < chars.length - 1) out.push({ bar: false, width: MyAssignmentsComponent.NARROW_PX }); /* inter-character gap */
+      if (i < chars.length - 1) out.push({ bar: false, width: MyAssignmentsPageComponent.NARROW_PX }); /* inter-character gap */
     }
     return out;
   }

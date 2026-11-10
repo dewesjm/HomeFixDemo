@@ -20,7 +20,7 @@ import { HistoryTableComponent } from './history-table.component';
 import { HistoryTableState } from './history-table-state';
 
 @Component({
-  selector: 'app-history',
+  selector: 'app-history-page',
   standalone: true,
   imports: [
     CommonModule, FormsModule,
@@ -28,9 +28,9 @@ import { HistoryTableState } from './history-table-state';
     LucideX, LucideSearch, LucideBriefcase, LucideFileSpreadsheet, LucideListFilter, LucideHistory, LucideArrowLeft,
     LucideChevronsUpDown, LucideChevronsDownUp
   ],
-  templateUrl: './history.component.html'
+  templateUrl: './history-page.component.html'
 })
-export class HistoryComponent {
+export class HistoryPageComponent {
   private store = inject(WorkflowStore);
   private wfService = inject(RoutingService);
   private route = inject(ActivatedRoute);
