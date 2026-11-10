@@ -1,6 +1,6 @@
 # Common sign-off validation: proposal
 
-Status: PROPOSED 2026-11-09, waiting on the user's answers to the questions at the bottom. Nothing built.
+Status: PROPOSED 2026-11-09. Answers so far: 1a, 3a, 5 dropped (user: a routing the joint hasn't reached can't be signed, not a concern; no change there). 2 leaning a, re-explained; 4 re-explained. Waiting on 2 and 4. Nothing built.
 
 ## How it works today
 
