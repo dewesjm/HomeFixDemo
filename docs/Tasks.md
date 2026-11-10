@@ -6,9 +6,9 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 
 - [ ] **Attribute-code engineering clarification:** demo behavior for all 13 progression codes is configured as seeded rows in Admin > Attribute Code Exceptions (add/drop routing, Types offered, Type needs ID accessible, minimum RT), with Joint Details messages and fresh examples. Clarify the numbered assumptions and questions before treating meanings as authoritative; user comments remain alongside assumptions. No signed-joint migration needed for demo. [Single reference and clarification register](ATTRIBUTE-CODES-PLAN.md).
-- [ ] **Remaining Repair / Excavation configuration:** summarize Repair/Excavation destinations across settings. General original/performed inspection facts have replaced the PT-to-5X marker. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. Preserve round identity, History, resets and Deprogress; decide effects on existing joints. [Scope and verification](ADMIN-CONFIGURATION-IDEAS.md#repair-and-excavation-ndt-configuration-follow-up).
-- [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Deferred requirement. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-audit-log--deferred-requirement).
-- [ ] **Signoff Type Forms export:** identified gap: current export omits expanded conditions and behaviors. [Export audit](ADMIN-CONFIGURATION-IDEAS.md#export-audit--identified-gaps).
+- [ ] **Remaining Repair / Excavation configuration:** summarize Repair/Excavation destinations across settings. General original/performed inspection facts have replaced the PT-to-5X marker. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. The usability problem: related settings are spread across Routing Settings, Signoff Type to Routing and Signoff Type Forms, so one readable summary of where Repair/Excavation goes (and which form settings apply) is what's left. Keep round creation, linking Excavation to its own Repair, Repair # and Refit # counters, History, route-back resets and Deprogress in code; a general-purpose workflow editor is not wanted. Before delivery, check saved settings drive both execution and the routing preview, covering repeated repair rounds, Excavation UNSAT back to its own Repair, inspection exceptions and return Types, NQC/regular persona, thickness-rule precedence, Cut/fabrication reset and Deprogress. Decide how changed settings affect joints already in progress.
+- [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Removals must not lose their audit history. Deferred requirement; do not build yet.
+- [ ] **Signoff Type Forms export:** identified gap: the export has Type and field names but omits expanded conditions and behaviors.
 - [x] **One field catalog:** merged the form and condition catalogs into one list with a Source on each entry. [Plan](FIELD-CATALOG-PLAN.md).
 
 ## Cleanup
@@ -62,20 +62,27 @@ Implement one package at a time only when requested, commit and stop for review.
 
 ## Ideas requiring a decision before implementation
 
-- **Routing retirement and deletion:** deferred. Define reference checks, new-work eligibility, open-joint migration and preservation of signed routings/History before extending lifecycle controls. Permanent deletion should be considered only for unused, unreferenced definitions. See ADMIN-CONFIGURATION-IDEAS.md.
+- **Routing retirement and deletion:** deferred. Define reference checks, new-work eligibility, open-joint migration and preservation of signed routings/History before extending lifecycle controls. Permanent deletion should be considered only for unused, unreferenced definitions. Today's lifecycle controls for custom inserted routings don't set a general deletion/migration policy.
 
 
 - **Repair / Excavation routing-bar visibility:** revisit whether Repair and Excavation NDT should appear in the routing bar. The user recalls an earlier decision to hide them; confirm the intended behavior and whether visibility should be configurable. Current behavior is unchanged pending that decision.
 
-- **Reusable option lists:** consider configuration for choices on existing fields. New fields, data types and mappings remain code controlled; arbitrary field creation through configuration is not planned. Weld Colors is complete; Repair Codes are implemented. [Details](ADMIN-CONFIGURATION-IDEAS.md#signoff-field-catalog-and-reusable-option-lists).
-- **Fabrication form configuration:** layout, required flags, visibility and consolidation of Fit-required fabrication fields. Long term / low priority. [Details](ADMIN-CONFIGURATION-IDEAS.md#fabrication-form-definitions--long-term).
-- **Makeup allowance policy:** configurable annual limit and year allocation only if policy needs to change. Current policy is 90 days, assigned by grant start year. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-policy--lower-priority).
-- **Makeup entry point:** tentative move from top navigation to the Foreman grid; only foremen should manage it. No implementation approved. [Details](ADMIN-CONFIGURATION-IDEAS.md#makeup-entry-point--tentative).
+- **Reusable option lists:** consider configuration for choices on existing fields. New fields, data types and mappings remain code controlled; arbitrary field creation through configuration is not planned. Weld Colors and Repair Codes are done; other option lists need an individual decision. Backing Ring Type is probably owned by an external system: leave its list alone until that integration is known.
+- **Fabrication form configuration:** layout, required flags, visibility and consolidation of Fit-required fabrication fields. Long term / low priority, since fabrication is consistent today.
+- **Makeup allowance policy:** configurable annual limit and year allocation only if policy needs to change. Current policy is 90 days, assigned by grant start year.
+- **Makeup entry point:** tentative move from top navigation to the Foreman grid; only foremen should manage it. It would be a button on the Foreman grid (like Release to Welding) opening the existing Makeup screen. No implementation approved.
 - **Override preview / reason-screen wording:** an earlier request mentioned wording, but the remaining exact changes are unspecified. Revisit only on a specific request; see the previous-request note below.
 
 ## Mockup scope
 
-This project is a mockup. Real identity/permission enforcement, a backend, real synchronization, external reference-data integration and production data certification are outside the task backlog. Existing prototype boundaries are reference notes, not deferred implementation requirements.
+This project is a mockup. Real identity/permission enforcement, a backend, real synchronization, external reference-data integration and production data certification are outside the task backlog. Existing prototype boundaries are reference notes, not deferred implementation requirements. Groups has an admin table but its permissions are mocked, and the persona droplist stands in for the user's real role.
+
+## Guidelines for future configuration work
+
+- Extend the page that already owns a setting (Routing Settings, Signoff Type Forms, Qualifications, the lookup pages) instead of adding an overlapping editor.
+- Give configured values stable IDs; deactivate referenced values instead of deleting them.
+- Decide explicitly how a change affects joints already in progress and signed History.
+- History, record identity and repair numbering stay application mechanics in code.
 
 ## Completed work and deliberate switches
 

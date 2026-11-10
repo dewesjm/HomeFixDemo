@@ -36,7 +36,6 @@ Rules for AI tools are in [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md). Eve
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
 - [ROUTING.md](docs/ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
 - [Tasks.md](docs/Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
-- [ADMIN-CONFIGURATION-IDEAS.md](docs/ADMIN-CONFIGURATION-IDEAS.md): deferred Weld Record ideas and requirements
 - [ATTRIBUTE-CODES-PLAN.md](docs/ATTRIBUTE-CODES-PLAN.md): attribute code assumptions and open questions for end users
 - [TEST-COVERAGE-PLAN.md](docs/TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
 - Built plans, kept as records: [ADDED-ROUTINGS-PLAN.md](docs/ADDED-ROUTINGS-PLAN.md), [FIELD-CATALOG-PLAN.md](docs/FIELD-CATALOG-PLAN.md), [SIGNOFF-VALIDATION-PLAN.md](docs/SIGNOFF-VALIDATION-PLAN.md)

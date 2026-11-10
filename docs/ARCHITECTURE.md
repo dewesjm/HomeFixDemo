@@ -405,7 +405,7 @@ src/app/
 
 ## Field definitions
 
-`catalogs/field-catalog.ts` (its Signoff Form section) is the only source of field labels, types and options. `FormField` is its runtime shape with evaluated required/disabled rules; field types stay fixed in the catalog. Signoff Type Forms selects the fields and their rules/layout, and shows each field's type read-only in its Fields list.
+`catalogs/field-catalog.ts` (its Signoff Form section) is the only source of field labels, types and options. `FormField` is its runtime shape with evaluated required/disabled rules; field types stay fixed in the catalog. Signoff Type Forms selects the fields and their rules/layout, and shows each field's type read-only in its Fields list. The catalog stays code controlled: new fields, their IDs, data types and mappings need code, and admin pages never create arbitrary fields. Admins can maintain option lists on existing fields (Weld Colors, Repair Codes).
 
 `form-fields.ts` derives fields for the selected Type when needed. `formInputFields()` reads ordinary inputs; `formSignoffFields()` reads Pre-Fit/Fit's signoff-stored insert, ring and Defer Tack values. `routingFormFields()` unions all offered Types for routing and qualification condition pickers. Picker caches refresh when forms change. `shown-fields.ts` applies visibility, required and disabled conditions to catalog definitions. Defer Tack is therefore a checkbox everywhere, including History and validation.
 

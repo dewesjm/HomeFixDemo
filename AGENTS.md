@@ -15,7 +15,7 @@ Read [docs/Tasks.md](docs/Tasks.md) for the master backlog of deferred requireme
 Deferred testing backlog: see docs/TEST-COVERAGE-PLAN.md for the full audit and implementation scope.
 Do not start it automatically; when requested, implement one package at a time and stop for review.
 
-Remove an item here once it is built and committed. Keep deferred ideas in docs/ADMIN-CONFIGURATION-IDEAS.md.
+Remove an item here once it is built and committed. Keep deferred ideas in docs/Tasks.md.
 
 ## Consistent search and pagination
 
