@@ -13,10 +13,9 @@ import { rtDegrees } from '../../routing/ndt';
 import { DECISION_KEY, verifyAgainst } from '../../signoff-definition/step-field-config';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 import { standardRequiredMessage } from '../../signoff-definition/field-rules';
-import { DrawnFieldRule, drawnFieldRule } from '../../signoff-definition/shown-fields';
+import { DrawnFieldRule, drawnFieldRule, visibleSignoffFields } from '../../signoff-definition/shown-fields';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
 import { missingFitFabrication } from '../../fabrication/fabrication-form';
-import { requiredSignoffFields } from './fit-signoff';
 import { typedRequirementError } from './stage-form';
 
 export interface SignContext {
@@ -56,8 +55,10 @@ function unverifiedRows(stage: WorkflowStage, ctx: SignContext): FormField[] {
   return ctx.visibleFields.filter(f => isVerifyRow(f.key) && f.required && stage.inputs?.[f.key] !== 'yes');
 }
 
+/* required fields stored with the sign-off (visibleSignoffFields) that are left empty */
 function missingSignoffFields(stage: WorkflowStage, ctx: SignContext) {
-  return requiredSignoffFields(stage, ctx.job, ctx.fab).filter(f => f.type === 'checkbox' ? stage.signoffInputs[f.key] !== 'yes' : (stage.signoffInputs[f.key] ?? '').trim().length === 0);
+  return visibleSignoffFields(stage, ctx.job, ctx.fab).filter(f => f.required
+    && (f.type === 'checkbox' ? stage.signoffInputs[f.key] !== 'yes' : (stage.signoffInputs[f.key] ?? '').trim().length === 0));
 }
 
 /* Everything on the step itself preventing it from being signed, in reader-friendly wording (holds

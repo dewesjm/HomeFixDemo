@@ -142,6 +142,16 @@ describe('joint-form sign-validation', () => {
     resetStepFieldConfig();
   });
 
+  it('a required Comments blocks signing on any routing', () => {
+    const j = job();
+    setStepFieldConfig(DEFAULT_TYPE_DEFINITIONS.map(a => a.typeId === 'tack'
+      ? { ...a, fields: a.fields.map(f => f.key === 'comments' ? { ...f, required: true } : f) } : a));
+    const tack = stageOf(j, 'tack');
+    expect(signProblems(tack, ctxFor(j, tack))).toContain('Fill in Comments');
+    expect(stageFieldErrors(tack, ctxFor(j, tack))['tack:comments']).toBe('Comments is required');
+    resetStepFieldConfig();
+  });
+
   it('on blur: a filled field loses its error and a fixed Min/Max order clears the Max error', () => {
     const j = job();
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: 'W-101', actualPhMin: '100', actualPhMax: '200' } });

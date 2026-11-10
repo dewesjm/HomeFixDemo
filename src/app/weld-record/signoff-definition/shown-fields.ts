@@ -73,9 +73,10 @@ export function fieldsShown(stage: WorkflowStage, job: Job, stages: WorkflowStag
   return definedFields(stage, ctx);
 }
 
-/* Pre-Fit and Fit's Consumable Insert / Backing Ring / Defer Tack sign-off fields: the ones the
-   step's definition lists, each shown when its condition is met (the insert and ring fields when
-   the joint design needs them), with whether it's required and disabled right now */
+/* The fields stored with the sign-off (signoffInputs) rather than on the routing: Comments on any
+   routing, and Consumable Insert / Backing Ring / Defer Tack on Pre-Fit and Fit. The ones the Type
+   form lists, each shown when its condition is met (the insert and ring fields when the joint design
+   needs them), with whether it's required and disabled right now */
 export function visibleSignoffFields(stage: WorkflowStage, job: Job | undefined, fab: Fab): FormField[] {
   const activation = getActivationForStep(stage);
   const condCtx = buildConditionContext(stage, job, [], fab);
