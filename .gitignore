@@ -44,5 +44,6 @@ Thumbs.db
 
 # Local AI tool files (not part of the app)
 AGENTS.md
-docs/Tasks.md
+CLAUDE.md
+docs/
 .codex/

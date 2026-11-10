@@ -31,7 +31,9 @@ npx ng test --watch=false --browsers=ChromeHeadless
 
 ## Documentation
 
-Rules for AI tools are in [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md). Everything else is in [docs/](docs/):
+Built with AI assistance (Claude Code and Codex).
+
+The docs below, and the AI tool rules (CLAUDE.md, AGENTS.md), are kept locally and are not in this repository. Local docs are in [docs/](docs/):
 
 - [ARCHITECTURE.md](docs/ARCHITECTURE.md): folder map, data flow, data schema, services, screens, gotchas
 - [ROUTING.md](docs/ROUTING.md): current routing rules, NDT, repairs, Cut, and signoff requirements
