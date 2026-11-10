@@ -1,18 +1,18 @@
 /* A step's fields on the joint page: which show, and the options each offers */
-import { repairCodeOptions } from '../signoff-definition/repair-code-options';
+import { repairCodeOptions } from '../signoff-forms/repair-code-options';
 import { weldPositionOptions } from '../../data/weld-positions';
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
-import { isFilledByRule } from '../signoff-definition/field-fill';
-import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
+import { ACTUAL_REQUIREMENT, SHOW_WELD_OVERRIDES } from '../signoff-forms/weld-fields';
+import { isFilledByRule } from '../signoff-forms/field-fill';
+import { rtDegreeRequired } from '../signoff-forms/rt-degree-minimum';
 import { evaluateCondition, conditionClauses } from '../conditions/form-conditions';
-import { buildConditionContext } from '../signoff-definition/condition-context';
-import { fieldActivation } from '../signoff-definition/signoff-type-form-rules';
-import { effectiveShowIf } from '../signoff-definition/field-rules';
-import { definedFields } from '../signoff-definition/shown-fields';
+import { buildConditionContext } from '../signoff-forms/condition-context';
+import { fieldActivation } from '../signoff-forms/signoff-type-form-rules';
+import { effectiveShowIf } from '../signoff-forms/field-rules';
+import { definedFields } from '../signoff-forms/shown-fields';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment/weld-assignment-rules';

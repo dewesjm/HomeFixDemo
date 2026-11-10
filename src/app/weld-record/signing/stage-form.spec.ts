@@ -1,9 +1,9 @@
-import { isRoutingLockedField } from '../signoff-definition/stage-rules';
+import { isRoutingLockedField } from '../signoff-forms/stage-rules';
 import { setDefectCodes } from '../../data/defect-codes';
 import { setWeldPositions } from '../../data/weld-positions';
 import { STORAGE } from '../../data/storage-keys';
-import { snapshotInputs } from '../signoff-definition/stage-display';
-import { formInputFields, formSignoffFields } from '../signoff-definition/form-fields';
+import { snapshotInputs } from '../signoff-forms/stage-display';
+import { formInputFields, formSignoffFields } from '../signoff-forms/form-fields';
 import { JOBS, Job } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routing/inserted-routing/added-routings';
@@ -15,7 +15,7 @@ import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
 } from './stage-form';
-import { typeChange, typeValues } from '../signoff-definition/stage-rules';
+import { typeChange, typeValues } from '../signoff-forms/stage-rules';
 
 const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });

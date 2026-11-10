@@ -5,7 +5,7 @@ import { activeStageId, isStageLocked, setRoutingFrom } from '../current-routing
 import { routeSignoff } from './signoff-routing';
 import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
-import { typeValues } from '../../signoff-definition/stage-rules';
+import { typeValues } from '../../signoff-forms/stage-rules';
 import { RouteToRule } from '../route-to-rules';
 
 const rule = (to: string, value = 'tack'): RouteToRule => ({

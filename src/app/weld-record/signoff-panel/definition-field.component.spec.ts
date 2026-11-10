@@ -3,7 +3,7 @@ import { DefinitionFieldComponent } from './definition-field.component';
 import { SignoffContext } from './signoff-context';
 import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
-import { visibleSignoffFields } from '../signoff-definition/shown-fields';
+import { visibleSignoffFields } from '../signoff-forms/shown-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { WorkflowStage } from '../model/workflow-types';
 

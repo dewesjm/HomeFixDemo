@@ -6,9 +6,9 @@ import { newWorkflow } from '../build-stages';
 import { activeStageId } from '../current-routing';
 import { updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { typeChange } from '../../signoff-definition/stage-rules';
+import { typeChange } from '../../signoff-forms/stage-rules';
 import { setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
-import { getActivationForStep } from '../../signoff-definition/signoff-type-form-rules';
+import { getActivationForStep } from '../../signoff-forms/signoff-type-form-rules';
 
 describe('Inserted routing table decisions', () => {
   let job: Job;

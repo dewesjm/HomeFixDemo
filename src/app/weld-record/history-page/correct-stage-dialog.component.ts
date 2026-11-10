@@ -7,9 +7,9 @@ import { Component, ElementRef, computed, effect, inject, input, output, signal,
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
 
-import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';
-import { isUserEditable } from '../signoff-definition/field-locks';
-import { isRoutingLockedField } from '../signoff-definition/stage-rules';
+import { fieldsShown, visibleSignoffFields } from '../signoff-forms/shown-fields';
+import { isUserEditable } from '../signoff-forms/field-locks';
+import { isRoutingLockedField } from '../signoff-forms/stage-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';

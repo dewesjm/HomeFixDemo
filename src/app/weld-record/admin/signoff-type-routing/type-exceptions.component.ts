@@ -3,12 +3,12 @@
 import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';
-import { typeSourceLabel } from '../../signoff-definition/signoff-type-routing-rules';
+import { typeSourceLabel } from '../../signoff-forms/signoff-type-routing-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes } from '../../../data/signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
-import { TypeException, typeExceptionCondition } from '../../signoff-definition/type-exceptions';
+import { TypeException, typeExceptionCondition } from '../../signoff-forms/type-exceptions';
 
 interface ExceptionRow { id: number; routing: string; rule: TypeException; }
 

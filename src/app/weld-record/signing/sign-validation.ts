@@ -7,13 +7,13 @@ import { attributeAccessError } from '../attribute-codes/attribute-validation';
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { checksFabrication } from '../fabrication/fabrication-steps';
-import { rtDegreeRequired, rtDegrees } from '../signoff-definition/rt-degree-minimum';
-import { ACTUAL_MIN_MAX, actualOrderError } from '../signoff-definition/weld-fields';
-import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../signoff-definition/stage-rules';
+import { rtDegreeRequired, rtDegrees } from '../signoff-forms/rt-degree-minimum';
+import { ACTUAL_MIN_MAX, actualOrderError } from '../signoff-forms/weld-fields';
+import { unsatWithoutRejectTarget, inspectionTypeRequired } from '../signoff-forms/stage-rules';
 import { DECISION_KEY } from '../../data/signoff-type-forms';
-import { standardRequiredMessage } from '../signoff-definition/field-rules';
-import { DrawnFieldRule, drawnFieldRule, visibleSignoffFields } from '../signoff-definition/shown-fields';
-import { buildConditionContext } from '../signoff-definition/condition-context';
+import { standardRequiredMessage } from '../signoff-forms/field-rules';
+import { DrawnFieldRule, drawnFieldRule, visibleSignoffFields } from '../signoff-forms/shown-fields';
+import { buildConditionContext } from '../signoff-forms/condition-context';
 import { typedRequirementError } from './stage-form';
 
 export interface SignContext {

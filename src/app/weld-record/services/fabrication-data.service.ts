@@ -2,7 +2,7 @@
    aren't tied to any one stage and don't affect stage progression */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
-import { show } from '../signoff-definition/stage-display';
+import { show } from '../signoff-forms/stage-display';
 import { SHIP_LOCATION_DEPENDENTS, shipLocationOptions } from '../fabrication/ship-location-options';
 import { recheckFabricationRules } from '../routing/route-changes';
 import { WorkflowStore } from './workflow-store.service';

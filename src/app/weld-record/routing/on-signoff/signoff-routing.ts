@@ -19,8 +19,8 @@ import {
   baseStepId,
   stepOnJoint,
 } from '../../../data/welding-step-ids';
-import { hasDecision, initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
-import { withoutHiddenAnswers } from '../../signoff-definition/shown-fields';
+import { hasDecision, initialInspectionType, typeValues } from '../../signoff-forms/stage-rules';
+import { withoutHiddenAnswers } from '../../signoff-forms/shown-fields';
 import { getTemplates, routingTemplateId } from '../routing-settings-rules';
 import { CUT_RESTARTS_AT } from './repair-code-rules';
 import { signedAsStep, signAsStep } from './type-routing';
@@ -28,7 +28,7 @@ import { describeConditions } from '../../conditions/condition-text';
 import { firstMatchingRule } from '../route-to-rules';
 import { stageConditionFields } from '../../catalogs/field-choices';
 import { RULE_TARGETS, ENGINEERING_HOLD_TARGET, isAddTarget, resolveRuleTarget } from './rule-targets';
-import { usesReturningInspectionType } from '../../signoff-definition/signoff-type-routing-rules';
+import { usesReturningInspectionType } from '../../signoff-forms/signoff-type-routing-rules';
 import { lastingReasons, signedFlagChanges } from '../routing-preview/signed-flag-reasons';
 
 const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.signoffType)?.label ?? s.signoffType;

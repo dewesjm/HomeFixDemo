@@ -11,7 +11,7 @@ import { routingPanelSteps } from '../routing-panel/rules/routing-panel-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
-import { typeValues } from '../signoff-definition/stage-rules';
+import { typeValues } from '../signoff-forms/stage-rules';
 
 /* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:
    N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),

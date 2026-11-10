@@ -1,8 +1,8 @@
 import { JOBS, Job } from '../../data/jobs';
 import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
-import { buildConditionContext } from '../signoff-definition/condition-context';
+import { buildConditionContext } from '../signoff-forms/condition-context';
 import { evaluateCondition } from '../conditions/form-conditions';
-import { conditionText } from '../signoff-definition/field-rules';
+import { conditionText } from '../signoff-forms/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
 import { FIELD_CATALOG, FORM_FIELDS, lookupCatalogField } from './field-catalog';

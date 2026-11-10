@@ -2,8 +2,8 @@
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { DECISION_KEY } from '../../../data/signoff-type-forms';
-import { buildConditionContext } from '../../signoff-definition/condition-context';
-import { drawnFieldRule } from '../../signoff-definition/shown-fields';
+import { buildConditionContext } from '../../signoff-forms/condition-context';
+import { drawnFieldRule } from '../../signoff-forms/shown-fields';
 import { isEngineeringHoldId } from '../../../data/welding-step-ids';
 import { closesJoint } from '../current-routing';
 

@@ -2,8 +2,8 @@
    value is saved to the step, fields it hides are blanked, fill rules and the WPS cascade run, and the
    field's red message is updated (SignoffFormErrorsService). Covers the step's fields, its sign-off
    fields, Affected Item, Type and SAT/UNSAT. The rules themselves are in this folder and
-   signoff-definition/. Provided by JointPageComponent, one per joint page. */
-import { formInputFields } from '../signoff-definition/form-fields';
+   signoff-forms/. Provided by JointPageComponent, one per joint page. */
+import { formInputFields } from '../signoff-forms/form-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { Injectable, WritableSignal, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
@@ -12,12 +12,12 @@ import { RoutingService } from '../services/routing.service';
 import { SignoffService } from '../services/signoff.service';
 import { WeldAssignmentService } from '../services/weld-assignment.service';
 import { isAssignedStage } from '../weld-assignment/weld-assignment-rules';
-import { show } from '../signoff-definition/stage-display';
-import { fillChanges } from '../signoff-definition/field-fill';
+import { show } from '../signoff-forms/stage-display';
+import { fillChanges } from '../signoff-forms/field-fill';
 import { REQUIREMENT_KEYS, hiddenFieldsWithValues } from './stage-form';
 import { requiredError } from './sign-validation';
 import { selectChangeCascade, typedRequirementChanges } from './weld-cascade';
-import { typeChange } from '../signoff-definition/stage-rules';
+import { typeChange } from '../signoff-forms/stage-rules';
 import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
 import { JointOverridesService } from '../joint-page/joint-overrides.service';
 import { SignoffFormErrorsService } from './signoff-form-errors.service';

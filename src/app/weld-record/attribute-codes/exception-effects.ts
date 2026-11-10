@@ -8,7 +8,7 @@ import { WorkflowStage } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
 import { NQC_SPLIT_STEP_IDS, baseStepId } from '../../data/welding-step-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
-import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
+import { signoffTypeOptions } from '../signoff-forms/signoff-type-routing-rules';
 import { jointCodeSlots } from './attribute-context';
 import { AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions } from '../../data/attribute-code-exceptions';
 

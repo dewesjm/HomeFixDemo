@@ -12,8 +12,8 @@ import { StageTemplate } from '../../model/stage-template';
 import { WorkflowStage } from '../../model/workflow-types';
 import { excavationIdForRepair, isEngineeringHoldId, isRepairStageId, roundLabel } from '../../../data/welding-step-ids';
 import { setRoutingFrom } from '../current-routing';
-import { initialInspectionType, typeValues } from '../../signoff-definition/stage-rules';
-import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
+import { initialInspectionType, typeValues } from '../../signoff-forms/stage-rules';
+import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-forms/signoff-type-routing-rules';
 
 /* ── Repair ── */
 

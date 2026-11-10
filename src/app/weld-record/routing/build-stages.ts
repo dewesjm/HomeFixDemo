@@ -6,7 +6,7 @@ import { conditionsMatch, usesStepAnswers } from '../conditions/joint-conditions
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { StageTemplate } from '../model/stage-template';
 import { isAddedTemplateId, getTemplates } from './routing-settings-rules';
-import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
+import { initialInspectionType, typeValues } from '../signoff-forms/stage-rules';
 import { seedFabricationData } from '../../data/seed-fabrication';
 import { closesJoint } from './current-routing';
 import { isFitupInspId } from '../../data/welding-step-ids';

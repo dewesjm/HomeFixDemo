@@ -3,11 +3,11 @@
    from it: those need an engineering override, where the values are typed in by hand (see
    isEngineeringEntryJoint). Picks are fixed per joint and step, so they come back the same on every
    visit. Which fields and steps it covers is weld-assignment-rules.ts. */
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { SHOW_WELD_OVERRIDES } from '../signoff-definition/weld-fields';
-import { isFilledByRule } from '../signoff-definition/field-fill';
+import { SHOW_WELD_OVERRIDES } from '../signoff-forms/weld-fields';
+import { isFilledByRule } from '../signoff-forms/field-fill';
 import { requirementsMet } from '../qualifications/qualifications';
 import { conditionRequirements } from '../qualifications/qual-conditions';
 import { Procedure, procedures } from '../../data/procedures';

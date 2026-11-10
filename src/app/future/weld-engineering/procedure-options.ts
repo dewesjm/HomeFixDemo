@@ -6,12 +6,12 @@ import {
 } from '../../data/procedures';
 
 /* true when a procedure has any preheat/interpass override values set -- shared by the PDF
-   (procedure-pdf.ts) and Weld Record's stage fields (weld-record/signoff/stage-form.ts) */
+   (procedure-pdf.ts) and Weld Record's stage fields (weld-record/signing/stage-form.ts) */
 export function hasOverride(p: Procedure): boolean {
   return !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
 }
 
-/* ── GWP/WTN cascade, the source of Weld Record's GWP/WTN step fields (weld-record/signoff/
+/* ── GWP/WTN cascade, the source of Weld Record's GWP/WTN step fields (weld-record/signing/
    stage-form.ts). A GWP groups several Procedure rows, one per WTN. ── */
 /* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 13-SS316 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */

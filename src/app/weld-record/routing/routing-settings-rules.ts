@@ -4,12 +4,12 @@
 import { insertedDefinitionId } from './inserted-routing/instance-identity';
 import { insertionConfigurationErrors } from './inserted-routing/insertion-validation';
 import { addedRoutingSetup, routingNameError } from './inserted-routing/added-routing-configuration';
-import { routingFormFields } from '../signoff-definition/form-fields';
+import { routingFormFields } from '../signoff-forms/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/stage-template';
-import { excavationPossibleTypes, signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
+import { excavationPossibleTypes, signoffTypeOptions } from '../signoff-forms/signoff-type-routing-rules';
 import { signoffTypeRoutingVersion } from '../../data/signoff-type-routing';
 
 /* ── The live rows ── */

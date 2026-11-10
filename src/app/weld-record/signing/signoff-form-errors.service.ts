@@ -5,7 +5,7 @@ import { FormField } from '../catalogs/field-catalog';
 import { Injectable, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
-import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
+import { ACTUAL_REQUIREMENT } from '../signoff-forms/weld-fields';
 import { errorsAfterBlur, errorsAfterSelect } from './sign-validation';
 
 /* what the page hands over: its joint and live workflow */

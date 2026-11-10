@@ -11,7 +11,7 @@ import { blankFabricationData } from '../fabrication/fabrication-fields';
 import { repairIdForExcavation, isEngineeringHoldId, isExcavationNdtStageId, isRepairStageId } from '../../data/welding-step-ids';
 import { activeStageId, setRoutingFrom } from './current-routing';
 import { fabricationSigned, goesBackPastFabrication } from '../fabrication/fabrication-steps';
-import { initialInspectionType, typeValues } from '../signoff-definition/stage-rules';
+import { initialInspectionType, typeValues } from '../signoff-forms/stage-rules';
 
 /* Repair's own bookkeeping (not fields): kept when a Repair comes up blank */
 const REPAIR_BOOKKEEPING_KEYS = ['originPhase', 'originStageId', 'originInspectionType'];

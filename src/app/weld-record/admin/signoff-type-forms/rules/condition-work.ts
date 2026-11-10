@@ -9,7 +9,7 @@ import {
   conditionTerms,
   isConditionGroup,
 } from '../../../conditions/form-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-definition/stage-property-keys';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-forms/stage-property-keys';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
    the rejected phase has an RT/UT step */

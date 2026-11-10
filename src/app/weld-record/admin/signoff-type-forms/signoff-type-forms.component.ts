@@ -27,7 +27,7 @@ import {
   DEFAULT_TYPE_DEFINITIONS, TypeDefinition, FieldActivation, getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
   DECISION_KEY, type VerifyAgainst,
 } from '../../../data/signoff-type-forms';
-import { getActivationForStep, definitionFields } from '../../signoff-definition/signoff-type-form-rules';
+import { getActivationForStep, definitionFields } from '../../signoff-forms/signoff-type-form-rules';
 import { FORM_FIELDS, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../catalogs/field-catalog';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import {
@@ -47,21 +47,21 @@ import {
   defaultFill,
   effectiveFill,
   fillRuleText,
-} from '../../signoff-definition/field-rules';
-import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
+} from '../../signoff-forms/field-rules';
+import { signoffTypeOptions } from '../../signoff-forms/signoff-type-routing-rules';
 import { getSignoffTypes } from '../../../data/signoff-types';
-import { isDefinitionLockedField } from '../../signoff-definition/stage-rules';
-import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
-import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';
-import type { FieldRuleLine } from '../../signoff-definition/field-rule-lines';
-import type { RequiredMode } from '../../signoff-definition/field-rules';
+import { isDefinitionLockedField } from '../../signoff-forms/stage-rules';
+import { drawnByOwnForm } from '../../signoff-forms/signoff-parts';
+import { fieldRuleLines } from '../../signoff-forms/field-rule-lines';
+import type { FieldRuleLine } from '../../signoff-forms/field-rule-lines';
+import type { RequiredMode } from '../../signoff-forms/field-rules';
 import { WTN_FILL_FIELDS } from '../../../future/weld-engineering/procedure-options';
 import { WorkGroup, conditionToWork } from './rules/condition-work';
 import { StepFieldChoice } from './condition-group-editor.component';
 import { CondKind, OpenCondition, THIS_STEP, WTN, applyOpenCondition, copyActivation, fillChoices, fillSourceId } from './rules/definition-edits';
 import { FieldConditionEditorComponent } from './field-condition-editor.component';
 import { DefinitionLayoutListComponent } from './definition-layout-list.component';
-import { withNewField } from '../../signoff-definition/definition-layout';
+import { withNewField } from '../../signoff-forms/definition-layout';
 
 interface DefRow {
   uid: string;

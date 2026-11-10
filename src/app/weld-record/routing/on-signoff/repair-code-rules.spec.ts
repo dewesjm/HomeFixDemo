@@ -9,7 +9,7 @@ import { newWorkflow } from '../build-stages';
 import { activeStage } from '../current-routing';
 import { getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { repairCodeError } from '../../admin/repair-codes/rules/repair-code-validation';
-import { conditionText } from '../../signoff-definition/field-rules';
+import { conditionText } from '../../signoff-forms/field-rules';
 
 describe('Configured Repair Code routing', () => {
   let store: WorkflowStore;

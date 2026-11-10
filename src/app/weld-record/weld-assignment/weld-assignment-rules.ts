@@ -1,6 +1,6 @@
 /* Which fields and steps the external system's weld assignment covers. The values themselves come
    from the system (weld-assignment-mock.ts stands in for it); the person can't change them. */
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 
 /* the fields the external system sets */

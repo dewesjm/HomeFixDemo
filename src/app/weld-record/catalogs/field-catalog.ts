@@ -23,8 +23,8 @@ import { WorkflowStage } from '../model/workflow-types';
 import { fabricationSigned } from '../fabrication/fabrication-steps';
 import { nqcStepId } from '../../data/welding-step-ids';
 import { FieldCondition } from '../conditions/form-conditions';
-import { repairCodeOptions } from '../signoff-definition/repair-code-options';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-definition/stage-property-keys';
+import { repairCodeOptions } from '../signoff-forms/repair-code-options';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-forms/stage-property-keys';
 
 /* ── What an entry is ── */
 

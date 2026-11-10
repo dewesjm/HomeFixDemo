@@ -4,7 +4,7 @@ import { getStepFieldConfig } from '../../../data/signoff-type-forms';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage } from '../../model/workflow-types';
 import { StageTemplate } from '../../model/stage-template';
-import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';
+import { signoffTypeOptions } from '../../signoff-forms/signoff-type-routing-rules';
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-routings';
 import { conditionsMatch } from '../../conditions/joint-conditions';

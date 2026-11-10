@@ -9,7 +9,7 @@ import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } fr
 import { formInputFields, formSignoffFields } from './form-fields';
 import { visibleSignoffFields } from './shown-fields';
 import { snapshotInputs } from './stage-display';
-import { stageFieldErrors } from '../signoff/sign-validation';
+import { stageFieldErrors } from '../signing/sign-validation';
 
 describe('Catalog and Type forms as the only field definitions', () => {
   const job = () => ({ ...JOBS[0], nInd: '3' });

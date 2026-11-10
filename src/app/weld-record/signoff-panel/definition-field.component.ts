@@ -5,9 +5,9 @@
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ACTUAL_REQUIREMENT } from '../signoff-definition/weld-fields';
+import { ACTUAL_REQUIREMENT } from '../signoff-forms/weld-fields';
 import { WorkflowStage } from '../model/workflow-types';
-import { isFieldLocked, isReadonlyLimit } from '../signoff-definition/field-locks';
+import { isFieldLocked, isReadonlyLimit } from '../signoff-forms/field-locks';
 import { isPersonField } from '../catalogs/field-catalog';
 import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
 import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';

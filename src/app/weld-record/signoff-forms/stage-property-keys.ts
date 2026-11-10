@@ -1,4 +1,4 @@
-/* the stage properties a field condition can read (signoff-definition/condition-context.ts answers them) */
+/* the stage properties a field condition can read (signoff-forms/condition-context.ts answers them) */
 
 /* an "Engineering override is on/off" clause */
 export const ENGINEERING_OVERRIDE_KEY = 'engineeringEntry';

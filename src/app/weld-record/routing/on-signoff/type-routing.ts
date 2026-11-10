@@ -1,7 +1,7 @@
 /* A Type can sign a later routing. */
 import { WorkflowStage } from '../../model/workflow-types';
-import { typeSignsStep } from '../../signoff-definition/signoff-type-routing-rules';
-import { typeValues } from '../../signoff-definition/stage-rules';
+import { typeSignsStep } from '../../signoff-forms/signoff-type-routing-rules';
+import { typeValues } from '../../signoff-forms/stage-rules';
 import { baseStepId } from '../../../data/welding-step-ids';
 
 /* the later step a stage's Type signs (the Type's Signs step), or '' */

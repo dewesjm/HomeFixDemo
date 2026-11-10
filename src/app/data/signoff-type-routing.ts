@@ -1,9 +1,9 @@
 /* Admin > Signoff Type to Routing rows: which Types (Admin > Signoff Types) each routing offers, its
    default Type, when each Type is enabled, and the Type source and exceptions for Excavation NDT. The
    starting rows, load and save (localStorage). The rules that read them are in
-   weld-record/signoff-definition/signoff-type-routing-rules.ts. */
+   weld-record/signoff-forms/signoff-type-routing-rules.ts. */
 import { STORAGE } from './storage-keys';
-import { TypeException } from '../weld-record/signoff-definition/type-exceptions';
+import { TypeException } from '../weld-record/signoff-forms/type-exceptions';
 import { ConditionRule } from '../weld-record/conditions/joint-conditions';
 import { NDT_KINDS } from './welding-steps';
 import { PHASE_NDT_KINDS, nqcStepId } from './welding-step-ids';

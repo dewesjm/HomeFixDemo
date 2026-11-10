@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor page and panel folder names (Pipe Welding, History, Makeup, My Assignments, Fabrication, Joint Details, References, Engineering Release, Routing).',
+      'Refactor the sign-off folders (signing, signoff forms).',
       'Refactor: Weld Planning, Weld Engineering and the switched-off Weld Record pages moved to a future folder.',
       'Refactor the weld record model (unused joint fields removed, persona list moved to data).',
       'Refactor the sign-off form rules into their own folder, and tidy them.',

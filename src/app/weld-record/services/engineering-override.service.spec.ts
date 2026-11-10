@@ -1,4 +1,4 @@
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { EngineeringOverrideService } from './engineering-override.service';

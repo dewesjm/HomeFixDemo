@@ -2,8 +2,8 @@
    row as the step's definition sets it (drawnFieldRule); at least one must be picked while it's required */
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
-import { drawnFieldRule } from '../signoff-definition/shown-fields';
-import { buildConditionContext } from '../signoff-definition/condition-context';
+import { drawnFieldRule } from '../signoff-forms/shown-fields';
+import { buildConditionContext } from '../signoff-forms/condition-context';
 import { SignoffContext } from './signoff-context';
 
 @Component({

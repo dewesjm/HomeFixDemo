@@ -1,14 +1,14 @@
 /* The joint page's overrides for one visit: Foreman Override entries, the engineering override
    reason given on a step, and the deviations a sign-off would accept. Provided by JointPageComponent,
    so this state lives exactly as long as the page. */
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { Injectable, inject, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { DeviationItem } from '../model/deviation';
-import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-definition/weld-fields';
-import { displayValue } from '../signoff-definition/stage-display';
+import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-forms/weld-fields';
+import { displayValue } from '../signoff-forms/stage-display';
 import { ASSIGNED_KEYS } from '../weld-assignment/weld-assignment-rules';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from './rules/deviations';
 import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';

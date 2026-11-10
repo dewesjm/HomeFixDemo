@@ -18,7 +18,7 @@ import { routeBack } from '../route-changes';
 import { insertionTarget } from './instance-identity';
 import { newWorkflow } from '../build-stages';
 import { resolveInsertion } from './generic-insertion';
-import { typeChange } from '../../signoff-definition/stage-rules';
+import { typeChange } from '../../signoff-forms/stage-rules';
 
 describe('Ordinary insertion execution and preview', () => {
   let job: Job;

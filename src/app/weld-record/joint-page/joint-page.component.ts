@@ -16,8 +16,8 @@ import { SignoffPanelComponent } from '../signoff-panel/signoff-panel.component'
 import { SignoffContext } from '../signoff-panel/signoff-context';
 import { DeviationAcceptDialogComponent, DeviationAcceptRequest } from '../deviation-dialog/deviation-accept-dialog.component';
 import { JointOverridesService } from './joint-overrides.service';
-import { SignoffFormEditsService } from '../signoff/signoff-form-edits.service';
-import { SignoffFormErrorsService } from '../signoff/signoff-form-errors.service';
+import { SignoffFormEditsService } from '../signing/signoff-form-edits.service';
+import { SignoffFormErrorsService } from '../signing/signoff-form-errors.service';
 
 import { Job } from '../../data/jobs';
 import { findJointByRoute } from './joint-route';
@@ -39,19 +39,19 @@ import {
 } from '../routing/current-routing';
 import { routingPanelSteps } from '../routing-panel/rules/routing-panel-steps';
 import { FabricationField } from '../fabrication/fabrication-fields';
-import { snapshotInputs } from '../signoff-definition/stage-display';
-import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
-import { buildConditionContext } from '../signoff-definition/condition-context';
+import { snapshotInputs } from '../signoff-forms/stage-display';
+import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-forms/shown-fields';
+import { buildConditionContext } from '../signoff-forms/condition-context';
 import { HistoryRow, historyRows } from '../history-page/rules/history-rows';
-import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
+import { inspectionTypeRequired } from '../signoff-forms/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId } from '../../data/welding-step-ids';
 import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
 import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
-import { StageFormContext, visibleStageFields } from '../signoff/stage-form';
-import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from '../signoff/sign-validation';
+import { StageFormContext, visibleStageFields } from '../signing/stage-form';
+import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from '../signing/sign-validation';
 import { routePreviewLabel } from '../routing/routing-preview/route-preview';
 import { LoadedJoint, captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './rules/unsaved-edits';
 

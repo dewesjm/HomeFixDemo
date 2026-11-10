@@ -1,11 +1,11 @@
-import { formInputFields } from '../signoff-definition/form-fields';
+import { formInputFields } from '../signoff-forms/form-fields';
 import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { WorkflowStage } from '../model/workflow-types';
-import { fillChanges } from '../signoff-definition/field-fill';
-import { isFieldLocked } from '../signoff-definition/field-locks';
+import { fillChanges } from '../signoff-forms/field-fill';
+import { isFieldLocked } from '../signoff-forms/field-locks';
 import { setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
-import { getActivationForStep } from '../signoff-definition/signoff-type-form-rules';
+import { getActivationForStep } from '../signoff-forms/signoff-type-form-rules';
 import { procedures } from '../../data/procedures';
 import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
