@@ -2,8 +2,8 @@
    condition (an AND/OR group, condition-group-editor), and for Prepopulated from the one list of
    fields it can copy. Changes are emitted; the page writes them to the field (definition-edits.ts). */
 import { Component, computed, input, output } from '@angular/core';
-import { WorkGroup } from './condition-work';
-import { CondKind, FillChoice, fillChoiceId } from './definition-edits';
+import { WorkGroup } from './rules/condition-work';
+import { CondKind, FillChoice, fillChoiceId } from './rules/definition-edits';
 import { ConditionGroupEditorComponent, StepFieldChoice } from './condition-group-editor.component';
 import { ChoiceSelectComponent } from './choice-select.component';
 

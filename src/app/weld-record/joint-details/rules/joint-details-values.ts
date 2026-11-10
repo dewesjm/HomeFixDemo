@@ -1,6 +1,6 @@
 /* Joint Details values worked out from the job rather than shown as stored: UT and VT read the
    job's NDT requirement */
-import { Job } from '../../data/jobs';
+import { Job } from '../../../data/jobs';
 
 const ndtHas = (job: Job, method: string) => (job.ndt || '').toUpperCase().includes(method);
 

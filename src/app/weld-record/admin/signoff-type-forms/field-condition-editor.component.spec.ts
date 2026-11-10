@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import { conditionToWork } from './condition-work';
+import { conditionToWork } from './rules/condition-work';
 import { FieldConditionEditorComponent } from './field-condition-editor.component';
-import { WTN, fillChoiceId } from './definition-edits';
+import { WTN, fillChoiceId } from './rules/definition-edits';
 
 describe('Prepopulated from picker', () => {
   const setup = () => {

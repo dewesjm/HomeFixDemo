@@ -1,5 +1,5 @@
 /* Admin > Weld Colors row check: the error for a blank or duplicate color. */
-import { WeldColor } from '../../../data/weld-colors';
+import { WeldColor } from '../../../../data/weld-colors';
 
 export function weldColorError(color: WeldColor, others: WeldColor[]): string {
   if (!color.name.trim()) return 'Color is required.';

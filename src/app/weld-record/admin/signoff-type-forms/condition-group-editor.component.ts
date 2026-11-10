@@ -4,8 +4,8 @@ import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucideX } from '@lucide/angular';
 import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/field-choices';
-import { clauseChoiceId, clauseChoices, withSavedChoice } from './condition-choices';
-import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
+import { clauseChoiceId, clauseChoices, withSavedChoice } from './rules/condition-choices';
+import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './rules/condition-work';
 import { ChoiceSelectComponent } from './choice-select.component';
 
 /* a field of the step a clause can test, with its suggested values */

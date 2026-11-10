@@ -1,7 +1,7 @@
 /* Fabrication's ship-location droplists, built from Admin > Ship Locations (data/ship-locations.ts):
    Deck lists the joint's hull's decks, Frame the frames on that deck, P/S/CL the sides set up at that
    Deck + Frame, Usage the usages at that Deck + Frame + P/S/CL. */
-import { PSCL_VALUES, getShipLocations, psclOption } from '../../data/ship-locations';
+import { PSCL_VALUES, getShipLocations, psclOption } from '../../../data/ship-locations';
 
 /* S and D hulls' ship locations have no Usage (Fabrication shows Level/Deck, Frame and P/S/CL only) */
 export const hullHasUsage = (hull: string) => !['S', 'D'].includes(hull.charAt(0));

@@ -1,9 +1,9 @@
 /* The one list a Signoff Type Forms condition clause picks from: this form's fields, Joint Details,
    Calculated, Fabrication and the clauses that aren't about a field, each named by its Source. */
-import { JOINT_AND_FABRICATION_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
-import type { StepFieldChoice } from './condition-group-editor.component';
+import { JOINT_AND_FABRICATION_FIELDS, fieldChoiceLabel } from '../../../catalogs/field-choices';
+import type { StepFieldChoice } from '../condition-group-editor.component';
 import { ClauseSrc, WorkClause } from './condition-work';
-import type { Choice } from './choice-select.component';
+import type { Choice } from '../choice-select.component';
 
 /* an entry of the list, with the clause picking it starts */
 interface ClauseChoice extends Choice {

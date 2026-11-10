@@ -2,13 +2,13 @@
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/routing-settings-rules.ts edit functions (rows stored by data/routing-settings.ts).
 import { insertionRelativeTargets } from '../../routing/inserted-routing/insertion-target-options';
-import { thenRuleSummary } from './then-rule-summary';
+import { thenRuleSummary } from './rules/then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
 import { AttributeCodeNoteComponent } from '../attribute-code-exceptions/attribute-code-note.component';
-import { insertionTriggers, InsertionTrigger } from './insertion-triggers';
+import { insertionTriggers, InsertionTrigger } from './rules/insertion-triggers';
 import { insertionTarget, insertionDefinitionId } from '../../routing/inserted-routing/instance-identity';
 import { insertionConfigurationErrors } from '../../routing/inserted-routing/insertion-validation';
-import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './routing-row-order';
+import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './rules/routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
 import { addedRoutingSetup, routingNameError } from '../../routing/inserted-routing/added-routing-configuration';
 import { StageTemplate } from '../../model/stage-template';
@@ -46,7 +46,7 @@ import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
-} from './condition-editing';
+} from './rules/condition-editing';
 
 interface RoutingRow {
   id: string;

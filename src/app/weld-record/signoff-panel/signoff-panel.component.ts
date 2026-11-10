@@ -9,7 +9,7 @@ import { FOREMAN_OVERRIDE_ENABLED } from '../signoff-definition/weld-fields';
 import { hasDecision } from '../signoff-definition/stage-rules';
 import { isEngineeringHoldId } from '../routing/routing-ids';
 import { closesJoint } from '../routing/current-routing';
-import { inspectingLabel } from './inspecting-label';
+import { inspectingLabel } from './rules/inspecting-label';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { DefinitionFormComponent } from './definition-form.component';
 import { EngineeringReleaseComponent } from '../engineering-release/engineering-release.component';

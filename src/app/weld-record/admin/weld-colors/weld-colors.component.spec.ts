@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { AdminWeldColorsComponent } from './weld-colors.component';
 import { getWeldColors } from '../../../data/weld-colors';
 import { STORAGE } from '../../../data/storage-keys';
-import { weldColorError } from './weld-color-validation';
+import { weldColorError } from './rules/weld-color-validation';
 
 describe('Admin Weld Colors', () => {
   beforeEach(() => localStorage.removeItem(STORAGE.weldColors));

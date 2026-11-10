@@ -2,14 +2,14 @@
    (localStorage). Matching itself is shared/filter-engine.ts. */
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';
-import { FABRICATION_FIELDS, fabricationFieldVisible, fabricationFields } from '../fabrication/fabrication-fields';
+import { FABRICATION_FIELDS, fabricationFieldVisible, fabricationFields } from '../fabrication/rules/fabrication-fields';
 import { JobWorkflow } from '../model/workflow-types';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { locationOptions } from '../../data/locations';
 import { jointDesignOptions } from '../../data/joint-designs';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields } from '../catalogs/field-choices';
-import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
+import { jointDetailsUt, jointDetailsVt } from '../joint-details/rules/joint-details-values';
 import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
 import { NDT_LABELS } from '../../data/ndt-labels';
 

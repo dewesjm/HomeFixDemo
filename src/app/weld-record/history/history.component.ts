@@ -12,7 +12,7 @@ import { PersonSearchInputComponent } from '../../shared/person-search-input.com
 import { JOBS, Job } from '../../data/jobs';
 import { RoutingService } from '../services/routing.service';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { HistoryRow, historyRows } from './history-rows';
+import { HistoryRow, historyRows } from './rules/history-rows';
 import { downloadCsv } from '../../shared/export-csv';
 import { PEOPLE, Person, fullName } from '../../data/people';
 import { formatDateTime } from '../../shared/date-format';

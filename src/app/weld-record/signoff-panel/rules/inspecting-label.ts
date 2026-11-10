@@ -1,6 +1,6 @@
 /* Inspecting on an inspection step: what's being inspected (Fit on Fit-Up Insp; Root, Layer, Final,
    or the Excavation of a Weld Repair on NDT); '' for any other step */
-import { baseStepId, isExcavationNdtStageId, isFitupInspId } from '../routing/routing-ids';
+import { baseStepId, isExcavationNdtStageId, isFitupInspId } from '../../routing/routing-ids';
 
 export function inspectingLabel(stageId: string): string {
   if (isFitupInspId(stageId)) return 'Fit';

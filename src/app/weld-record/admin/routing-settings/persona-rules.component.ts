@@ -7,7 +7,7 @@ import { getTemplates, updateStageTemplate } from '../../routing/routing-setting
 import { ConditionClause } from '../../conditions/joint-conditions';
 import { describeConditions } from '../../conditions/condition-text';
 import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
-import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './condition-editing';
+import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './rules/condition-editing';
 
 @Component({
   selector: 'app-persona-rules', standalone: true, imports: [FormsModule],

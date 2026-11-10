@@ -7,7 +7,7 @@ import { HistoryEntry } from '../model/history';
 import { JobWorkflow } from '../model/workflow-types';
 import { activeStageId } from '../routing/current-routing';
 import { discardUnsignedEdits } from '../routing/route-changes';
-import { routingBarSteps } from '../routing-bar/routing-bar-steps';
+import { routingBarSteps } from '../routing-bar/rules/routing-bar-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/routing-settings-rules';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';

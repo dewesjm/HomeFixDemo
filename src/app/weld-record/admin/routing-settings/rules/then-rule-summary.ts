@@ -1,7 +1,7 @@
 /** Describe the condition separately from the destination in Routing Settings. */
-import { describeClauses } from '../../conditions/condition-text';
-import { RouteToRule } from '../../routing/route-to-rules';
-import { ConditionCatalogField } from '../../catalogs/field-catalog';
+import { describeClauses } from '../../../conditions/condition-text';
+import { RouteToRule } from '../../../routing/route-to-rules';
+import { ConditionCatalogField } from '../../../catalogs/field-catalog';
 
 export function thenRuleSummary(rule: RouteToRule, fields: ConditionCatalogField[], destination: string): string {
   const summaryFields = fields.map(field => ({

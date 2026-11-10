@@ -10,7 +10,7 @@ import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { AppDateTimePipe } from '../../shared/date-format';
 import { JOBS, Job } from '../../data/jobs';
-import { HistoryRow, correctableKeys, deprogressableKey, historyRowHasDetail, historyRows } from './history-rows';
+import { HistoryRow, correctableKeys, deprogressableKey, historyRowHasDetail, historyRows } from './rules/history-rows';
 import { getTemplates } from '../routing/routing-settings-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { CorrectStageDialogComponent, CorrectTarget } from './correct-stage-dialog.component';

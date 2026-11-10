@@ -16,7 +16,7 @@ import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHo
 import { setRoutingFrom } from '../weld-record/routing/current-routing';
 import { baseStepId, isFitupInspId } from '../weld-record/routing/routing-ids';
 import { newWorkflow } from '../weld-record/routing/build-stages';
-import { fabricationSnapshot } from '../weld-record/fabrication/fabrication-fields';
+import { fabricationSnapshot } from '../weld-record/fabrication/rules/fabrication-fields';
 import { seeded, seededMic } from './seed-fabrication';
 
 /* which jobs get each seeded situation: a job id hash modulo EVERY equal to AT */

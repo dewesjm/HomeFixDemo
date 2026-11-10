@@ -1,8 +1,8 @@
-import { HistoryEntry } from '../model/history';
-import { JobWorkflow } from '../model/workflow-types';
+import { HistoryEntry } from '../../model/history';
+import { JobWorkflow } from '../../model/workflow-types';
 import { historyRows } from './history-rows';
-import { seededWorkflow } from '../../data/seeded-workflow';
-import { JOBS } from '../../data/jobs';
+import { seededWorkflow } from '../../../data/seeded-workflow';
+import { JOBS } from '../../../data/jobs';
 
 const entry = (when: string, section: HistoryEntry['section'], fab?: Record<string, string>): HistoryEntry => ({
   when, who: 'A. Tester', section, action: `${section} ${when}`, routing: 'Fit',

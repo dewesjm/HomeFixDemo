@@ -1,8 +1,8 @@
 /* Fabrication: the cross-step data section on a Welding joint (location, MICs, drawing rev...) */
-import { jointDesignOptions } from '../../data/joint-designs';
-import { isShipboardLocation, locationOptions } from '../../data/locations';
+import { jointDesignOptions } from '../../../data/joint-designs';
+import { isShipboardLocation, locationOptions } from '../../../data/locations';
 import { hullHasUsage } from './ship-location-options';
-import { SignoffInput } from '../model/history';
+import { SignoffInput } from '../../model/history';
 
 export interface FabricationField {
   key: string;

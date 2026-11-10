@@ -10,7 +10,7 @@ import { WorkflowStage, JobWorkflow } from '../model/workflow-types';
 import { activeStage } from '../routing/current-routing';
 import { signoffUndo } from '../routing/route-changes';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
+import { fabricationSnapshot } from '../fabrication/rules/fabrication-fields';
 import { hasDecision, isRoutingLockedField } from '../signoff-definition/stage-rules';
 import { labelFor, snapshotInputs, displayValue } from '../signoff-definition/stage-display';
 import { fieldsShown, visibleSignoffFields } from '../signoff-definition/shown-fields';

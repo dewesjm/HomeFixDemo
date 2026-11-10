@@ -37,19 +37,19 @@ import {
   allRequiredSigned,
   fabricationEditable,
 } from '../routing/current-routing';
-import { routingBarSteps } from '../routing-bar/routing-bar-steps';
-import { FabricationField } from '../fabrication/fabrication-fields';
+import { routingBarSteps } from '../routing-bar/rules/routing-bar-steps';
+import { FabricationField } from '../fabrication/rules/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';
-import { HistoryRow, historyRows } from '../history/history-rows';
+import { HistoryRow, historyRows } from '../history/rules/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
 import { discardUnsignedEdits } from '../routing/route-changes';
 import { isEngineeringHoldId } from '../routing/routing-ids';
 import { closesJoint } from '../routing/current-routing';
 import { featureToggles } from '../../data/feature-toggles';
 import { formatDate } from '../../shared/date-format';
-import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/fabrication-form';
+import { fabricationErrors, fabricationFieldRequired, fabricationFieldsShown } from '../fabrication/rules/fabrication-form';
 import { StageFormContext, visibleStageFields } from './rules/stage-form';
 import { FABRICATION_PROBLEM, SignContext, generalSignProblems, stageFieldErrors } from './rules/sign-validation';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';

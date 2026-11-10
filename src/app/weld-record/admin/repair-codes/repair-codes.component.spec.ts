@@ -7,7 +7,7 @@ import { lookupCatalogField } from '../../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { AdminRepairCodesComponent } from './repair-codes.component';
 import { getRepairCodes } from '../../../data/repair-codes';
-import { repairCodeError } from './repair-code-validation';
+import { repairCodeError } from './rules/repair-code-validation';
 
 describe('Admin Repair Codes', () => {
   beforeEach(() => localStorage.clear());

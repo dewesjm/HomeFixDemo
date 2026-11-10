@@ -11,7 +11,7 @@ import { HistoryEntry } from '../model/history';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { newWorkflow, buildStages } from '../routing/build-stages';
 import { getTemplates } from '../routing/routing-settings-rules';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
+import { fabricationSnapshot } from '../fabrication/rules/fabrication-fields';
 import { currentRoutingLabel } from '../routing/current-routing';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../routing/routing-ids';
 

@@ -5,7 +5,7 @@ import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular'
 import { Job, N_IND_MEANINGS } from '../../data/jobs';
 import { TooltipDirective } from '../../shared/tooltip.directive';
 import { attributeCodeLabel } from '../../data/attribute-codes';
-import { jointDetailsUt, jointDetailsVt } from './joint-details-values';
+import { jointDetailsUt, jointDetailsVt } from './rules/joint-details-values';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
 

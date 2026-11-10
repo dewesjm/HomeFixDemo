@@ -9,7 +9,7 @@ import { TablePagerComponent } from '../../../shared/table-pager.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { ToastService } from '../../../shared/toast.service';
 import { downloadCsv } from '../../../shared/export-csv';
-import { newRepairCodeId, repairCodeError } from './repair-code-validation';
+import { newRepairCodeId, repairCodeError } from './rules/repair-code-validation';
 
 @Component({
   selector: 'app-admin-repair-codes', standalone: true,

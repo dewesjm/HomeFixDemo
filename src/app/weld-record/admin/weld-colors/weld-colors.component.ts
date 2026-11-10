@@ -6,7 +6,7 @@ import { LucidePencil, LucideCheck, LucideX, LucideTrash2 } from '@lucide/angula
 
 import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
-import { weldColorError } from './weld-color-validation';
+import { weldColorError } from './rules/weld-color-validation';
 import { getWeldColors, setWeldColors } from '../../../data/weld-colors';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';

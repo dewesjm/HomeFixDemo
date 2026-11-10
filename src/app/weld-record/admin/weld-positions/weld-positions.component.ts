@@ -11,7 +11,7 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { validWeldPosition } from './weld-position-validation';
+import { validWeldPosition } from './rules/weld-position-validation';
 
 interface WeldPositionRow {
   uid: string;

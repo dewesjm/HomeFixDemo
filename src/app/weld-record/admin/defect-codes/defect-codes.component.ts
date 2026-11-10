@@ -12,7 +12,7 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { validDefectCode } from './defect-code-validation';
+import { validDefectCode } from './rules/defect-code-validation';
 
 interface DefectRow {
   uid: string;
