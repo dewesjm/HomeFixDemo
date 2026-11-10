@@ -2,7 +2,7 @@
    Attribute Code Exceptions row for that routing, linking to the table where they are edited */
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { codesChangingRouting } from '../../attribute-codes/attribute-code-exceptions';
+import { codesChangingRouting } from '../../attribute-codes/exception-effects';
 
 @Component({
   selector: 'app-attribute-code-note',

@@ -241,7 +241,7 @@ The fixed resolver is gone; Admin > Attribute Code Exceptions holds all 13 codes
 
 ## Verification and code ownership
 
-- Table, seeds and storage: weld-record/attribute-codes/attribute-code-exceptions.ts; admin page: weld-record/admin/admin-attribute-code-exceptions/.
+- Table, seeds and storage: data/attribute-code-exceptions.ts; admin page: weld-record/admin/admin-attribute-code-exceptions/.
 - Effects on a joint (build, re-check as answers come in, Type narrowing): weld-record/attribute-codes/exception-effects.ts; ID accessible check: attribute-validation.ts.
 - RT minimum (RT form rule + code minimum): weld-record/signoff-definition/rt-degree-minimum.ts.
 - Messages and provisional identifiers: data/attribute-codes.ts; lookup descriptions: data/characteristics.ts.

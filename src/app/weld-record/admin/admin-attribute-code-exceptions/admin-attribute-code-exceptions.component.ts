@@ -18,7 +18,7 @@ import { getSignoffTypes } from '../../../data/signoff-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,
-} from '../../attribute-codes/attribute-code-exceptions';
+} from '../../../data/attribute-code-exceptions';
 import {
   accessibleText, appliesWhenText, exceptionConditionFields, minRtText, routingChangeText, typesText,
 } from '../../attribute-codes/exception-text';

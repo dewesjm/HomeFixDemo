@@ -14,6 +14,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-11-09',
     changed: ['Refactor Signoff Type Forms.',
       'Refactor Qualifications.',
+      'Refactor Attribute Code Exceptions.',
       'Admin > Locations: saved changes to the list were reset to the starting locations.',
       'Admin > Signoff Types now opens at /admin/signoff-types, and its Excel export is named signoff-types. Saved changes on this page were reset to the starting Types.',
       'Admin > Signoff Type to Routing now opens at /admin/signoff-type-routing, and its Excel export is named signoff-type-routing. Saved changes on this page were reset to the starting rows.',

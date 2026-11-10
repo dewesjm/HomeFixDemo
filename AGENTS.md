@@ -6,11 +6,7 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Admin table data in `data/`: every admin page's rows (starting rows, load, save) live in `data/`; the rules that use
-   them stay in their feature folder. One admin page per commit. Done: Routing Settings, Signoff Types,
-   Signoff Type to Routing, Signoff Type Forms, Qualifications. Left:
-   Attribute Code Exceptions (`attribute-code-exceptions.ts`).
-2. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
+1. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
    (see Tasks.md Cleanup). Propose before building.
 
 Completed plans are references, not instructions to start another feature.
@@ -42,6 +38,8 @@ Remove an item here once it is built and committed. Keep deferred ideas in ADMIN
   `weld-record/signoff-definition/`, `weld-record/joint-page/rules/`) or a `weld-record/services/`
   service, where they can be unit tested.
 - `data/` holds seed data and stored lookup tables only (records, their model, load/save), never rules.
+  Every admin page's rows (starting rows, load, save) live in `data/`; the rules that use them stay in the
+  feature folder.
 - Don't build a monolith. Break code up the way a person would to read it: when a file or component
   starts handling several separate things, split it along those lines rather than adding another branch.
 - Comments describe what the code does now. Dates, "used to", and who asked for what go in git

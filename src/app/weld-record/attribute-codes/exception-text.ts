@@ -4,7 +4,7 @@ import { describeConditions } from '../conditions/condition-text';
 import { ConditionCatalogField } from '../catalogs/field-catalog';
 import { allStepAnswerFields, FABRICATION_DEPENDENT_FIELDS, JOINT_DETAIL_FIELDS } from '../catalogs/field-choices';
 import { typeLabel } from '../../data/signoff-types';
-import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from './attribute-code-exceptions';
+import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from '../../data/attribute-code-exceptions';
 
 /* what an Applies when condition can read: Joint Details, Fabrication,
    Root's and Final Weld's Weld Process, and each MT/PT routing's Type and ID accessible answer */

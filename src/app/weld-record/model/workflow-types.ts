@@ -2,7 +2,7 @@
 import { Job } from '../../data/jobs';
 import { ConditionRule } from '../conditions/joint-conditions';
 import { RejectRule } from '../routing/route-to-rules';
-import type { AttributeStageRules } from '../attribute-codes/attribute-code-exceptions';
+import type { AttributeStageRules } from '../attribute-codes/exception-effects';
 
 /* roles a step routes to; Pipe Welding filters its queue by these */
 export const ROLES = ['Fitting', 'Welding', 'Foreman', 'Inspector', 'NQC Inspector', 'O63 Records', 'O04 Records', 'Engineering', 'View'] as const;

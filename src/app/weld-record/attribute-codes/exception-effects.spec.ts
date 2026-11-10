@@ -9,7 +9,7 @@ import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
 import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
 import { typeValues } from '../signoff-definition/stage-rules';
 import { attributeAccessError } from './attribute-validation';
-import { SEED_EXCEPTIONS, setAttributeCodeExceptions } from './attribute-code-exceptions';
+import { SEED_EXCEPTIONS, setAttributeCodeExceptions } from '../../data/attribute-code-exceptions';
 import { typesForAccessibleAnswer } from './exception-effects';
 
 const job = (code: string, more: Partial<Job> = {}): Job => ({

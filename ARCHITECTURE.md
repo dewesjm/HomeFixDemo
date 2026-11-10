@@ -170,7 +170,7 @@ src/app/
                            and their rules; the rows are data/qualifications), qual-when, qual-requirements,
                            qualifications
     attribute-codes/       Admin > Attribute Code Exceptions (see ROUTING.md and ATTRIBUTE-CODES-PLAN.md):
-                           attribute-code-exceptions (rows, seeds, storage), exception-effects (what the rows do to a
+                           exception-effects (what the rows in data/attribute-code-exceptions do to a
                            joint's routings: buildStages, applySignedFlags, Type list narrowing), attribute-validation
                            (ID accessible check), exception-text (rows in words), attribute-context (the joint's codes)
     pipe-search/           Pipe Welding (Classic) — the old simple job table, switched off by a feature toggle

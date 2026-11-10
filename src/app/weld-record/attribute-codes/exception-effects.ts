@@ -9,7 +9,20 @@ import { NQC_SPLIT_STEP_IDS, baseStepId } from '../routing/routing-ids';
 import { getSignoffTypes } from '../../data/signoff-types';
 import { signoffTypeOptions } from '../signoff-definition/signoff-type-routing-rules';
 import { jointCodeSlots } from './attribute-context';
-import { AttributeCodeException, AttributeStageRules, getAttributeCodeExceptions } from './attribute-code-exceptions';
+import { AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions } from '../../data/attribute-code-exceptions';
+
+/* what the exceptions left on one routing of a joint, kept on its stage for the form and signoff checks */
+export interface AttributeStageRules {
+  codes: string[];
+  accessible: { type: string; answer: AccessibleAnswer }[];
+  askAccessible?: boolean;
+  minRt?: number;
+}
+
+/* the codes with a row for a routing, for the other admin tables' notes */
+export function codesChangingRouting(routingId: string): string[] {
+  return [...new Set(getAttributeCodeExceptions().filter(r => r.routing === routingId).map(r => r.code))];
+}
 
 export interface RoutingEffect {
   codes: string[];

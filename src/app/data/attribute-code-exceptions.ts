@@ -1,11 +1,12 @@
 /* Admin > Attribute Code Exceptions: what each attribute code changes on a joint's routing, applied
    after the normal routing is built (Routing Settings, Signoff Type to Routing). One row per code
-   and routing. A regular routing and its NQC row are separate routings with separate rows. Stored in
-   localStorage. */
-import { STORAGE } from '../../data/storage-keys';
-import { SHIPBOARD_FIELD } from '../catalogs/field-catalog';
-import { ConditionRule } from '../conditions/joint-conditions';
-import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../routing/routing-ids';
+   and routing. A regular routing and its NQC row are separate routings with separate rows. The model,
+   the starting rows, load and save (localStorage). The rules that apply them are in
+   weld-record/attribute-codes/exception-effects.ts. */
+import { STORAGE } from './storage-keys';
+import { SHIPBOARD_FIELD } from '../weld-record/catalogs/field-catalog';
+import { ConditionRule } from '../weld-record/conditions/joint-conditions';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../weld-record/routing/routing-ids';
 
 export type AccessibleAnswer = 'yes' | 'no';
 
@@ -24,14 +25,6 @@ export interface AttributeCodeException {
   /* "ID is accessible" must be answered on the signoff, whatever the Type */
   askAccessible?: boolean;
   /* an RT signoff needs at least this Degree of RT Performed */
-  minRt?: number;
-}
-
-/* what the exceptions left on one routing of a joint, kept on its stage for the form and signoff checks */
-export interface AttributeStageRules {
-  codes: string[];
-  accessible: { type: string; answer: AccessibleAnswer }[];
-  askAccessible?: boolean;
   minRt?: number;
 }
 
@@ -107,9 +100,4 @@ export function getAttributeCodeExceptions(): AttributeCodeException[] {
 
 export function setAttributeCodeExceptions(rows: AttributeCodeException[]) {
   localStorage.setItem(STORAGE.attributeCodeExceptions, JSON.stringify(rows));
-}
-
-/* the codes with a row for a routing, for the other admin tables' notes */
-export function codesChangingRouting(routingId: string): string[] {
-  return [...new Set(getAttributeCodeExceptions().filter(r => r.routing === routingId).map(r => r.code))];
 }
