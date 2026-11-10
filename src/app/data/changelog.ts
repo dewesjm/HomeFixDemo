@@ -1,7 +1,8 @@
 /* Change Log (Quick Links > Change Log). Plain-language summary for people using the demo, newest
-   day first. Add to the top entry (or a new day) with every user-facing change. A refactor gets one
-   short line naming the area, e.g. "Refactor Signoff Type Forms". Skip docs and data changes (sample
-   values, formats, droplist option names). */
+   day first. Add to the top entry (or a new day) with every user-facing change. Code-only work gets at most two
+   summary lines per day: "Reorganized ..." for moved or renamed folders and files, "Refactored ..." for
+   code changes with no visible effect; extend that day's line instead of adding another. Skip docs and
+   data changes (sample values, formats, droplist option names). */
 interface ChangeLogDay {
   date: string;        /* ISO date */
   added?: string[];
@@ -12,38 +13,13 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
-    changed: ['Refactor page and panel folder names (Pipe Welding, History, Makeup, My Assignments, Fabrication, Joint Details, References, Engineering Release, Routing).',
-      'Refactor the sync status dot (now shared by every section).',
-      'Refactor the sign-off folders and name every logic-only folder with -logic.',
-      'Refactor: Weld Planning, Weld Engineering and the switched-off Weld Record pages moved to a future folder.',
-      'Refactor the weld record model (unused joint fields removed, persona list moved to data).',
-      'Refactor the sign-off form rules into their own folder, and tidy them.',
+    changed: ['Reorganized the Weld Record code: folders and files renamed and regrouped by what they are (pages, panels, logic, data shapes), top bar pieces shared by every section, and Weld Planning, Weld Engineering and switched-off pages moved to a future folder.',
+      'Refactored the Weld Record code: unused joint fields removed, duplicate routing rule code merged, fixed routing rules split by concern, and the sign-off form rules and Signoff Type Forms conditions tidied.',
       'Admin pages: shorter descriptions under each title, saying what the page is for and what it changes.',
       'Saved Routing Settings were reset (persona settings renamed).',
       'Pipe Welding now opens at /pipe-welding (Classic at /pipe-welding-classic).',
       'History CSV export is now named history-<person>.csv (history-all.csv for everyone).',
-      'Refactor the routing ids.',
-      'Refactor the avatar menu.',
-      'Refactor the Signoff Type Forms conditions.',
-      'Refactor the external GWP/WTN/filler assignment.',
-      'Refactor where page rules live (Admin pages, Fabrication, History, Joint Details, routing bar, Signoff panel).',
-      'Refactor the switched-off pages (Pipe Welding Classic, My Assignments).',
-      'Refactor the History page.',
-      'Refactor the Pipe Welding pages.',
-      'Refactor the Admin pages.',
-      'Refactor the joint data model.',
-      'Refactor the sync status dot.',
-      'Refactor the Routing Settings error that blocks a signoff.',
-      'Refactor added routings (Repair, Excavation NDT, Engineering Hold) and the routing preview.',
-      'Refactor Routing Override and Deprogress.',
-      'Refactor Routing Settings.',
-      'Refactor the fixed rules for Fit, Fit-Up Insp, Layer and Sold.',
       'Admin condition droplists: the fields offered for Excavation NDT now follow the Types set for the NDT routings on Admin > Signoff Type to Routing, instead of a fixed list.',
-      'Refactor NDT routings and Degree of RT values.',
-      'Refactor Reject routes to and Then go to rules.',
-      'Refactor Fabrication ship location droplists.',
-      'Refactor procedure droplists (GWP, WTN and filler).',
-      'Refactor weld assignment (GWP, WTN and filler set by the outside system).',
       'Admin > Routing Settings: saved changes were reset to the starting routings.',
       'Admin page addresses now match their menu names: Routing Override, Penetrant Types, Attribute Codes, Signoff Type Forms, Routing Settings.'],
   },
@@ -51,9 +27,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
     date: '2026-11-09',
     fixed: ['Signoff on Fit and Fit-Up Insp no longer does nothing when a Fabrication value is missing: "Fix the Fabrication fields marked in red" shows under Signoff and the page scrolls to the Fabrication panel.',
       'A wrong ID accessibility answer for the chosen Type now shows its message on the ID accessibility field when Signoff is pressed.'],
-    changed: ['Refactor Signoff Type Forms.',
-      'Refactor Qualifications.',
-      'Refactor Attribute Code Exceptions.',
+    changed: ['Reorganized where the Signoff Type Forms, Qualifications and Attribute Code Exceptions rows are kept.',
       'Admin > Locations: saved changes to the list were reset to the starting locations.',
       'Admin > Signoff Types now opens at /admin/signoff-types, and its Excel export is named signoff-types. Saved changes on this page were reset to the starting Types.',
       'Admin > Signoff Type to Routing now opens at /admin/signoff-type-routing, and its Excel export is named signoff-type-routing. Saved changes on this page were reset to the starting rows.',
