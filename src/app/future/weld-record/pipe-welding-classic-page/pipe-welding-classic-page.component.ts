@@ -18,12 +18,12 @@ import { downloadCsv } from '../../../shared/export-csv';
 import {
   JOBS, Job
 } from '../../../data/jobs';
-import { SignoffService } from '../../services/signoff.service';
-import { WorkflowStore } from '../../services/workflow-store.service';
-import { currentRoutingLabel, activeStage } from '../../routing/current-routing';
+import { SignoffService } from '../../../weld-record/services/signoff.service';
+import { WorkflowStore } from '../../../weld-record/services/workflow-store.service';
+import { currentRoutingLabel, activeStage } from '../../../weld-record/routing/current-routing';
 import { ROLES, DEFAULT_ROLE, type Role } from '../../../data/roles';
 import { BannerPillComponent } from '../../../shared/banner-pill.component';
-import { jointRoute } from '../../joint-page/joint-route';
+import { jointRoute } from '../../../weld-record/joint-page/joint-route';
 
 const SEARCH_STATE_KEY = STORAGE.searchState;
 
