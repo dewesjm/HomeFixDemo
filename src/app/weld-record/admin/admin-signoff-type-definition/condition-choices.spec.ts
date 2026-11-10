@@ -1,5 +1,4 @@
 import { clauseChoiceId, clauseChoices, withSavedChoice } from './condition-choices';
-import { matchingChoices } from './searchable-select.component';
 
 const fields = [{ key: 'weldColor', label: 'Weld Color', values: [] }, { key: 'partial', label: 'Partial', values: [], yesNo: true }];
 const labels = (list: { label: string }[]) => list.map(c => c.label);
@@ -40,15 +39,5 @@ describe('condition clause list', () => {
     const stepOnly = clauseChoices(fields, true);
     expect(withSavedChoice(stepOnly, { source: 'jointDetail', key: 'ss', equals: 'Yes' })[0].label).toBe('Joint Details: SS');
     expect(withSavedChoice(stepOnly, { source: 'stepId', key: '', equals: 'x' })[0].label).toBe('Routing ID matches');
-  });
-});
-
-describe('searchable list', () => {
-  const list = [{ id: 'a', label: 'Root Weld: Weld Process' }, { id: 'b', label: 'WTN: Weld Process' }];
-
-  it('searches the whole name and keeps the current pick', () => {
-    expect(labels(matchingChoices(list, ' root ', ''))).toEqual(['Root Weld: Weld Process']);
-    expect(labels(matchingChoices(list, 'root', 'b'))).toEqual(['Root Weld: Weld Process', 'WTN: Weld Process']);
-    expect(matchingChoices(list, '', '')).toBe(list);
   });
 });

@@ -18,6 +18,12 @@ const yesNo = (b: boolean) => b ? 'Yes' : 'No';
 
 const RULE_ROWS = FIELD_CATALOG.filter((f): f is RuleEntry => f.source !== 'Signoff Form');
 
+/* a field's name in a droplist, Source first; Fabrication rows, routing answers and This routing already
+   start with theirs. Rule text keeps the plain label. */
+export function fieldChoiceLabel(f: { label: string; source?: string }): string {
+  return f.source === 'Joint Details' || f.source === 'Calculated' ? `${f.source}: ${f.label}` : f.label;
+}
+
 /* a Calculated row without stepAnswer is worked out from the joint alone */
 export const readsFabrication = (f: ConditionCatalogField | undefined): boolean =>
   f?.source === 'Fabrication' || (f?.source === 'Calculated' && !!f.stepAnswer);

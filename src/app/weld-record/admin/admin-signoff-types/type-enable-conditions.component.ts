@@ -4,7 +4,7 @@ import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ConditionRule } from '../../routing/step-conditions';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
-import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';
+import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 
 const BLANK = 'Blank';
 
@@ -19,9 +19,9 @@ const BLANK = 'Blank';
         @for (clause of rule; track $index; let ci = $index) {
           <div class="flex flex-wrap items-center gap-1 my-1">
             @if (ci > 0) { <span>AND</span> }
-            <select class="select select-xs select-bordered" aria-label="Joint Details field"
+            <select class="select select-xs select-bordered w-auto max-w-full" aria-label="Joint Details field"
               [ngModel]="clause.field" (ngModelChange)="setField(ri, ci, $event)">
-              @for (field of fields(); track field.key) { <option [value]="field.key">{{ field.label }}</option> }
+              @for (field of fields(); track field.key) { <option [value]="field.key">{{ choiceLabel(field) }}</option> }
             </select>
             <select class="select select-xs select-bordered" aria-label="Comparison"
               [ngModel]="clause.op" (ngModelChange)="clause.op = $event; emit()">
@@ -49,7 +49,8 @@ export class TypeEnableConditionsComponent {
   rules = input.required<ConditionRule[]>();
   listId = input.required<string>();
   changed = output<ConditionRule[]>();
-  fields = input<Pick<ConditionCatalogField, 'key' | 'label' | 'values'>[]>([...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }]);
+  readonly choiceLabel = fieldChoiceLabel;
+  fields = input<(Pick<ConditionCatalogField, 'key' | 'label' | 'values'> & { source?: string })[]>([...JOINT_DETAIL_FIELDS, { key: 'self.returningInspectionType', label: 'Returning inspection Type', values: ['vt', '5x', 'mt', 'pt', 'ut', 'rt'] }]);
   /* suggestions for the value box; an empty value is shown and typed as Blank */
   values(field: string) {
     return [...new Set((this.fields().find(f => f.key === field)?.values ?? []).map(v => v || BLANK)), BLANK];

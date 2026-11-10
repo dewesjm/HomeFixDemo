@@ -6,7 +6,7 @@ import { LucidePlus, LucideX } from '@lucide/angular';
 import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/field-choices';
 import { clauseChoiceId, clauseChoices, withSavedChoice } from './condition-choices';
 import { WorkClause, WorkGroup, WorkTerm, blankClause, isWorkGroup } from './condition-work';
-import { SearchableSelectComponent } from './searchable-select.component';
+import { ChoiceSelectComponent } from './choice-select.component';
 
 /* a field of the step a clause can test, with its suggested values */
 export interface StepFieldChoice {
@@ -20,7 +20,7 @@ export interface StepFieldChoice {
 @Component({
   selector: 'app-condition-group-editor',
   standalone: true,
-  imports: [FormsModule, LucidePlus, LucideX, SearchableSelectComponent],
+  imports: [FormsModule, LucidePlus, LucideX, ChoiceSelectComponent],
   templateUrl: './condition-group-editor.component.html',
 })
 export class ConditionGroupEditorComponent {

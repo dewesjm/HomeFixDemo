@@ -14,11 +14,11 @@
     } @else {
       @let c = asClause(t);
       <div class="flex flex-wrap items-center gap-1 max-w-2xl">
-        <select class="select select-bordered select-sm w-52" [ngModel]="c.field" (ngModelChange)="setField(i, $event)"
+        <select class="select select-bordered select-sm w-auto max-w-full" [ngModel]="c.field" (ngModelChange)="setField(i, $event)"
                 aria-label="Field">
           @for (fg of fieldGroupsFor(c.field); track fg.name) {
             <optgroup [label]="fg.name">
-              @for (f of fg.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+              @for (f of fg.fields; track f.key) { <option [ngValue]="f.key">{{ choiceLabel({ label: f.label, source: f.group }) }}</option> }
             </optgroup>
           }
         </select>

@@ -5,7 +5,7 @@ import { Job } from '../../../data/jobs';
 import { ROLES, StageTemplate } from '../../model/workflow-types';
 import { getTemplates, updateStageTemplate } from '../../routing/stage-templates';
 import { ConditionClause, describeConditions } from '../../routing/step-conditions';
-import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';
+import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './condition-editing';
 
 @Component({
@@ -26,8 +26,8 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
             @for (clause of rule.when; track $index; let ci = $index) {
               <div class="my-2">
                 @if (ci > 0) { <span>And </span> }
-                <select class="select select-sm" aria-label="Persona condition field" [ngModel]="clause.field" (ngModelChange)="patch(ri, ci, {field: $event})">
-                  @for (field of fields; track field.key) { <option [value]="field.key">{{ field.label }}</option> }
+                <select class="select select-sm w-auto max-w-full" aria-label="Persona condition field" [ngModel]="clause.field" (ngModelChange)="patch(ri, ci, {field: $event})">
+                  @for (field of fields; track field.key) { <option [value]="field.key">{{ choiceLabel(field) }}</option> }
                 </select>
                 <select class="select select-sm" aria-label="Persona condition operator" [ngModel]="clause.op" (ngModelChange)="patch(ri, ci, {op: $event})">
                   <option value="is">is</option><option value="isNot">is not</option><option value="contains">contains</option>
@@ -74,6 +74,7 @@ export class PersonaRulesComponent {
   closed = output<void>();
   saved = output<void>();
   fields = JOINT_DETAIL_FIELDS;
+  readonly choiceLabel = fieldChoiceLabel;
   roles: string[] = [...ROLES];
   rules: NonNullable<StageTemplate['roleRules']> = [];
   fallbackRole = '';

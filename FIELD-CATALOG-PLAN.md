@@ -94,6 +94,8 @@ Note that a plain "Source is Joint Details" filter is wrong for the first row: i
 
 ## Droplist grouping
 
+After building, the user asked for the Source prefix on every droplist that uses the catalog, headed or not (`fieldChoiceLabel` in `field-choices.ts`), and each is wide enough for its full names.
+
 Calculated rows show under Joint Details or Fabrication today. They move to their own Calculated group.
 
 - **Droplists with headings** (Routing Settings via `admin-routing/condition-editing.ts`, Qualifications): the Source is the heading. Order: This routing, Joint Details, Calculated, Fabrication, Earlier routings. Choices that aren't catalog rows keep their current names.

@@ -35,18 +35,8 @@ describe('Prepopulated from picker', () => {
     expect(emitted).toEqual([{ fillStepId: 'root-weld', fillFieldKey: 'weldProcess' }, { fillStepId: '', fillFieldKey: '' }]);
   });
 
-  it('filters by search, with a clear button once there is text', () => {
-    const { fixture, el, options } = setup();
-    const clear = () => el.querySelector('[aria-label="Clear Prepopulated from search"]') as HTMLButtonElement | null;
-    expect(clear()).toBeNull();
-    const search = el.querySelector('[aria-label="Search Prepopulated from"]') as HTMLInputElement;
-    search.value = 'root';
-    search.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(options()).toEqual(['Nothing', 'Root Weld: Weld Process']);
-    clear()!.click();
-    fixture.detectChanges();
-    expect(options().length).toBe(3);
-    expect(clear()).toBeNull();
+  it('has no search box beside the droplist', () => {
+    const { el } = setup();
+    expect(el.querySelector('input')).toBeNull();
   });
 });

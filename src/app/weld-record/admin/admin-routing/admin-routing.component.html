@@ -216,10 +216,10 @@
           @for (c of rule; track $index; let ci = $index) {
             @if (ci > 0) { <div class="font-semibold my-1">and</div> }
             <div class="flex flex-wrap items-center gap-2">
-              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setClause(ri, ci, { field: $event })">
+              <select class="select select-bordered select-sm w-auto max-w-full" [ngModel]="c.field" (ngModelChange)="setClause(ri, ci, { field: $event })">
                 @for (g of groupsOf(condFields()); track g.label) {
                   <optgroup [label]="g.label">
-                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ choiceLabel(f) }}</option> }
                   </optgroup>
                 }
               </select>
@@ -303,10 +303,10 @@
           @for (c of rule.when; track $index; let ci = $index) {
             @if (ci > 0) { <div class="font-semibold my-1">and</div> }
             <div class="flex flex-wrap items-center gap-2">
-              <select class="select select-bordered select-sm" [ngModel]="c.field" (ngModelChange)="setRejectClause(ri, ci, { field: $event })">
+              <select class="select select-bordered select-sm w-auto max-w-full" [ngModel]="c.field" (ngModelChange)="setRejectClause(ri, ci, { field: $event })">
                 @for (g of groupsOf(rejFields()); track g.label) {
                   <optgroup [label]="g.label">
-                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ f.label }}</option> }
+                    @for (f of g.fields; track f.key) { <option [ngValue]="f.key">{{ choiceLabel(f) }}</option> }
                   </optgroup>
                 }
               </select>

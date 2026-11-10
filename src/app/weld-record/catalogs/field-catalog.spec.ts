@@ -7,7 +7,7 @@ import { conditionText } from '../signoff-definition/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
 import { FIELD_CATALOG, FORM_FIELDS, lookupCatalogField } from './field-catalog';
-import { JOINT_AND_FABRICATION_FIELDS, JOINT_DETAIL_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, jointOrFabricationField, readsFabrication, stageConditionFields, stepAnswerFieldsBefore } from './field-choices';
+import { JOINT_AND_FABRICATION_FIELDS, JOINT_DETAIL_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, fieldChoiceLabel, jointOrFabricationField, readsFabrication, stageConditionFields, stepAnswerFieldsBefore } from './field-choices';
 import { RECORDED_SCREENS } from './field-catalog.recording';
 import { exceptionConditionFields } from '../attribute-codes/exception-text';
 import { clauseChoices } from '../admin/admin-signoff-type-definition/condition-choices';
@@ -103,6 +103,15 @@ describe('what each screen offers', () => {
     const groups = conditionFieldGroups([...stageConditionFields(t), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore('Welding', 'fit')]);
     expect(groups.map(g => g.label)).toEqual(['This routing', 'Joint Details', 'Calculated', 'Fabrication', 'Earlier routings (once signed)']);
     expect(keysOf(groups.find(g => g.label === 'Calculated')!.fields)).toEqual(keysOf(FIELD_CATALOG.filter(f => f.source === 'Calculated')));
+  });
+
+  it('names a droplist field with its Source once, leaving rule text to the plain label', () => {
+    expect(fieldChoiceLabel(catalogField('nInd')!)).toBe('Joint Details: N Ind.');
+    expect(fieldChoiceLabel(catalogField('controlledMaterial')!)).toBe('Calculated: Controlled Material');
+    expect(fieldChoiceLabel(catalogField('fab.id1')!)).toBe('Fabrication: Joining Item MIC');
+    expect(fieldChoiceLabel(catalogField('fitDeferTack')!)).toBe('Fit: Defer Tack (once Fit is signed)');
+    expect(fieldChoiceLabel({ label: 'Returning inspection Type' })).toBe('Returning inspection Type');
+    expect(catalogField('nInd')!.label).toBe('N Ind.');
   });
 
   it('starts each flat list name with the Source, without doubling Fabrication', () => {

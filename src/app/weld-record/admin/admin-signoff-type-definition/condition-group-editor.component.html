@@ -23,8 +23,8 @@
     } @else {
       @let c = asClause(t);
       <div class="flex flex-wrap items-center gap-1 mb-1">
-        <app-searchable-select name="Condition on" emptyLabel="Select a field" [emptyPickable]="false"
-                               [choices]="choicesFor(c)" [value]="choiceId(c)" (picked)="pickClause(i, $event)" />
+        <app-choice-select name="Condition on" emptyLabel="Select a field" [emptyPickable]="false"
+                           [choices]="choicesFor(c)" [value]="choiceId(c)" (picked)="pickClause(i, $event)" />
         @if (c.source === 'engineering') {
           <span class="text-xs">is</span>
           <select class="select select-bordered select-xs w-24" aria-label="Engineering override is"

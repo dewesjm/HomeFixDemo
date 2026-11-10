@@ -1,13 +1,12 @@
 /* The one list a Signoff Type Forms condition clause picks from: this form's fields, Joint Details,
    Calculated, Fabrication and the clauses that aren't about a field, each named by its Source. */
-import { ConditionCatalogField } from '../../catalogs/field-catalog';
-import { JOINT_AND_FABRICATION_FIELDS } from '../../catalogs/field-choices';
+import { JOINT_AND_FABRICATION_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 import type { StepFieldChoice } from './condition-group-editor.component';
 import { ClauseSrc, WorkClause } from './condition-work';
-import type { SearchChoice } from './searchable-select.component';
+import type { Choice } from './choice-select.component';
 
 /* an entry of the list, with the clause picking it starts */
-interface ClauseChoice extends SearchChoice {
+interface ClauseChoice extends Choice {
   clause: WorkClause;
 }
 
@@ -22,11 +21,6 @@ const choice = (source: ClauseSrc, key: string, equals: string, label: string): 
   return { id: clauseChoiceId(clause), label, clause };
 };
 
-/* Fabrication rows already start with the word */
-function catalogLabel(f: ConditionCatalogField): string {
-  return f.source === 'Fabrication' ? f.label : `${f.source}: ${f.label}`;
-}
-
 /* Prepopulated from's condition reads only the step itself (stepOnly) */
 export function clauseChoices(stepFields: StepFieldChoice[], stepOnly: boolean): ClauseChoice[] {
   const form = stepFields.map(f => choice('field', f.key, f.yesNo ? 'yes' : '', `This form: ${f.label}`));
@@ -34,7 +28,7 @@ export function clauseChoices(stepFields: StepFieldChoice[], stepOnly: boolean):
   if (stepOnly) return [...form, engineering];
   return [
     ...form,
-    ...JOINT_AND_FABRICATION_FIELDS.map(f => choice('jointDetail', f.key, f.values.join() === 'Yes,No' ? 'Yes' : '', catalogLabel(f))),
+    ...JOINT_AND_FABRICATION_FIELDS.map(f => choice('jointDetail', f.key, f.values.join() === 'Yes,No' ? 'Yes' : '', fieldChoiceLabel(f))),
     choice('stepId', '', '', 'Routing ID matches'),
     choice('rejectedUtrt', '', 'yes', 'Rejected phase has RT/UT'),
     engineering,

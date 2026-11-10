@@ -6,7 +6,7 @@ import { disabledIfToStore, fillToStore, requiredIfToStore, showIfToStore } from
 import type { FieldCondition } from '../../signoff-definition/field-conditions';
 import type { FieldFill } from '../../catalogs/field-catalog';
 import { WorkGroup, workToCondition } from './condition-work';
-import type { SearchChoice } from './searchable-select.component';
+import type { Choice } from './choice-select.component';
 
 /* which of a field's conditions the editor is changing */
 export type CondKind = 'show' | 'disabled' | 'fill' | 'required';
@@ -45,7 +45,7 @@ export interface FillSource {
 }
 
 /* one entry of the Prepopulated from list, e.g. "Root Weld: Weld Process" */
-export interface FillChoice extends SearchChoice {
+export interface FillChoice extends Choice {
   stepId: string;
   key: string;
 }

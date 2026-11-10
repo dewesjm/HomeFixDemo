@@ -3,6 +3,7 @@
    User is offered only on the top group's single clause: picking it makes the row a User row, which has
    just that clause. Edits are emitted as a new group. */
 import { Component, input, output } from '@angular/core';
+import { fieldChoiceLabel } from '../../catalogs/field-choices';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
 import { ConditionField, ConditionOption, USER_FIELD, conditionField, conditionFields } from '../../qualifications/qual-conditions';
@@ -17,6 +18,7 @@ const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Calculated', 
   templateUrl: './when-group-editor.component.html'
 })
 export class WhenGroupEditorComponent {
+  readonly choiceLabel = fieldChoiceLabel;
   group = input.required<WhenGroup>();
   nested = input(false);
   changed = output<WhenGroup>();

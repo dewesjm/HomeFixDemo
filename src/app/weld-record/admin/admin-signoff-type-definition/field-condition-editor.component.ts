@@ -5,12 +5,12 @@ import { Component, computed, input, output } from '@angular/core';
 import { WorkGroup } from './condition-work';
 import { CondKind, FillChoice, fillChoiceId } from './definition-edits';
 import { ConditionGroupEditorComponent, StepFieldChoice } from './condition-group-editor.component';
-import { SearchableSelectComponent } from './searchable-select.component';
+import { ChoiceSelectComponent } from './choice-select.component';
 
 @Component({
   selector: 'app-field-condition-editor',
   standalone: true,
-  imports: [ConditionGroupEditorComponent, SearchableSelectComponent],
+  imports: [ConditionGroupEditorComponent, ChoiceSelectComponent],
   templateUrl: './field-condition-editor.component.html',
 })
 export class FieldConditionEditorComponent {

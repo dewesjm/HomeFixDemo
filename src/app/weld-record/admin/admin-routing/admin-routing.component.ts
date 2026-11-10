@@ -41,7 +41,7 @@ import { ROLES, type Role } from '../../model/workflow-types';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { ConditionClause, ConditionRule, RejectRule, DEFAULT_STEP_CONDITIONS, describeConditions } from '../../routing/step-conditions';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
-import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore } from '../../catalogs/field-choices';
+import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';
 import {
   conditionFieldGroups, conditionValueOptions, clauseTyped, clauseValid, patchClause, newConditionClause
 } from './condition-editing';
@@ -436,6 +436,7 @@ export class AdminRoutingComponent {
   /* ── shared by both rule dialogs ── */
 
   readonly groupsOf = conditionFieldGroups;
+  readonly choiceLabel = fieldChoiceLabel;
   readonly optionsOf = conditionValueOptions;
   readonly typed = clauseTyped;
   readonly clauseValid = clauseValid;

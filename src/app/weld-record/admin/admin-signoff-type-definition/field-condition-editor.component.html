@@ -2,7 +2,7 @@
   @if (kind() === 'fill') {
     <div class="text-xs font-semibold mb-1">Prepopulated from (Nothing = not prepopulated)</div>
     <div class="flex flex-wrap items-center gap-1 mb-2">
-      <app-searchable-select name="Prepopulated from" [choices]="fillChoices()" [value]="selectedChoiceId()" (picked)="pick($event)" />
+      <app-choice-select name="Prepopulated from" [choices]="fillChoices()" [value]="selectedChoiceId()" (picked)="pick($event)" />
     </div>
     <div class="text-xs font-semibold mb-1">when this form's fields match (no clauses = always)</div>
   } @else {
