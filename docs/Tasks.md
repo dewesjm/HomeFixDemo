@@ -4,26 +4,16 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 
 ## Deferred requirements and identified gaps
 
-
 - [ ] **Attribute-code engineering clarification:** demo behavior for all 13 progression codes is configured as seeded rows in Admin > Attribute Code Exceptions (add/drop routing, Types offered, Type needs ID accessible, minimum RT), with Joint Details messages and fresh examples. Clarify the numbered assumptions and questions before treating meanings as authoritative; user comments remain alongside assumptions. No signed-joint migration needed for demo. [Single reference and clarification register](ATTRIBUTE-CODES-PLAN.md).
 - [ ] **Remaining Repair / Excavation configuration:** summarize Repair/Excavation destinations across settings. General original/performed inspection facts have replaced the PT-to-5X marker. Shared Type-selection summaries and readable exception exports are complete. Separate repair-limit fields and configurable persona rules are complete. The usability problem: related settings are spread across Routing Settings, Signoff Type to Routing and Signoff Type Forms, so one readable summary of where Repair/Excavation goes (and which form settings apply) is what's left. Keep round creation, linking Excavation to its own Repair, Repair # and Refit # counters, History, route-back resets and Deprogress in code; a general-purpose workflow editor is not wanted. Before delivery, check saved settings drive both execution and the routing preview, covering repeated repair rounds, Excavation UNSAT back to its own Repair, inspection exceptions and return Types, NQC/regular persona, thickness-rule precedence, Cut/fabrication reset and Deprogress. Decide how changed settings affect joints already in progress.
 - [ ] **Makeup audit log:** additions, date changes and removals with actor, timestamp, grant/person and before/after values. Preserve removal history; Changed by alone is insufficient. Removals must not lose their audit history. Deferred requirement; do not build yet.
 - [ ] **Signoff Type Forms export:** identified gap: the export has Type and field names but omits expanded conditions and behaviors.
-- [x] **One field catalog:** merged the form and condition catalogs into one list with a Source on each entry. [Plan](FIELD-CATALOG-PLAN.md).
 
 ## Cleanup
 
 Nothing here is queued in AGENTS.md; start an item only on request.
 
-- [x] **Remove old migrations:** every listed conversion removed; saved data reset with a version bump and new form and Qualifications storage keys.
-- [x] **Leftovers evaluation:** dead code and the remaining saved-data conversions removed; `addTestJob` removed, specs copy a seeded joint.
-- [x] **File purpose:** every app source file (`.ts`, not specs) now opens with a comment saying what it is for; descriptions that sat below the imports were moved to the top.
-- [x] **Routing folder size:** `weld-record/routing/` split into `signoff/`, `inserted/` and `preview/` subfolders; the joint's own routing stays at the top level. An import loop through generic-insertion was removed.
-- [x] **Routing file placement follow-ups:** additional-signoffs moved to `signoff-definition/`; the routing bar rule is `routing-bar/routing-bar-steps.ts`; `routing/signoff/` is now `routing/on-signoff/`; `routing-role` is `routing-persona`; spec renamed to `build-stages.spec.ts`; the NDT-Type-blank tests now sit in `build-stages.spec.ts` and `inserted/excavation-definition.spec.ts`.
-- [x] **Admin table data in `data/`:** six admin pages kept their rows next to the code that uses them. Each is split: rows (starting values, load, save) to `data/`, rules stay in the feature folder. Routing Settings DONE (`data/welding-steps.ts` starting rows and rules, `data/routing-settings.ts` saved rows, `routing/routing-settings-rules.ts` rules). Signoff Types DONE (moved whole to `data/signoff-types.ts`; it held no rules). Signoff Type to Routing DONE (`data/signoff-type-routing.ts` rows, `signoff-definition/signoff-type-routing-rules.ts` rules). Signoff Type Forms DONE (`data/signoff-type-forms.ts` model, starting definitions, load/save; `signoff-definition/signoff-type-form-rules.ts` rules). Qualifications DONE (`data/qualifications.ts` model, starting rows, load/save; live rows and rules stay in `qualifications/qual-conditions.ts`). Attribute Code Exceptions DONE (moved to `data/attribute-code-exceptions.ts`; the per-routing rules shape and `codesChangingRouting` moved to `attribute-codes/exception-effects.ts`).
-- [x] **Common sign-off validation:** BUILT, see [SIGNOFF-VALIDATION-PLAN.md](SIGNOFF-VALIDATION-PLAN.md). Every problem is red on its field, or a line under Signoff (Fabrication); a test fails if a check points at a field nothing draws. Original note: Every routing should decide and show what blocks Signoff the same way. Today a problem is either a red message on a field shown after clicking Signoff, or a reasons-list line that is no longer drawn anywhere, so Signoff silently does nothing. Example: on Fit, an invalid Fabrication value blocks Signoff through a hidden `__fabrication` field error nothing draws, while Fit-Up Insp lists "Fix the fabrication errors" and disables the button. Also: ordinary required fields block only on click, not in the reasons list. Propose one approach (where checks live: `joint-page/rules/sign-validation.ts`; what shows where) before building.
 - [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
-- [x] **Review the .md files for leftovers:** reviewed; docs moved into `docs/` (CLAUDE.md, AGENTS.md and README.md stay at the root, where the tools look for them) and stale lines fixed. Still open: whether to delete the built plans and trim the duplicated "Implemented"/completed sections; then untrack every .md except README.md (next item).
 - [ ] **Organization sweep:** look across the app for files whose location doesn't make sense: data mixed into rule files (or rules in `data/`), admin table rows kept next to the code that uses them beyond the six pages already queued, files in a folder that doesn't match their concern, and folder names that don't say what's inside. Report findings and proposed moves before changing anything. Not queued in AGENTS.md.
   Notes for this sweep (2026-11-09):
     - `weld-record/services/`: needs a similar organization pass.
@@ -64,7 +54,6 @@ Implement one package at a time only when requested, commit and stop for review.
 
 - **Routing retirement and deletion:** deferred. Define reference checks, new-work eligibility, open-joint migration and preservation of signed routings/History before extending lifecycle controls. Permanent deletion should be considered only for unused, unreferenced definitions. Today's lifecycle controls for custom inserted routings don't set a general deletion/migration policy.
 
-
 - **Repair / Excavation routing-bar visibility:** revisit whether Repair and Excavation NDT should appear in the routing bar. The user recalls an earlier decision to hide them; confirm the intended behavior and whether visibility should be configurable. Current behavior is unchanged pending that decision.
 
 - **Reusable option lists:** consider configuration for choices on existing fields. New fields, data types and mappings remain code controlled; arbitrary field creation through configuration is not planned. Weld Colors and Repair Codes are done; other option lists need an individual decision. Backing Ring Type is probably owned by an external system: leave its list alone until that integration is known.
@@ -84,54 +73,10 @@ This project is a mockup. Real identity/permission enforcement, a backend, real 
 - Decide explicitly how a change affects joints already in progress and signed History.
 - History, record identity and repair numbering stay application mechanics in code.
 
-## Completed work and deliberate switches
-
-- [x] **Joint Details Engineering Notes:** stays on one line with horizontal scrolling, scoped to the notes value.
-
-- [x] **Fabrication Usage field:** removed the prerequisite placeholder text.
-
-- [x] **Additional Signoffs condition editing:** Add clause and Add group retain unfinished rows while editing; saved conditions include completed clauses only.
-
-- [x] **Seeded Excavation NDT descriptions:** supplied reference text explains repair readiness and NQC requirements for both regular and NQC Excavation NDT.
-
-- [x] **Seeded Repair description:** supplied reference text explains insertion after UNSAT NDT and configurable Repair codes in the Routing Settings description viewer.
-
-- [x] **Seeded Pre-Fit description:** supplied reference text explains NQC validation and nuclear-joint applicability in the Routing Settings description viewer.
-
-- [x] **Routing Settings drag handle:** reordering starts only from the grip button; row text and controls do not start a routing drag.
-
-- [x] **Lookup editor consistency:** Repair Codes uses inline add/edit with pencil, save and cancel controls like Weld Colors. Repair Codes, Defect Codes and Weld Positions use an Active checkbox when editing; saved status and retirement behavior are preserved.
-
-- [x] **Plain-English routing descriptions:** click a routing name in Routing Settings to read/edit its saved description in a compact dialog; descriptions are included in Excel export.
-
-- [x] **Defect Code and Weld Position retirement:** editable Active/Inactive status, preserved stored identities and recorded values, active-only new choices, readable inactive rule choices and Status in exports. Weld Colors unchanged.
-
-- [x] **Routing condition summaries:** If … Then go to distinguishes conditions from destinations, removes redundant inspection wording from thickness summaries and separates rules visually.
-
-- [x] **Routing Settings button consistency:** right-aligned, theme-colored Add inserted routing matches Add numbered routing; Edit persona has spacing below the persona name and does not wrap.
-
-- [x] **General inspection routing facts:** Original rejecting inspection Type and Performed inspection Type replace the special PT-to-5X flag. Regular/NQC defaults retain their return path; saved legacy conditions translate to the general facts.
-
-- [x] **Admin table outline grid:** shared theme-aware cell borders and top alignment across all admin routes, including nested editors/imports. Recorded as the standard in AGENTS.md.
-
-- [x] **Admin-defined Repair Codes:** Admin > Repair Codes maintains names and active/inactive status with stable values. Choices feed Repair forms, Type Form conditions and existing Repair destination rules; custom codes without a matching rule block signoff/preview. Existing Grind Only/Weld Repair/Cut identities and specialized behavior remain.
-
-- [x] **Configurable inserted routings and insertion:** create runtime definitions and select them as configured insertion targets. Includes Type/form/persona setup, repeated instances, specialized lifecycle boundaries, and a potential separate NQC Excavation NDT for indicators 1/2 (regular for 3). [Implementation scope and acceptance criteria](ADDED-ROUTINGS-PLAN.md). Packages 1-4 are complete: definition CRUD/setup, generic insertion execution/preview, instance context, continuation, cycle validation, persistence, and separate configurable regular/NQC Excavation variants with round returns. Shared Type Exceptions adds ordered conditional replacements across routings, shared resolution, summaries and exports. Stopped for review.
-- [x] **Shared Type Exceptions:** per-routing sources, ordered material/Joint Details conditions, shared execution/preview resolution, save/cancel/reload, readable Type-selection summaries and exports.
-- [x] **Repair thickness confirmations:** separate indicator 1 and indicators 2/3 fields, distinct History labels, configurable visibility and destination rules, and compatibility for old saved conditions/forms.
-- [x] **Conditional routing personas:** one editor for ordered persona rules and fallback; Excavation defaults select the appropriate persona.
-- [x] **Routing Settings editing and terminology:** Inserted routings, compact name cells, editable insertion sources and applicability, and source-rule navigation.
-- [x] **Conditional Additional Signoffs:** configured additional routing/Type signoffs with shared Deprogress behavior and updated heading.
-- [x] **Weld Colors:** admin-maintained reusable inspection options.
-- [x] **Routing configuration and field-definition consolidation:** completed reference plans; not queued work.
-- [x] **Engineering Override:** implemented for joints without an external welding assignment; any unspecified wording changes remain a separate decision below.
+## Deliberate switches
 
 Groups export was dropped from scope. O63/O04 selection already exists; no change was requested. Foreman Override remains deliberately disabled, and Makeup's NO MIKE switch hides the retained real screen. These are deliberate choices, not unfinished build tasks.
 
 ## Previous override request
 
 Engineering Override is implemented for joints without an external welding assignment; Foreman Override remains disabled. See [ROUTING.md](ROUTING.md) for current behavior. The original task also mentioned preview and reason-screen wording; revisit any remaining wording only when specifically requested.
-
-- [x] Type Exceptions grid consistency: show every routing's exceptions together, identify routing per row, use header Add and inline pencil/check/X controls, and reorder within routing with left arrows or grip-only dragging. Type source remains configurable in the upper routing grid.
-
-- [x] Separate Non-Ferrous and Austenitic material flags, use AND/OR conditions in Type Exceptions, and seed both Excavations with Non-Ferrous OR Austenitic.

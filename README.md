@@ -38,5 +38,4 @@ Rules for AI tools are in [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md). Eve
 - [Tasks.md](docs/Tasks.md): master backlog of outstanding requirements, gaps and tentative ideas
 - [ATTRIBUTE-CODES-PLAN.md](docs/ATTRIBUTE-CODES-PLAN.md): attribute code assumptions and open questions for end users
 - [TEST-COVERAGE-PLAN.md](docs/TEST-COVERAGE-PLAN.md): deferred testing packages and historical coverage baseline
-- Built plans, kept as records: [ADDED-ROUTINGS-PLAN.md](docs/ADDED-ROUTINGS-PLAN.md), [FIELD-CATALOG-PLAN.md](docs/FIELD-CATALOG-PLAN.md), [SIGNOFF-VALIDATION-PLAN.md](docs/SIGNOFF-VALIDATION-PLAN.md)
 - Change Log (Quick Links > Change Log in the app, data in `src/app/data/changelog.ts`): user-facing changes, newest first
