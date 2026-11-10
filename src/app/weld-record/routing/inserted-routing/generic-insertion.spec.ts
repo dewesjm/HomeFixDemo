@@ -27,7 +27,7 @@ describe('Ordinary insertion execution and preview', () => {
   const current = () => activeStage(store.workflowFor(job)().stages)!;
   const wf = () => store.workflowFor(job)();
   function definition(id = 'extra', patch: Partial<StageTemplate> = {}) {
-    addStageTemplate({ id, label: id, classification: 'added', role: 'Inspector', ...patch, required: true });
+    addStageTemplate({ id, label: id, classification: 'added', persona: 'Inspector', ...patch, required: true });
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
     updateStageTemplate(id, { status: 'active' });
   }
@@ -57,7 +57,7 @@ describe('Ordinary insertion execution and preview', () => {
   });
 
   it('inserts only the first matching target with blank values, conditional persona and shared form', () => {
-    definition('extra', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['3'] }], role: 'Foreman' }] });
+    definition('extra', { personaRules: [{ when: [{ field: 'nInd', op: 'is', values: ['3'] }], persona: 'Foreman' }] });
     definition('other');
     updateStageTemplate('pre-fit', { thenRules: [{ when: [], to: insertionTarget('extra') }, { when: [], to: insertionTarget('other') }] });
     expect(wf().stages.some(s => s.insertion)).toBeFalse();
@@ -166,7 +166,7 @@ describe('Ordinary insertion execution and preview', () => {
   it('freezes open instance labels/personas/rules/Types, retaining stable references through rename/deactivation', () => {
     definition(); rule('pre-fit', insertionTarget('extra')); sign('pre-fit');
     const inserted = current();
-    updateStageTemplate('extra', { label: 'Renamed', role: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
+    updateStageTemplate('extra', { label: 'Renamed', persona: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'extra'));
     expect(current()).toBe(inserted);
     expect(getTemplates().find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));

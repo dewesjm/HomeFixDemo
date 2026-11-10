@@ -127,11 +127,11 @@ describe('Configured regular and NQC Excavation', () => {
     expect(excavationNdtStageFor({ ...job, nInd: '2' }, 'pt', 'repair-2').typeOptions).toEqual([]);
     const regular = excavationNdtStageFor(job, 'pt', 'repair-2');
     expect(regular.typeOptions?.map(o => o.value)).toEqual(['5x']);
-    updateStageTemplate('excavation-ndt', { label: 'Regular excavation', role: 'Engineering' });
+    updateStageTemplate('excavation-ndt', { label: 'Regular excavation', persona: 'Engineering' });
     expect(regular.label).toBe('Excavation NDT 2');
     expect(regular.role).toBe('Inspector');
     expect(routingTemplateId('nqc-excavation-ndt-2')).toBe('nqc-excavation-ndt');
-    expect(getTemplates().find(t => t.id === 'nqc-excavation-ndt')!.role).toBe('NQC Inspector');
+    expect(getTemplates().find(t => t.id === 'nqc-excavation-ndt')!.persona).toBe('NQC Inspector');
   });
   it('retains variant identities and multiple rounds after persistence and reload', fakeAsync(() => {
     job.nInd = '2';

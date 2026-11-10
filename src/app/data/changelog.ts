@@ -13,6 +13,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-10',
     changed: ['Refactor page and panel folder names (Pipe Welding, History, Makeup, My Assignments, Fabrication, Joint Details, References, Engineering Release, Routing).',
+      'Saved Routing Settings were reset (persona settings renamed).',
       'Pipe Welding now opens at /pipe-welding (Classic at /pipe-welding-classic).',
       'History CSV export is now named history-<person>.csv (history-all.csv for everyone).',
       'Refactor the routing ids.',

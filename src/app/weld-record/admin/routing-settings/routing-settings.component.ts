@@ -56,7 +56,7 @@ interface RoutingRow {
   added?: boolean;
   status?: StageTemplate['status'];
   rejectToStage: string;
-  role: Role;
+  persona: Role;
   includedWhen: string;   /* describeConditions() of the step's rules */
   thenRules: string[];
   rejectRules: string[];  /* one line per reject rule, "<conditions> -> <target>" */
@@ -78,10 +78,10 @@ interface RoutingRow {
   `]
 })
 export class AdminRoutingSettingsComponent {
-  roleOptions = computed(() => {
+  personaOptions = computed(() => {
     const used = new Set<string>();
     for (const t of getTemplates()) {
-      if (t.role) used.add(t.role);
+      if (t.persona) used.add(t.persona);
     }
     // always include all base roles plus any pipe-delimited combos
     for (const r of ROLES) used.add(r);
@@ -108,14 +108,14 @@ export class AdminRoutingSettingsComponent {
     else this.openRejectRules(source);
   }
   routingTemplate(row: RoutingRow): StageTemplate | undefined { return this.templateFor(row); }
-  personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.role; }
+  personaSummary(row: RoutingRow): string { const template = this.templateFor(row); return template ? personaRuleSummary(template) : row.persona; }
   personaSaved() {
     this.rows.update(rows => rows.map(row => {
-      const role = this.templateFor(row)?.role as Role | undefined;
-      if (!role) return row;
+      const persona = this.templateFor(row)?.persona as Role | undefined;
+      if (!persona) return row;
       const original = this.clonedRows[row.id];
-      if (original) this.clonedRows[row.id] = { ...original, role };
-      return { ...row, role };
+      if (original) this.clonedRows[row.id] = { ...original, persona };
+      return { ...row, persona };
     }));
   }
   editingId = signal<string | null>(null);
@@ -148,7 +148,7 @@ export class AdminRoutingSettingsComponent {
       displayName: t.displayName ?? '',
       sequence: isAddedTemplateId(t.id) ? 0 : ++sequence,
       rejectToStage: t.rejectToStage ?? '',
-      role: (t.role as Role) || 'View',
+      persona: (t.persona as Role) || 'View',
       includedWhen: describeConditions(t.includeWhen),
       rejectRules: [], thenRules: [],
       fabricationEditable: !!t.fabricationEditable,
@@ -189,7 +189,7 @@ export class AdminRoutingSettingsComponent {
     if (this.editingId()) return;
     const newId = `new-${++this.seq}`;
     const sequence = nextRoutingNumber(this.rows().filter(row => !this.isAdded(row)));
-    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: newId, routing: '', displayName: '', sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
+    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: newId, routing: '', displayName: '', sequence, rejectToStage: '', persona: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
     this.editingId.set(newId);
@@ -226,7 +226,7 @@ export class AdminRoutingSettingsComponent {
     const isNew = stageId.startsWith('new-');
     const current = this.templateFor(row);
     if (current?.classification === 'added' && current.lifecycle === 'ordinary' && current.status === 'active') {
-      const setup = addedRoutingSetup({ ...current, label: row.routing, role: row.role });
+      const setup = addedRoutingSetup({ ...current, label: row.routing, persona: row.persona });
       if (setup.errors.length) {
         this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
         return;
@@ -243,7 +243,7 @@ export class AdminRoutingSettingsComponent {
       const newId = `custom-${crypto.randomUUID()}`;
       addStageTemplate({
         classification: this.isAdded(row) ? 'added' : 'numbered', lifecycle: 'ordinary', status: row.status,
-        id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
+        id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, persona: row.persona,
         rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
@@ -256,7 +256,7 @@ export class AdminRoutingSettingsComponent {
         label: row.routing,
         displayName: row.displayName.trim() || undefined,
         rejectToStage: row.rejectToStage,
-        role: row.role,
+        persona: row.persona,
         fabricationEditable: row.fabricationEditable,
       });
     }
@@ -281,7 +281,7 @@ export class AdminRoutingSettingsComponent {
     this.editingId.set(null);
   }
 
-  updateField(row: RoutingRow, field: 'routing' | 'displayName' | 'role', value: string) {
+  updateField(row: RoutingRow, field: 'routing' | 'displayName' | 'persona', value: string) {
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, [field]: value } : x));
   }
 

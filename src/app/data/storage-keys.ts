@@ -2,7 +2,7 @@
 export const STORAGE = {
   appVersion: 'welding:app-version',
   workflows: 'welding:workflows:v5',
-  stageTemplates: 'welding:stage-templates:v6',
+  stageTemplates: 'welding:stage-templates:v7',
   signoffTypeRouting: 'welding:signoff-type-routing:v1',
   signoffTypes: 'welding:signoff-types:v5',
   penetrants: 'welding:penetrants:v1',

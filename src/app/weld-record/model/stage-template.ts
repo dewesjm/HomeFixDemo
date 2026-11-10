@@ -27,10 +27,10 @@ export interface StageTemplate {
   required: boolean | ((job: Job) => boolean);
   /* stage id to route back to when this stage is rejected (empty = no routing) */
   rejectToStage?: string;
-  /* role that this stage routes to */
-  role?: string;
-  /* Ordered Joint Details conditions choose a persona; no match uses role. */
-  roleRules?: { when: ConditionRule; role: string }[];
+  /* persona that signs this routing */
+  persona?: string;
+  /* Ordered Joint Details conditions choose a persona; no match uses persona. */
+  personaRules?: { when: ConditionRule; persona: string }[];
   /* admin-managed signoff type options (Admin > Signoff Type to Routing) (e.g. Fit/Weld Build-Up, MT/PT) */
   typeOptions?: StageOption[];
   /* when a joint gets this step (conditions/joint-conditions.ts); none = always */

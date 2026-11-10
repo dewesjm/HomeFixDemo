@@ -3,7 +3,7 @@
    reject rule). Ids and round numbers are in welding-step-ids.ts. */
 import { excavationDefinition } from './excavation-definition';
 import { getAddedTemplate } from '../routing-settings-rules';
-import { routingRole } from '../routing-persona';
+import { routingPersona } from '../routing-persona';
 import { Job } from '../../../data/jobs';
 import { describeClauses } from '../../conditions/condition-text';
 import { RouteToRule } from '../route-to-rules';
@@ -21,7 +21,7 @@ import { excavationTypeOptions, signoffTypeOptions } from '../../signoff-definit
 export function nextRepairStage(stages: { id: string }[], job?: Job): StageTemplate {
   const n = stages.filter(s => isRepairStageId(s.id)).length + 1;
   const id = n === 1 ? 'repair' : `repair-${n}`;
-  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job), role: job ? routingRole(getAddedTemplate('repair'), job) : getAddedTemplate('repair').role };
+  return { ...getAddedTemplate('repair'), id, label: roundLabel(getAddedTemplate('repair').displayName || getAddedTemplate('repair').label, id), typeOptions: signoffTypeOptions(id, job), persona: job ? routingPersona(getAddedTemplate('repair'), job) : getAddedTemplate('repair').persona };
 }
 
 /* ── Excavation NDT ── */
@@ -43,7 +43,7 @@ export function excavationNdtStage(inspectionType: string, repairId = 'repair', 
 /* Runtime Excavation uses its saved persona conditions and resolved inspection choices. */
 export function excavationNdtStageFor(job: Job, inspectionType: string, repairId: string): WorkflowStage {
   const template = excavationNdtStage(inspectionType, repairId, job);
-  return { ...stageFromTemplate(template), displayName: template.displayName, role: routingRole(template, job) };
+  return { ...stageFromTemplate(template), displayName: template.displayName, role: routingPersona(template, job) };
 }
 
 /* ── Engineering Hold ── */
@@ -70,7 +70,7 @@ export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, 
   if (idx < 0) return stages;
   const id = nextEngineeringHoldId(stages);
   const hold = stageFromTemplate({ ...getAddedTemplate('engineering-hold'), id, label: roundLabel(getAddedTemplate('engineering-hold').displayName || getAddedTemplate('engineering-hold').label, id) }, reason ? { holdReason: reason } : {});
-  if (job) hold.role = routingRole(getAddedTemplate('engineering-hold'), job);
+  if (job) hold.role = routingPersona(getAddedTemplate('engineering-hold'), job);
   return setRoutingFrom([...stages.slice(0, idx + 1), hold, ...stages.slice(idx + 1)], id);
 }
 
@@ -78,7 +78,7 @@ export function insertEngineeringHold(stages: WorkflowStage[], afterId: string, 
 
 /* Build a live WorkflowStage from a template for a stage inserted at runtime (Repair, Excavation
    NDT, Engineering Hold) -- same shape buildStages() makes, minus the parts only a job's real
-   routing needs (role remap, override fields, etc.), since these are always the same regardless
+   routing needs (persona rules, override fields, etc.), since these are always the same regardless
    of job. Type starts as initialInspectionType() gives it. */
 export function stageFromTemplate(t: StageTemplate, inputs: Record<string, string> = {}): WorkflowStage {
   return {
@@ -86,7 +86,7 @@ export function stageFromTemplate(t: StageTemplate, inputs: Record<string, strin
     label: t.label,
     displayName: t.displayName,
     required: true,
-    role: t.role ?? '',
+    role: t.persona ?? '',
     inputs,
     signoffInputs: {},
     result: null,

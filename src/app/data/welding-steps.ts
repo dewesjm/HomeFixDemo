@@ -23,34 +23,34 @@ function ndtStage(phase: NdtPhase, kind: NdtKind): StageTemplate {
     id: `${phase}-ndt-${kind}`,
     label: `${phase[0].toUpperCase()}${phase.slice(1)} NDT ${NDT_KINDS[kind].label}`,
     required: true,
-    role: 'Inspector',
+    persona: 'Inspector',
     rejectToStage: 'repair',
     decisionLabel: 'Inspection Results',
   };
 }
 
 const BUILT_IN_STEPS: StageTemplate[] = [
-  { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, role: 'NQC Inspector' },
-  { id: 'fit', label: 'Fit', required: true, role: 'Fitting' },
-  { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, role: 'Welding' },
-  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, role: 'Foreman|Inspector', decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
-  { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, role: 'Foreman' },
-  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, role: 'Welding' },
-  { id: 'root-weld', label: 'Root', required: true, role: 'Welding' },
+  { id: 'pre-fit', label: 'Pre-Fit', description: 'Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required', required: true, persona: 'NQC Inspector' },
+  { id: 'fit', label: 'Fit', required: true, persona: 'Fitting' },
+  { id: 'tack', label: 'Tack', displayName: 'Tack', required: true, persona: 'Welding' },
+  { id: 'fitup-insp', label: 'Fit-Up Insp', required: true, persona: 'Foreman|Inspector', decisionLabel: 'Inspection Results', rejectToStage: 'fit' },
+  { id: 'fitup-release', label: 'Fit-Up Release', displayName: 'Fit-Up Release', required: false, persona: 'Foreman' },
+  { id: 'deferred-tack', label: 'Deferred Tack', displayName: 'Tack', required: false, persona: 'Welding' },
+  { id: 'root-weld', label: 'Root', required: true, persona: 'Welding' },
   ...PHASE_NDT_KINDS.root.map(kind => ndtStage('root', kind)),
-  { id: 'root-layer', label: 'Layer', required: true, role: 'Welding' },
+  { id: 'root-layer', label: 'Layer', required: true, persona: 'Welding' },
   ...PHASE_NDT_KINDS.layer.map(kind => ndtStage('layer', kind)),
-  { id: 'final-weld', label: 'Final Weld', required: true, role: 'Welding' },
+  { id: 'final-weld', label: 'Final Weld', required: true, persona: 'Welding' },
   ...PHASE_NDT_KINDS.final.map(kind => ndtStage('final', kind)),
-  { id: 'review-o63', label: 'O63 Records Review', required: true, role: 'O63 Records', rejectToStage: 'review-o63', decisionLabel: 'Inspection Results' },
-  { id: 'review-o04', label: 'O04 Records Review', required: true, role: 'O04 Records', rejectToStage: 'review-o04', decisionLabel: 'Inspection Results' },
-  { id: 'sold', label: 'Sold', required: true, role: 'O63 Records' },
+  { id: 'review-o63', label: 'O63 Records Review', required: true, persona: 'O63 Records', rejectToStage: 'review-o63', decisionLabel: 'Inspection Results' },
+  { id: 'review-o04', label: 'O04 Records Review', required: true, persona: 'O04 Records', rejectToStage: 'review-o04', decisionLabel: 'Inspection Results' },
+  { id: 'sold', label: 'Sold', required: true, persona: 'O63 Records' },
 ];
 
 /* each NQC_SPLIT_STEP_IDS step is followed by its NQC row: same step, signed by NQC Inspector, shown
    under the same Display Name (its Included when, below, splits them by N Ind) */
 export const WELDING_STEPS: StageTemplate[] = BUILT_IN_STEPS.flatMap(t => NQC_SPLIT_STEP_IDS.includes(t.id)
-  ? [t, { ...t, id: nqcStepId(t.id), label: `NQC ${t.label}`, displayName: t.displayName ?? t.label, role: 'NQC Inspector' }]
+  ? [t, { ...t, id: nqcStepId(t.id), label: `NQC ${t.label}`, displayName: t.displayName ?? t.label, persona: 'NQC Inspector' }]
   : [t]);
 
 /* ── Starting Included when / Reject routes to / Then go to rules ── */
@@ -153,13 +153,13 @@ export const DEFAULT_THEN_RULES: Record<string, RouteToRule[]> = {
 /* ── Added routings: inserted while a joint is worked ── */
 
 const REPAIR_STAGE: StageTemplate = {
-  classification: 'added', lifecycle: 'repair', status: 'active', id: 'repair', label: 'Repair', required: true, role: 'Foreman',
+  classification: 'added', lifecycle: 'repair', status: 'active', id: 'repair', label: 'Repair', required: true, persona: 'Foreman',
   description: 'Repair is inserted whenever an NDT is recorded as UNSAT. Repair codes are configurable and are utilized to route the joint further',
   decisionLabel: 'Inspection Results',
 };
 
 const ENGINEERING_HOLD_STAGE: StageTemplate = {
-  classification: 'added', lifecycle: 'engineering-hold', status: 'active', id: 'engineering-hold', label: 'Engineering Hold', required: true, role: 'Engineering',
+  classification: 'added', lifecycle: 'engineering-hold', status: 'active', id: 'engineering-hold', label: 'Engineering Hold', required: true, persona: 'Engineering',
 };
 
 export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
@@ -170,14 +170,14 @@ export const ADDED_STAGE_TEMPLATES: StageTemplate[] = [
     { when: [{ field: 'self.repairType', op: 'is', values: ['cut'] }], to: 'fit' },
     { when: [{ field: 'self.repairType', op: 'is', values: ['weld-repair'] }], to: 'add-excavation-ndt' },
   ] },
-  { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'excavation-ndt', label: 'Excavation NDT', required: true, role: 'Inspector',
+  { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'excavation-ndt', label: 'Excavation NDT', required: true, persona: 'Inspector',
     description: 'Excavation NDT is a request to repair, validating that the joint has been prepared and is ready for the actual repair (weld repair, cut, etc.) to proceed. Requires NQC for nuclear joints',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]],
     rejectToStage: 'own-repair', thenRules: [
       { when: [{ field: 'self.originalInspectionType', op: 'is', values: ['pt'] }, { field: 'self.performedInspectionType', op: 'is', values: ['5x'] }], to: 'rejecting-vt5x' },
       { when: [], to: 'rejecting-ndt' },
     ] },
-  { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'nqc-excavation-ndt', label: 'NQC Excavation NDT', displayName: 'Excavation NDT', required: true, role: 'NQC Inspector',
+  { classification: 'added', lifecycle: 'excavation', status: 'active', id: 'nqc-excavation-ndt', label: 'NQC Excavation NDT', displayName: 'Excavation NDT', required: true, persona: 'NQC Inspector',
     description: 'Excavation NDT is a request to repair, validating that the joint has been prepared and is ready for the actual repair (weld repair, cut, etc.) to proceed. Requires NQC for nuclear joints',
     includeWhen: [[{ field: 'nInd', op: 'is', values: ['1', '2'] }]],
     rejectToStage: 'own-repair', thenRules: [

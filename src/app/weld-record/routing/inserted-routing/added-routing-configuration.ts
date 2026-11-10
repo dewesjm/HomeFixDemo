@@ -14,7 +14,7 @@ export function routingNameError(name: string, id: string, templates: StageTempl
 export function addedRoutingSetup(template: StageTemplate): { errors: string[]; summary: string } {
   const errors: string[] = [];
   if (!template.label.trim()) errors.push('Enter a routing name.');
-  if (!template.role || template.role === 'View') errors.push('Choose a signing persona.');
+  if (!template.persona || template.persona === 'View') errors.push('Choose a signing persona.');
   const row = getSignoffTypeRoutingRows().find(r => r.stepId === template.id);
   if (template.lifecycle !== 'ordinary') return { errors: [], summary: 'Built-in lifecycle; configure its Types in Signoff Type to Routing.' };
   if (!row || (!row.typeSource && !row.types.length)) errors.push('Offer at least one Signoff Type.');

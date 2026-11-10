@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { closingRole, routingRole } from './routing-persona';
+import { closingPersona, routingPersona } from './routing-persona';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes/exception-effects';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from '../conditions/joint-conditions';
@@ -31,7 +31,7 @@ export function buildStages(job: Job, fab?: Record<string, string>): WorkflowSta
     const { typeOptions: exceptionOptions, attributeRules } = attributeTypeSettings(t.id, job);
     const typeOptions = exceptionOptions ?? t.typeOptions;
     const inputs: Record<string, string> = isFitupInspId(t.id) ? { releaseToWelding: 'yes' } : {};   /* Fit-Up Insp starts released to welding */
-    const role = closesJoint(t.id) ? closingRole(hasO63Data) : routingRole(t, job);
+    const role = closesJoint(t.id) ? closingPersona(hasO63Data) : routingPersona(t, job);
     return {
       id: t.id,
       /* the joint shows the Display Name; the Routing name is for Admin > Routing Settings rules */

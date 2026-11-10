@@ -48,15 +48,15 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
             } @empty { <p>Always</p> }
             <button class="btn btn-xs" (click)="rule.when.push(newClause())">And condition</button>
             <label class="flex gap-2 items-center mt-3">Persona
-              <select class="select select-sm" aria-label="Rule persona" [(ngModel)]="rule.role">
-                @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
+              <select class="select select-sm" aria-label="Rule persona" [(ngModel)]="rule.persona">
+                @for (persona of personas; track persona) { <option [value]="persona">{{ persona }}</option> }
               </select>
             </label>
           </div>
         }
         <label class="flex gap-2 items-center my-3">Otherwise
-          <select class="select select-sm" aria-label="Otherwise persona" [(ngModel)]="fallbackRole">
-            @for (role of roles; track role) { <option [value]="role">{{ role }}</option> }
+          <select class="select select-sm" aria-label="Otherwise persona" [(ngModel)]="fallbackPersona">
+            @for (persona of personas; track persona) { <option [value]="persona">{{ persona }}</option> }
           </select>
         </label>
         <button class="btn btn-sm mt-2" (click)="add()">Add condition</button>
@@ -75,20 +75,20 @@ export class PersonaRulesComponent {
   saved = output<void>();
   fields = JOINT_DETAIL_FIELDS;
   readonly choiceLabel = fieldChoiceLabel;
-  roles: string[] = [...ROLES];
-  rules: NonNullable<StageTemplate['roleRules']> = [];
-  fallbackRole = '';
+  personas: string[] = [...ROLES];
+  rules: NonNullable<StageTemplate['personaRules']> = [];
+  fallbackPersona = '';
   newClause = newConditionClause;
   ngOnInit() {
-    this.fallbackRole = this.routing().role ?? '';
-    this.rules = structuredClone(this.routing().roleRules ?? []);
-    this.roles = [...new Set([...this.roles, ...getTemplates().flatMap(row => [row.role ?? '', ...(row.roleRules ?? []).map(rule => rule.role)])])].filter(Boolean).sort();
+    this.fallbackPersona = this.routing().persona ?? '';
+    this.rules = structuredClone(this.routing().personaRules ?? []);
+    this.personas = [...new Set([...this.personas, ...getTemplates().flatMap(row => [row.persona ?? '', ...(row.personaRules ?? []).map(rule => rule.persona)])])].filter(Boolean).sort();
   }
   typed(clause: ConditionClause) { return clauseTyped(this.fields, clause); }
   options(key: string) { return conditionValueOptions(this.fields, key); }
   validClause(clause: ConditionClause) { return this.fields.some(field => field.key === clause.field) && clauseValid(this.fields, clause); }
-  valid() { return !!this.fallbackRole && this.rules.every(rule => !!rule.role && rule.when.every(clause => this.validClause(clause))); }
-  add() { this.rules.push({ when: [newConditionClause()], role: this.routing().role ?? 'Inspector' }); }
+  valid() { return !!this.fallbackPersona && this.rules.every(rule => !!rule.persona && rule.when.every(clause => this.validClause(clause))); }
+  add() { this.rules.push({ when: [newConditionClause()], persona: this.routing().persona ?? 'Inspector' }); }
   patch(ri: number, ci: number, patch: Partial<ConditionClause>) { this.rules[ri].when[ci] = patchClause(this.fields, this.rules[ri].when[ci], patch); }
   toggle(ri: number, ci: number, value: string) {
     const clause = this.rules[ri].when[ci];
@@ -100,13 +100,13 @@ export class PersonaRulesComponent {
   }
   save() {
     if (!this.valid()) return;
-    updateStageTemplate(this.routing().id, { role: this.fallbackRole, roleRules: structuredClone(this.rules) });
+    updateStageTemplate(this.routing().id, { persona: this.fallbackPersona, personaRules: structuredClone(this.rules) });
     this.saved.emit();
     this.closed.emit();
   }
 }
 
 export function personaRuleSummary(template: StageTemplate): string {
-  if (!template.roleRules?.length) return template.role ?? '';
-  return [...(template.roleRules ?? []).map(rule => `${describeConditions([rule.when])} → ${rule.role}`), `Otherwise: ${template.role ?? ''}`].join('; ');
+  if (!template.personaRules?.length) return template.persona ?? '';
+  return [...(template.personaRules ?? []).map(rule => `${describeConditions([rule.when])} → ${rule.persona}`), `Otherwise: ${template.persona ?? ''}`].join('; ');
 }

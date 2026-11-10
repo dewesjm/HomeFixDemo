@@ -33,8 +33,8 @@ interface SerializedStage {
   displayName?: string;
   required: boolean;
   rejectToStage: string;
-  role?: string;
-  roleRules?: StageTemplate['roleRules'];
+  persona?: string;
+  personaRules?: StageTemplate['personaRules'];
   includeWhen?: ConditionRule[];
   rejectRules?: RouteToRule[];
   thenRules?: RouteToRule[];
@@ -51,8 +51,8 @@ function serializeStage(t: StageTemplate): SerializedStage {
     displayName: t.displayName,
     required: typeof t.required === 'function' ? true : t.required,
     rejectToStage: t.rejectToStage ?? '',
-    role: t.role ?? '',
-    roleRules: t.roleRules ?? [],
+    persona: t.persona ?? '',
+    personaRules: t.personaRules ?? [],
     includeWhen: t.includeWhen ?? [],
     rejectRules: t.rejectRules ?? [],
     thenRules: t.thenRules ?? [],
@@ -69,7 +69,7 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
     classification: s.classification ?? builtIn?.classification ?? 'numbered',
     lifecycle: builtIn?.lifecycle ?? 'ordinary', status: s.status ?? 'active',
     id: s.id, label: s.label, displayName: s.displayName, required: s.required, rejectToStage: s.rejectToStage,
-    role: s.role ?? '', roleRules: s.roleRules ?? builtIn?.roleRules ?? [], includeWhen: s.includeWhen,
+    persona: s.persona ?? '', personaRules: s.personaRules ?? builtIn?.personaRules ?? [], includeWhen: s.includeWhen,
     rejectRules: s.rejectRulesEdited ? s.rejectRules : builtIn?.rejectRules ?? s.rejectRules,
     thenRules: s.thenRules ?? builtIn?.thenRules ?? [],
     rejectRulesEdited: s.rejectRulesEdited, fabricationEditable: s.fabricationEditable ?? false,

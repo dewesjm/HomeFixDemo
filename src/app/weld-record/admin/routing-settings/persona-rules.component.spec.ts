@@ -9,7 +9,7 @@ describe('Persona rules editor', () => {
   beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
   afterEach(() => localStorage.clear());
   function editor() {
-    updateStageTemplate('nqc-excavation-ndt', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], role: 'NQC Inspector' }] });
+    updateStageTemplate('nqc-excavation-ndt', { personaRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], persona: 'NQC Inspector' }] });
     const fixture = TestBed.createComponent(PersonaRulesComponent);
     fixture.componentRef.setInput('routing', getAddedTemplate('nqc-excavation-ndt'));
     fixture.detectChanges();
@@ -20,13 +20,13 @@ describe('Persona rules editor', () => {
     const component = fixture.componentInstance;
     expect(fixture.nativeElement.textContent).toContain('Persona: NQC Excavation NDT');
     component.toggle(0, 0, '1');
-    component.rules[0].role = 'Foreman';
+    component.rules[0].persona = 'Foreman';
     const cancel = [...fixture.nativeElement.querySelectorAll('button')].find((button: any) => button.textContent.trim() === 'Cancel') as HTMLButtonElement;
     const closed = spyOn(component.closed, 'emit');
     cancel.click();
     expect(closed).toHaveBeenCalled();
-    expect(getAddedTemplate('nqc-excavation-ndt').roleRules![0].when[0].values).toEqual(['1', '2']);
-    expect(getAddedTemplate('nqc-excavation-ndt').roleRules![0].role).toBe('NQC Inspector');
+    expect(getAddedTemplate('nqc-excavation-ndt').personaRules![0].when[0].values).toEqual(['1', '2']);
+    expect(getAddedTemplate('nqc-excavation-ndt').personaRules![0].persona).toBe('NQC Inspector');
   });
   it('saves through the rendered control and affects newly created Excavation', () => {
     const fixture = editor();

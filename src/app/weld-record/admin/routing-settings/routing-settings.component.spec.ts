@@ -125,7 +125,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('shows insertion sources and opens their owning rule including its editable fallback', fakeAsync(() => {
-    addStageTemplate({ id: 'test-inspection', label: 'Test inspection', role: 'Inspector', rejectToStage: 'repair' });
+    addStageTemplate({ id: 'test-inspection', label: 'Test inspection', persona: 'Inspector', rejectToStage: 'repair' });
     const fixture = TestBed.createComponent(AdminRoutingSettingsComponent); fixture.detectChanges();
     const editor = fixture.componentInstance;
     const host: HTMLElement = fixture.nativeElement;
@@ -146,7 +146,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('renders stable insertion targets, saves their labels and rejects an unconditional cycle', fakeAsync(() => {
-    addStageTemplate({ id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
+    addStageTemplate({ id: 'extra', label: 'Extra check', classification: 'added', persona: 'Inspector' });
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
     updateStageTemplate('extra', { status: 'active' });
     const fixture = TestBed.createComponent(AdminRoutingSettingsComponent);
@@ -216,7 +216,7 @@ describe('Routing Settings rules editor', () => {
     let row = component.rows().find(r => r.id === component.editingId())!;
     expect(component.isAdded(row)).toBeTrue();
     component.updateField(row, 'routing', 'Extra inspection');
-    component.updateField(row, 'role', 'Inspector');
+    component.updateField(row, 'persona', 'Inspector');
     component.saveEdit(component.rows().find(r => r.id === row.id)!);
     row = component.rows().find(r => r.routing === 'Extra inspection')!;
     const id = row.id;
@@ -259,7 +259,7 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('enforces classification and activation validation in the configuration owner', () => {
-    addStageTemplate({ id: 'custom-added', label: 'Extra', role: 'Inspector', classification: 'added' });
+    addStageTemplate({ id: 'custom-added', label: 'Extra', persona: 'Inspector', classification: 'added' });
     expect(() => updateStageTemplate('custom-added', { status: 'active' })).toThrowError(/Signoff Type/);
     updateStageTemplate('custom-added', { classification: 'numbered', lifecycle: 'repair' });
     const definition = getTemplates().find(t => t.id === 'custom-added')!;

@@ -4,8 +4,8 @@ import { StageTemplate } from '../model/stage-template';
 import { conditionsMatch } from '../conditions/joint-conditions';
 
 /* Sold's persona follows whichever Records Review the joint got */
-export const closingRole = (hasO63Review: boolean) => hasO63Review ? 'O63 Records' : 'O04 Records';
+export const closingPersona = (hasO63Review: boolean) => hasO63Review ? 'O63 Records' : 'O04 Records';
 
-export function routingRole(template: StageTemplate, job: Job): string {
-  return template.roleRules?.find(rule => conditionsMatch([rule.when], job))?.role ?? template.role ?? '';
+export function routingPersona(template: StageTemplate, job: Job): string {
+  return template.personaRules?.find(rule => conditionsMatch([rule.when], job))?.persona ?? template.persona ?? '';
 }

@@ -8,7 +8,7 @@ import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routin
 import { addedRoutingSetup } from './added-routing-configuration';
 import { stageFromTemplate } from './added-routings';
 import { conditionsMatch } from '../../conditions/joint-conditions';
-import { routingRole } from '../routing-persona';
+import { routingPersona } from '../routing-persona';
 import { insertionDefinitionId, insertedDefinitionId } from './instance-identity';
 import { isRepairStageId, isExcavationNdtStageId, repairIdForExcavation, baseStepId } from '../../../data/welding-step-ids';
 
@@ -22,8 +22,8 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
   const setup = addedRoutingSetup(definition);
   if (setup.errors.length) return fail(setup.errors.join(' '));
   if (!conditionsMatch(definition.includeWhen, job, stages, source, fab)) return fail('applicability conditions do not match');
-  const role = routingRole(definition, job);
-  if (!role || role === 'View') return fail('no signing persona is available');
+  const persona = routingPersona(definition, job);
+  if (!persona || persona === 'View') return fail('no signing persona is available');
   const sequence = Math.max(0, ...[...stages.map(s => s.id), ...recordedIds].filter(key => insertedDefinitionId(key) === id).map(key => Number(key.split(':').at(-1)))) + 1;
   const at = stages.findIndex(s => s.id === source.id);
   const parent = isRepairStageId(source.id) ? source.id : isExcavationNdtStageId(source.id) ? repairIdForExcavation(source.id) : source.insertion?.parentRepairId;
@@ -43,5 +43,5 @@ export function resolveInsertion(templates: StageTemplate[], stages: WorkflowSta
   if (typeOptions.some(o => (o.signsStep && o.signsStep !== id) ||
     !forms.some(f => f.typeId === o.value && f.fields.some(field => field.heading === undefined)))) return fail('resolved Type must sign this routing and have a form');
   const label = `${definition.displayName || definition.label} ${sequence}`;
-  return { ...stageFromTemplate({ ...definition, id: `added:${id}:${sequence}`, label, typeOptions, role }), insertion };
+  return { ...stageFromTemplate({ ...definition, id: `added:${id}:${sequence}`, label, typeOptions, persona }), insertion };
 }

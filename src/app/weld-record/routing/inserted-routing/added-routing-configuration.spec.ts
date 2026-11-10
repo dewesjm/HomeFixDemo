@@ -5,7 +5,7 @@ import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
 
 describe('ordinary inserted routing setup', () => {
-  const template: StageTemplate = { id: 'extra', label: 'Extra', required: true, classification: 'added', lifecycle: 'ordinary', role: 'Inspector', status: 'draft' };
+  const template: StageTemplate = { id: 'extra', label: 'Extra', required: true, classification: 'added', lifecycle: 'ordinary', persona: 'Inspector', status: 'draft' };
   beforeEach(() => { localStorage.clear(); resetStepFieldConfig(); });
   afterEach(() => { localStorage.clear(); resetStepFieldConfig(); });
 
@@ -21,7 +21,7 @@ describe('ordinary inserted routing setup', () => {
 
   it('rejects a Type signing another routing and multiple defaults', () => {
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'final-weld', default: true }, { type: 'vt', default: true }] }]);
-    const errors = addedRoutingSetup({ ...template, role: 'View' }).errors.join(' ');
+    const errors = addedRoutingSetup({ ...template, persona: 'View' }).errors.join(' ');
     expect(errors).toContain('another routing');
     expect(errors).toContain('at most one default');
     expect(errors).toContain('signing persona');
