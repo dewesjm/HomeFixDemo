@@ -13,7 +13,7 @@ import { addStageTemplate, getTemplates, updateStageTemplate } from '../routing-
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
 import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../signoff-definition/step-field-config';
-import { routeBack } from '../signoff/route-changes';
+import { routeBack } from '../on-signoff/route-changes';
 import { insertionTarget } from './instance-identity';
 import { newWorkflow } from '../build-stages';
 import { resolveInsertion } from './generic-insertion';

@@ -6,11 +6,7 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Routing file placement follow-ups (approved): move `routing/signoff/additional-signoffs.ts` to `signoff-definition/`;
-   move `routing/routing-bar.ts` into `routing-bar/` as `routing-bar-steps.ts`; rename `routing/signoff/` to `routing/on-signoff/`;
-   rename `routing-role.ts` to `routing-persona.ts`; rename `nqc-rows.spec.ts` to `build-stages.spec.ts` and
-   `inspection-type.spec.ts` to `ndt-type-blank.spec.ts`. File moves and renames only.
-2. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
+1. Common sign-off validation: propose one consistent way every routing decides and shows what blocks Signoff
    (see Tasks.md Cleanup). Propose before building.
 
 Completed plans are references, not instructions to start another feature.

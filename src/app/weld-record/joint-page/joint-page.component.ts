@@ -36,14 +36,14 @@ import {
   allRequiredSigned,
   fabricationEditable,
 } from '../routing/current-routing';
-import { routingBarSteps } from '../routing/routing-bar';
+import { routingBarSteps } from '../routing-bar/routing-bar-steps';
 import { FabricationField } from '../fabrication/fabrication-fields';
 import { snapshotInputs } from '../signoff-definition/stage-display';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from '../signoff-definition/shown-fields';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { HistoryRow, historyRows } from '../work-history/history-rows';
 import { inspectionTypeRequired } from '../signoff-definition/stage-rules';
-import { discardUnsignedEdits } from '../routing/signoff/route-changes';
+import { discardUnsignedEdits } from '../routing/on-signoff/route-changes';
 import { isEngineeringHoldId } from '../routing/routing-ids';
 import { closesJoint } from '../routing/built-in-routing-rules';
 import { featureToggles } from '../../data/feature-toggles';
@@ -121,7 +121,7 @@ export class JointPageComponent implements OnDestroy {
 
   /* ── Page state ── */
 
-  /* the routing bar's steps (weld-record/routing/routing-bar.ts) */
+  /* the routing bar's steps (routing-bar/routing-bar-steps.ts) */
   routingModel = computed<{ label: string; disabled: boolean; stageIndex: number }[]>(() =>
     this.wf ? routingBarSteps(this.wf().stages).map(s => ({ ...s, disabled: this.locked(s.stageIndex) })) : []);
   /* which stage's sign-off shows; defaults to active */

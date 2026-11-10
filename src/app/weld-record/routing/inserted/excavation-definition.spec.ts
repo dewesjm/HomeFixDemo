@@ -10,8 +10,8 @@ import { activeStage } from '../current-routing';
 import { excavationNdtStageFor } from './added-routings';
 import { excavationDefinition } from './excavation-definition';
 import { getTemplates, routingTemplateId, updateStageTemplate } from '../routing-templates';
-import { routingBarSteps } from '../routing-bar';
-import { routeBack } from '../signoff/route-changes';
+import { routingBarSteps } from '../../routing-bar/routing-bar-steps';
+import { routeBack } from '../on-signoff/route-changes';
 import { isExcavationNdtStageId } from '../routing-ids';
 
 describe('Configured regular and NQC Excavation', () => {

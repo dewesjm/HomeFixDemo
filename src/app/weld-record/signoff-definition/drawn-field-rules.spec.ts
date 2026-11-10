@@ -2,7 +2,7 @@ import { JOBS } from '../../data/jobs';
 import { signProblems, stageFieldErrors, SignContext } from '../joint-page/rules/sign-validation';
 import { WorkflowStage } from '../model/workflow-types';
 import { newWorkflow } from '../routing/build-stages';
-import { routeSignoff } from '../routing/signoff/signoff-routing';
+import { routeSignoff } from '../routing/on-signoff/signoff-routing';
 import '../routing/routing-templates';
 import { buildConditionContext } from './condition-context';
 import { FieldActivation, TypeDefinition, getStepFieldConfig, setStepFieldConfig } from './step-field-config';

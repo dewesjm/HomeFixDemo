@@ -13,7 +13,7 @@ import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.compo
 import { addedRoutingSetup, routingNameError } from '../../routing/inserted/added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { isAddedTemplateId } from '../../routing/routing-templates';
-import { RULE_TARGETS, availableRuleTargets } from '../../routing/signoff/rule-targets';
+import { RULE_TARGETS, availableRuleTargets } from '../../routing/on-signoff/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

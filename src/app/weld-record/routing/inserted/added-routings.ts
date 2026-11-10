@@ -3,7 +3,7 @@
    reject rule). Ids and round numbers are in routing-ids.ts. */
 import { excavationDefinition } from './excavation-definition';
 import { getAddedTemplate } from '../routing-templates';
-import { routingRole } from '../routing-role';
+import { routingRole } from '../routing-persona';
 import { Job } from '../../../data/jobs';
 import { RejectRule, describeClauses } from '../routing-conditions';
 import { stageConditionFields } from '../../catalogs/field-choices';

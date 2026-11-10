@@ -621,15 +621,15 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [built-in-routing-rules.ts](src/app/weld-record/routing/built-in-routing-rules.ts) | Yes | 100% |
 | [current-routing.ts](src/app/weld-record/routing/current-routing.ts) | No | 88.88% |
 | [ndt.ts](src/app/weld-record/routing/ndt.ts) | No | 100% |
-| [route-changes.ts](src/app/weld-record/routing/signoff/route-changes.ts) | No | 100% |
+| [route-changes.ts](src/app/weld-record/routing/on-signoff/route-changes.ts) | No | 100% |
 | [route-preview.ts](src/app/weld-record/routing/preview/route-preview.ts) | Yes | 100% |
-| [routing-bar.ts](src/app/weld-record/routing/routing-bar.ts) | No | 100% |
-| [rule-targets.ts](src/app/weld-record/routing/signoff/rule-targets.ts) | Yes | 100% |
-| [signoff-routing.ts](src/app/weld-record/routing/signoff/signoff-routing.ts) | Yes | 100% |
+| [routing-bar-steps.ts](src/app/weld-record/routing-bar/routing-bar-steps.ts) | No | 100% |
+| [rule-targets.ts](src/app/weld-record/routing/on-signoff/rule-targets.ts) | Yes | 100% |
+| [signoff-routing.ts](src/app/weld-record/routing/on-signoff/signoff-routing.ts) | Yes | 100% |
 | [routing-templates.ts](src/app/weld-record/routing/routing-templates.ts) | No | 84.37% |
 | [routing-conditions.ts](src/app/weld-record/routing/routing-conditions.ts) | Yes | 97.56% |
 | [routing-ids.ts](src/app/weld-record/routing/routing-ids.ts) | No | 100% |
-| [type-routing.ts](src/app/weld-record/routing/signoff/type-routing.ts) | No | 100% |
+| [type-routing.ts](src/app/weld-record/routing/on-signoff/type-routing.ts) | No | 100% |
 
 ### weld-record/routing-bar
 

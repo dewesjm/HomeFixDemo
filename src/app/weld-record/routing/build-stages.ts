@@ -1,5 +1,5 @@
 /* A joint's steps, built from the step templates and its Joint Details */
-import { routingRole } from './routing-role';
+import { routingRole } from './routing-persona';
 import { attributeTypeSettings, isJointsTwin, mayBeAddedLater, routingEffect } from '../attribute-codes/exception-effects';
 import { Job } from '../../data/jobs';
 import { conditionsMatch, usesStepAnswers } from './routing-conditions';
