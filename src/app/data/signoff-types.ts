@@ -2,7 +2,7 @@
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage. */
 import { STORAGE } from './storage-keys';
-import { FieldCondition } from '../weld-record/conditions/form-conditions';
+import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 
 export interface AdditionalSignoff {
   stepId: string;

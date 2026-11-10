@@ -1,0 +1,160 @@
+import { buildStages } from './build-stages';
+import { applySignedFlags } from './route-changes';
+import { updateStageTemplate, reorderStageTemplates, getTemplates } from './routing-settings-rules';
+import { fabricationEditable, activeStageId } from './current-routing';
+import { JOBS, Job } from '../../data/jobs';
+import { jointAttributeCodes } from '../attribute-codes-logic/attribute-context';
+import { getJointDesign } from '../../data/joint-designs';
+import { NQC_SPLIT_STEP_IDS, nqcStepId } from '../../data/welding-step-ids';
+import { conditionsMatch } from '../conditions-logic/joint-conditions';
+import { describeConditions } from '../conditions-logic/condition-text';
+import { DEFAULT_STEP_CONDITIONS } from '../../data/welding-steps';
+import { stepAnswerFieldsBefore } from '../catalogs/field-choices';
+
+/* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
+function oldStepIds(job: Job, ids: string[]): string[] {
+
+  const hasO63 = Boolean(job.sfff || job.dssAaa || job.ss);
+  return ids.filter(id => {
+    const m = /^(root|layer|final)-ndt-(\w+)$/.exec(id);
+    if (m) {
+      const phase = m[1];
+      const ndt = (phase === 'root' ? job.ndtRoot : phase === 'layer' ? job.ndtEach : job.ndtFinal).trim().toUpperCase();
+      const rt = phase === 'root' ? job.rtRoot : phase === 'final' ? job.rtFinal : '';
+      if (m[2] === 'vt5x') return phase !== 'layer' || ['VT', '5X'].includes(ndt);
+      if (m[2] === 'mtpt') return ['MT', 'PT', 'MT/PT'].includes(ndt);
+      return ndt === 'UT' || (!!rt && rt !== 'NA');
+    }
+    if (id === 'pre-fit') {
+      const jd = getJointDesign(job.jointDesign);
+      return job.nInd === '1' || job.nInd === '2' || !!jd?.requiresConsumableInsert || !!jd?.requiresBackingRing;
+    }
+    if (id === 'review-o63') return hasO63;
+    if (id === 'review-o04') return !hasO63;
+    return true;
+  });
+}
+
+const ALL_IDS = ['pre-fit', 'fit', 'tack', 'fitup-insp', 'fitup-release', 'deferred-tack', 'root-weld',
+  'root-ndt-vt5x', 'root-ndt-mtpt', 'root-ndt-utrt', 'root-layer', 'layer-ndt-vt5x', 'layer-ndt-mtpt',
+  'final-weld', 'final-ndt-vt5x', 'final-ndt-mtpt', 'final-ndt-utrt', 'review-o63', 'review-o04', 'sold'];
+
+describe('step conditions', () => {
+  afterEach(() => updateStageTemplate('pre-fit', { includeWhen: DEFAULT_STEP_CONDITIONS['pre-fit'] }));
+
+  it('built-in rules preserve the baseline for seeded joints without progression attributes', () => {
+    for (const job of JOBS.filter(j => !jointAttributeCodes(j).length)) {
+      /* N Ind 1 or 2 joints get the NQC row of each split step instead */
+      const nuclear = job.nInd === '1' || job.nInd === '2';
+      const expected = oldStepIds(job, ALL_IDS).map(id => nuclear && NQC_SPLIT_STEP_IDS.includes(id) ? nqcStepId(id) : id);
+      expect(buildStages(job).map(s => s.id)).withContext(job.id).toEqual(expected);
+    }
+  });
+
+  it('uses an admin-changed rule', () => {
+    const job = { ...JOBS[0], nInd: '3', jointDesign: 'C-24' };
+    expect(buildStages(job).some(s => s.id === 'pre-fit')).toBeFalse();
+    updateStageTemplate('pre-fit', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]] });
+    expect(buildStages(job).some(s => s.id === 'pre-fit')).toBeTrue();
+    updateStageTemplate('pre-fit', { includeWhen: [] });
+    expect(buildStages({ ...job, nInd: '1' }).some(s => s.id === 'pre-fit')).toBeTrue();
+  });
+
+  it('Defer Tack and Release to welding switch steps on once signed', () => {
+    const job = { ...JOBS[0], nInd: '3' };
+    let stages = buildStages(job);
+    const req = (id: string) => stages.find(s => s.id === id)!.required;
+    expect([req('tack'), req('deferred-tack'), req('fitup-release')]).toEqual([true, false, false]);
+    stages = applySignedFlags(stages.map(s => s.id === 'fit' ? { ...s, signed: true, signoffInputs: { deferTack: 'yes' } } : s), job);
+    expect([req('tack'), req('deferred-tack')]).toEqual([false, true]);
+    stages = applySignedFlags(stages.map(s => s.id === 'fitup-insp' ? { ...s, signed: true, inputs: { releaseToWelding: '' } } : s), job);
+    expect(req('fitup-release')).toBeTrue();
+  });
+
+  it('describes rules in plain words', () => {
+    expect(describeConditions([])).toBe('Always');
+    expect(describeConditions(DEFAULT_STEP_CONDITIONS['root-ndt-utrt']))
+      .toBe('NDT Root is UT and N Ind. is 3; or RT Degree Root is 10 or 100 or 360 or 60 or 75 and N Ind. is 3');
+  });
+});
+
+describe('step order (Admin > Routing Settings)', () => {
+  it('a saved order is what new joints get, and it survives a reload', () => {
+    const original = getTemplates().map(t => t.id);
+    const moved = original.filter(id => id !== 'fit');
+    moved.splice(moved.indexOf('tack') + 1, 0, 'fit');
+    reorderStageTemplates(moved);
+    try {
+      const ids = buildStages({ ...JOBS[0], nInd: '3' }).map(s => s.id);
+      expect(ids.indexOf('fit')).toBe(ids.indexOf('tack') + 1);
+      /* written to storage: a second read (cache cleared by the save) still has it */
+      expect(getTemplates().map(t => t.id)).toEqual(moved);
+    } finally {
+      reorderStageTemplates(original);
+    }
+  });
+});
+
+describe('contains conditions', () => {
+  const job = { ...JOBS[0], nInd: '3', weldType: 'Fillet' };
+  it('matches typed text anywhere in the value, any case', () => {
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['ILL'] }]], job)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['groove'] }]], job)).toBeFalse();
+    expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['  '] }]], job)).toBeFalse();
+    expect(describeConditions([[{ field: 'weldType', op: 'contains', values: ['ill'] }]])).toBe('Weld Type contains "ill"');
+  });
+});
+
+describe('Fabrication editable (Admin > Routing Settings)', () => {
+  const job = { ...JOBS[0], nInd: '3' };
+  const signThrough = (id: string) => {
+    const stages = buildStages(job);
+    const upTo = stages.findIndex(s => s.id === id);
+    return stages.map((s, i) => i <= upTo ? { ...s, signed: true } : s);
+  };
+  afterEach(() => updateStageTemplate('root-weld', { fabricationEditable: false }));
+
+  it('built in: editable through Fit-Up Insp, locked once it is signed', () => {
+    expect(fabricationEditable(buildStages(job))).toBeTrue();
+    expect(fabricationEditable(signThrough('fit'))).toBeTrue();
+    expect(fabricationEditable(signThrough('fitup-insp'))).toBeFalse();
+  });
+
+  it('uses an admin change on a joint already in progress', () => {
+    const stages = signThrough('fitup-insp');
+    updateStageTemplate('root-weld', { fabricationEditable: true });
+    expect(activeStageId(stages)).toBe('root-weld');
+    expect(fabricationEditable(stages)).toBeTrue();
+  });
+});
+
+describe('every field as a condition (Admin > Routing Settings)', () => {
+  const job = JOBS.find(j => buildStages(j).some(s => s.id === 'root-ndt-vt5x'))!;
+  afterEach(() => updateStageTemplate('root-layer', { includeWhen: [] }));
+
+  it('offers Joint Details text fields, matched as typed (any case)', () => {
+    const j = { ...job, engineeringNotes: 'Check Alignment' };
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'is', values: ['check alignment '] }]], j)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'contains', values: ['ALIGN'] }]], j)).toBeTrue();
+    expect(conditionsMatch([[{ field: 'engineeringNotes', op: 'isNot', values: ['Check Alignment'] }]], j)).toBeFalse();
+  });
+
+  it('only offers the answers of steps before this one', () => {
+    const keys = stepAnswerFieldsBefore('root-layer').map(f => f.key);
+    expect(keys).toContain('step.root-ndt-vt5x.weldColor');
+    expect(keys).toContain('step.root-weld.weldPosition');
+    expect(keys.some(k => k.startsWith('step.root-layer.'))).toBeFalse();
+    expect(keys).not.toContain('step.fit.deferTack');   /* already offered as Fit: Defer Tack */
+  });
+
+  it('a step answer (Root NDT Weld Color is Straw) turns a later step on once signed', () => {
+    updateStageTemplate('root-layer', { includeWhen: [[{ field: 'step.root-ndt-vt5x.weldColor', op: 'is', values: ['straw'] }]] });
+    let stages = buildStages(job);
+    const req = () => stages.find(s => s.id === 'root-layer')!.required;
+    expect(req()).toBeFalse();
+    stages = applySignedFlags(stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, signed: true, inputs: { ...s.inputs, weldColor: 'straw' } } : s), job);
+    expect(req()).toBeTrue();
+    expect(describeConditions(getTemplates().find(t => t.id === 'root-layer')!.includeWhen))
+      .toBe('Root NDT 5X/VT: Weld Color is Straw');
+  });
+});

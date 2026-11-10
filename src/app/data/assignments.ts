@@ -1,7 +1,7 @@
 /* Mock assignments data — simulates work items assigned from an external system */
 import { JOBS } from './jobs';
 import { seededWorkflow } from './seeded-workflow';
-import { currentRoutingLabel } from '../weld-record/routing/current-routing';
+import { currentRoutingLabel } from '../weld-record/routing-logic/current-routing';
 import { seedFabricationData } from './seed-fabrication';
 import { getLocations, isShipboardLocation } from './locations';
 import { allWtns } from './procedures';

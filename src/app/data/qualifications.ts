@@ -1,10 +1,10 @@
 /* Admin > Qualifications rows: "when <clauses>, signoff type <type>, require <quals>" requirement rows
    and "when User is <person>, holds <quals>" User rows. The model, the starting rows, load and save
    (localStorage). The live rows and the rules that read them are in
-   weld-record/qualifications/qual-conditions.ts. */
+   weld-record/qualifications-logic/qual-conditions.ts. */
 import { STORAGE } from './storage-keys';
-import type { QualGroup } from '../weld-record/qualifications/qual-requirements';
-import type { WhenGroup } from '../weld-record/qualifications/qual-when';
+import type { QualGroup } from '../weld-record/qualifications-logic/qual-requirements';
+import type { WhenGroup } from '../weld-record/qualifications-logic/qual-when';
 
 export interface QualCondition {
   when: WhenGroup;

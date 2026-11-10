@@ -2,8 +2,8 @@
    draws it below the step's form, or the definition form where the Layout list places it. */
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
-import { buildConditionContext } from '../signoff-forms/condition-context';
-import { drawnFieldRule } from '../signoff-forms/shown-fields';
+import { buildConditionContext } from '../signoff-forms-logic/condition-context';
+import { drawnFieldRule } from '../signoff-forms-logic/shown-fields';
 import { DECISION_KEY } from '../../data/signoff-type-forms';
 import { SignoffContext } from './signoff-context';
 

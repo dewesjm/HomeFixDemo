@@ -3,9 +3,9 @@
    Saved changes are in routing-settings.ts. Type options are in signoff-type-routing.ts. */
 import { StageOption, StageTemplate } from '../weld-record/model/stage-template';
 import { NQC_SPLIT_STEP_IDS, PHASE_NDT_KINDS, nqcStepId } from './welding-step-ids';
-import { ConditionClause, ConditionRule } from '../weld-record/conditions/joint-conditions';
-import { RouteToRule } from '../weld-record/routing/route-to-rules';
-import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing/on-signoff/rule-targets';
+import { ConditionClause, ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
+import { RouteToRule } from '../weld-record/routing-logic/route-to-rules';
+import { ENGINEERING_HOLD_TARGET } from '../weld-record/routing-logic/on-signoff/rule-targets';
 
 type NdtPhase = 'root' | 'layer' | 'final';
 type NdtKind = 'utrt' | 'mtpt' | 'vt5x';

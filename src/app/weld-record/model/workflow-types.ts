@@ -3,7 +3,7 @@
 import type { HistoryEntry, SignoffUndo } from './history';
 import type { Deviation } from './deviation';
 import type { StageTemplate, StageOption } from './stage-template';
-import type { AttributeStageRules } from '../attribute-codes/exception-effects';
+import type { AttributeStageRules } from '../attribute-codes-logic/exception-effects';
 
 /* accept/reject, required to sign */
 export type StageResult = 'sat' | 'unsat';

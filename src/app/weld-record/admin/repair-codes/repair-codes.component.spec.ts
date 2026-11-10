@@ -1,8 +1,8 @@
 import { setRepairCodes } from '../../../data/repair-codes';
 import { DefinitionFieldComponent } from '../../signoff-panel/definition-field.component';
 import { SignoffContext } from '../../signoff-panel/signoff-context';
-import { stageFromTemplate, nextRepairStage } from '../../routing/inserted-routing/added-routings';
-import { stageFieldOptions } from '../../signing/stage-form';
+import { stageFromTemplate, nextRepairStage } from '../../routing-logic/inserted-routing/added-routings';
+import { stageFieldOptions } from '../../signoff-validation-logic/stage-form';
 import { lookupCatalogField } from '../../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { AdminRepairCodesComponent } from './repair-codes.component';

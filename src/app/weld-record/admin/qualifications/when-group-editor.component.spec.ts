@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
-import '../../routing/routing-settings-rules';
+import '../../routing-logic/routing-settings-rules';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
-import { WhenClause, WhenGroup } from '../../qualifications/qual-when';
+import { WhenClause, WhenGroup } from '../../qualifications-logic/qual-when';
 
 describe('Qualifications When editor', () => {
   async function create(group: WhenGroup) {

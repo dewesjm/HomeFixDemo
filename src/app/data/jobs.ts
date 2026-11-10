@@ -97,7 +97,7 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
    6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
    Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
    metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
-   future/weld-engineering/procedure-options.ts gwpOptionsForMaterials, weld-record/signing/stage-form.ts). */
+   future/weld-engineering/procedure-options.ts gwpOptionsForMaterials, weld-record/signoff-validation-logic/stage-form.ts). */
 export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
   '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
@@ -122,13 +122,13 @@ export const N_IND_MEANINGS: Record<string, string> = {
 };
 const NDT_RESULTS = ['SAT', 'UNSAT', 'N/A', ''];
 /* NDT Root / NDT Each (Layer) / NDT Final: each phase's NDT requirement (see routing inclusion conditions and Type enable conditions in
-   weld-record/conditions/joint-conditions.ts and data/signoff-type-routing.ts). Blank and NA aren't valid. */
+   weld-record/conditions-logic/joint-conditions.ts and data/signoff-type-routing.ts). Blank and NA aren't valid. */
 export const NDT_REQUIREMENT_VALUES = ['5X', 'MT', 'MT/PT', 'PT', 'UT', 'VT'];
 /* NDT Each Layer has no UT: Layer has no RT/UT routing */
 export const NDT_EACH_VALUES = NDT_REQUIREMENT_VALUES.filter(v => v !== 'UT');
 /* Degree of RT: NA, or a number of degrees, in number order. The values of RT Degree Root/Final
    (required) and of the Degree of RT Performed signoff field, which must be at least the required one
-   before its RT NDT routing can be signed (signProblems() in weld-record/signing/sign-validation.ts). */
+   before its RT NDT routing can be signed (signProblems() in weld-record/signoff-validation-logic/sign-validation.ts). */
 export const RT_DEGREE_OPTIONS: { label: string; value: string }[] =
   ['NA', '10', '60', '75', '100', '360'].map(v => ({ label: v, value: v }));
 /* RT Degree Root/Final seeds, with real-data proportions (other valid degrees exist but aren't used in practice):

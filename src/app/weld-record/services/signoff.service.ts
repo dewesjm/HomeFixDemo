@@ -1,28 +1,28 @@
-/* per-stage sign-off: signing a step (where it routes is routing/on-signoff/signoff-routing.ts), saving it with its
+/* per-stage sign-off: signing a step (where it routes is routing-logic/on-signoff/signoff-routing.ts), saving it with its
    History entries and undo, Correct, and Fit-Up Release */
-import { RoutingConfigurationError } from '../routing/routing-configuration-error';
-import { formInputFields, formSignoffFields } from '../signoff-forms/form-fields';
+import { RoutingConfigurationError } from '../routing-logic/routing-configuration-error';
+import { formInputFields, formSignoffFields } from '../signoff-forms-logic/form-fields';
 import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../../shared/toast.service';
 import { Job } from '../../data/jobs';
 import { SignoffInput } from '../model/history';
 import { WorkflowStage, JobWorkflow } from '../model/workflow-types';
-import { activeStage } from '../routing/current-routing';
-import { signoffUndo } from '../routing/route-changes';
-import { routeSignoff } from '../routing/on-signoff/signoff-routing';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
-import { hasDecision, isRoutingLockedField } from '../signoff-forms/stage-rules';
-import { labelFor, snapshotInputs, displayValue } from '../signoff-forms/stage-display';
-import { fieldsShown, visibleSignoffFields } from '../signoff-forms/shown-fields';
-import { isUserEditable } from '../signoff-forms/field-locks';
-import { isOwnType } from '../signoff-forms/signoff-type-routing-rules';
-import { namedAfterType } from '../signoff-forms/stage-display';
+import { activeStage } from '../routing-logic/current-routing';
+import { signoffUndo } from '../routing-logic/route-changes';
+import { routeSignoff } from '../routing-logic/on-signoff/signoff-routing';
+import { fabricationSnapshot } from '../fabrication-logic/fabrication-fields';
+import { hasDecision, isRoutingLockedField } from '../signoff-forms-logic/stage-rules';
+import { labelFor, snapshotInputs, displayValue } from '../signoff-forms-logic/stage-display';
+import { fieldsShown, visibleSignoffFields } from '../signoff-forms-logic/shown-fields';
+import { isUserEditable } from '../signoff-forms-logic/field-locks';
+import { isOwnType } from '../signoff-forms-logic/signoff-type-routing-rules';
+import { namedAfterType } from '../signoff-forms-logic/stage-display';
 
 /* signed by the Release to Welding button, not a sign-off form */
 const FITUP_RELEASE = 'fitup-release';
 import { WorkflowStore } from './workflow-store.service';
-import { additionalSignoffs } from '../signoff-forms/additional-signoffs';
-import { typeValues } from '../signoff-forms/stage-rules';
+import { additionalSignoffs } from '../signoff-forms-logic/additional-signoffs';
+import { typeValues } from '../signoff-forms-logic/stage-rules';
 
 /* History names a signoff with a Type other than the step's own (Weld Build-Up) and Layer's Interim
    Layer after the chosen option; the routing column still shows the stage (Fit, Layer) */

@@ -1,7 +1,7 @@
 /* Demo data: each job's workflow with a deterministic run of steps already signed, so joints sit at
    different points in their routing. A few are seeded on Fit-Up Release, Engineering Hold or Repair.
    Saved (real) workflows always replace this. */
-import { formInputFields, formSignoffFields } from '../weld-record/signoff-forms/form-fields';
+import { formInputFields, formSignoffFields } from '../weld-record/signoff-forms-logic/form-fields';
 import { FormField } from '../weld-record/catalogs/field-catalog';
 import { Job } from './jobs';
 import { SEEDED_INSPECTOR_NAMES, stampWho } from './people';
@@ -9,14 +9,14 @@ import { inspectionProcedureOptions } from './inspection-procedures';
 import { DEFAULT_REJECT_RULES } from './welding-steps';
 import { DeviationItem } from '../weld-record/model/deviation';
 import { JobWorkflow, StageResult, WorkflowStage } from '../weld-record/model/workflow-types';
-import { hasDecision, typeValues } from '../weld-record/signoff-forms/stage-rules';
-import { labelFor, snapshotInputs } from '../weld-record/signoff-forms/stage-display';
-import { fieldsShown, visibleSignoffFields } from '../weld-record/signoff-forms/shown-fields';
-import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing/inserted-routing/added-routings';
-import { setRoutingFrom } from '../weld-record/routing/current-routing';
+import { hasDecision, typeValues } from '../weld-record/signoff-forms-logic/stage-rules';
+import { labelFor, snapshotInputs } from '../weld-record/signoff-forms-logic/stage-display';
+import { fieldsShown, visibleSignoffFields } from '../weld-record/signoff-forms-logic/shown-fields';
+import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage, rejectHoldReason, stageFromTemplate } from '../weld-record/routing-logic/inserted-routing/added-routings';
+import { setRoutingFrom } from '../weld-record/routing-logic/current-routing';
 import { baseStepId, isFitupInspId } from './welding-step-ids';
-import { newWorkflow } from '../weld-record/routing/build-stages';
-import { fabricationSnapshot } from '../weld-record/fabrication/fabrication-fields';
+import { newWorkflow } from '../weld-record/routing-logic/build-stages';
+import { fabricationSnapshot } from '../weld-record/fabrication-logic/fabrication-fields';
 import { seeded, seededMic } from './seed-fabrication';
 
 /* which jobs get each seeded situation: a job id hash modulo EVERY equal to AT */

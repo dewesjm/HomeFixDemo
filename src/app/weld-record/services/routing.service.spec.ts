@@ -2,7 +2,7 @@ import { FormField } from '../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
 import { JOBS, Job } from '../../data/jobs';
 
-import { activeStageId } from '../routing/current-routing';
+import { activeStageId } from '../routing-logic/current-routing';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
 

@@ -2,8 +2,8 @@
    condition editor's working copy written back to the field it's open on (Show when, Disabled when,
    Required when, Prepopulated from), and the fill source picker's values. */
 import { FieldActivation } from '../../../../data/signoff-type-forms';
-import { disabledIfToStore, fillToStore, requiredIfToStore, showIfToStore } from '../../../signoff-forms/field-rules';
-import type { FieldCondition } from '../../../conditions/form-conditions';
+import { disabledIfToStore, fillToStore, requiredIfToStore, showIfToStore } from '../../../signoff-forms-logic/field-rules';
+import type { FieldCondition } from '../../../conditions-logic/form-conditions';
 import type { FieldFill } from '../../../catalogs/field-catalog';
 import { WorkGroup, workToCondition } from './condition-work';
 import type { Choice } from '../choice-select.component';

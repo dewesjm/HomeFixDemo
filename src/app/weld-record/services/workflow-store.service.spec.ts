@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
 import { JOBS, Job } from '../../data/jobs';
-import { buildStages } from '../routing/build-stages';
+import { buildStages } from '../routing-logic/build-stages';
 import { isFitupInspId } from '../../data/welding-step-ids';
 import { WorkflowStore } from './workflow-store.service';
 

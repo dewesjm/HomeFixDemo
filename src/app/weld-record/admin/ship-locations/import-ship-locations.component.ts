@@ -8,7 +8,7 @@ import { LucideArrowLeft } from '@lucide/angular';
 import { BulkImport } from '../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../shared/import-grid.component';
 import { ShipLocationEntry, PSCL_OPTIONS, PSCL_VALUES, getShipLocations, setShipLocations } from '../../../data/ship-locations';
-import { hullHasUsage } from '../../fabrication/ship-location-options';
+import { hullHasUsage } from '../../fabrication-logic/ship-location-options';
 import { HULLS } from '../../../data/jobs';
 import { parseCsvRows, parseXlsxRows } from '../../../shared/spreadsheet-import';
 import { downloadCsv } from '../../../shared/export-csv';

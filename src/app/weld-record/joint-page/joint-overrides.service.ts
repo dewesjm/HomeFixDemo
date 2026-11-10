@@ -1,17 +1,17 @@
 /* The joint page's overrides for one visit: Foreman Override entries, the engineering override
    reason given on a step, and the deviations a sign-off would accept. Provided by JointPageComponent,
    so this state lives exactly as long as the page. */
-import { formInputFields } from '../signoff-forms/form-fields';
+import { formInputFields } from '../signoff-forms-logic/form-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { Injectable, inject, signal } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { DeviationItem } from '../model/deviation';
-import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-forms/weld-fields';
-import { displayValue } from '../signoff-forms/stage-display';
-import { ASSIGNED_KEYS } from '../weld-assignment/weld-assignment-rules';
+import { ACTUAL_REQUIREMENT, ENGINEERING_ENTRY_KEYS } from '../signoff-forms-logic/weld-fields';
+import { displayValue } from '../signoff-forms-logic/stage-display';
+import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
 import { detectDeviations, isActualOutOfRange, BaseMetals } from './rules/deviations';
-import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
+import { conditionRequirements, heldQuals } from '../qualifications-logic/qual-conditions';
 import { ConfirmService } from '../../shared/confirm.service';
 import { RoutingService } from '../services/routing.service';
 import { ForemanOverrideService } from '../services/foreman-override.service';

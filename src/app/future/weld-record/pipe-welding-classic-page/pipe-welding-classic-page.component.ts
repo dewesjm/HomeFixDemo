@@ -20,7 +20,7 @@ import {
 } from '../../../data/jobs';
 import { SignoffService } from '../../../weld-record/services/signoff.service';
 import { WorkflowStore } from '../../../weld-record/services/workflow-store.service';
-import { currentRoutingLabel, activeStage } from '../../../weld-record/routing/current-routing';
+import { currentRoutingLabel, activeStage } from '../../../weld-record/routing-logic/current-routing';
 import { ROLES, DEFAULT_ROLE, type Role } from '../../../data/roles';
 import { BannerPillComponent } from '../../../shared/banner-pill.component';
 import { jointRoute } from '../../../weld-record/joint-page/joint-route';

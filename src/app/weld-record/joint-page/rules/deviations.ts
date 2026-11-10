@@ -4,13 +4,13 @@
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
-import { formInputFields } from '../../signoff-forms/form-fields';
+import { formInputFields } from '../../signoff-forms-logic/form-fields';
 import { WorkflowStage } from '../../model/workflow-types';
 import { DeviationItem } from '../../model/deviation';
-import { ACTUAL_REQUIREMENT } from '../../signoff-forms/weld-fields';
-import { isFilledByRule } from '../../signoff-forms/field-fill';
-import { labelFor } from '../../signoff-forms/stage-display';
-import { QualGroup, missingText, requirementText } from '../../qualifications/qual-requirements';
+import { ACTUAL_REQUIREMENT } from '../../signoff-forms-logic/weld-fields';
+import { isFilledByRule } from '../../signoff-forms-logic/field-fill';
+import { labelFor } from '../../signoff-forms-logic/stage-display';
+import { QualGroup, missingText, requirementText } from '../../qualifications-logic/qual-requirements';
 import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
 import { fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, gwpOptionsForMaterials } from '../../../future/weld-engineering/procedure-options';
 

@@ -7,9 +7,9 @@ import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { Deviation, DeviationItem } from '../model/deviation';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
-import { currentRoutingLabel } from '../routing/current-routing';
+import { currentRoutingLabel } from '../routing-logic/current-routing';
 import { isEngineeringHoldId } from '../../data/welding-step-ids';
-import { nextEngineeringHoldId } from '../routing/inserted-routing/added-routings';
+import { nextEngineeringHoldId } from '../routing-logic/inserted-routing/added-routings';
 import { WorkflowStore } from './workflow-store.service';
 import { RoutingService } from './routing.service';
 

@@ -6,10 +6,10 @@ import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideArrowDown, LucideArrowUp, LucidePlus, LucideX } from '@lucide/angular';
 import { DECISION_KEY, FieldActivation, HEADING_KEY_PREFIX } from '../../../data/signoff-type-forms';
-import { isHeadingItem } from '../../signoff-forms/signoff-type-form-rules';
+import { isHeadingItem } from '../../signoff-forms-logic/signoff-type-form-rules';
 import { isVerifyRow, lookupCatalogField } from '../../catalogs/field-catalog';
-import { definitionFieldNote } from '../../signoff-forms/stage-rules';
-import { inLineOrder, nextLine } from '../../signoff-forms/definition-layout';
+import { definitionFieldNote } from '../../signoff-forms-logic/stage-rules';
+import { inLineOrder, nextLine } from '../../signoff-forms-logic/definition-layout';
 
 let seq = 0;
 

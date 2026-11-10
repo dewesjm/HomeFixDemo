@@ -6,7 +6,7 @@ import {
 } from '../../data/procedures';
 
 /* true when a procedure has any preheat/interpass override values set -- shared by the PDF
-   (procedure-pdf.ts) and Weld Record's stage fields (weld-record/signing/stage-form.ts) */
+   (procedure-pdf.ts) and Weld Record's stage fields (weld-record/signoff-validation-logic/stage-form.ts) */
 export function hasOverride(p: Procedure): boolean {
   return !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
 }
@@ -79,7 +79,7 @@ export function wtnFillValue(gwp: string, wtn: string, key: string): string {
 
 /* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
    Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
-   On the weld record the external-system mock (weld-record/weld-assignment/weld-assignment-mock.ts) picks one of these; a
+   On the weld record the external-system mock (weld-record/weld-assignment-logic/weld-assignment-mock.ts) picks one of these; a
    Foreman Override opens the full lists. */
 export function fillerMetalTypeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
   if (!p) return [];

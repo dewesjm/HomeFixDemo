@@ -1,7 +1,7 @@
 /* Admin > Qualifications: the conditions that make a step require quals, each an AND/OR group of
    clauses plus the one Signoff Type it applies to, requiring an AND/OR group of quals, and
-   the User rows that say which quals a person holds (weld-record/qualifications/qual-conditions.ts). SELF is the testing
-   entry the Qualification Check runs as (weld-record/qualifications/qualifications.ts). Each row is edited and saved on its own. */
+   the User rows that say which quals a person holds (weld-record/qualifications-logic/qual-conditions.ts). SELF is the testing
+   entry the Qualification Check runs as (weld-record/qualifications-logic/qualifications.ts). Each row is edited and saved on its own. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,14 +12,14 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { ALL_QUALS } from '../../qualifications/qualifications';
+import { ALL_QUALS } from '../../qualifications-logic/qualifications';
 import { QualCondition, SELF } from '../../../data/qualifications';
 import {
   conditionFields, conditionTypeText, conditionWhenText, distinctRequirements, heldBy, notOnCheckForm, qualConditions, setQualConditions,
   signoffTypeChoices, signoffTypeLabel, userOf,
-} from '../../qualifications/qual-conditions';
-import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications/qual-requirements';
-import { WhenGroup, cloneWhen, newWhenClause, pruneWhen, whenComplete } from '../../qualifications/qual-when';
+} from '../../qualifications-logic/qual-conditions';
+import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications-logic/qual-requirements';
+import { WhenGroup, cloneWhen, newWhenClause, pruneWhen, whenComplete } from '../../qualifications-logic/qual-when';
 import { QualGroupEditorComponent } from './qual-group-editor.component';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
 

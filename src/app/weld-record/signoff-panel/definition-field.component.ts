@@ -5,12 +5,12 @@
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ACTUAL_REQUIREMENT } from '../signoff-forms/weld-fields';
+import { ACTUAL_REQUIREMENT } from '../signoff-forms-logic/weld-fields';
 import { WorkflowStage } from '../model/workflow-types';
-import { isFieldLocked, isReadonlyLimit } from '../signoff-forms/field-locks';
+import { isFieldLocked, isReadonlyLimit } from '../signoff-forms-logic/field-locks';
 import { isPersonField } from '../catalogs/field-catalog';
-import { qualCheck, QualCheckResult } from '../qualifications/qualifications';
-import { conditionRequirements, heldQuals } from '../qualifications/qual-conditions';
+import { qualCheck, QualCheckResult } from '../qualifications-logic/qualifications';
+import { conditionRequirements, heldQuals } from '../qualifications-logic/qual-conditions';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 import { SignoffContext } from './signoff-context';
 

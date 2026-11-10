@@ -4,7 +4,7 @@
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
-import { verifyAgainst } from '../signoff-forms/signoff-type-form-rules';
+import { verifyAgainst } from '../signoff-forms-logic/signoff-type-form-rules';
 import { SignoffContext } from './signoff-context';
 import { fitupVerifyValue, reviewVerifyValue } from './rules/verify-values';
 

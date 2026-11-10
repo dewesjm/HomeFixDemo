@@ -1,9 +1,9 @@
-/* The joint page's Fabrication panel: the cross-stage Welding fields (fabrication/fabrication-fields.ts). */
+/* The joint page's Fabrication panel: the cross-stage Welding fields (fabrication-logic/fabrication-fields.ts). */
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideBox } from '@lucide/angular';
-import { FabricationField } from '../fabrication/fabrication-fields';
+import { FabricationField } from '../fabrication-logic/fabrication-fields';
 
 @Component({
   selector: 'app-fabrication-panel',

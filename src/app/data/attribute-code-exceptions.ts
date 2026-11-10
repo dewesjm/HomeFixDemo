@@ -2,10 +2,10 @@
    after the normal routing is built (Routing Settings, Signoff Type to Routing). One row per code
    and routing. A regular routing and its NQC row are separate routings with separate rows. The model,
    the starting rows, load and save (localStorage). The rules that apply them are in
-   weld-record/attribute-codes/exception-effects.ts. */
+   weld-record/attribute-codes-logic/exception-effects.ts. */
 import { STORAGE } from './storage-keys';
 import { SHIPBOARD_FIELD } from '../weld-record/catalogs/field-catalog';
-import { ConditionRule } from '../weld-record/conditions/joint-conditions';
+import { ConditionRule } from '../weld-record/conditions-logic/joint-conditions';
 import { NQC_SPLIT_STEP_IDS, nqcStepId } from './welding-step-ids';
 
 export type AccessibleAnswer = 'yes' | 'no';

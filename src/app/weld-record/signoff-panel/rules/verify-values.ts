@@ -1,6 +1,6 @@
 /* The values Fit-Up Insp and the Records Reviews check off, shown beside each verification checkbox */
 import { Job } from '../../../data/jobs';
-import { fabricationDisplayValue } from '../../fabrication/fabrication-form';
+import { fabricationDisplayValue } from '../../fabrication-logic/fabrication-form';
 
 /* Fit-Up Insp checkbox -> the Fabrication value it verifies */
 const FAB_VERIFY_MAP: Record<string, string> = {

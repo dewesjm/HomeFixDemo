@@ -8,11 +8,11 @@ import { LucideArrowUpRight, LucideFileText, LucideChevronRight, LucideChevronDo
 
 import { ASSIGNMENTS, Assignment } from '../../../data/assignments';
 import { JOBS, Job } from '../../../data/jobs';
-import { currentRoutingLabel } from '../../../weld-record/routing/current-routing';
+import { currentRoutingLabel } from '../../../weld-record/routing-logic/current-routing';
 import { WorkflowStore } from '../../../weld-record/services/workflow-store.service';
 import { bannerFor } from '../../../data/banner';
 import { isShipboardLocationName } from '../../../data/locations';
-import { hullHasUsage } from '../../../weld-record/fabrication/ship-location-options';
+import { hullHasUsage } from '../../../weld-record/fabrication-logic/ship-location-options';
 import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';

@@ -7,16 +7,16 @@ import { Component, ElementRef, computed, effect, inject, input, output, signal,
 import { FormsModule } from '@angular/forms';
 import { Job } from '../../data/jobs';
 
-import { fieldsShown, visibleSignoffFields } from '../signoff-forms/shown-fields';
-import { isUserEditable } from '../signoff-forms/field-locks';
-import { isRoutingLockedField } from '../signoff-forms/stage-rules';
+import { fieldsShown, visibleSignoffFields } from '../signoff-forms-logic/shown-fields';
+import { isUserEditable } from '../signoff-forms-logic/field-locks';
+import { isRoutingLockedField } from '../signoff-forms-logic/stage-rules';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { ReferenceService } from '../services/reference.service';
 import { ReferencesPanelComponent } from '../references-panel/references-panel.component';
 import { PersonSearchInputComponent } from '../../shared/person-search-input.component';
 
-/* fields the live signoff panel already gives a person-search assist to (see weld-record/routing/ndt.ts's
+/* fields the live signoff panel already gives a person-search assist to (see weld-record/routing-logic/ndt.ts's
    the field catalog) -- Correct should offer the same help, not just a plain text box */
 const PERSON_SEARCH_FIELDS = new Set(['probationaryInspector', 'oversightInspector']);
 

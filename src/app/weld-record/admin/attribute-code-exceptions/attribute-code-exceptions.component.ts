@@ -12,8 +12,8 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
-import { getTemplates } from '../../routing/routing-settings-rules';
-import { ConditionRule } from '../../conditions/joint-conditions';
+import { getTemplates } from '../../routing-logic/routing-settings-rules';
+import { ConditionRule } from '../../conditions-logic/joint-conditions';
 import { getSignoffTypes } from '../../../data/signoff-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import {
@@ -21,7 +21,7 @@ import {
 } from '../../../data/attribute-code-exceptions';
 import {
   accessibleText, appliesWhenText, exceptionConditionFields, minRtText, routingChangeText, typesText,
-} from '../../attribute-codes/exception-text';
+} from '../../attribute-codes-logic/exception-text';
 import { TypeEnableConditionsComponent } from '../signoff-type-routing/type-enable-conditions.component';
 
 interface ExceptionRow extends AttributeCodeException {

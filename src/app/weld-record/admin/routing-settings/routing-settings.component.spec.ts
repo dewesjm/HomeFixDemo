@@ -1,13 +1,13 @@
 import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
 import { STORAGE } from '../../../data/storage-keys';
 import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
-import { insertionTarget } from '../../routing/inserted-routing/instance-identity';
+import { insertionTarget } from '../../routing-logic/inserted-routing/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';
 import { AdminRoutingSettingsComponent } from './routing-settings.component';
-import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing/routing-settings-rules';
+import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTemplate, getTemplates } from '../../routing-logic/routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
-import { buildStages } from '../../routing/build-stages';
+import { buildStages } from '../../routing-logic/build-stages';
 import { JOBS } from '../../../data/jobs';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 

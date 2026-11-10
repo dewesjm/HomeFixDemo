@@ -1,6 +1,6 @@
 import { JOBS } from '../../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
-import { newWorkflow } from '../../routing/build-stages';
+import { newWorkflow } from '../../routing-logic/build-stages';
 import { captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './unsaved-edits';
 
 const job = JOBS[0];

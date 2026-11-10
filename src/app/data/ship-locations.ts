@@ -1,6 +1,6 @@
 /* Admin > Ship Locations: per hull, the Level/Deck / Frame / P/S/CL / Usage combinations a joint on the
    Ship can be given (S and D hulls have no Usage). Stored in localStorage. Fabrication's droplists
-   built from these rows are weld-record/fabrication/ship-location-options.ts. */
+   built from these rows are weld-record/fabrication-logic/ship-location-options.ts. */
 import { STORAGE } from './storage-keys';
 import { HULLS } from './jobs';
 

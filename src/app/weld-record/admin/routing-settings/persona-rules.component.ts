@@ -3,9 +3,9 @@ import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ROLES } from '../../../data/roles';
 import { StageTemplate } from '../../model/stage-template';
-import { getTemplates, updateStageTemplate } from '../../routing/routing-settings-rules';
-import { ConditionClause } from '../../conditions/joint-conditions';
-import { describeConditions } from '../../conditions/condition-text';
+import { getTemplates, updateStageTemplate } from '../../routing-logic/routing-settings-rules';
+import { ConditionClause } from '../../conditions-logic/joint-conditions';
+import { describeConditions } from '../../conditions-logic/condition-text';
 import { JOINT_DETAIL_FIELDS, fieldChoiceLabel } from '../../catalogs/field-choices';
 import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, patchClause } from './rules/condition-editing';
 

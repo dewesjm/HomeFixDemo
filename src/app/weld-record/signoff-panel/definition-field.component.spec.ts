@@ -2,8 +2,8 @@ import { TestBed } from '@angular/core/testing';
 import { DefinitionFieldComponent } from './definition-field.component';
 import { SignoffContext } from './signoff-context';
 import { JOBS } from '../../data/jobs';
-import { buildStages } from '../routing/build-stages';
-import { visibleSignoffFields } from '../signoff-forms/shown-fields';
+import { buildStages } from '../routing-logic/build-stages';
+import { visibleSignoffFields } from '../signoff-forms-logic/shown-fields';
 import { FormField } from '../catalogs/field-catalog';
 import { WorkflowStage } from '../model/workflow-types';
 

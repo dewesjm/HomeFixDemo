@@ -7,13 +7,13 @@
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
 import { DECISION_KEY, FieldActivation, TYPE_KEY } from '../../data/signoff-type-forms';
-import { getActivationForStep } from '../signoff-forms/signoff-type-form-rules';
-import { LayoutSection, layoutSections } from '../signoff-forms/definition-layout';
+import { getActivationForStep } from '../signoff-forms-logic/signoff-type-form-rules';
+import { LayoutSection, layoutSections } from '../signoff-forms-logic/definition-layout';
 import { WorkflowStage } from '../model/workflow-types';
-import { buildConditionContext } from '../signoff-forms/condition-context';
-import { drawnFieldRule } from '../signoff-forms/shown-fields';
+import { buildConditionContext } from '../signoff-forms-logic/condition-context';
+import { drawnFieldRule } from '../signoff-forms-logic/shown-fields';
 import { isVerifyRow } from '../catalogs/field-catalog';
-import { showsType } from '../signoff-forms/stage-rules';
+import { showsType } from '../signoff-forms-logic/stage-rules';
 import { ReferencesPanelComponent } from '../references-panel/references-panel.component';
 import { AffectedItemComponent } from './affected-item.component';
 import { DefinitionFieldComponent } from './definition-field.component';

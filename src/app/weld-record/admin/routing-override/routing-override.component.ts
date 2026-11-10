@@ -12,7 +12,7 @@ import { ConfirmService } from '../../../shared/confirm.service';
 import { JOBS, Job } from '../../../data/jobs';
 import { RoutingService } from '../../services/routing.service';
 import { WorkflowStore } from '../../services/workflow-store.service';
-import { currentRoutingLabel, activeStageId } from '../../routing/current-routing';
+import { currentRoutingLabel, activeStageId } from '../../routing-logic/current-routing';
 
 @Component({
   selector: 'app-admin-routing-override',

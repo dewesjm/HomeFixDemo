@@ -2,7 +2,7 @@
 import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { StageTemplate } from '../../model/stage-template';
-import { updateStageTemplate } from '../../routing/routing-settings-rules';
+import { updateStageTemplate } from '../../routing-logic/routing-settings-rules';
 
 @Component({
   selector: 'app-routing-description', standalone: true, imports: [FormsModule],

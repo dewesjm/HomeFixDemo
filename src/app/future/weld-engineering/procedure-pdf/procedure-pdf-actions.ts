@@ -2,7 +2,7 @@
    definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency. */
 import { Procedure } from '../../../data/procedures';
 import { procedureSections } from '../procedure-sections';
-import { wtnRequirementText } from '../../../weld-record/qualifications/qual-conditions';
+import { wtnRequirementText } from '../../../weld-record/qualifications-logic/qual-conditions';
 import { procedureDocDefinition } from './procedure-pdf';
 
 let vfsReady: Promise<any> | null = null;

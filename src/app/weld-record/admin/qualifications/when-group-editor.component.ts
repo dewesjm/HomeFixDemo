@@ -1,4 +1,4 @@
-/* Edits one AND/OR group of a qual condition's When (weld-record/qualifications/qual-when.ts). Items are clauses
+/* Edits one AND/OR group of a qual condition's When (weld-record/qualifications-logic/qual-when.ts). Items are clauses
    (is, is not or contains, as in Routing Settings) or nested groups, which render this same editor.
    User is offered only on the top group's single clause: picking it makes the row a User row, which has
    just that clause. Edits are emitted as a new group. */
@@ -7,8 +7,8 @@ import { fieldChoiceLabel } from '../../catalogs/field-choices';
 import { FormsModule } from '@angular/forms';
 import { LucideX } from '@lucide/angular';
 import { USER_FIELD } from '../../../data/qualifications';
-import { ConditionField, ConditionOption, conditionField, conditionFields } from '../../qualifications/qual-conditions';
-import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, newWhenClause } from '../../qualifications/qual-when';
+import { ConditionField, ConditionOption, conditionField, conditionFields } from '../../qualifications-logic/qual-conditions';
+import { WhenClause, WhenGroup, WhenTerm, isWhenGroup, newWhenClause } from '../../qualifications-logic/qual-when';
 
 const FIELD_GROUPS: ConditionField['group'][] = ['Joint Details', 'Calculated', 'Fabrication', 'Routing answers', 'Sign-off', 'User'];
 

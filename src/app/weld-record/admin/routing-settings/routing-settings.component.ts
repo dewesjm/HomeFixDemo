@@ -1,19 +1,19 @@
 // Admin → Routing Settings: manage the routings with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
-// Persists to localStorage via the weld-record/routing/routing-settings-rules.ts edit functions (rows stored by data/routing-settings.ts).
-import { insertionRelativeTargets } from '../../routing/inserted-routing/insertion-target-options';
+// Persists to localStorage via the weld-record/routing-logic/routing-settings-rules.ts edit functions (rows stored by data/routing-settings.ts).
+import { insertionRelativeTargets } from '../../routing-logic/inserted-routing/insertion-target-options';
 import { thenRuleSummary } from './rules/then-rule-summary';
 import { RoutingDescriptionComponent } from './routing-description.component';
 import { AttributeCodeNoteComponent } from '../attribute-code-exceptions/attribute-code-note.component';
 import { insertionTriggers, InsertionTrigger } from './rules/insertion-triggers';
-import { insertionTarget, insertionDefinitionId } from '../../routing/inserted-routing/instance-identity';
-import { insertionConfigurationErrors } from '../../routing/inserted-routing/insertion-validation';
+import { insertionTarget, insertionDefinitionId } from '../../routing-logic/inserted-routing/instance-identity';
+import { insertionConfigurationErrors } from '../../routing-logic/inserted-routing/insertion-validation';
 import { isDraftRouting, nextRoutingNumber, pinDraftRoutings } from './rules/routing-row-order';
 import { PersonaRulesComponent, personaRuleSummary } from './persona-rules.component';
-import { addedRoutingSetup, routingNameError } from '../../routing/inserted-routing/added-routing-configuration';
+import { addedRoutingSetup, routingNameError } from '../../routing-logic/inserted-routing/added-routing-configuration';
 import { StageTemplate } from '../../model/stage-template';
-import { isAddedTemplateId } from '../../routing/routing-settings-rules';
-import { RULE_TARGETS, availableRuleTargets } from '../../routing/on-signoff/rule-targets';
+import { isAddedTemplateId } from '../../routing-logic/routing-settings-rules';
+import { RULE_TARGETS, availableRuleTargets } from '../../routing-logic/on-signoff/rule-targets';
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -35,12 +35,12 @@ import {
   reorderStageTemplates,
   allStageIds,
   getTemplates,
-} from '../../routing/routing-settings-rules';
+} from '../../routing-logic/routing-settings-rules';
 import { ROLES, type Role } from '../../../data/roles';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
-import { ConditionClause, ConditionRule } from '../../conditions/joint-conditions';
-import { describeConditions } from '../../conditions/condition-text';
-import { RouteToRule } from '../../routing/route-to-rules';
+import { ConditionClause, ConditionRule } from '../../conditions-logic/joint-conditions';
+import { describeConditions } from '../../conditions-logic/condition-text';
+import { RouteToRule } from '../../routing-logic/route-to-rules';
 import { DEFAULT_STEP_CONDITIONS } from '../../../data/welding-steps';
 import { ConditionCatalogField } from '../../catalogs/field-catalog';
 import { ROUTING_CONDITION_FIELDS, stageConditionFields, stepAnswerFieldsBefore, fieldChoiceLabel } from '../../catalogs/field-choices';

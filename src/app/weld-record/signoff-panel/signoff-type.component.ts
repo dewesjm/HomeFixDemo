@@ -5,7 +5,7 @@ import { Component, input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { WorkflowStage } from '../model/workflow-types';
 import { SignoffContext } from './signoff-context';
-import { typesForAccessibleAnswer } from '../attribute-codes/exception-effects';
+import { typesForAccessibleAnswer } from '../attribute-codes-logic/exception-effects';
 
 @Component({
   selector: 'app-signoff-type',

@@ -13,7 +13,7 @@ import {
   FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../../data/procedures';
-import { wtnRequirementText } from '../../../../weld-record/qualifications/qual-conditions';
+import { wtnRequirementText } from '../../../../weld-record/qualifications-logic/qual-conditions';
 import {
   procedureSections, sectionNumber, withAllFields, extraFieldProblems, compactExtras, type RangeValue
 } from '../../procedure-sections';

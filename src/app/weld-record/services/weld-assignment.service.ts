@@ -1,15 +1,15 @@
 /* Writes the external system's GWP/WTN/filler assignment (weld-assignment-mock.ts) onto a joint's
    unsigned welding steps. It's the system's value, not the person's edit, so no History entry.
    A joint it sends nothing for gets engineeringEntry steps instead, typed in by hand. */
-import { formInputFields } from '../signoff-forms/form-fields';
+import { formInputFields } from '../signoff-forms-logic/form-fields';
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
-import { ENGINEERING_ENTRY_KEYS } from '../signoff-forms/weld-fields';
-import { isFilledByRule, withFills } from '../signoff-forms/field-fill';
-import { heldQuals } from '../qualifications/qual-conditions';
-import { assignedInputs, isEngineeringEntryJoint } from '../weld-assignment/weld-assignment-mock';
-import { isAssignedStage } from '../weld-assignment/weld-assignment-rules';
+import { ENGINEERING_ENTRY_KEYS } from '../signoff-forms-logic/weld-fields';
+import { isFilledByRule, withFills } from '../signoff-forms-logic/field-fill';
+import { heldQuals } from '../qualifications-logic/qual-conditions';
+import { assignedInputs, isEngineeringEntryJoint } from '../weld-assignment-logic/weld-assignment-mock';
+import { isAssignedStage } from '../weld-assignment-logic/weld-assignment-rules';
 import { WorkflowStore } from './workflow-store.service';
 
 @Injectable({ providedIn: 'root' })

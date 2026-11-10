@@ -1,4 +1,4 @@
-import { buildStages } from '../../routing/build-stages';
+import { buildStages } from '../../routing-logic/build-stages';
 import { WorkflowStage } from '../../model/workflow-types';
 import { JOBS } from '../../../data/jobs';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';

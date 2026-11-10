@@ -1,5 +1,5 @@
 /* The condition editor's working copy of a field condition: AND/OR groups of clauses as the admin
-   edits them, and the conversion to and from the stored FieldCondition (weld-record/conditions/form-conditions.ts) */
+   edits them, and the conversion to and from the stored FieldCondition (weld-record/conditions-logic/form-conditions.ts) */
 import {
   FormConditionClause,
   ConditionTerm,
@@ -8,8 +8,8 @@ import {
   conditionOp,
   conditionTerms,
   isConditionGroup,
-} from '../../../conditions/form-conditions';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-forms/stage-property-keys';
+} from '../../../conditions-logic/form-conditions';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../../../signoff-forms-logic/stage-property-keys';
 
 /* 'engineering' = whether an engineering override has the step; 'rejectedUtrt' = on a Repair, whether
    the rejected phase has an RT/UT step */

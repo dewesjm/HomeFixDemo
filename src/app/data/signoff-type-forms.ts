@@ -1,15 +1,15 @@
 /* Admin > Signoff Type Forms rows: one definition per Type (Admin > Signoff Types), matched by the
    Type's value. Each says which catalog fields the Type's form has, under what conditions, and how the
    form lays them out (line numbers, widths, headings, where Inspection Results goes, see
-   weld-record/signoff-forms/definition-layout.ts). The model, the starting definitions, load and
+   weld-record/signoff-forms-logic/definition-layout.ts). The model, the starting definitions, load and
    save (localStorage). The rules that read them are in
-   weld-record/signoff-forms/signoff-type-form-rules.ts. */
+   weld-record/signoff-forms-logic/signoff-type-form-rules.ts. */
 import { repairCodesVersion } from './repair-codes';
 import { STORAGE } from './storage-keys';
 import { WELD_BUILDUP_TYPE } from './signoff-types';
-import { FieldCondition } from '../weld-record/conditions/form-conditions';
+import { FieldCondition } from '../weld-record/conditions-logic/form-conditions';
 import { type FieldFill } from '../weld-record/catalogs/field-catalog';
-import { FILLER_KEYS } from '../weld-record/signoff-forms/weld-fields';
+import { FILLER_KEYS } from '../weld-record/signoff-forms-logic/weld-fields';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {

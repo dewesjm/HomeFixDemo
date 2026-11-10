@@ -1,18 +1,18 @@
 import { JOBS, Job } from '../../data/jobs';
-import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications/qual-conditions';
-import { buildConditionContext } from '../signoff-forms/condition-context';
-import { evaluateCondition } from '../conditions/form-conditions';
-import { conditionText } from '../signoff-forms/field-rules';
+import { conditionField, conditionFields, conditionRequirements, qualConditions, setQualConditions } from '../qualifications-logic/qual-conditions';
+import { buildConditionContext } from '../signoff-forms-logic/condition-context';
+import { evaluateCondition } from '../conditions-logic/form-conditions';
+import { conditionText } from '../signoff-forms-logic/field-rules';
 import { WorkflowStage } from '../model/workflow-types';
-import { newWorkflow } from '../routing/build-stages';
+import { newWorkflow } from '../routing-logic/build-stages';
 import { FIELD_CATALOG, FORM_FIELDS, lookupCatalogField } from './field-catalog';
 import { JOINT_AND_FABRICATION_FIELDS, JOINT_DETAIL_FIELDS, ROUTING_CONDITION_FIELDS, allStepAnswerFields, catalogField, formFieldValues, fieldChoiceLabel, jointOrFabricationField, readsFabrication, stageConditionFields, stepAnswerFieldsBefore } from './field-choices';
-import { exceptionConditionFields } from '../attribute-codes/exception-text';
+import { exceptionConditionFields } from '../attribute-codes-logic/exception-text';
 import { clauseChoices } from '../admin/signoff-type-forms/rules/condition-choices';
 import { conditionFieldGroups } from '../admin/routing-settings/rules/condition-editing';
-import { recheckFabricationRules } from '../routing/route-changes';
-import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
-import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
+import { recheckFabricationRules } from '../routing-logic/route-changes';
+import { getTemplates, updateStageTemplate } from '../routing-logic/routing-settings-rules';
+import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions-logic/joint-conditions';
 
 const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], ...more });
 const stage = { id: 'tack', signed: false, inputs: {}, signoffInputs: {}, inspectionType: '', result: null } as unknown as WorkflowStage;

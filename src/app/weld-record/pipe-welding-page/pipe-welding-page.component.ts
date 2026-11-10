@@ -37,7 +37,7 @@ import {
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
-import { activeStage } from '../routing/current-routing';
+import { activeStage } from '../routing-logic/current-routing';
 import { ROLES, type Role } from '../../data/roles';
 import { formatDate } from '../../shared/date-format';
 import { jointRoute } from '../joint-page/joint-route';

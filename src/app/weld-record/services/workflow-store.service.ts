@@ -9,10 +9,10 @@ import { stampWho } from '../../data/people';
 import { JobWorkflow } from '../model/workflow-types';
 import { HistoryEntry } from '../model/history';
 import { seededWorkflow } from '../../data/seeded-workflow';
-import { newWorkflow, buildStages } from '../routing/build-stages';
-import { getTemplates } from '../routing/routing-settings-rules';
-import { fabricationSnapshot } from '../fabrication/fabrication-fields';
-import { currentRoutingLabel } from '../routing/current-routing';
+import { newWorkflow, buildStages } from '../routing-logic/build-stages';
+import { getTemplates } from '../routing-logic/routing-settings-rules';
+import { fabricationSnapshot } from '../fabrication-logic/fabrication-fields';
+import { currentRoutingLabel } from '../routing-logic/current-routing';
 import { isRepairStageId, isExcavationNdtStageId, isEngineeringHoldId } from '../../data/welding-step-ids';
 
 const LS_KEY = STORAGE.workflows;

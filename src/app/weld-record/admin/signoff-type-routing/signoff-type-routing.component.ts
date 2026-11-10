@@ -2,7 +2,7 @@
    which Types (Admin > Signoff Types) they offer (data/signoff-type-routing.ts);
    rows are added and removed here */
 import { isExcavationNdtStageId } from '../../../data/welding-step-ids';
-import { typeExceptionCondition } from '../../signoff-forms/type-exceptions';
+import { typeExceptionCondition } from '../../signoff-forms-logic/type-exceptions';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { JOINT_DETAIL_FIELDS } from '../../catalogs/field-choices';
 import { TypeExceptionsComponent } from './type-exceptions.component';
@@ -18,10 +18,10 @@ import { TableState } from '../../../shared/table-state';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { typeSourceLabel } from '../../signoff-forms/signoff-type-routing-rules';
+import { typeSourceLabel } from '../../signoff-forms-logic/signoff-type-routing-rules';
 import { AvailableType, SignoffTypeRoutingRow, EXCAVATION_TYPE_ROW, getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes, typeLabel } from '../../../data/signoff-types';
-import { getTemplates } from '../../routing/routing-settings-rules';
+import { getTemplates } from '../../routing-logic/routing-settings-rules';
 
 interface TypeRow extends SignoffTypeRoutingRow {
   uid: string;

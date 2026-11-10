@@ -2,7 +2,7 @@
    its value comes from, its Source: Joint Details, Calculated, Fabrication or Signoff Form.
    The catalog says what a field is; other code decides when it is used. Which fields each admin screen
    offers, and the per-routing fields generated from these rows, are in field-choices.ts. The Fabrication
-   form builds its fields from fabrication/fabrication-fields.ts; this list only maps them in. */
+   form builds its fields from fabrication-logic/fabrication-fields.ts; this list only maps them in. */
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
@@ -16,15 +16,15 @@ import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data
 import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { weldColorOptions } from '../../data/weld-colors';
 import { weldPositionOptions } from '../../data/weld-positions';
-import { jointAttributeCodes } from '../attribute-codes/attribute-context';
-import { FABRICATION_FIELDS } from '../fabrication/fabrication-fields';
-import { jointDetailsUt, jointDetailsVt } from '../joint-details/joint-details-values';
+import { jointAttributeCodes } from '../attribute-codes-logic/attribute-context';
+import { FABRICATION_FIELDS } from '../fabrication-logic/fabrication-fields';
+import { jointDetailsUt, jointDetailsVt } from '../joint-details-logic/joint-details-values';
 import { WorkflowStage } from '../model/workflow-types';
-import { fabricationSigned } from '../fabrication/fabrication-steps';
+import { fabricationSigned } from '../fabrication-logic/fabrication-steps';
 import { nqcStepId } from '../../data/welding-step-ids';
-import { FieldCondition } from '../conditions/form-conditions';
-import { repairCodeOptions } from '../signoff-forms/repair-code-options';
-import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-forms/stage-property-keys';
+import { FieldCondition } from '../conditions-logic/form-conditions';
+import { repairCodeOptions } from '../signoff-forms-logic/repair-code-options';
+import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from '../signoff-forms-logic/stage-property-keys';
 
 /* ── What an entry is ── */
 

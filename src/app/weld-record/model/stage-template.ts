@@ -1,7 +1,7 @@
 /* a Routing Settings row: the definition a joint's step is built from */
 import { Job } from '../../data/jobs';
-import { ConditionRule } from '../conditions/joint-conditions';
-import { RouteToRule } from '../routing/route-to-rules';
+import { ConditionRule } from '../conditions-logic/joint-conditions';
+import { RouteToRule } from '../routing-logic/route-to-rules';
 
 /* one choice in a step's Type droplist (e.g. Fit/Weld Build-Up, MT/PT): named on Admin > Signoff Types,
    offered by Admin > Signoff Type to Routing */
@@ -33,9 +33,9 @@ export interface StageTemplate {
   personaRules?: { when: ConditionRule; persona: string }[];
   /* admin-managed signoff type options (Admin > Signoff Type to Routing) (e.g. Fit/Weld Build-Up, MT/PT) */
   typeOptions?: StageOption[];
-  /* when a joint gets this step (conditions/joint-conditions.ts); none = always */
+  /* when a joint gets this step (conditions-logic/joint-conditions.ts); none = always */
   includeWhen?: ConditionRule[];
-  /* on UNSAT, the first matching rule picks the target instead of rejectToStage (routing/route-to-rules.ts) */
+  /* on UNSAT, the first matching rule picks the target instead of rejectToStage (routing-logic/route-to-rules.ts) */
   rejectRules?: RouteToRule[];
   /* On accepted signoff, the first matching rule selects the next routing. */
   thenRules?: RouteToRule[];

@@ -1,5 +1,5 @@
 import { seededWorkflow } from './seeded-workflow';
-import { activeStageId } from '../weld-record/routing/current-routing';
+import { activeStageId } from '../weld-record/routing-logic/current-routing';
 import { JOBS } from './jobs';
 
 /* joints seeded partway through their routing; the attribute demo joints start fresh */

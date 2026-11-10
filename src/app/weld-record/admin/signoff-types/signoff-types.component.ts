@@ -11,9 +11,9 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import { SignoffType, getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
-import { getTemplates } from '../../routing/routing-settings-rules';
+import { getTemplates } from '../../routing-logic/routing-settings-rules';
 import { AdditionalSignoffsEditorComponent } from './additional-signoffs-editor.component';
-import { conditionText } from '../../signoff-forms/field-rules';
+import { conditionText } from '../../signoff-forms-logic/field-rules';
 
 interface TypeRow extends SignoffType {
   uid: string;
