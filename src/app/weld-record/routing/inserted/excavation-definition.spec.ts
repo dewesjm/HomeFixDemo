@@ -156,3 +156,21 @@ describe('Configured regular and NQC Excavation', () => {
     expect(job.repairNumber).toBe('02');
   }));
 });
+
+/* Excavation NDT Type starts blank, like every NDT step, so the inspector picks what was performed */
+describe('Excavation NDT Type is never pre-filled', () => {
+  const job = (over: Partial<Job>): Job =>
+    ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', ndt: '', ndtRoot: '', ndtEach: 'MT', ndtFinal: '', ...over });
+
+  it('Excavation NDT offers the method that rejected the joint, with Type blank', () => {
+    const s = excavationNdtStageFor(job({}), 'rt', 'repair');
+    expect(s.typeOptions?.map(o => o.value)).toEqual(['rt']);
+    expect(s.inspectionType).toBe('');
+  });
+
+  it('seed and live Excavation construction share the configured material exception', () => {
+    const s = excavationNdtStageFor(job({ materialType1: '12-SS304' }), 'pt', 'repair');
+    expect(s.typeOptions?.map(o => o.value)).toEqual(['5x']);
+    expect(s.inspectionType).toBe('');
+  });
+});
