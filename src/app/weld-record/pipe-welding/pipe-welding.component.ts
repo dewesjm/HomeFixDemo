@@ -45,7 +45,7 @@ import { jointRoute } from '../joint-page/joint-route';
 const PAGE_SIZES = [10, 25, 50, 100];
 
 @Component({
-  selector: 'app-adaptive-search',
+  selector: 'app-pipe-welding',
   standalone: true,
   imports: [OrderedPickListComponent, BannerPillComponent, MenuButtonComponent,
     CommonModule, FormsModule,
@@ -54,9 +54,9 @@ const PAGE_SIZES = [10, 25, 50, 100];
     LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch, LucidePlus,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
   ],
-  templateUrl: './adaptive-search.component.html'
+  templateUrl: './pipe-welding.component.html'
 })
-export class AdaptiveSearchComponent {
+export class PipeWeldingComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
   readonly STANDARD = STANDARD_VARIANT;

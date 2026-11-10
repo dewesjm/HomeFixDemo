@@ -104,7 +104,7 @@ html, body {
 .min-w-14 { min-width: 14rem; }
 .search-input { width: 25rem; max-width: 100%; }   /* fits the longest placeholder plus the clear button */
 
-/* Adaptive-search filter bar + adapt dialog */
+/* Pipe Welding filter bar + adapt dialog */
 .fw-bold { font-weight: 600; }
 .flex-1 { flex: 1; }
 .mb-sm { margin-bottom: 0.75rem; }

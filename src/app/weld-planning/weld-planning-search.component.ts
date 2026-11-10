@@ -1,5 +1,5 @@
 /* Advanced Search for Weld Planning — schema-driven filter bar + saved variants + column picker,
-   mirrors adaptive-search.component.ts but scoped to WeldJoint records */
+   mirrors pipe-welding.component.ts but scoped to WeldJoint records */
 import { STORAGE } from '../data/storage-keys';
 import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';

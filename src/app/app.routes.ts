@@ -5,9 +5,9 @@ import { inject } from '@angular/core';
 import { Router, Routes } from '@angular/router';
 import { canDeactivateGuard } from './shared/can-deactivate.guard';
 import { featureToggles } from './data/feature-toggles';
-import { PipeSearchComponent } from './weld-record/pipe-search/pipe-search.component';
+import { PipeWeldingClassicComponent } from './weld-record/pipe-welding-classic/pipe-welding-classic.component';
 import { WorkHistoryComponent } from './weld-record/work-history/work-history.component';
-import { AdaptiveSearchComponent } from './weld-record/adaptive-search/adaptive-search.component';
+import { PipeWeldingComponent } from './weld-record/pipe-welding/pipe-welding.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingSettingsComponent } from './weld-record/admin/routing-settings/routing-settings.component';
 import { AdminAttributeCodesComponent } from './weld-record/admin/attribute-codes/attribute-codes.component';
@@ -52,10 +52,10 @@ import { ProcedureSectionsComponent } from './weld-engineering/admin/procedure-s
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-search' },
   /* Pipe Welding is the Advanced Search page */
-  { path: 'pipe-search', component: AdaptiveSearchComponent, title: 'EWR - Pipe Welding' },
+  { path: 'pipe-search', component: PipeWeldingComponent, title: 'EWR - Pipe Welding' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page
      is on; kept so it can be turned back on without a rewrite */
-  { path: 'pipe-search-classic', component: PipeSearchComponent, title: 'EWR - Pipe Welding (Classic)',
+  { path: 'pipe-search-classic', component: PipeWeldingClassicComponent, title: 'EWR - Pipe Welding (Classic)',
     canActivate: [() => featureToggles().classicPipeWelding || inject(Router).parseUrl('/pipe-search')] },
   /* switched off unless Admin > Feature Toggles > My Assignments page is on; kept so it can be turned
      back on without a rewrite */
