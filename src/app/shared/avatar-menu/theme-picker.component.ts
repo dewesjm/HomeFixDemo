@@ -1,5 +1,5 @@
 /* Theme droplist, in the avatar menu: switch the active DaisyUI theme at runtime, persisted. */
-import { STORAGE } from '../data/storage-keys';
+import { STORAGE } from '../../data/storage-keys';
 import { Component, signal } from '@angular/core';
 
 interface ThemeOption { name: string; label: string; dark?: boolean; }

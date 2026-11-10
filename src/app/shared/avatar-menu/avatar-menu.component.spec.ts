@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { STORAGE } from '../data/storage-keys';
+import { STORAGE } from '../../data/storage-keys';
 import { AvatarMenuComponent } from './avatar-menu.component';
 
 describe('AvatarMenuComponent', () => {

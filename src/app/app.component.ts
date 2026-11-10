@@ -7,7 +7,7 @@ import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } fro
 import { filter } from 'rxjs/operators';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { CompactNavDirective } from './shared/compact-nav.directive';
-import { AvatarMenuComponent } from './avatar-menu/avatar-menu.component';
+import { AvatarMenuComponent } from './shared/avatar-menu/avatar-menu.component';
 import { ToastHostComponent } from './shared/toast-host.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog.component';
 import { SyncStatusComponent } from './weld-record/sync-status/sync-status.component';
