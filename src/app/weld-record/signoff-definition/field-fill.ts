@@ -8,7 +8,7 @@ import { FieldFill } from '../catalogs/field-catalog';
 import { evaluateCondition } from './field-conditions';
 import { stepOnlyContext } from './condition-context';
 import { isDisabledByOwnRule } from './field-locks';
-import { fieldActivation } from './step-field-config';
+import { fieldActivation } from './signoff-type-form-rules';
 import { effectiveFill } from './field-rules';
 import { wtnFillValue } from '../../data/procedures';
 

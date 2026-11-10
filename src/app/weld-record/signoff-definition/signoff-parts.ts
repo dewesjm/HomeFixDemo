@@ -2,7 +2,7 @@
    Comments and References where the Layout list says. */
 import { baseStepId } from '../routing/routing-ids';
 import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
-import { StepRef } from './step-field-config';
+import { StepRef } from './signoff-type-form-rules';
 import { lookupCatalogField } from '../catalogs/field-catalog';
 
 /* Whether a field its definition lists is drawn its own way rather than as an ordinary field of the

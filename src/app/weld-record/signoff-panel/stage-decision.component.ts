@@ -4,7 +4,7 @@ import { Component, input } from '@angular/core';
 import { WorkflowStage } from '../model/workflow-types';
 import { buildConditionContext } from '../signoff-definition/condition-context';
 import { drawnFieldRule } from '../signoff-definition/shown-fields';
-import { DECISION_KEY } from '../signoff-definition/step-field-config';
+import { DECISION_KEY } from '../../data/signoff-type-forms';
 import { SignoffContext } from './signoff-context';
 
 @Component({

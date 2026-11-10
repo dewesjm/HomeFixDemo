@@ -1,6 +1,6 @@
 import { getRepairCodes, setRepairCodes } from '../../../data/repair-codes';
 import { STORAGE } from '../../../data/storage-keys';
-import { resetStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
 import { insertionTarget } from '../../routing/inserted/instance-identity';
 import { provideRouter } from '@angular/router';
 import { fakeAsync, tick, TestBed } from '@angular/core/testing';

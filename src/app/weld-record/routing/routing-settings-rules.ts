@@ -5,7 +5,7 @@ import { insertedDefinitionId } from './inserted/instance-identity';
 import { insertionConfigurationErrors } from './inserted/insertion-validation';
 import { addedRoutingSetup, routingNameError } from './inserted/added-routing-configuration';
 import { routingFormFields } from '../signoff-definition/form-fields';
-import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
+import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { NDT_KINDS } from './ndt';
 import { Job } from '../../data/jobs';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';

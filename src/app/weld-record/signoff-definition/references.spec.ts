@@ -1,7 +1,7 @@
-import { StepRef, definitionHas } from './step-field-config';
+import { StepRef, definitionHas } from './signoff-type-form-rules';
 
 const showsReferences = (step: StepRef) => definitionHas(step, 'references');
-import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';
+import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 
 describe('showsReferences', () => {
   afterEach(() => resetStepFieldConfig());

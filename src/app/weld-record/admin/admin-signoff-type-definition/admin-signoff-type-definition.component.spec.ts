@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AdminSignoffTypeDefinitionComponent } from './admin-signoff-type-definition.component';
-import { resetStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { resetStepFieldConfig } from '../../../data/signoff-type-forms';
 
 describe('Shared inspection Type forms admin', () => {
   afterEach(() => resetStepFieldConfig());

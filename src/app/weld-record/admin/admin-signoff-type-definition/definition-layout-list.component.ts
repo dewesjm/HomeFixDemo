@@ -5,7 +5,8 @@
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucideArrowDown, LucideArrowUp, LucidePlus, LucideX } from '@lucide/angular';
-import { DECISION_KEY, FieldActivation, HEADING_KEY_PREFIX, isHeadingItem } from '../../signoff-definition/step-field-config';
+import { DECISION_KEY, FieldActivation, HEADING_KEY_PREFIX } from '../../../data/signoff-type-forms';
+import { isHeadingItem } from '../../signoff-definition/signoff-type-form-rules';
 import { isVerifyRow, lookupCatalogField } from '../../catalogs/field-catalog';
 import { definitionFieldNote } from '../../signoff-definition/stage-rules';
 import { inLineOrder, nextLine } from '../../signoff-definition/definition-layout';

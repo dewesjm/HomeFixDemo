@@ -1,6 +1,6 @@
 import { formInputFields, formSignoffFields } from './form-fields';
 import { drawnByOwnForm } from './signoff-parts';
-import { StepRef, definitionHas, verifyAgainst } from './step-field-config';
+import { StepRef, definitionHas, verifyAgainst } from './signoff-type-form-rules';
 import { snapshotInputs } from './stage-display';
 import { buildStages } from '../routing/build-stages';
 import { JOBS } from '../../data/jobs';

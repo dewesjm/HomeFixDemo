@@ -1,5 +1,6 @@
 import { layoutSections, withNewField } from './definition-layout';
-import { DECISION_KEY, HEADING_KEY_PREFIX, getActivationForStep, numberLines } from './step-field-config';
+import { DECISION_KEY, HEADING_KEY_PREFIX, numberLines } from '../../data/signoff-type-forms';
+import { getActivationForStep } from './signoff-type-form-rules';
 
 const all = () => true;
 

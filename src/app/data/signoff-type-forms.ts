@@ -1,17 +1,15 @@
-/* Signoff Type Forms: one per Type (Admin > Signoff Types), matched by the Type's value.
-   Each says which catalog fields the Type's form has, under what conditions, and how the form lays them
-   out (line numbers, widths, headings, where Inspection Results goes, see definition-layout.ts). A routing
-   reads the definition of the Type it is being signed as, including Excavation NDT. Live overrides are stored in
-   localStorage and take effect immediately. */
-import { repairCodesVersion } from '../../data/repair-codes';
-import { STORAGE } from '../../data/storage-keys';
-import { FieldCondition } from './field-conditions';
-import { type FieldFill } from '../catalogs/field-catalog';
-import type { WorkflowStage } from '../model/workflow-types';
-import { FILLER_KEYS } from './weld-fields';
-import { signoffTypeOptions } from './signoff-type-routing-rules';
-import { WELD_BUILDUP_TYPE } from '../../data/signoff-types';
-import { isExcavationNdtStageId } from '../routing/routing-ids';
+/* Admin > Signoff Type Forms rows: one definition per Type (Admin > Signoff Types), matched by the
+   Type's value. Each says which catalog fields the Type's form has, under what conditions, and how the
+   form lays them out (line numbers, widths, headings, where Inspection Results goes, see
+   weld-record/signoff-definition/definition-layout.ts). The model, the starting definitions, load and
+   save (localStorage). The rules that read them are in
+   weld-record/signoff-definition/signoff-type-form-rules.ts. */
+import { repairCodesVersion } from './repair-codes';
+import { STORAGE } from './storage-keys';
+import { WELD_BUILDUP_TYPE } from './signoff-types';
+import { FieldCondition } from '../weld-record/signoff-definition/field-conditions';
+import { type FieldFill } from '../weld-record/catalogs/field-catalog';
+import { FILLER_KEYS } from '../weld-record/signoff-definition/weld-fields';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */
 export interface FieldActivation {
@@ -41,25 +39,12 @@ export interface FieldActivation {
 /* heading items' keys start with this, so they never match a catalog field */
 export const HEADING_KEY_PREFIX = 'heading:';
 
-export function isHeadingItem(a: FieldActivation): boolean {
-  return a.heading !== undefined;
-}
-
 /* the signoff section's fields, placed in the form by the Layout list like any field: Type,
    Inspection Results (SAT/UNSAT) and Comments */
 export const TYPE_KEY = 'type';
 export const DECISION_KEY = 'decision';
 export const COMMENTS_KEY = 'comments';
 
-/* a Layout list item that isn't a field: a heading */
-function isLayoutOnlyItem(a: FieldActivation): boolean {
-  return isHeadingItem(a);
-}
-
-/* the definition's fields, without its headings */
-export function definitionFields(items: FieldActivation[]): FieldActivation[] {
-  return items.filter(a => !isLayoutOnlyItem(a));
-}
 
 /* what a step's verify-grid rows are checked against: the joint's Fabrication values (Fit-Up Insp)
    or its record (Records Review) */
@@ -72,8 +57,6 @@ export interface TypeDefinition {
   /* unset = the default definition's, else the record */
   verifyAgainst?: VerifyAgainst;
 }
-
-
 
 /* ── Condition shorthands ── */
 const ndtRootInspection: FieldCondition = { all: [{ source: 'jointDetail', key: 'ndtRoot', anyOf: ['5X', 'VT'] }] };
@@ -201,9 +184,6 @@ export const DEFAULT_TYPE_DEFINITIONS: TypeDefinition[] = ([
   { typeId: 'sold', fields: [] },
 ] satisfies TypeDefinition[]).map(a => ({ ...a, fields: numberLines(a.fields) }));
 
-/* what a step whose Type hasn't been picked yet shows: only the Type droplist */
-const TYPE_ONLY: TypeDefinition = { typeId: '', fields: [{ ...TYPE, line: 1 }] };
-
 /* ── Storage ── */
 
 let version = 0;
@@ -232,61 +212,4 @@ export function resetStepFieldConfig(): void {
   version++;
   _cache = null;
   localStorage.removeItem(STORAGE.stepFieldConfig);
-}
-
-/* a definition by its id (a Type's value), or a step, which reads the definition of its Type */
-export type StepRef = string | Pick<WorkflowStage, 'id' | 'signoffType'> & Partial<Pick<WorkflowStage, 'insertion' | 'typeOptions' | 'attributeRules' | 'inputs'>>;
-
-/* the definition a step reads: its Type's, including Excavation NDT; '' while
-   the step has Types but none is picked yet; undefined for a step with no Types (Engineering Hold, a
-   routing without a Signoff Type to Routing row), which has no form */
-export function definitionId(step: StepRef): string | undefined {
-  if (typeof step === 'string') return step;
-  if (isExcavationNdtStageId(step.id)) return step.signoffType === 'standard' ? '' : step.signoffType;
-  const options = step.insertion || step.attributeRules ? step.typeOptions : signoffTypeOptions(step.id);
-  if (!options) return undefined;
-  return options.some(o => o.value === step.signoffType) ? step.signoffType : '';
-}
-
-function findDefinition(step: StepRef): TypeDefinition | undefined {
-  const id = definitionId(step);
-  if (id === undefined) return undefined;
-  if (!id) return TYPE_ONLY;
-  return getStepFieldConfig().find(a => a.typeId === id) ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id);
-}
-
-/* whether a step's fields come from a definition (otherwise from its template): its Type has one */
-export function hasStepActivation(step: StepRef): boolean {
-  return !!findDefinition(step);
-}
-
-/* a field's settings on a step: its definition's entry, else the catalog defaults (a step with no
-   definition, or a field its definition doesn't list) */
-export function fieldActivation(step: StepRef, key: string): FieldActivation {
-  return findDefinition(step)?.fields.find(a => a.key === key) ?? { key };
-}
-
-/* whether the step's definition lists the field; used for fields its own form draws (Release to
-   welding, Affected Item), which show only when listed */
-export function definitionHas(step: StepRef, key: string): boolean {
-  return !!findDefinition(step)?.fields.some(a => a.key === key);
-}
-
-/* the definition a step reads, or an empty one when it has none */
-export function getActivationForStep(step: StepRef): TypeDefinition {
-  const definition = findDefinition(step) ?? { typeId: definitionId(step) ?? '', fields: [] };
-  if (typeof step === 'string' || !(step.attributeRules?.accessible.length || step.attributeRules?.askAccessible)) return definition;
-  /* Attribute Code Exceptions accessible rules: "ID is accessible" is asked above the Type, on its own line */
-  const fields = definition.fields.filter(f => f.key !== 'idAccessible');
-  const at = Math.max(0, fields.findIndex(f => f.key === TYPE_KEY));
-  const line = fields[at]?.line ?? 1;
-  fields.splice(at, 0, { key: 'idAccessible', required: true, showIf: { all: [] }, fill: null, line });
-  return { ...definition, fields: fields.map((f, i) => i > at && f.line !== undefined && f.line >= line ? { ...f, line: f.line + 1 } : f) };
-}
-
-/* what the step's verify-grid rows are checked against */
-export function verifyAgainst(step: StepRef): VerifyAgainst {
-  const id = definitionId(step);
-  return getActivationForStep(step).verifyAgainst
-    ?? DEFAULT_TYPE_DEFINITIONS.find(a => a.typeId === id)?.verifyAgainst ?? 'record';
 }

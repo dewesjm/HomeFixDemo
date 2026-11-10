@@ -3,11 +3,7 @@ import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
 import { inspectionTypeRequired } from '../../signoff-definition/stage-rules';
 import { WorkflowStage } from '../../model/workflow-types';
-import {
-  DEFAULT_TYPE_DEFINITIONS,
-  setStepFieldConfig,
-  resetStepFieldConfig,
-} from '../../signoff-definition/step-field-config';
+import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
 import { signProblems, stageFieldErrors, errorsAfterBlur, errorsAfterSelect, SignContext } from './sign-validation';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../../catalogs/field-catalog';

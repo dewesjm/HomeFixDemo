@@ -6,7 +6,7 @@ import { activeStageId, setRoutingFrom } from '../routing/current-routing';
 import { applySignedFlags } from '../routing/on-signoff/route-changes';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';
 import { rtDegreeRequired } from '../signoff-definition/rt-degree-minimum';
-import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../signoff-definition/step-field-config';
+import { DEFAULT_TYPE_DEFINITIONS, setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
 import { typeValues } from '../signoff-definition/stage-rules';
 import { attributeAccessError } from './attribute-validation';
 import { SEED_EXCEPTIONS, setAttributeCodeExceptions } from './attribute-code-exceptions';

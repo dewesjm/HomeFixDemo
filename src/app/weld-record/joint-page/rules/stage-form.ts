@@ -10,7 +10,7 @@ import { isFilledByRule } from '../../signoff-definition/field-fill';
 import { rtDegreeRequired } from '../../signoff-definition/rt-degree-minimum';
 import { evaluateCondition, conditionClauses } from '../../signoff-definition/field-conditions';
 import { buildConditionContext } from '../../signoff-definition/condition-context';
-import { fieldActivation } from '../../signoff-definition/step-field-config';
+import { fieldActivation } from '../../signoff-definition/signoff-type-form-rules';
 import { effectiveShowIf } from '../../signoff-definition/field-rules';
 import { definedFields } from '../../signoff-definition/shown-fields';
 import { inspectionProcedureOptions } from '../../../data/inspection-procedures';

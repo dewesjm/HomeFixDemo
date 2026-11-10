@@ -2,7 +2,7 @@
    plain-language text for Admin > Signoff Type Forms */
 import { FieldCondition, ConditionClause, ConditionContext, conditionOp, conditionTerms, evaluateCondition, hasClauses, isConditionGroup } from './field-conditions';
 import { jointOrFabricationField } from '../catalogs/field-choices';
-import { FieldActivation } from './step-field-config';
+import { FieldActivation } from '../../data/signoff-type-forms';
 import { FieldFill, isVerifyRow, lookupCatalogField } from '../catalogs/field-catalog';
 import { ENGINEERING_OVERRIDE_KEY, REJECTED_PHASE_UTRT_KEY } from './stage-property-keys';
 

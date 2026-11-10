@@ -5,7 +5,7 @@ import { formInputFields } from './form-fields';
 import { WorkflowStage } from '../model/workflow-types';
 import { ConditionClause, conditionClauses, evaluateCondition } from './field-conditions';
 import { ACTUAL_REQUIREMENT } from './weld-fields';
-import { fieldActivation } from './step-field-config';
+import { fieldActivation } from './signoff-type-form-rules';
 import { effectiveDisabledIf } from './field-rules';
 import { stepOnlyContext } from './condition-context';
 

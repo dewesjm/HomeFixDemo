@@ -3,7 +3,7 @@ import { describeConditions } from '../../conditions/condition-text';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes } from '../../../data/signoff-types';
-import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { getStepFieldConfig } from '../../../data/signoff-type-forms';
 
 export function routingNameError(name: string, id: string, templates: StageTemplate[]): string {
   if (!name.trim()) return 'Enter a routing name.';

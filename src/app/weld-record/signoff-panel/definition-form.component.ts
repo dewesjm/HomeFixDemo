@@ -6,7 +6,8 @@
    together as one grid where the first of them is listed. A routing without a Type form has no fields. */
 import { FormField } from '../catalogs/field-catalog';
 import { Component, input } from '@angular/core';
-import { DECISION_KEY, FieldActivation, TYPE_KEY, getActivationForStep } from '../signoff-definition/step-field-config';
+import { DECISION_KEY, FieldActivation, TYPE_KEY } from '../../data/signoff-type-forms';
+import { getActivationForStep } from '../signoff-definition/signoff-type-form-rules';
 import { LayoutSection, layoutSections } from '../signoff-definition/definition-layout';
 import { WorkflowStage } from '../model/workflow-types';
 import { buildConditionContext } from '../signoff-definition/condition-context';

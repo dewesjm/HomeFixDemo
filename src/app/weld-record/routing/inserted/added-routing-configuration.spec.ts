@@ -2,7 +2,7 @@ import { addedRoutingSetup } from './added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
-import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../../data/signoff-type-forms';
 
 describe('ordinary inserted routing setup', () => {
   const template: StageTemplate = { id: 'extra', label: 'Extra', required: true, classification: 'added', lifecycle: 'ordinary', role: 'Inspector', status: 'draft' };

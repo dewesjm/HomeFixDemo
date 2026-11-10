@@ -8,11 +8,7 @@ import { JOBS, Job } from '../../../data/jobs';
 import { buildStages } from '../../routing/build-stages';
 import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../../routing/inserted/added-routings';
 import { WorkflowStage } from '../../model/workflow-types';
-import {
-  setStepFieldConfig,
-  resetStepFieldConfig,
-  DEFAULT_TYPE_DEFINITIONS,
-} from '../../signoff-definition/step-field-config';
+import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../../data/signoff-type-forms';
 import { procedures, gwpOptionsForMaterials, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,

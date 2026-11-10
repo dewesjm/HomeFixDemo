@@ -1,4 +1,5 @@
-import { COMMENTS_KEY, DECISION_KEY, DEFAULT_TYPE_DEFINITIONS, TYPE_KEY, definitionFields, definitionId, getActivationForStep, hasStepActivation } from './step-field-config';
+import { COMMENTS_KEY, DECISION_KEY, DEFAULT_TYPE_DEFINITIONS, TYPE_KEY } from '../../data/signoff-type-forms';
+import { definitionFields, definitionId, getActivationForStep, hasStepActivation } from './signoff-type-form-rules';
 describe('signoff section fields (Type, Inspection Results, Comments)', () => {
   it('Inspection Results is one of the definition fields', () => {
     expect(definitionFields([{ key: 'a' }, { key: DECISION_KEY }])).toEqual([{ key: 'a' }, { key: DECISION_KEY }]);

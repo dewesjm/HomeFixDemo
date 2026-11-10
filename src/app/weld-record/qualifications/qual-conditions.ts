@@ -11,7 +11,7 @@
      check always runs as SELF, the testing entry: give SELF quals to test with. Named people are
      how it would look with real users.
    This is the only place quals are required or held. */
-import { stepFieldConfigVersion } from '../signoff-definition/step-field-config';
+import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { computed, signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 import { Job } from '../../data/jobs';

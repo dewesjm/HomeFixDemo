@@ -1,6 +1,6 @@
 /* One resolver builds ordinary inserted work for execution, seeds and preview. */
 import { RoutingConfigurationError } from './routing-configuration-error';
-import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { getStepFieldConfig } from '../../../data/signoff-type-forms';
 import { Job } from '../../../data/jobs';
 import { WorkflowStage, StageTemplate } from '../../model/workflow-types';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-type-routing-rules';

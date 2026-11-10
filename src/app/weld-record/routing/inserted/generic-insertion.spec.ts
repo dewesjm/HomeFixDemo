@@ -12,7 +12,7 @@ import { activeStage } from '../current-routing';
 import { addStageTemplate, getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypeRoutingRows, setSignoffTypeRoutingRows } from '../../../data/signoff-type-routing';
 import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
-import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../signoff-definition/step-field-config';
+import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../../data/signoff-type-forms';
 import { routeBack } from '../on-signoff/route-changes';
 import { insertionTarget } from './instance-identity';
 import { newWorkflow } from '../build-stages';

@@ -7,7 +7,7 @@
    verify-grid rows says what they're checked against. Conditions are AND/OR groups
    (field-condition-editor, condition-group-editor; their edits are written back by
    definition-edits.ts); the Layout list is definition-layout-list. Add's list is the Types; picking
-   one that already has a definition edits it. Stored by step-field-config.ts. */
+   one that already has a definition edits it. Stored by data/signoff-type-forms.ts. */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { formFieldValues } from '../../catalogs/field-choices';
 import { CommonModule } from '@angular/common';
@@ -24,17 +24,10 @@ import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
 import {
-  DEFAULT_TYPE_DEFINITIONS,
-  TypeDefinition,
-  FieldActivation,
-  getStepFieldConfig,
-  setStepFieldConfig,
-  resetStepFieldConfig,
-  getActivationForStep,
-  DECISION_KEY,
-  definitionFields,
-  type VerifyAgainst,
-} from '../../signoff-definition/step-field-config';
+  DEFAULT_TYPE_DEFINITIONS, TypeDefinition, FieldActivation, getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig,
+  DECISION_KEY, type VerifyAgainst,
+} from '../../../data/signoff-type-forms';
+import { getActivationForStep, definitionFields } from '../../signoff-definition/signoff-type-form-rules';
 import { FORM_FIELDS, catalogFieldTypeLabel, isVerifyRow, lookupCatalogField } from '../../catalogs/field-catalog';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import {

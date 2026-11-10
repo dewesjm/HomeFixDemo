@@ -5,7 +5,7 @@ import { getTemplates } from '../routing/routing-settings-rules';
 import { conditionsMatch } from '../conditions/joint-conditions';
 import { stageConditionFields, stepAnswerFieldsBefore } from '../catalogs/field-choices';
 import { conditionFields } from '../qualifications/qual-conditions';
-import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';
+import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { formInputFields, formSignoffFields } from './form-fields';
 import { visibleSignoffFields } from './shown-fields';
 import { snapshotInputs } from './stage-display';

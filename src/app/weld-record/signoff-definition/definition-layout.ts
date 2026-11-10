@@ -1,8 +1,8 @@
 /* How a step's form is laid out from its Signoff Type Form: the items in line-number order,
    fields with the same line number side by side, split by headings (a heading can start a box).
    Type, Comments, References and Inspection Results are laid out like fields. Fields on a line share its width. */
-import type { FieldActivation } from './step-field-config';
-import { DECISION_KEY, isHeadingItem } from './step-field-config';
+import { DECISION_KEY, type FieldActivation } from '../../data/signoff-type-forms';
+import { isHeadingItem } from './signoff-type-form-rules';
 import { isVerifyRow } from '../catalogs/field-catalog';
 
 type LayoutPart = { kind: 'heading'; text: string } | { kind: 'line'; keys: string[] };

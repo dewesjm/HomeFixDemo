@@ -1,5 +1,5 @@
 import { isRoutingLockedField, isDefinitionLockedField, definitionFieldNote, hasDecision, unsatWithoutRejectTarget, showsType, inspectionTypeRequired } from './stage-rules';
-import { resetStepFieldConfig, setStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from './step-field-config';
+import { resetStepFieldConfig, setStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 
 describe('stage rules', () => {
   it('Release to welding and Defer Tack stay locked for Correct but can come off a definition', () => {

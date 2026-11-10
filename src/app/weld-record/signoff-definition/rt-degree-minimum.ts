@@ -5,7 +5,7 @@ import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { baseStepId } from '../routing/routing-ids';
 import { rtDegrees } from '../routing/ndt';
-import { fieldActivation } from './step-field-config';
+import { fieldActivation } from './signoff-type-form-rules';
 
 function jointRtDegree(job: Job | undefined, stageId: string): string {
   const phase = /^(root|final)-ndt-/.exec(baseStepId(stageId))?.[1];

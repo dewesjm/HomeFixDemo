@@ -5,7 +5,7 @@ import { newWorkflow } from '../routing/build-stages';
 import { routeSignoff } from '../routing/on-signoff/signoff-routing';
 import '../routing/routing-settings-rules';
 import { buildConditionContext } from './condition-context';
-import { FieldActivation, TypeDefinition, getStepFieldConfig, setStepFieldConfig } from './step-field-config';
+import { FieldActivation, TypeDefinition, getStepFieldConfig, setStepFieldConfig } from '../../data/signoff-type-forms';
 import { hasBuiltInShowRule, hasFixedRules } from './field-rules';
 import { drawnFieldRule, visibleSignoffFields, withoutHiddenAnswers } from './shown-fields';
 
