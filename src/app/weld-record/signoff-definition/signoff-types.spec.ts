@@ -4,7 +4,7 @@ import { STORAGE } from '../../data/storage-keys';
 import { excavationNdtStage, nextRepairStage } from '../routing/inserted/added-routings';
 import { getSignoffTypeRows, setSignoffTypeRows, signoffTypeOptions, usesReturningInspectionType } from './signoff-types';
 import { initialInspectionType, inspectionTypeRequired } from './stage-rules';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from './routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../data/routing-signoff-types';
 
 describe('Signoff Type to Routing', () => {
   it('retains return context when an exception condition needs the performed inspection Type', () => {

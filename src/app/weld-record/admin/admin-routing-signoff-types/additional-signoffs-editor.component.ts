@@ -2,7 +2,7 @@
    which Type, and when). */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdditionalSignoff, getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { AdditionalSignoff, getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { FORM_FIELDS } from '../../catalogs/field-catalog';
 import { formFieldValues } from '../../catalogs/field-choices';
 import { ConditionGroupEditorComponent } from '../admin-signoff-type-definition/condition-group-editor.component';

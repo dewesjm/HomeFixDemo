@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { AdminRoutingSignoffTypesComponent } from './admin-routing-signoff-types.component';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 
 describe('Signoff Types settings', () => {
   afterEach(() => { localStorage.clear(); setRoutingSignoffTypes(getRoutingSignoffTypes()); });

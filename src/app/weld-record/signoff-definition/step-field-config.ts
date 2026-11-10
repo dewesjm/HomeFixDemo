@@ -10,7 +10,7 @@ import { type FieldFill } from '../catalogs/field-catalog';
 import type { WorkflowStage } from '../model/workflow-types';
 import { FILLER_KEYS } from './weld-fields';
 import { signoffTypeOptions } from './signoff-types';
-import { WELD_BUILDUP_TYPE } from './routing-signoff-types';
+import { WELD_BUILDUP_TYPE } from '../../data/routing-signoff-types';
 import { isExcavationNdtStageId } from '../routing/routing-ids';
 
 /* One activated field within a step; absent conditions fall back to the catalog defaults */

@@ -11,7 +11,7 @@ import { StageTemplate, WorkflowStage } from '../../model/workflow-types';
 import { activeStage } from '../current-routing';
 import { addStageTemplate, getTemplates, updateStageTemplate } from '../routing-settings-rules';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getStepFieldConfig, resetStepFieldConfig, setStepFieldConfig } from '../../signoff-definition/step-field-config';
 import { routeBack } from '../on-signoff/route-changes';
 import { insertionTarget } from './instance-identity';

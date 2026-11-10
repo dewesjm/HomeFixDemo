@@ -9,7 +9,7 @@ import { addStageTemplate, updateStageTemplate, isAddedTemplateId, deleteStageTe
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import { buildStages } from '../../routing/build-stages';
 import { JOBS } from '../../../data/jobs';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 
 describe('Routing Settings rules editor', () => {
   it('shows the seeded Pre-Fit description with older saved settings and preserves an explicitly cleared description', fakeAsync(() => {

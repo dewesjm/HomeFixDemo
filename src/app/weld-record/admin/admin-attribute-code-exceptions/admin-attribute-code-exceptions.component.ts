@@ -14,7 +14,7 @@ import { downloadCsv } from '../../../shared/export-csv';
 import { PROGRESSION_ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { ConditionRule } from '../../routing/routing-conditions';
-import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
 import {
   AccessibleAnswer, AttributeCodeException, getAttributeCodeExceptions, setAttributeCodeExceptions,

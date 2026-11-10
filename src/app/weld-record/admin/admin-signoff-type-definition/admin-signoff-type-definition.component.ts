@@ -56,7 +56,7 @@ import {
   fillRuleText,
 } from '../../signoff-definition/field-rules';
 import { signoffTypeOptions } from '../../signoff-definition/signoff-types';
-import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { isDefinitionLockedField } from '../../signoff-definition/stage-rules';
 import { drawnByOwnForm } from '../../signoff-definition/signoff-parts';
 import { fieldRuleLines } from '../../signoff-definition/field-rule-lines';

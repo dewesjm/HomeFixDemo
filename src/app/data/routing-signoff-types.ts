@@ -1,8 +1,8 @@
 /* Admin > Signoff Types: every Type a step can be signed as. A Type is added here first, then
    offered on steps (Admin > Signoff Type to Routing) and given its fields (Admin > Signoff Type
    Forms, one definition per Type, matched by its value). Stored in localStorage. */
-import { STORAGE } from '../../data/storage-keys';
-import { FieldCondition } from './field-conditions';
+import { STORAGE } from './storage-keys';
+import { FieldCondition } from '../weld-record/signoff-definition/field-conditions';
 
 export interface AdditionalSignoff {
   stepId: string;

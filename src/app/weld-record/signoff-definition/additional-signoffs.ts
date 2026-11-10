@@ -1,7 +1,7 @@
 /* Additional routings signed by the same signoff, without skipping intervening work. */
 import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
-import { routingSignoffType } from './routing-signoff-types';
+import { routingSignoffType } from '../../data/routing-signoff-types';
 import { evaluateCondition } from './field-conditions';
 import { buildConditionContext } from './condition-context';
 import { signoffTypeOptions } from './signoff-types';

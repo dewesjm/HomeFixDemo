@@ -8,7 +8,7 @@ import { StageOption } from '../model/workflow-types';
 import { ConditionRule, conditionsMatch } from '../routing/routing-conditions';
 import { NDT_KINDS } from '../routing/ndt';
 import { PHASE_NDT_KINDS, isExcavationNdtStageId, isRepairStageId, nqcStepId } from '../routing/routing-ids';
-import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from './routing-signoff-types';
+import { WELD_BUILDUP_TYPE, getRoutingSignoffTypes, routingSignoffTypesVersion } from '../../data/routing-signoff-types';
 
 /* one Type a step offers, by its Signoff Types value */
 export interface AvailableType {

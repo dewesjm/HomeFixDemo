@@ -9,7 +9,7 @@
    - Qualifications and Advanced Search: allStepAnswerFields
    - Attribute Code Exceptions: exceptionConditionFields, built from these */
 import { Job } from '../../data/jobs';
-import { getRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes } from '../../data/routing-signoff-types';
 import { isExcavationNdtStageId, isRepairStageId } from '../routing/routing-ids';
 import { ConditionCatalogField, FIELD_CATALOG, FORM_FIELDS, RuleEntry, StageAnswers } from './field-catalog';
 

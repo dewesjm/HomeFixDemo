@@ -4,7 +4,7 @@ import { Component, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LucidePlus, LucidePencil, LucideCheck, LucideX, LucideTrash2, LucideArrowUp, LucideArrowDown, LucideGripVertical } from '@lucide/angular';
 import { getSignoffTypeRows, setSignoffTypeRows, typeSourceLabel } from '../../signoff-definition/signoff-types';
-import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getTemplates } from '../../routing/routing-settings-rules';
 import { TypeEnableConditionsComponent } from './type-enable-conditions.component';
 import { TypeException, typeExceptionCondition } from '../../signoff-definition/type-exceptions';

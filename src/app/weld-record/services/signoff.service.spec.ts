@@ -9,7 +9,7 @@ import { discardUnsignedEdits } from '../routing/on-signoff/route-changes';
 import { routingBarSteps } from '../routing-bar/routing-bar-steps';
 import { seededWorkflow } from '../../data/seeded-workflow';
 import { updateStageTemplate } from '../routing/routing-settings-rules';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../data/routing-signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
 
 /* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:

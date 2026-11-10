@@ -155,8 +155,8 @@ src/app/
       preview/             route-preview (the demo "On signoff, this routes to" line), signed-flag-reasons
     signoff-definition/    What each routing's sign-off shows, requires and locks (Admin > Routing Signoff
                            Types / Signoff Type to Routing / Signoff Type Forms):
-                           routing-signoff-types (the Types), additional-signoffs (other routings a Type also
-                           signs), signoff-types (which routings offer which),
+                           additional-signoffs (other routings a Type also signs; the Types themselves are
+                           data/routing-signoff-types), signoff-types (which routings offer which),
                            step-field-config (one definition per Type, defaults, localStorage), field-rules,
                            field-rule-lines, field-conditions, condition-context, stage-property-keys, field-fill,
                            field-locks, shown-fields, definition-layout, signoff-parts, stage-rules,
@@ -326,6 +326,8 @@ src/app/
                          starting Included when / Reject routes to / Then go to rules, and the added routings
                          (Repair, Excavation NDT, Engineering Hold)
     routing-settings.ts  Routing Settings rows: starting rows with saved changes applied, and saving them
+    routing-signoff-types.ts  Admin > Signoff Types rows: every Type (name, stored value, Signs routing, also signs),
+                         the starting Types, load/save and lookup by value
     assignments.ts       Assignment model + seeded generator (36)
     people.ts            Mock people directory (id, first, last, title), searchPeople(), stampWho(); one source for all seeded names
     weld-assignment.ts   Stand-in for the external system that sets GWP / WTN / Filler Metal (see "External assignment")
@@ -488,7 +490,7 @@ Records Review is exactly one of two stages, chosen by `buildStages()` (`weld-re
   - UNSAT on a routing with no reject target is a sign error (`unsatWithoutRejectTarget()`, "UNSAT needs a Reject routes to target in Admin > Routing Settings").
   - Seeds tick Type on the Types whose routing showed a Type droplist (not Pre-Fit, Fit-Up Insp, Fit-Up Release, Records Review or Sold), Inspection Results on Types whose routing has a reject target, and Comments everywhere but Sold.
 - **Comments**: one optional Comments box: the catalog's `comments` field, on a form when its Signoff Type's definition lists it, following Show when, Disabled when and Required like any other field. It's saved in `signoffInputs.comments`.
-- **Types**: Admin > Signoff Types (`weld-record/signoff-definition/routing-signoff-types.ts`) lists every Type (name, stored value, Signs routing); a Type is added there first. The Types named after a routing (Pre-Fit, Fit, Tack, Fit-Up Insp, Fit-Up Release, Repair, the Records Reviews, Sold) use that routing's id as their value, so rules keyed by routing id (`isRoutingLockedField()`, `drawnByOwnForm()`) read the same on the Type's definition. A routing is a status; its Types are what can be signed in it.
+- **Types**: Admin > Signoff Types (`data/routing-signoff-types.ts`) lists every Type (name, stored value, Signs routing); a Type is added there first. The Types named after a routing (Pre-Fit, Fit, Tack, Fit-Up Insp, Fit-Up Release, Repair, the Records Reviews, Sold) use that routing's id as their value, so rules keyed by routing id (`isRoutingLockedField()`, `drawnByOwnForm()`) read the same on the Type's definition. A routing is a status; its Types are what can be signed in it.
 - **Type dropdown** for stages with `typeOptions`, which come only from Admin > Signoff Type to Routing (`weld-record/signoff-definition/signoff-types.ts`): a seeded table the admin adds rows to and removes them from, each row naming the Types a routing offers (by value) and its default; `signoffTypeOptions()` joins them with their name and settings, leaving out a Type deleted from Signoff Types. A routing with no row has no Type. Every built-in routing has a row (the ones without a choice offer one Type, named after the routing).
   - Every Repair round reads the Repair row. Excavation NDT reads its configured Type source and ordered material exceptions on Signoff Type to Routing (`excavationTypeOptions()`); the default source is the rejecting inspection, with PT to 5X for either non-ferrous/austenitic member.
   - A routing whose options have **no default** starts **blank**, is required (`*`), and signing is blocked until chosen (`inspectionTypeRequired()` in `weld-record/signoff-definition/stage-rules.ts`), even with one option; a default pre-fills it.

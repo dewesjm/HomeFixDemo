@@ -1,7 +1,7 @@
 import { addedRoutingSetup } from './added-routing-configuration';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRows, setSignoffTypeRows } from '../../signoff-definition/signoff-types';
-import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getStepFieldConfig, setStepFieldConfig, resetStepFieldConfig } from '../../signoff-definition/step-field-config';
 
 describe('ordinary inserted routing setup', () => {

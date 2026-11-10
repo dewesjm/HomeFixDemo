@@ -665,7 +665,7 @@ Paths below are relative to `src/app/`. Direct spec means a sibling with the sam
 | [field-rule-lines.ts](src/app/weld-record/signoff-definition/field-rule-lines.ts) | Yes | 100% |
 | [field-rules.ts](src/app/weld-record/signoff-definition/field-rules.ts) | Yes | 96.05% |
 | [form-fields.ts](src/app/weld-record/signoff-definition/form-fields.ts) | Yes | 100% |
-| [routing-signoff-types.ts](src/app/weld-record/signoff-definition/routing-signoff-types.ts) | No | 80% |
+| [routing-signoff-types.ts](src/app/data/routing-signoff-types.ts) | No | 80% |
 | [shown-fields.ts](src/app/weld-record/signoff-definition/shown-fields.ts) | Yes | 100% |
 | [signoff-parts.ts](src/app/weld-record/signoff-definition/signoff-parts.ts) | Yes | 100% |
 | [signoff-types.ts](src/app/weld-record/signoff-definition/signoff-types.ts) | Yes | 93.33% |

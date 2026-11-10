@@ -2,7 +2,7 @@
 import { describeConditions } from '../routing-conditions';
 import { StageTemplate } from '../../model/workflow-types';
 import { getSignoffTypeRows } from '../../signoff-definition/signoff-types';
-import { getRoutingSignoffTypes } from '../../signoff-definition/routing-signoff-types';
+import { getRoutingSignoffTypes } from '../../../data/routing-signoff-types';
 import { getStepFieldConfig } from '../../signoff-definition/step-field-config';
 
 export function routingNameError(name: string, id: string, templates: StageTemplate[]): string {
