@@ -8,7 +8,7 @@ import {
   NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_DEGREE_OPTIONS, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS
 } from './jobs';
-import { CHARACTERISTIC_CODES } from './characteristics';
+import { ATTRIBUTE_CODES } from './attribute-codes';
 import { signal } from '@angular/core';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';
@@ -49,7 +49,7 @@ export const NDT_FIELDS = [
    Codes), same values as the weld record. Refit #/Repair # left out: the weld record's own steps set those.
    Ship isn't typed in: it follows the hull, same as the weld record. */
 type Opt = { label: string; value: string };
-const ATTR_CODE_OPTIONS: Opt[] = CHARACTERISTIC_CODES.map(c => ({ label: `${c.code} ${c.description}`, value: c.code }));
+const ATTR_CODE_OPTIONS: Opt[] = ATTRIBUTE_CODES.map(c => ({ label: `${c.code} ${c.description}`, value: c.code }));
 export type JointExtraKey =
   'ship' | 'nInd' | 'sequenceNumber' | 'engineeringNotes' |
   'mcl1' | 'mcl2' | 'joiningItem' | 'joinToItem' |
@@ -182,7 +182,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
 
     const hull = pick(HULLS);
     /* informational codes only, as in jobs.ts; progression codes appear only on the AC examples */
-    const attr = () => pick(CHARACTERISTIC_CODES.filter(c => /^\d+$/.test(c.code))).code;
+    const attr = () => pick(ATTRIBUTE_CODES.filter(c => /^\d+$/.test(c.code))).code;
     out.push({
       ...blankJointExtras(),
       id: i % 4 === 0 ? '' : makeId(i + 1),

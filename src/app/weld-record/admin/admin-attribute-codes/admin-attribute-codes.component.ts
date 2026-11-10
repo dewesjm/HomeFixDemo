@@ -1,4 +1,4 @@
-// Admin → Characteristic Codes: table-maintenance screen for the
+// Admin → Attribute Codes: table-maintenance screen for the
 // shared code → description lookup. Inline row editing via a per-row `editingId` signal.
 // in database memory only
 import { Component, computed, effect, inject, signal } from '@angular/core';
@@ -10,7 +10,7 @@ import { ToastService } from '../../../shared/toast.service';
 import { ConfirmService } from '../../../shared/confirm.service';
 import { TableState } from '../../../shared/table-state';
 import { downloadCsv } from '../../../shared/export-csv';
-import { CHARACTERISTIC_CODES } from '../../../data/characteristics';
+import { ATTRIBUTE_CODES } from '../../../data/attribute-codes';
 import { TableToolbarComponent } from '../../../shared/table-toolbar.component';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 
@@ -21,16 +21,16 @@ interface CodeRow {
 }
 
 @Component({
-  selector: 'app-admin-characteristics',
+  selector: 'app-admin-attribute-codes',
   standalone: true,
   imports: [TableToolbarComponent, SortHeaderComponent, 
     CommonModule, FormsModule,
     LucidePencil, LucideCheck, LucideX, LucideTrash2
   ],
-  templateUrl: './admin-characteristics.component.html'
+  templateUrl: './admin-attribute-codes.component.html'
 })
-export class AdminCharacteristicsComponent {
-  rows = signal<CodeRow[]>(CHARACTERISTIC_CODES.map(c => ({ id: c.code, code: c.code, description: c.description })));
+export class AdminAttributeCodesComponent {
+  rows = signal<CodeRow[]>(ATTRIBUTE_CODES.map(c => ({ id: c.code, code: c.code, description: c.description })));
 
   table = new TableState<CodeRow>(['code', 'description']);
   visibleRows = computed(() => this.table.sorted());
@@ -85,7 +85,7 @@ export class AdminCharacteristicsComponent {
   }
 
   exportCsv() {
-    downloadCsv('characteristic-codes', [
+    downloadCsv('attribute-codes', [
       { header: 'Code', value: (r: CodeRow) => r.code },
       { header: 'Description', value: (r: CodeRow) => r.description }
     ], this.visibleRows());

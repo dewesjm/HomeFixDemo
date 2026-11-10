@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { LucideInfo, LucideChevronDown, LucideChevronUp } from '@lucide/angular';
 import { Job, N_IND_MEANINGS } from '../../data/jobs';
 import { TooltipDirective } from '../../shared/tooltip.directive';
-import { characteristicLabel } from '../../data/characteristics';
+import { attributeCodeLabel } from '../../data/attribute-codes';
 import { jointDetailsUt, jointDetailsVt } from './joint-details-values';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { jointAttributeCodes } from '../attribute-codes/attribute-context';
@@ -22,7 +22,7 @@ export class JointDetailsComponent {
   showAudit = signal(false);
   labels = NDT_LABELS;
   attributeCodes = () => jointAttributeCodes(this.job());
-  attributeMessage = characteristicLabel;
+  attributeMessage = attributeCodeLabel;
 
   nIndTooltip(): string {
     return N_IND_MEANINGS[this.job().nInd] ?? '';
@@ -31,7 +31,7 @@ export class JointDetailsComponent {
   /* "AB123 Description" when the code is known, otherwise just the bare code */
   attrCodeDisplay(code: string): string {
     if (!code) return '';
-    const desc = characteristicLabel(code);
+    const desc = attributeCodeLabel(code);
     return desc ? `${code} ${desc}` : code;
   }
 

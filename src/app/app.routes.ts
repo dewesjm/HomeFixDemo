@@ -10,7 +10,7 @@ import { WorkHistoryComponent } from './weld-record/work-history/work-history.co
 import { AdaptiveSearchComponent } from './weld-record/adaptive-search/adaptive-search.component';
 import { JointPageComponent } from './weld-record/joint-page/joint-page.component';
 import { AdminRoutingComponent } from './weld-record/admin/admin-routing/admin-routing.component';
-import { AdminCharacteristicsComponent } from './weld-record/admin/admin-characteristics/admin-characteristics.component';
+import { AdminAttributeCodesComponent } from './weld-record/admin/admin-attribute-codes/admin-attribute-codes.component';
 import { AdminAttributeCodeExceptionsComponent } from './weld-record/admin/admin-attribute-code-exceptions/admin-attribute-code-exceptions.component';
 import { AdminRoutingOverrideComponent } from './weld-record/admin/admin-routing-override/admin-routing-override.component';
 import { AdminPenetrantTypesComponent } from './weld-record/admin/admin-penetrant-types/admin-penetrant-types.component';
@@ -65,7 +65,7 @@ export const routes: Routes = [
   { path: 'makeup', component: MakeupComponent, title: 'EWR - Makeup' },
   { path: 'admin/routing', component: AdminRoutingComponent, title: 'EWR - Routing Settings' },
   /* not in the menu: attribute codes are another system's; the table is kept for code -> description */
-  { path: 'admin/characteristics', component: AdminCharacteristicsComponent, title: 'EWR - Attribute Codes' },
+  { path: 'admin/attribute-codes', component: AdminAttributeCodesComponent, title: 'EWR - Attribute Codes' },
   { path: 'admin/attribute-code-exceptions', component: AdminAttributeCodeExceptionsComponent, title: 'EWR - Attribute Code Exceptions' },
   { path: 'admin/routing-override', component: AdminRoutingOverrideComponent, title: 'EWR - Routing Override' },
   { path: 'admin/penetrant-types', component: AdminPenetrantTypesComponent, title: 'EWR - Penetrant Types' },
