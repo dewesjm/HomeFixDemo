@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job, JOBS } from '../../data/jobs';
+import { Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { RoutingService } from './routing.service';
 import { WorkflowStore } from './workflow-store.service';
@@ -12,12 +12,12 @@ import { updateStageTemplate } from '../routing/stage-templates';
 import { getRoutingSignoffTypes, setRoutingSignoffTypes } from '../signoff-definition/routing-signoff-types';
 import { typeValues } from '../signoff-definition/stage-rules';
 
-/* addTestJob() with these overrides yields a minimal, deterministic Welding pipeline:
+/* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:
    N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
    root-weld, root-layer, final-weld, review-o04, sold — plus a VT step per phase (NDT Root/Each/Final blank counts as VT only) unless noted. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
-  const job = addTestJob();
-  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: 'C-18', sfff: '', dssAaa: '', ss: '', ...overrides });
+  const job = { ...JOBS[0], id: 'signoff-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
+  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', rtRoot: '', rtFinal: '', ut: '', jointDesign: 'C-18', sfff: '', dssAaa: '', ss: '', ...overrides });
   return job;
 }
 

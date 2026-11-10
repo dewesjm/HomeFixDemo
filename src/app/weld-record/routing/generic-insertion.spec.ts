@@ -2,7 +2,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angul
 import { JointPageComponent } from '../joint-page/joint-page.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
-import { JOBS, addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
@@ -41,7 +41,8 @@ describe('Ordinary insertion execution and preview', () => {
     TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ hull: job.hull, drawing: job.drawing, joint: job.joint }), queryParamMap: convertToParamMap({}) } }) }] });
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
-    job = Object.assign(addTestJob(), { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', refitNumber: '', repairNumber: '' });
+    job = Object.assign({ ...JOBS[0], id: 'insertion-test', joint: 'IN-00001', _fresh: true }, { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', sfff: '', dssAaa: '', ss: '', refitNumber: '', repairNumber: '' });
+    JOBS.push(job);
     setRoutingSignoffTypes([...getRoutingSignoffTypes(), { value: 'extra-type', label: 'Extra check' }]);
     setStepFieldConfig([...getStepFieldConfig(), { typeId: 'extra-type', fields: [{ key: 'comments' }] }]);
     store.update(job, () => newWorkflow(job));

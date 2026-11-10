@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { ReferenceService } from './reference.service';
 import { WorkflowStore } from './workflow-store.service';
 
@@ -13,7 +13,7 @@ describe('ReferenceService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(ReferenceService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob();
+    job = { ...JOBS[0], id: 'reference-test', _fresh: true, nInd: '1' };
   });
 
   afterEach(() => localStorage.clear());

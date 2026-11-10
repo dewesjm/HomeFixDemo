@@ -312,8 +312,8 @@ src/app/
   data/                   Seed data and stored lookup tables only: the app's stand-in for a backend. Each
                           file is records, their model, and load/save (localStorage); rules that use them
                           live in the feature folders above.
-    jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), makeShip(),
-                         addTestJob(); exports MATERIAL_TYPES (base metal codes) reused by
+    jobs.ts              Job model + seeded generator (480 jobs), makeJobId(), makeHull(), makeShip();
+                         exports MATERIAL_TYPES (base metal codes) reused by
                          Weld Engineering's procedures.ts for baseMetal1Type/baseMetal2Type
     seeded-workflow.ts, seed-fabrication.ts   Each job's workflow with a deterministic run of routings already signed
     welding-steps.ts     The built-in Welding routings, in order (Admin > Routing Settings edits merge onto these)
@@ -767,7 +767,7 @@ Job records aren't persisted, so `WorkflowStore.load()` copies `refitNumber`/`re
 - **MIC** values are hyphenated codes such as `250C-1500-290-5` (`seededMic`).
 - **Material Type 1/2 codes** (`MATERIAL_TYPES`, `jobs.ts`) — one `NN-LETTERS` numbering scheme (`02-CS`, `12-SS304`, `65-CUNI`, ...), not real AISI/AWS designations: `NN` groups by family and is shared across both lists (1x = stainless, 6x = nonferrous) so a base metal and its typical filler read as part of one system; the letters stay recognizable (real alloy chemistry/grade abbreviations) rather than reusing raw industry codes.
   - `material-classification.ts`'s `DEFAULT_ENTRIES` uses the same codes (keep the two matching); Weld Planning reads `MATERIAL_TYPES` directly (`data/weld-planning.ts`, `weld-planning-form.component.ts`).
-- **Trades** — Welding is the only trade. `getTemplates()` ignores other trades in a save, and reads back only the settings Routing Settings offers (`deserializeStage()`), so a setting no longer offered drops out. `addTestJob()` makes a blank Welding job (N Ind. 1, routing starts at Pre-Fit). `Job.trade` (always `'Welding'`) and the templates/Admin > Routing Settings rows keyed by trade (`Welding:<stageId>`) are kept so saved admin settings keep loading; removing them means a storage reset.
+- **Trades** — Welding is the only trade. `getTemplates()` ignores other trades in a save, and reads back only the settings Routing Settings offers (`deserializeStage()`), so a setting no longer offered drops out. `Job.trade` (always `'Welding'`) and the templates/Admin > Routing Settings rows keyed by trade (`Welding:<stageId>`) are kept so saved admin settings keep loading; removing them means a storage reset.
 - **Work package** — `Hull-Compartment-Detail`, e.g. `S7234-FWD-D03` (`workPackageFor()` in `jobs.ts`; compartments FWD/MID/AFT/ENG/CGO/HAB, details D01–D12).
 - **Fit-Up Release** routes to role **Foreman**. A handful of seeded jobs (about 7 of 480) sit at this stage awaiting a Foreman: Fit-Up Insp is signed with "Release to welding" unchecked, so Fit-Up Release is required and is the job's current routing. The Pipe Welding role filter checks the first unsigned **required** stage (the same rule as `currentRoutingLabel` / `activeStageId`), not just the first unsigned stage.
 - **Deferred Tack** — its own routing and its own Signoff Type (`deferred-tack`, with its own definition seeded with Tack's fields); same behavior as Tack (welding fields in `signoff-definition/weld-fields.ts`, WTN overrides, weld-card layout). It sits after Fit-Up Release, is included when Fit signs with Defer Tack = yes (its Included when), and its Display Name is Tack, so the joint and routing bar show Tack while its Type records that it was deferred.

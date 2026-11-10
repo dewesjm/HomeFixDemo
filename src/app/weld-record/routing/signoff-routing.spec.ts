@@ -1,5 +1,5 @@
 import { originalInspectionType, performedInspectionType } from './inspection-context';
-import { addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { routeSignoff } from './signoff-routing';
 import { newWorkflow } from './build-stages';
@@ -15,7 +15,7 @@ describe('Inserted routing table decisions', () => {
   beforeEach(() => {
     localStorage.clear();
     setSignoffTypeRows(getSignoffTypeRows());
-    job = Object.assign(addTestJob(), { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS' });
+    job = Object.assign({ ...JOBS[0], id: 'signoff-routing-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS' });
     wf = newWorkflow(job);
   });
   afterEach(() => { localStorage.clear(); setSignoffTypeRows(getSignoffTypeRows()); resetStepFieldConfig(); });

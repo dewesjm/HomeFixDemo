@@ -1,13 +1,13 @@
 import { buildStages } from '../../routing/build-stages';
 import { WorkflowStage } from '../../model/workflow-types';
-import { addTestJob } from '../../../data/jobs';
+import { JOBS } from '../../../data/jobs';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import { detectDeviations, isActualOutOfRange } from './deviations';
 
 /* a Tack stage on the first seeded WPS that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
   const proc = procedures().find(p => p.fillerMetalTypes.length < FILLER_METAL_TYPE_OPTIONS.length)!;
-  const tack = buildStages(addTestJob()).find(s => s.id === 'tack')!;
+  const tack = buildStages({ ...JOBS[0], nInd: '1' }).find(s => s.id === 'tack')!;
   const stage: WorkflowStage = {
     ...tack,
     inputs: { weldProcedure: proc.gwp, wtn: proc.wtn, phMin: '50', phMax: '300', ipMin: '50', ipMax: '300', ...extra },
@@ -76,7 +76,7 @@ describe('deviations', () => {
   });
 
   it('checks condition quals on a welding step with no WPS picked and on an inspection step showing the check', () => {
-    const job = { ...addTestJob(), nInd: '3' };
+    const job = { ...JOBS[0], nInd: '3' };
     const tack = buildStages(job).find(s => s.id === 'tack')!;
     const req = [{ op: 'all' as const, items: ['CNTRLMTL1'] }];
     expect(detectDeviations(tack, ALL_VISIBLE, [], undefined, req))

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob } from '../../data/jobs';
+import { JOBS } from '../../data/jobs';
 import { ForemanOverrideService } from './foreman-override.service';
 import { DeviationService } from './deviation.service';
 import { WorkflowStore } from './workflow-store.service';
@@ -18,7 +18,7 @@ describe('ForemanOverrideService', () => {
   afterEach(() => localStorage.clear());
 
   it('logs the override and its off-list values to history without holding the joint', () => {
-    const job = addTestJob();
+    const job = { ...JOBS[0], id: 'foreman-test', _fresh: true, nInd: '1' };
     service.record(job, 'tack', ['Used a different GWP'], [{ kind: 'off-list', label: 'GWP', entered: 'X1', required: 'A1, A2' }]);
     const wf = store.workflowFor(job)();
     const h = wf.history.at(-1)!;
@@ -31,7 +31,7 @@ describe('ForemanOverrideService', () => {
   });
 
   it('records nothing when there are no overrides', () => {
-    const job = addTestJob();
+    const job = { ...JOBS[0], id: 'foreman-test', _fresh: true, nInd: '1' };
     const before = store.workflowFor(job)().history.length;
     service.record(job, 'tack', [], []);
     expect(store.workflowFor(job)().history.length).toBe(before);

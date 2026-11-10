@@ -2,7 +2,7 @@ import { seededWorkflow } from './seeded-workflow';
 import { activeStageId } from '../weld-record/routing/current-routing';
 import { JOBS } from './jobs';
 
-/* joints the app seeds: addTestJob() joints share JOBS, so including them depends on test order */
+/* joints seeded partway through their routing; the attribute demo joints start fresh */
 const seededJobs = () => JOBS.filter(j => !j._fresh);
 
 describe('seeded joints', () => {

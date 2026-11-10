@@ -1,6 +1,6 @@
 import { FormField } from '../catalogs/field-catalog';
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 
 import { activeStageId } from '../routing/current-routing';
 import { RoutingService } from './routing.service';
@@ -16,7 +16,7 @@ describe('RoutingService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(RoutingService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob();   // routing starts Pre-Fit, then Fit
+    job = { ...JOBS[0], id: 'routing-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };   // routing starts Pre-Fit, then Fit
   });
 
   afterEach(() => localStorage.clear());

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job, JOBS } from '../../data/jobs';
+import { Job, JOBS } from '../../data/jobs';
 import { SignoffService } from './signoff.service';
 import { DeviationService } from './deviation.service';
 import { RoutingService } from './routing.service';
@@ -9,12 +9,12 @@ import { seededWorkflow } from '../../data/seeded-workflow';
 import { DeviationItem } from '../model/workflow-types';
 
 function weldingJob(): Job {
-  const job = addTestJob();
+  const job = { ...JOBS[0], id: 'deviation-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
   Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
   return job;
 }
 
-/* joints the app seeds: addTestJob() joints share JOBS, so counting them depends on test order */
+/* joints seeded partway through their routing; the attribute demo joints start fresh */
 const seededJobs = () => JOBS.filter(j => !j._fresh);
 
 const ITEM: DeviationItem = { kind: 'out-of-range', label: 'Actual PH Max', entered: '140', required: '50 to 125' };
@@ -33,7 +33,7 @@ describe('DeviationService', () => {
   afterEach(() => localStorage.clear());
 
   it('records an open deviation, logs it to history and holds the joint', () => {
-    const job = addTestJob();
+    const job = { ...JOBS[0], id: 'deviation-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
     expect(service.openDeviations(store.workflowFor(job)())).toEqual([]);
     service.record(job, 'tack', [{ kind: 'out-of-range', label: 'Actual PH Min', entered: '40', required: '50 to 300' }], 'Heater failed');
     const wf = store.workflowFor(job)();
@@ -45,7 +45,7 @@ describe('DeviationService', () => {
   });
 
   it('records nothing when there are no items', () => {
-    const job = addTestJob();
+    const job = { ...JOBS[0], id: 'deviation-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
     service.record(job, 'tack', [], 'n/a');
     expect(service.openDeviations(store.workflowFor(job)())).toEqual([]);
   });
@@ -157,7 +157,7 @@ describe('Engineering Hold from a reject rule (PT failure on a GTAW weld)', () =
   /* Root welded with `process`, then Root NDT MT/PT signed PT and UNSAT */
   /* an N Ind 1 joint, so this is the NQC row (it starts with the regular row's reject rules) */
   function ptFailure(process: string) {
-    const job = addTestJob();
+    const job = { ...JOBS[0], id: 'deviation-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
     Object.assign(job, { ndt: '', ndtRoot: 'PT', ndtEach: '', ndtFinal: '', jointDesign: '', sfff: '', dssAaa: '', ss: '' });
     store.update(job, wf => ({ ...wf, stages: wf.stages.map(s =>
       s.id === 'root-weld' ? { ...s, inputs: { ...s.inputs, weldProcess: process } }

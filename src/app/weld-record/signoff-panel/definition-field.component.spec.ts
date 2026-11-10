@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { DefinitionFieldComponent } from './definition-field.component';
 import { SignoffContext } from './signoff-context';
-import { addTestJob } from '../../data/jobs';
+import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { visibleSignoffFields } from '../signoff-definition/shown-fields';
 import { FormField } from '../catalogs/field-catalog';
@@ -9,7 +9,7 @@ import { WorkflowStage } from '../model/workflow-types';
 
 describe('Defer Tack control', () => {
   it('renders a checkbox and records yes or blank when toggled', () => {
-    const job = addTestJob();
+    const job = { ...JOBS[0], nInd: '1' };
     const fit = buildStages(job).find(s => s.id === 'fit')!;
     const field = visibleSignoffFields(fit, job, {}).find(f => f.key === 'deferTack')!;
     const ctx = { editable: () => true, fieldError: () => undefined,

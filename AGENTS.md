@@ -6,9 +6,8 @@ Read ARCHITECTURE.md first, and ROUTING.md for routing rules.
 
 ## Queued work (do in this order, one at a time; stop for review after each)
 
-1. Evaluate the app for leftovers and code that isn't needed; report findings before removing anything.
-2. Check that every file states its purpose at the top, and add it where it's missing.
-3. Review the size of `weld-record/routing/` and propose how to break it up.
+1. Check that every file states its purpose at the top, and add it where it's missing.
+2. Review the size of `weld-record/routing/` and propose how to break it up.
 
 Completed plans are references, not instructions to start another feature.
 

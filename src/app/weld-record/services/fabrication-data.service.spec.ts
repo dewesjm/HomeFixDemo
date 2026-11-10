@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { FabricationDataService } from './fabrication-data.service';
 import { WorkflowStore } from './workflow-store.service';
 import { setShipLocations } from '../../data/ship-locations';
@@ -14,7 +14,7 @@ describe('FabricationDataService', () => {
     TestBed.configureTestingModule({});
     service = TestBed.inject(FabricationDataService);
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob();
+    job = { ...JOBS[0], id: 'fabrication-test', _fresh: true, nInd: '1' };
   });
 
   afterEach(() => localStorage.clear());

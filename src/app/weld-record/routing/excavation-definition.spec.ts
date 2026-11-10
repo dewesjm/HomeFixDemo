@@ -1,6 +1,6 @@
 import { originalInspectionType } from './inspection-context';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
-import { addTestJob, JOBS, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { WorkflowStore } from '../services/workflow-store.service';
 import { SignoffService } from '../services/signoff.service';
 import { RoutingService } from '../services/routing.service';
@@ -44,8 +44,9 @@ describe('Configured regular and NQC Excavation', () => {
     setSignoffTypeRows(getSignoffTypeRows());
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
-    job = Object.assign(addTestJob(), { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '',
+    job = Object.assign({ ...JOBS[0], id: 'excavation-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: '', ndtFinal: '',
       materialType1: '12-SS304', materialType2: '02-CS', jointDesign: 'C-18', refitNumber: '', repairNumber: '' });
+    JOBS.push(job);
     store.update(job, () => newWorkflow(job));
   });
   afterEach(() => {

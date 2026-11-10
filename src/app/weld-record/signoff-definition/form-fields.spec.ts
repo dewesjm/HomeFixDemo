@@ -1,4 +1,4 @@
-import { addTestJob } from '../../data/jobs';
+import { JOBS } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { stageFromTemplate } from '../routing/added-steps';
 import { getTemplates } from '../routing/stage-templates';
@@ -12,7 +12,7 @@ import { snapshotInputs } from './stage-display';
 import { stageFieldErrors } from '../joint-page/rules/sign-validation';
 
 describe('Catalog and Type forms as the only field definitions', () => {
-  const job = () => Object.assign(addTestJob(), { nInd: '3' });
+  const job = () => ({ ...JOBS[0], nInd: '3' });
   afterEach(() => resetStepFieldConfig());
   it('never copies definitions onto new routings or templates', () => {
     for (const s of [...buildStages(job()), ...getTemplates()['Welding']]) {

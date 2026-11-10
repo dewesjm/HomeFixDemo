@@ -1,4 +1,4 @@
-import { addTestJob } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import '../routing/stage-templates';
 import {
   QualCondition, SELF, conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
@@ -11,6 +11,9 @@ const w = (field: string, value: string): WhenGroup => ({ op: 'all', items: [c(f
 const clause = (cond: Partial<WhenClause> & { field: string }): WhenGroup => ({ op: 'all', items: [{ op: 'is', values: [], ...cond }] });
 const REQ = { op: 'all' as const, items: ['TIWELD1'] };
 const VT = { inspectionType: 'vt' };
+
+/* a seeded joint with the fields these conditions read cleared */
+const BLANK_JOINT: Job = { ...JOBS[0], nInd: '1', ss: '', materialType1: '', materialType2: '', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' };
 
 describe('qual conditions', () => {
   let saved: QualCondition[];
@@ -26,7 +29,7 @@ describe('qual conditions', () => {
   });
 
   it('matches joint fields always and sign-off fields once the step has them', () => {
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     setQualConditions([
       { when: w('ss', job.ss === 'Yes' ? 'Yes' : 'No'), type: 'vt', require: { op: 'all', items: ['WELD412'] } },
       { when: w('step:wtn', '01.1-1'), type: 'vt', require: { op: 'any', items: ['WELD427', 'WELD403'] } },
@@ -43,7 +46,7 @@ describe('qual conditions', () => {
 
   it('matches Titanium from either Material Type', () => {
     setQualConditions([{ when: w('material.titanium', 'Yes'), type: 'vt', require: { op: 'all', items: ['TIWELD1'] } }]);
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     expect(conditionRequirements({ ...job, materialType1: '02-CS', materialType2: '61-TI64' }, VT).length).toBe(1);
     expect(conditionRequirements({ ...job, materialType1: '02-CS', materialType2: '02-CS' }, VT).length).toBe(0);
   });
@@ -56,7 +59,7 @@ describe('qual conditions', () => {
     ]);
     expect(heldQuals()).toEqual(['SSWELD1', 'VTINSP1']);
     expect(heldBy('Mike Rourke')).toEqual(['TIWELD1']);
-    expect(conditionRequirements(addTestJob(), VT)).toEqual([]);
+    expect(conditionRequirements(BLANK_JOINT, VT)).toEqual([]);
   });
 
   it('seeds SELF, one row per Signoff Type for controlled material, SS and titanium, and VT', () => {
@@ -69,7 +72,7 @@ describe('qual conditions', () => {
   });
 
   it('applies a row to its one Signoff Type, and an empty When then matches every joint of it', () => {
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     setQualConditions([
       { when: w('material.titanium', 'Yes'), type: 'vt', require: { op: 'all', items: ['TIWELD1'] } },
       { when: { op: 'all', items: [] }, type: 'rt', require: { op: 'all', items: ['WELD412'] } },
@@ -83,7 +86,7 @@ describe('qual conditions', () => {
   });
 
   it('matches a When of AND and OR clauses, with nested groups', () => {
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     setQualConditions([{
       when: { op: 'all', items: [
         c('step:inspectionType', 'vt'),
@@ -101,7 +104,7 @@ describe('qual conditions', () => {
 
   it('a row with no Signoff Type matches nothing', () => {
     setQualConditions([{ when: { op: 'all', items: [] }, require: { op: 'all', items: ['TIWELD1'] } }]);
-    expect(conditionRequirements(addTestJob(), { inspectionType: 'vt' })).toEqual([]);
+    expect(conditionRequirements(BLANK_JOINT, { inspectionType: 'vt' })).toEqual([]);
   });
 
   it('offers only fields on a form with a Qualification Check, plus WTN', () => {
@@ -116,7 +119,7 @@ describe('qual conditions', () => {
   });
 
   it('never matches a field off the check forms, whichever comparison it saved', () => {
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     for (const when of [w('step:verifyMcl1', 'No'), w('step:verifyMcl1', 'Yes'), clause({ field: 'step:verifyMcl1', op: 'isNot', values: ['Yes'] })]) {
       setQualConditions([{ when, type: 'vt', require: REQ }]);
       expect(conditionRequirements(job, { inspectionType: 'vt' })).toEqual([]);
@@ -126,7 +129,7 @@ describe('qual conditions', () => {
   });
 
   it('compares is, is not, several values and contains like Routing Settings', () => {
-    const job = { ...addTestJob(), nInd: '2', drawing: 'ABC-123' };
+    const job = { ...BLANK_JOINT, nInd: '2', drawing: 'ABC-123' };
     const matches = (when: WhenGroup) => { setQualConditions([{ when, type: 'vt', require: REQ }]); return conditionRequirements(job, VT).length === 1; };
     expect(matches(clause({ field: 'nInd', values: ['1', '2'] }))).toBeTrue();
     expect(matches(clause({ field: 'nInd', values: ['1', '3'] }))).toBeFalse();
@@ -142,7 +145,7 @@ describe('qual conditions', () => {
   });
 
   it('a sign-off field not filled in yet matches nothing, is not included', () => {
-    const job = addTestJob();
+    const job = BLANK_JOINT;
     setQualConditions([{ when: clause({ field: 'step:weldColor', op: 'isNot', values: ['straw'] }), type: 'vt', require: REQ }]);
     expect(conditionRequirements(job, { inspectionType: 'vt' })).toEqual([]);
     expect(conditionRequirements(job, { inspectionType: 'vt', inputs: { weldColor: 'light-blue' } }).length).toBe(1);
@@ -150,7 +153,7 @@ describe('qual conditions', () => {
   });
 
   it('matches any attribute code slot', () => {
-    const job = { ...addTestJob(), attributeCode1: 'GV', attributeCode2: 'PR' };
+    const job = { ...BLANK_JOINT, attributeCode1: 'GV', attributeCode2: 'PR' };
     setQualConditions([{ when: clause({ field: 'attributeCodes', values: ['PR'] }), type: 'vt', require: REQ }]);
     expect(conditionRequirements(job, VT).length).toBe(1);
   });

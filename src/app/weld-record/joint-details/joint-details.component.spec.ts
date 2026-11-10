@@ -1,11 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { addTestJob } from '../../data/jobs';
+import { JOBS } from '../../data/jobs';
 import { JointDetailsComponent } from './joint-details.component';
 
 describe('Joint details attribute messages', () => {
   it('exposes supplied messages on focusable badges and expanded details', () => {
     const fixture = TestBed.createComponent(JointDetailsComponent);
-    fixture.componentRef.setInput('job', { ...addTestJob(), attributeCode1: 'LR', attributeCode2: 'SI' });
+    fixture.componentRef.setInput('job', { ...JOBS[0], attributeCode1: 'LR', attributeCode2: 'SI', attributeCode3: '', attributeCode4: '' });
     fixture.componentRef.setInput('currentRouting', 'Fit');
     fixture.detectChanges();
     const badge = fixture.nativeElement.querySelector('[aria-label="Progression attributes"] [data-tip]') as HTMLElement;

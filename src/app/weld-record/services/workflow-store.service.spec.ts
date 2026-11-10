@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { STORAGE } from '../../data/storage-keys';
-import { addTestJob, Job } from '../../data/jobs';
+import { JOBS, Job } from '../../data/jobs';
 import { buildStages } from '../routing/build-stages';
 import { isFitupInspId } from '../routing/step-ids';
 import { WorkflowStore } from './workflow-store.service';
@@ -13,7 +13,7 @@ describe('WorkflowStore', () => {
     localStorage.clear();
     TestBed.configureTestingModule({});
     store = TestBed.inject(WorkflowStore);
-    job = addTestJob();
+    job = { ...JOBS[0], id: 'workflow-store-test', _fresh: true, nInd: '1' };
   });
 
   afterEach(() => localStorage.clear());

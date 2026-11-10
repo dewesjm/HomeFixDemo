@@ -16,10 +16,11 @@ Master index of outstanding requirements, gaps and ideas, audited against reposi
 Queued in AGENTS.md, in this order.
 
 - [x] **Remove old migrations:** every listed conversion removed; saved data reset with a version bump and new form and Qualifications storage keys.
-- [ ] **Leftovers evaluation:** a larger pass over the app for leftovers and code that isn't needed. Report findings before removing anything.
+- [x] **Leftovers evaluation:** dead code and the remaining saved-data conversions removed; `addTestJob` removed, specs copy a seeded joint.
 - [ ] **File purpose:** check that every file states its purpose at the top, and add it where it's missing.
 - [ ] **Routing folder size:** `weld-record/routing/` has grown very large. Review it and propose how to break it up.
 - [ ] **Remove `trade` (later, separate task, not queued in AGENTS.md):** Welding is the only trade, but `Job.trade` and the templates and Routing Settings rows keyed by trade remain (about 134 uses in 25 files). Removing it needs a storage reset.
+- [ ] **Review the .md files for leftovers:** go through the repo's Markdown docs for stale, completed or duplicated content. Report findings before removing anything. Not queued in AGENTS.md.
 
 ## Deferred testing packages
 
