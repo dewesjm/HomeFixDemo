@@ -46,8 +46,6 @@ const STATUS_ORDER: Record<GrantStatus, number> = { Active: 0, Upcoming: 1, Inac
 export class MakeupComponent {
   private messages = inject(ToastService);
   private confirm = inject(ConfirmService);
-  /* joke placeholder: page shows only "NO MIKE"; set false to restore the real page */
-  readonly noMike = false;
 
   grants = makeupGrants;
   today = new Date().toISOString().slice(0, 10);
