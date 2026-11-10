@@ -6,7 +6,7 @@ import { excavationNdtStageFor, insertEngineeringHold, nextRepairStage } from '.
 import { buildStages } from './build-stages';
 
 describe('Configured routing personas', () => {
-  const job = (nInd: string): Job => ({ ...JOBS[0], trade: 'Welding', nInd });
+  const job = (nInd: string): Job => ({ ...JOBS[0], nInd });
   afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
   beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); });
 
@@ -17,7 +17,7 @@ describe('Configured routing personas', () => {
     });
   }
   it('uses the first matching rule, falls back to the base persona, and supports removing all rules', () => {
-    updateStageTemplate('Welding', 'excavation-ndt', {
+    updateStageTemplate('excavation-ndt', {
       role: 'Foreman', roleRules: [
         { when: [{ field: 'nInd', op: 'is', values: ['3'] }], role: 'Engineering' },
         { when: [], role: 'Welding' },
@@ -25,7 +25,7 @@ describe('Configured routing personas', () => {
     });
     expect(excavationNdtStageFor(job('3'), 'pt', 'repair').role).toBe('Engineering');
     expect(routingRole(getAddedTemplate('excavation-ndt'), job('1'))).toBe('Welding');
-    updateStageTemplate('Welding', 'excavation-ndt', { roleRules: [] });
+    updateStageTemplate('excavation-ndt', { roleRules: [] });
     expect(getAddedTemplate('excavation-ndt').roleRules).toEqual([]);
     expect(excavationNdtStageFor(job('3'), 'pt', 'repair').role).toBe('Foreman');
     expect(routingRole({ id: 'custom', label: 'Custom', required: true }, job('1'))).toBe('');
@@ -33,7 +33,7 @@ describe('Configured routing personas', () => {
   it('applies persona rules to numbered and inserted routings without changing existing instances', () => {
     const existing = excavationNdtStageFor(job('1'), 'pt', 'repair');
     for (const id of ['nqc-excavation-ndt', 'repair', 'engineering-hold', 'tack']) {
-      updateStageTemplate('Welding', id, { roleRules: [{ when: [], role: 'Engineering' }] });
+      updateStageTemplate(id, { roleRules: [{ when: [], role: 'Engineering' }] });
     }
     expect(excavationNdtStageFor(job('1'), 'pt', 'repair-2').role).toBe('Engineering');
     expect(nextRepairStage([], job('1')).role).toBe('Engineering');

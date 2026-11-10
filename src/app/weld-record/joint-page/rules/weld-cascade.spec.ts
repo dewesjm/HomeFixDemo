@@ -9,7 +9,7 @@ import { getActivationForStep } from '../../signoff-definition/signoff-type-form
 import { procedures } from '../../../data/procedures';
 import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
-const job = JOBS.find(j => j.trade === 'Welding')!;
+const job = JOBS[0];
 const stageOf = (id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(job).find(s => s.id === id)!, ...change });
 const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;
 const asRecord = (changes: FieldChange[]) => Object.fromEntries(changes.map(c => [c.field.key, c.value]));

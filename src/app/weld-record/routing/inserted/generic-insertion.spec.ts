@@ -26,12 +26,12 @@ describe('Ordinary insertion execution and preview', () => {
   const current = () => activeStage(store.workflowFor(job)().stages)!;
   const wf = () => store.workflowFor(job)();
   function definition(id = 'extra', patch: Partial<StageTemplate> = {}) {
-    addStageTemplate('Welding', { id, label: id, classification: 'added', role: 'Inspector', ...patch, required: true });
+    addStageTemplate({ id, label: id, classification: 'added', role: 'Inspector', ...patch, required: true });
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'extra-type', default: true }] }]);
-    updateStageTemplate('Welding', id, { status: 'active' });
+    updateStageTemplate(id, { status: 'active' });
   }
   function rule(source: string, to: string) {
-    updateStageTemplate('Welding', source, { thenRules: [{ when: [], to }] });
+    updateStageTemplate(source, { thenRules: [{ when: [], to }] });
   }
   function sign(id = current().id) { expect(signoff.signStage(job, id)).toBeTrue(); }
   beforeEach(() => {
@@ -58,7 +58,7 @@ describe('Ordinary insertion execution and preview', () => {
   it('inserts only the first matching target with blank values, conditional persona and shared form', () => {
     definition('extra', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['3'] }], role: 'Foreman' }] });
     definition('other');
-    updateStageTemplate('Welding', 'pre-fit', { thenRules: [{ when: [], to: insertionTarget('extra') }, { when: [], to: insertionTarget('other') }] });
+    updateStageTemplate('pre-fit', { thenRules: [{ when: [], to: insertionTarget('extra') }, { when: [], to: insertionTarget('other') }] });
     expect(wf().stages.some(s => s.insertion)).toBeFalse();
     const preview = signoff.previewSignoff(wf(), job, 'pre-fit');
     expect(preview.target?.role).toBe('Foreman');
@@ -114,7 +114,7 @@ describe('Ordinary insertion execution and preview', () => {
     job.ndtRoot = 'PT';
     store.update(job, () => newWorkflow(job));
     definition();
-    updateStageTemplate('Welding', 'root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
+    updateStageTemplate('root-ndt-mtpt', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: [],
       typeSource: 'rejecting-inspection', typeExceptions: [{ from: 'pt', to: '5x' }] } : r));
     store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-mtpt'
@@ -139,11 +139,11 @@ describe('Ordinary insertion execution and preview', () => {
   for (const failure of ['inactive', 'applicability', 'types', 'missing']) {
     it(`blocks ${failure} targets before signing or writing History, consistently with preview`, () => {
       definition(); rule('pre-fit', insertionTarget('extra'));
-      if (failure === 'inactive') updateStageTemplate('Welding', 'extra', { status: 'inactive' });
-      if (failure === 'applicability') updateStageTemplate('Welding', 'extra', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
+      if (failure === 'inactive') updateStageTemplate('extra', { status: 'inactive' });
+      if (failure === 'applicability') updateStageTemplate('extra', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['1'] }]] });
       if (failure === 'types') setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().map(r => r.stepId === 'extra' ? { ...r, types: r.types.map(t => ({ ...t, enableWhen: [[{ field: 'nInd', op: 'is' as const, values: ['1'] }]] })) } : r));
       if (failure === 'missing') {
-        const templates = getTemplates()['Welding'];
+        const templates = getTemplates();
         templates.splice(templates.findIndex(t => t.id === 'extra'), 1);
       }
       const before = wf();
@@ -158,17 +158,17 @@ describe('Ordinary insertion execution and preview', () => {
     expect(() => rule('extra', insertionTarget('extra'))).toThrowError(/cycle/);
     rule('extra', insertionTarget('nested'));
     expect(() => rule('nested', insertionTarget('extra'))).toThrowError(/cycle/);
-    updateStageTemplate('Welding', 'nested', { thenRules: [{ when: [{ field: 'self.comments', op: 'is', values: ['repeat'] }], to: insertionTarget('extra') }] });
-    expect(getTemplates()['Welding'].find(t => t.id === 'nested')!.thenRules!.length).toBe(1);
+    updateStageTemplate('nested', { thenRules: [{ when: [{ field: 'self.comments', op: 'is', values: ['repeat'] }], to: insertionTarget('extra') }] });
+    expect(getTemplates().find(t => t.id === 'nested')!.thenRules!.length).toBe(1);
   });
 
   it('freezes open instance labels/personas/rules/Types, retaining stable references through rename/deactivation', () => {
     definition(); rule('pre-fit', insertionTarget('extra')); sign('pre-fit');
     const inserted = current();
-    updateStageTemplate('Welding', 'extra', { label: 'Renamed', role: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
+    updateStageTemplate('extra', { label: 'Renamed', role: 'Foreman', thenRules: [{ when: [], to: 'pre-fit' }], status: 'inactive' });
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows().filter(r => r.stepId !== 'extra'));
     expect(current()).toBe(inserted);
-    expect(getTemplates()['Welding'].find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
+    expect(getTemplates().find(t => t.id === 'pre-fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
     sign(); expect(current().id).toBe('fit');
   });
 
@@ -218,7 +218,7 @@ describe('Ordinary insertion execution and preview', () => {
 
   it('inserts on a reject rule and applies an ordinary rejected destination', () => {
     definition('extra', { rejectRules: [{ when: [], to: 'fit' }] });
-    updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
+    updateStageTemplate('root-ndt-vt5x', { rejectRulesEdited: true, rejectRules: [{ when: [], to: insertionTarget('extra') }] });
     store.update(job, w => ({ ...w, stages: w.stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, result: 'unsat', inspectionType: 'vt', signoffType: 'vt' } : s) }));
     const preview = signoff.previewSignoff(wf(), job, 'root-ndt-vt5x');
     sign('root-ndt-vt5x'); expect(current()).toEqual(preview.target!);
@@ -249,7 +249,7 @@ describe('Ordinary insertion execution and preview', () => {
   it('uses the same resolver for seed construction and execution', () => {
     definition();
     const source = wf().stages[0];
-    const seeded = resolveInsertion(getTemplates()['Welding'], wf().stages, job, source, insertionTarget('extra'));
+    const seeded = resolveInsertion(getTemplates(), wf().stages, job, source, insertionTarget('extra'));
     rule(source.id, insertionTarget('extra')); sign(source.id);
     expect(current()).toEqual({ ...seeded, routingFrom: true });
   });

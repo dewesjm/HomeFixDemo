@@ -7,7 +7,6 @@ import { addedRoutingSetup, routingNameError } from './inserted/added-routing-co
 import { routingFormFields } from '../signoff-definition/form-fields';
 import { stepFieldConfigVersion } from '../../data/signoff-type-forms';
 import { NDT_KINDS } from './ndt';
-import { Job } from '../../data/jobs';
 import { loadRoutingSettings, saveRoutingSettings } from '../../data/routing-settings';
 import { registerStepTemplates, registerRoutingFields } from '../catalogs/field-choices';
 import { StageTemplate } from '../model/workflow-types';
@@ -17,17 +16,13 @@ import { signoffTypeRoutingVersion } from '../../data/signoff-type-routing';
 /* ── The live rows ── */
 
 /* Routing Settings rows with each row's Type options (Admin > Signoff Type to Routing); cached until a save or a Type change */
-let _merged: Record<Job['trade'], StageTemplate[]> | null = null;
+let _merged: StageTemplate[] | null = null;
 let _mergedTypesVersion = -1;
 
-export function getTemplates(): Record<Job['trade'], StageTemplate[]> {
+export function getTemplates(): StageTemplate[] {
   if (_merged && _mergedTypesVersion === signoffTypeRoutingVersion()) return _merged;
   _mergedTypesVersion = signoffTypeRoutingVersion();
-  const rows = loadRoutingSettings();
-  for (const trade of Object.keys(rows) as Job['trade'][]) {
-    rows[trade] = rows[trade].map(s => ({ ...s, typeOptions: s.lifecycle === 'excavation' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
-  }
-  _merged = rows;
+  _merged = loadRoutingSettings().map(s => ({ ...s, typeOptions: s.lifecycle === 'excavation' ? Object.values(NDT_KINDS).flatMap(k => k.options) : signoffTypeOptions(s.id) }));
   return _merged;
 }
 
@@ -40,28 +35,25 @@ function invalidateTemplateCache() { _merged = null; }
 
 /* ── Admin > Routing Settings edits ── */
 
-export function addStageTemplate(trade: Job['trade'], stage: Omit<StageTemplate, 'required'> & { required?: boolean }) {
+export function addStageTemplate(stage: Omit<StageTemplate, 'required'> & { required?: boolean }) {
   const templates = getTemplates();
   const newStage: StageTemplate = {
     ...stage,
     required: stage.required ?? true,
     rejectToStage: stage.rejectToStage ?? '',
   };
-  const error = routingNameError(newStage.label, newStage.id, templates[trade] ?? []);
+  const error = routingNameError(newStage.label, newStage.id, templates);
   if (error) throw new Error(error);
-  if ((templates[trade] ?? []).some(t => t.id === newStage.id)) throw new Error('Routing ID already exists.');
+  if (templates.some(t => t.id === newStage.id)) throw new Error('Routing ID already exists.');
   if (newStage.classification === 'added') {
     newStage.lifecycle = 'ordinary';
     newStage.status = 'draft';
   }
-  templates[trade] = [...(templates[trade] ?? []), newStage];
-  persistTemplates(templates);
+  persistTemplates([...templates, newStage]);
 }
 
-export function updateStageTemplate(trade: Job['trade'], stageId: string, patch: Partial<StageTemplate>) {
-  const templates = getTemplates();
-  const list = templates[trade];
-  if (!list) return;
+export function updateStageTemplate(stageId: string, patch: Partial<StageTemplate>) {
+  const list = getTemplates();
   const current = list.find(s => s.id === stageId);
   if (!current) return;
   const next = { ...current, ...patch, classification: current.classification, lifecycle: current.lifecycle };
@@ -74,40 +66,30 @@ export function updateStageTemplate(trade: Job['trade'], stageId: string, patch:
   const updated = list.map(s => s.id === stageId ? next : s);
   const insertionErrors = insertionConfigurationErrors(updated);
   if (insertionErrors.length) throw new Error(insertionErrors.join(' '));
-  templates[trade] = updated;
-  persistTemplates(templates);
+  persistTemplates(updated);
 }
 
-/* Admin > Routing Settings Order: `ids` is the trade's steps in their new order */
-export function reorderStageTemplates(trade: Job['trade'], ids: string[]) {
-  const templates = getTemplates();
-  const list = templates[trade] ?? [];
+/* Admin > Routing Settings Order: `ids` is the routings in their new order */
+export function reorderStageTemplates(ids: string[]) {
+  const list = getTemplates();
   const pos = (id: string) => { const i = ids.indexOf(id); return i < 0 ? ids.length + list.findIndex(s => s.id === id) : i; };
-  templates[trade] = [...list].sort((a, b) => pos(a.id) - pos(b.id));
-  persistTemplates(templates);
+  persistTemplates([...list].sort((a, b) => pos(a.id) - pos(b.id)));
 }
 
-export function deleteStageTemplate(trade: Job['trade'], stageId: string) {
+export function deleteStageTemplate(stageId: string) {
   const templates = getTemplates();
-  if (templates[trade]?.some(t => t.id === stageId && t.classification === 'added')) throw new Error('Deactivate inserted routings to retain references and history.');
-  templates[trade] = (templates[trade] ?? []).filter(s => s.id !== stageId);
-  persistTemplates(templates);
+  if (templates.some(t => t.id === stageId && t.classification === 'added')) throw new Error('Deactivate inserted routings to retain references and history.');
+  persistTemplates(templates.filter(s => s.id !== stageId));
 }
 
-function persistTemplates(templates: Record<Job['trade'], StageTemplate[]>) {
+function persistTemplates(templates: StageTemplate[]) {
   saveRoutingSettings(templates);
   invalidateTemplateCache();
 }
 
-/* all unique stage ids across all trades (for the admin screen) */
+/* every routing's id and label (for the admin screen) */
 export function allStageIds(): { id: string; label: string }[] {
-  const seen = new Map<string, string>();
-  for (const templates of Object.values(getTemplates())) {
-    for (const t of templates) {
-      if (!seen.has(t.id)) seen.set(t.id, t.label);
-    }
-  }
-  return [...seen.entries()].map(([id, label]) => ({ id, label }));
+  return getTemplates().map(t => ({ id: t.id, label: t.label }));
 }
 
 /* A numbered round reads the settings of its shared added-routing row. */
@@ -115,8 +97,8 @@ export function routingTemplateId(id: string): string {
   return insertedDefinitionId(id) ?? /^(repair|nqc-excavation-ndt|excavation-ndt|engineering-hold)(-\d+)?$/.exec(id)?.[1] ?? id;
 }
 export function getAddedTemplate(id: string): StageTemplate {
-  return getTemplates()['Welding'].find(t => t.id === routingTemplateId(id))!;
+  return getTemplates().find(t => t.id === routingTemplateId(id))!;
 }
 export function isAddedTemplateId(id: string): boolean {
-  return getTemplates()['Welding'].some(t => t.id === id && t.classification === 'added');
+  return getTemplates().some(t => t.id === id && t.classification === 'added');
 }

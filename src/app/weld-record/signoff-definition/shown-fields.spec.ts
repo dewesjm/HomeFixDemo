@@ -8,7 +8,7 @@ import { fieldsShown, visibleSignoffFields } from './shown-fields';
 import { jointDesignRequiresInsert, jointDesignRequiresBackingRing } from '../catalogs/field-catalog';
 import { typeValues } from './stage-rules';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '1', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], nInd: '1', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage =>
   ({ ...buildStages(j).find(s => s.id === id)!, ...change });
 const buildupOf = (j: Job) => stageOf(j, 'fit', { signoffType: 'weld-buildup' });
@@ -30,7 +30,7 @@ describe('shown-fields', () => {
   });
 
   it('shows an NDT step’s Defect Code only on RT and UNSAT', () => {
-    const j = JOBS.find(x => x.trade === 'Welding' && buildStages(x).some(s => s.id.endsWith('-ndt-utrt')))!;
+    const j = JOBS.find(x => buildStages(x).some(s => s.id.endsWith('-ndt-utrt')))!;
     const id = buildStages(j).find(s => s.id.endsWith('-ndt-utrt'))!.id;
     const keys = (change: Partial<WorkflowStage>) => fieldsShown(stageOf(j, id, change), j).map(f => f.key);
     expect(keys({ ...typeValues('rt'), result: 'unsat' })).toContain('defectCode');
@@ -59,7 +59,7 @@ describe('shown-fields', () => {
 });
 
 describe('shown-fields visibleSignoffFields', () => {
-  const fitJob = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', jointDesign: 'C-24', ...over });
+  const fitJob = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', jointDesign: 'C-24', ...over });
   const fitOf = (j: Job): WorkflowStage => buildStages(j).find(s => s.id === 'fit')!;
   const keys = (fields: { key: string }[]) => fields.map(f => f.key);
   const required = (j: Job) => keys(visibleSignoffFields(fitOf(j), j, {}).filter(f => f.required));

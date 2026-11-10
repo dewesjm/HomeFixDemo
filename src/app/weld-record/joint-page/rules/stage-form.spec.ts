@@ -17,7 +17,7 @@ import {
 import { typeChange } from './type-change';
 import { typeValues } from '../../signoff-definition/stage-rules';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', ...over });
 const ctxFor = (j: Job, offListUnlocked = false): StageFormContext => ({ job: j, stages: buildStages(j), offListUnlocked });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
 const field = (s: WorkflowStage, key: string) => formInputFields(s).find(f => f.key === key)!;

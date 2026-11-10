@@ -65,7 +65,7 @@ export class AdaptiveSearchComponent {
 
   fields = searchFields();
   private fieldMap = new Map(this.fields.map(f => [f.key, f]));
-  private stepFields = new Map(allStepAnswerFields('Welding').map(f => [f.key, f]));
+  private stepFields = new Map(allStepAnswerFields().map(f => [f.key, f]));
   field = (key: string) => this.fieldMap.get(key);
 
   /* column header filters: list columns get a multiselect, so they need the in-list predicate */

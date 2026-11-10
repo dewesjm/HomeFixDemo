@@ -76,8 +76,8 @@ export function registerRoutingFields(fn: typeof routingFields, version: () => n
 export const routingAnswerFields = (stage: StageShape) => routingFields(stage.id ?? '', stage.typeOptions);
 
 /* routing-settings-rules.ts registers its templates at load (it imports this file, so it can't be imported back) */
-let stepTemplates: () => Record<string, StepTemplateShape[]> = () => ({});
-export function registerStepTemplates(fn: () => Record<string, StepTemplateShape[]>) { stepTemplates = fn; }
+let stepTemplates: () => StepTemplateShape[] = () => [];
+export function registerStepTemplates(fn: () => StepTemplateShape[]) { stepTemplates = fn; }
 
 /* covered by the fixed fields above (the built-in rules use those keys) */
 const isFixedAnswer = (stageId: string, key: string) => FIXED_ANSWERS.some(({ row, answer }) => row.key === key && answer.stageIds.includes(stageId));
@@ -107,32 +107,30 @@ function answersOf(t: StepTemplateShape): ConditionCatalogField[] {
   return out;
 }
 
-const stepsOf = (trade: string): StepTemplateShape[] => stepTemplates()[trade] ?? [];
+/* the routings (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
+export const routingsInOrder = (): StepTemplateShape[] => stepTemplates();
 
-/* a trade's routings (id, label, fields), in routing order (Admin > Qualifications builds its sign-off fields from these) */
-export const tradeSteps = (trade: string): StepTemplateShape[] => stepsOf(trade);
-
-/* the answers of a trade's routings before `stageId`, in routing order (what a rule on that routing can use) */
-export function stepAnswerFieldsBefore(trade: string, stageId: string): ConditionCatalogField[] {
-  const list = stepsOf(trade);
+/* the answers of the routings before `stageId`, in routing order (what a rule on that routing can use) */
+export function stepAnswerFieldsBefore(stageId: string): ConditionCatalogField[] {
+  const list = stepTemplates();
   const at = list.findIndex(t => t.id === stageId);
   return (at < 0 ? list : list.slice(0, at)).flatMap(answersOf);
 }
 
-/* every routing's answers for a trade, in routing order, with Fit's and Fit-Up Insp's fixed ones under
+/* every routing's answers, in routing order, with Fit's and Fit-Up Insp's fixed ones under
    their own routing (Advanced Search) */
-export function allStepAnswerFields(trade: string): ConditionCatalogField[] {
+export function allStepAnswerFields(): ConditionCatalogField[] {
   const fixedOf = (stageId: string) => FIXED_ANSWER_FIELDS.filter((_, i) => FIXED_ANSWERS[i].answer.stageIds.includes(stageId));
-  return stepsOf(trade).flatMap(t => [...fixedOf(t.id), ...answersOf(t)]);
+  return stepTemplates().flatMap(t => [...fixedOf(t.id), ...answersOf(t)]);
 }
 
-/* every trade's routing answers, for looking a saved clause's field up by key */
-let cache: { src: Record<string, StepTemplateShape[]>; fields: Map<string, ConditionCatalogField>; version: number } | null = null;
+/* every routing's answers, for looking a saved clause's field up by key */
+let cache: { src: StepTemplateShape[]; fields: Map<string, ConditionCatalogField>; version: number } | null = null;
 function stepAnswerField(key: string): ConditionCatalogField | undefined {
   const src = stepTemplates();
   if (cache?.src !== src || cache?.version !== fieldsVersion()) {
     const fields = new Map<string, ConditionCatalogField>();
-    for (const f of Object.values(src).flat().flatMap(answersOf)) if (!fields.has(f.key)) fields.set(f.key, f);
+    for (const f of src.flatMap(answersOf)) if (!fields.has(f.key)) fields.set(f.key, f);
     cache = { src, fields, version: fieldsVersion() };
   }
   return cache.fields.get(key);

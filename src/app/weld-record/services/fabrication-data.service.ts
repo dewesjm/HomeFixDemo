@@ -1,4 +1,4 @@
-/* cross-stage fabrication fields (Welding trade) — separate from routing since these fields
+/* cross-stage fabrication fields — separate from routing since these fields
    aren't tied to any one stage and don't affect stage progression */
 import { Injectable, inject } from '@angular/core';
 import { Job } from '../../data/jobs';

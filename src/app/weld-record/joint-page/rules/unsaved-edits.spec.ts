@@ -3,7 +3,7 @@ import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
 import { newWorkflow } from '../../routing/build-stages';
 import { captureLoaded, hasUnsavedEdits, rebaselineAfterSignoff } from './unsaved-edits';
 
-const job = JOBS.find(j => j.trade === 'Welding')!;
+const job = JOBS[0];
 const none = () => ({});
 const withStage = (wf: JobWorkflow, id: string, change: Partial<WorkflowStage>): JobWorkflow =>
   ({ ...wf, stages: wf.stages.map(s => s.id === id ? { ...s, ...change } : s) });

@@ -1,5 +1,4 @@
 /* Where a joint is in its routing: the current step, and which steps are locked */
-import { Job } from '../../data/jobs';
 import { WorkflowStage } from '../model/workflow-types';
 import { getTemplates } from './routing-settings-rules';
 
@@ -50,7 +49,7 @@ export function allRequiredSigned(stages: WorkflowStage[]): boolean {
 /* Fabrication fields can be changed while the current step has Fabrication editable (Admin > Routing Settings,
    read live so a change applies to joints in progress). Repair,
    Excavation NDT and a finished joint lock them. */
-export function fabricationEditable(trade: Job['trade'], stages: WorkflowStage[]): boolean {
+export function fabricationEditable(stages: WorkflowStage[]): boolean {
   const id = activeStageId(stages);
-  return !!id && !!getTemplates()[trade]?.find(t => t.id === id)?.fabricationEditable;
+  return !!id && !!getTemplates().find(t => t.id === id)?.fabricationEditable;
 }

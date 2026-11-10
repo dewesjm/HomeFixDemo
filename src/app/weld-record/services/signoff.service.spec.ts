@@ -140,7 +140,7 @@ describe('SignoffService', () => {
   });
 
   it('seeded joints never sign a skipped step (Deferred Tack, Fit-Up Release) or defer their Tack', () => {
-    for (const job of JOBS.filter(j => j.trade === 'Welding' && !j._fresh)) {
+    for (const job of JOBS.filter(j => !j._fresh)) {
       const stages = seededWorkflow(job).stages;
       expect(stages.filter(s => s.signed && !s.required).map(s => s.id)).withContext(job.id).toEqual([]);
       expect(stages.find(s => s.id === 'fit')?.signoffInputs['deferTack'] ?? '').withContext(job.id).not.toBe('yes');
@@ -209,7 +209,7 @@ describe('SignoffService', () => {
 
   describe('reject rules (Admin > Routing Settings)', () => {
     const straw = [{ when: [{ field: 'self.weldColor', op: 'is' as const, values: ['straw'] }], to: 'root-weld' }];
-    afterEach(() => updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: [] }));
+    afterEach(() => updateStageTemplate('root-ndt-vt5x', { rejectRules: [] }));
     const failVt = (job: Job, weldColor: string) => {
       store.update(job, wf => ({ ...wf, stages: wf.stages.map(s => s.id === 'root-ndt-vt5x'
         ? { ...s, result: 'unsat', inspectionType: 'vt', inputs: { ...s.inputs, weldColor } } : s) }));
@@ -218,14 +218,14 @@ describe('SignoffService', () => {
     };
 
     it('a matching rule sends the UNSAT to its step instead of adding a Repair', () => {
-      updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: straw });
+      updateStageTemplate('root-ndt-vt5x', { rejectRules: straw });
       const stages = failVt(weldingJob(), 'straw');
       expect(stages.some(s => s.id === 'repair')).toBeFalse();
       expect(activeStageId(stages)).toBe('root-weld');
     });
 
     it('no matching rule keeps the normal reject (Repair)', () => {
-      updateStageTemplate('Welding', 'root-ndt-vt5x', { rejectRules: straw });
+      updateStageTemplate('root-ndt-vt5x', { rejectRules: straw });
       const stages = failVt(weldingJob(), 'shiny-silver');
       expect(activeStageId(stages)).toBe('repair');
     });
@@ -598,7 +598,7 @@ describe('SignoffService', () => {
     });
 
     it('removing the self-return rule completes the routing', () => {
-      updateStageTemplate('Welding', 'fit', { thenRules: [] });
+      updateStageTemplate('fit', { thenRules: [] });
       const job = weldingJob();
       setStage(job, 'fit', { ...typeValues('weld-buildup') });
       service.signStage(job, 'fit');

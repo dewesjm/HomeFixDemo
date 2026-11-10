@@ -108,7 +108,7 @@ export class AdminSignoffTypeDefinitionComponent {
   });
 
   /* Routing sources for Prepopulated from, and the Types whose forms can be edited. */
-  private readonly routingSteps = (getTemplates()['Welding'] ?? []).map(s => ({ stepId: s.id, stepLabel: s.label }));
+  private readonly routingSteps = getTemplates().map(s => ({ stepId: s.id, stepLabel: s.label }));
   private readonly types = [
     ...getSignoffTypes().map(t => ({ typeId: t.value, typeLabel: t.label })),
   ];

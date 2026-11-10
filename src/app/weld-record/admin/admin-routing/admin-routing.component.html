@@ -47,11 +47,11 @@
               <svg lucideGripVertical class="size-4" aria-hidden="true"></svg>
             </button>
             <span class="text-sm tabular-nums w-6 text-center">{{ row.sequence }}</span>
-            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirstInTrade(row)"
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isFirst(row)"
                     (click)="moveUp(row)">
               <svg lucideArrowUp class="size-3"></svg>
             </button>
-            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isLastInTrade(row)"
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="isLast(row)"
                     (click)="moveDown(row)">
               <svg lucideArrowDown class="size-3"></svg>
             </button>
@@ -66,7 +66,7 @@
             <button type="button" class="text-left underline decoration-dotted underline-offset-4 hover:text-primary"
                     [attr.aria-label]="'View or edit description for ' + row.routing"
                     title="View or edit routing description" (click)="descriptionRow.set(row)">{{ row.routing || '-' }}</button>
-            <app-attribute-code-note [routingId]="row.id.split(':')[1]" />
+            <app-attribute-code-note [routingId]="row.id" />
           }
         </td>
         <td>
@@ -78,7 +78,7 @@
           }
         </td>
         <td>
-          @if (added && !row.id.includes(':new-')) {
+          @if (added && !row.id.startsWith('new-')) {
             @let triggers = insertionTriggers(row);
             <details>
               <summary class="cursor-pointer" [attr.aria-label]="'Insertion conditions for ' + row.routing">Insertion conditions ({{ triggers.length }})</summary>
@@ -92,7 +92,7 @@
             @if (canConfigureApplicability(row)) {
               <div class="mt-2">Applies when: {{ row.includedWhen }} <button type="button" class="btn btn-outline btn-xs" (click)="openConditions(row)" [attr.aria-label]="'Edit applicability for ' + row.routing">Edit</button></div>
             }
-          } @else if (row.id.includes(':new-')) {
+          } @else if (row.id.startsWith('new-')) {
             Always (save the routing to change this)
           } @else {
             <div class="flex items-start gap-1">
@@ -110,7 +110,7 @@
               @for (line of row.thenRules; track $index) { <div class="mb-2">{{ line }}</div> }
               <div>Otherwise: {{ canChangeStatus(row) ? 'continue after inserted work' : 'continue in order' }}</div>
             </div>
-            @if (!row.id.includes(':new-')) {
+            @if (!row.id.startsWith('new-')) {
               <button type="button" class="btn btn-outline btn-xs" (click)="openThenRules(row)" aria-label="Edit Then go to rules">
                 <svg lucideGitBranch class="size-4"></svg> Edit
               </button>
@@ -127,7 +127,7 @@
                 <option [value]="s.id">{{ s.label }}</option>
               }
             </select>
-          } @else if (row.id.includes(':new-')) {
+          } @else if (row.id.startsWith('new-')) {
             {{ getRejectLabel(row.rejectToStage) }}
           } @else {
             <div class="flex items-start gap-1">
@@ -156,7 +156,7 @@
         </td>
         <td>
           <div>{{ personaSummary(row) }}</div>
-          @if (!row.id.includes(':new-')) {
+          @if (!row.id.startsWith('new-')) {
             <button type="button" class="btn btn-ghost btn-xs mt-2 whitespace-nowrap" (click)="personaRow.set(row)" [attr.aria-label]="'Edit persona for ' + row.routing">Edit persona</button>
           } @else {
             <select class="select select-sm" aria-label="Persona" [ngModel]="row.role" (ngModelChange)="updateField(row, 'role', $event)">
@@ -378,11 +378,11 @@
 
 @if (personaRow(); as row) {
   @if (routingTemplate(row); as template) {
-    <app-persona-rules [routing]="template" [trade]="row.trade" (saved)="personaSaved()" (closed)="personaRow.set(null)" />
+    <app-persona-rules [routing]="template" (saved)="personaSaved()" (closed)="personaRow.set(null)" />
   }
 }
 @if (descriptionRow(); as row) {
   @if (routingTemplate(row); as template) {
-    <app-routing-description [routing]="template" [trade]="row.trade" (closed)="descriptionRow.set(null)" />
+    <app-routing-description [routing]="template" (closed)="descriptionRow.set(null)" />
   }
 }

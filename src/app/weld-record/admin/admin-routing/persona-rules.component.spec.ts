@@ -9,10 +9,9 @@ describe('Persona rules editor', () => {
   beforeEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); TestBed.configureTestingModule({ imports: [PersonaRulesComponent] }); });
   afterEach(() => localStorage.clear());
   function editor() {
-    updateStageTemplate('Welding', 'nqc-excavation-ndt', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], role: 'NQC Inspector' }] });
+    updateStageTemplate('nqc-excavation-ndt', { roleRules: [{ when: [{ field: 'nInd', op: 'is', values: ['1', '2'] }], role: 'NQC Inspector' }] });
     const fixture = TestBed.createComponent(PersonaRulesComponent);
     fixture.componentRef.setInput('routing', getAddedTemplate('nqc-excavation-ndt'));
-    fixture.componentRef.setInput('trade', 'Welding');
     fixture.detectChanges();
     return fixture;
   }
@@ -42,7 +41,6 @@ describe('Persona rules editor', () => {
     component.rules = []; component.save();
     const reopened = TestBed.createComponent(PersonaRulesComponent);
     reopened.componentRef.setInput('routing', getAddedTemplate('nqc-excavation-ndt'));
-    reopened.componentRef.setInput('trade', 'Welding');
     reopened.detectChanges();
     expect(reopened.componentInstance.rules).toEqual([]);
     expect(excavationNdtStageFor({ ...JOBS[0], nInd: '2' }, 'pt', 'repair').role).toBe('Welding');

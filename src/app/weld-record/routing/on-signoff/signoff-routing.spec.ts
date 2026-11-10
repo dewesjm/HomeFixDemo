@@ -60,14 +60,14 @@ describe('Inserted routing table decisions', () => {
 
   it('an edited Repair rule changes the destination for numbered rounds', () => {
     repair();
-    updateStageTemplate(job.trade, 'repair', { thenRules: [{ when: [], to: 'tack' }] });
+    updateStageTemplate('repair', { thenRules: [{ when: [], to: 'tack' }] });
     sign('repair', { inputs: { ...stage(wf, 'repair').inputs, repairType: 'grind' } });
     expect(activeStageId(wf.stages)).toBe('tack');
     expect(stage(wf, 'root-ndt-mtpt').signed).toBeFalse();
   });
   it('removing the Repair rules removes the coded repair branching', () => {
     repair();
-    updateStageTemplate(job.trade, 'repair', { thenRules: [] });
+    updateStageTemplate('repair', { thenRules: [] });
     weldRepair();
     expect(wf.stages.some(s => s.id === 'excavation-ndt')).toBeFalse();
   });
@@ -121,21 +121,21 @@ describe('Inserted routing table decisions', () => {
   });
   it('an edited Excavation rule replaces the default return to rejecting NDT', () => {
     repair(); weldRepair(); selectExcavation('pt');
-    updateStageTemplate(job.trade, 'excavation-ndt', { thenRules: [{ when: [], to: 'fit' }] });
+    updateStageTemplate('excavation-ndt', { thenRules: [{ when: [], to: 'fit' }] });
     sign('excavation-ndt', { result: 'sat' });
     expect(activeStageId(wf.stages)).toBe('fit');
   });
   it('an Excavation reject rule can add Engineering Hold instead of returning to Repair', () => {
     repair(); weldRepair(); selectExcavation('pt');
-    updateStageTemplate(job.trade, 'excavation-ndt', { rejectRules: [{ when: [], to: 'engineering-hold' }], rejectRulesEdited: true });
+    updateStageTemplate('excavation-ndt', { rejectRules: [{ when: [], to: 'engineering-hold' }], rejectRulesEdited: true });
     sign('excavation-ndt', { result: 'unsat' });
     expect(activeStageId(wf.stages)).toBe('engineering-hold');
   });
   it('an accepted signoff can add Repair or Engineering Hold', () => {
-    updateStageTemplate(job.trade, 'root-ndt-mtpt', { thenRules: [{ when: [], to: 'repair' }] });
+    updateStageTemplate('root-ndt-mtpt', { thenRules: [{ when: [], to: 'repair' }] });
     sign('root-ndt-mtpt', { inspectionType: 'pt', signoffType: 'pt', result: 'sat' });
     expect(activeStageId(wf.stages)).toBe('repair');
-    updateStageTemplate(job.trade, 'repair', { thenRules: [{ when: [], to: 'engineering-hold' }] });
+    updateStageTemplate('repair', { thenRules: [{ when: [], to: 'engineering-hold' }] });
     sign('repair');
     expect(activeStageId(wf.stages)).toBe('engineering-hold');
   });

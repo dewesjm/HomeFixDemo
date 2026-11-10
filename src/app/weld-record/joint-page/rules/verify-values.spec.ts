@@ -1,7 +1,7 @@
 import { JOBS, Job } from '../../../data/jobs';
 import { fitupVerifyValue, reviewVerifyValue } from './verify-values';
 
-const job: Job = JOBS.find(j => j.trade === 'Welding')!;
+const job: Job = JOBS[0];
 
 describe('joint-form verify-values', () => {
   it('shows the Fabrication value each Fit-Up Insp checkbox verifies', () => {

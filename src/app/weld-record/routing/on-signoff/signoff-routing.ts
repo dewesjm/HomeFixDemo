@@ -34,7 +34,7 @@ const typeLabel = (s: WorkflowStage) => s.typeOptions?.find(o => o.value === s.s
 
 /* The first matching reject rule wins; otherwise use the routing's reject destination. */
 function rejectTarget(stages: WorkflowStage[], job: Job, st: WorkflowStage, stageId: string, fab: Record<string, string>) {
-  const rule = matchingRejectRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
+  const rule = matchingRejectRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.rejectRules, job, stages, st, fab);
   const at = stages.findIndex(s => s.id === stageId);
   const targetId = rule ? resolveRuleTarget(stages, st, rule.to) : '';
   const targetAt = stages.findIndex(s => s.id === stepOnJoint(stages, targetId)?.id);
@@ -70,7 +70,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   /* a Type that loads a later step's definition (Layer's Final Weld) is that step's signoff */
   const asStepId = signedAsStep(wf.stages, signing);
   if (isRepairStageId(stageId) && signing.result !== 'unsat') {
-    const error = repairCodeRoutingError(signing, job, wf.stages, getTemplates()[job.trade]?.find(t => t.id === 'repair'), wf.fabricationData);
+    const error = repairCodeRoutingError(signing, job, wf.stages, getTemplates().find(t => t.id === 'repair'), wf.fabricationData);
     if (error) throw new RoutingConfigurationError(error);
   }
   const now = new Date().toISOString();
@@ -119,7 +119,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
   const executeTarget = (destination: string, reason = '') => {
     const currentIdx = stages.findIndex(s => s.id === stageId);
     if (insertionDefinitionId(destination)) {
-      const templates = (getTemplates()[job.trade] ?? []).map(t => t.id === st.insertion?.definition.id ? st.insertion.definition : t);
+      const templates = getTemplates().map(t => t.id === st.insertion?.definition.id ? st.insertion.definition : t);
       const errors = insertionConfigurationErrors(templates);
       if (errors.length) throw new RoutingConfigurationError(errors.join(' '));
       const inserted = resolveInsertion(templates, stages, job, st, destination, wf.history.flatMap(h => h.stageId ? [h.stageId] : []), fabricationData);
@@ -202,7 +202,7 @@ export function routeSignoff(wf: JobWorkflow, job: Job, stageId: string, enginee
     }
   }
   if (st.result !== 'unsat') {
-    const rule = matchingThenRule((st.insertion?.definition ?? getTemplates()[job.trade]?.find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
+    const rule = matchingThenRule((st.insertion?.definition ?? getTemplates().find(t => t.id === routingTemplateId(stageId)))?.thenRules, job, stages, signing, fabricationData);
     if (rule && (st.insertion || (isRepairStageId(stageId) && isCustomRepairCode(st.inputs['repairType'])) || isAddTarget(rule.to) || stepOnJoint(stages, resolveRuleTarget(stages, st, rule.to)))) {
       executeTarget(rule.to);
       reasons.push(`Then go to rule ${describeConditions([rule.when], stageConditionFields(signing))} -> ${RULE_TARGETS.find(t => t.id === rule.to)?.label ?? stepOnJoint(stages, rule.to)?.label ?? rule.to}`);

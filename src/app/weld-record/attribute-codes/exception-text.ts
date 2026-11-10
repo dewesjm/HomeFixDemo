@@ -9,7 +9,7 @@ import { AttributeCodeException, FINAL_WELD_PROCESS, ROOT_WELD_PROCESS } from '.
 /* what an Applies when condition can read: Joint Details, Fabrication,
    Root's and Final Weld's Weld Process, and each MT/PT routing's Type and ID accessible answer */
 export function exceptionConditionFields(): ConditionCatalogField[] {
-  const answers = allStepAnswerFields('Welding');
+  const answers = allStepAnswerFields();
   return [
     ...JOINT_DETAIL_FIELDS.map(f => ({ ...f, valueLabel: (v: string) => f.valueLabel?.(v) ?? (v || 'Blank') })),
     ...FABRICATION_DEPENDENT_FIELDS,

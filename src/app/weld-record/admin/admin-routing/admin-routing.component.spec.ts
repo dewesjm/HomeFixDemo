@@ -13,9 +13,9 @@ import { getSignoffTypes, setSignoffTypes } from '../../../data/signoff-types';
 
 describe('Routing Settings rules editor', () => {
   it('shows the seeded Pre-Fit description with older saved settings and preserves an explicitly cleared description', fakeAsync(() => {
-    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify({ Welding: [
+    localStorage.setItem(STORAGE.stageTemplates, JSON.stringify([
       { id: 'pre-fit', label: 'Pre-Fit', required: true, role: 'NQC Inspector', rejectToStage: '' },
-    ] }));
+    ]));
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();
@@ -23,8 +23,8 @@ describe('Routing Settings rules editor', () => {
     host.querySelector<HTMLButtonElement>('[aria-label="View or edit description for Pre-Fit"]')!.click();
     fixture.detectChanges(); tick(); fixture.detectChanges();
     expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('Pre-Fit is a required step where NQC validates the consumable insert or backing ring being utilized prior to fitting. Only applies on Nuclear Joints, where a consumable insert or backing ring is required');
-    updateStageTemplate('Welding', 'pre-fit', { description: '' });
-    expect(getTemplates()['Welding'].find(t => t.id === 'pre-fit')!.description).toBe('');
+    updateStageTemplate('pre-fit', { description: '' });
+    expect(getTemplates().find(t => t.id === 'pre-fit')!.description).toBe('');
     fixture.destroy();
   }));
 
@@ -71,8 +71,8 @@ describe('Routing Settings rules editor', () => {
     open();
     expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toBe('Repair is inserted whenever an NDT is recorded as UNSAT. Repair codes are configurable and are utilized to route the joint further');
     enter('Explain the repair.\nRecord the result.'); save();
-    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.description).toBe('Explain the repair.\nRecord the result.');
-    expect(JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!)['Welding'].find((t: { id: string }) => t.id === 'repair').description)
+    expect(getTemplates().find(t => t.id === 'repair')!.description).toBe('Explain the repair.\nRecord the result.');
+    expect(JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!).find((t: { id: string }) => t.id === 'repair').description)
       .toBe('Explain the repair.\nRecord the result.');
     open(); expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('Record the result.');
     enter('Unsaved edit');
@@ -80,7 +80,7 @@ describe('Routing Settings rules editor', () => {
     fixture.detectChanges(); open();
     expect(host.querySelector<HTMLTextAreaElement>('textarea')!.value).toContain('Explain the repair.');
     enter(''); save();
-    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.description).toBe('');
+    expect(getTemplates().find(t => t.id === 'repair')!.description).toBe('');
     fixture.destroy();
   }));
   let component: AdminRoutingComponent;
@@ -95,17 +95,17 @@ describe('Routing Settings rules editor', () => {
 
   it('offers admin-defined Repair Codes in the rendered destination rule editor and preserves their stable value', fakeAsync(() => {
     setRepairCodes([...getRepairCodes(), { code: 'custom-recheck', name: 'Recheck', active: true }]);
-    updateStageTemplate('Welding', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
+    updateStageTemplate('repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['custom-recheck'] }], to: 'rejecting-ndt' }] });
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     const editor = fixture.componentInstance;
-    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:repair')!);
+    editor.openThenRules(editor.rows().find(r => r.id === 'repair')!);
     fixture.detectChanges(); tick(); fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
     const label = Array.from(host.querySelectorAll('dialog label')).find(l => l.textContent!.trim() === 'Recheck')!;
     expect(label).toBeTruthy(); expect(label.querySelector<HTMLInputElement>('input')!.checked).toBeTrue();
     Array.from(host.querySelectorAll<HTMLButtonElement>('dialog button')).find(b => b.textContent!.trim() === 'Save Then go to rules')!.click();
     fixture.detectChanges();
-    expect(getTemplates()['Welding'].find(t => t.id === 'repair')!.thenRules![0].when[0].values).toEqual(['custom-recheck']);
+    expect(getTemplates().find(t => t.id === 'repair')!.thenRules![0].when[0].values).toEqual(['custom-recheck']);
     fixture.destroy();
   }));
 
@@ -119,25 +119,25 @@ describe('Routing Settings rules editor', () => {
     open(); editor.toggleValue(0, 0, '2'); button('Cancel').click(); fixture.detectChanges();
     open(); expect(editor.condRules()[0][0].values).toEqual(['1', '2']);
     editor.toggleValue(0, 0, '2'); button('Save conditions').click(); fixture.detectChanges();
-    expect(getTemplates()['Welding'].find(t => t.id === 'nqc-excavation-ndt')!.includeWhen![0][0].values).toEqual(['1']);
+    expect(getTemplates().find(t => t.id === 'nqc-excavation-ndt')!.includeWhen![0][0].values).toEqual(['1']);
     open(); expect(editor.condRules()[0][0].values).toEqual(['1']);
     fixture.destroy();
   }));
 
   it('shows insertion sources and opens their owning rule including its editable fallback', fakeAsync(() => {
-    addStageTemplate('Welding', { id: 'test-inspection', label: 'Test inspection', role: 'Inspector', rejectToStage: 'repair' });
+    addStageTemplate({ id: 'test-inspection', label: 'Test inspection', role: 'Inspector', rejectToStage: 'repair' });
     const fixture = TestBed.createComponent(AdminRoutingComponent); fixture.detectChanges();
     const editor = fixture.componentInstance;
     const host: HTMLElement = fixture.nativeElement;
     const button = host.querySelector<HTMLButtonElement>('[aria-label="Edit Test inspection: UNSAT"]')!;
     expect(button).toBeTruthy(); button.click(); fixture.detectChanges(); tick(); fixture.detectChanges();
-    expect(editor.rejRow()?.id).toBe('Welding:test-inspection');
+    expect(editor.rejRow()?.id).toBe('test-inspection');
     const select = host.querySelector<HTMLSelectElement>('[aria-label="Otherwise reject destination"]')!;
     expect(select.selectedOptions[0].textContent).toContain('Repair');
     select.value = Array.from(select.options).find(option => option.textContent === 'Add Engineering Hold')!.value;
     select.dispatchEvent(new Event('change')); fixture.detectChanges();
     editor.saveRejectRules();
-    expect(getTemplates()['Welding'].find(t => t.id === 'test-inspection')!.rejectToStage).toBe('engineering-hold');
+    expect(getTemplates().find(t => t.id === 'test-inspection')!.rejectToStage).toBe('engineering-hold');
     expect(host.textContent).not.toContain('After an accepted signoff, the first matching rule');
     host.querySelector<HTMLButtonElement>('[aria-label="Edit persona for Excavation NDT"]')!.click(); fixture.detectChanges();
     expect(host.querySelector('[aria-label="Rule persona"]')).toBeNull();
@@ -146,13 +146,13 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('renders stable insertion targets, saves their labels and rejects an unconditional cycle', fakeAsync(() => {
-    addStageTemplate('Welding', { id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
+    addStageTemplate({ id: 'extra', label: 'Extra check', classification: 'added', role: 'Inspector' });
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: 'extra', types: [{ type: 'vt', default: true }] }]);
-    updateStageTemplate('Welding', 'extra', { status: 'active' });
+    updateStageTemplate('extra', { status: 'active' });
     const fixture = TestBed.createComponent(AdminRoutingComponent);
     fixture.detectChanges();
     const editor = fixture.componentInstance;
-    const row = editor.rows().find(r => r.id === 'Welding:fit')!;
+    const row = editor.rows().find(r => r.id === 'fit')!;
     editor.openThenRules(row); editor.rejRules.set([]); editor.addRejectRule(); editor.removeRejectClause(0, 0);
     fixture.detectChanges();
     const host: HTMLElement = fixture.nativeElement;
@@ -164,15 +164,15 @@ describe('Routing Settings rules editor', () => {
     select.value = Array.from(select.options).find(o => o.text === 'Insert Extra check')!.value; select.dispatchEvent(new Event('change')); fixture.detectChanges();
     expect(editor.rejRules()[0].to).toBe(insertionTarget('extra'));
     editor.saveRejectRules();
-    expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
+    expect(getTemplates().find(t => t.id === 'fit')!.thenRules![0].to).toBe(insertionTarget('extra'));
     expect(editor.rows().find(r => r.id === row.id)!.thenRules[0]).toContain('Insert Extra check');
-    editor.openThenRules(editor.rows().find(r => r.id === 'Welding:extra')!);
+    editor.openThenRules(editor.rows().find(r => r.id === 'extra')!);
     editor.addRejectRule(); editor.removeRejectClause(0, 0); editor.setRejectTo(0, insertionTarget('extra'));
     fixture.detectChanges();
     expect(editor.rejectRulesValid()).toBeFalse();
     expect(host.querySelector('[role=alert]')?.textContent).toContain('cycle');
     editor.saveRejectRules();
-    expect(getTemplates()['Welding'].find(t => t.id === 'extra')!.thenRules).toEqual([]);
+    expect(getTemplates().find(t => t.id === 'extra')!.thenRules).toEqual([]);
     fixture.destroy(); tick(2000);
   }));
 
@@ -219,16 +219,16 @@ describe('Routing Settings rules editor', () => {
     component.updateField(row, 'role', 'Inspector');
     component.saveEdit(component.rows().find(r => r.id === row.id)!);
     row = component.rows().find(r => r.routing === 'Extra inspection')!;
-    const id = row.id.split(':')[1];
+    const id = row.id;
     expect(row.status).toBe('draft');
     expect(isAddedTemplateId(id)).toBeTrue();
     expect(buildStages(JOBS[0]).some(s => s.id === id)).toBeFalse();
     expect(component.rejectTargets(row).some(t => t.id === id)).toBeFalse();
     component.toggleStatus(row);
-    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('draft');
+    expect(getTemplates().find(t => t.id === id)!.status).toBe('draft');
     setSignoffTypeRoutingRows([...getSignoffTypeRoutingRows(), { stepId: id, types: [{ type: 'vt', default: true }] }]);
     component.toggleStatus(row);
-    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('active');
+    expect(getTemplates().find(t => t.id === id)!.status).toBe('active');
     component.startEdit(row);
     component.updateField(row, 'routing', 'Renamed inspection');
     component.saveEdit(component.rows().find(r => r.id === row.id)!);
@@ -238,8 +238,8 @@ describe('Routing Settings rules editor', () => {
     expect(row.sequence).toBe(0);
     expect(getSignoffTypeRoutingRows().some(t => t.stepId === id)).toBeTrue();
     reopened.toggleStatus(row);
-    expect(getTemplates()['Welding'].find(t => t.id === id)!.status).toBe('inactive');
-    expect(() => deleteStageTemplate('Welding', id)).toThrowError(/Deactivate/);
+    expect(getTemplates().find(t => t.id === id)!.status).toBe('inactive');
+    expect(() => deleteStageTemplate(id)).toThrowError(/Deactivate/);
     tick(2000);
   }));
 
@@ -259,10 +259,10 @@ describe('Routing Settings rules editor', () => {
   }));
 
   it('enforces classification and activation validation in the configuration owner', () => {
-    addStageTemplate('Welding', { id: 'custom-added', label: 'Extra', role: 'Inspector', classification: 'added' });
-    expect(() => updateStageTemplate('Welding', 'custom-added', { status: 'active' })).toThrowError(/Signoff Type/);
-    updateStageTemplate('Welding', 'custom-added', { classification: 'numbered', lifecycle: 'repair' });
-    const definition = getTemplates()['Welding'].find(t => t.id === 'custom-added')!;
+    addStageTemplate({ id: 'custom-added', label: 'Extra', role: 'Inspector', classification: 'added' });
+    expect(() => updateStageTemplate('custom-added', { status: 'active' })).toThrowError(/Signoff Type/);
+    updateStageTemplate('custom-added', { classification: 'numbered', lifecycle: 'repair' });
+    const definition = getTemplates().find(t => t.id === 'custom-added')!;
     expect(definition.classification).toBe('added');
     expect(definition.lifecycle).toBe('ordinary');
   });
@@ -295,14 +295,14 @@ describe('Routing Settings rules editor', () => {
     const draft = component.rows().find(row => row.id === component.editingId())!;
     component.cancelEdit(draft);
     expect(component.rows().length).toBe(count);
-    expect(getTemplates()['Welding'].some(row => row.id.startsWith('new-'))).toBeFalse();
+    expect(getTemplates().some(row => row.id.startsWith('new-'))).toBeFalse();
     component.addRow();
     expect(component.rows().find(row => row.id === component.editingId())!.sequence).toBe(draft.sequence);
     tick(2000);
   }));
 
   it('offers self, earlier and later routings for Then go to, with add targets', () => {
-    const row = component.rows().find(r => r.id === 'Welding:fit')!;
+    const row = component.rows().find(r => r.id === 'fit')!;
     component.openThenRules(row);
     const ids = component.rejectTargets(row).map(t => t.id);
     expect(ids).toContain('fit');
@@ -315,17 +315,17 @@ describe('Routing Settings rules editor', () => {
   });
 
   it('edits a copy, saves ordered rules and leaves reject settings untouched', () => {
-    const row = component.rows().find(r => r.id === 'Welding:fit')!;
+    const row = component.rows().find(r => r.id === 'fit')!;
     component.openThenRules(row);
     component.setRejectTo(0, 'tack');
-    expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules![0].to).toBe('fit');
+    expect(getTemplates().find(t => t.id === 'fit')!.thenRules![0].to).toBe('fit');
     component.addRejectRule();
     component.setRejectClause(1, 0, { field: 'self.inspectionType' });
     component.toggleRejectValue(1, 0, 'fit');
     component.moveRejectRule(1, -1);
     expect(component.rejectRulesValid()).toBeTrue();
     component.saveRejectRules();
-    const template = getTemplates()['Welding'].find(t => t.id === 'fit')!;
+    const template = getTemplates().find(t => t.id === 'fit')!;
     expect(template.thenRules!.map(r => r.to)).toEqual(['fit', 'tack']);
     expect(template.rejectToStage).toBeFalsy();
     expect(component.rows().find(r => r.id === row.id)!.thenRules.length).toBe(2);
@@ -333,25 +333,25 @@ describe('Routing Settings rules editor', () => {
     component.removeRejectRule(1);
     component.removeRejectRule(0);
     component.saveRejectRules();
-    expect(getTemplates()['Welding'].find(t => t.id === 'fit')!.thenRules).toEqual([]);
+    expect(getTemplates().find(t => t.id === 'fit')!.thenRules).toEqual([]);
   });
 
   it('separates inserted routings and edits the unconditional Excavation fallback', () => {
     expect(component.rows().filter(r => component.isAdded(r)).map(r => r.id)).toEqual([
-      'Welding:repair', 'Welding:excavation-ndt', 'Welding:nqc-excavation-ndt', 'Welding:engineering-hold',
+      'repair', 'excavation-ndt', 'nqc-excavation-ndt', 'engineering-hold',
     ]);
-    const row = component.rows().find(r => r.id === 'Welding:excavation-ndt')!;
+    const row = component.rows().find(r => r.id === 'excavation-ndt')!;
     component.openThenRules(row);
     expect(component.rejRules().at(-1)?.when).toEqual([]);
     expect(component.rejectRulesValid()).toBeTrue();
     while (component.rejRules()[0].when.length) component.removeRejectClause(0, 0);
     expect(component.rejRules()[0].when).toEqual([]);
     component.saveRejectRules();
-    expect(getTemplates()['Welding'].find(t => t.id === 'excavation-ndt')!.thenRules![0].when).toEqual([]);
+    expect(getTemplates().find(t => t.id === 'excavation-ndt')!.thenRules![0].when).toEqual([]);
   });
 
   it('keeps the Reject editor on its existing rules and targets', () => {
-    const row = component.rows().find(r => r.id === 'Welding:root-ndt-mtpt')!;
+    const row = component.rows().find(r => r.id === 'root-ndt-mtpt')!;
     component.openThenRules(row);
     component.openRejectRules(row);
     expect(component.ruleMode()).toBe('reject');

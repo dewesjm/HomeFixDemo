@@ -1,6 +1,6 @@
 /* Draft placement is independent of the routing's actual sequence number. */
 export function isDraftRouting(row: { id: string }): boolean {
-  return row.id.includes(':new-');
+  return row.id.startsWith('new-');
 }
 
 export function nextRoutingNumber(rows: { sequence: number }[]): number {

@@ -31,7 +31,7 @@ export class AdminSignoffTypesComponent {
   private seq = 0;
 
   /* what Signs routing can name: the Routing Settings routings */
-  readonly routings = (getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label }));
+  readonly routings = getTemplates().map(s => ({ id: s.id, label: s.label }));
 
   rows = signal<TypeRow[]>(getSignoffTypes().map(t => this.toRow(t)));
   editingUid = signal<string | null>(null);

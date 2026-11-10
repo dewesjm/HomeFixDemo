@@ -13,7 +13,7 @@ import { SEED_EXCEPTIONS, setAttributeCodeExceptions } from '../../data/attribut
 import { typesForAccessibleAnswer } from './exception-effects';
 
 const job = (code: string, more: Partial<Job> = {}): Job => ({
-  ...JOBS[0], trade: 'Welding', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: 'NA', rtFinal: 'NA',
+  ...JOBS[0], nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: 'NA', rtFinal: 'NA',
   attributeCode1: '', attributeCode2: code, attributeCode3: '', attributeCode4: '', ...more,
 });
 const stage = (stages: WorkflowStage[], id: string) => stages.find(s => s.id === id);

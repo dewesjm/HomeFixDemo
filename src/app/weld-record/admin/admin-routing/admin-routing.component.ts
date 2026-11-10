@@ -1,4 +1,4 @@
-// Admin → Routing Settings: manage per-trade workflow routing with sequence ordering,
+// Admin → Routing Settings: manage the routings with sequence ordering,
 // field configuration (readings + sign-off), reject routing + reject rules, and step conditions (Included when).
 // Persists to localStorage via the weld-record/routing/routing-settings-rules.ts edit functions (rows stored by data/routing-settings.ts).
 import { insertionRelativeTargets } from '../../routing/inserted/insertion-target-options';
@@ -28,7 +28,6 @@ import { TooltipDirective } from '../../../shared/tooltip.directive';
 import { TableState } from '../../../shared/table-state';
 import { SortHeaderComponent } from '../../../shared/sort-header.component';
 import { downloadCsv } from '../../../shared/export-csv';
-import { Job } from '../../../data/jobs';
 import {
   addStageTemplate,
   updateStageTemplate,
@@ -53,7 +52,6 @@ interface RoutingRow {
   id: string;
   routing: string;        /* the name rules use (Included when, reject rules) */
   displayName: string;    /* shown on the joint and the routing bar; blank = routing */
-  trade: Job['trade'];
   sequence: number;
   added?: boolean;
   status?: StageTemplate['status'];
@@ -82,10 +80,8 @@ interface RoutingRow {
 export class AdminRoutingComponent {
   roleOptions = computed(() => {
     const used = new Set<string>();
-    for (const templates of Object.values(getTemplates())) {
-      for (const t of templates) {
-        if (t.role) used.add(t.role);
-      }
+    for (const t of getTemplates()) {
+      if (t.role) used.add(t.role);
     }
     // always include all base roles plus any pipe-delimited combos
     for (const r of ROLES) used.add(r);
@@ -104,9 +100,9 @@ export class AdminRoutingComponent {
 
   personaRow = signal<RoutingRow | null>(null);
   descriptionRow = signal<RoutingRow | null>(null);
-  insertionTriggers(row: RoutingRow) { return insertionTriggers(getTemplates()[row.trade] ?? [], row.id.split(':')[1]); }
+  insertionTriggers(row: RoutingRow) { return insertionTriggers(getTemplates(), row.id); }
   editInsertionTrigger(row: RoutingRow, trigger: InsertionTrigger) {
-    const source = this.rows().find(r => r.trade === row.trade && r.id.split(':')[1] === trigger.sourceId);
+    const source = this.rows().find(r => r.id === trigger.sourceId);
     if (!source) return;
     if (trigger.mode === 'then') this.openThenRules(source);
     else this.openRejectRules(source);
@@ -136,33 +132,27 @@ export class AdminRoutingComponent {
     effect(() => this.table.setRows(this.rows()));
   }
 
-  isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(row.id.split(':')[1]); }
+  isAdded(row: RoutingRow): boolean { return row.added ?? isAddedTemplateId(row.id); }
   sectionRows(added: boolean) { return pinDraftRoutings(this.visibleRows().filter(r => this.isAdded(r) === added)); }
   private targetOptions() {
     return [...allStageIds().filter(s => !isAddedTemplateId(s.id)), ...RULE_TARGETS,
-      ...Object.values(getTemplates()).flatMap(list => list.filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` })))];
+      ...getTemplates().filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
   }
 
   private buildInitialRows(): RoutingRow[] {
-    const rows: RoutingRow[] = [];
-    for (const [trade, templates] of Object.entries(getTemplates())) {
-      let sequence = 0;
-      templates.forEach(t => {
-        rows.push({
-          id: `${trade}:${t.id}`,
-          added: t.classification === 'added', status: t.status ?? 'active',
-          routing: t.label,
-          displayName: t.displayName ?? '',
-          trade: trade as Job['trade'],
-          sequence: isAddedTemplateId(t.id) ? 0 : ++sequence,
-          rejectToStage: t.rejectToStage ?? '',
-          role: (t.role as Role) || 'View',
-          includedWhen: describeConditions(t.includeWhen),
-          rejectRules: [], thenRules: [],
-          fabricationEditable: !!t.fabricationEditable,
-        });
-      });
-    }
+    let sequence = 0;
+    const rows: RoutingRow[] = getTemplates().map(t => ({
+      id: t.id,
+      added: t.classification === 'added', status: t.status ?? 'active',
+      routing: t.label,
+      displayName: t.displayName ?? '',
+      sequence: isAddedTemplateId(t.id) ? 0 : ++sequence,
+      rejectToStage: t.rejectToStage ?? '',
+      role: (t.role as Role) || 'View',
+      includedWhen: describeConditions(t.includeWhen),
+      rejectRules: [], thenRules: [],
+      fabricationEditable: !!t.fabricationEditable,
+    }));
     return rows.map(r => ({ ...r, rejectRules: this.rejectRuleLines(r), thenRules: this.thenRuleLines(r) }));
   }
 
@@ -190,22 +180,20 @@ export class AdminRoutingComponent {
       this.messages.add({ severity: 'warn', summary: 'Complete routing setup', detail: setup.errors.join(' '), life: 6000 });
       return;
     }
-    updateStageTemplate(row.trade, t.id, { status: next });
+    updateStageTemplate(t.id, { status: next });
     this.rows.set(this.buildInitialRows());
     this.refreshStageOptions();
   }
 
   addRow(added = false) {
     if (this.editingId()) return;
-    const trade = 'Welding';
     const newId = `new-${++this.seq}`;
-    const fullId = `${trade}:${newId}`;
-    const sequence = nextRoutingNumber(this.rows().filter(row => row.trade === trade && !this.isAdded(row)));
-    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: fullId, routing: '', displayName: '', trade, sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
+    const sequence = nextRoutingNumber(this.rows().filter(row => !this.isAdded(row)));
+    const row: RoutingRow = { added, status: added ? 'draft' : 'active', id: newId, routing: '', displayName: '', sequence, rejectToStage: '', role: 'View', includedWhen: describeConditions([]), rejectRules: [], thenRules: [], fabricationEditable: false };
     this.table.clearFilters();
     this.rows.update(r => [...r, row]);
-    this.editingId.set(fullId);
-    this.newRowId.set(fullId);
+    this.editingId.set(newId);
+    this.newRowId.set(newId);
     setTimeout(() => this.newRowId.set(null), 2000);
   }
 
@@ -216,11 +204,9 @@ export class AdminRoutingComponent {
       message: `Delete ${row.routing}?`,
       acceptLabel: 'Delete',
       accept: () => {
-        const trade = row.trade;
-        const stageId = row.id.split(':')[1];
-        deleteStageTemplate(trade, stageId);
+        deleteStageTemplate(row.id);
         this.rows.update(r => r.filter(x => x.id !== row.id));
-        this.resequence(trade);
+        this.resequence();
         this.refreshStageOptions();
         this.messages.add({ severity: 'info', summary: 'Routing deleted', life: 3000 });
       }
@@ -233,11 +219,10 @@ export class AdminRoutingComponent {
   }
 
   saveEdit(row: RoutingRow) {
-    const error = routingNameError(row.routing, row.id.split(':')[1], getTemplates()[row.trade]);
+    const error = routingNameError(row.routing, row.id, getTemplates());
     if (error) { this.messages.add({ severity: 'warn', summary: error, life: 4000 }); return; }
     row = { ...row, routing: row.routing.trim() };
-    const parts = row.id.split(':');
-    const stageId = parts[1];
+    const stageId = row.id;
     const isNew = stageId.startsWith('new-');
     const current = this.templateFor(row);
     if (current?.classification === 'added' && current.lifecycle === 'ordinary' && current.status === 'active') {
@@ -248,7 +233,7 @@ export class AdminRoutingComponent {
       }
     }
 
-    const insertionErrors = insertionConfigurationErrors(getTemplates()[row.trade].map(t => t.id === stageId ? { ...t, rejectToStage: row.rejectToStage } : t));
+    const insertionErrors = insertionConfigurationErrors(getTemplates().map(t => t.id === stageId ? { ...t, rejectToStage: row.rejectToStage } : t));
     if (insertionErrors.length) {
       this.messages.add({ severity: 'warn', summary: 'Invalid routing destination', detail: insertionErrors.join(' '), life: 6000 });
       return;
@@ -256,19 +241,18 @@ export class AdminRoutingComponent {
 
     if (isNew) {
       const newId = `custom-${crypto.randomUUID()}`;
-      addStageTemplate(row.trade, {
+      addStageTemplate({
         classification: this.isAdded(row) ? 'added' : 'numbered', lifecycle: 'ordinary', status: row.status,
         id: newId, label: row.routing, displayName: row.displayName.trim() || undefined, required: true, role: row.role,
         rejectToStage: row.rejectToStage,
         fabricationEditable: row.fabricationEditable,
       });
-      const newFullId = `${row.trade}:${newId}`;
       /* Saving ends draft pinning; its sequence remains in the numbered list. */
-      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newFullId } : x));
-      this.resequence(row.trade);
-      this.saveOrder(row.trade);
+      this.rows.update(r => r.map(x => x.id === row.id ? { ...x, id: newId } : x));
+      this.resequence();
+      this.saveOrder();
     } else {
-      updateStageTemplate(row.trade, stageId, {
+      updateStageTemplate(stageId, {
         label: row.routing,
         displayName: row.displayName.trim() || undefined,
         rejectToStage: row.rejectToStage,
@@ -287,7 +271,7 @@ export class AdminRoutingComponent {
   cancelEdit(row: RoutingRow) {
     if (isDraftRouting(row)) {
       this.rows.update(rows => rows.filter(item => item.id !== row.id));
-      this.resequence(row.trade);
+      this.resequence();
     }
     const original = this.clonedRows[row.id];
     if (original) {
@@ -312,36 +296,36 @@ export class AdminRoutingComponent {
   /* ── Reorder ── */
 
   moveUp(row: RoutingRow) {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
-    const idx = tradeRows.findIndex(r => r.id === row.id);
+    const numbered = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
+    const idx = numbered.findIndex(r => r.id === row.id);
     if (idx <= 0) return;
-    const above = tradeRows[idx - 1];
+    const above = numbered[idx - 1];
     this.rows.update(rows => rows.map(r => {
       if (r.id === row.id) return { ...r, sequence: above.sequence };
       if (r.id === above.id) return { ...r, sequence: row.sequence };
       return r;
     }));
-    this.saveOrder(row.trade);
+    this.saveOrder();
   }
 
   moveDown(row: RoutingRow) {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
-    const idx = tradeRows.findIndex(r => r.id === row.id);
-    if (idx < 0 || idx >= tradeRows.length - 1) return;
-    const below = tradeRows[idx + 1];
+    const numbered = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
+    const idx = numbered.findIndex(r => r.id === row.id);
+    if (idx < 0 || idx >= numbered.length - 1) return;
+    const below = numbered[idx + 1];
     this.rows.update(rows => rows.map(r => {
       if (r.id === row.id) return { ...r, sequence: below.sequence };
       if (r.id === below.id) return { ...r, sequence: row.sequence };
       return r;
     }));
-    this.saveOrder(row.trade);
+    this.saveOrder();
   }
 
-  /* the trade's steps as shown in Order are the order joints get them in (unsaved new rows left out) */
-  private saveOrder(trade: Job['trade']) {
-    const ids = this.rows().filter(r => r.trade === trade && !r.id.includes(':new-'))
-      .sort((a, b) => a.sequence - b.sequence).map(r => r.id.split(':')[1]);
-    reorderStageTemplates(trade, ids);
+  /* the routings as shown in Order are the order joints get them in (unsaved new rows left out) */
+  private saveOrder() {
+    const ids = this.rows().filter(r => !isDraftRouting(r))
+      .sort((a, b) => a.sequence - b.sequence).map(r => r.id);
+    reorderStageTemplates(ids);
     this.refreshStageOptions();
   }
 
@@ -351,7 +335,7 @@ export class AdminRoutingComponent {
 
   dropSide(row: RoutingRow): '' | 'above' | 'below' {
     const from = this.rows().find(r => r.id === this.dragId());
-    if (!from || from.id === row.id || this.overId() !== row.id || from.trade !== row.trade) return '';
+    if (!from || from.id === row.id || this.overId() !== row.id) return '';
     return from.sequence < row.sequence ? 'below' : 'above';
   }
 
@@ -363,7 +347,7 @@ export class AdminRoutingComponent {
 
   onDragOver(e: DragEvent, row: RoutingRow) {
     const from = this.rows().find(r => r.id === this.dragId());
-    if (!from || from.trade !== row.trade) return;
+    if (!from) return;
     e.preventDefault();
     this.overId.set(row.id);
   }
@@ -372,13 +356,13 @@ export class AdminRoutingComponent {
   onDrop(e: DragEvent, target: RoutingRow) {
     e.preventDefault();
     const from = this.rows().find(r => r.id === this.dragId());
-    if (from && from.id !== target.id && from.trade === target.trade) {
-      const order = this.rows().filter(r => r.trade === target.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence).map(r => r.id);
+    if (from && from.id !== target.id) {
+      const order = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence).map(r => r.id);
       const movingDown = order.indexOf(from.id) < order.indexOf(target.id);
       const rest = order.filter(id => id !== from.id);
       rest.splice(rest.indexOf(target.id) + (movingDown ? 1 : 0), 0, from.id);
-      this.rows.update(rows => rows.map(r => r.trade === target.trade && !this.isAdded(r) ? { ...r, sequence: rest.indexOf(r.id) + 1 } : r));
-      this.saveOrder(target.trade);
+      this.rows.update(rows => rows.map(r => !this.isAdded(r) ? { ...r, sequence: rest.indexOf(r.id) + 1 } : r));
+      this.saveOrder();
     }
     this.clearDrag();
   }
@@ -388,13 +372,13 @@ export class AdminRoutingComponent {
     this.overId.set('');
   }
 
-  isFirstInTrade(row: RoutingRow): boolean {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
-    return tradeRows[0]?.id === row.id;
+  isFirst(row: RoutingRow): boolean {
+    const numbered = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
+    return numbered[0]?.id === row.id;
   }
-  isLastInTrade(row: RoutingRow): boolean {
-    const tradeRows = this.rows().filter(r => r.trade === row.trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
-    return tradeRows[tradeRows.length - 1]?.id === row.id;
+  isLast(row: RoutingRow): boolean {
+    const numbered = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
+    return numbered[numbered.length - 1]?.id === row.id;
   }
 
   getRejectLabel(rejectToStage: string): string {
@@ -403,7 +387,7 @@ export class AdminRoutingComponent {
     if (rejectToStage === 'continue') return 'Continue after inserted work';
     const definition = insertionDefinitionId(rejectToStage);
     if (definition) {
-      const t = Object.values(getTemplates()).flat().find(t => t.id === definition);
+      const t = getTemplates().find(t => t.id === definition);
       return `Insert ${t?.label ?? definition}${t && t.status !== 'active' ? ` (${t.status})` : ''}`;
     }
     const special = RULE_TARGETS.find(t => t.id === rejectToStage);
@@ -412,10 +396,10 @@ export class AdminRoutingComponent {
     return match?.label ?? rejectToStage;
   }
 
-  private resequence(trade: Job['trade']) {
-    const sorted = this.rows().filter(r => r.trade === trade && !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
+  private resequence() {
+    const sorted = this.rows().filter(r => !this.isAdded(r)).sort((a, b) => a.sequence - b.sequence);
     this.rows.update(rows => rows.map(r => {
-      if (r.trade !== trade || this.isAdded(r)) return r;
+      if (this.isAdded(r)) return r;
       const idx = sorted.findIndex(s => s.id === r.id);
       return { ...r, sequence: idx + 1 };
     }));
@@ -430,8 +414,8 @@ export class AdminRoutingComponent {
   /* ── Included when (step conditions) dialog ── */
 
   openConditions(row: RoutingRow) {
-    const stage = getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
-    this.condFields.set([...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])]);
+    const stage = getTemplates().find(t => t.id === row.id);
+    this.condFields.set([...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.id)]);
     this.condRules.set((stage?.includeWhen ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
     this.condRow.set(row);
   }
@@ -446,13 +430,13 @@ export class AdminRoutingComponent {
 
   /* the built-in rule for this step, if it has one */
   hasDefaultConditions(row: RoutingRow): boolean {
-    return !!DEFAULT_STEP_CONDITIONS[row.id.split(':')[1]];
+    return !!DEFAULT_STEP_CONDITIONS[row.id];
   }
 
   restoreDefaultConditions() {
     const row = this.condRow();
     if (!row) return;
-    this.condRules.set((DEFAULT_STEP_CONDITIONS[row.id.split(':')[1]] ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
+    this.condRules.set((DEFAULT_STEP_CONDITIONS[row.id] ?? []).map(rule => rule.map(c => ({ ...c, values: [...c.values] }))));
   }
 
   addRule() {
@@ -484,7 +468,7 @@ export class AdminRoutingComponent {
     const row = this.condRow();
     if (!row) return;
     const rules = this.condRules();
-    updateStageTemplate(row.trade, row.id.split(':')[1], { includeWhen: rules });
+    updateStageTemplate(row.id, { includeWhen: rules });
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, includedWhen: describeConditions(rules) } : x));
     this.condRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Conditions saved', detail: row.routing, life: 3000 });
@@ -498,13 +482,13 @@ export class AdminRoutingComponent {
   rejFields = signal<ConditionCatalogField[]>([]);
 
   private templateFor(row: RoutingRow) {
-    return getTemplates()[row.trade]?.find(t => t.id === row.id.split(':')[1]);
+    return getTemplates().find(t => t.id === row.id);
   }
 
   /* this step's own answers, Joint Details, then earlier steps' answers */
   private rejectFieldsFor(row: RoutingRow): ConditionCatalogField[] {
     const t = this.templateFor(row);
-    return [...(t ? stageConditionFields(t) : []), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.trade, row.id.split(':')[1])];
+    return [...(t ? stageConditionFields(t) : []), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore(row.id)];
   }
 
   private rejectRuleLines(row: RoutingRow): string[] {
@@ -515,10 +499,10 @@ export class AdminRoutingComponent {
 
   /* Ordinary definitions can continue their captured path or request another insertion. */
   rejectTargets(row: RoutingRow): { id: string; label: string }[] {
-    return [...(getTemplates()[row.trade] ?? []).filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id.split(':')[1]),
+    return [...getTemplates().filter(t => !isAddedTemplateId(t.id)).map(t => ({ id: t.id, label: t.label })), ...availableRuleTargets(row.id),
       ...(this.templateFor(row)?.lifecycle === 'ordinary' && this.isAdded(row)
-        ? insertionRelativeTargets(row.id.split(':')[1], getTemplates()[row.trade] ?? []) : []),
-      ...(getTemplates()[row.trade] ?? []).filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
+        ? insertionRelativeTargets(row.id, getTemplates()) : []),
+      ...getTemplates().filter(t => t.classification === 'added' && t.lifecycle === 'ordinary' && t.status === 'active').map(t => ({ id: insertionTarget(t.id), label: `Insert ${t.label}` }))];
   }
 
   openRejectRules(row: RoutingRow) {
@@ -543,7 +527,7 @@ export class AdminRoutingComponent {
 
   addRejectRule() {
     const row = this.rejRow();
-    const to = (this.ruleMode() === 'then' ? row?.id.split(':')[1] : row?.rejectToStage) || this.rejectTargets(row!)[0]?.id || '';
+    const to = (this.ruleMode() === 'then' ? row?.id : row?.rejectToStage) || this.rejectTargets(row!)[0]?.id || '';
     this.rejRules.update(r => [...r, { when: [{ field: this.rejFields()[0]?.key ?? '', op: 'is', values: [] }], to }]);
   }
   removeRejectRule(ri: number) {
@@ -582,7 +566,7 @@ export class AdminRoutingComponent {
     const row = this.rejRow();
     if (!row) return '';
     const patch = this.ruleMode() === 'then' ? { thenRules: this.rejRules() } : { rejectRules: this.rejRules(), rejectToStage: this.rejDefaultTarget() };
-    return insertionConfigurationErrors((getTemplates()[row.trade] ?? []).map(t => t.id === row.id.split(':')[1] ? { ...t, ...patch } : t)).join(' ');
+    return insertionConfigurationErrors(getTemplates().map(t => t.id === row.id ? { ...t, ...patch } : t)).join(' ');
   }
 
   rejectRulesValid = computed(() => !this.ruleConfigurationError() && this.rejRules().every(r => !!r.to && r.when.every(c => this.clauseValid(this.rejFields(), c))));
@@ -591,13 +575,13 @@ export class AdminRoutingComponent {
     const row = this.rejRow();
     if (!row || !this.rejectRulesValid()) return;
     if (this.ruleMode() === 'then') {
-      updateStageTemplate(row.trade, row.id.split(':')[1], { thenRules: this.rejRules() });
+      updateStageTemplate(row.id, { thenRules: this.rejRules() });
       this.rows.update(r => r.map(x => x.id === row.id ? { ...x, thenRules: this.thenRuleLines(row) } : x));
       this.rejRow.set(null);
       this.messages.add({ severity: 'success', summary: 'Then go to rules saved', detail: row.routing, life: 3000 });
       return;
     }
-    updateStageTemplate(row.trade, row.id.split(':')[1], { rejectRules: this.rejRules(), rejectRulesEdited: true, rejectToStage: this.rejDefaultTarget() });
+    updateStageTemplate(row.id, { rejectRules: this.rejRules(), rejectRulesEdited: true, rejectToStage: this.rejDefaultTarget() });
     this.rows.update(r => r.map(x => x.id === row.id ? { ...x, rejectToStage: this.rejDefaultTarget(), rejectRules: this.rejectRuleLines(row) } : x));
     this.rejRow.set(null);
     this.messages.add({ severity: 'success', summary: 'Reject rules saved', detail: row.routing, life: 3000 });

@@ -13,7 +13,7 @@ const codeText = (e: RoutingEffect) => `attribute code${e.codes.length > 1 ? 's'
 
 /* `before`/`after`: the stages around applySignedFlags; `fab` is the joint's Fabrication values */
 export function signedFlagChanges(before: WorkflowStage[], after: WorkflowStage[], job: Job, fab?: Record<string, string>): SignedFlagChange[] {
-  const templates = getTemplates()[job.trade] ?? [];
+  const templates = getTemplates();
   return after.flatMap((s, i) => {
     const was = before[i];
     const typesChanged = typesKey(s) !== typesKey(was);

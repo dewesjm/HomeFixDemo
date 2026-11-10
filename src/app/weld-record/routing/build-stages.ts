@@ -11,7 +11,7 @@ import { closesJoint, closingRole, startsReleasedToWelding } from './built-in-ro
 
 export function buildStages(job: Job, fab?: Record<string, string>): WorkflowStage[] {
   /* the Welding steps from the merged templates, no cycling; Sold is the end */
-  const tradeStages = (getTemplates()['Welding'] ?? []).filter(t => !isAddedTemplateId(t.id));
+  const tradeStages = getTemplates().filter(t => !isAddedTemplateId(t.id));
   /* Admin > Routing Settings step conditions: Joint Details rules decide here whether the joint gets the step;
      a step with step-answer rules is always there and its rules set required (see applySignedFlags) */
   const routingIncluded = (t: StageTemplate) => usesStepAnswers(t.includeWhen) || conditionsMatch(t.includeWhen, job);

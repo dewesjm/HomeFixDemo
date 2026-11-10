@@ -132,7 +132,7 @@ export class JointPageComponent implements OnDestroy {
   jobComplete = computed(() => (this.wf ? allRequiredSigned(this.wf().stages) : false));
   soldSigned = computed(() => !!this.wf?.().stages.some(s => closesJoint(s.id) && s.signed));
   /* fabrication fields locked unless the current step has Fabrication editable (Admin > Routing Settings) */
-  fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.job.trade, this.wf().stages));
+  fabLocked = computed(() => !!this.wf && !!this.job && !fabricationEditable(this.wf().stages));
   /* id of stage awaiting sign-off, null when done */
   activeStage = computed(() => (this.wf ? activeStageId(this.wf().stages) : null));
   rejectedCount = computed(() =>

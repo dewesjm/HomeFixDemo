@@ -15,7 +15,7 @@ describe('Catalog and Type forms as the only field definitions', () => {
   const job = () => ({ ...JOBS[0], nInd: '3' });
   afterEach(() => resetStepFieldConfig());
   it('never copies definitions onto new routings or templates', () => {
-    for (const s of [...buildStages(job()), ...getTemplates()['Welding']]) {
+    for (const s of [...buildStages(job()), ...getTemplates()]) {
       expect('fields' in s).withContext(s.id).toBeFalse();
       expect('signoffFields' in s).withContext(s.id).toBeFalse();
     }
@@ -48,19 +48,19 @@ describe('Catalog and Type forms as the only field definitions', () => {
     expect(formSignoffFields(s)).toEqual([]);
   });
   it('routing conditions include every offered Type’s form, including Fit’s Weld Build-Up', () => {
-    const fields = stepAnswerFieldsBefore('Welding', 'root-layer');
+    const fields = stepAnswerFieldsBefore('root-layer');
     expect(fields.some(f => f.key === 'step.fit.wtn')).toBeTrue();
-    const own = stageConditionFields(getTemplates()['Welding'].find(t => t.id === 'fit')!);
+    const own = stageConditionFields(getTemplates().find(t => t.id === 'fit')!);
     expect(own.find(f => f.key === 'self.deferTack')?.values).toEqual(['yes', '']);
     expect(own.find(f => f.key === 'self.wtn')).toBeDefined();
   });
   it('routing and qualification condition pickers refresh after forms change', () => {
-    const template = getTemplates()['Welding'].find(t => t.id === 'tack')!;
+    const template = getTemplates().find(t => t.id === 'tack')!;
     expect(stageConditionFields(template).some(f => f.key === 'self.wtn')).toBeTrue();
     conditionFields();
     setStepFieldConfig([{ typeId: 'tack', fields: [{ key: 'deferTack' }] }]);
     expect(stageConditionFields(template).some(f => f.key === 'self.wtn')).toBeFalse();
-    expect(stepAnswerFieldsBefore('Welding', 'root-layer').some(f => f.key === 'step.tack.wtn')).toBeFalse();
+    expect(stepAnswerFieldsBefore('root-layer').some(f => f.key === 'step.tack.wtn')).toBeFalse();
     const checkbox = conditionFields().find(f => f.key === 'step:deferTack')!;
     expect(checkbox.options().map(o => o.value)).toEqual(['Yes', 'No']);
     expect(checkbox.get({ job: job(), step: { signoffInputs: { deferTack: 'yes' } } })).toBe('Yes');

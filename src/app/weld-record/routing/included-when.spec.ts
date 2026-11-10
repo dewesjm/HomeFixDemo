@@ -40,10 +40,10 @@ const ALL_IDS = ['pre-fit', 'fit', 'tack', 'fitup-insp', 'fitup-release', 'defer
   'final-weld', 'final-ndt-vt5x', 'final-ndt-mtpt', 'final-ndt-utrt', 'review-o63', 'review-o04', 'sold'];
 
 describe('step conditions', () => {
-  afterEach(() => updateStageTemplate('Welding', 'pre-fit', { includeWhen: DEFAULT_STEP_CONDITIONS['pre-fit'] }));
+  afterEach(() => updateStageTemplate('pre-fit', { includeWhen: DEFAULT_STEP_CONDITIONS['pre-fit'] }));
 
   it('built-in rules preserve the baseline for seeded joints without progression attributes', () => {
-    for (const job of JOBS.filter(j => j.trade === 'Welding' && !jointAttributeCodes(j).length)) {
+    for (const job of JOBS.filter(j => !jointAttributeCodes(j).length)) {
       /* N Ind 1 or 2 joints get the NQC row of each split step instead */
       const nuclear = job.nInd === '1' || job.nInd === '2';
       const expected = oldStepIds(job, ALL_IDS).map(id => nuclear && NQC_SPLIT_STEP_IDS.includes(id) ? nqcStepId(id) : id);
@@ -52,16 +52,16 @@ describe('step conditions', () => {
   });
 
   it('uses an admin-changed rule', () => {
-    const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', jointDesign: 'C-24' };
+    const job = { ...JOBS[0], nInd: '3', jointDesign: 'C-24' };
     expect(buildStages(job).some(s => s.id === 'pre-fit')).toBeFalse();
-    updateStageTemplate('Welding', 'pre-fit', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]] });
+    updateStageTemplate('pre-fit', { includeWhen: [[{ field: 'nInd', op: 'is', values: ['3'] }]] });
     expect(buildStages(job).some(s => s.id === 'pre-fit')).toBeTrue();
-    updateStageTemplate('Welding', 'pre-fit', { includeWhen: [] });
+    updateStageTemplate('pre-fit', { includeWhen: [] });
     expect(buildStages({ ...job, nInd: '1' }).some(s => s.id === 'pre-fit')).toBeTrue();
   });
 
   it('Defer Tack and Release to welding switch steps on once signed', () => {
-    const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' };
+    const job = { ...JOBS[0], nInd: '3' };
     let stages = buildStages(job);
     const req = (id: string) => stages.find(s => s.id === id)!.required;
     expect([req('tack'), req('deferred-tack'), req('fitup-release')]).toEqual([true, false, false]);
@@ -80,23 +80,23 @@ describe('step conditions', () => {
 
 describe('step order (Admin > Routing Settings)', () => {
   it('a saved order is what new joints get, and it survives a reload', () => {
-    const original = getTemplates()['Welding'].map(t => t.id);
+    const original = getTemplates().map(t => t.id);
     const moved = original.filter(id => id !== 'fit');
     moved.splice(moved.indexOf('tack') + 1, 0, 'fit');
-    reorderStageTemplates('Welding', moved);
+    reorderStageTemplates(moved);
     try {
-      const ids = buildStages({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' }).map(s => s.id);
+      const ids = buildStages({ ...JOBS[0], nInd: '3' }).map(s => s.id);
       expect(ids.indexOf('fit')).toBe(ids.indexOf('tack') + 1);
       /* written to storage: a second read (cache cleared by the save) still has it */
-      expect(getTemplates()['Welding'].map(t => t.id)).toEqual(moved);
+      expect(getTemplates().map(t => t.id)).toEqual(moved);
     } finally {
-      reorderStageTemplates('Welding', original);
+      reorderStageTemplates(original);
     }
   });
 });
 
 describe('contains conditions', () => {
-  const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', weldType: 'Fillet' };
+  const job = { ...JOBS[0], nInd: '3', weldType: 'Fillet' };
   it('matches typed text anywhere in the value, any case', () => {
     expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['ILL'] }]], job)).toBeTrue();
     expect(conditionsMatch([[{ field: 'weldType', op: 'contains', values: ['groove'] }]], job)).toBeFalse();
@@ -106,31 +106,31 @@ describe('contains conditions', () => {
 });
 
 describe('Fabrication editable (Admin > Routing Settings)', () => {
-  const job = { ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3' };
+  const job = { ...JOBS[0], nInd: '3' };
   const signThrough = (id: string) => {
     const stages = buildStages(job);
     const upTo = stages.findIndex(s => s.id === id);
     return stages.map((s, i) => i <= upTo ? { ...s, signed: true } : s);
   };
-  afterEach(() => updateStageTemplate('Welding', 'root-weld', { fabricationEditable: false }));
+  afterEach(() => updateStageTemplate('root-weld', { fabricationEditable: false }));
 
   it('built in: editable through Fit-Up Insp, locked once it is signed', () => {
-    expect(fabricationEditable('Welding', buildStages(job))).toBeTrue();
-    expect(fabricationEditable('Welding', signThrough('fit'))).toBeTrue();
-    expect(fabricationEditable('Welding', signThrough('fitup-insp'))).toBeFalse();
+    expect(fabricationEditable(buildStages(job))).toBeTrue();
+    expect(fabricationEditable(signThrough('fit'))).toBeTrue();
+    expect(fabricationEditable(signThrough('fitup-insp'))).toBeFalse();
   });
 
   it('uses an admin change on a joint already in progress', () => {
     const stages = signThrough('fitup-insp');
-    updateStageTemplate('Welding', 'root-weld', { fabricationEditable: true });
+    updateStageTemplate('root-weld', { fabricationEditable: true });
     expect(activeStageId(stages)).toBe('root-weld');
-    expect(fabricationEditable('Welding', stages)).toBeTrue();
+    expect(fabricationEditable(stages)).toBeTrue();
   });
 });
 
 describe('every field as a condition (Admin > Routing Settings)', () => {
-  const job = JOBS.find(j => j.trade === 'Welding' && buildStages(j).some(s => s.id === 'root-ndt-vt5x'))!;
-  afterEach(() => updateStageTemplate('Welding', 'root-layer', { includeWhen: [] }));
+  const job = JOBS.find(j => buildStages(j).some(s => s.id === 'root-ndt-vt5x'))!;
+  afterEach(() => updateStageTemplate('root-layer', { includeWhen: [] }));
 
   it('offers Joint Details text fields, matched as typed (any case)', () => {
     const j = { ...job, engineeringNotes: 'Check Alignment' };
@@ -140,7 +140,7 @@ describe('every field as a condition (Admin > Routing Settings)', () => {
   });
 
   it('only offers the answers of steps before this one', () => {
-    const keys = stepAnswerFieldsBefore('Welding', 'root-layer').map(f => f.key);
+    const keys = stepAnswerFieldsBefore('root-layer').map(f => f.key);
     expect(keys).toContain('step.root-ndt-vt5x.weldColor');
     expect(keys).toContain('step.root-weld.weldPosition');
     expect(keys.some(k => k.startsWith('step.root-layer.'))).toBeFalse();
@@ -148,13 +148,13 @@ describe('every field as a condition (Admin > Routing Settings)', () => {
   });
 
   it('a step answer (Root NDT Weld Color is Straw) turns a later step on once signed', () => {
-    updateStageTemplate('Welding', 'root-layer', { includeWhen: [[{ field: 'step.root-ndt-vt5x.weldColor', op: 'is', values: ['straw'] }]] });
+    updateStageTemplate('root-layer', { includeWhen: [[{ field: 'step.root-ndt-vt5x.weldColor', op: 'is', values: ['straw'] }]] });
     let stages = buildStages(job);
     const req = () => stages.find(s => s.id === 'root-layer')!.required;
     expect(req()).toBeFalse();
     stages = applySignedFlags(stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, signed: true, inputs: { ...s.inputs, weldColor: 'straw' } } : s), job);
     expect(req()).toBeTrue();
-    expect(describeConditions(getTemplates()['Welding'].find(t => t.id === 'root-layer')!.includeWhen))
+    expect(describeConditions(getTemplates().find(t => t.id === 'root-layer')!.includeWhen))
       .toBe('Root NDT 5X/VT: Weld Color is Straw');
   });
 });

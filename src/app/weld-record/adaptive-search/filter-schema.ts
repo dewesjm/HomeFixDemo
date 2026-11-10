@@ -90,7 +90,7 @@ const stepGroup = (f: ConditionCatalogField) => `Routing: ${f.label.split(': ')[
 /* every field Advanced Search offers, as filters and as columns. Built when the screen opens, since
    step fields come from the (admin-editable) Welding step templates. */
 export function searchFields(): SearchField[] {
-  const steps = allStepAnswerFields('Welding').map<SearchField>(f => ({
+  const steps = allStepAnswerFields().map<SearchField>(f => ({
     key: f.key, label: f.label, group: stepGroup(f), kind: f.values.length ? 'list' : 'text', width: 'min-w-28',
   }));
   return [...JOB_FIELDS, ...fabFields(), ...steps];

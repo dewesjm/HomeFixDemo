@@ -10,7 +10,7 @@ import { fabricationErrors } from '../../fabrication/fabrication-form';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../../catalogs/field-catalog';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
 const ctxFor = (j: Job, stage: WorkflowStage, fab: Record<string, string> = {}, fabErrors: Record<string, string> = {}): SignContext =>
   ({ job: j, fab, fabErrors, visibleFields: visibleStageFields(stage, { job: j, stages: buildStages(j), offListUnlocked: false }) });
@@ -167,7 +167,7 @@ describe('joint-form sign-validation', () => {
 
   it('every field problem is on a field the sign-off form draws, so none is invisible', () => {
     const drawnByComponents = ['__decision', '__inspectionType', 'affectedItem', 'references'];
-    for (const j of JOBS.filter(x => x.trade === 'Welding').slice(0, 25)) {
+    for (const j of JOBS.slice(0, 25)) {
       const stages = buildStages(j);
       for (const st of stages) {
         const ctx = { ...ctxFor(j, st), stages };

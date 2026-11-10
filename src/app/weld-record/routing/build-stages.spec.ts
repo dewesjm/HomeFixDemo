@@ -5,7 +5,7 @@ import { JOBS, Job } from '../../data/jobs';
 import { STORAGE } from '../../data/storage-keys';
 
 describe('NQC rows (Admin > Routing Settings)', () => {
-  const job = (nInd: string): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd, ndtRoot: 'UT' });
+  const job = (nInd: string): Job => ({ ...JOBS[0], nInd, ndtRoot: 'UT' });
   const stage = (j: Job, id: string) => buildStages(j).find(s => s.id === id);
 
   afterEach(() => localStorage.removeItem(STORAGE.stageTemplates));
@@ -25,16 +25,16 @@ describe('NQC rows (Admin > Routing Settings)', () => {
   });
 
   it('the Routing Settings names differ, so rules can tell them apart', () => {
-    const t = (id: string) => getTemplates()['Welding'].find(s => s.id === id)!;
+    const t = (id: string) => getTemplates().find(s => s.id === id)!;
     expect(t('root-ndt-vt5x').label).toBe('Root NDT 5X/VT');
     expect(t('nqc-root-ndt-vt5x').label).toBe('NQC Root NDT 5X/VT');
     expect(t('nqc-root-ndt-vt5x').displayName).toBe('Root NDT 5X/VT');
   });
 
   it('a Display Name set in Routing Settings is what the joint shows', () => {
-    updateStageTemplate('Welding', 'nqc-fitup-insp', { displayName: 'Fit-Up Inspection' });
+    updateStageTemplate('nqc-fitup-insp', { displayName: 'Fit-Up Inspection' });
     expect(stage(job('1'), 'nqc-fitup-insp')?.label).toBe('Fit-Up Inspection');
-    updateStageTemplate('Welding', 'nqc-fitup-insp', { displayName: 'Fit-Up Insp' });
+    updateStageTemplate('nqc-fitup-insp', { displayName: 'Fit-Up Insp' });
   });
 
   it('a built-in step id finds the joint\'s own row', () => {
@@ -47,7 +47,7 @@ describe('NQC rows (Admin > Routing Settings)', () => {
    Joint Details allow only one method */
 describe('NDT Type is never pre-filled', () => {
   const job = (over: Partial<Job>): Job =>
-    ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', ndt: '', ndtRoot: '', ndtEach: 'MT', ndtFinal: '', ...over });
+    ({ ...JOBS[0], nInd: '3', ndt: '', ndtRoot: '', ndtEach: 'MT', ndtFinal: '', ...over });
 
   it('a single-method NDT step offers only that method, with Type blank', () => {
     const stages = buildStages(job({}));
@@ -57,7 +57,7 @@ describe('NDT Type is never pre-filled', () => {
   });
 
   it('no NDT step starts with a Type', () => {
-    for (const j of JOBS.filter(j => j.trade === 'Welding').slice(0, 60)) {
+    for (const j of JOBS.slice(0, 60)) {
       for (const s of buildStages(j).filter(s => /-ndt-/.test(s.id))) {
         expect(s.inspectionType).withContext(`${j.id} ${s.id}`).toBe('');
       }

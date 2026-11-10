@@ -12,7 +12,6 @@ export interface Job {
                            serialNumber is blank too, since neither was captured for that record. */
   ship: string;         /* 3-digit ship number, e.g. '692'; stable per hull, same idea as hull below */
   hull: string;        /* S, T, D or N + 4 digits, e.g. S7234; not unique, many jobs share a hull */
-  trade: string;  /* always 'Welding' */
   technician: string;
   drawing: string;           /* drawing number */
   drawingRev: string;        /* drawing revision */
@@ -191,7 +190,6 @@ function generateJobs(count = 480): Job[] {
   const usedIdentity = new Set<string>();
   const joints = jointNumbers(count, 7);
   for (let i = 0; i < count; i++) {
-    const trade = 'Welding';
     const technician = TECHNICIAN_NAMES[Math.floor(rand() * TECHNICIAN_NAMES.length)];
     rand();   /* a draw no field uses, kept so every seeded joint keeps its values */
     const estimatedHours = Math.round((0.5 + rand() * 39.5) * 10) / 10;
@@ -230,7 +228,6 @@ function generateJobs(count = 480): Job[] {
       xrefid: xrefidBlank ? '' : id,
       ship: SHIP_BY_HULL.get(hull)!,
       hull,
-      trade,
       technician,
       drawing,
       drawingRev: pick(DRAWING_REVS),

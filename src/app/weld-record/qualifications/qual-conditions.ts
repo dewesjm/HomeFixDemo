@@ -18,7 +18,7 @@ import { QualCondition, SELF, USER_FIELD, defaultQualConditions, loadQualConditi
 import { Job } from '../../data/jobs';
 import { PEOPLE } from '../../data/people';
 import { ConditionCatalogField, StageAnswers } from '../catalogs/field-catalog';
-import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, tradeSteps, routingAnswerFields } from '../catalogs/field-choices';
+import { JOINT_AND_FABRICATION_FIELDS, allStepAnswerFields, routingsInOrder, routingAnswerFields } from '../catalogs/field-choices';
 import { QualGroup, cloneGroup, qualsIn, requirementText } from './qual-requirements';
 import { WhenClause, WhenGroup, isWhenGroup, whenMatches, whenText } from './qual-when';
 
@@ -53,7 +53,6 @@ export interface ConditionField {
 /* sign-off field keys: 'step:<field key>' ('step:inspectionType' = the step's Type, 'step:id' = the step) */
 const STEP_PREFIX = 'step:';
 const TYPE_FIELD = `${STEP_PREFIX}inspectionType`;
-const TRADE = 'Welding';
 
 const plain = (values: string[]): ConditionOption[] => values.map(v => ({ value: v, label: v }));
 
@@ -67,7 +66,7 @@ function fromCatalog(f: ConditionCatalogField): ConditionField {
 /* the condition catalog: Joint Details, Fabrication and every routing's answers (Fit-Up Insp's Release
    to welding is listed under both its regular and NQC routing, and offered once) */
 function catalogFields(): ConditionField[] {
-  const answers = new Map(allStepAnswerFields(TRADE).map(f => [f.key, f]));
+  const answers = new Map(allStepAnswerFields().map(f => [f.key, f]));
   return [...JOINT_AND_FABRICATION_FIELDS, ...answers.values()].map(fromCatalog);
 }
 
@@ -79,7 +78,7 @@ const OFF_FORM_FIELDS = new Set(['wtn']);
    the first label. What's offered comes from the steps with a Qualification Check, the only place
    these rows are checked; labels come from every step so old clauses still read properly. */
 function signoffFields(): ConditionField[] {
-  const steps = tradeSteps(TRADE);
+  const steps = routingsInOrder();
   const hasCheck = (t: typeof steps[number]) => routingAnswerFields(t).some(f => f.key === QUAL_CHECK_KEY);
   const toOptions = (m: Map<string, string>) => [...m].map(([value, label]) => ({ value, label }));
   const out: ConditionField[] = [{
@@ -129,7 +128,7 @@ const userField: ConditionField = {
 /* rebuilt whenever the (admin-editable) step templates change, since sign-off fields come from them */
 let cache: { steps: unknown; version: number; fields: ConditionField[] } | null = null;
 export function conditionFields(): ConditionField[] {
-  const steps = tradeSteps(TRADE);
+  const steps = routingsInOrder();
   if (cache?.steps !== steps || cache?.version !== stepFieldConfigVersion()) cache = { steps, version: stepFieldConfigVersion(), fields: [...catalogFields(), ...signoffFields(), userField] };
   return cache.fields;
 }

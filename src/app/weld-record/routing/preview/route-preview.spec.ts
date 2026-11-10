@@ -4,7 +4,7 @@ import { nextRepairStage, excavationNdtStage, stageFromTemplate } from '../inser
 import { WorkflowStage } from '../../model/workflow-types';
 import { routePreviewLabel, SignoffPreview } from './route-preview';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, nInd: '3', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], nInd: '3', ...over });
 const noPreview: SignoffPreview = () => ({ target: undefined, reasons: [] });
 
 describe('joint-form route-preview', () => {

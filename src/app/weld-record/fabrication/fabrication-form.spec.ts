@@ -4,7 +4,7 @@ import {
   micApplies, fabricationFieldsShown, fabricationDisplayValue, fabricationErrors, fabricationFieldRequired,
 } from './fabrication-form';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS.find(j => j.trade === 'Welding')!, mcl1: 'STD', mcl2: 'STD', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', ...over });
 
 describe('joint-form fabrication-form', () => {
   it('Joining Item MIC / Join To Item MIC apply only when that member\'s MCL requires traceability', () => {

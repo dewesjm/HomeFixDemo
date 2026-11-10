@@ -20,7 +20,7 @@ interface ExceptionRow { id: number; routing: string; rule: TypeException; }
 export class TypeExceptionsComponent {
   saved = output<void>();
   types = getSignoffTypes();
-  get routings() { return (getTemplates()['Welding'] ?? []).filter(t => getSignoffTypeRoutingRows().some(r => r.stepId === t.id)); }
+  get routings() { return getTemplates().filter(t => getSignoffTypeRoutingRows().some(r => r.stepId === t.id)); }
   private seq = 0;
   rows: ExceptionRow[] = this.load();
   editing: number | null = null;

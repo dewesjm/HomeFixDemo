@@ -11,7 +11,7 @@ import { RejectRule } from '../route-to-rules';
 const rule = (to: string, value = 'tack'): RejectRule => ({
   when: [{ field: 'self.inspectionType', op: 'is', values: [value] }], to,
 });
-const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], trade: 'Welding', nInd: '3',
+const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], nInd: '3',
   ndtEach: '', ndtRoot: 'VT', ndtFinal: 'VT', ...more });
 const workflowAt = (j: Job, id: string) => {
   const wf = newWorkflow(j);
@@ -32,7 +32,7 @@ describe('Then go to routing', () => {
 
   it('uses the first matching rule and passes intervening routings without signing them', () => {
     const j = job();
-    updateStageTemplate('Welding', 'tack', { thenRules: [rule('root-layer'), rule('fit')] });
+    updateStageTemplate('tack', { thenRules: [rule('root-layer'), rule('fit')] });
     const wf = workflowAt(j, 'tack');
     const result = routeSignoff(wf, j, 'tack');
     expect(activeStageId(result.stages)).toBe('root-layer');
@@ -45,7 +45,7 @@ describe('Then go to routing', () => {
 
   it('continues in order when no rule matches', () => {
     const j = job();
-    updateStageTemplate('Welding', 'tack', { thenRules: [rule('fit', 'other')] });
+    updateStageTemplate('tack', { thenRules: [rule('fit', 'other')] });
     expect(activeStageId(routeSignoff(workflowAt(j, 'tack'), j, 'tack').stages)).toBe('fitup-insp');
   });
 
@@ -69,7 +69,7 @@ describe('Then go to routing', () => {
 
   it('routes to an earlier routing and blanks its fabrication data', () => {
     const j = job();
-    updateStageTemplate('Welding', 'tack', { thenRules: [rule('fit')] });
+    updateStageTemplate('tack', { thenRules: [rule('fit')] });
     const wf = workflowAt(j, 'tack');
     wf.fabricationData = { specificLocation: 'Bay 3' };
     const result = routeSignoff(wf, j, 'tack');
@@ -82,7 +82,7 @@ describe('Then go to routing', () => {
 
   it('leaves UNSAT on the reject path even when a Then go to rule matches', () => {
     const j = job();
-    updateStageTemplate('Welding', 'root-ndt-vt5x', { thenRules: [rule('fit', 'vt')] });
+    updateStageTemplate('root-ndt-vt5x', { thenRules: [rule('fit', 'vt')] });
     const wf = workflowAt(j, 'root-ndt-vt5x');
     wf.stages = wf.stages.map(s => s.id === 'root-ndt-vt5x' ? { ...s, ...typeValues('vt'), result: 'unsat' } : s);
     const result = routeSignoff(wf, j, 'root-ndt-vt5x');
@@ -127,15 +127,15 @@ describe('Then go to routing', () => {
 
   it('saves, reloads, reorders and removes Then go to rules', () => {
     const rules = [rule('root-layer'), rule('fit')];
-    updateStageTemplate('Welding', 'tack', { thenRules: rules });
+    updateStageTemplate('tack', { thenRules: rules });
     const saved = JSON.parse(localStorage.getItem(STORAGE.stageTemplates)!);
-    expect(saved.Welding.find((s: { id: string }) => s.id === 'tack').thenRules).toEqual(rules);
+    expect(saved.find((s: { id: string }) => s.id === 'tack').thenRules).toEqual(rules);
     setSignoffTypes(getSignoffTypes());
-    expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules).toEqual(rules);
-    updateStageTemplate('Welding', 'tack', { thenRules: [...rules].reverse() });
-    expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules![0].to).toBe('fit');
-    updateStageTemplate('Welding', 'tack', { thenRules: [] });
+    expect(getTemplates().find(s => s.id === 'tack')!.thenRules).toEqual(rules);
+    updateStageTemplate('tack', { thenRules: [...rules].reverse() });
+    expect(getTemplates().find(s => s.id === 'tack')!.thenRules![0].to).toBe('fit');
+    updateStageTemplate('tack', { thenRules: [] });
     setSignoffTypes(getSignoffTypes());
-    expect(getTemplates()['Welding'].find(s => s.id === 'tack')!.thenRules).toEqual([]);
+    expect(getTemplates().find(s => s.id === 'tack')!.thenRules).toEqual([]);
   });
 });

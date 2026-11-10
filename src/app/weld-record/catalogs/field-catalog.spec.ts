@@ -15,7 +15,7 @@ import { recheckFabricationRules } from '../routing/on-signoff/route-changes';
 import { getTemplates, updateStageTemplate } from '../routing/routing-settings-rules';
 import { ConditionRule, conditionsMatch, usesFabrication, usesStepAnswers } from '../conditions/joint-conditions';
 
-const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], trade: 'Welding', ...more });
+const job = (more: Partial<Job> = {}): Job => ({ ...JOBS[0], ...more });
 const stage = { id: 'tack', signed: false, inputs: {}, signoffInputs: {}, inspectionType: '', result: null } as unknown as WorkflowStage;
 
 const keysOf = (fields: { key: string }[]) => fields.map(f => f.key);
@@ -62,7 +62,7 @@ describe('field catalog', () => {
     expect(catalogField('fitDeferTack')?.get(job(), signed('fit', { deferTack: 'yes' }))).toBe('Yes');
     expect(catalogField('inspReleaseToWelding')?.get(job(), signed('nqc-fitup-insp', {}, { releaseToWelding: 'yes' }))).toBe('Yes');
     expect(catalogField('inspReleaseToWelding')?.get(job(), [])).toBe('');
-    expect(keysOf(allStepAnswerFields('Welding')).filter(k => /deferTack|releaseToWelding/i.test(k))).toEqual(['fitDeferTack', 'inspReleaseToWelding', 'inspReleaseToWelding']);
+    expect(keysOf(allStepAnswerFields()).filter(k => /deferTack|releaseToWelding/i.test(k))).toEqual(['fitDeferTack', 'inspReleaseToWelding', 'inspReleaseToWelding']);
   });
 
   it('treats only Fabrication-dependent rows as reading Fabrication', () => {
@@ -76,18 +76,18 @@ describe('field catalog', () => {
 
 describe('what each screen offers', () => {
   const sameKeys = (fields: { key: string }[], recorded: string[]) => expect([...keysOf(fields)].sort()).toEqual([...recorded].sort());
-  const steps = () => getTemplates()['Welding'];
+  const steps = () => getTemplates();
 
   it('keeps the keys recorded when the catalogs were merged', () => {
     sameKeys(JOINT_DETAIL_FIELDS, RECORDED_SCREENS.personas);
     sameKeys(JOINT_AND_FABRICATION_FIELDS, RECORDED_SCREENS.clauses);
     sameKeys(ROUTING_CONDITION_FIELDS, RECORDED_SCREENS.routing);
     sameKeys(FORM_FIELDS, RECORDED_SCREENS.form);
-    sameKeys(allStepAnswerFields('Welding'), RECORDED_SCREENS.answers);
+    sameKeys(allStepAnswerFields(), RECORDED_SCREENS.answers);
     sameKeys(exceptionConditionFields(), RECORDED_SCREENS.exceptions);
     for (const t of steps()) sameKeys(stageConditionFields(t), (RECORDED_SCREENS.self[t.id] ?? []).map(k => `self.${k}`));
     const all = new Set(RECORDED_SCREENS.answers);
-    for (const t of steps()) expect(keysOf(stepAnswerFieldsBefore('Welding', t.id)).every(k => all.has(k))).withContext(t.id).toBeTrue();
+    for (const t of steps()) expect(keysOf(stepAnswerFieldsBefore(t.id)).every(k => all.has(k))).withContext(t.id).toBeTrue();
   });
 
   it('leaves Fabrication-dependent rows out of personas and Signoff Type to Routing', () => {
@@ -99,7 +99,7 @@ describe('what each screen offers', () => {
 
   it('heads Routing Settings droplists with the Source, in order', () => {
     const t = steps().find(s => s.id === 'fit')!;
-    const groups = conditionFieldGroups([...stageConditionFields(t), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore('Welding', 'fit')]);
+    const groups = conditionFieldGroups([...stageConditionFields(t), ...ROUTING_CONDITION_FIELDS, ...stepAnswerFieldsBefore('fit')]);
     expect(groups.map(g => g.label)).toEqual(['This routing', 'Joint Details', 'Calculated', 'Fabrication', 'Earlier routings (once signed)']);
     expect(keysOf(groups.find(g => g.label === 'Calculated')!.fields)).toEqual(keysOf(FIELD_CATALOG.filter(f => f.source === 'Calculated')));
   });
@@ -169,13 +169,13 @@ describe('condition catalog', () => {
 
 describe('rules on Fabrication', () => {
   const rule: ConditionRule[] = [[{ field: 'fab.weldMemo', op: 'is', values: ['M1'] }]];
-  const before = getTemplates()['Welding'].find(t => t.id === 'tack')!.includeWhen;
-  afterEach(() => { updateStageTemplate('Welding', 'tack', { includeWhen: before }); localStorage.clear(); });
+  const before = getTemplates().find(t => t.id === 'tack')!.includeWhen;
+  afterEach(() => { updateStageTemplate('tack', { includeWhen: before }); localStorage.clear(); });
 
   it('count as later answers and are re-checked when a value changes', () => {
     expect(usesStepAnswers(rule)).toBeTrue();
     expect(usesFabrication(rule)).toBeTrue();
-    updateStageTemplate('Welding', 'tack', { includeWhen: rule });
+    updateStageTemplate('tack', { includeWhen: rule });
     const j = job();
     const stages = newWorkflow(j).stages;
     const tack = (s: WorkflowStage[]) => s.find(x => x.id === 'tack')!;
@@ -205,7 +205,7 @@ describe('Qualifications', () => {
   it('offers the same catalog as Routing Settings, each field once', () => {
     const keys = conditionFields().map(f => f.key);
     expect(new Set(keys).size).toBe(keys.length);
-    for (const f of [...ROUTING_CONDITION_FIELDS, ...allStepAnswerFields('Welding')]) expect(keys).toContain(f.key);
+    for (const f of [...ROUTING_CONDITION_FIELDS, ...allStepAnswerFields()]) expect(keys).toContain(f.key);
     expect(conditionField('step.root-weld.weldProcess')?.group).toBe('Routing answers');
   });
 

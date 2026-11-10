@@ -1,7 +1,6 @@
 /* Admin > Routing Settings: the dialog for a routing's plain-English description (reference text only). */
 import { Component, input, output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Job } from '../../../data/jobs';
 import { StageTemplate } from '../../model/workflow-types';
 import { updateStageTemplate } from '../../routing/routing-settings-rules';
 
@@ -28,7 +27,6 @@ import { updateStageTemplate } from '../../routing/routing-settings-rules';
 })
 export class RoutingDescriptionComponent implements OnInit {
   routing = input.required<StageTemplate>();
-  trade = input.required<Job['trade']>();
   closed = output<void>();
   description = '';
   error = '';
@@ -37,7 +35,7 @@ export class RoutingDescriptionComponent implements OnInit {
 
   save() {
     try {
-      updateStageTemplate(this.trade(), this.routing().id, { description: this.description.trim() });
+      updateStageTemplate(this.routing().id, { description: this.description.trim() });
       this.closed.emit();
     } catch {
       this.error = 'The description could not be saved. Try again.';

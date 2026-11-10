@@ -46,7 +46,7 @@ export class WorkflowStore {
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') this.flushPersist(); });
   }
 
-  /* reactive workflow for a job, built from trade template */
+  /* reactive workflow for a job, built from the Routing Settings rows */
   workflowFor(job: Job): WritableSignal<JobWorkflow> {
     let sig = this.store.get(job.id);
     if (!sig) {
@@ -120,9 +120,9 @@ export class WorkflowStore {
 
         /* rebuild the stages if the joint has one its templates no longer do */
         if (job) {
-          /* a stage id the trade's templates no longer have; Repair, Excavation NDT, Engineering Hold
+          /* a stage id the Routing Settings rows no longer have; Repair, Excavation NDT, Engineering Hold
              and inserted routings are added at runtime, and a step an Admin > Routing Settings condition now leaves out stays put */
-          const templateIds = new Set((getTemplates()[job.trade] ?? []).map(t => t.id));
+          const templateIds = new Set(getTemplates().map(t => t.id));
           const missingStages = wf.stages.some(s => !templateIds.has(s.id)
             && !isRepairStageId(s.id) && !isExcavationNdtStageId(s.id) && !isEngineeringHoldId(s.id) && !s.insertion);
           if (missingStages) {

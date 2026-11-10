@@ -40,17 +40,15 @@ export class HistoryTableComponent {
   /* Deprogress confirmed with a reason; the parent carries it out */
   deprogress = output<{ jobId: string; reason: string }>();
 
-  /* canonical stage order (first appearance across every trade's template), so the routing
+  /* canonical stage order (Routing Settings order), so the routing
      filter reads like the actual workflow sequence instead of alphabetically; anything not a
      real stage (e.g. 'All stages complete') sorts to the end */
   private routingOrder = computed(() => {
     const order = new Map<string, number>();
     let i = 0;
-    for (const stages of Object.values(getTemplates())) {
-      for (const s of stages) {
-        const label = s.displayName || s.label;
-        if (!order.has(label)) order.set(label, i++);
-      }
+    for (const s of getTemplates()) {
+      const label = s.displayName || s.label;
+      if (!order.has(label)) order.set(label, i++);
     }
     return order;
   });

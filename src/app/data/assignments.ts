@@ -13,7 +13,6 @@ export interface Assignment {
   hull: string;
   drawing: string;
   joint: string;
-  trade: string;
   /* no stored routing: My Assignments shows the linked job's live current routing, so it can't drift
      from what the joint page shows (see my-assignments.component.ts routingFor) */
   location: string;           /* shop, same list as Fabrication's Location field; a Shipboard one for a couple of examples (see below) */
@@ -151,7 +150,6 @@ function generateAssignments(): Assignment[] {
       hull: job.hull,
       drawing: job.drawing,
       joint: job.joint,
-      trade: job.trade,
       /* a blank XREFID doesn't by itself mean "on the ship" — most still track to a shop/bay
          like any other assignment; only a couple of examples get the shipboard treatment below */
       location: pick(ashore.length ? ashore : locations)?.name ?? '',

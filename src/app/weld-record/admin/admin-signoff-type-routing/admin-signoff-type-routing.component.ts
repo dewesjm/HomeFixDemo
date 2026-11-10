@@ -50,7 +50,7 @@ export class AdminSignoffTypeRoutingComponent {
   readonly typeSourceLabel = typeSourceLabel;
   /* every routing a row can be for: the Routing Settings routings, then Repair and Excavation NDT */
   readonly steps: { id: string; label: string }[] = [
-    ...(getTemplates()['Welding'] ?? []).map(s => ({ id: s.id, label: s.label })),
+    ...getTemplates().map(s => ({ id: s.id, label: s.label })),
   ];
   /* what an option can be: the Types in Admin > Signoff Types */
   readonly typeChoices = getSignoffTypes();

@@ -1,7 +1,6 @@
 /* Ordered Joint Details rules selecting a routing's persona, with its base persona as fallback. */
 import { Component, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Job } from '../../../data/jobs';
 import { ROLES, StageTemplate } from '../../model/workflow-types';
 import { getTemplates, updateStageTemplate } from '../../routing/routing-settings-rules';
 import { ConditionClause } from '../../conditions/joint-conditions';
@@ -71,7 +70,6 @@ import { clauseTyped, clauseValid, conditionValueOptions, newConditionClause, pa
 })
 export class PersonaRulesComponent {
   routing = input.required<StageTemplate>();
-  trade = input.required<Job['trade']>();
   closed = output<void>();
   saved = output<void>();
   fields = JOINT_DETAIL_FIELDS;
@@ -83,7 +81,7 @@ export class PersonaRulesComponent {
   ngOnInit() {
     this.fallbackRole = this.routing().role ?? '';
     this.rules = structuredClone(this.routing().roleRules ?? []);
-    this.roles = [...new Set([...this.roles, ...Object.values(getTemplates()).flatMap(rows => rows.flatMap(row => [row.role ?? '', ...(row.roleRules ?? []).map(rule => rule.role)]))])].filter(Boolean).sort();
+    this.roles = [...new Set([...this.roles, ...getTemplates().flatMap(row => [row.role ?? '', ...(row.roleRules ?? []).map(rule => rule.role)])])].filter(Boolean).sort();
   }
   typed(clause: ConditionClause) { return clauseTyped(this.fields, clause); }
   options(key: string) { return conditionValueOptions(this.fields, key); }
@@ -101,7 +99,7 @@ export class PersonaRulesComponent {
   }
   save() {
     if (!this.valid()) return;
-    updateStageTemplate(this.trade(), this.routing().id, { role: this.fallbackRole, roleRules: structuredClone(this.rules) });
+    updateStageTemplate(this.routing().id, { role: this.fallbackRole, roleRules: structuredClone(this.rules) });
     this.saved.emit();
     this.closed.emit();
   }

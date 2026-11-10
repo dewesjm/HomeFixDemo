@@ -1,7 +1,6 @@
 /* Admin > Routing Settings rows: the starting rows (welding-steps.ts) with the saved changes (localStorage)
    applied, and saving them. Checks before a save and the Type options each row offers are in
    weld-record/routing/routing-settings-rules.ts. */
-import { Job } from './jobs';
 import { STORAGE } from './storage-keys';
 import { WELDING_STEPS, DEFAULT_STEP_CONDITIONS, DEFAULT_REJECT_RULES, DEFAULT_THEN_RULES, ADDED_STAGE_TEMPLATES } from './welding-steps';
 import { StageTemplate } from '../weld-record/model/workflow-types';
@@ -15,13 +14,11 @@ function withFabricationEditable(list: StageTemplate[]): StageTemplate[] {
   return list.map((s, i) => ({ ...s, fabricationEditable: fitupAt < 0 || i <= fitupAt }));
 }
 
-/* the built-in Welding steps, with their built-in conditions and reject rules */
-const STATIC_TEMPLATES: Record<Job['trade'], StageTemplate[]> = {
-  Welding: withFabricationEditable(WELDING_STEPS
-    .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
-    .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
-    .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)).concat(ADDED_STAGE_TEMPLATES),
-};
+/* the built-in routings, with their built-in conditions and reject rules */
+const STATIC_TEMPLATES: StageTemplate[] = withFabricationEditable(WELDING_STEPS
+  .map(s => DEFAULT_STEP_CONDITIONS[s.id] ? { ...s, includeWhen: DEFAULT_STEP_CONDITIONS[s.id] } : s)
+  .map(s => ({ ...s, thenRules: DEFAULT_THEN_RULES[s.id] ?? [] }))
+  .map(s => DEFAULT_REJECT_RULES[s.id] ? { ...s, rejectRules: DEFAULT_REJECT_RULES[s.id] } : s)).concat(ADDED_STAGE_TEMPLATES);
 
 /* ── Saved Admin > Routing Settings changes (localStorage) ── */
 
@@ -79,41 +76,36 @@ function deserializeStage(s: SerializedStage, builtIn?: StageTemplate): StageTem
   };
 }
 
-function loadSavedOverrides(): Record<string, SerializedStage[]> {
+function loadSavedOverrides(): SerializedStage[] | null {
   try {
     const raw = localStorage.getItem(STORAGE.stageTemplates);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+    const saved = raw ? JSON.parse(raw) : null;
+    return Array.isArray(saved) ? saved : null;
+  } catch { return null; }
 }
 
-function saveOverrides(overrides: Record<string, SerializedStage[]>) {
+function saveOverrides(overrides: SerializedStage[]) {
   try { localStorage.setItem(STORAGE.stageTemplates, JSON.stringify(overrides)); } catch { /* */ }
 }
 
 /* starting rows with the saved changes: saved order wins (Admin > Routing Settings reorders); a built-in
    row the save doesn't have goes in after the built-in row before it */
-export function loadRoutingSettings(): Record<Job['trade'], StageTemplate[]> {
+export function loadRoutingSettings(): StageTemplate[] {
+  const statics = STATIC_TEMPLATES;
   const saved = loadSavedOverrides();
-  const rows = {} as Record<Job['trade'], StageTemplate[]>;
-  for (const [trade, statics] of Object.entries(STATIC_TEMPLATES) as [Job['trade'], StageTemplate[]][]) {
-    const overridden = saved[trade];
-    let list = statics;
-    if (overridden) {
-      const staticMap = new Map(statics.map(s => [s.id, s]));
-      list = overridden.map(s => deserializeStage(s, staticMap.get(s.id)));
-      statics.forEach((st, i) => {
-        if (list.some(m => m.id === st.id)) return;
-        const prev = i > 0 ? list.findIndex(m => m.id === statics[i - 1].id) : -1;
-        list.splice(prev + 1, 0, st);
-      });
-    }
-    rows[trade] = list.map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active' }));
+  let list = statics;
+  if (saved) {
+    const staticMap = new Map(statics.map(s => [s.id, s]));
+    list = saved.map(s => deserializeStage(s, staticMap.get(s.id)));
+    statics.forEach((st, i) => {
+      if (list.some(m => m.id === st.id)) return;
+      const prev = i > 0 ? list.findIndex(m => m.id === statics[i - 1].id) : -1;
+      list.splice(prev + 1, 0, st);
+    });
   }
-  return rows;
+  return list.map(s => ({ ...s, classification: s.classification ?? 'numbered', lifecycle: s.lifecycle ?? 'ordinary', status: s.status ?? 'active' }));
 }
 
-export function saveRoutingSettings(rows: Record<Job['trade'], StageTemplate[]>) {
-  const serialized: Record<string, SerializedStage[]> = {};
-  for (const [trade, list] of Object.entries(rows)) serialized[trade] = list.map(serializeStage);
-  saveOverrides(serialized);
+export function saveRoutingSettings(rows: StageTemplate[]) {
+  saveOverrides(rows.map(serializeStage));
 }

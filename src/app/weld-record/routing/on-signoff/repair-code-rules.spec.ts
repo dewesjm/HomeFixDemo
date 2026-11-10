@@ -24,8 +24,8 @@ describe('Configured Repair Code routing', () => {
     return id;
   }
   function rule(to: string) {
-    const repair = getTemplates()['Welding'].find(t => t.id === 'repair')!;
-    updateStageTemplate('Welding', 'repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['extra'] }], to }, ...(repair.thenRules ?? [])] });
+    const repair = getTemplates().find(t => t.id === 'repair')!;
+    updateStageTemplate('repair', { thenRules: [{ when: [{ field: 'self.repairType', op: 'is', values: ['extra'] }], to }, ...(repair.thenRules ?? [])] });
   }
   beforeEach(() => {
     localStorage.clear();

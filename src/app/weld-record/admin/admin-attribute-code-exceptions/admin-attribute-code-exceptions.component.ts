@@ -44,7 +44,7 @@ export class AdminAttributeCodeExceptionsComponent {
 
   readonly codes = PROGRESSION_ATTRIBUTE_CODES;
   /* the routings a row can name: Routing Settings' numbered routings, NQC rows included */
-  readonly routings = (getTemplates()['Welding'] ?? [])
+  readonly routings = getTemplates()
     .filter(t => t.classification !== 'added')
     .map(t => ({ id: t.id, label: t.label }));
   readonly typeChoices = getSignoffTypes();
