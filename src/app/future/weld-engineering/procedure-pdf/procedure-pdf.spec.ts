@@ -10,7 +10,7 @@ const baseProcedure: Procedure = {
   baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', baseMetalThicknessMin: '0.125"', baseMetalThicknessMax: '0.75"',
   jointType: 'Groove', grooveAngle: '37.5°', rootOpening: '0.0625"', backing: 'None',
   weldPosition: 'F', weldProgression: 'N/A',
-  fillerMetalTypes: ['mil-80s-50'], fillerMetalClassification: 'MIL-80S-50', fillerMetalSizes: ['1/8', '5/32'],
+  fillerMetalTypes: ['mil-80s-50'], fillerMetalClassification: 'MIL-80S-50', fillerMetalSizes: ['1/8', '5/32'], requiredQuals: { op: 'all', items: [] },
   phMin: '120', phMax: '180', ipMin: '90', ipMax: '150',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: 'DCEP', powerSource: 'Constant Current',
@@ -96,7 +96,8 @@ describe('procedureDocDefinition', () => {
     const doc = procedureDocDefinition(baseProcedure);
     expect(ulFor(doc, 'Rules').length).toBe(baseProcedure.rules.length);
     expect(ulFor(doc, 'Specific Conditions').length).toBe(baseProcedure.conditions.length);
-    expect(ulFor(procedureDocDefinition(baseProcedure, [], 'WELD412 AND WELD427'), '5. Welder Qualifications')).toEqual(['WELD412 AND WELD427']);
+    const withQuals: Procedure = { ...baseProcedure, requiredQuals: { op: 'all', items: ['WELD412', { op: 'any', items: ['WELD427', 'WELD403'] }] } };
+    expect(ulFor(procedureDocDefinition(withQuals), '5. Welder Qualifications')).toEqual(['WELD412 AND (WELD427 OR WELD403)']);
   });
 
   it('renders a placeholder instead of an empty list when arrays are empty', () => {

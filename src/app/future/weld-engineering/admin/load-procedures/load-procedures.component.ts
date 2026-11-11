@@ -128,6 +128,7 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       fillerMetalTypes: splitFillerList(row.fillerMetalTypes),
       fillerMetalClassification: existing?.fillerMetalClassification ?? '',
       fillerMetalSizes: row.fillerMetalSizes ? splitFillerList(row.fillerMetalSizes) : existing?.fillerMetalSizes ?? [],
+      requiredQuals: existing?.requiredQuals ?? { op: 'all' as const, items: [] },
       phMin: row.phMin, phMax: row.phMax, ipMin: row.ipMin, ipMax: row.ipMax,
       overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
       currentType: existing?.currentType ?? '', powerSource: existing?.powerSource ?? '',

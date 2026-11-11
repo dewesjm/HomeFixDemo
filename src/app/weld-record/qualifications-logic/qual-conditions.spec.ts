@@ -3,7 +3,7 @@ import '../routing-logic/routing-settings-rules';
 import { QualCondition, SELF } from '../../data/qualifications';
 import {
   conditionFields, conditionTypeText, conditionWhenText, conditionRequirements, distinctRequirements, heldBy, heldQuals,
-  notOnCheckForm, qualConditions, setQualConditions, signoffTypeChoices, wtnRequirementText,
+  notOnCheckForm, qualConditions, setQualConditions, signoffTypeChoices,
 } from './qual-conditions';
 import { WhenClause, WhenGroup, whenComplete } from './qual-when';
 
@@ -25,7 +25,7 @@ describe('qual conditions', () => {
     const groups = new Set(conditionFields().map(f => f.group));
     expect([...groups]).toEqual(['Joint Details', 'Calculated', 'Fabrication', 'Routing answers', 'Sign-off', 'User']);
     const keys = conditionFields().map(f => f.key);
-    ['ss', 'controlledMaterial', 'material.titanium', 'drawing', 'materialType1', 'step:id', 'step:inspectionType', 'step:wtn', 'user']
+    ['ss', 'controlledMaterial', 'material.titanium', 'drawing', 'materialType1', 'step:id', 'step:inspectionType', 'step:weldColor', 'user']
       .forEach(k => expect(keys).toContain(k));
   });
 
@@ -33,16 +33,16 @@ describe('qual conditions', () => {
     const job = BLANK_JOINT;
     setQualConditions([
       { when: w('ss', job.ss === 'Yes' ? 'Yes' : 'No'), type: 'vt', require: { op: 'all', items: ['WELD412'] } },
-      { when: w('step:wtn', '01.1-1'), type: 'vt', require: { op: 'any', items: ['WELD427', 'WELD403'] } },
+      { when: w('step:weldColor', 'blue'), type: 'vt', require: { op: 'any', items: ['WELD427', 'WELD403'] } },
       { when: w('step:id', 'root-weld'), type: 'vt', require: { op: 'all', items: ['WELD458'] } },
     ]);
     expect(conditionRequirements(job, VT).length).toBe(1);
-    expect(conditionRequirements(job, { ...VT, inputs: { wtn: '01.1-1' } }).length).toBe(2);
-    expect(conditionRequirements(job, { ...VT, inputs: { wtn: '99.9-9' } }).length).toBe(1);
+    expect(conditionRequirements(job, { ...VT, inputs: { weldColor: 'blue' } }).length).toBe(2);
+    expect(conditionRequirements(job, { ...VT, inputs: { weldColor: 'red' } }).length).toBe(1);
     expect(conditionRequirements(job, { ...VT, id: 'root-weld' }).length).toBe(2);
     expect(conditionRequirements(job, { inspectionType: 'mt' }).length).toBe(0);
     expect(conditionRequirements(job).length).toBe(0);
-    expect(conditionRequirements(null, { inputs: { wtn: '01.1-1' } })).toEqual([]);
+    expect(conditionRequirements(null, { inputs: { weldColor: 'blue' } })).toEqual([]);
   });
 
   it('matches Titanium from either Material Type', () => {
@@ -108,10 +108,10 @@ describe('qual conditions', () => {
     expect(conditionRequirements(BLANK_JOINT, { inspectionType: 'vt' })).toEqual([]);
   });
 
-  it('offers only fields on a form with a Qualification Check, plus WTN', () => {
+  it('offers only fields on a form with a Qualification Check', () => {
     const offered = conditionFields().filter(f => f.group === 'Sign-off' && !f.unavailable).map(f => f.key);
     expect(offered).toContain('step:weldColor');
-    expect(offered).toContain('step:wtn');
+    expect(offered).not.toContain('step:wtn');
     for (const key of ['step:verifyMic1', 'step:verifyMcl1', 'step:fillerMetalMic', 'step:qualificationCheck']) expect(offered).not.toContain(key);
     expect(conditionFields().some(f => f.key === 'titanium')).toBeFalse();
     const types = signoffTypeChoices().map(o => o.value);
@@ -159,25 +159,11 @@ describe('qual conditions', () => {
     expect(conditionRequirements(job, VT).length).toBe(1);
   });
 
-  it('a WTN row reads only the WTN, so another field is not leaving it on every WTN', () => {
-    setQualConditions([{ when: clause({ field: 'ss', op: 'isNot', values: ['Yes'] }), require: REQ }]);
-    expect(wtnRequirementText('01.1-1')).toBe('');
-  });
-
   it('needs a value on every clause, including nested ones', () => {
     expect(whenComplete(w('ss', 'Yes'))).toBeTrue();
     expect(whenComplete({ op: 'all', items: [] })).toBeTrue();
     expect(whenComplete(clause({ field: 'ss' }))).toBeFalse();
     expect(whenComplete({ op: 'all', items: [c('ss', 'Yes'), clause({ field: 'ss' })] })).toBeFalse();
-  });
-
-  it('describes a WTN requirement, joining several conditions by AND', () => {
-    setQualConditions([
-      { when: w('step:wtn', '01.1-1'), require: { op: 'any', items: ['WELD427', 'WELD403'] } },
-      { when: w('step:wtn', '01.1-1'), require: { op: 'all', items: ['WELD412'] } },
-    ]);
-    expect(wtnRequirementText('01.1-1')).toBe('(WELD427 OR WELD403) AND WELD412');
-    expect(wtnRequirementText('02.2-2')).toBe('');
   });
 
   it('counts a requirement repeated across Signoff Types once, and leaves out User rows', () => {
@@ -189,11 +175,5 @@ describe('qual conditions', () => {
       { when: w('ss', 'Yes'), type: 'rt', require: { op: 'all', items: ['SSWELD1'] } },
     ];
     expect(distinctRequirements(rows).length).toBe(3);
-  });
-
-  it('reads a WTN requirement whatever the row\'s Signoff Type, naming one repeated across Types once', () => {
-    const require = { op: 'any' as const, items: ['WELD427', 'WELD403'] };
-    setQualConditions([{ when: w('step:wtn', '01.1-1'), type: 'vt', require }, { when: w('step:wtn', '01.1-1'), type: 'mt', require }]);
-    expect(wtnRequirementText('01.1-1')).toBe('WELD427 OR WELD403');
   });
 });

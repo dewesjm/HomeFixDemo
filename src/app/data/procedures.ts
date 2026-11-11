@@ -10,7 +10,8 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { type ExtraFields, procedureSections } from '../future/weld-engineering/procedure-sections';
+import { type ExtraFields } from '../future/weld-engineering/procedure-sections';
+import type { QualGroup } from '../weld-record/qualifications-logic/qual-requirements';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -95,8 +96,9 @@ export interface Procedure {
   fillerMetalClassification: string;
   fillerMetalSizes: string[];
 
-  /* 5. Welder Qualifications: not stored here; set by WTN conditions under Admin > Qualifications
-     (qual-conditions.ts, wtnRequirementText()) */
+  /* 5. Welder Qualifications: the quals a welder needs to weld to this WPS, an AND/OR group (an empty
+     group requires nothing). Weld Record reads it through procedureRequiredQuals() (procedure-values.ts). */
+  requiredQuals: QualGroup;
 
   /* 6. Preheat & Interpass Temperatures */
   phMin: string; phMax: string; ipMin: string; ipMax: string;               /* 'NC' = no limit, blank = not set */
@@ -213,6 +215,25 @@ function materialCombos(): [string, string][] {
   return combos;
 }
 
+/* sample Welder Qualifications, drawn from their own seeded sequence (keyed by WPS id) so they don't
+   shift the other seeded values; about a quarter of WPS rows require nothing */
+const REQUIRED_QUALS_POOL: QualGroup[] = [
+  { op: 'all', items: [] },
+  { op: 'all', items: ['WELD412'] },
+  { op: 'any', items: ['WELD427', 'WELD403'] },
+  { op: 'all', items: ['WELD412', { op: 'any', items: ['WELD427', 'WELD403'] }] },
+  { op: 'all', items: ['WELD458'] },
+  { op: 'any', items: ['WELD431', 'WELD466'] },
+  { op: 'all', items: [] },
+  { op: 'all', items: ['WELD419'] },
+];
+function seedRequiredQuals(id: string): QualGroup {
+  let n = 0;
+  for (const ch of id) n = (n * 31 + ch.charCodeAt(0)) % 100000;
+  const g = REQUIRED_QUALS_POOL[Math.floor(seeded(n)() * REQUIRED_QUALS_POOL.length)];
+  return JSON.parse(JSON.stringify(g));
+}
+
 function generateProcedures(): Procedure[] {
   const rand = seeded(777);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
@@ -277,6 +298,7 @@ function generateProcedures(): Procedure[] {
           /* matches the first allowed filler type, so the description names a filler this WPS allows */
           fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
           fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
+          requiredQuals: seedRequiredQuals(id),
           /* round values only (real limits are clean numbers like 60, 200, 300); every min pool
              value is below every max pool value */
           phMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150', '200']),
@@ -321,21 +343,11 @@ const LS_KEY = STORAGE.procedures;
 function loadProcedures(): Procedure[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return withAddedSectionIds(JSON.parse(raw) as Procedure[]);
+    if (raw) return JSON.parse(raw) as Procedure[];
   } catch { /* ignore */ }
   const seededList = generateProcedures();
   persistProcedures(seededList);
   return seededList;
-}
-
-/* migration (temporary, see docs/Tasks.md Cleanup): procedures saved before addedSectionIds existed
-   showed every added section, so they keep every section there is now */
-function withAddedSectionIds(list: Procedure[]): Procedure[] {
-  if (list.every(p => Array.isArray(p.addedSectionIds))) return list;
-  const allIds = procedureSections().map(s => s.id);
-  const next = list.map(p => Array.isArray(p.addedSectionIds) ? p : { ...p, addedSectionIds: [...allIds] });
-  persistProcedures(next);
-  return next;
 }
 
 function persistProcedures(list: Procedure[]) {

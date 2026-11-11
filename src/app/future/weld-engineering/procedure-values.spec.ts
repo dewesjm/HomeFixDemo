@@ -3,7 +3,7 @@ import {
 } from '../../data/procedures';
 import {
   hasOverride, allGwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, procedureDescription,
-  fillerMetalTypeOptions, fillerMetalSizeOptions, hasProcedure, procedureOverride,
+  fillerMetalTypeOptions, fillerMetalSizeOptions, hasProcedure, procedureOverride, procedureRequiredQuals,
 } from './procedure-values';
 
 const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
@@ -14,7 +14,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
-  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
+  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [], requiredQuals: { op: 'all', items: [] },
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: '', powerSource: '',
@@ -147,6 +147,21 @@ describe('procedure values', () => {
     it('returns an empty list when the GWP+WTN matches no WPS', () => {
       expect(fillerMetalTypeOptions('NO-SUCH-GWP', '01.1-1')).toEqual([]);
       expect(fillerMetalSizeOptions('NO-SUCH-GWP', '01.1-1')).toEqual([]);
+    });
+  });
+
+  describe('Welder Qualifications', () => {
+    it('procedureRequiredQuals gives the WPS\'s required quals, or an empty group when it matches none', () => {
+      addProcedure(blankProcedure('TEST-QUALS-1', 'TEST-GWP-QUALS', '11.1-1'));
+      updateProcedure('TEST-QUALS-1', { requiredQuals: { op: 'any', items: ['WELD427', 'WELD403'] } });
+      expect(procedureRequiredQuals('TEST-GWP-QUALS', '11.1-1')).toEqual({ op: 'any', items: ['WELD427', 'WELD403'] });
+      expect(procedureRequiredQuals('TEST-GWP-QUALS', 'no-such-wtn')).toEqual({ op: 'all', items: [] });
+    });
+
+    it('seeds Welder Qualifications on some WPS rows and none on others', () => {
+      const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+      expect(seeded.some(p => p.requiredQuals.items.length > 0)).toBeTrue();
+      expect(seeded.some(p => p.requiredQuals.items.length === 0)).toBeTrue();
     });
   });
 

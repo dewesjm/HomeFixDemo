@@ -10,6 +10,7 @@
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
 import { hasOverride } from '../procedure-values';
+import { requirementText } from '../../../weld-record/qualifications-logic/qual-requirements';
 import { extraValueText, sectionsOnProcedure, type ProcedureSection } from '../procedure-sections';
 import { formatDate } from '../../../shared/date-format';
 
@@ -86,8 +87,8 @@ function addedSections(p: Procedure, sections: ProcedureSection[]): Content[] {
     : [{ text: `${number}. ${s.name}`, style: 'sectionHeader' }]);
 }
 
-/* quals = the WTN's requirement from Admin > Qualifications (wtnRequirementText()), '' when none */
-export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = [], quals = ''): TDocumentDefinitions {
+export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = []): TDocumentDefinitions {
+  const quals = requirementText(p.requiredQuals);
   const content: Content[] = [
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },

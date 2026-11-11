@@ -4,6 +4,7 @@ import { CsvColumn } from '../../shared/export-csv';
 import { downloadXlsxTemplate } from '../../shared/spreadsheet-import';
 import { Procedure } from '../../data/procedures';
 import { ProcedureSection, extraValueText } from './procedure-sections';
+import { requirementText } from '../../weld-record/qualifications-logic/qual-requirements';
 
 const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'WPS', value: r => r.id },
@@ -29,6 +30,7 @@ const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Filler Metal Types', value: r => r.fillerMetalTypes.join('; ') },
   { header: 'Filler Metal Classification', value: r => r.fillerMetalClassification },
   { header: 'Filler Metal Sizes', value: r => r.fillerMetalSizes.join('; ') },
+  { header: 'Welder Qualifications', value: r => requirementText(r.requiredQuals) },
   { header: 'PH Min', value: r => r.phMin },
   { header: 'PH Max', value: r => r.phMax },
   { header: 'IP Min', value: r => r.ipMin },

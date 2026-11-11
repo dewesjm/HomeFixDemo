@@ -71,9 +71,6 @@ function catalogFields(): ConditionField[] {
 }
 
 const QUAL_CHECK_KEY = 'qualificationCheck';
-/* not on a Qualification Check form, but Weld Engineering shows each WTN's quals (wtnRequirementText) */
-const OFF_FORM_FIELDS = new Set(['wtn']);
-
 /* the step itself, then every field any step has (Type, fields, sign-off fields), once per key with
    the first label. What's offered comes from the steps with a Qualification Check, the only place
    these rows are checked; labels come from every step so old clauses still read properly. */
@@ -105,7 +102,7 @@ function signoffFields(): ConditionField[] {
   for (const [key, e] of byKey) {
     out.push({
       key: STEP_PREFIX + key, label: e.label, group: 'Sign-off', ownColumn: key === 'inspectionType',
-      unavailable: key === QUAL_CHECK_KEY || (!e.onForm && !OFF_FORM_FIELDS.has(key)),
+      unavailable: key === QUAL_CHECK_KEY || !e.onForm,
       options: () => e.checkbox ? plain(['Yes', 'No']) : toOptions(e.onForm ? e.offered : e.options),
       valueLabel: v => e.options.get(v) ?? v,
       get: s => {
@@ -220,15 +217,4 @@ export function conditionRequirements(job: Job | undefined | null, step: Conditi
   return qualConditions()
     .filter(c => userOf(c) === null && applies(c, valueOf))
     .map(c => cloneGroup(c.require));
-}
-
-/* the requirement of every condition a step with this WTN matches on the WTN alone, joined by AND;
-   '' when there's none. A procedure has no Signoff Type, so the row's Type isn't compared, and a
-   requirement repeated across Types is named once. */
-export function wtnRequirementText(wtn: string): string {
-  const valueOf = (key: string) => key === `${STEP_PREFIX}wtn` ? wtn : undefined;
-  const matched = qualConditions().filter(c => c.require.items.length && userOf(c) === null && c.when.items.length && whenMatches(c.when, valueOf));
-  const groups = [...new Map(matched.map(c => [requirementText(c.require), c])).values()];
-  if (groups.length === 1) return requirementText(groups[0].require);
-  return groups.map(c => requirementText(c.require, true)).join(' AND ');
 }

@@ -10,7 +10,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
-  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
+  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [], requiredQuals: { op: 'all', items: [] },
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: '', powerSource: '',

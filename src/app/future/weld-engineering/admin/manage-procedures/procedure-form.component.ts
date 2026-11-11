@@ -13,7 +13,9 @@ import {
   FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type Procedure
 } from '../../../../data/procedures';
-import { wtnRequirementText } from '../../../../weld-record/qualifications-logic/qual-conditions';
+import { ALL_QUALS } from '../../../../weld-record/qualifications-logic/qualifications';
+import { cloneGroup, pruneGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
+import { QualGroupEditorComponent } from '../../../../weld-record/qual-group-editor/qual-group-editor.component';
 import {
   procedureSections, sectionNumber, sectionsOnProcedure, withAllFields, extraFieldProblems, compactExtras,
   type RangeValue
@@ -29,6 +31,7 @@ const EMPTY_FORM: Procedure = {
   jointType: '', grooveAngle: '', rootOpening: '', backing: '',
   weldPosition: '', weldProgression: '',
   fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
+  requiredQuals: { op: 'all', items: [] },
   phMin: '', phMax: '', ipMin: '', ipMax: '',
   overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
   currentType: '', powerSource: '',
@@ -46,7 +49,7 @@ const EMPTY_FORM: Procedure = {
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX],
+  imports: [AppDatePipe, CommonModule, FormsModule, RouterLink, LucideSave, LucideArrowLeft, LucidePlus, LucideX, QualGroupEditorComponent],
   templateUrl: './procedure-form.component.html'
 })
 export class ProcedureFormComponent implements OnInit {
@@ -72,6 +75,7 @@ export class ProcedureFormComponent implements OnInit {
   backingOptions = BACKING_OPTIONS;
   weldProgressions = WELD_PROGRESSIONS;
   currentTypes = CURRENT_TYPES;
+  allQuals = ALL_QUALS;
   get weldPositions() {
     return getWeldPositions().filter(p => p.active !== false || p.code === this.form.weldPosition);
   }
@@ -91,7 +95,8 @@ export class ProcedureFormComponent implements OnInit {
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
           revisionHistory: [...existing.revisionHistory], addedSectionIds: [...existing.addedSectionIds],
-          fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes]
+          fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes],
+          requiredQuals: cloneGroup(existing.requiredQuals)
         };
         this.wasActive = existing.status === 'active';
       } else {
@@ -124,11 +129,6 @@ export class ProcedureFormComponent implements OnInit {
     this.form[field] = [...this.form[field], v];
     if (field === 'rules') this.newRule = '';
     if (field === 'conditions') this.newCondition = '';
-  }
-
-  /* this WTN's requirement from the WTN conditions in Admin > Qualifications */
-  wtnQuals(): string {
-    return this.form.wtn ? wtnRequirementText(this.form.wtn) : '';
   }
 
   removeListItem(field: 'rules' | 'conditions', index: number) {
@@ -182,6 +182,7 @@ export class ProcedureFormComponent implements OnInit {
       return;
     }
     const extraFields = compactExtras(this.form.extraFields);
+    this.form.requiredQuals = pruneGroup(this.form.requiredQuals);
     if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {
       this.toast.add({ severity: 'warn', summary: 'Revision note required', detail: 'This procedure is Active -- describe the change before saving' });
       return;

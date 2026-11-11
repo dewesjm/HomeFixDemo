@@ -6,6 +6,7 @@
 import {
   Procedure, procedures, getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS,
 } from '../../data/procedures';
+import type { QualGroup } from '../../weld-record/qualifications-logic/qual-requirements';
 
 /* true when a procedure has any preheat/interpass override values set (used by the PDF) */
 export function hasOverride(p: Procedure): boolean {
@@ -111,6 +112,12 @@ export function wtnFillValue(gwp: string, wtn: string, key: string): string {
   const proc = getProcedureByGwpWtn(gwp, wtn);
   if (!proc || !WTN_FILL_FIELDS.some(f => f.key === key)) return '';
   return key === 'weldProcess' ? proc.weldProcess.toLowerCase() : proc[key as Exclude<WtnFillKey, 'weldProcess'>];
+}
+
+/* the quals a welder needs to weld to the WPS a GWP+WTN pair matches (5. Welder Qualifications);
+   an empty group (requires nothing) when it matches none */
+export function procedureRequiredQuals(gwp: string, wtn: string): QualGroup {
+  return getProcedureByGwpWtn(gwp, wtn)?.requiredQuals ?? { op: 'all', items: [] };
 }
 
 /* Filler Metal Type/Size cascade: the options the WPS a GWP+WTN pair matches allows, empty when it

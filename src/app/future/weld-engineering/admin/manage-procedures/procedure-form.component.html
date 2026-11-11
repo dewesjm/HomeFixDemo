@@ -185,10 +185,12 @@
     </div>
   </div>
 
-  <!-- Welder Qualifications: read-only, set per WTN in Admin > Qualifications -->
+  <!-- Welder Qualifications: the quals a welder needs to weld to this WPS (empty = none) -->
   <h3 class="form-section-title">5. Welder Qualifications</h3>
-  <p class="mb-2">{{ wtnQuals() || 'None required for this WTN.' }}</p>
-  <p class="mb-4">Set per WTN under Weld Record <a class="link" routerLink="/admin/qualifications">Admin &gt; Qualifications</a>.</p>
+  <div class="mb-4">
+    <app-qual-group-editor [group]="form.requiredQuals" [allQuals]="allQuals"
+                           (changed)="form.requiredQuals = $event" />
+  </div>
 
   <h3 class="form-section-title">6. Preheat & Interpass Temperatures</h3>
   <div class="stage-inputs">

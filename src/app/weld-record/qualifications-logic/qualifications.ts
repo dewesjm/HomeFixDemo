@@ -1,5 +1,7 @@
-/* Qualification codes and the Qualification Check. Which quals a step requires, and which quals a
-   person holds, are both set by the conditions under Admin > Qualifications (qual-conditions.ts).
+/* Qualification codes and the Qualification Check. Which quals a step with a Qualification Check
+   requires, and which quals a person holds, are both set by the conditions under Admin >
+   Qualifications (qual-conditions.ts); the quals welding to a WPS needs are on the WPS itself
+   (Procedure.requiredQuals).
    In the real system held quals come from each person's certification record, not a list in the app. */
 import { QualGroup, missingText, qualsIn, termMet } from './qual-requirements';
 

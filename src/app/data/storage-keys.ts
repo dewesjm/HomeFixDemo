@@ -27,7 +27,7 @@ export const STORAGE = {
   weldPlanningSearchState: 'welding:weld-planning-search-state',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants:v2',
   quickLinks: 'welding:quick-links:v1',
-  procedures: 'welding:procedures:v10',
+  procedures: 'welding:procedures:v11',
   procedureSections: 'welding:procedure-sections:v1',
   makeup: 'welding:makeup:v3',
   qualConditions: 'welding:qual-conditions:v6',
