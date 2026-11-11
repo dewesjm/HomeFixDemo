@@ -1,4 +1,6 @@
-/* Weld Engineering Admin - create/edit a Procedure. */
+/* Weld Engineering Admin - create/edit a Procedure: the fixed header fields, then a tick for each
+   section in Admin > Procedure Sections and the fields of the ticked ones. Save checks are
+   rules/procedure-save-rules.ts. */
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,20 +8,19 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angular';
 
 import { ToastService } from '../../../../shared/toast.service';
-import { getWeldPositions } from '../../../../data/weld-positions';
 import {
   addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
-  PROCESS_TYPES, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS,
-  FILLER_METAL_SIZE_OPTIONS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
-  type Procedure
+  PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
 import { ALL_QUALS } from '../../../../weld-record/qualifications-logic/qualifications';
-import { cloneGroup, pruneGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
+import type { QualGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
 import { QualGroupEditorComponent } from '../../../../weld-record/qual-group-editor/qual-group-editor.component';
 import {
-  procedureSections, sectionNumber, sectionsOnProcedure, withAllFields, extraFieldProblems, compactExtras,
-  type RangeValue
+  procedureSections, sectionsOnProcedure, OVERRIDE_PARTS,
+  type ExtraField, type OverrideValue, type RangeValue
 } from '../../procedure-sections';
+import { withAllFields, compactExtras, fieldChoices } from '../../procedure-field-values';
+import { procedureSaveProblem } from './rules/procedure-save-rules';
 import { AppDatePipe } from '../../../../shared/date-format';
 
 const EMPTY_FORM: Procedure = {
@@ -27,21 +28,9 @@ const EMPTY_FORM: Procedure = {
   wtn: '', weldProcess: '',
   gwp: '', wpsRev: '', effectiveDate: '',
   processType: '', application: '',
-  baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
-  jointType: '', grooveAngle: '', rootOpening: '', backing: '',
-  weldPosition: '', weldProgression: '',
-  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [],
-  requiredQuals: { op: 'all', items: [] },
-  phMin: '', phMax: '', ipMin: '', ipMax: '',
-  overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
-  currentType: '', powerSource: '',
-  shieldingGas: '', gasFlowRate: '', backingGas: '',
-  heatInputMin: '', heatInputMax: '',
-  amperageRange: '', voltageRange: '', travelSpeedRange: '',
-  pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [],
   extraFields: {},
-  addedSectionIds: [],
+  sectionIds: [],
   revisionHistory: [],
   createdBy: 'User', createdAt: '', updatedAt: ''
 };
@@ -66,21 +55,9 @@ export class ProcedureFormComponent implements OnInit {
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   weldProcesses = WELD_PROCESSES;
   processTypes = PROCESS_TYPES;
-  baseMetal1Types = BASE_METAL_1_TYPES;
-  baseMetal2Types = BASE_METAL_2_TYPES;
-  fillerMetalClassificationOptions = FILLER_METAL_TYPES;
-  fillerMetalTypeOptions = FILLER_METAL_TYPE_OPTIONS;
-  fillerMetalSizeOptions = FILLER_METAL_SIZE_OPTIONS;
-  jointTypes = JOINT_TYPES;
-  backingOptions = BACKING_OPTIONS;
-  weldProgressions = WELD_PROGRESSIONS;
-  currentTypes = CURRENT_TYPES;
   allQuals = ALL_QUALS;
-  get weldPositions() {
-    return getWeldPositions().filter(p => p.active !== false || p.code === this.form.weldPosition);
-  }
-  addedSections = procedureSections;
-  sectionNumber = sectionNumber;
+  sections = procedureSections;
+  overrideParts = OVERRIDE_PARTS;
 
   /* pending text for each "add a new list item" input */
   newRule = '';
@@ -94,33 +71,46 @@ export class ProcedureFormComponent implements OnInit {
       if (existing) {
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
-          revisionHistory: [...existing.revisionHistory], addedSectionIds: [...existing.addedSectionIds],
-          fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes],
-          requiredQuals: cloneGroup(existing.requiredQuals)
+          revisionHistory: [...existing.revisionHistory], sectionIds: [...existing.sectionIds],
         };
         this.wasActive = existing.status === 'active';
       } else {
         this.router.navigate(['/weld-engineering/admin']);
       }
+    } else {
+      /* a new procedure starts with every section ticked */
+      this.form.sectionIds = this.sections().map(s => s.id);
     }
-    this.form.extraFields = withAllFields(this.addedSections(), this.form.extraFields);
+    this.form.extraFields = withAllFields(this.sections(), this.form.extraFields);
   }
 
-  /* the added sections ticked for this procedure, with their fixed numbers */
+  /* the sections ticked for this procedure, with their numbers */
   sectionsOn() {
-    return sectionsOnProcedure(this.form.addedSectionIds, this.addedSections());
+    return sectionsOnProcedure(this.form.sectionIds, this.sections());
   }
 
   /* unticking hides the section; its values stay in extraFields */
   toggleSection(id: string) {
-    this.form.addedSectionIds = this.form.addedSectionIds.includes(id)
-      ? this.form.addedSectionIds.filter(s => s !== id)
-      : [...this.form.addedSectionIds, id];
+    this.form.sectionIds = this.form.sectionIds.includes(id)
+      ? this.form.sectionIds.filter(s => s !== id)
+      : [...this.form.sectionIds, id];
   }
 
-  /* a range field's {min, max}, for binding its two inputs */
-  range(key: string): RangeValue {
-    return this.form.extraFields[key] as RangeValue;
+  /* typed views of one field's value, for binding its inputs */
+  range(key: string): RangeValue { return this.form.extraFields[key] as RangeValue; }
+  override(key: string): OverrideValue { return this.form.extraFields[key] as OverrideValue; }
+  quals(key: string): QualGroup { return this.form.extraFields[key] as QualGroup; }
+  picked(key: string): string[] { return this.form.extraFields[key] as string[]; }
+
+  /* a list, multi or table field's choices; a picked inactive admin-table row stays listed */
+  choices(f: ExtraField) {
+    const v = this.form.extraFields[f.key];
+    return fieldChoices(f, Array.isArray(v) ? v : typeof v === 'string' ? [v] : []);
+  }
+
+  togglePick(key: string, value: string) {
+    const current = this.picked(key);
+    this.form.extraFields[key] = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
   }
 
   addListItem(field: 'rules' | 'conditions', value: string) {
@@ -135,58 +125,17 @@ export class ProcedureFormComponent implements OnInit {
     this.form[field] = this.form[field].filter((_, i) => i !== index);
   }
 
-  /* Filler Metal Type/Size: checkbox lists against the fixed option sets, not free text -- these
-     are what Weld Record's Filler Metal Type/Size fields filter to once this WPS is selected. */
-  toggleFillerMetalType(value: string) {
-    this.form.fillerMetalTypes = this.form.fillerMetalTypes.includes(value)
-      ? this.form.fillerMetalTypes.filter(v => v !== value)
-      : [...this.form.fillerMetalTypes, value];
-  }
-
-  toggleFillerMetalSize(value: string) {
-    this.form.fillerMetalSizes = this.form.fillerMetalSizes.includes(value)
-      ? this.form.fillerMetalSizes.filter(v => v !== value)
-      : [...this.form.fillerMetalSizes, value];
-  }
-
   save() {
-    if (!this.form.id.trim()) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'Procedure ID is required' });
+    const problem = procedureSaveProblem(this.form, !this.isEdit(), procedures(), this.sections());
+    if (problem) {
+      this.toast.add({ severity: 'warn', ...problem });
       return;
     }
-    if (!this.form.gwp.trim() || !this.form.wtn.trim()) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: 'GWP and WTN are required' });
-      return;
-    }
-    const gwpWtnClash = procedures().find(p => p.id !== this.form.id && p.gwp === this.form.gwp && p.wtn === this.form.wtn);
-    if (gwpWtnClash) {
-      this.toast.add({ severity: 'warn', summary: 'Duplicate GWP/WTN', detail: `${gwpWtnClash.id} already covers GWP ${this.form.gwp} / WTN ${this.form.wtn}` });
-      return;
-    }
-    /* base metal is fixed per GWP (it's what filters the GWP droplist in Weld Record by the job's
-       Material Type 1/2) -- every WPS sharing a GWP must agree on it */
-    const baseMetalMismatch = procedures().find(p =>
-      p.id !== this.form.id && p.gwp === this.form.gwp
-      && (p.baseMetal1Type !== this.form.baseMetal1Type || p.baseMetal2Type !== this.form.baseMetal2Type)
-    );
-    if (baseMetalMismatch) {
-      this.toast.add({
-        severity: 'warn', summary: 'Base metal mismatch',
-        detail: `GWP ${this.form.gwp} is already ${baseMetalMismatch.baseMetal1Type} / ${baseMetalMismatch.baseMetal2Type} (see ${baseMetalMismatch.id})`
-      });
-      return;
-    }
-    const extraProblems = extraFieldProblems(this.sectionsOn().map(s => s.section), this.form.extraFields);
-    if (extraProblems.length) {
-      this.toast.add({ severity: 'warn', summary: 'Required fields', detail: extraProblems.join(' ') });
-      return;
-    }
-    const extraFields = compactExtras(this.form.extraFields);
-    this.form.requiredQuals = pruneGroup(this.form.requiredQuals);
     if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {
       this.toast.add({ severity: 'warn', summary: 'Revision note required', detail: 'This procedure is Active -- describe the change before saving' });
       return;
     }
+    const extraFields = compactExtras(this.form.extraFields);
     if (this.isEdit()) {
       if (this.wasActive) {
         this.form.revisionHistory = [
@@ -198,10 +147,6 @@ export class ProcedureFormComponent implements OnInit {
       updateProcedure(id, { ...rest, extraFields });
       this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.id} updated` });
     } else {
-      if (getProcedure(this.form.id)) {
-        this.toast.add({ severity: 'warn', summary: 'Duplicate ID', detail: `${this.form.id} already exists` });
-        return;
-      }
       const { createdAt, updatedAt, ...rest } = this.form;
       addProcedure({ ...rest, extraFields });
       this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.id} created` });

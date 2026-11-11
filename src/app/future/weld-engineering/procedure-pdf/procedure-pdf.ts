@@ -2,27 +2,14 @@
    trivially unit-testable. The only place that touches the actual pdfmake renderer is
    procedure-pdf-actions.ts (procedurePdfDataUrl/downloadProcedurePdf).
 
-   Layout: Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position, 4. Filler Metal,
-   5. Welder Qualifications, 6. Preheat & Interpass Temperatures, 7. Equipment, 8. Gas, 9. Heat Input,
-   10. Parameters, 11. Heat Treatment, then the sections added in Admin > Procedure Sections that this procedure has (12 on,
-   weld-engineering/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
+   Layout: Revision Record, then the sections (Admin > Procedure Sections, weld-engineering/
+   procedure-sections.ts) this procedure has, with their numbers, then its Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
-import { hasOverride } from '../procedure-values';
-import { requirementText } from '../../../weld-record/qualifications-logic/qual-requirements';
-import { extraValueText, sectionsOnProcedure, type ProcedureSection } from '../procedure-sections';
+import { Procedure } from '../../../data/procedures';
+import { OVERRIDE_PARTS, sectionsOnProcedure, type ExtraField, type ProcedureSection } from '../procedure-sections';
+import { extraValueText, isBlank, isOverride } from '../procedure-field-values';
 import { formatDate } from '../../../shared/date-format';
-
-function fillerMetalTypeLabels(values: string[]): string {
-  if (!values.length) return '';
-  return values.map(v => FILLER_METAL_TYPE_OPTIONS.find(o => o.value === v)?.label ?? v).join(', ');
-}
-
-function fillerMetalSizeLabels(values: string[]): string {
-  if (!values.length) return '';
-  return values.map(v => FILLER_METAL_SIZE_OPTIONS.find(o => o.value === v)?.label ?? v).join(', ');
-}
 
 function limitsTable(rows: [string, string][]): Content {
   return {
@@ -41,13 +28,6 @@ function limitsTable(rows: [string, string][]): Content {
     },
     margin: [0, 4, 0, 12] as [number, number, number, number],
   };
-}
-
-function numberedSection(n: number, title: string, rows: [string, string][]): Content[] {
-  return [
-    { text: `${n}. ${title}`, style: 'sectionHeader' },
-    limitsTable(rows),
-  ];
 }
 
 function revisionRecord(p: Procedure): Content[] {
@@ -79,16 +59,32 @@ function revisionRecord(p: Procedure): Content[] {
   ];
 }
 
-/* only the added sections this procedure has, keeping their fixed numbers; one with no fields yet
-   prints its heading only */
-function addedSections(p: Procedure, sections: ProcedureSection[]): Content[] {
-  return sectionsOnProcedure(p.addedSectionIds, sections).flatMap(({ section: s, number }) => s.fields.length
-    ? numberedSection(number, s.name, s.fields.map(f => [f.label, extraValueText(p.extraFields[f.key])]))
-    : [{ text: `${number}. ${s.name}`, style: 'sectionHeader' }]);
+/* One section: a table of its plain fields, then each qualification requirement as a list and each
+   override group as its own table (only when it has a value). A section with no fields prints its
+   heading only. */
+function section(p: Procedure, s: ProcedureSection, n: number): Content[] {
+  const out: Content[] = [{ text: `${n}. ${s.name}`, style: 'sectionHeader' }];
+  const value = (f: ExtraField) => p.extraFields[f.key];
+  const plain = s.fields.filter(f => f.type !== 'quals' && f.type !== 'override');
+  if (plain.length) out.push(limitsTable(plain.map(f => [f.label, extraValueText(f, value(f))])));
+  for (const f of s.fields) {
+    if (f.type === 'quals') {
+      if (f.label !== s.name) out.push({ text: f.label, bold: true });
+      out.push({ ul: [extraValueText(f, value(f)) || '-'], margin: [0, 4, 0, 12] });
+    }
+    const o = value(f);
+    if (f.type === 'override' && isOverride(o) && !isBlank(o)) {
+      out.push(
+        { text: f.label, style: 'sectionHeader' },
+        limitsTable(OVERRIDE_PARTS.filter(part => part.key !== 'note').map(part => [part.label, o[part.key]])),
+      );
+      if (o.note) out.push({ text: o.note, italics: true, margin: [0, -8, 0, 12] });
+    }
+  }
+  return out;
 }
 
-export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[] = []): TDocumentDefinitions {
-  const quals = requirementText(p.requiredQuals);
+export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[]): TDocumentDefinitions {
   const content: Content[] = [
     { text: p.id, style: 'procedureId' },
     { text: p.title, style: 'title' },
@@ -97,73 +93,14 @@ export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[
 
     ...revisionRecord(p),
 
-    ...numberedSection(1, 'Base Metal', [
-      ['Base Metal 1 Type', p.baseMetal1Type], ['Base Metal 2 Type', p.baseMetal2Type],
-      ['Thickness Min', p.baseMetalThicknessMin], ['Thickness Max', p.baseMetalThicknessMax],
-    ]),
-
-    ...numberedSection(2, 'Joint Design', [
-      ['Joint Type', p.jointType], ['Groove Angle', p.grooveAngle],
-      ['Root Opening', p.rootOpening], ['Backing', p.backing],
-    ]),
-
-    ...numberedSection(3, 'Welding Position', [
-      ['Position', p.weldPosition], ['Progression', p.weldProgression],
-    ]),
-
-    ...numberedSection(4, 'Filler Metal', [
-      ['Filler Metal Type(s)', fillerMetalTypeLabels(p.fillerMetalTypes)], ['Classification', p.fillerMetalClassification],
-      ['Size(s)', fillerMetalSizeLabels(p.fillerMetalSizes)],
-    ]),
-
-    { text: '5. Welder Qualifications', style: 'sectionHeader' },
-    { ul: [quals || '-'], margin: [0, 4, 0, 12] },
-
-    ...numberedSection(6, 'Preheat & Interpass Temperatures', [
-      ['PH Min', p.phMin], ['PH Max', p.phMax], ['IP Min', p.ipMin], ['IP Max', p.ipMax],
-    ]),
-  ];
-
-  if (hasOverride(p)) {
-    content.push(
-      { text: 'Override Requirements', style: 'sectionHeader' },
-      limitsTable([
-        ['Override PH Min', p.overridePhMin], ['Override PH Max', p.overridePhMax],
-        ['Override IP Min', p.overrideIpMin], ['Override IP Max', p.overrideIpMax],
-      ]),
-    );
-    if (p.overrideNote) content.push({ text: p.overrideNote, italics: true, margin: [0, -8, 0, 12] });
-  }
-
-  content.push(
-    ...numberedSection(7, 'Equipment', [
-      ['Current Type', p.currentType], ['Power Source', p.powerSource],
-    ]),
-
-    ...numberedSection(8, 'Gas', [
-      ['Shielding Gas', p.shieldingGas], ['Gas Flow Rate', p.gasFlowRate], ['Backing Gas', p.backingGas],
-    ]),
-
-    ...numberedSection(9, 'Heat Input', [
-      ['Heat Input Min', p.heatInputMin], ['Heat Input Max', p.heatInputMax],
-    ]),
-
-    ...numberedSection(10, 'Parameters', [
-      ['Amperage Range', p.amperageRange], ['Voltage Range', p.voltageRange], ['Travel Speed Range', p.travelSpeedRange],
-    ]),
-
-    ...numberedSection(11, 'Heat Treatment', [
-      ['PWHT Temp', p.pwhtTemp], ['PWHT Time', p.pwhtTime],
-    ]),
-
-    ...addedSections(p, sections),
+    ...sectionsOnProcedure(p.sectionIds, sections).flatMap(({ section: s, number }) => section(p, s, number)),
 
     { text: 'Rules', style: 'sectionHeader' },
     { ul: p.rules.length ? p.rules : ['-'], margin: [0, 4, 0, 12] },
 
     { text: 'Specific Conditions', style: 'sectionHeader' },
     { ul: p.conditions.length ? p.conditions : ['-'], margin: [0, 4, 0, 12] },
-  );
+  ];
 
   return {
     content,

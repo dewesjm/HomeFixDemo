@@ -3,16 +3,19 @@ import { WorkflowStage } from '../../model/workflow-types';
 import { JOBS } from '../../../data/jobs';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import { detectDeviations, isActualOutOfRange } from './deviations';
+import { fillerMetalTypeOptions, gwpDetails } from '../../../future/weld-engineering/procedure-values';
+
+const allowedFillers = (gwp: string, wtn: string) => fillerMetalTypeOptions(gwp, wtn).map(o => o.value);
 
 /* a Tack stage on the first seeded WPS that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
-  const proc = procedures().find(p => p.fillerMetalTypes.length < FILLER_METAL_TYPE_OPTIONS.length)!;
+  const proc = procedures().find(p => allowedFillers(p.gwp, p.wtn).length < FILLER_METAL_TYPE_OPTIONS.length)!;
   const tack = buildStages({ ...JOBS[0], nInd: '1' }).find(s => s.id === 'tack')!;
   const stage: WorkflowStage = {
     ...tack,
     inputs: { weldProcedure: proc.gwp, wtn: proc.wtn, phMin: '50', phMax: '300', ipMin: '50', ipMax: '300', ...extra },
   };
-  const offListType = FILLER_METAL_TYPE_OPTIONS.find(o => !proc.fillerMetalTypes.includes(o.value))!.value;
+  const offListType = FILLER_METAL_TYPE_OPTIONS.find(o => !allowedFillers(proc.gwp, proc.wtn).includes(o.value))!.value;
   /* quals are only required through conditions passed to detectDeviations, so none are needed here */
   return { stage, offListType, quals: [] };
 }
@@ -61,9 +64,9 @@ describe('deviations', () => {
 
   it('flags a GWP not qualified for the base metals, and passes one that is', () => {
     const { stage, quals } = tackOnWps();
-    const proc = procedures().find(p => p.gwp === stage.inputs['weldProcedure'])!;
+    const gwp = gwpDetails(stage.inputs['weldProcedure'])!;
     const vis = new Set(['weldProcedure']);
-    expect(detectDeviations(stage, vis, quals, { type1: proc.baseMetal1Type, type2: proc.baseMetal2Type })).toEqual([]);
+    expect(detectDeviations(stage, vis, quals, { type1: gwp.baseMetal1Type, type2: gwp.baseMetal2Type })).toEqual([]);
     const items = detectDeviations(stage, vis, quals, { type1: 'none', type2: 'none' });
     expect(items.map(i => i.kind)).toEqual(['off-list']);
     expect(items[0].required).toBe('None qualified for these base metals');

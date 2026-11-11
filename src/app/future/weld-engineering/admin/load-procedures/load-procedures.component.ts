@@ -11,7 +11,9 @@ import {
   addProcedure, updateProcedure, getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus
 } from '../../../../data/procedures';
 import { parseCsvRows, parseXlsxRows } from '../../../../shared/spreadsheet-import';
-import { downloadProcedureXlsxTemplate } from '../../procedure-files';
+import { downloadProcedureXlsxTemplate, sectionColumns } from '../../procedure-files';
+import { procedureSections } from '../../procedure-sections';
+import { applyCells, cellProblems } from './rules/procedure-import';
 
 type EditableRow = {
   _existing: boolean;
@@ -27,21 +29,14 @@ type EditableRow = {
   effectiveDate: string;
   processType: string;
   application: string;
-  baseMetal1Type: string;
-  baseMetal2Type: string;
-  fillerMetalTypes: string;
-  fillerMetalSizes: string;
-  phMin: string; phMax: string; ipMin: string; ipMax: string;
+  /* section field cells as typed, by column id (procedure-files.ts sectionColumns) */
+  cells: Record<string, string>;
   rules: string;
   conditions: string;
 };
 
 const VALID_STATUSES = new Set(['active', 'draft', 'retired']);
 const splitList = (s: string) => s.split(';').map(v => v.trim()).filter(Boolean);
-/* Filler Metal Types/Sizes must match FILLER_METAL_TYPE_OPTIONS/FILLER_METAL_SIZE_OPTIONS values
-   (procedures.ts) for the Weld Record cascade to pick them up -- normalize casing and stray quotes
-   from a pasted size like '1/16"' so a plain lowercase/no-quote entry isn't required. */
-const splitFillerList = (s: string) => splitList(s).map(v => v.toLowerCase().replace(/"/g, ''));
 
 @Component({
   selector: 'app-load-procedures',
@@ -53,6 +48,8 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
   protected readonly noun = 'procedures';
   statuses = PROCEDURE_STATUS_OPTIONS;
   weldProcesses = WELD_PROCESSES;
+  /* one column per section field, from Admin > Procedure Sections */
+  columns = sectionColumns(procedureSections());
 
   protected parseFile(file: File): Promise<Record<string, string>[]> {
     return file.name.endsWith('.xlsx') || file.name.endsWith('.xls')
@@ -73,14 +70,8 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       effectiveDate: raw['effectiveDate'] || raw['Effective Date'] || '',
       processType: raw['processType'] || raw['Process Type'] || '',
       application: raw['application'] || raw['Application'] || '',
-      baseMetal1Type: raw['baseMetal1Type'] || raw['Base Metal 1 Type'] || '',
-      baseMetal2Type: raw['baseMetal2Type'] || raw['Base Metal 2 Type'] || '',
-      fillerMetalTypes: raw['fillerMetalTypes'] || raw['Filler Metal Types'] || raw['fillerMetalType'] || raw['Filler Metal Type'] || '',
-      fillerMetalSizes: raw['fillerMetalSizes'] || raw['Filler Metal Sizes'] || '',
-      phMin: raw['phMin'] || raw['PH Min'] || '',
-      phMax: raw['phMax'] || raw['PH Max'] || '',
-      ipMin: raw['ipMin'] || raw['IP Min'] || '',
-      ipMax: raw['ipMax'] || raw['IP Max'] || '',
+      cells: Object.fromEntries(this.columns.map(c =>
+        [c.id, [c.id, c.header, ...c.aliases].map(h => raw[h]).find(v => v) ?? ''])),
       rules: raw['rules'] || raw['Rules'] || '',
       conditions: raw['conditions'] || raw['Conditions'] || '',
     };
@@ -92,25 +83,31 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
     if (!row.gwp) errors.push('GWP required');
     if (!row.wtn) errors.push('WTN required');
     if (!VALID_STATUSES.has(row.status)) errors.push('Invalid status');
-    row._errors = errors;
+    row._errors = [...errors, ...cellProblems(this.columns, row.cells)];
   }
 
   protected sampleRows(): EditableRow[] {
+    const row = (r: Omit<EditableRow, '_existing' | '_errors' | '_saved'>): EditableRow =>
+      ({ _existing: false, _errors: [], _saved: false, ...r });
     return [
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Carbon Steel', baseMetal2Type: 'Carbon Steel', fillerMetalTypes: 'mil-70s-6; mil-70s-3', fillerMetalSizes: '1/16; 3/32', phMin: '100', phMax: '300', ipMin: '60', ipMax: '250', rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', application: 'Process Piping', baseMetal1Type: 'Stainless Steel', baseMetal2Type: 'Stainless Steel', fillerMetalTypes: 'mil-80s-50', fillerMetalSizes: '3/32; 1/8', phMin: 'NC', phMax: '350', ipMin: '100', ipMax: '300', rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.' },
-      { _existing: false, _errors: [], _saved: false, id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semiautomatic', application: 'Surface Structure', baseMetal1Type: 'Low Alloy Steel', baseMetal2Type: 'Low Alloy Steel', fillerMetalTypes: 'mil-70s-3', fillerMetalSizes: '1/8; 5/32; 3/16', phMin: '150', phMax: 'NC', ipMin: 'NC', ipMax: '400', rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.' },
+      row({ id: 'W-901-1', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-1', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '0', effectiveDate: '2026-01-15', processType: 'Manual', application: 'Process Piping',
+        cells: { baseMetal1Type: '02-CS', baseMetal2Type: '02-CS', fillerMetalTypes: 'MIL-70S-6; MIL-70S-3', fillerMetalSizes: '1/16; 3/32', requiredQuals: 'WELD412', phMin: '100', phMax: '300', ipMin: '60', ipMax: '250' },
+        rules: 'Preheat required for base metal thickness over 1 inch.; Visual inspection required prior to any NDT.', conditions: 'Applies to shop welding only.' }),
+      row({ id: 'W-901-2', title: 'GTAW procedure for pipe joints', status: 'active', wtn: '05.5-2', weldProcess: 'GTAW', gwp: 'W-901', wpsRev: '1', effectiveDate: '2026-02-01', processType: 'Manual', application: 'Process Piping',
+        cells: { baseMetal1Type: '02-CS', baseMetal2Type: '02-CS', fillerMetalTypes: 'MIL-80S-50', fillerMetalSizes: '3/32; 1/8', requiredQuals: 'WELD412 AND (WELD427 OR WELD403)', phMin: 'NC', phMax: '350', ipMin: '100', ipMax: '300' },
+        rules: 'Interpass temperature shall not exceed 350°F.', conditions: 'Requires qualified welder certification on file.' }),
+      row({ id: 'W-902-1', title: 'FCAW procedure for pipe joints', status: 'draft', wtn: '05.5A-3', weldProcess: 'FCAW', gwp: 'W-902', wpsRev: '0', effectiveDate: '2026-03-01', processType: 'Semiautomatic', application: 'Surface Structure',
+        cells: { baseMetal1Type: '04-AS', baseMetal2Type: '04-AS', fillerMetalTypes: 'MIL-70S-3', fillerMetalSizes: '1/8; 5/32; 3/16', phMin: '150', phMax: 'NC', ipMin: 'NC', ipMax: '400' },
+        rules: 'Backing gas required for all root passes.; PWHT required when specified on the drawing.', conditions: 'Ambient temperature shall be above 32°F during welding.' }),
     ];
   }
 
   downloadTemplate() {
-    downloadProcedureXlsxTemplate();
+    downloadProcedureXlsxTemplate(procedureSections());
   }
 
+  /* a blank cell keeps an existing procedure's value; a new procedure gets every section ticked */
   protected saveRow(row: EditableRow) {
-    /* fields the bulk-import grid doesn't collect: keep the existing record's values on update
-       (don't blank out a procedure's WPS detail sections just because it was re-imported) rather
-       than defaulting to '' the way the pre-existing override* fields already do below. */
     const existing = getProcedure(row.id);
     const payload = {
       id: row.id,
@@ -119,27 +116,11 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       wtn: row.wtn,
       weldProcess: row.weldProcess,
       gwp: row.gwp, wpsRev: row.wpsRev, effectiveDate: row.effectiveDate,
-      processType: row.processType, application: row.application, baseMetal1Type: row.baseMetal1Type,
-      baseMetal2Type: row.baseMetal2Type,
-      baseMetalThicknessMin: existing?.baseMetalThicknessMin ?? '', baseMetalThicknessMax: existing?.baseMetalThicknessMax ?? '',
-      jointType: existing?.jointType ?? '', grooveAngle: existing?.grooveAngle ?? '',
-      rootOpening: existing?.rootOpening ?? '', backing: existing?.backing ?? '',
-      weldPosition: existing?.weldPosition ?? '', weldProgression: existing?.weldProgression ?? '',
-      fillerMetalTypes: splitFillerList(row.fillerMetalTypes),
-      fillerMetalClassification: existing?.fillerMetalClassification ?? '',
-      fillerMetalSizes: row.fillerMetalSizes ? splitFillerList(row.fillerMetalSizes) : existing?.fillerMetalSizes ?? [],
-      requiredQuals: existing?.requiredQuals ?? { op: 'all' as const, items: [] },
-      phMin: row.phMin, phMax: row.phMax, ipMin: row.ipMin, ipMax: row.ipMax,
-      overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
-      currentType: existing?.currentType ?? '', powerSource: existing?.powerSource ?? '',
-      shieldingGas: existing?.shieldingGas ?? '', gasFlowRate: existing?.gasFlowRate ?? '', backingGas: existing?.backingGas ?? '',
-      heatInputMin: existing?.heatInputMin ?? '', heatInputMax: existing?.heatInputMax ?? '',
-      amperageRange: existing?.amperageRange ?? '', voltageRange: existing?.voltageRange ?? '', travelSpeedRange: existing?.travelSpeedRange ?? '',
-      pwhtTemp: existing?.pwhtTemp ?? '', pwhtTime: existing?.pwhtTime ?? '',
+      processType: row.processType, application: row.application,
       rules: splitList(row.rules),
       conditions: splitList(row.conditions),
-      extraFields: existing?.extraFields ?? {},
-      addedSectionIds: existing?.addedSectionIds ?? [],
+      extraFields: applyCells(this.columns, row.cells, existing?.extraFields ?? {}),
+      sectionIds: existing?.sectionIds ?? procedureSections().map(s => s.id),
       revisionHistory: existing?.revisionHistory ?? [],
       createdBy: 'Import',
     };

@@ -2,7 +2,9 @@ import { formInputFields } from '../signoff-forms-logic/form-fields';
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
 import { getProcedureByGwpWtn } from '../../data/procedures';
-import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-values';
+import {
+  gwpOptionsForMaterials, wtnFillValue, fillerMetalTypeOptions, fillerMetalSizeOptions
+} from '../../future/weld-engineering/procedure-values';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
 import { isEngineeringEntryJoint } from '../weld-assignment-logic/weld-assignment-mock';
 import { detectDeviations } from '../joint-page/rules/deviations';
@@ -30,11 +32,11 @@ describe('WeldAssignmentService', () => {
     expect(gwpOptionsForMaterials(job.materialType1!, job.materialType2!).some(o => o.value === proc.gwp)).toBeTrue();
     /* Weld Process and PH/IP come in by their fill rules, an NC requirement makes its actual NC */
     expect(stage.inputs['weldProcess']).toBe(proc.weldProcess.toLowerCase());
-    expect(stage.inputs['phMax']).toBe(proc.phMax);
-    if (proc.phMin === 'NC') expect(stage.inputs['actualPhMin']).toBe('NC');
+    expect(stage.inputs['phMax']).toBe(wtnFillValue(proc.gwp, proc.wtn, 'phMax'));
+    if (wtnFillValue(proc.gwp, proc.wtn, 'phMin') === 'NC') expect(stage.inputs['actualPhMin']).toBe('NC');
     if (!isFilledByRule(stage, 'fillerMetalType')) {
-      expect(proc.fillerMetalTypes).toContain(stage.inputs['fillerMetalType']);
-      expect(proc.fillerMetalSizes).toContain(stage.inputs['fillerMetalSize']);
+      expect(fillerMetalTypeOptions(proc.gwp, proc.wtn).map(o => o.value)).toContain(stage.inputs['fillerMetalType']);
+      expect(fillerMetalSizeOptions(proc.gwp, proc.wtn).map(o => o.value)).toContain(stage.inputs['fillerMetalSize']);
     }
     const before = { ...stage.inputs };
     service.applyAll(job);

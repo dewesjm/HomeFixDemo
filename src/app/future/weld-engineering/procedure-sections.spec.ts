@@ -1,25 +1,32 @@
 import {
-  fieldKey, sectionNameProblem, fieldDraftProblem, withAllFields, compactExtras, extraFieldProblems,
-  extraValueText, sectionNumber, sectionsOnProcedure, type ProcedureSection
+  fieldKey, sectionNameProblem, fieldDraftProblem, sectionsOnProcedure, procedureSections, SEEDED_SECTION_IDS,
+  type ProcedureSection
 } from './procedure-sections';
 
 const taco: ProcedureSection = {
   id: 's1', name: 'Taco Tuesday', fields: [
     { key: 'shell_type', label: 'Shell Type', type: 'list', required: true, options: ['Hard', 'Soft'] },
-    { key: 'spice_level', label: 'Spice Level', type: 'number', required: false, options: [] },
-    { key: 'taco_count', label: 'Taco Count', type: 'range', required: true, options: [] },
   ],
 };
 
 describe('procedure sections', () => {
-  it('numbers added sections after the 11 built-in ones', () => {
-    expect(sectionNumber(0)).toBe(12);
-    expect(sectionNumber(2)).toBe(14);
+  it('seeds the 11 starting sections in order, with the fields other systems read locked', () => {
+    const seeded = procedureSections().filter(s => SEEDED_SECTION_IDS.includes(s.id));
+    expect(seeded.map(s => s.name)).toEqual([
+      'Base Metal', 'Joint Design', 'Welding Position', 'Filler Metal', 'Welder Qualifications',
+      'Preheat & Interpass Temperatures', 'Equipment', 'Gas', 'Heat Input', 'Parameters', 'Heat Treatment',
+    ]);
+    const locked = seeded.flatMap(s => s.fields).filter(f => f.locked).map(f => f.key);
+    expect(locked).toEqual([
+      'baseMetal1Type', 'baseMetal2Type', 'weldPosition', 'fillerMetalTypes', 'fillerMetalClassification',
+      'fillerMetalSizes', 'requiredQuals', 'phMin', 'phMax', 'ipMin', 'ipMax', 'override',
+    ]);
   });
 
-  it('keeps each section at its fixed number when a procedure skips earlier ones', () => {
+  it('numbers sections by list order, and keeps each number when a procedure skips earlier ones', () => {
     const two: ProcedureSection = { id: 's2', name: 'Second', fields: [] };
-    expect(sectionsOnProcedure(['s2'], [taco, two]).map(s => [s.section.id, s.number])).toEqual([['s2', 13]]);
+    expect(sectionsOnProcedure(['s1', 's2'], [taco, two]).map(s => s.number)).toEqual([1, 2]);
+    expect(sectionsOnProcedure(['s2'], [taco, two]).map(s => [s.section.id, s.number])).toEqual([['s2', 2]]);
     expect(sectionsOnProcedure([], [taco, two])).toEqual([]);
   });
 
@@ -29,47 +36,27 @@ describe('procedure sections', () => {
     expect(fieldKey('Spice Level', ['spice_level', 'spice_level_2'])).toBe('spice_level_3');
   });
 
-  it('rejects a blank or duplicate section name, including built-in names', () => {
+  it('rejects a blank or duplicate section name', () => {
     expect(sectionNameProblem('  ', [])).not.toBe('');
-    expect(sectionNameProblem('heat treatment', [])).not.toBe('');
     expect(sectionNameProblem('taco tuesday', [taco])).not.toBe('');
     expect(sectionNameProblem('Lunch', [taco])).toBe('');
   });
 
-  it('rejects a field with no label, a duplicate label, or a list with no choices', () => {
+  it('rejects a field with no label, a duplicate label, a list with no choices or a table with no source', () => {
     const ok = { label: 'Salsa', type: 'text' as const, required: false, options: [] };
     expect(fieldDraftProblem(ok, taco)).toBe('');
     expect(fieldDraftProblem({ ...ok, label: '' }, taco)).not.toBe('');
     expect(fieldDraftProblem({ ...ok, label: 'shell type' }, taco)).not.toBe('');
     expect(fieldDraftProblem({ ...ok, type: 'list' }, taco)).not.toBe('');
+    expect(fieldDraftProblem({ ...ok, type: 'multi' }, taco)).not.toBe('');
+    expect(fieldDraftProblem({ ...ok, type: 'table' }, taco)).not.toBe('');
+    expect(fieldDraftProblem({ ...ok, type: 'table', source: 'weldPositions' }, taco)).toBe('');
   });
 
-  it('fills an empty value for every defined field and keeps existing values', () => {
-    expect(withAllFields([taco], { shell_type: 'Soft', old_key: 'x' })).toEqual({
-      shell_type: 'Soft', old_key: 'x', spice_level: null, taco_count: { min: null, max: null },
-    });
-  });
-
-  it('stores only filled-in values', () => {
-    expect(compactExtras({ shell_type: ' Hard ', spice_level: null, taco_count: { min: null, max: null }, note: '' }))
-      .toEqual({ shell_type: 'Hard' });
-    expect(compactExtras({ spice_level: 0, taco_count: { min: 1, max: null } }))
-      .toEqual({ spice_level: 0, taco_count: { min: 1, max: null } });
-  });
-
-  it('reports required fields left blank and a range with Min over Max', () => {
-    expect(extraFieldProblems([taco], withAllFields([taco], {}))).toEqual([
-      'Shell Type is required.', 'Taco Count needs both Min and Max.',
-    ]);
-    expect(extraFieldProblems([taco], { shell_type: 'Hard', taco_count: { min: 5, max: 2 } }))
-      .toEqual(['Taco Count: Min is more than Max.']);
-    expect(extraFieldProblems([taco], { shell_type: 'Hard', taco_count: { min: 2, max: 5 } })).toEqual([]);
-  });
-
-  it('formats values as one line of text', () => {
-    expect(extraValueText({ min: 2, max: 4 })).toBe('2 - 4');
-    expect(extraValueText({ min: null, max: null })).toBe('');
-    expect(extraValueText(7)).toBe('7');
-    expect(extraValueText(undefined)).toBe('');
+  it('only lets a new field be one of the addable types', () => {
+    const draft = { label: 'Salsa', required: false, options: [] };
+    expect(fieldDraftProblem({ ...draft, type: 'quals' }, taco)).not.toBe('');
+    expect(fieldDraftProblem({ ...draft, type: 'override' }, taco)).not.toBe('');
+    expect(fieldDraftProblem({ ...draft, type: 'limit' }, taco)).toBe('');
   });
 });

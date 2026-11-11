@@ -64,264 +64,18 @@
     </div>
   </div>
 
-  <h3 class="form-section-title">1. Base Metal</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Base Metal 1 Type</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal1Type">
-        <option value="">-</option>
-        @for (m of baseMetal1Types; track m) {
-          <option [value]="m">{{ m }}</option>
-        }
-      </select>
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Base Metal 2 Type</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.baseMetal2Type">
-        <option value="">-</option>
-        @for (m of baseMetal2Types; track m) {
-          <option [value]="m">{{ m }}</option>
-        }
-      </select>
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Thickness Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.baseMetalThicknessMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Thickness Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.baseMetalThicknessMax" />
-    </div>
+  <!-- the sections in Admin > Procedure Sections: tick the ones this procedure has; values go in form.extraFields -->
+  <h3 class="form-section-title">Sections</h3>
+  <div class="flex flex-wrap gap-x-6 gap-y-2">
+    @for (s of sections(); track s.id; let i = $index) {
+      <label class="flex items-center gap-2 text-sm">
+        <input type="checkbox" class="checkbox checkbox-sm"
+               [checked]="form.sectionIds.includes(s.id)" (change)="toggleSection(s.id)" />
+        {{ i + 1 }}. {{ s.name }}
+      </label>
+    }
   </div>
 
-  <h3 class="form-section-title">2. Joint Design</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Joint Type</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.jointType">
-        <option value="">-</option>
-        @for (j of jointTypes; track j) {
-          <option [value]="j">{{ j }}</option>
-        }
-      </select>
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Groove Angle</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.grooveAngle" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Root Opening</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.rootOpening" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Backing</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.backing">
-        <option value="">-</option>
-        @for (b of backingOptions; track b) {
-          <option [value]="b">{{ b }}</option>
-        }
-      </select>
-    </div>
-  </div>
-
-  <h3 class="form-section-title">3. Welding Position</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Position</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldPosition">
-        <option value="">-</option>
-        @for (wp of weldPositions; track wp.code) {
-          <option [value]="wp.code">{{ wp.code }} - {{ wp.description }}{{ wp.active === false ? ' (inactive)' : '' }}</option>
-        }
-      </select>
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Progression</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.weldProgression">
-        <option value="">-</option>
-        @for (wp of weldProgressions; track wp) {
-          <option [value]="wp">{{ wp }}</option>
-        }
-      </select>
-    </div>
-  </div>
-
-  <h3 class="form-section-title">4. Filler Metal</h3>
-  <div class="stage-field mb-2">
-    <label class="stage-field-label">Valid Filler Metal Types (Weld Record's Filler Metal Type field filters to these)</label>
-    <div class="flex flex-wrap gap-3">
-      @for (o of fillerMetalTypeOptions; track o.value) {
-        <label class="label cursor-pointer justify-start gap-2">
-          <input type="checkbox" class="checkbox checkbox-sm"
-                 [checked]="form.fillerMetalTypes.includes(o.value)"
-                 (change)="toggleFillerMetalType(o.value)" />
-          <span class="label-text">{{ o.label }}</span>
-        </label>
-      }
-    </div>
-  </div>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Classification</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.fillerMetalClassification">
-        <option value="">-</option>
-        @for (m of fillerMetalClassificationOptions; track m) {
-          <option [value]="m">{{ m }}</option>
-        }
-      </select>
-    </div>
-  </div>
-  <div class="stage-field mb-2">
-    <label class="stage-field-label">Valid Filler Metal Sizes (Weld Record's Filler Metal Size field filters to these)</label>
-    <div class="flex flex-wrap gap-3">
-      @for (o of fillerMetalSizeOptions; track o.value) {
-        <label class="label cursor-pointer justify-start gap-2">
-          <input type="checkbox" class="checkbox checkbox-sm"
-                 [checked]="form.fillerMetalSizes.includes(o.value)"
-                 (change)="toggleFillerMetalSize(o.value)" />
-          <span class="label-text">{{ o.label }}</span>
-        </label>
-      }
-    </div>
-  </div>
-
-  <!-- Welder Qualifications: the quals a welder needs to weld to this WPS (empty = none) -->
-  <h3 class="form-section-title">5. Welder Qualifications</h3>
-  <div class="mb-4">
-    <app-qual-group-editor [group]="form.requiredQuals" [allQuals]="allQuals"
-                           (changed)="form.requiredQuals = $event" />
-  </div>
-
-  <h3 class="form-section-title">6. Preheat & Interpass Temperatures</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">PH Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.phMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">PH Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.phMax" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">IP Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.ipMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">IP Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.ipMax" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">Override Requirements</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Override PH Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overridePhMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Override PH Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overridePhMax" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Override IP Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideIpMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Override IP Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideIpMax" />
-    </div>
-    <div class="stage-field" style="flex: 1 1 100%">
-      <label class="stage-field-label">Override Note</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.overrideNote" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">7. Equipment</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Current Type</label>
-      <select class="select select-sm select-bordered w-full" [(ngModel)]="form.currentType">
-        <option value="">-</option>
-        @for (c of currentTypes; track c) {
-          <option [value]="c">{{ c }}</option>
-        }
-      </select>
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Power Source</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.powerSource" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">8. Gas</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Shielding Gas</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.shieldingGas" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Gas Flow Rate</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.gasFlowRate" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Backing Gas</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.backingGas" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">9. Heat Input</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Heat Input Min</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.heatInputMin" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Heat Input Max</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.heatInputMax" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">10. Parameters</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">Amperage Range</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.amperageRange" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Voltage Range</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.voltageRange" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">Travel Speed Range</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.travelSpeedRange" />
-    </div>
-  </div>
-
-  <h3 class="form-section-title">11. Heat Treatment</h3>
-  <div class="stage-inputs">
-    <div class="stage-field">
-      <label class="stage-field-label">PWHT Temp</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.pwhtTemp" />
-    </div>
-    <div class="stage-field">
-      <label class="stage-field-label">PWHT Time</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.pwhtTime" />
-    </div>
-  </div>
-
-  <!-- sections added in Admin > Procedure Sections: tick the ones this procedure has; values go in form.extraFields -->
-  @if (addedSections().length) {
-    <h3 class="form-section-title">Added Sections</h3>
-    <div class="flex flex-wrap gap-x-6 gap-y-2">
-      @for (s of addedSections(); track s.id; let i = $index) {
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" class="checkbox checkbox-sm"
-                 [checked]="form.addedSectionIds.includes(s.id)" (change)="toggleSection(s.id)" />
-          {{ sectionNumber(i) }}. {{ s.name }}
-        </label>
-      }
-    </div>
-  }
   @for (on of sectionsOn(); track on.section.id) {
     @let s = on.section;
     <h3 class="form-section-title">{{ on.number }}. {{ s.name }}</h3>
@@ -330,31 +84,82 @@
     }
     <div class="stage-inputs">
       @for (f of s.fields; track f.key) {
-        <div class="stage-field">
-          <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
-          @switch (f.type) {
-            @case ('number') {
-              <input type="number" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
-            }
-            @case ('range') {
-              <div class="flex gap-2">
-                <input type="number" class="input input-sm input-bordered w-full" placeholder="Min" [(ngModel)]="range(f.key).min" />
-                <input type="number" class="input input-sm input-bordered w-full" placeholder="Max" [(ngModel)]="range(f.key).max" />
-              </div>
-            }
-            @case ('list') {
-              <select class="select select-sm select-bordered w-full" [(ngModel)]="form.extraFields[f.key]">
-                <option value="">-</option>
-                @for (o of f.options; track o) {
-                  <option [value]="o">{{ o }}</option>
+        @switch (f.type) {
+          @case ('multi') {
+            <div class="stage-field" style="flex: 1 1 100%">
+              <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+              <div class="flex flex-wrap gap-3">
+                @for (o of choices(f); track o.value) {
+                  <label class="label cursor-pointer justify-start gap-2">
+                    <input type="checkbox" class="checkbox checkbox-sm"
+                           [checked]="picked(f.key).includes(o.value)" (change)="togglePick(f.key, o.value)" />
+                    <span class="label-text">{{ o.label }}</span>
+                  </label>
                 }
-              </select>
-            }
-            @default {
-              <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
-            }
+              </div>
+            </div>
           }
-        </div>
+          @case ('quals') {
+            <div class="stage-field" style="flex: 1 1 100%">
+              @if (f.label !== s.name) {
+                <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+              }
+              <app-qual-group-editor [group]="quals(f.key)" [allQuals]="allQuals"
+                                     (changed)="form.extraFields[f.key] = $event" />
+            </div>
+          }
+          @case ('override') {
+            <div class="stage-field" style="flex: 1 1 100%">
+              <label class="stage-field-label">{{ f.label }}</label>
+              <div class="stage-inputs">
+                @for (part of overrideParts; track part.key) {
+                  <div class="stage-field" [style.flex]="part.key === 'note' ? '1 1 100%' : null">
+                    <label class="stage-field-label">{{ part.label }}</label>
+                    <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="override(f.key)[part.key]" />
+                  </div>
+                }
+              </div>
+            </div>
+          }
+          @default {
+            <div class="stage-field">
+              <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
+              @switch (f.type) {
+                @case ('number') {
+                  <input type="number" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
+                }
+                @case ('range') {
+                  <div class="flex gap-2">
+                    <input type="number" class="input input-sm input-bordered w-full" placeholder="Min" [(ngModel)]="range(f.key).min" />
+                    <input type="number" class="input input-sm input-bordered w-full" placeholder="Max" [(ngModel)]="range(f.key).max" />
+                  </div>
+                }
+                @case ('limit') {
+                  <input type="text" class="input input-sm input-bordered w-full" placeholder="NC = no limit" [(ngModel)]="form.extraFields[f.key]" />
+                }
+                @case ('list') {
+                  <select class="select select-sm select-bordered w-full" [(ngModel)]="form.extraFields[f.key]">
+                    <option value="">-</option>
+                    @for (o of choices(f); track o.value) {
+                      <option [value]="o.value">{{ o.label }}</option>
+                    }
+                  </select>
+                }
+                @case ('table') {
+                  <select class="select select-sm select-bordered w-full" [(ngModel)]="form.extraFields[f.key]">
+                    <option value="">-</option>
+                    @for (o of choices(f); track o.value) {
+                      <option [value]="o.value">{{ o.label }}</option>
+                    }
+                  </select>
+                }
+                @default {
+                  <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.extraFields[f.key]" />
+                }
+              }
+            </div>
+          }
+        }
       }
     </div>
   }

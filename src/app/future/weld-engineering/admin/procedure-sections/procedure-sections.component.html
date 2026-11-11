@@ -1,20 +1,12 @@
 <div class="table-page-wrap" style="max-width: 56rem">
   <h2 class="section-title">Procedure Sections</h2>
   <p class="text-sm" style="margin-bottom: 1rem">
-    Sections 1-11 are built in. Sections you add here come after them, numbered from 12, on the procedure
-    form and the PDF. A new section is on no procedures until you tick it on a procedure's edit form. Added
-    sections and fields can't be renamed or removed yet.
+    The sections a procedure (WPS) can have, in form and PDF order; each procedure ticks its own.
+    Locked fields are read by Weld Record and Weld Planning.
   </p>
 
-  <h3 class="form-section-title">Built-in Sections</h3>
-  <ol class="list-decimal text-sm" style="padding-left: 1.5rem">
-    @for (name of builtIn; track name) {
-      <li>{{ name }}</li>
-    }
-  </ol>
-
   @for (s of sections(); track s.id; let i = $index) {
-    <h3 class="form-section-title">{{ sectionNumber(i) }}. {{ s.name }}</h3>
+    <h3 class="form-section-title">{{ i + 1 }}. {{ s.name }}</h3>
     <p class="text-sm">On {{ procedureCount(s.id) }} of {{ procedureTotal() }} procedures.</p>
     <div class="overflow-x-auto">
       <table class="table table-sm">
@@ -24,11 +16,11 @@
         <tbody>
           @for (f of s.fields; track f.key) {
             <tr>
-              <td>{{ f.label }}</td>
+              <td>{{ f.label }}@if (f.locked) { <span class="badge badge-sm">Locked</span>}</td>
               <td><code>{{ f.key }}</code></td>
               <td>{{ typeLabel(f.type) }}</td>
               <td>{{ f.required ? 'Yes' : 'No' }}</td>
-              <td>{{ f.options.join(', ') || '-' }}</td>
+              <td>{{ choicesText(f) }}</td>
             </tr>
           } @empty {
             <tr><td colspan="5" class="empty">No fields yet.</td></tr>
@@ -52,7 +44,18 @@
           }
         </select>
       </div>
-      @if (d.type === 'list') {
+      @if (d.type === 'table') {
+        <div class="stage-field">
+          <label class="stage-field-label">Admin Table</label>
+          <select class="select select-sm select-bordered w-full" [(ngModel)]="d.source">
+            <option value="">-</option>
+            @for (t of tableSources; track t.value) {
+              <option [ngValue]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+      }
+      @if (d.type === 'list' || d.type === 'multi') {
         <div class="stage-field">
           <label class="stage-field-label">Choices (separate with commas)</label>
           <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. Hard, Soft"
@@ -85,14 +88,14 @@
     </p>
     <pre class="json-block">{{ sections() | json }}</pre>
     <p class="text-sm" style="margin: 0.75rem 0 0.5rem">
-      Each procedure keeps the values for every added field in one <code>extraFields</code> bag, keyed by the
+      Each procedure keeps the values for every field in one <code>extraFields</code> bag, keyed by the
       field's Key. Adding a field adds a key there, not a new column. Blank values aren't stored.
     </p>
     @if (example(); as p) {
       <p class="text-sm" style="margin-bottom: 0.5rem">Example, {{ p.id }}:</p>
       <pre class="json-block">{{ p.extraFields | json }}</pre>
     } @else {
-      <p class="text-sm">No procedure has values in an added section yet. Fill some in on a procedure and an example shows here.</p>
+      <p class="text-sm">No procedure has section values yet. Fill some in on a procedure and an example shows here.</p>
     }
   </details>
 </div>

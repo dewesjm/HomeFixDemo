@@ -10,6 +10,7 @@ import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routi
 import { WorkflowStage } from '../model/workflow-types';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { fillerMetalTypeOptions } from '../../future/weld-engineering/procedure-values';
 import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-values';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
@@ -201,7 +202,7 @@ describe('joint-form stage-form', () => {
     const proc = procedures()[0];
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: proc.gwp, wtn: proc.wtn } });
     expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(
-      FILLER_METAL_TYPE_OPTIONS.filter(o => proc.fillerMetalTypes.includes(o.value)).map(o => o.value));
+      fillerMetalTypeOptions(proc.gwp, proc.wtn).map(o => o.value));
     expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j, true)).options).toBe(FILLER_METAL_TYPE_OPTIONS);
   });
 

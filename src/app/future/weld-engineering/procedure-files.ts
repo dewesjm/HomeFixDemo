@@ -3,10 +3,10 @@
 import { CsvColumn } from '../../shared/export-csv';
 import { downloadXlsxTemplate } from '../../shared/spreadsheet-import';
 import { Procedure } from '../../data/procedures';
-import { ProcedureSection, extraValueText } from './procedure-sections';
-import { requirementText } from '../../weld-record/qualifications-logic/qual-requirements';
+import { OVERRIDE_PARTS, type ExtraField, type ExtraFieldValue, type OverrideValue, type ProcedureSection } from './procedure-sections';
+import { extraValueText, fieldChoices, isOverride } from './procedure-field-values';
 
-const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
+const HEADER_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'WPS', value: r => r.id },
   { header: 'WPS Rev', value: r => r.wpsRev },
   { header: 'Effective Date', value: r => r.effectiveDate },
@@ -17,67 +17,65 @@ const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Weld Process', value: r => r.weldProcess },
   { header: 'Process Type', value: r => r.processType },
   { header: 'Application', value: r => r.application },
-  { header: 'Base Metal 1 Type', value: r => r.baseMetal1Type },
-  { header: 'Base Metal 2 Type', value: r => r.baseMetal2Type },
-  { header: 'Base Metal Thickness Min', value: r => r.baseMetalThicknessMin },
-  { header: 'Base Metal Thickness Max', value: r => r.baseMetalThicknessMax },
-  { header: 'Joint Type', value: r => r.jointType },
-  { header: 'Groove Angle', value: r => r.grooveAngle },
-  { header: 'Root Opening', value: r => r.rootOpening },
-  { header: 'Backing', value: r => r.backing },
-  { header: 'Weld Position', value: r => r.weldPosition },
-  { header: 'Weld Progression', value: r => r.weldProgression },
-  { header: 'Filler Metal Types', value: r => r.fillerMetalTypes.join('; ') },
-  { header: 'Filler Metal Classification', value: r => r.fillerMetalClassification },
-  { header: 'Filler Metal Sizes', value: r => r.fillerMetalSizes.join('; ') },
-  { header: 'Welder Qualifications', value: r => requirementText(r.requiredQuals) },
-  { header: 'PH Min', value: r => r.phMin },
-  { header: 'PH Max', value: r => r.phMax },
-  { header: 'IP Min', value: r => r.ipMin },
-  { header: 'IP Max', value: r => r.ipMax },
-  { header: 'Current Type', value: r => r.currentType },
-  { header: 'Power Source', value: r => r.powerSource },
-  { header: 'Shielding Gas', value: r => r.shieldingGas },
-  { header: 'Gas Flow Rate', value: r => r.gasFlowRate },
-  { header: 'Backing Gas', value: r => r.backingGas },
-  { header: 'Heat Input Min', value: r => r.heatInputMin },
-  { header: 'Heat Input Max', value: r => r.heatInputMax },
-  { header: 'Amperage Range', value: r => r.amperageRange },
-  { header: 'Voltage Range', value: r => r.voltageRange },
-  { header: 'Travel Speed Range', value: r => r.travelSpeedRange },
-  { header: 'PWHT Temp', value: r => r.pwhtTemp },
-  { header: 'PWHT Time', value: r => r.pwhtTime },
+];
+
+const TAIL_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Rules', value: r => r.rules.join('; ') },
   { header: 'Conditions', value: r => r.conditions.join('; ') },
   { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
 ];
 
-/* the columns above, then one per added-section field (blank on a procedure without that section) */
+/* One spreadsheet column per section field (an override group gets one per part). The export and
+   Load Procedures use the same columns, so an export can be loaded back: id is the template
+   heading, header the export heading, and aliases older headings the import still accepts. */
+export interface SectionColumn {
+  id: string;
+  header: string;
+  aliases: string[];
+  sectionId: string;
+  field: ExtraField;
+  part?: keyof OverrideValue;
+}
+
+export function sectionColumns(sections: ProcedureSection[]): SectionColumn[] {
+  return sections.flatMap(s => s.fields.flatMap((f): SectionColumn[] => f.type === 'override'
+    ? OVERRIDE_PARTS.map(part => ({
+        id: `${f.key}.${part.key}`, header: `${s.name}: ${f.label} ${part.label}`,
+        aliases: [`Override ${part.label}`], sectionId: s.id, field: f, part: part.key,
+      }))
+    : [{ id: f.key, header: `${s.name}: ${f.label}`, aliases: [f.label], sectionId: s.id, field: f }]));
+}
+
+/* a value as spreadsheet text: pick-many lists are '; ' separated labels */
+export function columnText(col: SectionColumn, value: ExtraFieldValue | undefined): string {
+  if (col.part) return isOverride(value) ? value[col.part] ?? '' : '';
+  if (Array.isArray(value)) {
+    const choices = fieldChoices(col.field, value);
+    return value.map(v => choices.find(c => c.value === v)?.label ?? v).join('; ');
+  }
+  return extraValueText(col.field, value);
+}
+
+/* the header columns, one per section field (blank on a procedure without that section), then
+   Rules, Conditions and Revision History */
 export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Procedure>[] {
   return [
-    ...PROCEDURE_CSV_COLUMNS,
-    ...sections.flatMap(s => s.fields.map(f => ({
-      header: `${s.name}: ${f.label}`,
-      value: (r: Procedure) => r.addedSectionIds.includes(s.id) ? extraValueText(r.extraFields[f.key]) : '',
-    }))),
+    ...HEADER_CSV_COLUMNS,
+    ...sectionColumns(sections).map(col => ({
+      header: col.header,
+      value: (r: Procedure) => r.sectionIds.includes(col.sectionId) ? columnText(col, r.extraFields[col.field.key]) : '',
+    })),
+    ...TAIL_CSV_COLUMNS,
   ];
 }
 
-const PROCEDURE_TEMPLATE_HEADERS = [
+export const PROCEDURE_HEADER_TEMPLATE_COLUMNS = [
   'id', 'title', 'status', 'wtn', 'weldProcess', 'gwp', 'wpsRev', 'effectiveDate', 'processType', 'application',
-  'baseMetal1Type', 'baseMetal2Type', 'baseMetalThicknessMin', 'baseMetalThicknessMax',
-  'jointType', 'grooveAngle', 'rootOpening', 'backing',
-  'weldPosition', 'weldProgression',
-  'fillerMetalTypes', 'fillerMetalClassification', 'fillerMetalSizes',
-  'phMin', 'phMax', 'ipMin', 'ipMax',
-  'currentType', 'powerSource',
-  'shieldingGas', 'gasFlowRate', 'backingGas',
-  'heatInputMin', 'heatInputMax',
-  'amperageRange', 'voltageRange', 'travelSpeedRange',
-  'pwhtTemp', 'pwhtTime',
-  'rules', 'conditions'
 ];
 
-export function downloadProcedureXlsxTemplate(): Promise<void> {
-  return downloadXlsxTemplate(PROCEDURE_TEMPLATE_HEADERS, 'procedures-import-template.xlsx');
+export function downloadProcedureXlsxTemplate(sections: ProcedureSection[]): Promise<void> {
+  return downloadXlsxTemplate(
+    [...PROCEDURE_HEADER_TEMPLATE_COLUMNS, ...sectionColumns(sections).map(c => c.id), 'rules', 'conditions'],
+    'procedures-import-template.xlsx'
+  );
 }

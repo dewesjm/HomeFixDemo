@@ -19,14 +19,9 @@
       <th class="min-w-32">Effective Date</th>
       <th class="min-w-32">Process Type</th>
       <th class="min-w-40">Application</th>
-      <th class="min-w-32">Base Metal 1 Type</th>
-      <th class="min-w-32">Base Metal 2 Type</th>
-      <th class="min-w-40">Filler Metal Types</th>
-      <th class="min-w-40">Filler Metal Sizes</th>
-      <th class="min-w-20">PH Min</th>
-      <th class="min-w-20">PH Max</th>
-      <th class="min-w-20">IP Min</th>
-      <th class="min-w-20">IP Max</th>
+      @for (col of columns; track col.id) {
+        <th class="min-w-32">{{ col.header }}</th>
+      }
       <th class="min-w-48">Rules</th>
       <th class="min-w-48">Conditions</th>
     </ng-template>
@@ -54,14 +49,9 @@
       <td><input type="date" class="input input-xs w-full" [(ngModel)]="row.effectiveDate" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.processType" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.application" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal1Type" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.baseMetal2Type" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalTypes" placeholder="mil-70s-3; mil-70s-6" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.fillerMetalSizes" placeholder="1/16; 3/32" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.phMin" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.phMax" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.ipMin" /></td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.ipMax" /></td>
+      @for (col of columns; track col.id) {
+        <td><input class="input input-xs w-full" [(ngModel)]="row.cells[col.id]" /></td>
+      }
       <td><input class="input input-xs w-full" [(ngModel)]="row.rules" placeholder="a; b" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.conditions" placeholder="a; b" /></td>
     </ng-template>

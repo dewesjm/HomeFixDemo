@@ -35,11 +35,11 @@
             [filter]="'select'" [options]="weldProcessOptions"></th>
         <th appSortHeader class="min-w-28" [table]="table" field="processType" label="Process Type"
             [filter]="'select'" [options]="processTypeOptions"></th>
-        <th appSortHeader class="min-w-28" [table]="table" field="baseMetal1Type" label="Base Metal 1 Type"
+        <th appSortHeader class="min-w-28" [table]="table" field="baseMetal1Type" [label]="label('baseMetal1Type')"
             [filter]="'select'" [options]="baseMetal1Options"></th>
-        <th appSortHeader class="min-w-28" [table]="table" field="baseMetal2Type" label="Base Metal 2 Type"
+        <th appSortHeader class="min-w-28" [table]="table" field="baseMetal2Type" [label]="label('baseMetal2Type')"
             [filter]="'select'" [options]="baseMetal2Options"></th>
-        <th appSortHeader class="min-w-28" [table]="table" field="fillerMetalTypes" label="Filler Metal Types"
+        <th appSortHeader class="min-w-28" [table]="table" field="fillerMetalTypes" [label]="label('fillerMetalTypes')"
             [filter]="'select'" [options]="fillerTypeOptions"></th>
       </tr>
     </thead>

@@ -10,7 +10,10 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { type ExtraFields } from '../future/weld-engineering/procedure-sections';
+import {
+  SEEDED_SECTION_IDS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
+  type ExtraFields, type OverrideValue
+} from '../future/weld-engineering/procedure-sections';
 import type { QualGroup } from '../weld-record/qualifications-logic/qual-requirements';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
@@ -30,10 +33,10 @@ const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping',
    pair is fixed per GWP and matched against a job's Material Type 1/2 to filter its GWP droplist */
 export const BASE_METAL_1_TYPES = MATERIAL_TYPES;
 export const BASE_METAL_2_TYPES = MATERIAL_TYPES;
-/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- used for the free-text Classification field.
+/* MIL-spec filler metal designations, e.g. MIL-80S-50 -- the choices of the Classification field.
    Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
-   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WPS's fillerMetalTypes/
-   fillerMetalSizes list which of those option VALUES are valid for that WPS. */
+   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WPS's
+   fillerMetalTypes/fillerMetalSizes section fields list which of those option VALUES are valid for it. */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 export const FILLER_METAL_TYPE_OPTIONS: { label: string; value: string }[] = [
   { label: 'MIL-70S-3', value: 'mil-70s-3' }, { label: 'MIL-70S-6', value: 'mil-70s-6' },
@@ -44,10 +47,6 @@ export const FILLER_METAL_SIZE_OPTIONS: { label: string; value: string }[] = [
   { label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' }, { label: '1/8"', value: '1/8' },
   { label: '5/32"', value: '5/32' }, { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' },
 ];
-export const JOINT_TYPES = ['Groove', 'Fillet', 'Plug', 'Edge'];
-export const BACKING_OPTIONS = ['None', 'Backing Strip', 'Consumable Insert', 'Gas Backing'];
-export const WELD_PROGRESSIONS = ['N/A', 'Uphill', 'Downhill'];
-export const CURRENT_TYPES = ['AC', 'DCEP', 'DCEN'];
 
 interface RevisionNote {
   wpsRev: string;
@@ -56,10 +55,9 @@ interface RevisionNote {
   by: string;
 }
 
-/* The PDF (procedure-pdf.ts) is laid out as: Revision Record, then 1. Base Metal, 2. Joint Design,
-   3. Welding Position, 4. Filler Metal, 5. Welder Qualifications, 6. Preheat & Interpass Temperatures,
-   7. Equipment, 8. Gas, 9. Heat Input, 10. Parameters, 11. Heat Treatment. Fields below are grouped
-   the same way. */
+/* The header fields are fixed. Everything in a numbered section (Base Metal, Filler Metal, Welder
+   Qualifications, ...) is defined in Admin > Procedure Sections (future/weld-engineering/
+   procedure-sections.ts) and its value is kept in extraFields. */
 export interface Procedure {
   id: string;               /* 'W-101-2' -- the lookup key, user-facing, shown as "WPS". One row/PDF per GWP+WTN pair. */
   title: string;
@@ -72,67 +70,13 @@ export interface Procedure {
   processType: string;
   application: string;       /* free text, e.g. 'Surface Structure' */
 
-  /* 1. Base Metal */
-  baseMetal1Type: string;
-  baseMetal2Type: string;
-  baseMetalThicknessMin: string;
-  baseMetalThicknessMax: string;
-
-  /* 2. Joint Design */
-  jointType: string;
-  grooveAngle: string;
-  rootOpening: string;
-  backing: string;
-
-  /* 3. Welding Position */
-  weldPosition: string;
-  weldProgression: string;
-
-  /* 4. Filler Metal -- fillerMetalTypes/fillerMetalSizes are the valid FILLER_METAL_TYPE_OPTIONS/
-     FILLER_METAL_SIZE_OPTIONS values for this WPS; Weld Record's Filler Metal Type/Size fields
-     filter to these once GWP+WTN resolve to this Procedure (fillerMetalTypeOptions/
-     fillerMetalSizeOptions in future/weld-engineering/procedure-values.ts) */
-  fillerMetalTypes: string[];
-  fillerMetalClassification: string;
-  fillerMetalSizes: string[];
-
-  /* 5. Welder Qualifications: the quals a welder needs to weld to this WPS, an AND/OR group (an empty
-     group requires nothing). Weld Record reads it through procedureRequiredQuals() (procedure-values.ts). */
-  requiredQuals: QualGroup;
-
-  /* 6. Preheat & Interpass Temperatures */
-  phMin: string; phMax: string; ipMin: string; ipMax: string;               /* 'NC' = no limit, blank = not set */
-  overridePhMin: string; overridePhMax: string; overrideIpMin: string; overrideIpMax: string; overrideNote: string;
-
-  /* 7. Equipment */
-  currentType: string;
-  powerSource: string;
-
-  /* 8. Gas */
-  shieldingGas: string;
-  gasFlowRate: string;
-  backingGas: string;
-
-  /* 9. Heat Input */
-  heatInputMin: string;
-  heatInputMax: string;
-
-  /* 10. Parameters */
-  amperageRange: string;
-  voltageRange: string;
-  travelSpeedRange: string;
-
-  /* 11. Heat Treatment */
-  pwhtTemp: string;
-  pwhtTime: string;
-
   rules: string[];
   conditions: string[];
-  /* values for the fields of sections added after 11 (future/weld-engineering/procedure-sections.ts), keyed by field key */
+  /* values for every section field, keyed by field key; blank values aren't stored */
   extraFields: ExtraFields;
-  /* which added sections this procedure has (ProcedureSection.id), picked on its edit form; values of
-     sections not picked stay in extraFields, hidden */
-  addedSectionIds: string[];
+  /* which sections this procedure has (ProcedureSection.id), ticked on its edit form; values of
+     sections not ticked stay in extraFields, hidden */
+  sectionIds: string[];
   /* required whenever a change is saved to a procedure that is (or was) Active -- see
      requiresRevisionNote() in procedure-form.component.ts. Shown at the top of the PDF as "Revision Record". */
   revisionHistory: RevisionNote[];
@@ -237,6 +181,13 @@ function seedRequiredQuals(id: string): QualGroup {
 function generateProcedures(): Procedure[] {
   const rand = seeded(777);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
+  const seedOverride = (): OverrideValue => ({
+    phMin: pick(['50', '60', '100', '150']),
+    phMax: pick(['250', '300', '350']),
+    ipMin: pick(['50', '60', '100']),
+    ipMax: pick(['250', '300', '350']),
+    note: `Approved deviation per WPS-${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}`,
+  });
   const out: Procedure[] = [];
   const combos = materialCombos();
 
@@ -284,48 +235,45 @@ function generateProcedures(): Procedure[] {
           effectiveDate: effectiveDate.toISOString().slice(0, 10),
           processType,
           application,
-          baseMetal1Type,
-          baseMetal2Type,
-          baseMetalThicknessMin: `${(0.125 + rand() * 0.25).toFixed(3)}"`,
-          baseMetalThicknessMax: `${(0.5 + rand() * 1.5).toFixed(3)}"`,
-          jointType: pick(JOINT_TYPES),
-          grooveAngle: `${30 + Math.floor(rand() * 45)}°`,
-          rootOpening: `${(rand() * 0.1875).toFixed(3)}"`,
-          backing: pick(BACKING_OPTIONS),
-          weldPosition: pick(getWeldPositions()).code,
-          weldProgression: pick(WELD_PROGRESSIONS),
-          fillerMetalTypes,
-          /* matches the first allowed filler type, so the description names a filler this WPS allows */
-          fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
-          fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
-          requiredQuals: seedRequiredQuals(id),
-          /* round values only (real limits are clean numbers like 60, 200, 300); every min pool
-             value is below every max pool value */
-          phMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150', '200']),
-          phMax: pick(['250', '300', '350', '400']),
-          ipMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150']),
-          ipMax: pick(['250', '300', '350', '400']),
-          overridePhMin: hasOverride ? pick(['50', '60', '100', '150']) : '',
-          overridePhMax: hasOverride ? pick(['250', '300', '350']) : '',
-          overrideIpMin: hasOverride ? pick(['50', '60', '100']) : '',
-          overrideIpMax: hasOverride ? pick(['250', '300', '350']) : '',
-          overrideNote: hasOverride ? `Approved deviation per WPS-${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}` : '',
-          currentType: pick(CURRENT_TYPES),
-          powerSource: pick(['Constant Current', 'Constant Voltage']),
-          shieldingGas: pick(['100% Argon', '75% Ar / 25% CO2', '100% CO2', 'N/A']),
-          gasFlowRate: `${20 + Math.floor(rand() * 20)} CFH`,
-          backingGas: pick(['100% Argon', 'None']),
-          heatInputMin: String(20 + Math.floor(rand() * 10)),
-          heatInputMax: String(40 + Math.floor(rand() * 20)),
-          amperageRange: `${80 + Math.floor(rand() * 40)}-${160 + Math.floor(rand() * 80)} A`,
-          voltageRange: `${16 + Math.floor(rand() * 4)}-${24 + Math.floor(rand() * 6)} V`,
-          travelSpeedRange: `${4 + Math.floor(rand() * 3)}-${8 + Math.floor(rand() * 4)} in/min`,
-          pwhtTemp: pick(['N/A', `${1100 + Math.floor(rand() * 100)}°F`]),
-          pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
+          extraFields: {
+            baseMetal1Type,
+            baseMetal2Type,
+            baseMetalThicknessMin: `${(0.125 + rand() * 0.25).toFixed(3)}"`,
+            baseMetalThicknessMax: `${(0.5 + rand() * 1.5).toFixed(3)}"`,
+            jointType: pick(JOINT_TYPES),
+            grooveAngle: `${30 + Math.floor(rand() * 45)}°`,
+            rootOpening: `${(rand() * 0.1875).toFixed(3)}"`,
+            backing: pick(BACKING_OPTIONS),
+            weldPosition: pick(getWeldPositions()).code,
+            weldProgression: pick(WELD_PROGRESSIONS),
+            fillerMetalTypes,
+            /* matches the first allowed filler type, so the description names a filler this WPS allows */
+            fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
+            fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
+            requiredQuals: seedRequiredQuals(id),
+            /* round values only (real limits are clean numbers like 60, 200, 300); every min pool
+               value is below every max pool value */
+            phMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150', '200']),
+            phMax: pick(['250', '300', '350', '400']),
+            ipMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150']),
+            ipMax: pick(['250', '300', '350', '400']),
+            ...(hasOverride ? { override: seedOverride() } : {}),
+            currentType: pick(CURRENT_TYPES),
+            powerSource: pick(['Constant Current', 'Constant Voltage']),
+            shieldingGas: pick(['100% Argon', '75% Ar / 25% CO2', '100% CO2', 'N/A']),
+            gasFlowRate: `${20 + Math.floor(rand() * 20)} CFH`,
+            backingGas: pick(['100% Argon', 'None']),
+            heatInputMin: String(20 + Math.floor(rand() * 10)),
+            heatInputMax: String(40 + Math.floor(rand() * 20)),
+            amperageRange: `${80 + Math.floor(rand() * 40)}-${160 + Math.floor(rand() * 80)} A`,
+            voltageRange: `${16 + Math.floor(rand() * 4)}-${24 + Math.floor(rand() * 6)} V`,
+            travelSpeedRange: `${4 + Math.floor(rand() * 3)}-${8 + Math.floor(rand() * 4)} in/min`,
+            pwhtTemp: pick(['N/A', `${1100 + Math.floor(rand() * 100)}°F`]),
+            pwhtTime: pick(['N/A', `${1 + Math.floor(rand() * 3)} hr`]),
+          },
+          sectionIds: [...SEEDED_SECTION_IDS],
           rules: pickSome(RULE_POOL, rand, 2, 4),
           conditions: pickSome(CONDITION_POOL, rand, 1, 3),
-          extraFields: {},
-          addedSectionIds: [],
           revisionHistory,
           createdBy: 'System',
           createdAt: createdAt.toISOString(),

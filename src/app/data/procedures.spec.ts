@@ -1,26 +1,16 @@
 import {
   procedures, addProcedure, updateProcedure, deleteProcedure, getProcedure, type Procedure
 } from './procedures';
+import { SEEDED_SECTION_IDS } from '../future/weld-engineering/procedure-sections';
 
 const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
   id, title: 'Test procedure', status: 'draft',
   wtn, weldProcess: 'GTAW',
   gwp, wpsRev: '0', effectiveDate: '',
   processType: '', application: '',
-  baseMetal1Type: '', baseMetal2Type: '', baseMetalThicknessMin: '', baseMetalThicknessMax: '',
-  jointType: '', grooveAngle: '', rootOpening: '', backing: '',
-  weldPosition: '', weldProgression: '',
-  fillerMetalTypes: [], fillerMetalClassification: '', fillerMetalSizes: [], requiredQuals: { op: 'all', items: [] },
-  phMin: '', phMax: '', ipMin: '', ipMax: '',
-  overridePhMin: '', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: '',
-  currentType: '', powerSource: '',
-  shieldingGas: '', gasFlowRate: '', backingGas: '',
-  heatInputMin: '', heatInputMax: '',
-  amperageRange: '', voltageRange: '', travelSpeedRange: '',
-  pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [],
   extraFields: {},
-  addedSectionIds: [],
+  sectionIds: [...SEEDED_SECTION_IDS],
   revisionHistory: [],
   createdBy: 'Test',
 });
@@ -43,7 +33,7 @@ describe('procedures data layer', () => {
     }
   });
 
-  it('every seeded procedure has rules, conditions, and qualifications required', () => {
+  it('every seeded procedure has rules, conditions and every seeded section ticked', () => {
     /* scoped to seeded ids (W-###-#) since `procedures` is shared module state across this whole
        spec run -- other specs below add their own TEST-* procedures with intentionally empty lists */
     const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
@@ -51,6 +41,7 @@ describe('procedures data layer', () => {
     for (const p of seeded) {
       expect(p.rules.length).toBeGreaterThan(0);
       expect(p.conditions.length).toBeGreaterThan(0);
+      expect(p.sectionIds).toEqual(SEEDED_SECTION_IDS);
     }
   });
 

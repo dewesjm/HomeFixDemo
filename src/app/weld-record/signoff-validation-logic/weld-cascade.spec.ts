@@ -7,6 +7,7 @@ import { isFieldLocked } from '../signoff-forms-logic/field-locks';
 import { setStepFieldConfig, resetStepFieldConfig } from '../../data/signoff-type-forms';
 import { getActivationForStep } from '../signoff-forms-logic/signoff-type-form-rules';
 import { procedures } from '../../data/procedures';
+import { wtnFillValue, fillerMetalTypeOptions } from '../../future/weld-engineering/procedure-values';
 import { selectChangeCascade, typedRequirementChanges, FieldChange } from './weld-cascade';
 
 const job = JOBS[0];
@@ -32,13 +33,13 @@ describe('joint-form weld-cascade', () => {
   });
 
   it('a WTN fills in its WPS\'s process and PH/IP requirements, and NC requirements lock their actuals', () => {
-    const proc = procedures().find(p => p.phMin === 'NC')!;
+    const proc = procedures().find(p => wtnFillValue(p.gwp, p.wtn, 'phMin') === 'NC')!;
     const tack = stageOf('tack', { inputs: { weldProcedure: proc.gwp } });
     const { changes, matchedProc } = selectChangeCascade(tack, field(tack, 'wtn'), proc.wtn, false);
     const set = afterChange(tack, changes);
     expect(matchedProc).toBeTrue();
     expect(set['weldProcess']).toBe(proc.weldProcess.toLowerCase());
-    expect(set['phMax']).toBe(proc.phMax);
+    expect(set['phMax']).toBe(wtnFillValue(proc.gwp, proc.wtn, 'phMax'));
     expect(set['actualPhMin']).toBe('NC');
     const filled = { ...tack, inputs: set };
     expect(isFieldLocked(filled, { key: 'actualPhMin' })).toBeTrue();
@@ -47,7 +48,7 @@ describe('joint-form weld-cascade', () => {
   });
 
   it('a WTN clears a filler choice its WPS does not allow, unless a Foreman Override opened the list', () => {
-    const proc = procedures().find(p => !p.fillerMetalTypes.includes('mil-100s-1'))!;
+    const proc = procedures().find(p => !fillerMetalTypeOptions(p.gwp, p.wtn).some(o => o.value === 'mil-100s-1'))!;
     const tack = stageOf('tack', { inputs: { weldProcedure: proc.gwp, fillerMetalType: 'mil-100s-1' } });
     expect(asRecord(selectChangeCascade(tack, field(tack, 'wtn'), proc.wtn, false).changes)['fillerMetalType']).toBe('');
     expect('fillerMetalType' in asRecord(selectChangeCascade(tack, field(tack, 'wtn'), proc.wtn, true).changes)).toBeFalse();
