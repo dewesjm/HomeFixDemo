@@ -1,32 +1,38 @@
 import { weldJoints } from '../../data/weld-planning';
-import { applyFilters } from './weld-planning-filter-schema';
+import { gwpDetails } from '../weld-engineering/procedure-options';
+import { Condition, applyFilters } from '../../shared/filter-engine';
+import { SEARCH_FIELDS, buildRow, standardLayout } from './weld-planning-filter-schema';
 
-describe('weld-planning filter schema', () => {
-  const rows = weldJoints();
+const cond = (c: Partial<Condition>): Condition => ({ op: 'is', value: '', to: '', values: [], ...c });
 
-  it('no values: every joint', () => {
-    expect(applyFilters(rows, {})).toBe(rows);
-    expect(applyFilters(rows, { hull: [], joint: null, rtRoot: '' })).toBe(rows);
+describe('weld-planning search schema', () => {
+  const rows = weldJoints().map(buildRow);
+  const withGwp = rows.find(r => r.gwp)!;
+
+  it('a joint\'s row carries what its GWP stands for', () => {
+    const d = gwpDetails(withGwp.gwp)!;
+    expect(withGwp.weldProcess).toBe(d.weldProcess);
+    expect(withGwp.processType).toBe(d.processType);
+    expect(withGwp.baseMetal1Type).toBe(withGwp.materialType1);
+    expect(withGwp.baseMetal2Type).toBe(withGwp.materialType2);
+    expect(withGwp.fillerMetalTypes.length).toBe(d.fillerMetalTypes.length);
+    const blank = rows.find(r => !r.gwp)!;
+    expect([blank.weldProcess, blank.processType, blank.fillerMetalTypes.length]).toEqual(['', '', 0]);
   });
 
-  it('text contains, any case', () => {
-    const part = rows[0].joint.slice(0, 4).toLowerCase();
-    const hits = applyFilters(rows, { joint: part });
+  it('every procedure field filters, and Standard opens with them in the bar', () => {
+    const keys = ['gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'];
+    expect(standardLayout().filterKeys).toEqual(keys);
+    for (const key of keys) expect(SEARCH_FIELDS.some(f => f.key === key)).withContext(key).toBeTrue();
+    const hits = applyFilters(rows, SEARCH_FIELDS, { weldProcess: [cond({ values: [withGwp.weldProcess] })] });
     expect(hits.length).toBeGreaterThan(0);
-    expect(hits.every(r => r.joint.toLowerCase().includes(part))).toBeTrue();
+    expect(hits.every(r => r.weldProcess === withGwp.weldProcess)).toBeTrue();
   });
 
-  it('multiselect is any of the picked values; fields are AND\'d', () => {
-    const [a, b] = [...new Set(rows.map(r => r.status))];
-    expect(applyFilters(rows, { status: [a, b] }).length).toBe(rows.filter(r => r.status === a || r.status === b).length);
-    const hull = rows[0].hull;
-    expect(applyFilters(rows, { status: [a], hull: [hull] })).toEqual(rows.filter(r => r.status === a && r.hull === hull));
-  });
-
-  it('a date range includes its end day, and needs a start date to filter', () => {
-    const created = new Date(rows[0].createdAt);
-    const day = new Date(created.getFullYear(), created.getMonth(), created.getDate());
-    expect(applyFilters(rows, { createdAt: [day, day] })).toContain(rows[0]);
-    expect(applyFilters(rows, { createdAt: [null, new Date(2000, 0, 1)] })).toBe(rows);
+  it('Filler Metal Type matches a joint whose GWP allows that filler', () => {
+    const filler = withGwp.fillerMetalTypes[0];
+    const hits = applyFilters(rows, SEARCH_FIELDS, { fillerMetalTypes: [cond({ values: [filler] })] });
+    expect(hits).toContain(withGwp);
+    expect(hits.every(r => r.fillerMetalTypes.includes(filler))).toBeTrue();
   });
 });

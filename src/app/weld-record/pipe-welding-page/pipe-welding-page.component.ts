@@ -7,21 +7,20 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
-  LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch, LucidePlus,
+  LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
   LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
 } from '@lucide/angular';
 
 import { TableState, inArray } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
 import { SortHeaderComponent } from '../../shared/sort-header.component';
-import { MultiselectDropdownComponent } from '../../shared/multiselect-dropdown.component';
-import { DateRangeComponent } from '../../shared/date-range.component';
-import { TooltipDirective } from '../../shared/tooltip.directive';
 import { OrderedPickListComponent } from '../../shared/ordered-pick-list.component';
 import { BannerPillComponent } from '../../shared/banner-pill.component';
 import { MenuButtonComponent } from '../../shared/menu-button.component';
 import { ConfirmService } from '../../shared/confirm.service';
 import { downloadCsv } from '../../shared/export-csv';
+import { ConditionBarComponent } from '../../shared/condition-bar/condition-bar.component';
+import { ColumnDrag } from '../../shared/column-drag';
 import { bannerFor } from '../../data/banner';
 
 import { JOBS } from '../../data/jobs';
@@ -32,7 +31,7 @@ import {
   loadDefaultVariant, saveDefaultVariant
 } from './filter-schema';
 import {
-  Condition, FilterValues, Op, OPS_BY_KIND, opLabel, isExclude, needsNoValue, newCondition, activeConditions, applyFilters, chipLabel
+  FilterValues, activeConditions, applyFilters, chipLabel
 } from '../../shared/filter-engine';
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
@@ -49,9 +48,8 @@ const PAGE_SIZES = [10, 25, 50, 100];
   standalone: true,
   imports: [OrderedPickListComponent, BannerPillComponent, MenuButtonComponent,
     CommonModule, FormsModule,
-    TablePagerComponent, SortHeaderComponent, MultiselectDropdownComponent, DateRangeComponent,
-    TooltipDirective,
-    LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch, LucidePlus,
+    TablePagerComponent, SortHeaderComponent, ConditionBarComponent,
+    LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
     LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideHistory, LucideStar, LucideChevronDown, LucideChevronUp
   ],
   templateUrl: './pipe-welding-page.component.html'
@@ -82,6 +80,7 @@ export class PipeWeldingPageComponent {
   selectedVariant = signal<string>(STANDARD_VARIANT);
   /* filter bar folded away (chips still show what's active); remembered, not part of a variant */
   filtersHidden = signal(false);
+  colDrag = new ColumnDrag(this.columnKeys);
 
   constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService,
               private confirm: ConfirmService) {
@@ -153,6 +152,7 @@ export class PipeWeldingPageComponent {
     return out;
   });
   optionsFor(key: string) { return this.optionCache().get(key) ?? []; }
+  optionsFn = (key: string) => this.optionsFor(key);
 
   filterFields = computed<SearchField[]>(() =>
     this.filterKeys().map(k => this.field(k)).filter((f): f is SearchField => !!f));
@@ -310,104 +310,14 @@ export class PipeWeldingPageComponent {
     this.showColPicker.set(false);
   }
 
-  // --- Dragging column headings to reorder ---
-  /* only armed when the press starts outside the heading's filter box, so typing/selecting there still works */
-  armedCol = signal<string | null>(null);
-  dragCol = signal<string | null>(null);
-  dropAt = signal<{ key: string; before: boolean } | null>(null);
+  // --- Filter bar values ---
 
-  armColDrag(e: MouseEvent, key: string) {
-    const t = e.target as HTMLElement;
-    this.armedCol.set(t.closest('input, select, button, label, app-multiselect-dropdown') ? null : key);
-  }
-
-  onColDragStart(e: DragEvent, key: string) {
-    this.dragCol.set(key);
-    e.dataTransfer?.setData('text/plain', key);
-    if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-  }
-
-  onColDragOver(e: DragEvent, key: string) {
-    const from = this.dragCol();
-    if (!from) return;
-    e.preventDefault();
-    const box = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    this.dropAt.set(key === from ? null : { key, before: e.clientX < box.left + box.width / 2 });
-  }
-
-  onColDrop(e: DragEvent) {
-    e.preventDefault();
-    const from = this.dragCol(), at = this.dropAt();
-    if (from && at) {
-      const keys = this.columnKeys().filter(k => k !== from);
-      const i = keys.indexOf(at.key);
-      keys.splice(at.before ? i : i + 1, 0, from);
-      this.columnKeys.set(keys);
-    }
-    this.endColDrag();
-  }
-
-  endColDrag() {
-    this.dragCol.set(null);
-    this.dropAt.set(null);
-    this.armedCol.set(null);
-  }
-
-  // --- Stacked conditions ---
-
-  /* what the bar shows for a field: its conditions, or one empty one to type into */
-  conditionsOf(f: SearchField): Condition[] {
-    const c = this.values()[f.key];
-    return c?.length ? c : [newCondition(f.kind)];
-  }
-
-  private setConditions(key: string, conds: Condition[]) {
-    this.values.update(v => ({ ...v, [key]: conds }));
+  setValues(v: FilterValues) {
+    this.values.set(v);
     this.table.page.set(0);
   }
 
-  updateCondition(f: SearchField, i: number, patch: Partial<Condition>) {
-    const conds = this.conditionsOf(f).map((c, n) => (n === i ? { ...c, ...patch } : c));
-    this.setConditions(f.key, conds);
-  }
-
-  setOp(f: SearchField, i: number, op: Op) {
-    /* list fields keep their picks between is / is not, and typed text between the text operators */
-    this.updateCondition(f, i, { op, ...(op === 'between' ? {} : { to: '' }) });
-  }
-
-  addCondition(f: SearchField) {
-    this.setConditions(f.key, [...this.conditionsOf(f), newCondition(f.kind)]);
-  }
-
-  /* a field's only line, still empty, has nothing to remove */
-  canRemoveCondition(f: SearchField, c: Condition): boolean {
-    return this.conditionsOf(f).length > 1 || activeConditions(f, [c]).length > 0;
-  }
-
-  removeCondition(f: SearchField, i: number) {
-    const conds = this.conditionsOf(f).filter((_, n) => n !== i);
-    this.setConditions(f.key, conds);
-  }
-
-  /* the word shown in front of a stacked condition: includes are OR'd, excludes must all hold */
-  joinWord(c: Condition): string { return isExclude(c.op) ? 'and' : 'or'; }
-
-  numStr(v: number | null): string { return v == null ? '' : String(v); }
-
-  clearField(key: string) { this.setConditions(key, []); }
-
-  opsFor(f: SearchField) { return OPS_BY_KIND[f.kind].map(op => ({ op, label: opLabel(op, f.kind) })); }
-  needsNoValue = needsNoValue;
-  /* the operator box fits the chosen operator, so short ones (is) leave room for the value */
-  opWidth(op: Op, f: SearchField): number { return opLabel(op, f.kind).length + 5; }
-
-  /* between on a date field: app-date-range works in Dates, the condition stores yyyy-mm-dd */
-  asDate(s: string): Date | null { return s ? new Date(s + 'T00:00:00') : null; }
-  setDateBetween(f: SearchField, i: number, [from, to]: [Date | null, Date | null]) {
-    const iso = (d: Date | null) => d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : '';
-    this.updateCondition(f, i, { value: iso(from), to: iso(to) });
-  }
+  clearField(key: string) { this.setValues({ ...this.values(), [key]: [] }); }
 
   /* anything narrowing the rows: filter bar, heading filters, keyword search or role */
   isFiltering = computed(() =>

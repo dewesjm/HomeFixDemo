@@ -1,0 +1,66 @@
+<!-- Advanced Search filter bar: each field stacks its own conditions (paired with condition-bar.component.ts) -->
+<div class="facet-row facet-row-compact cond-bar">
+  @for (f of fields(); track f.key) {
+    <div class="field-col cond-col">
+      <label class="field-label">{{ f.label }}</label>
+      @for (c of conditionsOf(f); track $index; let i = $index, last = $last) {
+        <div class="cond-row">
+          @if (i > 0) { <span class="cond-join">{{ joinWord(c) }}</span> }
+          <select class="select select-sm select-bordered cond-op" [attr.aria-label]="f.label + ' operator'"
+                  [style.width.ch]="opWidth(c.op, f)"
+                  [ngModel]="c.op" (ngModelChange)="setOp(f, i, $event)">
+            @for (o of opsFor(f); track o.op) {
+              <option [ngValue]="o.op">{{ o.label }}</option>
+            }
+          </select>
+          <div class="cond-value">
+            @if (needsNoValue(c.op)) {
+              <!-- is blank / is not blank take no value -->
+            } @else if (f.kind === 'list' && (c.op === 'is' || c.op === 'isNot')) {
+              <app-multiselect-dropdown [options]="optionsFor()(f.key)" placeholder="Pick values"
+                [selected]="c.values" (selectedChange)="updateCondition(f, i, { values: $event })" />
+            } @else if (f.kind === 'number') {
+              <div class="flex gap-1">
+                <input type="number" class="input input-sm input-bordered flex-1 min-w-0"
+                       [placeholder]="c.op === 'between' ? 'From' : 'Value'"
+                       [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: numStr($event) })" />
+                @if (c.op === 'between') {
+                  <input type="number" class="input input-sm input-bordered flex-1 min-w-0" placeholder="To"
+                         [ngModel]="c.to" (ngModelChange)="updateCondition(f, i, { to: numStr($event) })" />
+                }
+              </div>
+            } @else if (f.kind === 'date') {
+              @if (c.op === 'between') {
+                <app-date-range [from]="asDate(c.value)" [to]="asDate(c.to)"
+                  (rangeChange)="setDateBetween(f, i, $event)" />
+              } @else {
+                <input type="date" class="input input-sm input-bordered w-full"
+                       [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event ?? '' })" />
+              }
+            } @else {
+              <input type="text" class="input input-sm input-bordered w-full" placeholder="Value"
+                     [ngModel]="c.value" (ngModelChange)="updateCondition(f, i, { value: $event })" />
+            }
+          </div>
+          <!-- every line can be removed (a lone empty one has nothing to remove); the last line also ends in + -->
+          @if (canRemoveCondition(f, c)) {
+            <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Remove this condition"
+                    aria-label="Remove this condition" (click)="removeCondition(f, i)">
+              <svg lucideX class="size-3.5"></svg>
+            </button>
+          }
+          @if (last) {
+            <button type="button" class="btn btn-ghost btn-xs btn-circle" appTooltip="Add condition"
+                    aria-label="Add condition" (click)="addCondition(f)">
+              <svg lucidePlus class="size-4"></svg>
+            </button>
+          }
+        </div>
+      }
+    </div>
+  }
+  <button type="button" class="btn btn-sm btn-ghost add-field-tile" appTooltip="Add, remove or reorder the filter fields"
+          (click)="adapt.emit()">
+    <svg lucidePlus class="size-4"></svg> Add field
+  </button>
+</div>

@@ -77,7 +77,13 @@ export function isoDay(d: unknown): string {
 const day = (iso: string) => (iso ? new Date(iso + 'T00:00:00').getTime() : NaN);
 const DAY_MS = 24 * 3600 * 1000;
 
+/* A cell holding several values (e.g. every filler a GWP allows) matches an "include" condition when
+   any value does and an "exclude" one when every value does; blank means no values. */
 function matches(c: Condition, kind: FieldKind, cell: unknown): boolean {
+  if (Array.isArray(cell)) {
+    if (needsNoValue(c.op)) return matches(c, kind, cell.join(''));
+    return isExclude(c.op) ? cell.every(v => matches(c, kind, v)) : cell.some(v => matches(c, kind, v));
+  }
   if (kind === 'number' || kind === 'date') {
     const v = kind === 'date' ? (cell ? new Date(cell as string | number).getTime() : NaN) : Number(cell);
     const n = (s: string) => (kind === 'date' ? day(s) : Number(s));

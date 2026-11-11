@@ -13,7 +13,10 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-11',
-    added: ['Weld Planning joints have a GWP, picked from the GWPs qualified for Material 1 and 2. It shows on the joint details, the CSV export and the import template. Changing a material clears a GWP that no longer fits. Saved Weld Planning joints were reset to the starting joints.'],
+    added: ['Weld Planning joints have a GWP, picked from the GWPs qualified for Material 1 and 2. It shows on the joint details, the CSV export and the import template. Changing a material clears a GWP that no longer fits. Saved Weld Planning joints were reset to the starting joints.',
+      'Weld Planning Advanced Search now works like Pipe Welding: each filter field can stack several conditions (is, is not, contains, is blank and more), column headings sort and filter, columns can be dragged into a new order, the filter bar can be hidden, and saved views keep filters and columns together. Saved Weld Planning views were cleared.',
+      'Weld Planning Advanced Search can search on GWP, Welding Process, Process Type, Base Metal 1 Type, Base Metal 2 Type and Filler Metal Type, all taken from the joint\'s GWP. The Standard view opens with these six in the filter bar.'],
+    changed: ['Refactored the Pipe Welding filter bar and column dragging into shared pieces, now also used by Weld Planning Advanced Search.'],
   },
   {
     date: '2026-11-10',

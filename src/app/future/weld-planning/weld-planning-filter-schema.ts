@@ -1,130 +1,126 @@
-/* Weld Planning's Advanced Search: its filter fields (one value per field) and saved variants.
-   Matching goes through the shared engine (shared/filter-engine.ts): each field's value becomes one condition. */
+/* Weld Planning's Advanced Search: every searchable field, the rows it searches, and saved views
+   (localStorage). Same model as Pipe Welding (weld-record/pipe-welding-page/filter-schema.ts):
+   stacked conditions per field, matched by shared/filter-engine.ts. */
 import { STORAGE } from '../../data/storage-keys';
-import { Condition, FieldKind, MatchField, applyFilters as applyConditions, isoDay } from '../../shared/filter-engine';
-import { weldJoints, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, NDT_FIELDS, JOINT_EXTRA_FIELDS, type WeldJoint, type JointPriority } from '../../data/weld-planning';
+import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine';
+import {
+  NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, type WeldJoint
+} from '../../data/weld-planning';
+import { FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { gwpDetails } from '../weld-engineering/procedure-options';
 
-export type FilterField =
-  | { key: string; label: string; type: 'text';        group: string; required?: boolean; field: keyof WeldJoint }
-  | { key: string; label: string; type: 'multiselect'; group: string; required?: boolean; field: keyof WeldJoint; options: { label: string; value: any }[] }
-  | { key: string; label: string; type: 'select';      group: string; required?: boolean; field: keyof WeldJoint; options: { label: string; value: any }[] }
-  | { key: string; label: string; type: 'daterange';   group: string; required?: boolean; field: keyof WeldJoint };
-
-function uniqueOpts(getter: (j: WeldJoint) => string): { label: string; value: string }[] {
-  const vals = [...new Set(weldJoints().map(getter))].filter(Boolean).sort();
-  return vals.map(v => ({ label: v, value: v }));
+export interface SearchField extends MatchField {
+  key: string;            /* row key: a WeldJoint field or one of the GWP's procedure fields */
+  group: string;
+  width?: string;         /* results column min width */
 }
 
-const PRIORITY_OPTIONS: { label: string; value: JointPriority }[] = [
-  { label: 'Low', value: 'low' }, { label: 'Medium', value: 'medium' },
-  { label: 'High', value: 'high' }, { label: 'Critical', value: 'critical' },
+/* ── Fields ── */
+
+const field = (key: string, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-24'): SearchField =>
+  ({ key, label, group, kind, width });
+
+/* free-text fields and fields with a fixed set of values; list fields pick from the values joints have */
+export const SEARCH_FIELDS: SearchField[] = [
+  field('id', 'XREFID', 'Joint', 'text', 'min-w-16'),
+  field('hull', 'Hull', 'Joint', 'list', 'min-w-20'),
+  field('joint', 'Joint', 'Joint', 'text', 'min-w-20'),
+  field('description', 'Description', 'Joint', 'text', 'min-w-32'),
+  field('status', 'Status', 'Joint', 'list'),
+  field('priority', 'Priority', 'Joint', 'list'),
+  field('jointType', 'Type', 'Joint', 'list'),
+  field('drawing', 'Drawing', 'Welding'),
+  field('drawingRev', 'Drawing Rev', 'Welding', 'list'),
+  field('jointDesign', 'Joint Design', 'Welding', 'list'),
+  field('weldType', 'Weld Type', 'Welding', 'list'),
+  field('pipeSize', 'Pipe Size', 'Welding', 'list'),
+  field('wallThickness', 'Wall Thickness', 'Welding', 'list'),
+  field('materialType1', 'Material 1', 'Welding', 'list'),
+  field('materialType2', 'Material 2', 'Welding', 'list'),
+  field('gwp', 'GWP', 'Procedure', 'list'),
+  field('weldProcess', 'Welding Process', 'Procedure', 'list'),
+  field('processType', 'Process Type', 'Procedure', 'list'),
+  field('baseMetal1Type', 'Base Metal 1 Type', 'Procedure', 'list'),
+  field('baseMetal2Type', 'Base Metal 2 Type', 'Procedure', 'list'),
+  field('fillerMetalTypes', 'Filler Metal Type', 'Procedure', 'list', 'min-w-32'),
+  ...NDT_FIELDS.map(f => field(f.key, f.label, 'NDT', 'list')),
+  ...JOINT_EXTRA_FIELDS.map(f => field(f.key, f.label, f.group, f.options ? 'list' : 'text')),
+  field('notes', 'Notes', 'Additional', 'text', 'min-w-32'),
+  field('createdBy', 'Created By', 'Additional'),
+  field('createdAt', 'Created', 'Additional', 'date'),
 ];
 
-export const FILTER_SCHEMA: FilterField[] = [
-  { key: 'id',            label: 'XREFID',        type: 'text',        group: 'Joint',   field: 'id' },
-  { key: 'hull',          label: 'Hull',          type: 'multiselect', group: 'Joint',   field: 'hull',        options: uniqueOpts(j => j.hull) },
-  { key: 'joint',         label: 'Joint',         type: 'text',        group: 'Joint',   field: 'joint' },
-  { key: 'description',   label: 'Description',   type: 'text',        group: 'Joint',   field: 'description' },
-  { key: 'status',        label: 'Status',        type: 'multiselect', group: 'Joint',   field: 'status',      options: JOINT_STATUS_OPTIONS },
-  { key: 'priority',      label: 'Priority',      type: 'multiselect', group: 'Joint',   field: 'priority',    options: PRIORITY_OPTIONS },
-  { key: 'jointType',     label: 'Type',          type: 'multiselect', group: 'Joint',   field: 'jointType',   options: JOINT_TYPE_OPTIONS },
-  { key: 'drawing',       label: 'Drawing',       type: 'text',        group: 'Welding', field: 'drawing' },
-  { key: 'drawingRev',    label: 'Drawing Rev',   type: 'multiselect', group: 'Welding', field: 'drawingRev',  options: uniqueOpts(j => j.drawingRev) },
-  { key: 'jointDesign',   label: 'Joint Design',  type: 'multiselect', group: 'Welding', field: 'jointDesign', options: uniqueOpts(j => j.jointDesign) },
-  { key: 'weldType',      label: 'Weld Type',     type: 'multiselect', group: 'Welding', field: 'weldType',    options: uniqueOpts(j => j.weldType) },
-  { key: 'pipeSize',      label: 'Pipe Size',     type: 'multiselect', group: 'Welding', field: 'pipeSize',    options: uniqueOpts(j => j.pipeSize) },
-  { key: 'wallThickness', label: 'Wall Thickness', type: 'multiselect', group: 'Welding', field: 'wallThickness', options: uniqueOpts(j => j.wallThickness) },
-  { key: 'materialType1', label: 'Material 1',    type: 'multiselect', group: 'Welding', field: 'materialType1', options: uniqueOpts(j => j.materialType1) },
-  { key: 'materialType2', label: 'Material 2',    type: 'multiselect', group: 'Welding', field: 'materialType2', options: uniqueOpts(j => j.materialType2) },
-  ...NDT_FIELDS.map(f => ({
-    key: f.key, label: f.label, type: 'select' as const, group: 'NDT', field: f.key as keyof WeldJoint, options: f.options.map(m => ({ label: m || 'Blank', value: m })),
-  })),
-  /* droplist fields filter by their options, free-text ones by text match */
-  ...JOINT_EXTRA_FIELDS.map((f): FilterField => f.options
-    ? { key: f.key, label: f.label, type: 'multiselect', group: f.group, field: f.key, options: f.options }
-    : { key: f.key, label: f.label, type: 'text', group: f.group, field: f.key }),
-  { key: 'notes',       label: 'Notes',       type: 'text',      group: 'Additional', field: 'notes' },
-  { key: 'createdBy',   label: 'Created By',  type: 'text',      group: 'Additional', field: 'createdBy' },
-  { key: 'createdAt',   label: 'Created',     type: 'daterange', group: 'Additional', field: 'createdAt' },
-];
+/* ── Values ── */
 
-export type FilterValues = Record<string, any>;
+/* a joint as the search sees it: status/priority/type by their labels, plus what its GWP stands
+   for. Filler Metal Type is every filler the GWP's WPS rows allow, so it's a list. */
+export type SearchRow = Omit<WeldJoint, 'status' | 'priority' | 'jointType'> & {
+  status: string; priority: string; jointType: string;
+  weldProcess: string; processType: string; baseMetal1Type: string; baseMetal2Type: string;
+  fillerMetalTypes: string[];
+};
 
-export function getField(key: string): FilterField | undefined {
-  return FILTER_SCHEMA.find(f => f.key === key);
+const PRIORITY_LABELS: Record<string, string> = { low: 'Low', medium: 'Medium', high: 'High', critical: 'Critical' };
+const label = (opts: { label: string; value: string }[], v: string) => opts.find(o => o.value === v)?.label ?? v;
+
+export function buildRow(j: WeldJoint): SearchRow {
+  const gwp = gwpDetails(j.gwp ?? '');
+  return {
+    ...j,
+    status: label(JOINT_STATUS_OPTIONS, j.status),
+    priority: PRIORITY_LABELS[j.priority] ?? j.priority,
+    jointType: label(JOINT_TYPE_OPTIONS, j.jointType),
+    gwp: j.gwp ?? '',
+    weldProcess: gwp?.weldProcess ?? '',
+    processType: gwp?.processType ?? '',
+    baseMetal1Type: gwp?.baseMetal1Type ?? '',
+    baseMetal2Type: gwp?.baseMetal2Type ?? '',
+    fillerMetalTypes: (gwp?.fillerMetalTypes ?? []).map(v => label(FILLER_METAL_TYPE_OPTIONS, v)),
+  };
 }
 
-export function isEmpty(field: FilterField, value: any): boolean {
-  if (value === null || value === undefined || value === '') return true;
-  switch (field.type) {
-    case 'multiselect':
-      return !Array.isArray(value) || value.length === 0;
-    case 'daterange':
-      return !Array.isArray(value) || !value[0];
-    default:
-      return false;
-  }
-}
+/* ── Layouts (the page's own state and saved views) ── */
 
-const KIND: Record<FilterField['type'], FieldKind> = { text: 'text', multiselect: 'list', select: 'list', daterange: 'date' };
-
-/* a field's value as the engine's condition: text contains it, a list is any of the picked values, a date range is between */
-function asCondition(f: FilterField, v: any): Condition {
-  const cond: Condition = { op: 'is', value: '', to: '', values: [] };
-  switch (f.type) {
-    case 'text':        return { ...cond, op: 'contains', value: String(v) };
-    case 'multiselect': return { ...cond, values: (v as any[]).map(String) };
-    case 'select':      return { ...cond, values: [String(v)] };
-    case 'daterange':   return { ...cond, op: 'between', value: isoDay(v[0]), to: isoDay(v[1]) };
-  }
-}
-
-export function applyFilters(rows: WeldJoint[], values: FilterValues): WeldJoint[] {
-  const used = FILTER_SCHEMA.filter(f => !isEmpty(f, values[f.key]));
-  const fields: MatchField[] = used.map(f => ({ key: f.field, label: f.label, kind: KIND[f.type] }));
-  return applyConditions(rows, fields, Object.fromEntries(used.map(f => [f.field, [asCondition(f, values[f.key])]])));
-}
-
-export interface FilterVariant {
-  name: string;
-  visibleKeys: string[];
+export interface SearchLayout {
+  filterKeys: string[];   /* fields in the filter bar, in order */
   values: FilterValues;
+  columnKeys: string[];   /* results columns, in order */
+  columnFilters: Record<string, any>;   /* the filter boxes in the column headers */
+  globalFilter: string;
+  sortField: string | null;
+  sortOrder: 1 | -1;
 }
 
-const VARIANTS_LS_KEY = STORAGE.weldPlanningFilterVariants;
+export interface FilterVariant extends SearchLayout { name: string }
 
-export function loadVariants(): FilterVariant[] {
+/* "Standard": the GWP and procedure fields in the filter bar */
+export const STANDARD_VARIANT = 'Standard';
+export function standardLayout(): SearchLayout {
+  return {
+    filterKeys: ['gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'],
+    values: {},
+    columnKeys: ['id', 'hull', 'drawing', 'joint', 'status', 'jointDesign', 'gwp'],
+    columnFilters: {},
+    globalFilter: '',
+    sortField: null,
+    sortOrder: 1,
+  };
+}
+
+function read<T>(key: string): T | null {
   try {
-    const raw = localStorage.getItem(VARIANTS_LS_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as FilterVariant[];
-    for (const v of parsed) {
-      for (const f of FILTER_SCHEMA) {
-        if (f.type === 'daterange' && Array.isArray(v.values[f.key])) {
-          v.values[f.key] = v.values[f.key].map((d: any) => (d ? new Date(d) : null));
-        }
-      }
-    }
-    return parsed;
-  } catch {
-    return [];
-  }
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) as T : null;
+  } catch { return null; }
+}
+function write(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* */ }
 }
 
-export function saveVariants(variants: FilterVariant[]): void {
-  localStorage.setItem(VARIANTS_LS_KEY, JSON.stringify(variants));
-}
+export const loadVariants = () => read<FilterVariant[]>(STORAGE.weldPlanningFilterVariants) ?? [];
+export const saveVariants = (variants: FilterVariant[]) => write(STORAGE.weldPlanningFilterVariants, variants);
 
-export function defaultValuesFor(keys: string[]): FilterValues {
-  const out: FilterValues = {};
-  for (const key of keys) {
-    const f = getField(key);
-    if (!f) continue;
-    switch (f.type) {
-      case 'multiselect': out[key] = []; break;
-      case 'daterange':   out[key] = null; break;
-      default:            out[key] = null;
-    }
-  }
-  return out;
-}
+/* the page as it was left, with the view chosen and page size */
+export interface SavedSearchState extends SearchLayout { variant: string; filtersHidden: boolean; pageSize: number }
+export const loadSearchState = () => read<SavedSearchState>(STORAGE.weldPlanningSearchState);
+export const saveSearchState = (s: SavedSearchState) => write(STORAGE.weldPlanningSearchState, s);

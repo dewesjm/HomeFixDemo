@@ -1,103 +1,89 @@
-/* Advanced Search for Weld Planning — schema-driven filter bar + saved variants + column picker,
-   mirrors pipe-welding.component.ts but scoped to WeldJoint records */
-import { STORAGE } from '../../data/storage-keys';
+/* Weld Planning's Advanced Search, laid out like Pipe Welding: stacked-condition filter bar (shared
+   condition bar), keyword search, column header filters, a column picker with draggable headings,
+   and saved views that keep filters and columns together. */
 import { Component, ElementRef, computed, effect, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import {
-  LucideSave, LucideX, LucideTrash2, LucidePlus, LucideListFilter,
-  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
+  LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
+  LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft, LucideChevronDown, LucideChevronUp
 } from '@lucide/angular';
 
 import { TableState } from '../../shared/table-state';
 import { TablePagerComponent } from '../../shared/table-pager.component';
-import { MultiselectDropdownComponent } from '../../shared/multiselect-dropdown.component';
-import { DateRangeComponent } from '../../shared/date-range.component';
-import { TooltipDirective } from '../../shared/tooltip.directive';
+import { SortHeaderComponent } from '../../shared/sort-header.component';
 import { OrderedPickListComponent } from '../../shared/ordered-pick-list.component';
 import { MenuButtonComponent } from '../../shared/menu-button.component';
+import { ConditionBarComponent } from '../../shared/condition-bar/condition-bar.component';
+import { ColumnDrag } from '../../shared/column-drag';
 import { ConfirmService } from '../../shared/confirm.service';
 import { downloadCsv } from '../../shared/export-csv';
+import { formatDate } from '../../shared/date-format';
+import { FilterValues, activeConditions, applyFilters, chipLabel } from '../../shared/filter-engine';
 
-import { weldJoints, JOINT_EXTRA_FIELDS, type WeldJoint } from '../../data/weld-planning';
+import { weldJoints } from '../../data/weld-planning';
 import {
-  FILTER_SCHEMA, FilterField, FilterValues, FilterVariant,
-  applyFilters, defaultValuesFor, getField, isEmpty,
-  loadVariants, saveVariants
+  SEARCH_FIELDS, SearchField, SearchRow, FilterVariant, SearchLayout, STANDARD_VARIANT,
+  buildRow, standardLayout, loadVariants, saveVariants, loadSearchState, saveSearchState
 } from './weld-planning-filter-schema';
-import { AppDatePipe, formatDate } from '../../shared/date-format';
-import { NDT_LABELS } from '../../data/ndt-labels';
 
-const DEFAULT_KEYS = ['hull', 'joint', 'status'];
+const PAGE_SIZES = [10, 25, 50, 100];
 
-interface ResultColumn {
-  key: string;
-  label: string;
-  field?: keyof WeldJoint;
-  sortField?: string;
-  width?: string;
-}
-
-const ALL_COLUMNS: ResultColumn[] = [
-  { key: 'id',            label: 'XREFID',         field: 'id',            sortField: 'id',            width: 'min-w-8' },
-  { key: 'hull',          label: 'Hull',           field: 'hull',          sortField: 'hull',          width: 'min-w-10' },
-  { key: 'joint',         label: 'Joint',          field: 'joint',         sortField: 'joint',         width: 'min-w-11' },
-  { key: 'description',   label: 'Description',    field: 'description',  sortField: 'description',  width: 'min-w-14' },
-  { key: 'status',        label: 'Status',         field: 'status',       sortField: 'status',        width: 'min-w-10' },
-  { key: 'priority',      label: 'Priority',       field: 'priority',     sortField: 'priority',      width: 'min-w-10' },
-  { key: 'jointType',     label: 'Type',           field: 'jointType',    sortField: 'jointType',     width: 'min-w-8' },
-  { key: 'drawing',       label: 'Drawing',        field: 'drawing',      sortField: 'drawing',       width: 'min-w-12' },
-  { key: 'drawingRev',    label: 'Drawing Rev',    field: 'drawingRev',   sortField: 'drawingRev',    width: 'min-w-10' },
-  { key: 'jointDesign',   label: 'Joint Design',   field: 'jointDesign',  sortField: 'jointDesign',   width: 'min-w-12' },
-  { key: 'weldType',      label: 'Weld Type',      field: 'weldType',     sortField: 'weldType',      width: 'min-w-11' },
-  { key: 'pipeSize',      label: 'Pipe Size',      field: 'pipeSize',     sortField: 'pipeSize',      width: 'min-w-10' },
-  { key: 'wallThickness', label: 'Wall Thickness', field: 'wallThickness', sortField: 'wallThickness', width: 'min-w-10' },
-  { key: 'materialType1', label: 'Material 1',     field: 'materialType1', sortField: 'materialType1', width: 'min-w-14' },
-  { key: 'materialType2', label: 'Material 2',     field: 'materialType2', sortField: 'materialType2', width: 'min-w-14' },
-  { key: 'rtRoot',        label: NDT_LABELS.rtRoot,        field: 'rtRoot',       sortField: 'rtRoot',        width: 'min-w-8' },
-  { key: 'rtFinal',       label: NDT_LABELS.rtFinal,       field: 'rtFinal',      sortField: 'rtFinal',       width: 'min-w-8' },
-  { key: 'ndtRoot',       label: NDT_LABELS.ndtRoot,       field: 'ndtRoot',      sortField: 'ndtRoot',       width: 'min-w-8' },
-  { key: 'ndtEach',       label: NDT_LABELS.ndtEach,       field: 'ndtEach',      sortField: 'ndtEach',       width: 'min-w-8' },
-  { key: 'ndtFinal',      label: NDT_LABELS.ndtFinal,      field: 'ndtFinal',     sortField: 'ndtFinal',      width: 'min-w-8' },
-  { key: 'ut',            label: NDT_LABELS.ut,             field: 'ut',           sortField: 'ut',            width: 'min-w-8' },
-  { key: 'vt',            label: NDT_LABELS.vt,             field: 'vt',           sortField: 'vt',            width: 'min-w-8' },
-  ...JOINT_EXTRA_FIELDS.map(f => ({ key: f.key, label: f.label, field: f.key, sortField: f.key, width: 'min-w-10' })),
-  { key: 'notes',         label: 'Notes',          field: 'notes',        sortField: 'notes',         width: 'min-w-14' },
-  { key: 'createdBy',     label: 'Created By',     field: 'createdBy',    sortField: 'createdBy',     width: 'min-w-10' },
-  { key: 'createdAt',     label: 'Created',        field: 'createdAt',    sortField: 'createdAt',     width: 'min-w-11' },
-];
-
-const DEFAULT_COLUMN_KEYS = ['hull', 'joint', 'status', 'jointDesign', 'weldType', 'drawing'];
-const COLUMNS_LS_KEY = STORAGE.weldPlanningResultColumns;
-
-function loadColumnKeys(): string[] {
-  try {
-    const raw = localStorage.getItem(COLUMNS_LS_KEY);
-    return raw ? JSON.parse(raw) : DEFAULT_COLUMN_KEYS;
-  } catch { return DEFAULT_COLUMN_KEYS; }
-}
-function saveColumnKeys(keys: string[]) {
-  try { localStorage.setItem(COLUMNS_LS_KEY, JSON.stringify(keys)); } catch { /* */ }
-}
+/* a header filter's picks match a joint when any of the cell's values is picked (Filler Metal Type holds several) */
+const anyPicked = (cell: unknown, picked: string | string[]) =>
+  (Array.isArray(cell) ? cell : [cell]).some(v => (picked as string[]).includes(String(v ?? '')));
 
 @Component({
   selector: 'app-weld-planning-search',
   standalone: true,
-  imports: [AppDatePipe, OrderedPickListComponent, MenuButtonComponent,
+  imports: [OrderedPickListComponent, MenuButtonComponent, ConditionBarComponent,
     CommonModule, FormsModule, RouterLink,
-    TablePagerComponent, MultiselectDropdownComponent, DateRangeComponent,
-    TooltipDirective,
-    LucideSave, LucideX, LucideTrash2, LucidePlus, LucideListFilter,
-    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft
+    TablePagerComponent, SortHeaderComponent,
+    LucideSave, LucideX, LucideTrash2, LucideListFilter, LucideSearch,
+    LucideFileSpreadsheet, LucideArrowUpRight, LucideCheck, LucideColumns3, LucideArrowLeft, LucideChevronDown, LucideChevronUp
   ],
   templateUrl: './weld-planning-search.component.html'
 })
 export class WeldPlanningSearchComponent {
   private adaptDlg = viewChild<ElementRef<HTMLDialogElement>>('adaptDlg');
 
+  readonly STANDARD = STANDARD_VARIANT;
+  fields = SEARCH_FIELDS;
+  private fieldMap = new Map(this.fields.map(f => [f.key, f]));
+  field = (key: string) => this.fieldMap.get(key);
+
+  table = new TableState<SearchRow>(
+    ['id', 'hull', 'drawing', 'joint', 'gwp'],
+    Object.fromEntries(this.fields.filter(f => f.kind === 'list').map(f => [f.key, anyPicked]))
+  );
+
+  filterKeys = signal<string[]>([]);
+  values = signal<FilterValues>({});
+  columnKeys = signal<string[]>([]);
+  selectedVariant = signal<string>(STANDARD_VARIANT);
+  /* filter bar folded away (chips still show what's active); remembered, not part of a view */
+  filtersHidden = signal(false);
+  colDrag = new ColumnDrag(this.columnKeys);
+
   constructor(private router: Router, private confirm: ConfirmService) {
+    const saved = loadSearchState();
+    if (saved) {
+      this.applyLayout(saved);
+      this.selectedVariant.set(saved.variant || STANDARD_VARIANT);
+      this.filtersHidden.set(!!saved.filtersHidden);
+      this.table.pageSize.set(PAGE_SIZES.includes(saved.pageSize) ? saved.pageSize : 10);
+    } else {
+      this.applyLayout(standardLayout());
+    }
+
     effect(() => this.table.setRows(this.filtered()));
+    effect(() => saveSearchState({
+      ...this.currentLayout(),
+      variant: this.selectedVariant(),
+      filtersHidden: this.filtersHidden(),
+      pageSize: this.table.pageSize(),
+    }));
     effect(() => {
       const open = this.showAdapt();
       const el = this.adaptDlg()?.nativeElement;
@@ -107,111 +93,91 @@ export class WeldPlanningSearchComponent {
     });
   }
 
-  schema = FILTER_SCHEMA;
+  // --- Rows ---
 
-  table = new TableState<WeldJoint>(['hull', 'joint', 'description']);
+  private allRows = computed<SearchRow[]>(() => weldJoints().map(buildRow));
+  filtered = computed<SearchRow[]>(() => applyFilters(this.allRows(), this.fields, this.values()));
+  totalJoints = computed(() => weldJoints().length);
 
-  openDetails(joint: WeldJoint) {
-    this.router.navigate(['/weld-planning', joint.id]);
-  }
-
-  visibleKeys = signal<string[]>([...DEFAULT_KEYS]);
-  values = signal<FilterValues>(defaultValuesFor(DEFAULT_KEYS));
-
-  visibleFields = computed<FilterField[]>(() =>
-    this.visibleKeys()
-      .map(k => getField(k))
-      .filter((f): f is FilterField => !!f)
-  );
-
-  totalJoints = weldJoints().length;
-  filtered = computed<WeldJoint[]>(() => applyFilters(weldJoints(), this.values()));
-
-  activeChips = computed(() => {
-    const chips: { label: string; clear: () => void }[] = [];
-    for (const f of this.visibleFields()) {
-      const v = this.values()[f.key];
-      if (isEmpty(f, v)) continue;
-      chips.push({
-        label: this.chipLabelFor(f, v),
-        clear: () => this.clearOne(f.key)
-      });
+  /* choices for a list field: the values joints actually have */
+  private optionCache = computed(() => {
+    const rows = this.allRows();
+    const out = new Map<string, { label: string; value: string }[]>();
+    for (const f of this.fields) {
+      if (f.kind !== 'list') continue;
+      const vals = rows.flatMap(r => { const v = (r as Record<string, unknown>)[f.key]; return Array.isArray(v) ? v : [v]; });
+      out.set(f.key, [...new Set(vals.map(v => String(v ?? '')).filter(Boolean))].sort().map(v => ({ label: v, value: v })));
     }
-    return chips;
+    return out;
   });
+  optionsFor(key: string) { return this.optionCache().get(key) ?? []; }
+  optionsFn = (key: string) => this.optionsFor(key);
 
-  // --- Adapt Filters dialog ---
-  showAdapt = signal(false);
-  draftKeys = signal<string[]>([]);
-  adaptFilter = signal<string>('');
+  filterFields = computed<SearchField[]>(() =>
+    this.filterKeys().map(k => this.field(k)).filter((f): f is SearchField => !!f));
+  visibleColumns = computed<SearchField[]>(() =>
+    this.columnKeys().map(k => this.field(k)).filter((f): f is SearchField => !!f));
 
-  openAdapt() {
-    this.draftKeys.set([...this.visibleKeys()]);
-    this.adaptFilter.set('');
-    this.showAdapt.set(true);
+  activeChips = computed(() => this.filterFields()
+    .filter(f => activeConditions(f, this.values()[f.key]).length)
+    .map(f => ({ key: f.key, label: chipLabel(f, this.values()[f.key]) })));
+
+  // --- Layout (what a view saves) ---
+
+  currentLayout(): SearchLayout {
+    return {
+      filterKeys: this.filterKeys(),
+      values: this.values(),
+      columnKeys: this.columnKeys(),
+      columnFilters: this.table.columnFilters(),
+      globalFilter: this.table.globalFilter(),
+      sortField: this.table.sortField(),
+      sortOrder: this.table.sortOrder(),
+    };
   }
 
-  selectAll(selected: boolean) {
-    const next: string[] = [];
-    for (const f of this.schema) {
-      if (selected || f.required) next.push(f.key);
-    }
-    this.draftKeys.set(next);
+  private applyLayout(l: SearchLayout) {
+    const known = (keys: string[]) => (keys ?? []).filter(k => this.fieldMap.has(k));
+    this.filterKeys.set(known(l.filterKeys));
+    this.values.set(JSON.parse(JSON.stringify(l.values ?? {})));
+    this.columnKeys.set(known(l.columnKeys));
+    this.table.columnFilters.set({ ...(l.columnFilters ?? {}) });
+    this.table.globalFilter.set(l.globalFilter ?? '');
+    this.table.sortField.set(l.sortField ?? null);
+    this.table.sortOrder.set(l.sortOrder ?? 1);
+    this.table.page.set(0);
   }
 
-  applyAdapt() {
-    const requiredKeys = this.schema.filter(f => f.required).map(f => f.key);
-    const draft = this.draftKeys();
-    const finalKeys = draft.length ? draft : this.schema.map(f => f.key).filter(k => requiredKeys.includes(k));
-
-    const prev = this.values();
-    const next = defaultValuesFor(finalKeys);
-    for (const k of finalKeys) if (k in prev) next[k] = prev[k];
-
-    this.visibleKeys.set(finalKeys);
-    this.values.set(next);
-    this.showAdapt.set(false);
-  }
-
-  // --- Variants (presets) ---
+  // --- Views ---
   variants = signal<FilterVariant[]>(loadVariants());
   variantName = signal<string>('');
-  /* name of the variant chosen in the droplist ('' = none); the name box only shows while saving */
-  selectedVariant = signal<string>('');
   savingVariant = signal(false);
 
   pickVariant(name: string) {
     this.selectedVariant.set(name);
+    if (name === STANDARD_VARIANT) { this.applyLayout(standardLayout()); return; }
     const v = this.variants().find(x => x.name === name);
-    if (v) this.applyVariant(v);
+    if (v) this.applyLayout(v);
   }
 
-  /* prefill with the chosen variant's name, so saving again updates it */
+  /* prefill with the chosen view's name, so saving again updates it */
   startSaveVariant() {
-    this.variantName.set(this.selectedVariant());
+    this.variantName.set(this.selectedVariant() === STANDARD_VARIANT ? '' : this.selectedVariant());
     this.savingVariant.set(true);
   }
 
-  applyVariant(v: FilterVariant) {
-    const next = defaultValuesFor(v.visibleKeys);
-    for (const k of v.visibleKeys) if (k in v.values) next[k] = v.values[k];
-    this.visibleKeys.set([...v.visibleKeys]);
-    this.values.set(next);
-  }
+  canSaveVariant = computed(() => {
+    const n = this.variantName().trim();
+    return !!n && n.toLowerCase() !== STANDARD_VARIANT.toLowerCase();
+  });
 
   saveCurrentVariant() {
+    if (!this.canSaveVariant()) return;
     const name = this.variantName().trim();
-    if (!name) return;
-    const next: FilterVariant = {
-      name,
-      visibleKeys: [...this.visibleKeys()],
-      values: JSON.parse(JSON.stringify(this.values()))
-    };
-    const others = this.variants().filter(v => v.name !== name);
-    const merged = [...others, next];
+    const next: FilterVariant = { name, ...JSON.parse(JSON.stringify(this.currentLayout())) };
+    const merged = [...this.variants().filter(v => v.name !== name), next];
     this.variants.set(merged);
     saveVariants(merged);
-    this.variantName.set('');
     this.selectedVariant.set(name);
     this.savingVariant.set(false);
   }
@@ -225,84 +191,91 @@ export class WeldPlanningSearchComponent {
         const merged = this.variants().filter(v => v.name !== name);
         this.variants.set(merged);
         saveVariants(merged);
-        if (this.selectedVariant() === name) this.selectedVariant.set('');
+        if (this.selectedVariant() === name) this.selectedVariant.set(STANDARD_VARIANT);
       },
     });
   }
 
-  // --- Column picker (results grid) ---
-  allColumns = ALL_COLUMNS;
-  visibleColumnKeys = signal<string[]>(loadColumnKeys());
-  visibleColumns = computed<ResultColumn[]>(() =>
-    this.visibleColumnKeys().map(k => ALL_COLUMNS.find(c => c.key === k)).filter((c): c is ResultColumn => !!c)
-  );
+  // --- Customize filters dialog ---
+  showAdapt = signal(false);
+  draftKeys = signal<string[]>([]);
+  adaptFilter = signal<string>('');
 
+  openAdapt() {
+    this.draftKeys.set([...this.filterKeys()]);
+    this.adaptFilter.set('');
+    this.showAdapt.set(true);
+  }
+
+  applyAdapt() {
+    const keys = this.draftKeys();
+    this.filterKeys.set(keys);
+    /* show the bar, or the fields just added would be out of sight */
+    if (keys.length) this.filtersHidden.set(false);
+    /* a field taken out of the bar stops filtering */
+    this.values.set(Object.fromEntries(Object.entries(this.values()).filter(([k]) => keys.includes(k))));
+    this.showAdapt.set(false);
+  }
+
+  // --- Column picker ---
   showColPicker = signal(false);
   draftColKeys = signal<string[]>([]);
   colFilter = signal<string>('');
 
-
   openColPicker() {
-    this.draftColKeys.set([...this.visibleColumnKeys()]);
+    this.draftColKeys.set([...this.columnKeys()]);
     this.colFilter.set('');
     this.showColPicker.set(true);
   }
 
-  selectAllCols(selected: boolean) {
-    this.draftColKeys.set(selected ? ALL_COLUMNS.map(c => c.key) : []);
-  }
   applyColPicker() {
     const keys = this.draftColKeys();
-    this.visibleColumnKeys.set(keys);
-    saveColumnKeys(keys);
+    this.columnKeys.set(keys);
+    /* a hidden column's header filter and sort would keep acting with nothing on screen to show it */
+    this.table.columnFilters.update(f => Object.fromEntries(Object.entries(f).filter(([k]) => keys.includes(k))));
+    if (this.table.sortField() && !keys.includes(this.table.sortField()!)) this.table.sortField.set(null);
     this.showColPicker.set(false);
   }
 
-  // --- Field value helpers ---
-  setValue(key: string, val: any) {
-    this.values.set({ ...this.values(), [key]: val });
-  }
-  valueOf(key: string): any { return this.values()[key]; }
+  // --- Filter bar values ---
 
-  dateRangeValue(key: string): [Date | null, Date | null] {
-    return this.valueOf(key) ?? [null, null];
-  }
-  setDateRange(key: string, range: [Date | null, Date | null]) {
-    this.setValue(key, range[0] || range[1] ? range : null);
+  setValues(v: FilterValues) {
+    this.values.set(v);
+    this.table.page.set(0);
   }
 
-  clearOne(key: string) {
-    const f = getField(key);
-    if (!f) return;
-    this.values.set({ ...this.values(), ...defaultValuesFor([key]) });
+  clearField(key: string) { this.setValues({ ...this.values(), [key]: [] }); }
+
+  /* anything narrowing the rows: filter bar, heading filters or keyword search */
+  isFiltering = computed(() =>
+    this.activeChips().length > 0
+    || Object.values(this.table.columnFilters()).some(v => Array.isArray(v) ? v.length : !!v)
+    || !!this.table.globalFilter());
+
+  clear() {
+    this.values.set({});
+    this.table.clearFilters();
   }
 
-  resetAll() {
-    this.values.set(defaultValuesFor(this.visibleKeys()));
-    this.selectedVariant.set('');
+  openDetails(row: SearchRow) { this.router.navigate(['/weld-planning', row.id]); }
+
+  /* column header filter kind: list = multiselect, text = box; dates sort only */
+  headerFilter(f: SearchField): 'text' | 'select' | 'none' {
+    return f.kind === 'list' ? 'select' : f.kind === 'text' ? 'text' : 'none';
   }
 
-  chipLabelFor(f: FilterField, v: any): string {
-    switch (f.type) {
-      case 'text':        return `${f.label}: "${v}"`;
-      case 'multiselect': return `${f.label}: ${(v as any[]).join(', ')}`;
-      case 'select':      return `${f.label}: ${v || 'Blank'}`;
-      case 'daterange': {
-        const fmt = (d: Date) => d ? formatDate(d) : '…';
-        return `${f.label}: ${fmt(v[0])} – ${fmt(v[1])}`;
-      }
-    }
+  cellText(row: SearchRow, f: SearchField): string {
+    const v = (row as Record<string, any>)[f.key];
+    if (f.kind === 'date') return v ? formatDate(v) : '';
+    if (Array.isArray(v)) return v.length ? v.join(', ') : '-';
+    /* a missing XREFID stays blank, as on every list */
+    return v == null || v === '' ? (f.key === 'id' ? '' : '-') : String(v);
   }
 
   exportCsv() {
-    downloadCsv('weld-planning-advanced-search', this.visibleColumns().map(col => ({
-      header: col.label,
-      value: (r: WeldJoint) => col.field ? String((r as any)[col.field] ?? '') : ''
+    downloadCsv('weld-planning-advanced-search', this.visibleColumns().map(f => ({
+      header: f.label,
+      value: (r: SearchRow) => { const t = this.cellText(r, f); return t === '-' ? '' : t; },
     })), this.table.sorted());
-  }
-
-  /* typed casts for discriminated fields */
-  asMulti(f: FilterField): Extract<FilterField, { type: 'multiselect' | 'select' }> {
-    return f as any;
   }
 }

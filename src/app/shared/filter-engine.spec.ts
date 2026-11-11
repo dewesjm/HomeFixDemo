@@ -25,6 +25,17 @@ describe('filter-engine', () => {
     expect(fieldMatches(HULL, [cond({ op: 'notBlank' })], undefined)).toBeFalse();
   });
 
+  it('a cell with several values: includes match any value, excludes need every value, blank = none', () => {
+    const cell = ['MIL-70S-3', 'MIL-80S-50'];
+    expect(fieldMatches(STATUS, [cond({ op: 'is', values: ['MIL-80S-50'] })], cell)).toBeTrue();
+    expect(fieldMatches(STATUS, [cond({ op: 'is', values: ['MIL-90S-B3'] })], cell)).toBeFalse();
+    expect(fieldMatches(STATUS, [cond({ op: 'isNot', values: ['MIL-80S-50'] })], cell)).toBeFalse();
+    expect(fieldMatches(STATUS, [cond({ op: 'isNot', values: ['MIL-90S-B3'] })], cell)).toBeTrue();
+    expect(fieldMatches(STATUS, [cond({ value: '70s' })], cell)).toBeTrue();
+    expect(fieldMatches(STATUS, [cond({ op: 'blank' })], [])).toBeTrue();
+    expect(fieldMatches(STATUS, [cond({ op: 'notBlank' })], cell)).toBeTrue();
+  });
+
   it('list: is / is not any of the picked values', () => {
     expect(fieldMatches(STATUS, [cond({ op: 'is', values: ['Open', 'Hold'] })], 'hold')).toBeTrue();
     expect(fieldMatches(STATUS, [cond({ op: 'is', values: ['Open'] })], 'Closed')).toBeFalse();
