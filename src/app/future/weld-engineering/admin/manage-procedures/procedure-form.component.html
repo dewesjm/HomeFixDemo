@@ -1,4 +1,4 @@
-<div class="table-page-wrap" style="max-width: 48rem">
+<div class="table-page-wrap procedure-form" style="max-width: 48rem">
   <div class="page-header">
     <a routerLink="/weld-engineering/admin" class="btn btn-ghost btn-sm">
       <svg lucideArrowLeft class="size-4"></svg> Manage Procedures
@@ -78,6 +78,7 @@
 
   @for (on of sectionsOn(); track on.section.id) {
     @let s = on.section;
+    <div class="procedure-section-card">
     <h3 class="form-section-title">{{ on.number }}. {{ s.name }}</h3>
     @if (!s.fields.length) {
       <p class="text-sm" style="color: var(--app-text-muted)">This section has no fields yet. Add them in Admin &gt; Procedure Sections.</p>
@@ -161,6 +162,7 @@
           }
         }
       }
+    </div>
     </div>
   }
 

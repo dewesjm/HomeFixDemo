@@ -47,6 +47,19 @@ html, body {
   font-size: 1.05rem;
   font-weight: 600;
 }
+/* Weld Engineering procedure edit form: each numbered section is a card, and field labels and
+   checkbox choices use the full text colour so they read clearly against the inputs */
+.procedure-form .stage-field-label,
+.procedure-form .label,
+.procedure-form .label-text { color: var(--app-text); }
+.procedure-section-card {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: 8px;
+  background: var(--app-surface);
+}
+.procedure-section-card > .form-section-title { margin-top: 0; }
 /* raw JSON shown as an example of stored data (Admin > Procedure Sections) */
 .json-block {
   margin: 0;
