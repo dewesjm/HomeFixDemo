@@ -34,6 +34,7 @@ type EditableRow = {
   wallThickness: string;
   materialType1: string;
   materialType2: string;
+  gwp: string;
   rtRoot: string;
   rtFinal: string;
   ndtRoot: string;
@@ -79,6 +80,7 @@ function toEditable(j: WeldJoint): EditableRow {
     wallThickness: j.wallThickness,
     materialType1: j.materialType1,
     materialType2: j.materialType2,
+    gwp: j.gwp ?? '',
     rtRoot: j.rtRoot, rtFinal: j.rtFinal, ndtRoot: j.ndtRoot, ndtEach: j.ndtEach,
     ndtFinal: j.ndtFinal, ut: j.ut, vt: j.vt,
     notes: j.notes,
@@ -204,6 +206,7 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
       wallThickness: raw['wallThickness'] || raw['wall_thickness'] || '',
       materialType1: raw['materialType1'] || raw['material_1'] || '',
       materialType2: raw['materialType2'] || raw['material_2'] || '',
+      gwp: raw['gwp'] || raw['GWP'] || '',
       rtRoot: raw['rtRoot'] || '', rtFinal: raw['rtFinal'] || '', ndtRoot: raw['ndtRoot'] || '', ndtEach: raw['ndtEach'] || '',
       ndtFinal: raw['ndtFinal'] || '', ut: raw['ut'] || '', vt: raw['vt'] || '',
       notes: raw['notes'] || '',
@@ -239,6 +242,7 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
       wallThickness: row.wallThickness,
       materialType1: row.materialType1,
       materialType2: row.materialType2,
+      gwp: row.gwp,
       rtRoot: row.rtRoot, rtFinal: row.rtFinal, ndtRoot: row.ndtRoot, ndtEach: row.ndtEach,
       ndtFinal: row.ndtFinal, ut: row.ut, vt: row.vt,
       notes: row.notes,
@@ -255,11 +259,11 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
 
   protected sampleRows(): EditableRow[] {
     return [
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'D5145', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H711-1234', drawingRev: 'B', jointDesign: 'C-18', weldType: 'Butt', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '02-CS', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'D5145', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H711-1234', drawingRev: 'B', jointDesign: 'P-9', weldType: 'Socket', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-CS', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample', extras: blankJointExtras() },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S720-4518', drawingRev: 'A', jointDesign: 'V-22', weldType: 'Butt', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '02-CS', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'LO-10017', description: 'Nozzle to header', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S720-4518', drawingRev: 'C', jointDesign: 'C-65', weldType: 'Boss', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '13-SS316', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample', extras: blankJointExtras() },
-      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'T8080', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H731-5002', drawingRev: 'A', jointDesign: 'P-12', weldType: 'Attachment', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-CS', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'D5145', joint: 'FW-10014', description: 'Main header to 4" reducer', status: 'development', priority: 'medium', jointType: 'pipe', drawing: 'H711-1234', drawingRev: 'B', jointDesign: 'C-18', weldType: 'Butt', pipeSize: '4"', wallThickness: '0.250"', materialType1: '02-CS', materialType2: '02-CS', gwp: '', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'D5145', joint: 'SW-10008', description: '90 elbow connection', status: 'unlocked', priority: 'medium', jointType: 'pipe', drawing: 'H711-1234', drawingRev: 'B', jointDesign: 'P-9', weldType: 'Socket', pipeSize: '3"', wallThickness: '0.219"', materialType1: '02-CS', materialType2: '02-CS', gwp: '', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'Standard procedure', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'ST-10005', description: 'I-beam splice connection', status: 'development', priority: 'low', jointType: 'structural', drawing: 'S720-4518', drawingRev: 'A', jointDesign: 'V-22', weldType: 'Butt', pipeSize: '', wallThickness: '', materialType1: '04-AS', materialType2: '02-CS', gwp: '', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'N6612', joint: 'LO-10017', description: 'Nozzle to header', status: 'locked', priority: 'high', jointType: 'pipe', drawing: 'S720-4518', drawingRev: 'C', jointDesign: 'C-65', weldType: 'Boss', pipeSize: '6"', wallThickness: '0.219"', materialType1: '13-SS316', materialType2: '13-SS316', gwp: '', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: 'PWHT required', createdBy: 'Sample', extras: blankJointExtras() },
+      { _id: '', _raw: {}, _errors: [], _saved: false, hull: 'T8080', joint: 'ST-10012', description: 'Pipe support to beam', status: 'development', priority: 'medium', jointType: 'structural', drawing: 'H731-5002', drawingRev: 'A', jointDesign: 'P-12', weldType: 'Attachment', pipeSize: '', wallThickness: '', materialType1: '02-CS', materialType2: '02-CS', gwp: '', rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: 'X', notes: '', createdBy: 'Sample', extras: blankJointExtras() },
     ];
   }
 

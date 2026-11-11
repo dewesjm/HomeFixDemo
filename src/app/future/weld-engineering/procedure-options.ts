@@ -48,6 +48,24 @@ export function gwpOptionsForMaterials(materialType1: string, materialType2: str
   return distinct.map(g => ({ label: g, value: g, detail: gwpDescription(g) }));
 }
 
+/* What a GWP stands for, for Weld Planning's search. Process, process type and base metals are the
+   same across a GWP's WPS rows (first row); filler varies per WTN, so it's every filler any row allows.
+   undefined when no WPS has this GWP. */
+export interface GwpDetails {
+  weldProcess: string;
+  processType: string;
+  baseMetal1Type: string;
+  baseMetal2Type: string;
+  fillerMetalTypes: string[];
+}
+export function gwpDetails(gwp: string): GwpDetails | undefined {
+  const rows = gwp ? procedures().filter(p => p.gwp === gwp) : [];
+  if (!rows.length) return undefined;
+  const { weldProcess, processType, baseMetal1Type, baseMetal2Type } = rows[0];
+  const fillerMetalTypes = [...new Set(rows.flatMap(p => p.fillerMetalTypes))].sort();
+  return { weldProcess, processType, baseMetal1Type, baseMetal2Type, fillerMetalTypes };
+}
+
 /* every GWP regardless of base metals -- for a Foreman Override */
 export function allGwpOptions(): { label: string; value: string; detail: string }[] {
   const distinct = Array.from(new Set(procedures().map(p => p.gwp))).sort();

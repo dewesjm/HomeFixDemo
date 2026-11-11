@@ -95,7 +95,7 @@
       }
       <div class="detail-col">
         <label class="field-label">Material 1</label>
-        <select class="select select-sm" [(ngModel)]="form.materialType1">
+        <select class="select select-sm" [(ngModel)]="form.materialType1" (ngModelChange)="onMaterialChange()">
           <option value="">Select...</option>
           @for (m of materialTypes; track m) {
             <option [value]="m">{{ m }}</option>
@@ -104,10 +104,19 @@
       </div>
       <div class="detail-col">
         <label class="field-label">Material 2</label>
-        <select class="select select-sm" [(ngModel)]="form.materialType2">
+        <select class="select select-sm" [(ngModel)]="form.materialType2" (ngModelChange)="onMaterialChange()">
           <option value="">Select...</option>
           @for (m of materialTypes; track m) {
             <option [value]="m">{{ m }}</option>
+          }
+        </select>
+      </div>
+      <div class="detail-col">
+        <label class="field-label">GWP</label>
+        <select class="select select-sm" [(ngModel)]="form.gwp" [disabled]="!form.materialType1 || !form.materialType2">
+          <option value="">Select...</option>
+          @for (g of gwpOptions(); track g.value) {
+            <option [value]="g.value">{{ g.label }} {{ g.detail }}</option>
           }
         </select>
       </div>

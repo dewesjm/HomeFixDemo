@@ -14,6 +14,7 @@ import {
   type JointExtraGroup,
   type WeldJoint
 } from '../../data/weld-planning';
+import { gwpOptionsForMaterials } from '../weld-engineering/procedure-options';
 
 
 @Component({
@@ -36,7 +37,7 @@ export class WeldPlanningFormComponent implements OnInit {
     status: 'development', priority: 'medium', jointType: 'pipe',
     drawing: '', drawingRev: '',
     jointDesign: '', weldType: '', pipeSize: '', wallThickness: '',
-    materialType1: '', materialType2: '',
+    materialType1: '', materialType2: '', gwp: '',
     rtRoot: '', rtFinal: '', ndtRoot: '', ndtEach: '', ndtFinal: '', ut: '', vt: '',
     notes: '',
     ...blankJointExtras(),
@@ -63,6 +64,16 @@ export class WeldPlanningFormComponent implements OnInit {
   /* Ship follows the Hull, same as the weld record */
   onHullChange(hull: string) {
     this.form.ship = shipForHull(hull);
+  }
+
+  /* GWPs qualified for the joint's Material 1/2, same list as the weld record's GWP droplist */
+  gwpOptions() {
+    return gwpOptionsForMaterials(this.form.materialType1, this.form.materialType2);
+  }
+
+  /* a GWP no longer qualified for the new base metals is cleared */
+  onMaterialChange() {
+    if (this.form.gwp && !this.gwpOptions().some(g => g.value === this.form.gwp)) this.form.gwp = '';
   }
 
   ngOnInit() {

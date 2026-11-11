@@ -18,6 +18,7 @@ export const WELD_JOINT_CSV_COLUMNS: CsvColumn<WeldJoint>[] = [
   { header: 'Wall Thickness', value: r => r.wallThickness },
   { header: 'Material 1', value: r => r.materialType1 },
   { header: 'Material 2', value: r => r.materialType2 },
+  { header: 'GWP', value: r => r.gwp },
   ...NDT_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
   ...JOINT_EXTRA_FIELDS.map(f => ({ header: f.label, value: (r: WeldJoint) => r[f.key] })),
   { header: 'Notes', value: r => r.notes },
@@ -27,7 +28,7 @@ const WELD_JOINT_TEMPLATE_HEADERS = [
   'hull', 'joint', 'description',
   'status', 'priority', 'jointType', 'drawing', 'drawingRev',
   'jointDesign', 'weldType', 'pipeSize', 'wallThickness',
-  'materialType1', 'materialType2', ...NDT_FIELDS.map(f => f.key),
+  'materialType1', 'materialType2', 'gwp', ...NDT_FIELDS.map(f => f.key),
   ...JOINT_EXTRA_FIELDS.filter(f => !f.readonly).map(f => f.key),
   'notes'
 ];

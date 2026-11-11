@@ -48,6 +48,7 @@
         }
         <div><div class="meta">Material 1</div><span>{{ j.materialType1 || '-' }}</span></div>
         <div><div class="meta">Material 2</div><span>{{ j.materialType2 || '-' }}</span></div>
+        <div><div class="meta">GWP</div><span>@if (j.gwp) {<span class="mono fw-bold">{{ j.gwp }}</span> {{ gwpDescription(j.gwp) }}} @else {-}</span></div>
         @for (n of ndtFields; track n.key) {
           <div><div class="meta">{{ n.label }}</div><span>{{ j[n.key] || '-' }}</span></div>
         }

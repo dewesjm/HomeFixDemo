@@ -12,6 +12,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-11',
+    added: ['Weld Planning joints have a GWP, picked from the GWPs qualified for Material 1 and 2. It shows on the joint details, the CSV export and the import template. Changing a material clears a GWP that no longer fits. Saved Weld Planning joints were reset to the starting joints.'],
+  },
+  {
     date: '2026-11-10',
     changed: ['Theme picker (avatar icon, top right): the droplist is now a list showing the colours of each theme, with a check on the current one.',
       'Reorganized the Weld Record code: folders and files renamed and regrouped by what they are (pages, panels, logic, data shapes), top bar pieces shared by every section, and Weld Planning, Weld Engineering and switched-off pages moved to a future folder.',

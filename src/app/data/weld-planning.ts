@@ -12,6 +12,7 @@ import { ATTRIBUTE_CODES } from './attribute-codes';
 import { signal } from '@angular/core';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';
+import { procedures } from './procedures';
 
 /* ── Joints ── */
 export type JointStatus = 'development' | 'locked' | 'unlocked';
@@ -124,6 +125,7 @@ export interface WeldJoint extends Record<JointExtraKey, string> {
   wallThickness: string;
   materialType1: string;
   materialType2: string;
+  gwp: string;               /* planned GWP, one qualified for Material 1/2; its WPS rows give the search's process/base metal/filler fields */
   rtRoot: string;
   rtFinal: string;
   ndtRoot: string;
@@ -160,6 +162,12 @@ function makeId(seed: number): string {
   return code;
 }
 
+/* a GWP qualified for the joint's base metals (by index, so it doesn't shift the other seeded values) */
+function seedGwp(m1: string, m2: string, i: number): string {
+  const gwps = [...new Set(procedures().filter(p => p.baseMetal1Type === m1 && p.baseMetal2Type === m2).map(p => p.gwp))].sort();
+  return gwps.length ? gwps[i % gwps.length] : '';
+}
+
 function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
   const rand = seeded(12345);
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
@@ -179,6 +187,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     /* same rule as the weld record's seed: no RT degree for a phase whose NDT is UT */
     const ndtRoot = pick(NDT_REQUIREMENT_VALUES);
     const ndtFinal = pick(NDT_REQUIREMENT_VALUES);
+    const materialType1 = pick(MATERIAL_TYPES);
+    const materialType2 = pick(MATERIAL_TYPES);
 
     const hull = pick(HULLS);
     /* informational codes only, as in jobs.ts; progression codes appear only on the AC examples */
@@ -215,8 +225,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       weldType: pick(WELD_TYPES),
       pipeSize: jt === 'pipe' ? pick(PIPE_SIZES) : '',
       wallThickness: jt === 'pipe' ? pick(WALL_THICKNESSES) : '',
-      materialType1: pick(MATERIAL_TYPES),
-      materialType2: pick(MATERIAL_TYPES),
+      materialType1, materialType2,
+      gwp: i % 7 === 0 ? '' : seedGwp(materialType1, materialType2, i),
       ndtRoot, ndtEach: pick(NDT_EACH_VALUES), ndtFinal,
       rtRoot: ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS),
       rtFinal: ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS),
