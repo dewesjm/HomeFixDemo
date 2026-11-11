@@ -3,6 +3,7 @@
   <p class="text-sm" style="margin-bottom: 1rem">
     The sections a procedure (WPS) can have, in form and PDF order; each procedure ticks its own.
     Locked fields are read by Weld Record and Weld Planning, so they can be renamed and moved but not removed.
+    Width sets a field's size on the procedure form and PDF; Auto fits it, and the PDF page is about {{ pageWidthPx }} px wide.
   </p>
 
   @for (s of sections(); track s.id; let i = $index) {
@@ -51,7 +52,7 @@
     <div class="overflow-x-auto">
       <table class="table table-sm">
         <thead>
-          <tr><th>Label</th><th>Key</th><th>Type</th><th>Required</th><th>Choices</th><th>Move To</th><th></th></tr>
+          <tr><th>Label</th><th>Key</th><th>Type</th><th>Required</th><th>Choices</th><th>Width</th><th>Move To</th><th></th></tr>
         </thead>
         <tbody>
           @for (f of s.fields; track f.key; let first = $first, last = $last) {
@@ -68,6 +69,34 @@
               <td>{{ typeLabel(f.type) }}</td>
               <td>{{ f.required ? 'Yes' : 'No' }}</td>
               <td>{{ choicesText(f) }}</td>
+              <td>
+                @if (fixedFullWidth(f)) {
+                  {{ widthText(f) }}
+                } @else {
+                  <div class="row-tight">
+                    <select class="select select-sm select-bordered" [attr.aria-label]="f.label + ' width'"
+                            [value]="widthMode(f)" (change)="setWidthMode(f, $any($event.target).value)">
+                      <option value="auto">Auto</option>
+                      <option value="full">Full line</option>
+                      <option value="px">Pixels</option>
+                    </select>
+                    @if (sizingField() === f.key) {
+                      <input type="number" class="input input-sm input-bordered" style="width: 6rem" [attr.aria-label]="f.label + ' width in pixels'"
+                             [(ngModel)]="widthDraft" (keydown.enter)="saveWidth(f)" (keydown.escape)="cancelWidth()" />
+                      <button type="button" class="btn btn-ghost btn-xs" (click)="saveWidth(f)" aria-label="Save width">
+                        <svg lucideCheck class="size-4"></svg>
+                      </button>
+                      <button type="button" class="btn btn-ghost btn-xs" (click)="cancelWidth()" aria-label="Cancel width">
+                        <svg lucideX class="size-4"></svg>
+                      </button>
+                    } @else if (widthMode(f) === 'px') {
+                      <button type="button" class="btn btn-ghost btn-xs" (click)="startWidthEdit(f)" [attr.aria-label]="'Change ' + f.label + ' width'">
+                        {{ widthText(f) }}
+                      </button>
+                    }
+                  </div>
+                }
+              </td>
               <td>
                 <select #moveTo class="select select-sm select-bordered w-full" [attr.aria-label]="'Move ' + f.label + ' to section'"
                         (change)="moveField(s, f, moveTo)">
@@ -106,7 +135,7 @@
               </td>
             </tr>
           } @empty {
-            <tr><td colspan="7" class="empty">No fields yet.</td></tr>
+            <tr><td colspan="8" class="empty">No fields yet.</td></tr>
           }
         </tbody>
       </table>

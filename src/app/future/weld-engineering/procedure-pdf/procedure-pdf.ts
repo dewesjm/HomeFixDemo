@@ -10,11 +10,13 @@ import { Procedure } from '../../../data/procedures';
 import { OVERRIDE_PARTS, sectionsOnProcedure, type ExtraField, type ProcedureSection } from '../procedure-sections';
 import { extraValueText, isBlank, isOverride } from '../procedure-field-values';
 import { formatDate } from '../../../shared/date-format';
+import { packFieldLines } from './pdf-field-lines';
 
-function limitsTable(rows: [string, string][]): Content {
+/* a label row over a value row; equal columns unless widths are given */
+function limitsTable(rows: [string, string][], widths?: number[], bottom = 12): Content {
   return {
     table: {
-      widths: rows.map(() => '*'),
+      widths: widths ?? rows.map(() => '*'),
       body: [
         rows.map(([label]) => ({ text: label, bold: true, fillColor: '#eeeeee' })),
         rows.map(([, value]) => value || '-'),
@@ -26,7 +28,7 @@ function limitsTable(rows: [string, string][]): Content {
       hLineColor: () => '#999999',
       vLineColor: () => '#999999',
     },
-    margin: [0, 4, 0, 12] as [number, number, number, number],
+    margin: [0, 4, 0, bottom] as [number, number, number, number],
   };
 }
 
@@ -59,14 +61,17 @@ function revisionRecord(p: Procedure): Content[] {
   ];
 }
 
-/* One section: a table of its plain fields, then each qualification requirement as a list and each
+/* One section: its plain fields in lines (pdf-field-lines.ts), then each qualification requirement as a list and each
    override group as its own table (only when it has a value). A section with no fields prints its
    heading only. */
 function section(p: Procedure, s: ProcedureSection, n: number): Content[] {
   const out: Content[] = [{ text: `${n}. ${s.name}`, style: 'sectionHeader' }];
   const value = (f: ExtraField) => p.extraFields[f.key];
   const plain = s.fields.filter(f => f.type !== 'quals' && f.type !== 'override');
-  if (plain.length) out.push(limitsTable(plain.map(f => [f.label, extraValueText(f, value(f))])));
+  const lines = packFieldLines(plain.map(f => ({ label: f.label, value: extraValueText(f, value(f)), width: f.width })));
+  lines.forEach((line, i) => out.push(limitsTable(
+    line.cells.map(c => [c.label, c.value]), line.widths, i === lines.length - 1 ? 12 : 2,
+  )));
   for (const f of s.fields) {
     if (f.type === 'quals') {
       if (f.label !== s.name) out.push({ text: f.label, bold: true });

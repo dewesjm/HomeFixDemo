@@ -12,11 +12,12 @@ import { ConfirmService } from '../../../../shared/confirm.service';
 import { procedures } from '../../../../data/procedures';
 import {
   procedureSections, addSection, addField, sectionNameProblem, fieldDraftProblem, fieldLabelProblem, fieldTypeLabel,
-  shiftSection, shiftField, moveField, renameSection, renameField, removeField, removeSection,
+  shiftSection, shiftField, moveField, renameSection, renameField, removeField, removeSection, setFieldWidth,
   EXTRA_FIELD_TYPE_OPTIONS, type ExtraField, type ExtraFieldType, type ProcedureSection
 } from '../../procedure-sections';
 import { sectionRemoveBlock, fieldRemoveBlock, fieldMoveBlock, type UsageBlock } from '../../procedure-section-usage';
 import { ADMIN_TABLE_SOURCES, sourceLabel, type OptionSourceId } from '../../procedure-option-sources';
+import { hasFixedFullWidth, parseWidth, widthText, PDF_PAGE_WIDTH_PX } from '../../procedure-field-width';
 
 interface FieldDraftForm { label: string; type: ExtraFieldType; required: boolean; optionsText: string; source: OptionSourceId | ''; }
 
@@ -34,6 +35,9 @@ export class ProcedureSectionsComponent {
   typeOptions = EXTRA_FIELD_TYPE_OPTIONS;
   tableSources = ADMIN_TABLE_SOURCES;
   typeLabel = fieldTypeLabel;
+  fixedFullWidth = hasFixedFullWidth;
+  widthText = widthText;
+  pageWidthPx = PDF_PAGE_WIDTH_PX;
 
   newSectionName = '';
   /* the "add a field" inputs under each section, by section id */
@@ -131,6 +135,46 @@ export class ProcedureSectionsComponent {
   cancelRename() {
     this.renamingSection.set(null);
     this.renamingField.set(null);
+  }
+
+  /* ── Width ── */
+  /* the field whose pixel width is being typed, and the typed text */
+  sizingField = signal<string | null>(null);
+  widthDraft = '';
+
+  widthMode(f: ExtraField): 'auto' | 'full' | 'px' {
+    if (this.sizingField() === f.key || typeof f.width === 'number') return 'px';
+    return f.width === 'full' ? 'full' : 'auto';
+  }
+
+  /* Auto and Full line save straight away; Pixels waits for a typed width */
+  setWidthMode(f: ExtraField, mode: string) {
+    if (mode === 'px') {
+      this.sizingField.set(f.key);
+      this.widthDraft = typeof f.width === 'number' ? String(f.width) : '';
+      return;
+    }
+    this.sizingField.set(null);
+    setFieldWidth(f.key, mode === 'full' ? 'full' : undefined);
+  }
+
+  startWidthEdit(f: ExtraField) {
+    this.setWidthMode(f, 'px');
+  }
+
+  saveWidth(f: ExtraField) {
+    const parsed = parseWidth(this.widthDraft);
+    if ('problem' in parsed) {
+      this.toast.add({ severity: 'warn', summary: 'Width not set', detail: parsed.problem });
+      return;
+    }
+    setFieldWidth(f.key, parsed.width);
+    this.sizingField.set(null);
+  }
+
+  /* back to how it was; a field that had no pixel width yet goes back to its earlier setting */
+  cancelWidth() {
+    this.sizingField.set(null);
   }
 
   /* ── Reorder and move ── */

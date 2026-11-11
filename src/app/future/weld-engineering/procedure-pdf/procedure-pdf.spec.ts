@@ -135,4 +135,19 @@ describe('procedureDocDefinition', () => {
     expect(JSON.stringify(footerContent)).toContain('Page 1 of 3');
     expect(JSON.stringify(footerContent)).toContain('Rev 0');
   });
+
+  it('splits a section with many fields over several lines, keeping every field once and in order', () => {
+    const fields = Array.from({ length: 14 }, (_, i) => ({ key: `wide_${i}`, label: `Wide Field ${i + 1}`, type: 'text' as const, required: false, options: [] }));
+    fields[3] = { ...fields[3], width: 'full' } as typeof fields[number];
+    const many: ProcedureSection = { id: 'many', name: 'Many', fields };
+    const doc = procedureDocDefinition({ ...baseProcedure, sectionIds: ['many'] }, [many]);
+    const content = doc.content as any[];
+    const start = content.findIndex(c => c?.text === '1. Many') + 1;
+    const sectionTables: any[] = [];
+    for (const c of content.slice(start)) { if (!c?.table) break; sectionTables.push(c); }
+    expect(sectionTables.length).toBeGreaterThan(2);
+    expect(sectionTables.flatMap(t => t.table.body[0].map((h: any) => h.text))).toEqual(fields.map(f => f.label));
+    expect(sectionTables.find(t => t.table.body[0][0].text === 'Wide Field 4').table.body[0].length).toBe(1);
+    expect(sectionTables.every(t => t.table.widths.every((w: unknown) => typeof w === 'number'))).toBeTrue();
+  });
 });

@@ -87,7 +87,7 @@
       @for (f of s.fields; track f.key) {
         @switch (f.type) {
           @case ('multi') {
-            <div class="stage-field" style="flex: 1 1 100%">
+            <div class="stage-field" [style.flex]="flex(f)">
               <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
               <div class="flex flex-wrap gap-3">
                 @for (o of choices(f); track o.value) {
@@ -123,7 +123,7 @@
             </div>
           }
           @default {
-            <div class="stage-field">
+            <div class="stage-field" [style.flex]="flex(f)">
               <label class="stage-field-label">{{ f.label }}@if (f.required) {<span class="req">*</span>}</label>
               @switch (f.type) {
                 @case ('number') {

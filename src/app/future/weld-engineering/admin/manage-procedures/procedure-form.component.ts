@@ -21,6 +21,7 @@ import {
 } from '../../procedure-sections';
 import { withAllFields, compactExtras, fieldChoices } from '../../procedure-field-values';
 import { procedureSaveProblem } from './rules/procedure-save-rules';
+import { formFlex } from '../../procedure-field-width';
 import { AppDatePipe } from '../../../../shared/date-format';
 
 const EMPTY_FORM: Procedure = {
@@ -58,6 +59,8 @@ export class ProcedureFormComponent implements OnInit {
   allQuals = ALL_QUALS;
   sections = procedureSections;
   overrideParts = OVERRIDE_PARTS;
+  /* each field's width (Admin > Procedure Sections) */
+  flex = formFlex;
 
   /* pending text for each "add a new list item" input */
   newRule = '';

@@ -45,7 +45,11 @@ export interface ExtraField {
   options: string[];  /* the choices typed in for a 'list' or 'multi' field, empty otherwise */
   source?: OptionSourceId;  /* where a 'table' field's choices come from (or a locked list field's) */
   locked?: boolean;
+  width?: FieldWidth; /* form and PDF width; unset = Auto (procedure-field-width.ts) */
 }
+
+/* a set width in pixels, or a line of its own */
+export type FieldWidth = number | 'full';
 
 export interface ProcedureSection {
   id: string;
@@ -266,6 +270,16 @@ export function withFieldRenamed(list: ProcedureSection[], key: string, label: s
 }
 
 /* locked fields are never removed */
+/* undefined = back to Auto */
+export function withFieldWidth(list: ProcedureSection[], key: string, width: FieldWidth | undefined): ProcedureSection[] {
+  return list.map(s => ({ ...s, fields: s.fields.map(f => {
+    if (f.key !== key) return f;
+    const next = { ...f, width };
+    if (width === undefined) delete next.width;
+    return next;
+  }) }));
+}
+
 export function withFieldRemoved(list: ProcedureSection[], key: string): ProcedureSection[] {
   return list.map(s => ({ ...s, fields: s.fields.filter(f => f.key !== key || f.locked) }));
 }
@@ -288,5 +302,6 @@ export const shiftField = (key: string, delta: number) => change(l => withFieldS
 export const moveField = (key: string, targetId: string) => change(l => withFieldMoved(l, key, targetId));
 export const renameSection = (id: string, name: string) => change(l => withSectionRenamed(l, id, name));
 export const renameField = (key: string, label: string) => change(l => withFieldRenamed(l, key, label));
+export const setFieldWidth = (key: string, width: FieldWidth | undefined) => change(l => withFieldWidth(l, key, width));
 export const removeField = (key: string) => change(l => withFieldRemoved(l, key));
 export const removeSection = (id: string) => change(l => withSectionRemoved(l, id));

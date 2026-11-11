@@ -147,4 +147,31 @@ describe('Procedure Sections admin', () => {
     expect(sectionOfField('baseMetal1Type', procedureSections())!.name).toBe('Cleaning');
     expect(lastToast().detail).toBe('Base Metal 1 Type to Cleaning');
   });
+
+  it('sets a field\'s width: Auto and Full line at once, pixels once a valid width is typed', () => {
+    const gas = () => findField('shieldingGas', procedureSections())!;
+    page.setWidthMode(gas(), 'full');
+    expect(gas().width).toBe('full');
+
+    page.setWidthMode(gas(), 'px');
+    expect(page.widthMode(gas())).toBe('px');
+    expect(gas().width).toBe('full');
+    page.widthDraft = '30';
+    page.saveWidth(gas());
+    expect(lastToast().detail).toBe('Width must be at least 60 px.');
+    page.widthDraft = '250';
+    page.saveWidth(gas());
+    expect(gas().width).toBe(250);
+    expect(page.sizingField()).toBeNull();
+    expect(page.widthText(gas())).toBe('250 px');
+
+    page.startWidthEdit(gas());
+    expect(page.widthDraft).toBe('250');
+    page.cancelWidth();
+    expect(gas().width).toBe(250);
+
+    page.setWidthMode(gas(), 'auto');
+    expect(gas().width).toBeUndefined();
+    expect(page.widthMode(gas())).toBe('auto');
+  });
 });
