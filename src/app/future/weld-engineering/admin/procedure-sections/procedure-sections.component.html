@@ -1,29 +1,112 @@
-<div class="table-page-wrap" style="max-width: 56rem">
+<div class="table-page-wrap" style="max-width: 72rem">
   <h2 class="section-title">Procedure Sections</h2>
   <p class="text-sm" style="margin-bottom: 1rem">
     The sections a procedure (WPS) can have, in form and PDF order; each procedure ticks its own.
-    Locked fields are read by Weld Record and Weld Planning.
+    Locked fields are read by Weld Record and Weld Planning, so they can be renamed and moved but not removed.
   </p>
 
   @for (s of sections(); track s.id; let i = $index) {
-    <h3 class="form-section-title">{{ i + 1 }}. {{ s.name }}</h3>
+    <div class="flex items-center gap-2 flex-wrap">
+      @if (renamingSection() === s.id) {
+        <span class="form-section-title">{{ i + 1 }}.</span>
+        <input type="text" class="input input-sm input-bordered grow" aria-label="Section name"
+               [(ngModel)]="nameDraft" (keydown.enter)="saveSectionRename(s)" (keydown.escape)="cancelRename()" />
+        <button type="button" class="btn btn-ghost btn-xs" (click)="saveSectionRename(s)" aria-label="Save section name">
+          <svg lucideCheck class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs" (click)="cancelRename()" aria-label="Cancel rename">
+          <svg lucideX class="size-4"></svg>
+        </button>
+      } @else {
+        <h3 class="form-section-title">{{ i + 1 }}. {{ s.name }}</h3>
+        <button type="button" class="btn btn-ghost btn-xs" (click)="startSectionRename(s)" [attr.aria-label]="'Rename ' + s.name">
+          <svg lucidePencil class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs" [disabled]="$first" (click)="shiftSection(s, -1)" [attr.aria-label]="'Move ' + s.name + ' up'">
+          <svg lucideArrowUp class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs" [disabled]="$last" (click)="shiftSection(s, 1)" [attr.aria-label]="'Move ' + s.name + ' down'">
+          <svg lucideArrowDown class="size-4"></svg>
+        </button>
+        <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeSection(s)" [attr.aria-label]="'Remove ' + s.name">
+          <svg lucideTrash2 class="size-4"></svg>
+        </button>
+      }
+    </div>
     <p class="text-sm">On {{ procedureCount(s.id) }} of {{ procedureTotal() }} procedures.</p>
+    @if (blocked(); as b) {
+      @if (b.sectionId === s.id) {
+        <div role="alert" class="alert alert-warning mb-sm" style="margin-top: 0.5rem; align-items: flex-start">
+          <div class="text-sm grow">
+            <p class="font-semibold">{{ b.heading }}</p>
+            <p>{{ b.problem }}</p>
+            @if (b.procedures.length) { <p>{{ b.procedures.join(', ') }}</p> }
+          </div>
+          <button type="button" class="btn btn-ghost btn-xs" (click)="blocked.set(null)" aria-label="Close message">
+            <svg lucideX class="size-4"></svg>
+          </button>
+        </div>
+      }
+    }
     <div class="overflow-x-auto">
       <table class="table table-sm">
         <thead>
-          <tr><th>Label</th><th>Key</th><th>Type</th><th>Required</th><th>Choices</th></tr>
+          <tr><th>Label</th><th>Key</th><th>Type</th><th>Required</th><th>Choices</th><th>Move To</th><th></th></tr>
         </thead>
         <tbody>
-          @for (f of s.fields; track f.key) {
+          @for (f of s.fields; track f.key; let first = $first, last = $last) {
             <tr>
-              <td>{{ f.label }}@if (f.locked) { <span class="badge badge-sm">Locked</span>}</td>
+              <td>
+                @if (renamingField() === f.key) {
+                  <input type="text" class="input input-sm input-bordered w-full" aria-label="Field label"
+                         [(ngModel)]="nameDraft" (keydown.enter)="saveFieldRename(s, f)" (keydown.escape)="cancelRename()" />
+                } @else {
+                  {{ f.label }}@if (f.locked) { <span class="badge badge-sm">Locked</span>}
+                }
+              </td>
               <td><code>{{ f.key }}</code></td>
               <td>{{ typeLabel(f.type) }}</td>
               <td>{{ f.required ? 'Yes' : 'No' }}</td>
               <td>{{ choicesText(f) }}</td>
+              <td>
+                <select #moveTo class="select select-sm select-bordered w-full" [attr.aria-label]="'Move ' + f.label + ' to section'"
+                        (change)="moveField(s, f, moveTo)">
+                  <option value="">-</option>
+                  @for (t of moveTargets(s); track t.id) {
+                    <option [value]="t.id">{{ t.name }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <div class="row-tight">
+                  @if (renamingField() === f.key) {
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="saveFieldRename(s, f)" aria-label="Save field label">
+                      <svg lucideCheck class="size-4"></svg>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="cancelRename()" aria-label="Cancel rename">
+                      <svg lucideX class="size-4"></svg>
+                    </button>
+                  } @else {
+                    <button type="button" class="btn btn-ghost btn-xs" (click)="startFieldRename(f)" [attr.aria-label]="'Rename ' + f.label">
+                      <svg lucidePencil class="size-4"></svg>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" [disabled]="first" (click)="shiftField(f, -1)" [attr.aria-label]="'Move ' + f.label + ' up'">
+                      <svg lucideArrowUp class="size-4"></svg>
+                    </button>
+                    <button type="button" class="btn btn-ghost btn-xs" [disabled]="last" (click)="shiftField(f, 1)" [attr.aria-label]="'Move ' + f.label + ' down'">
+                      <svg lucideArrowDown class="size-4"></svg>
+                    </button>
+                    @if (!f.locked) {
+                      <button type="button" class="btn btn-ghost btn-xs text-error" (click)="removeField(s, f)" [attr.aria-label]="'Remove ' + f.label">
+                        <svg lucideTrash2 class="size-4"></svg>
+                      </button>
+                    }
+                  }
+                </div>
+              </td>
             </tr>
           } @empty {
-            <tr><td colspan="5" class="empty">No fields yet.</td></tr>
+            <tr><td colspan="7" class="empty">No fields yet.</td></tr>
           }
         </tbody>
       </table>

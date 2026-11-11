@@ -5,8 +5,9 @@
    that bag, never a new property on Procedure -- in a real database the definitions are two tables
    and the bag is one JSON column on the procedure row.
    Each procedure ticks which sections it has (Procedure.sectionIds). Locked fields have fixed keys
-   because other systems read them (only through procedure-values.ts); they can't be deleted or
-   change type. Sections and fields can only be added for now.
+   because other systems read them (only through procedure-values.ts); they can be renamed and moved
+   to another section but never removed or change type. Sections and fields can be added, renamed,
+   reordered and removed; what blocks a removal or move is in procedure-section-usage.ts.
    Value rules (blank, text, validation) are in procedure-field-values.ts. */
 import { signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
@@ -144,19 +145,27 @@ export function findField(key: string, sections: ProcedureSection[]): ExtraField
 }
 
 /* ── Validation (Admin > Procedure Sections) ── */
-export function sectionNameProblem(name: string, sections: ProcedureSection[]): string {
+/* exceptId: the section being renamed, so keeping its own name isn't a clash */
+export function sectionNameProblem(name: string, sections: ProcedureSection[], exceptId?: string): string {
   const n = name.trim().toLowerCase();
   if (!n) return 'Enter a section name.';
-  if (sections.some(s => s.name.toLowerCase() === n)) return 'There is already a section with that name.';
+  if (sections.some(s => s.id !== exceptId && s.name.toLowerCase() === n)) return 'There is already a section with that name.';
+  return '';
+}
+
+/* exceptKey: the field being renamed */
+export function fieldLabelProblem(label: string, section: ProcedureSection, exceptKey?: string): string {
+  const l = label.trim().toLowerCase();
+  if (!l) return 'Enter a field label.';
+  if (section.fields.some(f => f.key !== exceptKey && f.label.toLowerCase() === l)) return 'This section already has a field with that label.';
   return '';
 }
 
 interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; source?: OptionSourceId; }
 
 export function fieldDraftProblem(draft: ExtraFieldDraft, section: ProcedureSection): string {
-  const label = draft.label.trim().toLowerCase();
-  if (!label) return 'Enter a field label.';
-  if (section.fields.some(f => f.label.toLowerCase() === label)) return 'This section already has a field with that label.';
+  const labelProblem = fieldLabelProblem(draft.label, section);
+  if (labelProblem) return labelProblem;
   if ((draft.type === 'list' || draft.type === 'multi') && !draft.options.length) return 'Enter at least one choice for a list field.';
   if (draft.type === 'table' && !draft.source) return 'Pick the admin table the choices come from.';
   if (!EXTRA_FIELD_TYPE_OPTIONS.some(o => o.value === draft.type)) return 'That field type can\'t be added.';
@@ -194,9 +203,11 @@ export function addSection(name: string): void {
   });
 }
 
-export function addField(sectionId: string, draft: ExtraFieldDraft): void {
+/* savedKeys: every key any procedure still has a value under, so a new field never picks up a
+   removed field's leftover hidden values */
+export function addField(sectionId: string, draft: ExtraFieldDraft, savedKeys: string[] = []): void {
   procedureSections.update(list => {
-    const taken = list.flatMap(s => s.fields.map(f => f.key));
+    const taken = [...list.flatMap(s => s.fields.map(f => f.key)), ...savedKeys];
     const field: ExtraField = {
       key: fieldKey(draft.label, taken),
       label: draft.label.trim(),
@@ -210,3 +221,72 @@ export function addField(sectionId: string, draft: ExtraFieldDraft): void {
     return next;
   });
 }
+
+/* ── Editing (Admin > Procedure Sections) ──
+   Pure list changes, then persisted wrappers below. Removal and move checks against procedures are
+   the caller's job (procedure-section-usage.ts). */
+
+/* moves the item at `index` by `delta` places; out-of-range moves return the list unchanged */
+function shifted<T>(items: T[], index: number, delta: number): T[] {
+  const to = index + delta;
+  if (index < 0 || to < 0 || to >= items.length) return items;
+  const next = [...items];
+  const [item] = next.splice(index, 1);
+  next.splice(to, 0, item);
+  return next;
+}
+
+export function withSectionShifted(list: ProcedureSection[], id: string, delta: number): ProcedureSection[] {
+  return shifted(list, list.findIndex(s => s.id === id), delta);
+}
+
+export function withFieldShifted(list: ProcedureSection[], key: string, delta: number): ProcedureSection[] {
+  return list.map(s => {
+    const i = s.fields.findIndex(f => f.key === key);
+    return i < 0 ? s : { ...s, fields: shifted(s.fields, i, delta) };
+  });
+}
+
+/* the field goes to the end of the target section, keeping its key and settings */
+export function withFieldMoved(list: ProcedureSection[], key: string, targetId: string): ProcedureSection[] {
+  const field = findField(key, list);
+  if (!field || !list.some(s => s.id === targetId)) return list;
+  return list.map(s => s.id === targetId
+    ? { ...s, fields: [...s.fields.filter(f => f.key !== key), field] }
+    : { ...s, fields: s.fields.filter(f => f.key !== key) });
+}
+
+export function withSectionRenamed(list: ProcedureSection[], id: string, name: string): ProcedureSection[] {
+  return list.map(s => s.id === id ? { ...s, name: name.trim() } : s);
+}
+
+/* the key never changes, so saved values and other systems' reads are unaffected */
+export function withFieldRenamed(list: ProcedureSection[], key: string, label: string): ProcedureSection[] {
+  return list.map(s => ({ ...s, fields: s.fields.map(f => f.key === key ? { ...f, label: label.trim() } : f) }));
+}
+
+/* locked fields are never removed */
+export function withFieldRemoved(list: ProcedureSection[], key: string): ProcedureSection[] {
+  return list.map(s => ({ ...s, fields: s.fields.filter(f => f.key !== key || f.locked) }));
+}
+
+/* a section holding a locked field is never removed */
+export function withSectionRemoved(list: ProcedureSection[], id: string): ProcedureSection[] {
+  return list.filter(s => s.id !== id || s.fields.some(f => f.locked));
+}
+
+function change(edit: (list: ProcedureSection[]) => ProcedureSection[]): void {
+  procedureSections.update(list => {
+    const next = edit(list);
+    persist(next);
+    return next;
+  });
+}
+
+export const shiftSection = (id: string, delta: number) => change(l => withSectionShifted(l, id, delta));
+export const shiftField = (key: string, delta: number) => change(l => withFieldShifted(l, key, delta));
+export const moveField = (key: string, targetId: string) => change(l => withFieldMoved(l, key, targetId));
+export const renameSection = (id: string, name: string) => change(l => withSectionRenamed(l, id, name));
+export const renameField = (key: string, label: string) => change(l => withFieldRenamed(l, key, label));
+export const removeField = (key: string) => change(l => withFieldRemoved(l, key));
+export const removeSection = (id: string) => change(l => withSectionRemoved(l, id));

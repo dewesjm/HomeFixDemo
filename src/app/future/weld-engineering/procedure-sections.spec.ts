@@ -1,5 +1,6 @@
 import {
-  fieldKey, sectionNameProblem, fieldDraftProblem, sectionsOnProcedure, procedureSections, SEEDED_SECTION_IDS,
+  fieldKey, sectionNameProblem, fieldDraftProblem, fieldLabelProblem, sectionsOnProcedure, procedureSections, SEEDED_SECTION_IDS,
+  withSectionShifted, withFieldShifted, withFieldMoved, withSectionRenamed, withFieldRenamed, withFieldRemoved, withSectionRemoved,
   type ProcedureSection
 } from './procedure-sections';
 
@@ -58,5 +59,48 @@ describe('procedure sections', () => {
     expect(fieldDraftProblem({ ...draft, type: 'quals' }, taco)).not.toBe('');
     expect(fieldDraftProblem({ ...draft, type: 'override' }, taco)).not.toBe('');
     expect(fieldDraftProblem({ ...draft, type: 'limit' }, taco)).toBe('');
+  });
+
+  describe('editing', () => {
+    const lunch: ProcedureSection = {
+      id: 's2', name: 'Lunch', fields: [
+        { key: 'drink', label: 'Drink', type: 'text', required: false, options: [] },
+        { key: 'ph', label: 'PH', type: 'limit', required: false, options: [], locked: true },
+      ],
+    };
+    const list = [taco, lunch];
+
+    it('lets a rename keep its own name or label but not take another one', () => {
+      expect(sectionNameProblem('Taco Tuesday', list, 's1')).toBe('');
+      expect(sectionNameProblem('lunch', list, 's1')).not.toBe('');
+      expect(fieldLabelProblem('drink', lunch, 'drink')).toBe('');
+      expect(fieldLabelProblem('ph', lunch, 'drink')).not.toBe('');
+    });
+
+    it('renames sections and fields (locked too) without changing keys', () => {
+      expect(withSectionRenamed(list, 's2', ' Dinner ')[1].name).toBe('Dinner');
+      const renamed = withFieldRenamed(list, 'ph', 'Preheat');
+      expect(renamed[1].fields[1]).toEqual({ ...lunch.fields[1], label: 'Preheat' });
+    });
+
+    it('reorders sections and fields, ignoring moves past either end', () => {
+      expect(withSectionShifted(list, 's2', -1).map(s => s.id)).toEqual(['s2', 's1']);
+      expect(withSectionShifted(list, 's1', -1)).toBe(list);
+      expect(withFieldShifted(list, 'ph', -1)[1].fields.map(f => f.key)).toEqual(['ph', 'drink']);
+      expect(withFieldShifted(list, 'ph', 1)[1].fields.map(f => f.key)).toEqual(['drink', 'ph']);
+    });
+
+    it('moves a field to the end of another section', () => {
+      const moved = withFieldMoved(list, 'ph', 's1');
+      expect(moved[0].fields.map(f => f.key)).toEqual(['shell_type', 'ph']);
+      expect(moved[1].fields.map(f => f.key)).toEqual(['drink']);
+    });
+
+    it('never removes a locked field or a section holding one', () => {
+      expect(withFieldRemoved(list, 'drink')[1].fields.map(f => f.key)).toEqual(['ph']);
+      expect(withFieldRemoved(list, 'ph')).toEqual(list);
+      expect(withSectionRemoved(list, 's2')).toEqual(list);
+      expect(withSectionRemoved(list, 's1').map(s => s.id)).toEqual(['s2']);
+    });
   });
 });
