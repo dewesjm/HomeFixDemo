@@ -32,7 +32,7 @@ describe('joint-form weld-cascade', () => {
     expect('fillerMetalType' in asRecord(selectChangeCascade(root, field(root, 'weldProcedure'), 'W-102', false).changes)).toBeFalse();
   });
 
-  it('a WTN fills in its WPS\'s process and PH/IP requirements, and NC requirements lock their actuals', () => {
+  it('a WTN fills in its process and PH/IP requirements, and NC requirements lock their actuals', () => {
     const proc = procedures().find(p => wtnFillValue(p.gwp, p.wtn, 'phMin') === 'NC')!;
     const tack = stageOf('tack', { inputs: { weldProcedure: proc.gwp } });
     const { changes, matchedProc } = selectChangeCascade(tack, field(tack, 'wtn'), proc.wtn, false);
@@ -47,7 +47,7 @@ describe('joint-form weld-cascade', () => {
     expect(isFieldLocked({ ...filled, engineeringEntry: true }, { key: 'weldProcess' })).toBeFalse();
   });
 
-  it('a WTN clears a filler choice its WPS does not allow, unless a Foreman Override opened the list', () => {
+  it('a WTN clears a filler choice it does not allow, unless a Foreman Override opened the list', () => {
     const proc = procedures().find(p => !fillerMetalTypeOptions(p.gwp, p.wtn).some(o => o.value === 'mil-100s-1'))!;
     const tack = stageOf('tack', { inputs: { weldProcedure: proc.gwp, fillerMetalType: 'mil-100s-1' } });
     expect(asRecord(selectChangeCascade(tack, field(tack, 'wtn'), proc.wtn, false).changes)['fillerMetalType']).toBe('');

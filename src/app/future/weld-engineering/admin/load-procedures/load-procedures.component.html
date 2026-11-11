@@ -9,13 +9,12 @@
 
   <app-import-grid [importer]="this" noun="procedures" doneLink="/weld-engineering/admin">
     <ng-template #headerCells>
-      <th class="min-w-32">WPS</th>
       <th class="min-w-40">Title</th>
       <th class="min-w-24">Status</th>
       <th class="min-w-24">GWP</th>
       <th class="min-w-24">WTN</th>
       <th class="min-w-24">Weld Process</th>
-      <th class="min-w-20">Rev</th>
+      <th class="min-w-20">Revision</th>
       <th class="min-w-32">Effective Date</th>
       <th class="min-w-32">Process Type</th>
       <th class="min-w-40">Application</th>
@@ -26,7 +25,6 @@
       <th class="min-w-48">Conditions</th>
     </ng-template>
     <ng-template #rowCells let-row>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.id" [class.input-error]="!row.id" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.title" /></td>
       <td>
         <select class="select select-xs w-full" [(ngModel)]="row.status">
@@ -45,7 +43,7 @@
           }
         </select>
       </td>
-      <td><input class="input input-xs w-full" [(ngModel)]="row.wpsRev" /></td>
+      <td><input class="input input-xs w-full" [(ngModel)]="row.revision" /></td>
       <td><input type="date" class="input input-xs w-full" [(ngModel)]="row.effectiveDate" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.processType" /></td>
       <td><input class="input input-xs w-full" [(ngModel)]="row.application" /></td>

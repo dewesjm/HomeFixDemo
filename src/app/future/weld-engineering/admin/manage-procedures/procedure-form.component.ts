@@ -9,7 +9,7 @@ import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angula
 
 import { ToastService } from '../../../../shared/toast.service';
 import {
-  addProcedure, updateProcedure, getProcedure, procedures, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
+  addProcedure, updateProcedure, getProcedure, procedures, isProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
   PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
 import { ALL_QUALS } from '../../../../weld-record/qualifications-logic/qualifications';
@@ -25,9 +25,9 @@ import { formFlex } from '../../procedure-field-width';
 import { AppDatePipe } from '../../../../shared/date-format';
 
 const EMPTY_FORM: Procedure = {
-  id: '', title: '', status: 'draft',
+  title: '', status: 'draft',
   wtn: '', weldProcess: '',
-  gwp: '', wpsRev: '', effectiveDate: '',
+  gwp: '', revision: '', effectiveDate: '',
   processType: '', application: '',
   rules: [], conditions: [],
   extraFields: {},
@@ -49,6 +49,8 @@ export class ProcedureFormComponent implements OnInit {
 
   isEdit = signal(false);
   form: Procedure = { ...EMPTY_FORM };
+  /* the GWP and WTN the edited procedure had when the form opened; both can be changed */
+  private original = { gwp: '', wtn: '' };
   /* true when the procedure was Active at load time -- a revision note is then required to save any change */
   wasActive = false;
   revisionNote = '';
@@ -67,11 +69,13 @@ export class ProcedureFormComponent implements OnInit {
   newCondition = '';
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
+    const gwp = this.route.snapshot.paramMap.get('gwp');
+    const wtn = this.route.snapshot.paramMap.get('wtn');
+    if (gwp && wtn) {
       this.isEdit.set(true);
-      const existing = getProcedure(id);
+      const existing = getProcedure(gwp, wtn);
       if (existing) {
+        this.original = { gwp, wtn };
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
           revisionHistory: [...existing.revisionHistory], sectionIds: [...existing.sectionIds],
@@ -129,7 +133,8 @@ export class ProcedureFormComponent implements OnInit {
   }
 
   save() {
-    const problem = procedureSaveProblem(this.form, !this.isEdit(), procedures(), this.sections());
+    const others = procedures().filter(p => !(this.isEdit() && isProcedure(p, this.original.gwp, this.original.wtn)));
+    const problem = procedureSaveProblem(this.form, others, this.sections());
     if (problem) {
       this.toast.add({ severity: 'warn', ...problem });
       return;
@@ -143,16 +148,16 @@ export class ProcedureFormComponent implements OnInit {
       if (this.wasActive) {
         this.form.revisionHistory = [
           ...this.form.revisionHistory,
-          { wpsRev: this.form.wpsRev, date: new Date().toISOString().slice(0, 10), note: this.revisionNote.trim(), by: 'User' }
+          { revision: this.form.revision, date: new Date().toISOString().slice(0, 10), note: this.revisionNote.trim(), by: 'User' }
         ];
       }
-      const { id, createdAt, updatedAt, ...rest } = this.form;
-      updateProcedure(id, { ...rest, extraFields });
-      this.toast.add({ severity: 'success', summary: 'Updated', detail: `${this.form.id} updated` });
+      const { createdAt, updatedAt, ...rest } = this.form;
+      updateProcedure(this.original.gwp, this.original.wtn, { ...rest, extraFields });
+      this.toast.add({ severity: 'success', summary: 'Updated', detail: `${procedureName(this.form)} updated` });
     } else {
       const { createdAt, updatedAt, ...rest } = this.form;
       addProcedure({ ...rest, extraFields });
-      this.toast.add({ severity: 'success', summary: 'Created', detail: `${this.form.id} created` });
+      this.toast.add({ severity: 'success', summary: 'Created', detail: `${procedureName(this.form)} created` });
     }
     this.router.navigate(['/weld-engineering/admin']);
   }

@@ -61,7 +61,6 @@ function seededFieldValue(f: FormField, rand: () => number): string {
   if (key.includes('manufacturer')) return pick(['Magnaflux Corp', 'Sherwin Williams', 'NDT Systems Inc']);
   if (key.includes('procedure') || key.includes('method')) return pick(['ASME V', 'AWS D1.1', 'ISO 17636', 'ISO 3452']);
   if (key.includes('thickness')) return pick(['3/8"', '1/2"', '5/8"', '3/4"', '1"']);
-  if (key.includes('wps')) return pick(['WPS-001', 'WPS-002', 'WPS-003']);
   if (key.includes('date')) return new Date(Date.now() - Math.floor(rand() * 30) * 86400000).toISOString().slice(0, 10);
   if (key.includes('note') || key.includes('comment')) return pick(['Standard procedure followed', 'No issues noted', 'Completed per spec', 'All criteria met']);
   return pick(['Completed', 'Verified', 'Accepted', 'Passed']);

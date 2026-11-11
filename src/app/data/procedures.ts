@@ -2,8 +2,9 @@
    Self-contained data module for the Weld Engineering "Procedure Lookup" system.
    All data is persisted to localStorage (no backend). Storage keys live in data/storage-keys.ts.
 
-   A GWP (Governing WPS) groups several specific WPS documents, one per WTN -- e.g. GWP W-101 covers
-   WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. Other systems (Weld Record, Weld
+   A GWP (General Weld Procedure) is the overarching procedure; its WTNs are specific branches of it,
+   one Procedure row / PDF each -- e.g. GWP W-101 covers WTN 05.5-1, 05.5-2 and 05.5A-3. GWP+WTN
+   identifies a row. Other systems (Weld Record, Weld
    Planning) read these rows only through future/weld-engineering/procedure-values.ts -- see
    docs/ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
@@ -35,7 +36,7 @@ export const BASE_METAL_1_TYPES = MATERIAL_TYPES;
 export const BASE_METAL_2_TYPES = MATERIAL_TYPES;
 /* MIL-spec filler metal designations, e.g. MIL-80S-50 -- the choices of the Classification field.
    Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
-   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WPS's
+   AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WTN's
    fillerMetalTypes/fillerMetalSizes section fields list which of those option VALUES are valid for it. */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 export const FILLER_METAL_TYPE_OPTIONS: { label: string; value: string }[] = [
@@ -49,7 +50,7 @@ export const FILLER_METAL_SIZE_OPTIONS: { label: string; value: string }[] = [
 ];
 
 interface RevisionNote {
-  wpsRev: string;
+  revision: string;
   date: string;    /* ISO date */
   note: string;
   by: string;
@@ -59,13 +60,12 @@ interface RevisionNote {
    Qualifications, ...) is defined in Admin > Procedure Sections (future/weld-engineering/
    procedure-sections.ts) and its value is kept in extraFields. */
 export interface Procedure {
-  id: string;               /* 'W-101-2' -- the lookup key, user-facing, shown as "WPS". One row/PDF per GWP+WTN pair. */
   title: string;
   status: ProcedureStatus;
-  wtn: string;               /* the single WTN this specific WPS document covers, e.g. '05.5-1' */
+  wtn: string;               /* the WTN this row is, e.g. '05.5-1'; GWP+WTN is the row's key */
   weldProcess: string;
-  gwp: string;               /* Governing WPS -- groups multiple Procedure rows, one per WTN (workflow/weld-fields.ts weldProcedure) */
-  wpsRev: string;
+  gwp: string;               /* General Weld Procedure -- groups multiple Procedure rows, one per WTN (Weld Record's weldProcedure field) */
+  revision: string;
   effectiveDate: string;     /* ISO date */
   processType: string;
   application: string;       /* free text, e.g. 'Surface Structure' */
@@ -91,7 +91,7 @@ const RULE_POOL = [
   'Interpass temperature shall not exceed 350°F.',
   'Backing gas required for all root passes.',
   'Visual inspection required prior to any NDT.',
-  'Filler metal shall match base metal chemistry per WPS.',
+  'Filler metal shall match base metal chemistry per GWP.',
   'PWHT required when specified on the drawing.',
   'Weld sequence shall follow the joint design order.',
   'Tack welds shall be incorporated into the final weld or removed.',
@@ -147,7 +147,7 @@ function generateWtnsForGwp(rand: () => number, count: number): string[] {
 }
 
 /* Every (Material Type 1, Material Type 2) combination a job can have gets 1-3 GWPs, so it has at
-   least one applicable GWP (and, per generateProcedures below, at least one of each GWP's WPS rows
+   least one applicable GWP (and, per generateProcedures below, at least one of each GWP's WTNs
    has override values populated). */
 function materialCombos(): [string, string][] {
   const combos: [string, string][] = [];
@@ -159,8 +159,8 @@ function materialCombos(): [string, string][] {
   return combos;
 }
 
-/* sample Welder Qualifications, drawn from their own seeded sequence (keyed by WPS id) so they don't
-   shift the other seeded values; about a quarter of WPS rows require nothing */
+/* sample Welder Qualifications, drawn from their own seeded sequence (keyed by GWP and the WTN's
+   position) so they don't shift the other seeded values; about a quarter of WTNs require nothing */
 const REQUIRED_QUALS_POOL: QualGroup[] = [
   { op: 'all', items: [] },
   { op: 'all', items: ['WELD412'] },
@@ -171,9 +171,9 @@ const REQUIRED_QUALS_POOL: QualGroup[] = [
   { op: 'all', items: [] },
   { op: 'all', items: ['WELD419'] },
 ];
-function seedRequiredQuals(id: string): QualGroup {
+function seedRequiredQuals(key: string): QualGroup {
   let n = 0;
-  for (const ch of id) n = (n * 31 + ch.charCodeAt(0)) % 100000;
+  for (const ch of key) n = (n * 31 + ch.charCodeAt(0)) % 100000;
   const g = REQUIRED_QUALS_POOL[Math.floor(seeded(n)() * REQUIRED_QUALS_POOL.length)];
   return JSON.parse(JSON.stringify(g));
 }
@@ -186,7 +186,7 @@ function generateProcedures(): Procedure[] {
     phMax: pick(['250', '300', '350']),
     ipMin: pick(['50', '60', '100']),
     ipMax: pick(['250', '300', '350']),
-    note: `Approved deviation per WPS-${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}`,
+    note: `Approved deviation #${String(1 + Math.floor(rand() * 20)).padStart(3, '0')}`,
   });
   const out: Procedure[] = [];
   const combos = materialCombos();
@@ -198,9 +198,9 @@ function generateProcedures(): Procedure[] {
       const gwp = `W-${gwpNumber++}`;
       const wtnCount = 2 + Math.floor(rand() * 3);
       const wtns = generateWtnsForGwp(rand, wtnCount);
-      /* guarantee at least one WPS under this GWP has override values, rather than leaving it to chance */
+      /* guarantee at least one WTN under this GWP has override values, rather than leaving it to chance */
       const overrideRowIndex = Math.floor(rand() * wtns.length);
-      /* process and application are the same across a GWP's WPS rows so the GWP has one description;
+      /* process and application are the same across a GWP's WTNs so the GWP has one description;
          filler metal varies per WTN */
       const weldProcess = pick(WELD_PROCESSES);
       const processType = pick(PROCESS_TYPES);
@@ -211,13 +211,12 @@ function generateProcedures(): Procedure[] {
         const hasOverride = n === overrideRowIndex || rand() < 0.3;
         const statuses: ProcedureStatus[] = ['active', 'active', 'active', 'draft', 'retired']; /* mostly active */
 
-        const id = `${gwp}-${n + 1}`;
         const effectiveDate = new Date(createdAt.getTime() + Math.floor(rand() * 30) * 24 * 60 * 60 * 1000);
         const status = pick(statuses);
-        const wpsRev = String(Math.floor(rand() * 4));
+        const revision = String(Math.floor(rand() * 4));
         const revisionHistory: RevisionNote[] = status !== 'draft'
-          ? Array.from({ length: Number(wpsRev) }, (_, revIndex) => ({
-              wpsRev: String(revIndex + 1),
+          ? Array.from({ length: Number(revision) }, (_, revIndex) => ({
+              revision: String(revIndex + 1),
               date: new Date(createdAt.getTime() + (revIndex + 1) * 20 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
               note: pick(REVISION_NOTE_POOL),
               by: 'System',
@@ -225,13 +224,12 @@ function generateProcedures(): Procedure[] {
           : [];
         const fillerMetalTypes = pickSome(FILLER_METAL_TYPE_OPTIONS.map(o => o.value), rand, 1, 3);
         out.push({
-          id,
           title: `${weldProcess} procedure for ${application.toLowerCase()}`,
           status,
           wtn,
           weldProcess,
           gwp,
-          wpsRev,
+          revision,
           effectiveDate: effectiveDate.toISOString().slice(0, 10),
           processType,
           application,
@@ -247,10 +245,10 @@ function generateProcedures(): Procedure[] {
             weldPosition: pick(getWeldPositions()).code,
             weldProgression: pick(WELD_PROGRESSIONS),
             fillerMetalTypes,
-            /* matches the first allowed filler type, so the description names a filler this WPS allows */
+            /* matches the first allowed filler type, so the description names a filler this WTN allows */
             fillerMetalClassification: FILLER_METAL_TYPE_OPTIONS.find(o => o.value === fillerMetalTypes[0])!.label,
             fillerMetalSizes: pickSome(FILLER_METAL_SIZE_OPTIONS.map(o => o.value), rand, 1, 3),
-            requiredQuals: seedRequiredQuals(id),
+            requiredQuals: seedRequiredQuals(`${gwp}-${n + 1}`),
             /* round values only (real limits are clean numbers like 60, 200, 300); every min pool
                value is below every max pool value */
             phMin: rand() < 0.15 ? 'NC' : pick(['50', '60', '100', '150', '200']),
@@ -316,31 +314,36 @@ export function addProcedure(p: Omit<Procedure, 'createdAt' | 'updatedAt'>): Pro
   return newProcedure;
 }
 
-export function updateProcedure(id: string, updates: Partial<Procedure>): void {
+/* true when p is the GWP+WTN row */
+export function isProcedure(p: Procedure, gwp: string, wtn: string): boolean {
+  return p.gwp === gwp && p.wtn === wtn;
+}
+
+/* how messages and pages name one row, e.g. 'GWP W-101 / WTN 05.5-1' */
+export function procedureName(p: Pick<Procedure, 'gwp' | 'wtn'>): string {
+  return `GWP ${p.gwp} / WTN ${p.wtn}`;
+}
+
+export function updateProcedure(gwp: string, wtn: string, updates: Partial<Procedure>): void {
   procedures.update(list => {
-    const next = list.map(p => p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p);
+    const next = list.map(p => isProcedure(p, gwp, wtn) ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p);
     persistProcedures(next);
     return next;
   });
 }
 
-export function deleteProcedure(id: string): void {
+export function deleteProcedure(gwp: string, wtn: string): void {
   procedures.update(list => {
-    const next = list.filter(p => p.id !== id);
+    const next = list.filter(p => !isProcedure(p, gwp, wtn));
     persistProcedures(next);
     return next;
   });
 }
 
-export function getProcedure(id: string): Procedure | undefined {
-  return procedures().find(p => p.id === id);
-}
-
-export function getProcedureByGwpWtn(gwp: string, wtn: string): Procedure | undefined {
+export function getProcedure(gwp: string, wtn: string): Procedure | undefined {
   if (!gwp || !wtn) return undefined;
-  return procedures().find(p => p.gwp === gwp && p.wtn === wtn);
+  return procedures().find(p => isProcedure(p, gwp, wtn));
 }
-
 /* every distinct WTN across all GWPs -- for demo data (assignments.ts) that just needs a plausible WTN */
 export function allWtns(): string[] {
   return Array.from(new Set(procedures().map(p => p.wtn)));

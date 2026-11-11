@@ -66,7 +66,7 @@ type FieldType = 'text' | 'number' | 'select' | 'checkbox' | 'radio';
    and whether an engineering override has it), or its source changes while it holds, the field
    copies the source's value; it's blanked when `when` stops holding. Whether it can be typed into
    is its separate Disabled when rule. The source is another step's recorded value, a field on this
-   same step, or the WTN's WPS. */
+   same step, or the WTN. */
 export type FieldFill = { fieldKey: string; when: FieldCondition }
   & ({ from?: 'step'; stepId: string } | { from: 'thisStep' } | { from: 'wtn' });
 
@@ -252,7 +252,7 @@ const showIfUnsat: FieldCondition = { all: [{ source: 'field', key: 'result', eq
    (the checkbox is only on Root, so the rule never holds on other steps) */
 const insertOnly: FieldCondition = { all: [{ source: 'field', key: 'consumableInsertOnly', equals: 'yes' }] };
 const fillFromFit = (fieldKey: string): FieldFill => ({ stepId: 'fit', fieldKey, when: insertOnly });
-/* Weld Process and the PH/IP requirements come from the WTN's WPS, except under an engineering
+/* Weld Process and the PH/IP requirements come from the WTN, except under an engineering
    override (no WTN on file, the values are typed) */
 const ENGINEERING_OVERRIDE_OFF: FieldCondition = { all: [{ source: 'stageProperty', key: ENGINEERING_OVERRIDE_KEY, equals: '' }] };
 const fillFromWtn = (fieldKey: string): FieldFill => ({ from: 'wtn', fieldKey, when: ENGINEERING_OVERRIDE_OFF });

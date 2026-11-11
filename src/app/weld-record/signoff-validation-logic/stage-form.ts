@@ -73,7 +73,7 @@ function withSavedValue(offered: Option[], saved: string, all: Option[] = []): O
 
 /* A field with its runtime options and label. GWP is filtered to the GWPs qualified for this job's
    base metal pair (Material Type 1/2), WTN to the selected GWP, and Filler Metal Type/Size to the
-   WPS that GWP+WTN matches. */
+   WTN that GWP+WTN matches. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
   const lists = adminLists(f, stage);

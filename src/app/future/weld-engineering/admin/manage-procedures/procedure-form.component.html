@@ -8,11 +8,6 @@
 
   <div class="stage-inputs">
     <div class="stage-field">
-      <label class="stage-field-label">Procedure ID<span class="req">*</span></label>
-      <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. W-123"
-             [(ngModel)]="form.id" [disabled]="isEdit()" />
-    </div>
-    <div class="stage-field">
       <label class="stage-field-label">Title</label>
       <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.title" />
     </div>
@@ -42,8 +37,8 @@
       <input type="text" class="input input-sm input-bordered w-full" placeholder="e.g. 05.5-1" [(ngModel)]="form.wtn" />
     </div>
     <div class="stage-field">
-      <label class="stage-field-label">WPS Rev</label>
-      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.wpsRev" />
+      <label class="stage-field-label">Revision</label>
+      <input type="text" class="input input-sm input-bordered w-full" [(ngModel)]="form.revision" />
     </div>
     <div class="stage-field">
       <label class="stage-field-label">Effective Date</label>
@@ -177,10 +172,10 @@
     @if (form.revisionHistory.length) {
       <h3 class="form-section-title">Revision History</h3>
       <table class="table table-sm">
-        <thead><tr><th>Rev</th><th>Date</th><th>By</th><th>Note</th></tr></thead>
+        <thead><tr><th>Revision</th><th>Date</th><th>By</th><th>Note</th></tr></thead>
         <tbody>
           @for (rv of form.revisionHistory; track $index) {
-            <tr><td>{{ rv.wpsRev }}</td><td>{{ rv.date | appDate }}</td><td>{{ rv.by }}</td><td>{{ rv.note }}</td></tr>
+            <tr><td>{{ rv.revision }}</td><td>{{ rv.date | appDate }}</td><td>{{ rv.by }}</td><td>{{ rv.note }}</td></tr>
           }
         </tbody>
       </table>

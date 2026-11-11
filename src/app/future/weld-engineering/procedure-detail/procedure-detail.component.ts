@@ -1,4 +1,4 @@
-/* Weld Engineering - one WPS: its generated PDF shown inline, with Download. */
+/* Weld Engineering - one procedure (GWP+WTN): its generated PDF shown inline, with Download. */
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -23,8 +23,8 @@ export class ProcedureDetailComponent implements OnInit {
   pdfUrl = signal<SafeResourceUrl | null>(null);
 
   async ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    const found = id ? getProcedure(id) : undefined;
+    const params = this.route.snapshot.paramMap;
+    const found = getProcedure(params.get('gwp') ?? '', params.get('wtn') ?? '');
     if (!found) {
       this.router.navigate(['/weld-engineering']);
       return;

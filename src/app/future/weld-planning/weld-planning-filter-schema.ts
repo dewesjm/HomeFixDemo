@@ -53,7 +53,7 @@ export const SEARCH_FIELDS: SearchField[] = [
 /* ── Values ── */
 
 /* a joint as the search sees it: status/priority/type by their labels, plus what its GWP stands
-   for. Filler Metal Type is every filler the GWP's WPS rows allow, so it's a list. */
+   for. Filler Metal Type is every filler the GWP's WTNs allow, so it's a list. */
 export type SearchRow = Omit<WeldJoint, 'status' | 'priority' | 'jointType'> & {
   status: string; priority: string; jointType: string;
   weldProcess: string; processType: string; baseMetal1Type: string; baseMetal2Type: string;

@@ -25,8 +25,8 @@ describe('Manage Procedures', () => {
     TestBed.flushEffects();
   });
 
-  const ids = () => page.table.filtered().map(r => r.id);
-  const savedIds = () => (JSON.parse(localStorage.getItem(STORAGE.procedures)!) as { id: string }[]).map(p => p.id);
+  const ids = () => page.table.filtered().map(r => r.gwp);
+  const savedIds = () => (JSON.parse(localStorage.getItem(STORAGE.procedures)!) as { gwp: string }[]).map(p => p.gwp);
 
   it('lists every procedure and filters by status', () => {
     expect(ids()).toEqual(['MP-1', 'MP-2']);
@@ -38,19 +38,19 @@ describe('Manage Procedures', () => {
     page.addNew();
     expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/admin/new']);
     page.edit(procedures()[1]);
-    expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/admin', 'MP-2', 'edit']);
+    expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/admin', 'MP-2', '99.9-1', 'edit']);
   });
 
   it('deletes a procedure only after the delete is confirmed, and saves the change', () => {
     page.deleteRow(procedures()[0]);
-    expect(confirm.request()!.message).toBe('Delete MP-1?');
+    expect(confirm.request()!.message).toBe('Delete GWP MP-1 / WTN 99.9-1?');
     expect(ids()).toEqual(['MP-1', 'MP-2']);
 
     confirm.resolve(true);
     TestBed.flushEffects();
     expect(ids()).toEqual(['MP-2']);
     expect(savedIds()).toEqual(['MP-2']);
-    expect(toast.messages().at(-1)!.detail).toBe('MP-1 deleted');
+    expect(toast.messages().at(-1)!.detail).toBe('GWP MP-1 / WTN 99.9-1 deleted');
   });
 
   it('keeps the procedure when the delete is cancelled', () => {

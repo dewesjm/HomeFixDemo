@@ -1,4 +1,4 @@
-/* Weld Engineering - Procedure Lookup. Every WPS document (one per GWP+WTN pair) shown at once
+/* Weld Engineering - Procedure Lookup. Every procedure (one per GWP+WTN pair) shown at once
    (no pager) with sort/search, mirroring an admin list screen rather than a paginated search screen.
    Every column has a filter: text boxes for typed values, droplists for fixed lists. The base metal
    and filler columns are section fields (Admin > Procedure Sections): their headings and choices come
@@ -39,7 +39,7 @@ const shownDateContains = (rowValue: unknown, typed: string | string[]) =>
 })
 export class ProcedureLookupComponent {
   table = new TableState<LookupRow>(
-    ['id', 'title', 'wtn', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'],
+    ['title', 'wtn', 'gwp', 'weldProcess', 'processType', 'baseMetal1Type', 'baseMetal2Type', 'fillerMetalTypes'],
     {
       status: inArray, weldProcess: inArray, processType: inArray, baseMetal1Type: inArray, baseMetal2Type: inArray,
       fillerMetalTypes: anyPicked, effectiveDate: shownDateContains
@@ -79,6 +79,6 @@ export class ProcedureLookupComponent {
   }
 
   openProcedure(row: Procedure) {
-    this.router.navigate(['/weld-engineering/procedures', row.id]);
+    this.router.navigate(['/weld-engineering/procedures', row.gwp, row.wtn]);
   }
 }

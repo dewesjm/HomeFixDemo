@@ -104,7 +104,7 @@ describe('Procedure Sections admin', () => {
   it('removes a section after confirming, but not while procedures have it ticked or it has locked fields', () => {
     page.removeSection(section('Joint Design'));
     expect(page.blocked()!.heading).toBe('Joint Design can\'t be removed.');
-    expect(page.blocked()!.procedures).toEqual(['PS-1 (WTN 01.1-1)']);
+    expect(page.blocked()!.procedures).toEqual(['GWP PS-1 / WTN 01.1-1']);
 
     page.removeSection(section('Base Metal'));
     expect(page.blocked()!.problem).toContain('locked fields');
@@ -118,7 +118,7 @@ describe('Procedure Sections admin', () => {
 
   it('removes a field only when no procedure shows a value in it, and never a locked one', () => {
     page.removeField(section('Joint Design'), findField('grooveAngle', procedureSections())!);
-    expect(page.blocked()!.procedures).toEqual(['PS-1 (WTN 01.1-1)']);
+    expect(page.blocked()!.procedures).toEqual(['GWP PS-1 / WTN 01.1-1']);
 
     page.removeField(section('Base Metal'), findField('baseMetal1Type', procedureSections())!);
     expect(page.blocked()!.problem).toBe('Locked fields can\'t be removed.');

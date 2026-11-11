@@ -1,7 +1,7 @@
 import { formInputFields } from '../signoff-forms-logic/form-fields';
 import { TestBed } from '@angular/core/testing';
 import { JOBS } from '../../data/jobs';
-import { getProcedureByGwpWtn } from '../../data/procedures';
+import { getProcedure } from '../../data/procedures';
 import {
   gwpOptionsForMaterials, wtnFillValue, fillerMetalTypeOptions, fillerMetalSizeOptions
 } from '../../future/weld-engineering/procedure-values';
@@ -27,7 +27,7 @@ describe('WeldAssignmentService', () => {
     service.applyAll(job);
     const wf = store.workflowFor(job)();
     const stage = wf.stages.find(s => !s.signed && formInputFields(s).some(f => f.key === 'weldProcedure'))!;
-    const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'], stage.inputs['wtn'])!;
+    const proc = getProcedure(stage.inputs['weldProcedure'], stage.inputs['wtn'])!;
     expect(proc).toBeTruthy();
     expect(gwpOptionsForMaterials(job.materialType1!, job.materialType2!).some(o => o.value === proc.gwp)).toBeTrue();
     /* Weld Process and PH/IP come in by their fill rules, an NC requirement makes its actual NC */

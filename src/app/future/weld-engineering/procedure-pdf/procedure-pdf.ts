@@ -6,7 +6,7 @@
    procedure-sections.ts) this procedure has, with their numbers, then its Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
-import { Procedure } from '../../../data/procedures';
+import { procedureName, type Procedure } from '../../../data/procedures';
 import { OVERRIDE_PARTS, sectionsOnProcedure, type ExtraField, type ProcedureSection } from '../procedure-sections';
 import { extraValueText, isBlank, isOverride } from '../procedure-field-values';
 import { formatDate } from '../../../shared/date-format';
@@ -45,9 +45,9 @@ function revisionRecord(p: Procedure): Content[] {
       table: {
         widths: ['auto', 'auto', 'auto', '*'],
         body: [
-          [{ text: 'Rev', bold: true, fillColor: '#eeeeee' }, { text: 'Date', bold: true, fillColor: '#eeeeee' },
+          [{ text: 'Revision', bold: true, fillColor: '#eeeeee' }, { text: 'Date', bold: true, fillColor: '#eeeeee' },
            { text: 'By', bold: true, fillColor: '#eeeeee' }, { text: 'Note', bold: true, fillColor: '#eeeeee' }],
-          ...p.revisionHistory.map(rv => [rv.wpsRev, formatDate(rv.date), rv.by, rv.note]),
+          ...p.revisionHistory.map(rv => [rv.revision, formatDate(rv.date), rv.by, rv.note]),
         ],
       },
       layout: {
@@ -91,10 +91,10 @@ function section(p: Procedure, s: ProcedureSection, n: number): Content[] {
 
 export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[]): TDocumentDefinitions {
   const content: Content[] = [
-    { text: p.id, style: 'procedureId' },
+    { text: procedureName(p), style: 'procedureId' },
     { text: p.title, style: 'title' },
     { text: `Status: ${p.status}    Weld Process: ${p.weldProcess}`, style: 'meta', margin: [0, 0, 0, 4] },
-    { text: `WPS Rev: ${p.wpsRev || '-'}    Effective Date: ${p.effectiveDate || '-'}    GWP: ${p.gwp || '-'}    WTN: ${p.wtn || '-'}`, style: 'meta', margin: [0, 0, 0, 12] },
+    { text: `Revision: ${p.revision || '-'}    Effective Date: ${p.effectiveDate || '-'}`, style: 'meta', margin: [0, 0, 0, 12] },
 
     ...revisionRecord(p),
 
@@ -116,7 +116,7 @@ export function procedureDocDefinition(p: Procedure, sections: ProcedureSection[
     }),
     footer: (currentPage: number, pageCount: number) => ({
       columns: [
-        { text: `${p.gwp || '-'} - ${p.wtn || '-'}, Rev ${p.wpsRev || '-'}`, alignment: 'left' },
+        { text: `${p.gwp || '-'} - ${p.wtn || '-'}, Revision ${p.revision || '-'}`, alignment: 'left' },
         { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right' },
       ],
       style: 'pageFooter',

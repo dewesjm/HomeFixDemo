@@ -197,7 +197,7 @@ describe('joint-form stage-form', () => {
     expect(stageFieldOptions(field(tack, 'weldProcedure'), tack, ctxFor(j, true)).options!.length).toBe(all.size);
   });
 
-  it('Filler Metal Type narrows to the WPS the GWP+WTN resolves to', () => {
+  it('Filler Metal Type narrows to the WTN the GWP+WTN resolves to', () => {
     const j = job();
     const proc = procedures()[0];
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: proc.gwp, wtn: proc.wtn } });

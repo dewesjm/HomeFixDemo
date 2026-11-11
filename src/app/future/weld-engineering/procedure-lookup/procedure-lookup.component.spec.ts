@@ -34,18 +34,18 @@ describe('Procedure Lookup', () => {
     TestBed.flushEffects();
   });
 
-  const ids = () => page.table.filtered().map(r => r.id);
+  const ids = () => page.table.filtered().map(r => r.gwp);
 
   it('lists every procedure with its section values, blank when the section is not ticked', () => {
     expect(ids()).toEqual(['LK-1', 'LK-2', 'LK-3']);
-    const row = (id: string) => page.table.rows().find(r => r.id === id)!;
+    const row = (gwp: string) => page.table.rows().find(r => r.gwp === gwp)!;
     expect(row('LK-1').baseMetal1Type).toBe('02-CS');
     expect(row('LK-1').fillerMetalTypes).toEqual(['mil-70s-3', 'mil-70s-6']);
     expect(row('LK-3').baseMetal1Type).toBe('');
     expect(row('LK-3').fillerMetalTypes).toEqual([]);
   });
 
-  it('searches by title, WPS, WTN or GWP and shows nothing when none match', () => {
+  it('searches by title, WTN or GWP and shows nothing when none match', () => {
     page.table.setGlobalFilter('alloy');
     expect(ids()).toEqual(['LK-2']);
     page.table.setGlobalFilter('03.3-1');
@@ -90,6 +90,6 @@ describe('Procedure Lookup', () => {
 
   it('opens a procedure\'s detail page', () => {
     page.openProcedure(alloy);
-    expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/procedures', 'LK-2']);
+    expect(router.navigate).toHaveBeenCalledWith(['/weld-engineering/procedures', 'LK-2', '02.2-1']);
   });
 });

@@ -1,6 +1,6 @@
 /* Deviations: out-of-spec values a person can accept at sign-off instead of being blocked.
    Accepted kinds: Actual PH/IP out of range, a failed Qualification
-   Check, a Filler Metal Type/Size the WPS doesn't allow, and a GWP not qualified for the base
+   Check, a Filler Metal Type/Size the WTN doesn't allow, and a GWP not qualified for the base
    metals (the last two pickable only after a Foreman Override). Everything else stays a hard stop.
    Foreman Override text is typed in ('reported' items). DeviationService records them. Values typed
    on an engineering override step (engineeringEntry) are never off-list: there's no list to be off. */
@@ -46,7 +46,7 @@ function rangeText(stage: WorkflowStage, key: string): string {
 /* every acceptable deviation on this stage right now; visibleKeys = the fields the person can see.
    baseMetals is the joint's Material Type 1/2; without it the GWP check is skipped. requiredQuals =
    the requirements of the conditions the joint and the step match (conditionRequirements(),
-   qual-conditions.ts), checked even with no WPS picked. */
+   qual-conditions.ts), checked even with no WTN picked. */
 export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<string>, heldQuals: string[], baseMetals?: BaseMetals, requiredQuals: QualGroup[] = []): DeviationItem[] {
   const items: DeviationItem[] = [];
   for (const key of Object.keys(ACTUAL_REQUIREMENT)) {
@@ -85,7 +85,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     items.push({
       kind: 'off-list', label: f.label,
       entered: all.find(o => o.value === value)?.label ?? value,
-      required: allowed.map(o => o.label).join(', ') || 'None listed on the WPS',
+      required: allowed.map(o => o.label).join(', ') || 'None listed on the WTN',
     });
   }
   return items;

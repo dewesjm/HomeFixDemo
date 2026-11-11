@@ -6,7 +6,7 @@
    The values read here are the locked section fields (fixed keys, procedure-sections.ts); a value in
    a section the procedure hasn't ticked reads as blank. */
 import {
-  Procedure, procedures, getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS,
+  Procedure, procedures, getProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS,
 } from '../../data/procedures';
 import type { QualGroup } from '../../weld-record/qualifications-logic/qual-requirements';
 import { procedureSections } from './procedure-sections';
@@ -20,18 +20,18 @@ function overrideOf(p: Procedure) {
   return isOverride(v) && !isBlank(v) ? v : undefined;
 }
 
-/* true when a GWP+WTN pair matches a WPS */
+/* true when a GWP+WTN pair matches a procedure */
 export function hasProcedure(gwp: string, wtn: string): boolean {
-  return !!getProcedureByGwpWtn(gwp, wtn);
+  return !!getProcedure(gwp, wtn);
 }
 
-/* a WPS's preheat/interpass override values, keyed by Weld Record's override field keys;
-   undefined when the pair matches no WPS or that WPS has no override */
+/* a WTN's preheat/interpass override values, keyed by Weld Record's override field keys;
+   undefined when the pair matches no procedure or that WTN has no override */
 export interface OverrideValues {
   overridePhMin: string; overridePhMax: string; overrideIpMin: string; overrideIpMax: string; overrideNote: string;
 }
 export function procedureOverride(gwp: string, wtn: string): OverrideValues | undefined {
-  const p = getProcedureByGwpWtn(gwp, wtn);
+  const p = getProcedure(gwp, wtn);
   const o = p && overrideOf(p);
   if (!o) return undefined;
   return { overridePhMin: o.phMin, overridePhMax: o.phMax, overrideIpMin: o.ipMin, overrideIpMax: o.ipMax, overrideNote: o.note };
@@ -53,13 +53,13 @@ export function procedureDescription(p: Procedure | undefined, includeFiller = t
   ].filter(Boolean).join(' ');
 }
 
-/* a GWP's description comes from its first WPS row (seeded rows share process and application) */
+/* a GWP's description comes from its first WTN (seeded rows share process and application) */
 export function gwpDescription(gwp: string): string {
   return procedureDescription(procedures().find(p => p.gwp === gwp), false);
 }
 
 export function wtnDescription(gwp: string, wtn: string): string {
-  return procedureDescription(getProcedureByGwpWtn(gwp, wtn));
+  return procedureDescription(getProcedure(gwp, wtn));
 }
 
 /* GWP droplist filtered to whichever GWPs are qualified for a job's base metal pair -- a GWP's
@@ -76,8 +76,8 @@ export function gwpOptionsForMaterials(materialType1: string, materialType2: str
 }
 
 /* What a GWP stands for, for Weld Planning's search. Process, process type and base metals are the
-   same across a GWP's WPS rows (first row); filler varies per WTN, so it's every filler any row allows.
-   undefined when no WPS has this GWP. */
+   same across a GWP's WTNs (first one); filler varies per WTN, so it's every filler any row allows.
+   undefined when no procedure has this GWP. */
 export interface GwpDetails {
   weldProcess: string;
   processType: string;
@@ -110,37 +110,37 @@ export function wtnOptionsForGwp(gwp: string): { label: string; value: string; d
 }
 
 
-/* the WPS values a welding step's fields can be filled from (a "Filled from the WTN" rule) */
+/* the WTN values a welding step's fields can be filled from (a "Filled from the WTN" rule) */
 export const WTN_FILL_FIELDS = [
   { key: 'weldProcess', label: 'Weld Process' },
   { key: 'phMin', label: 'PH Min' }, { key: 'phMax', label: 'PH Max' },
   { key: 'ipMin', label: 'IP Min' }, { key: 'ipMax', label: 'IP Max' },
 ] as const;
 
-/* one of those values for a GWP+WTN; '' when the pair matches no WPS */
+/* one of those values for a GWP+WTN; '' when the pair matches no procedure */
 export function wtnFillValue(gwp: string, wtn: string, key: string): string {
-  const proc = getProcedureByGwpWtn(gwp, wtn);
+  const proc = getProcedure(gwp, wtn);
   if (!proc || !WTN_FILL_FIELDS.some(f => f.key === key)) return '';
   return key === 'weldProcess' ? proc.weldProcess.toLowerCase() : text(proc, key);
 }
 
-/* the quals a welder needs to weld to the WPS a GWP+WTN pair matches (5. Welder Qualifications);
+/* the quals a welder needs to weld to the WTN a GWP+WTN pair matches (5. Welder Qualifications);
    an empty group (requires nothing) when it matches none */
 export function procedureRequiredQuals(gwp: string, wtn: string): QualGroup {
-  const p = getProcedureByGwpWtn(gwp, wtn);
+  const p = getProcedure(gwp, wtn);
   const v = p && sectionValue(p, 'requiredQuals', procedureSections());
   return isQuals(v) ? v : { op: 'all', items: [] };
 }
 
-/* Filler Metal Type/Size cascade: the options the WPS a GWP+WTN pair matches allows, empty when it
+/* Filler Metal Type/Size cascade: the options the GWP+WTN pair's procedure allows, empty when it
    matches none. On the weld record the external-system mock (weld-record/weld-assignment-logic/
    weld-assignment-mock.ts) picks one of these; a Foreman Override opens the full lists. */
 export function fillerMetalTypeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
-  const p = getProcedureByGwpWtn(gwp, wtn);
+  const p = getProcedure(gwp, wtn);
   return p ? FILLER_METAL_TYPE_OPTIONS.filter(o => list(p, 'fillerMetalTypes').includes(o.value)) : [];
 }
 
 export function fillerMetalSizeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
-  const p = getProcedureByGwpWtn(gwp, wtn);
+  const p = getProcedure(gwp, wtn);
   return p ? FILLER_METAL_SIZE_OPTIONS.filter(o => list(p, 'fillerMetalSizes').includes(o.value)) : [];
 }

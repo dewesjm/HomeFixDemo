@@ -1,4 +1,4 @@
-/* Weld Engineering - procedure sections. Every section of a procedure (WPS) is a row here, edited in
+/* Weld Engineering - procedure sections. Every section of a procedure (one WTN) is a row here, edited in
    Admin > Procedure Sections; sections are numbered by list order. The 11 starting sections are
    seeded below. Only the section/field definitions live here; each procedure keeps its values for
    every field in one bag, Procedure.extraFields, keyed by ExtraField.key. A new field is a new key in
@@ -130,7 +130,7 @@ const SEEDED_SECTIONS: ProcedureSection[] = [
 export const SEEDED_SECTION_IDS = SEEDED_SECTIONS.map(s => s.id);
 
 /* the sections a procedure has, in list order, each with its number: a section keeps its number on
-   every procedure, so a WPS without section 3 goes from 2 to 4 */
+   every procedure, so a procedure without section 3 goes from 2 to 4 */
 export function sectionsOnProcedure(
   sectionIds: string[], sections: ProcedureSection[]
 ): { section: ProcedureSection; number: number }[] {

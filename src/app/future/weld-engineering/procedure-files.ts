@@ -7,13 +7,12 @@ import { OVERRIDE_PARTS, type ExtraField, type ExtraFieldValue, type OverrideVal
 import { extraValueText, fieldChoices, isOverride } from './procedure-field-values';
 
 const HEADER_CSV_COLUMNS: CsvColumn<Procedure>[] = [
-  { header: 'WPS', value: r => r.id },
-  { header: 'WPS Rev', value: r => r.wpsRev },
-  { header: 'Effective Date', value: r => r.effectiveDate },
   { header: 'GWP', value: r => r.gwp },
+  { header: 'WTN', value: r => r.wtn },
+  { header: 'Revision', value: r => r.revision },
+  { header: 'Effective Date', value: r => r.effectiveDate },
   { header: 'Title', value: r => r.title },
   { header: 'Status', value: r => r.status },
-  { header: 'WTN', value: r => r.wtn },
   { header: 'Weld Process', value: r => r.weldProcess },
   { header: 'Process Type', value: r => r.processType },
   { header: 'Application', value: r => r.application },
@@ -22,7 +21,7 @@ const HEADER_CSV_COLUMNS: CsvColumn<Procedure>[] = [
 const TAIL_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Rules', value: r => r.rules.join('; ') },
   { header: 'Conditions', value: r => r.conditions.join('; ') },
-  { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
+  { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Revision ${rv.revision} (${rv.date}): ${rv.note}`).join('; ') },
 ];
 
 /* One spreadsheet column per section field (an override group gets one per part). The export and
@@ -70,7 +69,7 @@ export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Pro
 }
 
 export const PROCEDURE_HEADER_TEMPLATE_COLUMNS = [
-  'id', 'title', 'status', 'wtn', 'weldProcess', 'gwp', 'wpsRev', 'effectiveDate', 'processType', 'application',
+  'gwp', 'wtn', 'title', 'status', 'weldProcess', 'revision', 'effectiveDate', 'processType', 'application',
 ];
 
 export function downloadProcedureXlsxTemplate(sections: ProcedureSection[]): Promise<void> {

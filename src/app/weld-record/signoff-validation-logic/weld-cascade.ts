@@ -1,5 +1,5 @@
 /* What else changes on a welding step when one of its values changes: GWP clears what it drove, and a
-   WTN clears a filler choice its WPS doesn't allow. Weld Process, PH/IP and NC actuals follow by
+   WTN clears a filler choice it doesn't allow. Weld Process, PH/IP and NC actuals follow by
    their Prepopulated from rules (field-fill.ts, applied after the change); a field prepopulated right
    now is left alone here. */
 import { formInputFields } from '../signoff-forms-logic/form-fields';
@@ -29,8 +29,8 @@ export function selectChangeCascade(stage: WorkflowStage, field: FormField, valu
     setIfPresent('fillerMetalType', ''); setIfPresent('fillerMetalSize', '');
   }
   if (field.key === 'wtn') {
-    /* GWP+WTN identifies one Weld Engineering WPS document; it sets the override values -- never
-       typed directly. Filler Metal Type/Size options narrow to this WPS too, but stay user-selected,
+    /* GWP+WTN identifies one Weld Engineering procedure; it sets the override values -- never
+       typed directly. Filler Metal Type/Size options narrow to this WTN too, but stay user-selected,
        so only a choice no longer valid is cleared. */
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     matchedProc = hasProcedure(gwp, value);

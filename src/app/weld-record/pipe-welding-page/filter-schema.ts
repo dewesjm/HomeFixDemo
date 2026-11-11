@@ -24,7 +24,7 @@ export interface SearchField extends MatchField {
 const job = (key: keyof Job, label: string, group: string, kind: FieldKind = 'text', width = 'min-w-24'): SearchField =>
   ({ key, label, group, kind, width });
 
-/* Joint Details fields under the labels the Joint Details panel uses, plus WPS, NDT, PWHT and the
+/* Joint Details fields under the labels the Joint Details panel uses, plus NDT, PWHT and the
    planning fields. UT and VT read the NDT requirement the way Joint Details shows them. */
 const JOB_FIELDS: SearchField[] = [
   job('xrefid', 'XREFID', 'Job', 'text', 'min-w-16'),
@@ -46,7 +46,6 @@ const JOB_FIELDS: SearchField[] = [
   job('joinToItem', 'Join To Item', 'Welding'),
   job('sequenceNumber', 'Sequence #', 'Welding'),
   job('nInd', 'Nuclear Indicator', 'Welding', 'list'),
-  job('wps', 'WPS', 'Welding'),
   job('engineeringNotes', 'Engineering Notes', 'Welding', 'text', 'min-w-32'),
   job('ndt', 'NDT', 'NDT'),
   job('rtRoot', NDT_LABELS.rtRoot, 'NDT', 'list'),

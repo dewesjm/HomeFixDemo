@@ -6,9 +6,9 @@ const seeded = () => procedureSections().filter(s => SEEDED_SECTION_IDS.includes
 const noOverride = { phMin: '', phMax: '', ipMin: '', ipMax: '', note: '' };
 
 const baseProcedure: Procedure = {
-  id: 'W-999-1', title: 'Test title', status: 'active',
+  title: 'Test title', status: 'active',
   wtn: '05.5-1', weldProcess: 'GTAW',
-  gwp: 'W-999', wpsRev: '0', effectiveDate: '2026-01-01',
+  gwp: 'W-999', revision: '0', effectiveDate: '2026-01-01',
   processType: 'Manual', application: 'Piping',
   extraFields: {
     baseMetal1Type: '02-CS', baseMetal2Type: '02-CS', baseMetalThicknessMin: '0.125"', baseMetalThicknessMax: '0.75"',
@@ -19,7 +19,7 @@ const baseProcedure: Procedure = {
   sectionIds: [...SEEDED_SECTION_IDS],
   rules: ['Rule one.', 'Rule two.', 'Rule three.'],
   conditions: ['Condition one.'],
-  revisionHistory: [{ wpsRev: '1', date: '2026-01-15', note: 'Initial release.', by: 'Test' }],
+  revisionHistory: [{ revision: '1', date: '2026-01-15', note: 'Initial release.', by: 'Test' }],
   createdBy: 'Test', createdAt: '', updatedAt: '',
 };
 
@@ -110,10 +110,10 @@ describe('procedureDocDefinition', () => {
     expect(ulFor(doc, '5. Welder Qualifications')).toEqual(['-']);
   });
 
-  it('includes the procedure id and title as content', () => {
+  it('includes the GWP / WTN and title as content', () => {
     const doc = procedureDocDefinition(baseProcedure, seeded());
     const content = doc.content as any[];
-    expect(content.some(c => c.text === 'W-999-1')).toBeTrue();
+    expect(content.some(c => c.text === 'GWP W-999 / WTN 05.5-1')).toBeTrue();
     expect(content.some(c => c.text === 'Test title')).toBeTrue();
   });
 
@@ -133,7 +133,7 @@ describe('procedureDocDefinition', () => {
     expect(headerContent.text).toContain('Weld Engineering');
     const footerContent = (doc.footer as any)(1, 3) as any;
     expect(JSON.stringify(footerContent)).toContain('Page 1 of 3');
-    expect(JSON.stringify(footerContent)).toContain('Rev 0');
+    expect(JSON.stringify(footerContent)).toContain('Revision 0');
   });
 
   it('splits a section with many fields over several lines, keeping every field once and in order', () => {

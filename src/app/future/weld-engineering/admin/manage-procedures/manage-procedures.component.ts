@@ -11,7 +11,7 @@ import { ConfirmService } from '../../../../shared/confirm.service';
 import { ToastService } from '../../../../shared/toast.service';
 import { downloadCsv } from '../../../../shared/export-csv';
 import {
-  procedures, deleteProcedure, PROCEDURE_STATUS_OPTIONS, type Procedure
+  procedures, deleteProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure
 } from '../../../../data/procedures';
 import { procedureCsvColumns } from '../../procedure-files';
 import { procedureSections } from '../../procedure-sections';
@@ -27,7 +27,7 @@ import { TableToolbarComponent } from '../../../../shared/table-toolbar.componen
   templateUrl: './manage-procedures.component.html'
 })
 export class ManageProceduresComponent {
-  table = new TableState<Procedure>(['id', 'title', 'wtn', 'gwp'], { status: inArray });
+  table = new TableState<Procedure>(['title', 'wtn', 'gwp'], { status: inArray });
   statusOptions = PROCEDURE_STATUS_OPTIONS;
 
   constructor(private router: Router, private confirm: ConfirmService, private toast: ToastService) {
@@ -39,17 +39,17 @@ export class ManageProceduresComponent {
   }
 
   edit(row: Procedure) {
-    this.router.navigate(['/weld-engineering/admin', row.id, 'edit']);
+    this.router.navigate(['/weld-engineering/admin', row.gwp, row.wtn, 'edit']);
   }
 
   deleteRow(row: Procedure) {
     this.confirm.confirm({
       header: 'Delete Procedure',
-      message: `Delete ${row.id}?`,
+      message: `Delete ${procedureName(row)}?`,
       acceptLabel: 'Delete',
       accept: () => {
-        deleteProcedure(row.id);
-        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${row.id} deleted` });
+        deleteProcedure(row.gwp, row.wtn);
+        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${procedureName(row)} deleted` });
       }
     });
   }

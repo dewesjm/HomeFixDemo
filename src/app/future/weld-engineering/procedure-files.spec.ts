@@ -11,17 +11,17 @@ const exported = (p: ReturnType<typeof testProcedure>, list: ProcedureSection[] 
 describe('Procedure CSV export', () => {
   it('has the header columns, one column per section field, then Rules, Conditions and Revision History', () => {
     const headers = procedureCsvColumns(sections()).map(c => c.header);
-    expect(headers.slice(0, 3)).toEqual(['WPS', 'WPS Rev', 'Effective Date']);
+    expect(headers.slice(0, 4)).toEqual(['GWP', 'WTN', 'Revision', 'Effective Date']);
     expect(headers).toContain('Base Metal: Base Metal 1 Type');
     expect(headers).toContain('Preheat & Interpass Temperatures: Override Requirements PH Min');
     expect(headers.slice(-3)).toEqual(['Rules', 'Conditions', 'Revision History']);
-    expect(headers.length).toBe(10 + sectionColumns(sections()).length + 3);
+    expect(headers.length).toBe(9 + sectionColumns(sections()).length + 3);
   });
 
   it('writes pick-many values as labels, override parts in their own columns, and lists joined with "; "', () => {
     const p = testProcedure('CSV-1', {
       rules: ['Rule one', 'Rule two'],
-      revisionHistory: [{ wpsRev: '1', date: '2026-02-01', note: 'Raised PH', by: 'User' }],
+      revisionHistory: [{ revision: '1', date: '2026-02-01', note: 'Raised PH', by: 'User' }],
       extraFields: {
         fillerMetalTypes: ['mil-70s-3', 'mil-80s-50'],
         phMin: '100',
@@ -29,13 +29,13 @@ describe('Procedure CSV export', () => {
       },
     });
     const row = exported(p);
-    expect(row['WPS']).toBe('CSV-1');
+    expect(row['GWP']).toBe('CSV-1');
     expect(row['Filler Metal: Filler Metal Types']).toBe('MIL-70S-3; MIL-80S-50');
     expect(row['Preheat & Interpass Temperatures: PH Min']).toBe('100');
     expect(row['Preheat & Interpass Temperatures: Override Requirements PH Min']).toBe('50');
     expect(row['Preheat & Interpass Temperatures: Override Requirements Note']).toBe('Thin wall');
     expect(row['Rules']).toBe('Rule one; Rule two');
-    expect(row['Revision History']).toBe('Rev 1 (2026-02-01): Raised PH');
+    expect(row['Revision History']).toBe('Revision 1 (2026-02-01): Raised PH');
   });
 
   it('leaves a section\'s columns blank on a procedure without that section ticked', () => {

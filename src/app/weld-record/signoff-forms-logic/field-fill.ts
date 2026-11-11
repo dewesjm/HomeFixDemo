@@ -29,7 +29,7 @@ function filledKeys(stage: WorkflowStage): string[] {
 }
 
 /* the value a fill brings in; undefined leaves the field alone (a step or field with nothing
-   recorded). The WTN always sets its values, blank when GWP+WTN matches no WPS. */
+   recorded). The WTN always sets its values, blank when GWP+WTN matches no procedure. */
 function fillValue(fill: FieldFill, stage: WorkflowStage, stages: WorkflowStage[]): string | undefined {
   if (fill.from === 'wtn') return wtnFillValue(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '', fill.fieldKey);
   if (fill.from === 'thisStep') return stage.inputs[fill.fieldKey] || undefined;

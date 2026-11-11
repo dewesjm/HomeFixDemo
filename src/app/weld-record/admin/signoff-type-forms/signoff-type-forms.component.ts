@@ -374,7 +374,7 @@ export class AdminSignoffTypeFormsComponent {
     return fillRuleText(this.activation(key), id => this.stepLabel(id));
   }
 
-  /* a source's fields: the WTN's WPS values, this step's other fields, or the fields of every Type that step offers */
+  /* a source's fields: the WTN's values, this step's other fields, or the fields of every Type that step offers */
   private fillSourceFields(sourceId: string, e: EditState): { key: string; label: string }[] {
     if (sourceId === WTN) return WTN_FILL_FIELDS.map(f => ({ key: f.key, label: f.label }));
     const acts = sourceId === THIS_STEP ? e.fieldActivations.filter(a => a.key !== e.condKey)

@@ -23,11 +23,10 @@
   <table class="table table-sm">
     <thead>
       <tr>
-        <th appSortHeader class="min-w-24" [table]="table" field="id" label="WPS" filter="text"></th>
-        <th appSortHeader class="w-5r" [table]="table" field="wpsRev" label="Rev" filter="text"></th>
-        <th appSortHeader class="min-w-24" [table]="table" field="effectiveDate" label="Effective Date" filter="text"></th>
-        <th appSortHeader class="min-w-16" [table]="table" field="gwp" label="GWP" filter="text"></th>
+        <th appSortHeader class="min-w-24" [table]="table" field="gwp" label="GWP" filter="text"></th>
         <th appSortHeader class="min-w-24" [table]="table" field="wtn" label="WTN" filter="text"></th>
+        <th appSortHeader class="min-w-20" [table]="table" field="revision" label="Revision" filter="text"></th>
+        <th appSortHeader class="min-w-24" [table]="table" field="effectiveDate" label="Effective Date" filter="text"></th>
         <th appSortHeader class="min-w-32" [table]="table" field="title" label="Title" filter="text"></th>
         <th appSortHeader class="min-w-20" [table]="table" field="status" label="Status"
             [filter]="'select'" [options]="statusOptions"></th>
@@ -44,16 +43,15 @@
       </tr>
     </thead>
     <tbody>
-      @for (row of table.sorted(); track row.id) {
+      @for (row of table.sorted(); track row.gwp + row.wtn) {
         <tr class="cursor-pointer" (click)="openProcedure(row)">
           <td class="font-semibold">
             <svg lucideFileText class="size-3.5 opacity-60" style="display: inline; margin-right: 0.25rem"></svg>
-            {{ row.id }}
+            {{ row.gwp }}
           </td>
-          <td>{{ row.wpsRev }}</td>
+          <td class="font-semibold">{{ row.wtn }}</td>
+          <td>{{ row.revision }}</td>
           <td>{{ row.effectiveDate | appDate }}</td>
-          <td>{{ row.gwp }}</td>
-          <td>{{ row.wtn }}</td>
           <td>{{ row.title }}</td>
           <td class="capitalize">{{ row.status }}</td>
           <td>{{ row.weldProcess }}</td>

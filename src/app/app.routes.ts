@@ -104,12 +104,12 @@ export const routes: Routes = [
 
   /* ── Weld Engineering routes (separate system) ── */
   { path: 'weld-engineering', component: ProcedureLookupComponent, title: 'EWE - Procedure Lookup' },
-  { path: 'weld-engineering/procedures/:id', component: ProcedureDetailComponent, title: 'EWE - Procedure' },
+  { path: 'weld-engineering/procedures/:gwp/:wtn', component: ProcedureDetailComponent, title: 'EWE - Procedure' },
   { path: 'weld-engineering/admin', component: ManageProceduresComponent, title: 'EWE - Manage Procedures' },
   { path: 'weld-engineering/admin/new', component: ProcedureFormComponent, title: 'EWE - New Procedure' },
   { path: 'weld-engineering/admin/import', component: LoadProceduresComponent, title: 'EWE - Load Procedures' },
   { path: 'weld-engineering/admin/sections', component: ProcedureSectionsComponent, title: 'EWE - Procedure Sections' },
-  { path: 'weld-engineering/admin/:id/edit', component: ProcedureFormComponent, title: 'EWE - Edit Procedure' },
+  { path: 'weld-engineering/admin/:gwp/:wtn/edit', component: ProcedureFormComponent, title: 'EWE - Edit Procedure' },
 
   { path: '**', redirectTo: 'pipe-welding' }
 ];

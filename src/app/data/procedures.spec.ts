@@ -3,10 +3,10 @@ import {
 } from './procedures';
 import { SEEDED_SECTION_IDS } from '../future/weld-engineering/procedure-sections';
 
-const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
-  id, title: 'Test procedure', status: 'draft',
+const blankProcedure = (gwp: string, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
+  title: 'Test procedure', status: 'draft',
   wtn, weldProcess: 'GTAW',
-  gwp, wpsRev: '0', effectiveDate: '',
+  gwp, revision: '0', effectiveDate: '',
   processType: '', application: '',
   rules: [], conditions: [],
   extraFields: {},
@@ -16,14 +16,11 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
 });
 
 describe('procedures data layer', () => {
-  it('seeds procedures grouped under GWPs, one row per GWP+WTN pair, with unique ids', () => {
+  it('seeds procedures grouped under GWPs, one row per GWP+WTN pair', () => {
     const all = procedures();
     expect(all.length).toBeGreaterThan(40);
 
-    const ids = new Set(all.map(p => p.id));
-    expect(ids.size).toBe(all.length);
-
-    const seeded = all.filter(p => /^W-\d+-\d+$/.test(p.id));
+    const seeded = all.filter(p => /^W-\d+$/.test(p.gwp));
     expect(seeded.length).toBeGreaterThan(0);
     const gwpWtnPairs = new Set(seeded.map(p => `${p.gwp}::${p.wtn}`));
     expect(gwpWtnPairs.size).toBe(seeded.length);
@@ -34,9 +31,9 @@ describe('procedures data layer', () => {
   });
 
   it('every seeded procedure has rules, conditions and every seeded section ticked', () => {
-    /* scoped to seeded ids (W-###-#) since `procedures` is shared module state across this whole
+    /* scoped to seeded GWPs (W-###) since `procedures` is shared module state across this whole
        spec run -- other specs below add their own TEST-* procedures with intentionally empty lists */
-    const seeded = procedures().filter(p => /^W-\d+-\d+$/.test(p.id));
+    const seeded = procedures().filter(p => /^W-\d+$/.test(p.gwp));
     expect(seeded.length).toBeGreaterThan(0);
     for (const p of seeded) {
       expect(p.rules.length).toBeGreaterThan(0);
@@ -52,35 +49,35 @@ describe('procedures data layer', () => {
     expect(procedures().length).toBe(before + 1);
     expect(created.createdAt).toBeTruthy();
     expect(created.updatedAt).toBeTruthy();
-    expect(getProcedure('TEST-ADD-1')?.title).toBe('Test procedure');
+    expect(getProcedure('TEST-ADD-1', '01.1-1')?.title).toBe('Test procedure');
   });
 
   it('updateProcedure merges fields and bumps updatedAt without touching other procedures', () => {
     addProcedure(blankProcedure('TEST-UPDATE-1'));
-    const before = getProcedure('TEST-UPDATE-1')!;
+    const before = getProcedure('TEST-UPDATE-1', '01.1-1')!;
 
-    updateProcedure('TEST-UPDATE-1', { title: 'Renamed', status: 'active' });
-    const after = getProcedure('TEST-UPDATE-1')!;
+    updateProcedure('TEST-UPDATE-1', '01.1-1', { title: 'Renamed', status: 'active' });
+    const after = getProcedure('TEST-UPDATE-1', '01.1-1')!;
 
     expect(after.title).toBe('Renamed');
     expect(after.status).toBe('active');
-    expect(after.id).toBe('TEST-UPDATE-1');
+    expect(after.gwp).toBe('TEST-UPDATE-1');
     expect(after.createdAt).toBe(before.createdAt);
   });
 
   it('deleteProcedure removes only the targeted procedure', () => {
-    addProcedure(blankProcedure('TEST-DELETE-1'));
-    addProcedure(blankProcedure('TEST-DELETE-2'));
+    addProcedure(blankProcedure('TEST-DELETE', '01.1-1'));
+    addProcedure(blankProcedure('TEST-DELETE', '01.1-2'));
     const before = procedures().length;
 
-    deleteProcedure('TEST-DELETE-1');
+    deleteProcedure('TEST-DELETE', '01.1-1');
 
     expect(procedures().length).toBe(before - 1);
-    expect(getProcedure('TEST-DELETE-1')).toBeUndefined();
-    expect(getProcedure('TEST-DELETE-2')).toBeDefined();
+    expect(getProcedure('TEST-DELETE', '01.1-1')).toBeUndefined();
+    expect(getProcedure('TEST-DELETE', '01.1-2')).toBeDefined();
   });
 
-  it('getProcedure returns undefined for an unknown id', () => {
-    expect(getProcedure('does-not-exist')).toBeUndefined();
+  it('getProcedure returns undefined for an unknown GWP+WTN', () => {
+    expect(getProcedure('W-101', 'does-not-exist')).toBeUndefined();
   });
 });

@@ -7,7 +7,7 @@ import { fillerMetalTypeOptions, gwpDetails } from '../../../future/weld-enginee
 
 const allowedFillers = (gwp: string, wtn: string) => fillerMetalTypeOptions(gwp, wtn).map(o => o.value);
 
-/* a Tack stage on the first seeded WPS that doesn't allow every filler type */
+/* a Tack stage on the first seeded WTN that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
   const proc = procedures().find(p => allowedFillers(p.gwp, p.wtn).length < FILLER_METAL_TYPE_OPTIONS.length)!;
   const tack = buildStages({ ...JOBS[0], nInd: '1' }).find(s => s.id === 'tack')!;
@@ -23,7 +23,7 @@ function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; 
 const ALL_VISIBLE = new Set(['actualPhMin', 'actualPhMax', 'actualIpMin', 'actualIpMax', 'qualificationCheck', 'fillerMetalType', 'fillerMetalSize']);
 
 describe('deviations', () => {
-  it('finds nothing when every value is within the WPS and the user holds the quals', () => {
+  it('finds nothing when every value is within the WTN and the user holds the quals', () => {
     const { stage, quals } = tackOnWps({ actualPhMin: '60', actualPhMax: '200', actualIpMin: '60', actualIpMax: '200' });
     expect(detectDeviations(stage, ALL_VISIBLE, quals)).toEqual([]);
   });
@@ -55,7 +55,7 @@ describe('deviations', () => {
       .toEqual([jasmine.objectContaining({ kind: 'qual', entered: 'Missing CNTRLMTL1 OR CNTRLMTL2' })]);
   });
 
-  it('flags a filler type the WPS does not allow', () => {
+  it('flags a filler type the WTN does not allow', () => {
     const { stage, offListType, quals } = tackOnWps();
     stage.inputs['fillerMetalType'] = offListType;
     const items = detectDeviations(stage, ALL_VISIBLE, quals);
@@ -78,7 +78,7 @@ describe('deviations', () => {
     expect(detectDeviations(stage, new Set(), [])).toEqual([]);
   });
 
-  it('checks condition quals on a welding step with no WPS picked and on an inspection step showing the check', () => {
+  it('checks condition quals on a welding step with no WTN picked and on an inspection step showing the check', () => {
     const job = { ...JOBS[0], nInd: '3' };
     const tack = buildStages(job).find(s => s.id === 'tack')!;
     const req = [{ op: 'all' as const, items: ['CNTRLMTL1'] }];

@@ -29,12 +29,15 @@ export function keepProcedureStores() {
   });
 }
 
-/* a procedure with every seeded section ticked and no section values */
-export function testProcedure(id: string, overrides: Partial<Procedure> = {}): Procedure {
+/* WTN of every test procedure unless overridden */
+export const TEST_WTN = '99.9-1';
+
+/* a procedure (GWP gwp, WTN TEST_WTN) with every seeded section ticked and no section values */
+export function testProcedure(gwp: string, overrides: Partial<Procedure> = {}): Procedure {
   return {
-    id, title: 'Test procedure', status: 'draft',
-    wtn: '99.9-1', weldProcess: 'GTAW',
-    gwp: `GWP-${id}`, wpsRev: '0', effectiveDate: '2026-01-15',
+    title: 'Test procedure', status: 'draft',
+    wtn: TEST_WTN, weldProcess: 'GTAW',
+    gwp, revision: '0', effectiveDate: '2026-01-15',
     processType: 'Manual', application: '',
     rules: [], conditions: [],
     extraFields: {},
@@ -47,4 +50,5 @@ export function testProcedure(id: string, overrides: Partial<Procedure> = {}): P
 
 export const fakeRouter = () => jasmine.createSpyObj('Router', ['navigate']);
 
-export const fakeRoute = (id?: string) => ({ snapshot: { paramMap: convertToParamMap(id ? { id } : {}) } });
+export const fakeRoute = (gwp?: string, wtn?: string) =>
+  ({ snapshot: { paramMap: convertToParamMap(gwp && wtn ? { gwp, wtn } : {}) } });

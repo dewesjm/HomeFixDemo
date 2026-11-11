@@ -4,19 +4,16 @@
    while any procedure shows a value in it, and a field can't move to a section that a procedure
    with a value in it doesn't have ticked. Each block names the procedures to fix first.
    Values left in an unticked section are hidden, so they don't count as in use. */
+import { procedureName } from '../../data/procedures';
 import { isBlank, sectionValue } from './procedure-field-values';
 import { findField, sectionOfField, type ExtraFields, type ProcedureSection } from './procedure-sections';
 
-export interface UsingProcedure { id: string; wtn: string; sectionIds: string[]; extraFields: ExtraFields; }
+export interface UsingProcedure { gwp: string; wtn: string; sectionIds: string[]; extraFields: ExtraFields; }
 
-/* why the change can't be made, and the procedures to change first ('W-101-1 (WTN 05.5-1)') */
+/* why the change can't be made, and the procedures to change first ('GWP W-101 / WTN 05.5-1') */
 export interface UsageBlock { problem: string; procedures: string[]; }
 
-export function procedureName(p: UsingProcedure): string {
-  return `${p.id} (WTN ${p.wtn})`;
-}
-
-const names = (list: UsingProcedure[]) => list.map(procedureName).sort((a, b) => a.localeCompare(b));
+const names = (list: UsingProcedure[]) => list.map(p => procedureName(p)).sort((a, b) => a.localeCompare(b));
 
 /* procedures showing a value in this field (its section ticked and the value not blank) */
 export function proceduresWithValue(key: string, sections: ProcedureSection[], procs: UsingProcedure[]): UsingProcedure[] {

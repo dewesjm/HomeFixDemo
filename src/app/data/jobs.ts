@@ -28,7 +28,6 @@ export interface Job {
   joinToItem: string;        /* join to item */
   sequenceNumber: string;    /* sequence # */
   engineeringNotes: string;  /* engineering notes */
-  wps: string;               /* Welding Procedure Specification */
   ndt: string;               /* Non-Destructive Examination requirement */
   pwht: string;              /* Post Weld Heat Treatment */
   nInd: string;              /* Nuclear Indicator: 1, 2, or 3 */
@@ -110,7 +109,6 @@ export const JOINING_ITEMS = [
   'H12398765-05', 'M84512345-01', 'A55678901-15', 'F19283746-07',
   'D77654321-10', 'P23456789-04', 'S65432109-13', 'H91234567-16',
 ];
-const WPS_POOL = ['WPS-001', 'WPS-002', 'WPS-003', 'WPS-004', 'WPS-005', 'WPS-006'];
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600°C/2hr', 'Required - 620°C/1hr', 'Pending review'];
 export const N_IND_POOL = ['1', '2', '3'];
@@ -246,8 +244,7 @@ function generateJobs(count = 480): Job[] {
       joinToItem: pick(JOINING_ITEMS),
       sequenceNumber: '1',
       engineeringNotes,
-      wps: pick(WPS_POOL),
-      ndt: pick(NDT_POOL),
+      ndt: (rand(), pick(NDT_POOL)),   /* rand(): the draw of a removed field, so later seeded values don't shift */
       pwht: pick(PWHT_POOL),
       nInd: pick(N_IND_POOL),
       rtRoot,

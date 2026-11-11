@@ -29,7 +29,7 @@ export function isEngineeringEntryJoint(job: Job): boolean {
 }
 
 /* one GWP per joint (qualified for its base metals); WTN and filler per step, preferring a WTN
-   whose WPS Welder Qualifications the welder holds. undefined when no GWP is qualified for the base metals. */
+   whose Welder Qualifications the welder holds. undefined when no GWP is qualified for the base metals. */
 function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): { gwp: string; wtn: string } | undefined {
   const gwp = pick(gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? ''), job.id)?.value;
   if (!gwp) return undefined;

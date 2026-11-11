@@ -27,7 +27,7 @@ export const STORAGE = {
   weldPlanningSearchState: 'welding:weld-planning-search-state',
   weldPlanningFilterVariants: 'welding:weld-planning-filter-variants:v2',
   quickLinks: 'welding:quick-links:v1',
-  procedures: 'welding:procedures:v12',
+  procedures: 'welding:procedures:v13',
   procedureSections: 'welding:procedure-sections:v2',
   makeup: 'welding:makeup:v3',
   qualConditions: 'welding:qual-conditions:v6',
@@ -37,7 +37,7 @@ export const STORAGE = {
 } as const;
 
 /* Caches that must be rebuilt when stage definitions change (new app version or new build activated).
-   procedures is included because its seeded GWP/WPS rows are generated from MATERIAL_TYPES
+   procedures is included because its seeded GWP/WTN rows are generated from MATERIAL_TYPES
    (jobs.ts) -- a change to those codes without a matching cache clear leaves the GWP/WTN cascade
    silently blank (see storage-keys history, and the v4->v5 bump this line was added for). */
 const STALE_ON_UPDATE = [STORAGE.workflows, STORAGE.stageTemplates, STORAGE.penetrants, STORAGE.inspectionProcedures, STORAGE.defectCodes, STORAGE.signoffTypeRouting, STORAGE.signoffTypes, STORAGE.attributeCodeExceptions, STORAGE.shipLocations, STORAGE.weldPositions, STORAGE.procedures];

@@ -20,7 +20,7 @@ async function pdfMake() {
 
 export async function downloadProcedurePdf(p: Procedure): Promise<void> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p, procedureSections())).download(`${p.id}.pdf`);
+  pm.createPdf(procedureDocDefinition(p, procedureSections())).download(`${p.gwp}-${p.wtn}.pdf`);
 }
 
 /* data: URL for embedding in an <iframe> preview */

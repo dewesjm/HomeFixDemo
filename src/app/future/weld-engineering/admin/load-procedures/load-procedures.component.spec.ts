@@ -13,10 +13,10 @@ describe('Load Procedures', () => {
   let toast: ToastService;
 
   beforeEach(() => {
-    procedures.set([testProcedure('LP-OLD', {
-      gwp: 'GWP-OLD', wtn: '01.1-1', title: 'Old title',
+    procedures.set([testProcedure('GWP-OLD', {
+      wtn: '01.1-1', title: 'Old title',
       extraFields: { phMin: '100', jointType: 'Groove' }, sectionIds: ['sec-preheat-interpass'],
-      revisionHistory: [{ wpsRev: '0', date: '2026-01-01', note: 'First', by: 'User' }],
+      revisionHistory: [{ revision: '0', date: '2026-01-01', note: 'First', by: 'User' }],
     })]);
     TestBed.configureTestingModule({});
     toast = TestBed.inject(ToastService);
@@ -25,30 +25,32 @@ describe('Load Procedures', () => {
 
   /* load rows the way a parsed file would arrive, by heading */
   const load = (raws: Record<string, string>[]) => (page as any).setRows(raws.map(r => (page as any).fromRaw(r)));
-  const savedIds = () => (JSON.parse(localStorage.getItem(STORAGE.procedures)!) as { id: string }[]).map(p => p.id);
+  const savedGwps = () => (JSON.parse(localStorage.getItem(STORAGE.procedures)!) as { gwp: string }[]).map(p => p.gwp);
 
   it('reads template headings, export headings and older headings', () => {
     load([
-      { id: 'LP-1', gwp: 'G1', wtn: '01.1-1', phMin: '150' },
-      { Procedure: 'LP-2', GWP: 'G2', WTN: '02.2-1', 'Preheat & Interpass Temperatures: PH Min': '175' },
-      { id: 'LP-3', gwp: 'G3', wtn: '03.3-1', 'PH Min': '200', 'Override PH Min': '90' },
+      { gwp: 'G1', wtn: '01.1-1', phMin: '150', revision: '2' },
+      { GWP: 'G2', WTN: '02.2-1', Revision: '3', 'Preheat & Interpass Temperatures: PH Min': '175' },
+      { gwp: 'G3', wtn: '03.3-1', 'PH Min': '200', 'Override PH Min': '90' },
     ]);
     const [a, b, c] = page.rows();
     expect(a.cells['phMin']).toBe('150');
-    expect(b.id).toBe('LP-2');
+    expect(a.revision).toBe('2');
+    expect(b.gwp).toBe('G2');
+    expect(b.revision).toBe('3');
     expect(b.cells['phMin']).toBe('175');
     expect(c.cells['phMin']).toBe('200');
     expect(c.cells['override.phMin']).toBe('90');
     expect(a.status).toBe('draft');
   });
 
-  it('marks rows missing ID, GWP or WTN, with an unknown status, or with unreadable cells', () => {
+  it('marks rows missing GWP or WTN, with an unknown status, or with unreadable cells', () => {
     load([
-      { id: '', gwp: '', wtn: '' },
-      { id: 'LP-1', gwp: 'G', wtn: 'W', status: 'pending', phMin: 'warm' },
-      { id: 'LP-2', gwp: 'G', wtn: 'W2' },
+      { gwp: '', wtn: '' },
+      { gwp: 'G', wtn: 'W', status: 'pending', phMin: 'warm' },
+      { gwp: 'G', wtn: 'W2' },
     ]);
-    expect(page.rows()[0]._errors).toEqual(['Procedure ID required', 'GWP required', 'WTN required']);
+    expect(page.rows()[0]._errors).toEqual(['GWP required', 'WTN required']);
     expect(page.rows()[1]._errors).toEqual(['Invalid status', 'Preheat & Interpass Temperatures: PH Min must be a number or NC.']);
     expect(page.rows()[2]._errors).toEqual([]);
     expect(page.errorCount()).toBe(2);
@@ -56,13 +58,13 @@ describe('Load Procedures', () => {
 
   it('saves only valid rows; a fixed row saves on the next try without saving the others twice', async () => {
     load([
-      { id: 'LP-1', gwp: 'G1', wtn: 'W1', rules: 'One; Two ;', conditions: 'Shop only' },
-      { id: 'LP-2', gwp: 'G2', wtn: 'W2', phMin: 'warm' },
+      { gwp: 'G1', wtn: 'W1', rules: 'One; Two ;', conditions: 'Shop only' },
+      { gwp: 'G2', wtn: 'W2', phMin: 'warm' },
     ]);
     await page.saveAll();
-    expect(savedIds()).toEqual(['LP-OLD', 'LP-1']);
-    expect(getProcedure('LP-1')!.rules).toEqual(['One', 'Two']);
-    expect(getProcedure('LP-1')!.conditions).toEqual(['Shop only']);
+    expect(savedGwps()).toEqual(['GWP-OLD', 'G1']);
+    expect(getProcedure('G1', 'W1')!.rules).toEqual(['One', 'Two']);
+    expect(getProcedure('G1', 'W1')!.conditions).toEqual(['Shop only']);
     expect(page.savedCount()).toBe(1);
     expect(page.errorCount()).toBe(1);
 
@@ -71,24 +73,24 @@ describe('Load Procedures', () => {
     fixed.cells['phMin'] = 'NC';
     page.validateRow(fixed);
     await page.saveAll();
-    expect(getProcedure('LP-2')!.extraFields['phMin']).toBe('NC');
+    expect(getProcedure('G2', 'W2')!.extraFields['phMin']).toBe('NC');
     expect(page.savedCount()).toBe(2);
     expect(page.errorCount()).toBe(0);
     expect(added).toHaveBeenCalledOnceWith(jasmine.objectContaining({ detail: '1 procedures saved' }));
   });
 
   it('gives a new procedure every section and Import as its creator', async () => {
-    load([{ id: 'LP-NEW', gwp: 'G', wtn: 'W' }]);
+    load([{ gwp: 'G', wtn: 'W' }]);
     await page.saveAll();
-    const p = getProcedure('LP-NEW')!;
+    const p = getProcedure('G', 'W')!;
     expect(p.sectionIds).toEqual(procedureSections().map(s => s.id));
     expect(p.createdBy).toBe('Import');
   });
 
   it('updates an existing procedure: blank cells keep its values, and its ticks and revision history stay', async () => {
-    load([{ id: 'LP-OLD', gwp: 'GWP-OLD', wtn: '01.1-1', title: 'New title', phMin: '', jointType: 'Fillet' }]);
+    load([{ gwp: 'GWP-OLD', wtn: '01.1-1', title: 'New title', phMin: '', jointType: 'Fillet' }]);
     await page.saveAll();
-    const p = getProcedure('LP-OLD')!;
+    const p = getProcedure('GWP-OLD', '01.1-1')!;
     expect(procedures().length).toBe(1);
     expect(p.title).toBe('New title');
     expect(p.extraFields['phMin']).toBe('100');

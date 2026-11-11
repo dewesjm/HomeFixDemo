@@ -125,7 +125,7 @@ export interface WeldJoint extends Record<JointExtraKey, string> {
   wallThickness: string;
   materialType1: string;
   materialType2: string;
-  gwp: string;               /* planned GWP, one qualified for Material 1/2; its WPS rows give the search's process/base metal/filler fields */
+  gwp: string;               /* planned GWP, one qualified for Material 1/2; its WTNs give the search's process/base metal/filler fields */
   rtRoot: string;
   rtFinal: string;
   ndtRoot: string;
@@ -231,7 +231,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       rtRoot: ndtRoot === 'UT' ? '' : pickWeighted(RT_ROOT_WEIGHTS),
       rtFinal: ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS),
       ut: pick(NDT_MARKS), vt: pick(NDT_MARKS),
-      notes: i % 4 === 0 ? 'Standard GWP per WPS' : '',
+      notes: i % 4 === 0 ? 'Standard GWP' : '',
       createdBy: 'System',
       createdAt: createdAt.toISOString(),
       updatedAt: createdAt.toISOString(),

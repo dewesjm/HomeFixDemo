@@ -1,7 +1,7 @@
 <div class="table-page-wrap" style="max-width: 72rem">
   <h2 class="section-title">Procedure Sections</h2>
   <p class="text-sm" style="margin-bottom: 1rem">
-    The sections a procedure (WPS) can have, in form and PDF order; each procedure ticks its own.
+    The sections a procedure can have, in form and PDF order; each procedure ticks its own.
     Locked fields are read by Weld Record and Weld Planning, so they can be renamed and moved but not removed.
     Width sets a field's size on the procedure form and PDF; Auto fits it, and the PDF page is about {{ pageWidthPx }} px wide.
   </p>
@@ -204,7 +204,7 @@
       field's Key. Adding a field adds a key there, not a new column. Blank values aren't stored.
     </p>
     @if (example(); as p) {
-      <p class="text-sm" style="margin-bottom: 0.5rem">Example, {{ p.id }}:</p>
+      <p class="text-sm" style="margin-bottom: 0.5rem">Example, GWP {{ p.gwp }} / WTN {{ p.wtn }}:</p>
       <pre class="json-block">{{ p.extraFields | json }}</pre>
     } @else {
       <p class="text-sm">No procedure has section values yet. Fill some in on a procedure and an example shows here.</p>
