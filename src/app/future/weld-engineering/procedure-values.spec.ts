@@ -4,8 +4,11 @@ import {
 import {
   allGwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, procedureDescription,
   fillerMetalTypeOptions, fillerMetalSizeOptions, hasProcedure, procedureOverride, procedureRequiredQuals,
+  wtnFillValue, gwpDetails, wtnDescription,
 } from './procedure-values';
-import { SEEDED_SECTION_IDS, procedureSections } from './procedure-sections';
+import { SEEDED_SECTION_IDS, procedureSections, moveField, renameField, renameSection, shiftField, addSection } from './procedure-sections';
+import { deleteProcedure } from '../../data/procedures';
+import { keepProcedureStores } from './testing/procedure-test-state';
 import { textValue } from './procedure-field-values';
 
 const val = (p: Procedure, key: string) => textValue(p, key, procedureSections());
@@ -23,6 +26,8 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
 });
 
 describe('procedure values', () => {
+  keepProcedureStores();
+
   describe('GWP/WTN cascade', () => {
     it('allGwpOptions lists each distinct GWP once', () => {
       addProcedure(blankProcedure('TEST-CASCADE-1', 'TEST-GWP-CASCADE', '01.1-1'));
@@ -174,6 +179,68 @@ describe('procedure values', () => {
       updateProcedure('TEST-OV-1', { sectionIds: [] });
       expect(procedureOverride('TEST-GWP-OV', '10.1-1')).toBeUndefined();
       expect(hasProcedure('TEST-GWP-OV', 'no-such-wtn')).toBeFalse();
+    });
+  });
+
+  describe('changes made in Weld Engineering reach Weld Record and Weld Planning', () => {
+    const add = (extraFields: Procedure['extraFields']) =>
+      addProcedure({ ...blankProcedure('TEST-CHG-1', 'TEST-GWP-CHG', '20.1-1'), processType: 'Manual', application: 'Piping', extraFields });
+
+    beforeEach(() => add({
+      baseMetal1Type: '02-CS', baseMetal2Type: '02-CS', fillerMetalTypes: ['mil-70s-3'], fillerMetalSizes: ['3/32'],
+      phMin: '100', phMax: '300', requiredQuals: { op: 'all', items: ['WELD412'] },
+    }));
+
+    it('an edited WPS changes the droplists, filled values, required quals and Weld Planning details', () => {
+      updateProcedure('TEST-CHG-1', { weldProcess: 'FCAW', extraFields: {
+        baseMetal1Type: '04-AS', baseMetal2Type: '04-AS', fillerMetalTypes: ['mil-80s-50'], fillerMetalSizes: ['1/8'],
+        phMin: 'NC', phMax: '350', requiredQuals: { op: 'all', items: ['WELD427'] },
+      } });
+      expect(gwpOptionsForMaterials('02-CS', '02-CS').map(o => o.value)).not.toContain('TEST-GWP-CHG');
+      expect(gwpOptionsForMaterials('04-AS', '04-AS').map(o => o.value)).toContain('TEST-GWP-CHG');
+      expect(fillerMetalTypeOptions('TEST-GWP-CHG', '20.1-1').map(o => o.value)).toEqual(['mil-80s-50']);
+      expect(fillerMetalSizeOptions('TEST-GWP-CHG', '20.1-1').map(o => o.value)).toEqual(['1/8']);
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('NC');
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'weldProcess')).toBe('fcaw');
+      expect(procedureRequiredQuals('TEST-GWP-CHG', '20.1-1')).toEqual({ op: 'all', items: ['WELD427'] });
+      expect(gwpDetails('TEST-GWP-CHG')).toEqual(jasmine.objectContaining({ weldProcess: 'FCAW', baseMetal1Type: '04-AS', fillerMetalTypes: ['mil-80s-50'] }));
+    });
+
+    it('unticking a section blanks its values for Weld Record and Weld Planning', () => {
+      updateProcedure('TEST-CHG-1', { sectionIds: SEEDED_SECTION_IDS.filter(id => id !== 'sec-preheat-interpass' && id !== 'sec-filler-metal') });
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('');
+      expect(fillerMetalTypeOptions('TEST-GWP-CHG', '20.1-1')).toEqual([]);
+      expect(gwpDetails('TEST-GWP-CHG')!.fillerMetalTypes).toEqual([]);
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'weldProcess')).toBe('gtaw');
+    });
+
+    it('renaming, reordering or moving locked fields and sections changes nothing other systems read', () => {
+      const before = [wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin'), fillerMetalTypeOptions('TEST-GWP-CHG', '20.1-1'), wtnDescription('TEST-GWP-CHG', '20.1-1')];
+      renameField('phMin', 'Preheat Minimum');
+      renameSection('sec-filler-metal', 'Consumables');
+      shiftField('phMin', 1);
+      moveField('fillerMetalTypes', 'sec-base-metal');
+      expect([wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin'), fillerMetalTypeOptions('TEST-GWP-CHG', '20.1-1'), wtnDescription('TEST-GWP-CHG', '20.1-1')])
+        .toEqual(before);
+    });
+
+    it('a locked field moved into a section the WPS has not ticked reads as blank', () => {
+      addSection('Extra');
+      const extra = procedureSections().at(-1)!;
+      moveField('phMin', extra.id);
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('');
+      updateProcedure('TEST-CHG-1', { sectionIds: [...SEEDED_SECTION_IDS, extra.id] });
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('100');
+    });
+
+    it('a deleted WPS leaves the GWP/WTN droplists and fills nothing', () => {
+      deleteProcedure('TEST-CHG-1');
+      expect(hasProcedure('TEST-GWP-CHG', '20.1-1')).toBeFalse();
+      expect(allGwpOptions().map(o => o.value)).not.toContain('TEST-GWP-CHG');
+      expect(wtnOptionsForGwp('TEST-GWP-CHG')).toEqual([]);
+      expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('');
+      expect(procedureRequiredQuals('TEST-GWP-CHG', '20.1-1')).toEqual({ op: 'all', items: [] });
+      expect(gwpDetails('TEST-GWP-CHG')).toBeUndefined();
     });
   });
 });
