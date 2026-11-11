@@ -50,12 +50,13 @@ const PROCEDURE_CSV_COLUMNS: CsvColumn<Procedure>[] = [
   { header: 'Revision History', value: r => r.revisionHistory.map(rv => `Rev ${rv.wpsRev} (${rv.date}): ${rv.note}`).join('; ') },
 ];
 
-/* the columns above, then one per added-section field */
+/* the columns above, then one per added-section field (blank on a procedure without that section) */
 export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Procedure>[] {
   return [
     ...PROCEDURE_CSV_COLUMNS,
     ...sections.flatMap(s => s.fields.map(f => ({
-      header: `${s.name}: ${f.label}`, value: (r: Procedure) => extraValueText(r.extraFields[f.key]),
+      header: `${s.name}: ${f.label}`,
+      value: (r: Procedure) => r.addedSectionIds.includes(s.id) ? extraValueText(r.extraFields[f.key]) : '',
     }))),
   ];
 }

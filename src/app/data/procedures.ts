@@ -10,7 +10,7 @@ import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { getWeldPositions } from './weld-positions';
 import { MATERIAL_TYPES } from './jobs';
-import { type ExtraFields } from '../future/weld-engineering/procedure-sections';
+import { type ExtraFields, procedureSections } from '../future/weld-engineering/procedure-sections';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -128,6 +128,9 @@ export interface Procedure {
   conditions: string[];
   /* values for the fields of sections added after 11 (future/weld-engineering/procedure-sections.ts), keyed by field key */
   extraFields: ExtraFields;
+  /* which added sections this procedure has (ProcedureSection.id), picked on its edit form; values of
+     sections not picked stay in extraFields, hidden */
+  addedSectionIds: string[];
   /* required whenever a change is saved to a procedure that is (or was) Active -- see
      requiresRevisionNote() in procedure-form.component.ts. Shown at the top of the PDF as "Revision Record". */
   revisionHistory: RevisionNote[];
@@ -300,6 +303,7 @@ function generateProcedures(): Procedure[] {
           rules: pickSome(RULE_POOL, rand, 2, 4),
           conditions: pickSome(CONDITION_POOL, rand, 1, 3),
           extraFields: {},
+          addedSectionIds: [],
           revisionHistory,
           createdBy: 'System',
           createdAt: createdAt.toISOString(),
@@ -317,11 +321,21 @@ const LS_KEY = STORAGE.procedures;
 function loadProcedures(): Procedure[] {
   try {
     const raw = localStorage.getItem(LS_KEY);
-    if (raw) return JSON.parse(raw) as Procedure[];
+    if (raw) return withAddedSectionIds(JSON.parse(raw) as Procedure[]);
   } catch { /* ignore */ }
   const seededList = generateProcedures();
   persistProcedures(seededList);
   return seededList;
+}
+
+/* migration (temporary, see docs/Tasks.md Cleanup): procedures saved before addedSectionIds existed
+   showed every added section, so they keep every section there is now */
+function withAddedSectionIds(list: Procedure[]): Procedure[] {
+  if (list.every(p => Array.isArray(p.addedSectionIds))) return list;
+  const allIds = procedureSections().map(s => s.id);
+  const next = list.map(p => Array.isArray(p.addedSectionIds) ? p : { ...p, addedSectionIds: [...allIds] });
+  persistProcedures(next);
+  return next;
 }
 
 function persistProcedures(list: Procedure[]) {

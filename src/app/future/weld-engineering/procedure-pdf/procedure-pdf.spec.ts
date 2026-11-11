@@ -21,6 +21,7 @@ const baseProcedure: Procedure = {
   rules: ['Rule one.', 'Rule two.', 'Rule three.'],
   conditions: ['Condition one.'],
   extraFields: {},
+  addedSectionIds: [],
   revisionHistory: [{ wpsRev: '1', date: '2026-01-15', note: 'Initial release.', by: 'Test' }],
   createdBy: 'Test', createdAt: '', updatedAt: '',
 };
@@ -58,7 +59,9 @@ describe('procedureDocDefinition', () => {
       ] },
       { id: 'b', name: 'Empty One', fields: [] },
     ];
-    const withExtras: Procedure = { ...baseProcedure, extraFields: { shell_type: 'Hard', taco_count: { min: 2, max: 4 } } };
+    const withExtras: Procedure = {
+      ...baseProcedure, addedSectionIds: ['a', 'b'], extraFields: { shell_type: 'Hard', taco_count: { min: 2, max: 4 } }
+    };
     const doc = procedureDocDefinition(withExtras, sections);
     const headers = sectionHeaders(doc);
     expect(headers.slice(headers.indexOf('11. Heat Treatment') + 1, headers.indexOf('Rules')))
@@ -66,6 +69,15 @@ describe('procedureDocDefinition', () => {
     const content = doc.content as any[];
     const table = content[content.findIndex(c => c?.text === '12. Taco Tuesday') + 1].table;
     expect(table.body[1]).toEqual(['Hard', '2 - 4']);
+  });
+
+  it('prints only the added sections the procedure has, keeping their numbers', () => {
+    const sections: ProcedureSection[] = [
+      { id: 'a', name: 'First Added', fields: [] },
+      { id: 'b', name: 'Second Added', fields: [] },
+    ];
+    const headers = sectionHeaders(procedureDocDefinition({ ...baseProcedure, addedSectionIds: ['b'] }, sections));
+    expect(headers.slice(headers.indexOf('11. Heat Treatment') + 1, headers.indexOf('Rules'))).toEqual(['13. Second Added']);
   });
 
   it('includes Override Requirements when any override field is set', () => {

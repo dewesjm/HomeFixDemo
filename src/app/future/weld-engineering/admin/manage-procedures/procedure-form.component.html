@@ -307,9 +307,22 @@
     </div>
   </div>
 
-  <!-- sections added in Admin > Procedure Sections; values go in form.extraFields -->
-  @for (s of addedSections(); track s.id; let i = $index) {
-    <h3 class="form-section-title">{{ sectionNumber(i) }}. {{ s.name }}</h3>
+  <!-- sections added in Admin > Procedure Sections: tick the ones this procedure has; values go in form.extraFields -->
+  @if (addedSections().length) {
+    <h3 class="form-section-title">Added Sections</h3>
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
+      @for (s of addedSections(); track s.id; let i = $index) {
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" class="checkbox checkbox-sm"
+                 [checked]="form.addedSectionIds.includes(s.id)" (change)="toggleSection(s.id)" />
+          {{ sectionNumber(i) }}. {{ s.name }}
+        </label>
+      }
+    </div>
+  }
+  @for (on of sectionsOn(); track on.section.id) {
+    @let s = on.section;
+    <h3 class="form-section-title">{{ on.number }}. {{ s.name }}</h3>
     @if (!s.fields.length) {
       <p class="text-sm" style="color: var(--app-text-muted)">This section has no fields yet. Add them in Admin &gt; Procedure Sections.</p>
     }

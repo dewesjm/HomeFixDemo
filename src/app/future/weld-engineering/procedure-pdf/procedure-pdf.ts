@@ -4,13 +4,13 @@
 
    Layout: Revision Record, then 1. Base Metal, 2. Joint Design, 3. Welding Position, 4. Filler Metal,
    5. Welder Qualifications, 6. Preheat & Interpass Temperatures, 7. Equipment, 8. Gas, 9. Heat Input,
-   10. Parameters, 11. Heat Treatment, then any sections added in Admin > Procedure Sections (12 on,
+   10. Parameters, 11. Heat Treatment, then the sections added in Admin > Procedure Sections that this procedure has (12 on,
    weld-engineering/procedure-sections.ts) -- followed by the procedure's WTNs/Rules/Conditions. Every page
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
 import { hasOverride } from '../procedure-options';
-import { extraValueText, sectionNumber, type ProcedureSection } from '../procedure-sections';
+import { extraValueText, sectionsOnProcedure, type ProcedureSection } from '../procedure-sections';
 import { formatDate } from '../../../shared/date-format';
 
 function fillerMetalTypeLabels(values: string[]): string {
@@ -78,11 +78,12 @@ function revisionRecord(p: Procedure): Content[] {
   ];
 }
 
-/* an added section with no fields yet prints its heading only */
+/* only the added sections this procedure has, keeping their fixed numbers; one with no fields yet
+   prints its heading only */
 function addedSections(p: Procedure, sections: ProcedureSection[]): Content[] {
-  return sections.flatMap((s, i) => s.fields.length
-    ? numberedSection(sectionNumber(i), s.name, s.fields.map(f => [f.label, extraValueText(p.extraFields[f.key])]))
-    : [{ text: `${sectionNumber(i)}. ${s.name}`, style: 'sectionHeader' }]);
+  return sectionsOnProcedure(p.addedSectionIds, sections).flatMap(({ section: s, number }) => s.fields.length
+    ? numberedSection(number, s.name, s.fields.map(f => [f.label, extraValueText(p.extraFields[f.key])]))
+    : [{ text: `${number}. ${s.name}`, style: 'sectionHeader' }]);
 }
 
 /* quals = the WTN's requirement from Admin > Qualifications (wtnRequirementText()), '' when none */

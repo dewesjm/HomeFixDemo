@@ -4,7 +4,9 @@
    definitions live here; each procedure keeps its values for every added field in one bag,
    Procedure.extraFields, keyed by ExtraField.key. A new field is a new key in that bag, never a new
    property on Procedure -- in a real database the definitions are two tables and the bag is one
-   JSON column on the procedure row. Added sections and fields can only be added, not changed or removed. */
+   JSON column on the procedure row. Added sections and fields can only be added, not changed or removed.
+   Each procedure picks which added sections it has (Procedure.addedSectionIds, set on its edit form);
+   a new section starts on none. */
 import { signal } from '@angular/core';
 import { STORAGE } from '../../data/storage-keys';
 
@@ -43,6 +45,16 @@ export const BUILT_IN_SECTIONS = [
 
 export function sectionNumber(addedIndex: number): number {
   return BUILT_IN_SECTIONS.length + addedIndex + 1;
+}
+
+/* the added sections on one procedure, in list order, each with its fixed number: a section keeps
+   its number on every procedure, so a WPS without section 12 goes from 11 to 13 */
+export function sectionsOnProcedure(
+  addedSectionIds: string[], sections: ProcedureSection[]
+): { section: ProcedureSection; number: number }[] {
+  return sections
+    .map((section, i) => ({ section, number: sectionNumber(i) }))
+    .filter(s => addedSectionIds.includes(s.section.id));
 }
 
 /* ── Validation (Admin > Procedure Sections) ── */

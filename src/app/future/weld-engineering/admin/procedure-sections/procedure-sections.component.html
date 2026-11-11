@@ -2,7 +2,8 @@
   <h2 class="section-title">Procedure Sections</h2>
   <p class="text-sm" style="margin-bottom: 1rem">
     Sections 1-11 are built in. Sections you add here come after them, numbered from 12, on the procedure
-    form and the PDF. Added sections and fields can't be renamed or removed yet.
+    form and the PDF. A new section is on no procedures until you tick it on a procedure's edit form. Added
+    sections and fields can't be renamed or removed yet.
   </p>
 
   <h3 class="form-section-title">Built-in Sections</h3>
@@ -14,6 +15,7 @@
 
   @for (s of sections(); track s.id; let i = $index) {
     <h3 class="form-section-title">{{ sectionNumber(i) }}. {{ s.name }}</h3>
+    <p class="text-sm">On {{ procedureCount(s.id) }} of {{ procedureTotal() }} procedures.</p>
     <div class="overflow-x-auto">
       <table class="table table-sm">
         <thead>

@@ -24,6 +24,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [],
   extraFields: {},
+  addedSectionIds: [],
   revisionHistory: [],
   createdBy: 'Test',
 });

@@ -1,5 +1,5 @@
 /* Weld Engineering Admin - Procedure Sections: add sections after the built-in 1-11, and fields to
-   them. Definitions and rules are in weld-engineering/procedure-sections.ts. */
+   them. Which procedures have a section is ticked on each procedure's edit form. Definitions and rules are in weld-engineering/procedure-sections.ts. */
 import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -34,6 +34,13 @@ export class ProcedureSectionsComponent {
 
   /* first procedure with any added-section values, for the "How it's stored" example */
   example = computed(() => procedures().find(p => Object.keys(p.extraFields).length) ?? null);
+
+  procedureTotal = computed(() => procedures().length);
+
+  /* how many procedures have this section ticked */
+  procedureCount(sectionId: string): number {
+    return procedures().filter(p => p.addedSectionIds.includes(sectionId)).length;
+  }
 
   draftFor(sectionId: string): FieldDraftForm {
     return this.drafts[sectionId] ??= { label: '', type: 'text', required: false, optionsText: '' };

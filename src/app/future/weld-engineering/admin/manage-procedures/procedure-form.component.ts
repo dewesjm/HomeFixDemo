@@ -15,7 +15,8 @@ import {
 } from '../../../../data/procedures';
 import { wtnRequirementText } from '../../../../weld-record/qualifications-logic/qual-conditions';
 import {
-  procedureSections, sectionNumber, withAllFields, extraFieldProblems, compactExtras, type RangeValue
+  procedureSections, sectionNumber, sectionsOnProcedure, withAllFields, extraFieldProblems, compactExtras,
+  type RangeValue
 } from '../../procedure-sections';
 import { AppDatePipe } from '../../../../shared/date-format';
 
@@ -37,6 +38,7 @@ const EMPTY_FORM: Procedure = {
   pwhtTemp: '', pwhtTime: '',
   rules: [], conditions: [],
   extraFields: {},
+  addedSectionIds: [],
   revisionHistory: [],
   createdBy: 'User', createdAt: '', updatedAt: ''
 };
@@ -88,7 +90,7 @@ export class ProcedureFormComponent implements OnInit {
       if (existing) {
         this.form = {
           ...existing, rules: [...existing.rules], conditions: [...existing.conditions],
-          revisionHistory: [...existing.revisionHistory],
+          revisionHistory: [...existing.revisionHistory], addedSectionIds: [...existing.addedSectionIds],
           fillerMetalTypes: [...existing.fillerMetalTypes], fillerMetalSizes: [...existing.fillerMetalSizes]
         };
         this.wasActive = existing.status === 'active';
@@ -97,6 +99,18 @@ export class ProcedureFormComponent implements OnInit {
       }
     }
     this.form.extraFields = withAllFields(this.addedSections(), this.form.extraFields);
+  }
+
+  /* the added sections ticked for this procedure, with their fixed numbers */
+  sectionsOn() {
+    return sectionsOnProcedure(this.form.addedSectionIds, this.addedSections());
+  }
+
+  /* unticking hides the section; its values stay in extraFields */
+  toggleSection(id: string) {
+    this.form.addedSectionIds = this.form.addedSectionIds.includes(id)
+      ? this.form.addedSectionIds.filter(s => s !== id)
+      : [...this.form.addedSectionIds, id];
   }
 
   /* a range field's {min, max}, for binding its two inputs */
@@ -162,7 +176,7 @@ export class ProcedureFormComponent implements OnInit {
       });
       return;
     }
-    const extraProblems = extraFieldProblems(this.addedSections(), this.form.extraFields);
+    const extraProblems = extraFieldProblems(this.sectionsOn().map(s => s.section), this.form.extraFields);
     if (extraProblems.length) {
       this.toast.add({ severity: 'warn', summary: 'Required fields', detail: extraProblems.join(' ') });
       return;

@@ -1,6 +1,6 @@
 import {
   fieldKey, sectionNameProblem, fieldDraftProblem, withAllFields, compactExtras, extraFieldProblems,
-  extraValueText, sectionNumber, type ProcedureSection
+  extraValueText, sectionNumber, sectionsOnProcedure, type ProcedureSection
 } from './procedure-sections';
 
 const taco: ProcedureSection = {
@@ -15,6 +15,12 @@ describe('procedure sections', () => {
   it('numbers added sections after the 11 built-in ones', () => {
     expect(sectionNumber(0)).toBe(12);
     expect(sectionNumber(2)).toBe(14);
+  });
+
+  it('keeps each section at its fixed number when a procedure skips earlier ones', () => {
+    const two: ProcedureSection = { id: 's2', name: 'Second', fields: [] };
+    expect(sectionsOnProcedure(['s2'], [taco, two]).map(s => [s.section.id, s.number])).toEqual([['s2', 13]]);
+    expect(sectionsOnProcedure([], [taco, two])).toEqual([]);
   });
 
   it('makes a field key from the label, unique across taken keys', () => {
