@@ -1,4 +1,5 @@
 /* Sortable table header cell with an optional per-column filter (text box or multiselect).
+   Both filter kinds share one look (small bordered box, filter icon, clear X) and hide on phones.
    Usage: <th appSortHeader [table]="table" field="joint" label="Joint" filter="text" class="min-w-20"></th>
    With [clickToFilter]="true" the filter box stays hidden until the heading's funnel is clicked;
    the funnel is highlighted while the column is filtering. */
@@ -45,7 +46,7 @@ import { TableState } from './table-state';
             }
           </label>
         } @else {
-          <app-multiselect-dropdown class="block w-full min-w-0" [options]="options()"
+          <app-multiselect-dropdown class="block w-full min-w-0 col-filter-mobile" [columnFilter]="true" [options]="options()"
             [selected]="listFilter()"
             (selectedChange)="table().setColumnFilter(field(), $event)" />
         }
