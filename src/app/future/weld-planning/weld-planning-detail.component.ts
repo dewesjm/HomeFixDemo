@@ -9,7 +9,7 @@ import {
   type WeldJoint, type JointExtraField, type JointExtraGroup
 } from '../../data/weld-planning';
 import { formatDateTime } from '../../shared/date-format';
-import { gwpDescription } from '../weld-engineering/procedure-options';
+import { gwpDescription } from '../weld-engineering/procedure-values';
 
 @Component({
   selector: 'app-weld-planning-detail',

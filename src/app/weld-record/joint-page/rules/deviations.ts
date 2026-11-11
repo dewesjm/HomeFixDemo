@@ -11,8 +11,8 @@ import { ACTUAL_REQUIREMENT } from '../../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../../signoff-forms-logic/field-fill';
 import { labelFor } from '../../signoff-forms-logic/stage-display';
 import { QualGroup, missingText, requirementText } from '../../qualifications-logic/qual-requirements';
-import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
-import { fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure, gwpOptionsForMaterials } from '../../../future/weld-engineering/procedure-options';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
+import { fillerMetalTypeOptions, fillerMetalSizeOptions, gwpOptionsForMaterials, hasProcedure } from '../../../future/weld-engineering/procedure-values';
 
 export interface BaseMetals { type1: string; type2: string }
 
@@ -65,7 +65,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
       });
     }
   }
-  const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
+  const wtn = stage.inputs['wtn'] ?? '';
   /* the check runs when the step shows it */
   if (visibleKeys.has('qualificationCheck')) {
     const missing = requiredQuals.map(g => missingText(g, heldQuals)).filter(Boolean);
@@ -74,12 +74,12 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
       items.push({ kind: 'qual', label: 'Qualification Check', entered: `Missing ${missing.join(', ')}`, required: required.join(', ') });
     }
   }
-  if (!proc || stage.engineeringEntry) return items;
+  if (!hasProcedure(gwp, wtn) || stage.engineeringEntry) return items;
   for (const key of FILLER_KEYS) {
     const value = stage.inputs[key] ?? '';
     const f = formInputFields(stage).find(ff => ff.key === key);
     if (!value || !f || !visibleKeys.has(key) || isFilledByRule(stage, key)) continue;
-    const allowed = key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc);
+    const allowed = key === 'fillerMetalType' ? fillerMetalTypeOptions(gwp, wtn) : fillerMetalSizeOptions(gwp, wtn);
     if (allowed.some(o => o.value === value)) continue;
     const all = key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS;
     items.push({

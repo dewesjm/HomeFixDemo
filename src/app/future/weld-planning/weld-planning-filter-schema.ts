@@ -7,7 +7,7 @@ import {
   NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, type WeldJoint
 } from '../../data/weld-planning';
 import { FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { gwpDetails } from '../weld-engineering/procedure-options';
+import { gwpDetails } from '../weld-engineering/procedure-values';
 
 export interface SearchField extends MatchField {
   key: string;            /* row key: a WeldJoint field or one of the GWP's procedure fields */

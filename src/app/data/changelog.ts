@@ -18,7 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Weld Engineering Procedure Lookup: every column can be filtered. Weld Process, Process Type, Base Metal 1 Type, Base Metal 2 Type and Filler Metal Types have droplists; Rev and Effective Date have text boxes. Filler Metal Types now show as MIL-70S-3 rather than mil-70s-3.',
       "Weld Engineering: each procedure's edit form has Added Sections checkboxes to pick which added sections (12 on) it has. Only ticked sections show on its form, PDF and CSV export, and only they are checked for required fields. A section keeps its number on every procedure. A new section starts on no procedures; procedures saved before today keep every section added so far. Admin > Procedure Sections shows how many procedures each section is on.",
       'Weld Planning Advanced Search can search on GWP, Welding Process, Process Type, Base Metal 1 Type, Base Metal 2 Type and Filler Metal Type, all taken from the joint\'s GWP. The Standard view opens with these six in the filter bar.'],
-    changed: ['Refactored the Pipe Welding filter bar and column dragging into shared pieces, now also used by Weld Planning Advanced Search.'],
+    changed: ['Refactored the Pipe Welding filter bar and column dragging into shared pieces, now also used by Weld Planning Advanced Search; Weld Record and Weld Planning now read procedure values through one Weld Engineering lookup.'],
   },
   {
     date: '2026-11-10',

@@ -16,8 +16,8 @@ import { definedFields } from '../signoff-forms-logic/shown-fields';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
-import { getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
-import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../future/weld-engineering/procedure-options';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, procedureOverride, fillerMetalTypeOptions, fillerMetalSizeOptions } from '../../future/weld-engineering/procedure-values';
 
 /* what the field rules need besides the step itself */
 export interface StageFormContext {
@@ -44,8 +44,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
   const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);
   return definedFields(stage, condCtx).map(f => stageFieldOptions(f, stage, ctx)).filter(f => {
     if (!f.key.startsWith('override')) return true;
-    const proc = getProcedureByGwpWtn(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
-    return SHOW_WELD_OVERRIDES && !!proc && procedureHasOverride(proc);
+    return SHOW_WELD_OVERRIDES && !!procedureOverride(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
   });
 }
 
@@ -74,7 +73,7 @@ function withSavedValue(offered: Option[], saved: string, all: Option[] = []): O
 
 /* A field with its runtime options and label. GWP is filtered to the GWPs qualified for this job's
    base metal pair (Material Type 1/2), WTN to the selected GWP, and Filler Metal Type/Size to the
-   Procedure that GWP+WTN resolves to. */
+   WPS that GWP+WTN matches. */
 export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: StageFormContext): FormField {
   const job = ctx.job;
   const lists = adminLists(f, stage);
@@ -109,11 +108,8 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
     if (isFilledByRule(stage, f.key) || ctx.offListUnlocked) {
       return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
     }
-    const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', stage.inputs?.['wtn'] ?? '');
-    return {
-      ...f,
-      options: f.key === 'fillerMetalType' ? fillerMetalTypeOptionsForProcedure(proc) : fillerMetalSizeOptionsForProcedure(proc)
-    };
+    const wtn = stage.inputs?.['wtn'] ?? '';
+    return { ...f, options: f.key === 'fillerMetalType' ? fillerMetalTypeOptions(gwp, wtn) : fillerMetalSizeOptions(gwp, wtn) };
   }
   return f;
 }

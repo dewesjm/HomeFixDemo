@@ -1,10 +1,10 @@
 import {
-  procedures, addProcedure, updateProcedure, getProcedure, getProcedureByGwpWtn, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
+  procedures, addProcedure, updateProcedure, getProcedureByGwpWtn, BASE_METAL_1_TYPES, BASE_METAL_2_TYPES, type Procedure
 } from '../../data/procedures';
 import {
   hasOverride, allGwpOptions, gwpOptionsForMaterials, wtnOptionsForGwp, procedureDescription,
-  fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure,
-} from './procedure-options';
+  fillerMetalTypeOptions, fillerMetalSizeOptions, hasProcedure, procedureOverride,
+} from './procedure-values';
 
 const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, 'createdAt' | 'updatedAt'> => ({
   id, title: 'Test procedure', status: 'draft',
@@ -29,7 +29,7 @@ const blankProcedure = (id: string, gwp = id, wtn = '01.1-1'): Omit<Procedure, '
   createdBy: 'Test',
 });
 
-describe('procedure options', () => {
+describe('procedure values', () => {
   describe('GWP/WTN cascade', () => {
     it('allGwpOptions lists each distinct GWP once', () => {
       addProcedure(blankProcedure('TEST-CASCADE-1', 'TEST-GWP-CASCADE', '01.1-1'));
@@ -130,23 +130,37 @@ describe('procedure options', () => {
   });
 
   describe('Filler Metal Type/Size cascade', () => {
-    it('fillerMetalTypeOptionsForProcedure only returns that WPS\'s valid types', () => {
-      const p = addProcedure(blankProcedure('TEST-FILLER-1', 'TEST-GWP-FILLER', '08.8-1'));
+    it('fillerMetalTypeOptions only returns that WPS\'s valid types', () => {
+      addProcedure(blankProcedure('TEST-FILLER-1', 'TEST-GWP-FILLER', '08.8-1'));
       updateProcedure('TEST-FILLER-1', { fillerMetalTypes: ['mil-70s-3', 'mil-80s-50'] });
-      const opts = fillerMetalTypeOptionsForProcedure(getProcedure(p.id)).map(o => o.value);
+      const opts = fillerMetalTypeOptions('TEST-GWP-FILLER', '08.8-1').map(o => o.value);
       expect(opts).toEqual(['mil-70s-3', 'mil-80s-50']);
     });
 
-    it('fillerMetalSizeOptionsForProcedure only returns that WPS\'s valid sizes', () => {
-      const p = addProcedure(blankProcedure('TEST-FILLER-2', 'TEST-GWP-FILLER-2', '09.9-1'));
+    it('fillerMetalSizeOptions only returns that WPS\'s valid sizes', () => {
+      addProcedure(blankProcedure('TEST-FILLER-2', 'TEST-GWP-FILLER-2', '09.9-1'));
       updateProcedure('TEST-FILLER-2', { fillerMetalSizes: ['1/16', '3/32'] });
-      const opts = fillerMetalSizeOptionsForProcedure(getProcedure(p.id)).map(o => o.value);
+      const opts = fillerMetalSizeOptions('TEST-GWP-FILLER-2', '09.9-1').map(o => o.value);
       expect(opts).toEqual(['1/16', '3/32']);
     });
 
-    it('returns an empty list for an undefined procedure', () => {
-      expect(fillerMetalTypeOptionsForProcedure(undefined)).toEqual([]);
-      expect(fillerMetalSizeOptionsForProcedure(undefined)).toEqual([]);
+    it('returns an empty list when the GWP+WTN matches no WPS', () => {
+      expect(fillerMetalTypeOptions('NO-SUCH-GWP', '01.1-1')).toEqual([]);
+      expect(fillerMetalSizeOptions('NO-SUCH-GWP', '01.1-1')).toEqual([]);
+    });
+  });
+
+  describe('Override values', () => {
+    it('procedureOverride gives a WPS\'s override values, or undefined when it has none', () => {
+      addProcedure(blankProcedure('TEST-OV-1', 'TEST-GWP-OV', '10.1-1'));
+      expect(hasProcedure('TEST-GWP-OV', '10.1-1')).toBeTrue();
+      expect(procedureOverride('TEST-GWP-OV', '10.1-1')).toBeUndefined();
+      updateProcedure('TEST-OV-1', { overridePhMin: '50', overrideNote: 'Thin wall' });
+      expect(procedureOverride('TEST-GWP-OV', '10.1-1')).toEqual({
+        overridePhMin: '50', overridePhMax: '', overrideIpMin: '', overrideIpMax: '', overrideNote: 'Thin wall',
+      });
+      expect(procedureOverride('TEST-GWP-OV', 'no-such-wtn')).toBeUndefined();
+      expect(hasProcedure('TEST-GWP-OV', 'no-such-wtn')).toBeFalse();
     });
   });
 });

@@ -7,8 +7,7 @@ import { FormField } from '../catalogs/field-catalog';
 import { WorkflowStage } from '../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
-import { getProcedureByGwpWtn } from '../../data/procedures';
-import { hasOverride as procedureHasOverride, fillerMetalTypeOptionsForProcedure, fillerMetalSizeOptionsForProcedure } from '../../future/weld-engineering/procedure-options';
+import { hasProcedure, procedureOverride, fillerMetalTypeOptions, fillerMetalSizeOptions } from '../../future/weld-engineering/procedure-values';
 
 export interface FieldChange { field: FormField; value: string }
 
@@ -33,21 +32,21 @@ export function selectChangeCascade(stage: WorkflowStage, field: FormField, valu
     /* GWP+WTN identifies one Weld Engineering WPS document; it sets the override values -- never
        typed directly. Filler Metal Type/Size options narrow to this WPS too, but stay user-selected,
        so only a choice no longer valid is cleared. */
-    const proc = getProcedureByGwpWtn(stage.inputs?.['weldProcedure'] ?? '', value);
-    matchedProc = !!proc;
-    const hasOv = SHOW_WELD_OVERRIDES && !!proc && procedureHasOverride(proc);
-    setIfPresent('overridePhMin', hasOv ? proc!.overridePhMin : '');
-    setIfPresent('overridePhMax', hasOv ? proc!.overridePhMax : '');
-    setIfPresent('overrideIpMin', hasOv ? proc!.overrideIpMin : '');
-    setIfPresent('overrideIpMax', hasOv ? proc!.overrideIpMax : '');
-    setIfPresent('overrideNote', hasOv ? proc!.overrideNote : '');
+    const gwp = stage.inputs?.['weldProcedure'] ?? '';
+    matchedProc = hasProcedure(gwp, value);
+    const ov = SHOW_WELD_OVERRIDES ? procedureOverride(gwp, value) : undefined;
+    setIfPresent('overridePhMin', ov?.overridePhMin ?? '');
+    setIfPresent('overridePhMax', ov?.overridePhMax ?? '');
+    setIfPresent('overrideIpMin', ov?.overrideIpMin ?? '');
+    setIfPresent('overrideIpMax', ov?.overrideIpMax ?? '');
+    setIfPresent('overrideNote', ov?.overrideNote ?? '');
     if (!offListUnlocked) {
       const currentType = stage.inputs['fillerMetalType'] ?? '';
       const currentSize = stage.inputs['fillerMetalSize'] ?? '';
-      if (currentType && !fillerMetalTypeOptionsForProcedure(proc).some(o => o.value === currentType)) {
+      if (currentType && !fillerMetalTypeOptions(gwp, value).some(o => o.value === currentType)) {
         setIfPresent('fillerMetalType', '');
       }
-      if (currentSize && !fillerMetalSizeOptionsForProcedure(proc).some(o => o.value === currentSize)) {
+      if (currentSize && !fillerMetalSizeOptions(gwp, value).some(o => o.value === currentSize)) {
         setIfPresent('fillerMetalSize', '');
       }
     }

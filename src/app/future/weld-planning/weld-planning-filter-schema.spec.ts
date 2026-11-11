@@ -1,5 +1,5 @@
 import { weldJoints } from '../../data/weld-planning';
-import { gwpDetails } from '../weld-engineering/procedure-options';
+import { gwpDetails } from '../weld-engineering/procedure-values';
 import { Condition, applyFilters } from '../../shared/filter-engine';
 import { SEARCH_FIELDS, buildRow, standardLayout } from './weld-planning-filter-schema';
 

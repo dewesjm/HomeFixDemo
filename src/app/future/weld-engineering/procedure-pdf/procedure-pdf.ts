@@ -9,7 +9,7 @@
    carries a header reminding the reader to verify the revision before use. */
 import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
 import { Procedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
-import { hasOverride } from '../procedure-options';
+import { hasOverride } from '../procedure-values';
 import { extraValueText, sectionsOnProcedure, type ProcedureSection } from '../procedure-sections';
 import { formatDate } from '../../../shared/date-format';
 

@@ -3,9 +3,9 @@
    All data is persisted to localStorage (no backend). Storage keys live in data/storage-keys.ts.
 
    A GWP (Governing WPS) groups several specific WPS documents, one per WTN -- e.g. GWP W-101 covers
-   WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. allGwpOptions() and wtnOptionsForGwp()
-   below are the source of truth Weld Record's GWP/WTN stage fields cascade from (workflow/weld-fields.ts,
-   weld-record/signoff-validation-logic/stage-form.ts) -- see docs/ARCHITECTURE.md. */
+   WTN 05.5-1, 05.5-2 and 05.5A-3, each its own Procedure row / PDF. Other systems (Weld Record, Weld
+   Planning) read these rows only through future/weld-engineering/procedure-values.ts -- see
+   docs/ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
 import { getWeldPositions } from './weld-positions';
@@ -89,8 +89,8 @@ export interface Procedure {
 
   /* 4. Filler Metal -- fillerMetalTypes/fillerMetalSizes are the valid FILLER_METAL_TYPE_OPTIONS/
      FILLER_METAL_SIZE_OPTIONS values for this WPS; Weld Record's Filler Metal Type/Size fields
-     (workflow/weld-fields.ts) filter to these once GWP+WTN resolve to this Procedure (see
-     fillerMetalTypeOptionsForProcedure/fillerMetalSizeOptionsForProcedure below) */
+     filter to these once GWP+WTN resolve to this Procedure (fillerMetalTypeOptions/
+     fillerMetalSizeOptions in future/weld-engineering/procedure-values.ts) */
   fillerMetalTypes: string[];
   fillerMetalClassification: string;
   fillerMetalSizes: string[];

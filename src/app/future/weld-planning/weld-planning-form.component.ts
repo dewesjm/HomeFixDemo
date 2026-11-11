@@ -14,7 +14,7 @@ import {
   type JointExtraGroup,
   type WeldJoint
 } from '../../data/weld-planning';
-import { gwpOptionsForMaterials } from '../weld-engineering/procedure-options';
+import { gwpOptionsForMaterials } from '../weld-engineering/procedure-values';
 
 
 @Component({

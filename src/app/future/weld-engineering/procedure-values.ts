@@ -1,18 +1,36 @@
-/* What a procedure offers a welding step, and how it reads: the GWP / WTN / filler droplists, the
-   values a step fills from its WTN, and the plain-text descriptions. The procedure rows themselves
-   are data/procedures.ts. */
+/* Procedure values: the one way other systems (Weld Record, Weld Planning) read Weld Engineering's
+   procedures. Callers pass GWP / WTN codes and get values back; they never hold a Procedure or read
+   its fields, so how a procedure stores a value can change here without touching them. Covers the
+   GWP / WTN / filler droplists, the values a step fills from its WTN, override values and the
+   plain-text descriptions. The procedure rows themselves are data/procedures.ts. */
 import {
   Procedure, procedures, getProcedureByGwpWtn, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS,
 } from '../../data/procedures';
 
-/* true when a procedure has any preheat/interpass override values set -- shared by the PDF
-   (procedure-pdf.ts) and Weld Record's stage fields (weld-record/signoff-validation-logic/stage-form.ts) */
+/* true when a procedure has any preheat/interpass override values set (used by the PDF) */
 export function hasOverride(p: Procedure): boolean {
   return !!(p.overridePhMin || p.overridePhMax || p.overrideIpMin || p.overrideIpMax || p.overrideNote);
 }
 
-/* ── GWP/WTN cascade, the source of Weld Record's GWP/WTN step fields (weld-record/signing/
-   stage-form.ts). A GWP groups several Procedure rows, one per WTN. ── */
+/* true when a GWP+WTN pair matches a WPS */
+export function hasProcedure(gwp: string, wtn: string): boolean {
+  return !!getProcedureByGwpWtn(gwp, wtn);
+}
+
+/* a WPS's preheat/interpass override values, keyed by Weld Record's override field keys;
+   undefined when the pair matches no WPS or that WPS has no override */
+export interface OverrideValues {
+  overridePhMin: string; overridePhMax: string; overrideIpMin: string; overrideIpMax: string; overrideNote: string;
+}
+export function procedureOverride(gwp: string, wtn: string): OverrideValues | undefined {
+  const p = getProcedureByGwpWtn(gwp, wtn);
+  if (!p || !hasOverride(p)) return undefined;
+  const { overridePhMin, overridePhMax, overrideIpMin, overrideIpMax, overrideNote } = p;
+  return { overridePhMin, overridePhMax, overrideIpMin, overrideIpMax, overrideNote };
+}
+
+/* ── GWP/WTN cascade, the source of Weld Record's GWP/WTN step fields (weld-record/
+   signoff-validation-logic/stage-form.ts). A GWP groups several Procedure rows, one per WTN. ── */
 /* Plain-text description, e.g. "Semiautomatic GTAW of 02-CS and 13-SS316 using MIL-70S-6 for Surface
    Structure". Blank parts are left out. The GWP version drops the filler, which varies per WTN. */
 export function procedureDescription(p: Procedure | undefined, includeFiller = true): string {
@@ -95,16 +113,15 @@ export function wtnFillValue(gwp: string, wtn: string, key: string): string {
   return key === 'weldProcess' ? proc.weldProcess.toLowerCase() : proc[key as Exclude<WtnFillKey, 'weldProcess'>];
 }
 
-/* Filler Metal Type/Size cascade -- same shape as the GWP/WTN cascade above, but keyed off the
-   Procedure a GWP+WTN pair already resolved to (getProcedureByGwpWtn), not off GWP/WTN directly.
-   On the weld record the external-system mock (weld-record/weld-assignment-logic/weld-assignment-mock.ts) picks one of these; a
-   Foreman Override opens the full lists. */
-export function fillerMetalTypeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
-  if (!p) return [];
-  return FILLER_METAL_TYPE_OPTIONS.filter(o => p.fillerMetalTypes.includes(o.value));
+/* Filler Metal Type/Size cascade: the options the WPS a GWP+WTN pair matches allows, empty when it
+   matches none. On the weld record the external-system mock (weld-record/weld-assignment-logic/
+   weld-assignment-mock.ts) picks one of these; a Foreman Override opens the full lists. */
+export function fillerMetalTypeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
+  const p = getProcedureByGwpWtn(gwp, wtn);
+  return p ? FILLER_METAL_TYPE_OPTIONS.filter(o => p.fillerMetalTypes.includes(o.value)) : [];
 }
 
-export function fillerMetalSizeOptionsForProcedure(p: Procedure | undefined): { label: string; value: string }[] {
-  if (!p) return [];
-  return FILLER_METAL_SIZE_OPTIONS.filter(o => p.fillerMetalSizes.includes(o.value));
+export function fillerMetalSizeOptions(gwp: string, wtn: string): { label: string; value: string }[] {
+  const p = getProcedureByGwpWtn(gwp, wtn);
+  return p ? FILLER_METAL_SIZE_OPTIONS.filter(o => p.fillerMetalSizes.includes(o.value)) : [];
 }

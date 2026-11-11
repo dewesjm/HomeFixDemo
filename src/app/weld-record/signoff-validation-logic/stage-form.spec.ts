@@ -10,7 +10,7 @@ import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routi
 import { WorkflowStage } from '../model/workflow-types';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-options';
+import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-values';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
