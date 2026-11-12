@@ -20,34 +20,50 @@ interface MapArrow {
   planned?: boolean;
 }
 
+/* one of the four systems, drawn as a shaded box around its parts */
+interface MapGroup {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  title: string;
+}
+
 interface SystemNote {
   title: string;
   status: string;
   items: string[];
 }
 
+const GROUPS: MapGroup[] = [
+  { x: 260, y: 20, w: 770, h: 170, title: 'Weld Planning' },
+  { x: 260, y: 230, w: 360, h: 170, title: 'Weld Dispatch' },
+  { x: 660, y: 230, w: 370, h: 170, title: 'Weld Engineering' },
+  { x: 260, y: 440, w: 770, h: 340, title: 'Weld Record' },
+];
+
 const BOXES: MapBox[] = [
-  { x: 20, y: 40, w: 220, h: 100, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
-  { x: 330, y: 40, w: 240, h: 100, title: 'External Loads', lines: ['In Weld Planning:', 'checks and converts'] },
-  { x: 660, y: 40, w: 340, h: 100, title: 'Weld Planning Joints', lines: ['Joint list, search,', 'mass import'] },
-  { x: 330, y: 210, w: 240, h: 100, title: 'Weld Assignment', lines: ['Picks GWP, WTN, filler', '(stand-in in the demo)'], outside: true },
-  { x: 660, y: 210, w: 340, h: 100, title: 'Weld Engineering', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
-  { x: 280, y: 440, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
-  { x: 500, y: 440, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
-  { x: 820, y: 440, w: 180, h: 100, title: 'History', lines: ['Every signoff'] },
-  { x: 500, y: 590, w: 260, h: 100, title: 'Admin', lines: ['Routings, signoff', 'forms and rules'] },
+  { x: 20, y: 75, w: 180, h: 90, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
+  { x: 280, y: 75, w: 260, h: 90, title: 'External Loads', lines: ['Checks and converts', 'the vendor file'] },
+  { x: 640, y: 75, w: 370, h: 90, title: 'Joints', lines: ['Joint list, search,', 'mass import'] },
+  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Not built yet: menu', 'items are placeholders'] },
+  { x: 680, y: 285, w: 330, h: 90, title: 'Procedures', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
+  { x: 280, y: 500, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
+  { x: 500, y: 500, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
+  { x: 820, y: 500, w: 190, h: 100, title: 'History', lines: ['Every signoff'] },
+  { x: 500, y: 655, w: 260, h: 100, title: 'Admin', lines: ['Routings, signoff', 'forms and rules'] },
 ];
 
 const ARROWS: MapArrow[] = [
-  { d: 'M240 90 H322', label: { x: 285, y: 78, text: 'Hourly', anchor: 'middle' } },
-  { d: 'M570 90 H652', label: { x: 615, y: 78, text: 'Merge', anchor: 'middle' } },
-  { d: 'M830 210 V148', label: { x: 842, y: 184, text: 'GWP choices' } },
-  { d: 'M520 310 V432', label: { x: 508, y: 372, text: 'Sets GWP, WTN, filler', anchor: 'end' } },
-  { d: 'M700 310 V432', label: { x: 712, y: 372, text: 'GWP, WTN and filler lists' } },
-  { d: 'M450 490 H492' },
-  { d: 'M760 490 H812' },
-  { d: 'M630 590 V548' },
-  { d: 'M1000 90 H1050 V398 H1038', planned: true },
+  { d: 'M200 120 H272', label: { x: 236, y: 108, text: 'Hourly', anchor: 'middle' } },
+  { d: 'M540 120 H632', label: { x: 586, y: 108, text: 'Merge', anchor: 'middle' } },
+  { d: 'M960 285 V173', label: { x: 948, y: 216, text: 'GWP choices', anchor: 'end' } },
+  { d: 'M520 375 V492', label: { x: 508, y: 426, text: 'Sets GWP, WTN, filler', anchor: 'end' } },
+  { d: 'M700 375 V492', label: { x: 712, y: 426, text: 'GWP, WTN and filler lists' } },
+  { d: 'M450 550 H492' },
+  { d: 'M760 550 H812' },
+  { d: 'M630 655 V608' },
+  { d: 'M1010 120 H1055 V470 H1038', planned: true },
 ];
 
 const NOTES: SystemNote[] = [
@@ -74,17 +90,17 @@ const NOTES: SystemNote[] = [
     ],
   },
   {
-    title: 'Outside systems', status: 'Dashed boxes',
+    title: 'Weld Dispatch', status: 'Not built yet',
     items: [
-      'Vendor File: the full list of planned joints, sent hourly. The demo shows sample files only.',
-      'Weld Assignment: sets the GWP, WTN and filler on welding routings. The demo uses a stand-in.',
+      'WICCs: Active WICCs, Create WICC, Filler Metal Attendant and History Lookup. Its menu items are placeholders for now.',
+      "Sets the GWP, WTN and filler on Weld Record's welding routings. The demo uses a stand-in for this.",
     ],
   },
   {
-    title: 'Not connected yet', status: 'Dashed line',
+    title: 'Outside and not connected', status: 'Dashed',
     items: [
-      'Weld Planning and Weld Record name a joint the same way (hull + drawing + joint), but each has its own sample joints.',
-      'The vendor load never removes a joint that has weld record data.',
+      'Vendor File (dashed box): the full list of planned joints, sent hourly. The demo shows sample files only.',
+      'Dashed line: Weld Planning and Weld Record name a joint the same way (hull + drawing + joint), but each has its own sample joints. The vendor load never removes a joint that has weld record data.',
     ],
   },
 ];
@@ -101,7 +117,7 @@ const NOTES: SystemNote[] = [
     .group { fill: var(--app-muted); stroke: var(--app-border); }
     .box-title { font-weight: 700; font-size: 19px; fill: var(--app-text); }
     .box-line, .label, .group-title, .legend { font-size: 17px; fill: var(--app-text); }
-    .group-title { font-weight: 700; }
+    .group-title { font-weight: 700; font-size: 21px; }
     .label { paint-order: stroke; stroke: var(--app-surface); stroke-width: 6px; stroke-linejoin: round; }
     .arrow { fill: none; stroke: var(--color-primary); stroke-width: 2.5; }
     .arrow.planned { stroke: var(--app-text); stroke-dasharray: 7 5; }
@@ -114,7 +130,7 @@ const NOTES: SystemNote[] = [
 
       <section class="panel max-w-6xl">
         <div class="map-wrap">
-          <svg viewBox="0 0 1080 740" role="img" aria-label="How the systems feed each other">
+          <svg viewBox="0 0 1080 830" role="img" aria-label="How the systems feed each other">
             <defs>
               <marker id="sm-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                 <path d="M0 0 L10 5 L0 10 z" fill="var(--color-primary)" />
@@ -124,8 +140,10 @@ const NOTES: SystemNote[] = [
               </marker>
             </defs>
 
-            <rect class="group" x="260" y="380" width="770" height="330" rx="10" />
-            <text class="group-title" x="280" y="414">Weld Record</text>
+            @for (g of groups; track g.title) {
+              <rect class="group" [attr.x]="g.x" [attr.y]="g.y" [attr.width]="g.w" [attr.height]="g.h" rx="10" />
+              <text class="group-title" [attr.x]="g.x + 20" [attr.y]="g.y + 32">{{ g.title }}</text>
+            }
 
             @for (a of arrows; track a.d) {
               <path class="arrow" [class.planned]="a.planned" [attr.d]="a.d"
@@ -144,12 +162,12 @@ const NOTES: SystemNote[] = [
               }
             }
 
-            <line class="arrow" x1="20" y1="728" x2="60" y2="728" />
-            <text class="legend" x="70" y="734">Data flow</text>
-            <rect class="box outside" x="180" y="716" width="40" height="22" rx="4" />
-            <text class="legend" x="230" y="734">Outside system</text>
-            <line class="arrow planned" x1="380" y1="728" x2="420" y2="728" />
-            <text class="legend" x="430" y="734">Not connected yet</text>
+            <line class="arrow" x1="20" y1="815" x2="60" y2="815" />
+            <text class="legend" x="70" y="821">Data flow</text>
+            <rect class="box outside" x="180" y="803" width="40" height="22" rx="4" />
+            <text class="legend" x="230" y="821">Outside system</text>
+            <line class="arrow planned" x1="380" y1="815" x2="420" y2="815" />
+            <text class="legend" x="430" y="821">Not connected yet</text>
           </svg>
         </div>
       </section>
@@ -170,6 +188,7 @@ const NOTES: SystemNote[] = [
   `,
 })
 export class SystemMapComponent {
+  readonly groups = GROUPS;
   readonly boxes = BOXES;
   readonly arrows = ARROWS;
   readonly notes = NOTES;
