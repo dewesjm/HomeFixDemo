@@ -32,6 +32,8 @@ interface MapGroup {
 interface SystemNote {
   title: string;
   status: string;
+  /* what the system is for, in one line */
+  purpose?: string;
   items: string[];
 }
 
@@ -46,7 +48,7 @@ const BOXES: MapBox[] = [
   { x: 20, y: 75, w: 180, h: 90, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
   { x: 280, y: 75, w: 260, h: 90, title: 'External Loads', lines: ['Checks and converts', 'the vendor file'] },
   { x: 640, y: 75, w: 370, h: 90, title: 'Joints', lines: ['Joint list, search,', 'mass import'] },
-  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Assigns GWP, WTN and', 'filler to a welder for a task'] },
+  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Foreman assigns work', 'to welders and fitters'] },
   { x: 680, y: 285, w: 330, h: 90, title: 'Procedures', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
   { x: 280, y: 500, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
   { x: 500, y: 500, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
@@ -69,32 +71,36 @@ const ARROWS: MapArrow[] = [
 
 const NOTES: SystemNote[] = [
   {
-    title: 'Weld Record', status: 'Being built now',
-    items: [
-      'Where joints are worked. Pipe Welding finds a joint, and the joint page takes it through its routings (Fit, Tack, Root, NDT and on to Sold), one signoff at a time.',
-      'History keeps every signoff. Makeup lists acting-foreman grants.',
-      'Admin pages set the routings, the signoff forms and the rules for both.',
-    ],
-  },
-  {
     title: 'Weld Planning', status: 'Future',
+    purpose: 'Maintenance, creation and load of weld joint master data.',
     items: [
-      'The planned joints. They come from the vendor file (External Loads) or are added and mass imported by hand.',
+      'Joints come from the vendor file (External Loads) or are added and mass imported by hand.',
       'Each joint picks a GWP from Weld Engineering.',
     ],
   },
   {
-    title: 'Weld Engineering', status: 'Future',
+    title: 'Weld Dispatch', status: 'Existing system',
+    purpose: 'The foreman assigns work to a welder or fitter.',
     items: [
-      'The weld procedures: each GWP has WTNs, and each WTN has its own PDF.',
+      "An existing system that this prototype doesn't build. Its menu items here (Active WICCs, Create WICC, Filler Metal Attendant, History Lookup) are placeholders.",
+      "Each assignment carries a GWP, WTN and filler metal, from what Weld Engineering's procedures allow. It shows on Weld Record's welding routings; the demo uses a stand-in for this.",
+    ],
+  },
+  {
+    title: 'Weld Engineering', status: 'Future',
+    purpose: 'Definition of weld procedures and requirements.',
+    items: [
+      'Each GWP has WTNs, and each WTN has its own PDF.',
       'Weld Planning, Weld Dispatch and Weld Record read GWP, WTN, filler and limits from here. No other system keeps its own copy.',
     ],
   },
   {
-    title: 'Weld Dispatch', status: 'Existing system',
+    title: 'Weld Record', status: 'Being built now',
+    purpose: 'OQE and signoff: the execution record.',
     items: [
-      "An existing system that this prototype doesn't build. Its menu items here (Active WICCs, Create WICC, Filler Metal Attendant, History Lookup) are placeholders.",
-      "Assigns a GWP, WTN and filler metal to a welder for a task, from what Weld Engineering's procedures allow. The assignment shows on Weld Record's welding routings; the demo uses a stand-in for this.",
+      'Pipe Welding finds a joint, and the joint page takes it through its routings (Fit, Tack, Root, NDT and on to Sold), one signoff at a time.',
+      'History keeps every signoff. Makeup lists acting-foreman grants.',
+      'Admin pages set the routings, the signoff forms and the rules for both.',
     ],
   },
   {
@@ -177,6 +183,7 @@ const NOTES: SystemNote[] = [
         @for (n of notes; track n.title) {
           <section class="panel">
             <h3 class="panel-title">{{ n.title }} <span class="badge badge-ghost">{{ n.status }}</span></h3>
+            @if (n.purpose) { <p class="mt-2 font-semibold">{{ n.purpose }}</p> }
             <ul>
               @for (item of n.items; track $index) { <li>{{ item }}</li> }
             </ul>
