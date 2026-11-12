@@ -26,7 +26,7 @@ export interface Assignment {
   assignedBy: string;
   jobDescription: string;
   charge: string;   /* demo only: barcoded charge number, shown as a barcode in the expanded row */
-  /* demo only: role-specific fields eWICC (or whichever source system) would actually carry;
+  /* demo only: role-specific fields eWACC (or whichever source system) would actually carry;
      we're not building those systems, just showing a few of the fields they'd hand off */
   details: { label: string; value: string }[];
 }
@@ -35,7 +35,7 @@ export interface Assignment {
    Inspector and NQC Inspector draw from either of two systems, so each shows a mix. */
 const SOURCES_BY_ROLE: Record<string, string[]> = {
   'Fitting': ['SWIMS'],
-  'Welding': ['EWICC'],
+  'Welding': ['EWACC'],
   'Foreman': ['EWR'],
   'Inspector': ['SAIL', 'NCS'],
   'NQC Inspector': ['SAIL', 'NCS'],
@@ -46,7 +46,7 @@ const SOURCES_BY_ROLE: Record<string, string[]> = {
 
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
-/* demo only, standing in for what eWICC would send over -- same MIL-spec designations as Weld
+/* demo only, standing in for what eWACC would send over -- same MIL-spec designations as Weld
    Record's own Filler Metal Type/Size (FILLER_METAL_TYPE_OPTIONS/FILLER_METAL_SIZE_OPTIONS in data/procedures.ts),
    not duplicated as options here since this is just a random pick, not a real cascade */
 const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
