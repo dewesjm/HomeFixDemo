@@ -46,7 +46,7 @@ const BOXES: MapBox[] = [
   { x: 20, y: 75, w: 180, h: 90, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
   { x: 280, y: 75, w: 260, h: 90, title: 'External Loads', lines: ['Checks and converts', 'the vendor file'] },
   { x: 640, y: 75, w: 370, h: 90, title: 'Joints', lines: ['Joint list, search,', 'mass import'] },
-  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Not built yet: menu', 'items are placeholders'] },
+  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Existing system, not', 'built in this prototype'] },
   { x: 680, y: 285, w: 330, h: 90, title: 'Procedures', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
   { x: 280, y: 500, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
   { x: 500, y: 500, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
@@ -90,9 +90,9 @@ const NOTES: SystemNote[] = [
     ],
   },
   {
-    title: 'Weld Dispatch', status: 'Not built yet',
+    title: 'Weld Dispatch', status: 'Existing system',
     items: [
-      'WICCs: Active WICCs, Create WICC, Filler Metal Attendant and History Lookup. Its menu items are placeholders for now.',
+      "An existing system that this prototype doesn't build. Its menu items here (Active WICCs, Create WICC, Filler Metal Attendant, History Lookup) are placeholders.",
       "Sets the GWP, WTN and filler on Weld Record's welding routings. The demo uses a stand-in for this.",
     ],
   },
