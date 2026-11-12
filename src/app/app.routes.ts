@@ -31,6 +31,7 @@ import { AdminMaterialClassificationComponent } from './weld-record/admin/materi
 import { AdminQuickLinksComponent } from './weld-record/admin/quick-links/quick-links.component';
 import { AdminFeatureTogglesComponent } from './weld-record/admin/feature-toggles/feature-toggles.component';
 import { ChangelogComponent } from './changelog/changelog.component';
+import { SystemMapComponent } from './system-map/system-map.component';
 import { AdminQualificationsComponent } from './weld-record/admin/qualifications/qualifications.component';
 import { MakeupPageComponent } from './weld-record/makeup-page/makeup-page.component';
 import { MyAssignmentsPageComponent } from './future/weld-record/my-assignments-page/my-assignments-page.component';
@@ -85,6 +86,7 @@ export const routes: Routes = [
   { path: 'admin/groups', component: AdminGroupsComponent, title: 'EWR - Groups' },
   { path: 'admin/qualifications', component: AdminQualificationsComponent, title: 'EWR - Qualifications' },
   { path: 'changelog', component: ChangelogComponent, title: 'Change Log' },
+  { path: 'system-map', component: SystemMapComponent, title: 'System Map' },
   { path: 'admin/material-traceability', component: AdminMaterialTraceabilityComponent, title: 'EWR - Material Traceability' },
   { path: 'admin/material-classification', component: AdminMaterialClassificationComponent, title: 'EWR - Material Classification' },
   { path: 'admin/quick-links', component: AdminQuickLinksComponent, title: 'EWR - Quick Links' },

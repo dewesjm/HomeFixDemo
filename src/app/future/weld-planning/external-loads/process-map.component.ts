@@ -5,7 +5,6 @@ import { LucideArrowRight, LucideTriangleAlert, LucideSearch } from '@lucide/ang
 
 import { LoadData } from './loads';
 import { LINE_WIDTH } from './layout';
-import { MAX_CONVERSION_ERROR_RATE } from './file-checks';
 
 export type LoadView = 'runs' | 'raw' | 'converted' | 'processed' | 'weldJoints' | 'errors' | 'lookup';
 
@@ -29,6 +28,7 @@ const count = <T>(rows: T[], test: (r: T) => boolean) => rows.filter(test).lengt
     .stage-wrap { display: flex; align-items: center; gap: 0.5rem; flex: 1 1 11rem; }
     .stage {
       flex: 1; height: 100%; text-align: left; padding: 0.75rem; cursor: pointer;
+      display: flex; flex-direction: column; justify-content: flex-start;
       background: var(--app-surface); border: 1px solid var(--app-border); border-radius: 8px;
     }
     .stage:hover { border-color: var(--color-primary); }
@@ -84,7 +84,7 @@ export class ProcessMapComponent {
     const j = l.weldJoints;
     return [
       { view: 'runs', title: 'Vendor File',
-        does: `The vendor sends the full file hourly. It must be complete, with conversion errors under ${MAX_CONVERSION_ERROR_RATE * 100}%, or the load doesn't go live.`,
+        does: 'The vendor sends the full file hourly.',
         lines: [
           `Load ${l.run.id}: ${l.run.linesReceived} lines`,
         ] },

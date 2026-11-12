@@ -13,6 +13,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-12',
+    added: ['Quick Links > System Map: a diagram of how Weld Record, Weld Planning, Weld Engineering and the outside systems feed each other, with a short read-me for each.'],
     changed: ["Weld Planning > External Loads: the sample loads run hourly instead of every 15 minutes, and each Process Map stage now says in a sentence what it does, above that load's counts."],
   },
   {
