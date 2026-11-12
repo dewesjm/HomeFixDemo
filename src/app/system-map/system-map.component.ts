@@ -46,7 +46,7 @@ const BOXES: MapBox[] = [
   { x: 20, y: 75, w: 180, h: 90, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
   { x: 280, y: 75, w: 260, h: 90, title: 'External Loads', lines: ['Checks and converts', 'the vendor file'] },
   { x: 640, y: 75, w: 370, h: 90, title: 'Joints', lines: ['Joint list, search,', 'mass import'] },
-  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Existing system, not', 'built in this prototype'] },
+  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Assigns GWP, WTN and', 'filler to a welder for a task'] },
   { x: 680, y: 285, w: 330, h: 90, title: 'Procedures', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
   { x: 280, y: 500, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
   { x: 500, y: 500, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
@@ -58,6 +58,7 @@ const ARROWS: MapArrow[] = [
   { d: 'M200 120 H272', label: { x: 236, y: 108, text: 'Hourly', anchor: 'middle' } },
   { d: 'M540 120 H632', label: { x: 586, y: 108, text: 'Merge', anchor: 'middle' } },
   { d: 'M960 285 V173', label: { x: 948, y: 216, text: 'GWP choices', anchor: 'end' } },
+  { d: 'M680 330 H608', label: { x: 640, y: 318, text: 'Allowed', anchor: 'middle' } },
   { d: 'M520 375 V492', label: { x: 508, y: 426, text: 'Sets GWP, WTN, filler', anchor: 'end' } },
   { d: 'M700 375 V492', label: { x: 712, y: 426, text: 'GWP, WTN and filler lists' } },
   { d: 'M450 550 H492' },
@@ -86,14 +87,14 @@ const NOTES: SystemNote[] = [
     title: 'Weld Engineering', status: 'Future',
     items: [
       'The weld procedures: each GWP has WTNs, and each WTN has its own PDF.',
-      'Weld Planning and Weld Record read GWP, WTN, filler and limits from here. No other system keeps its own copy.',
+      'Weld Planning, Weld Dispatch and Weld Record read GWP, WTN, filler and limits from here. No other system keeps its own copy.',
     ],
   },
   {
     title: 'Weld Dispatch', status: 'Existing system',
     items: [
       "An existing system that this prototype doesn't build. Its menu items here (Active WICCs, Create WICC, Filler Metal Attendant, History Lookup) are placeholders.",
-      "Sets the GWP, WTN and filler on Weld Record's welding routings. The demo uses a stand-in for this.",
+      "Assigns a GWP, WTN and filler metal to a welder for a task, from what Weld Engineering's procedures allow. The assignment shows on Weld Record's welding routings; the demo uses a stand-in for this.",
     ],
   },
   {
