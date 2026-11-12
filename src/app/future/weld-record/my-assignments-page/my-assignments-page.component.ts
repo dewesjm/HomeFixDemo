@@ -62,7 +62,7 @@ export class MyAssignmentsPageComponent {
   roleFilter = signal('Welding');
   roles = [...new Set(ASSIGNMENTS.flatMap(a => a.assignedRoles))].sort();
 
-  /* search box covers the same fields it always did; WICC Date filters on the formatted text the column shows */
+  /* search box covers the same fields it always did; WACC Date filters on the formatted text the column shows */
   table = new TableState<AssignmentRow>(
     ['hull', 'drawing', 'routing', 'joint', 'location'],
     { expirationDate: (v, f) => formatDate(v as string).toLowerCase().includes(String(f).toLowerCase().trim()) }
@@ -86,7 +86,7 @@ export class MyAssignmentsPageComponent {
       { header: 'Location', value: r => r.location },
       { header: 'Specific Location', value: r => r.specificLocation },
       { header: 'Assignment #', value: r => r.assignmentNumber },
-      { header: 'WICC Date', value: r => formatDate(r.expirationDate) },
+      { header: 'WACC Date', value: r => formatDate(r.expirationDate) },
       { header: 'Source', value: r => r.source },
       { header: 'Assigned By', value: r => r.assignedBy },
       { header: 'Assigned Date', value: r => formatDate(r.assignedDate) },

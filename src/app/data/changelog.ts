@@ -14,7 +14,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-12',
     added: ['Quick Links > System Map: a diagram of how the four systems (Weld Planning, Weld Dispatch, Weld Engineering, Weld Record) and the vendor file feed each other, with a short read-me for each.'],
-    changed: ["Weld Planning > External Loads: the sample loads run hourly instead of every 15 minutes, and each Process Map stage now says in a sentence what it does, above that load's counts."],
+    changed: ['Weld Dispatch menu and My Assignments say WACC instead of WICC (Active WACCs, Create WACC, WACC Date), and the Welding assignment source is EWACC.',
+      "Weld Planning > External Loads: the sample loads run hourly instead of every 15 minutes, and each Process Map stage now says in a sentence what it does, above that load's counts."],
   },
   {
     date: '2026-11-11',

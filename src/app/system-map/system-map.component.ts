@@ -48,7 +48,7 @@ const BOXES: MapBox[] = [
   { x: 20, y: 75, w: 180, h: 90, title: 'Vendor File', lines: ['Planned joints,', 'full file hourly'], outside: true },
   { x: 280, y: 75, w: 260, h: 90, title: 'External Loads', lines: ['Checks and converts', 'the vendor file'] },
   { x: 640, y: 75, w: 370, h: 90, title: 'Joints', lines: ['Joint list, search,', 'mass import'] },
-  { x: 280, y: 285, w: 320, h: 90, title: 'WICCs', lines: ['Foreman assigns work', 'to welders and fitters'] },
+  { x: 280, y: 285, w: 320, h: 90, title: 'WACCs', lines: ['Foreman assigns work', 'to welders and fitters'] },
   { x: 680, y: 285, w: 330, h: 90, title: 'Procedures', lines: ['GWPs and their WTNs,', 'one PDF per WTN'] },
   { x: 280, y: 500, w: 170, h: 100, title: 'Pipe Welding', lines: ['Find a joint'] },
   { x: 500, y: 500, w: 260, h: 100, title: 'Joint Page', lines: ['Routings and signoffs'] },
@@ -82,7 +82,7 @@ const NOTES: SystemNote[] = [
     title: 'Weld Dispatch', status: 'Existing system',
     purpose: 'The foreman assigns work to a welder or fitter.',
     items: [
-      "An existing system that this prototype doesn't build. Its menu items here (Active WICCs, Create WICC, Filler Metal Attendant, History Lookup) are placeholders.",
+      "An existing system that this prototype doesn't build. Its menu items here (Active WACCs, Create WACC, Filler Metal Attendant, History Lookup) are placeholders.",
       "Each assignment carries a GWP, WTN and filler metal, from what Weld Engineering's procedures allow. It shows on Weld Record's welding routings; the demo uses a stand-in for this.",
     ],
   },
