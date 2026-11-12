@@ -95,9 +95,9 @@ describe('external loads: file checks', () => {
 describe('external loads: sample loads', () => {
   const loads = buildExternalLoads(new Date(2026, 9, 4, 10, 7));
 
-  it('times loads on the quarter hour', () => {
+  it('times loads on the hour', () => {
     expect(loads.live.run.startedAt).toEqual(new Date(2026, 9, 4, 10, 0));
-    expect(loads.previous.run.startedAt).toEqual(new Date(2026, 9, 4, 9, 45));
+    expect(loads.previous.run.startedAt).toEqual(new Date(2026, 9, 4, 9, 0));
   });
 
   it('shows every merge action and both exclusion reasons in the live load', () => {

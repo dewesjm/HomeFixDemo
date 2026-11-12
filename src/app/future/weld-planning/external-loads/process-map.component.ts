@@ -12,6 +12,9 @@ export type LoadView = 'runs' | 'raw' | 'converted' | 'processed' | 'weldJoints'
 interface MapStage {
   view: LoadView;
   title: string;
+  /* what the stage does, in plain words */
+  does: string;
+  /* this load's counts */
   lines: string[];
 }
 
@@ -31,6 +34,7 @@ const count = <T>(rows: T[], test: (r: T) => boolean) => rows.filter(test).lengt
     .stage:hover { border-color: var(--color-primary); }
     .stage.active { border-color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-primary); }
     .stage-title { font-weight: 600; margin-bottom: 0.25rem; }
+    .stage-counts { margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--app-border); }
     .notes { margin: 0.75rem 0 0; padding-left: 1.25rem; list-style: disc; line-height: 1.6; }
   `],
   template: `
@@ -41,7 +45,10 @@ const count = <T>(rows: T[], test: (r: T) => boolean) => rows.filter(test).lengt
           <div class="stage-wrap">
             <button type="button" class="stage" [class.active]="view() === s.view" (click)="viewChange.emit(s.view)">
               <div class="stage-title">{{ s.title }}</div>
-              @for (line of s.lines; track line) { <div>{{ line }}</div> }
+              <div>{{ s.does }}</div>
+              <div class="stage-counts">
+                @for (line of s.lines; track line) { <div>{{ line }}</div> }
+              </div>
             </button>
             @if (!last) { <svg lucideArrowRight class="size-5 shrink-0"></svg> }
           </div>
@@ -76,30 +83,37 @@ export class ProcessMapComponent {
     const p = l.processed;
     const j = l.weldJoints;
     return [
-      { view: 'runs', title: 'Vendor File', lines: [
-        'Full file, every 15 minutes',
-        `Load ${l.run.id}: ${l.run.linesReceived} lines`,
-        `Checks: complete file, conversion errors under ${MAX_CONVERSION_ERROR_RATE * 100}%`,
-      ] },
-      { view: 'raw', title: 'Raw', lines: [
-        `${l.raw.length} lines, stored as received`,
-        `${LINE_WIDTH} characters per line`,
-      ] },
-      { view: 'converted', title: 'Converted', lines: [
-        'Cut into fields by the file layout',
-        `${count(l.converted, r => r.errors.length > 0)} lines with conversion errors`,
-      ] },
-      { view: 'processed', title: 'Processed', lines: [
-        `${count(p, r => r.outcome === 'Included')} included`,
-        `${count(p, r => r.reason === 'Vendor Joint')} Vendor Joint`,
-        `${count(p, r => r.reason === 'Excluded by status')} Excluded by status`,
-        `${count(p, r => r.outcome === 'Not converted')} not converted`,
-      ] },
-      { view: 'weldJoints', title: 'Weld Joints', lines: [
-        `${count(j, r => r.action === 'Added')} added, ${count(j, r => r.action === 'Updated')} updated`,
-        `${count(j, r => r.action === 'Removed')} removed, ${count(j, r => r.action === 'Kept')} kept`,
-        `${count(j, r => r.action === 'Unchanged')} unchanged`,
-      ] },
+      { view: 'runs', title: 'Vendor File',
+        does: `The vendor sends the full file hourly. It must be complete, with conversion errors under ${MAX_CONVERSION_ERROR_RATE * 100}%, or the load doesn't go live.`,
+        lines: [
+          `Load ${l.run.id}: ${l.run.linesReceived} lines`,
+        ] },
+      { view: 'raw', title: 'Raw',
+        does: 'Keeps every line exactly as received, so any later result can be checked against the file.',
+        lines: [
+          `${l.raw.length} lines`,
+          `${LINE_WIDTH} characters per line`,
+        ] },
+      { view: 'converted', title: 'Converted',
+        does: 'Cuts each line into fields by the file layout and converts dates and numbers. A value that won\'t convert is flagged, not dropped.',
+        lines: [
+          `${count(l.converted, r => r.errors.length > 0)} lines with conversion errors`,
+        ] },
+      { view: 'processed', title: 'Processed',
+        does: 'Applies the rules: vendor-welded joints and Cancelled or Superseded joints are left out, and so are lines that didn\'t convert.',
+        lines: [
+          `${count(p, r => r.outcome === 'Included')} included`,
+          `${count(p, r => r.reason === 'Vendor Joint')} Vendor Joint`,
+          `${count(p, r => r.reason === 'Excluded by status')} Excluded by status`,
+          `${count(p, r => r.outcome === 'Not converted')} not converted`,
+        ] },
+      { view: 'weldJoints', title: 'Weld Joints',
+        does: 'Compares the included lines with the joints from the last load, by hull + drawing + joint, and adds, updates or removes joints to match. A joint with weld record data is never removed.',
+        lines: [
+          `${count(j, r => r.action === 'Added')} added, ${count(j, r => r.action === 'Updated')} updated`,
+          `${count(j, r => r.action === 'Removed')} removed, ${count(j, r => r.action === 'Kept')} kept`,
+          `${count(j, r => r.action === 'Unchanged')} unchanged`,
+        ] },
     ];
   });
 }

@@ -52,7 +52,7 @@ interface ExternalLoads {
 }
 
 const MINUTE = 60_000;
-const LOAD_MINUTES = 15;
+const LOAD_MINUTES = 60;
 
 interface Stages { converted: ConvertedRow[]; processed: ProcessedRow[] }
 
@@ -97,7 +97,7 @@ function loadErrors(load: LoadData): ErrorLogEntry[] {
   return [...conversion, ...protectedKept];
 }
 
-/* the most recent quarter hour, so the sample loads always look current */
+/* the most recent hour, so the sample loads always look current */
 function latestLoadTime(now: Date): Date {
   const d = new Date(now);
   d.setSeconds(0, 0);

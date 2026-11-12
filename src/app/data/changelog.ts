@@ -12,6 +12,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-12',
+    changed: ["Weld Planning > External Loads: the sample loads run hourly instead of every 15 minutes, and each Process Map stage now says in a sentence what it does, above that load's counts."],
+  },
+  {
     date: '2026-11-11',
     added: ["Weld Engineering > Admin > Procedure Sections: each field has a Width: Auto, Full line, or a set number of pixels. It sizes the field on the procedure edit form and the PDF. The PDF now starts a new line when a section's fields don't fit across the page, instead of squeezing them all into one row.",
       "Weld Engineering > Admin > Procedure Sections: sections and fields can be renamed, moved up or down, and removed, and a field can be moved to another section (Move To). Locked fields can be renamed and moved but not removed. A section ticked on any procedure, or a field with a value on any procedure, can't be removed, and a field can't be moved to a section that a procedure with a value in it doesn't have ticked; the page lists those procedures (WPS and WTN) to change first.",
