@@ -16,11 +16,11 @@ describe('Qualifications When editor', () => {
   const fieldOptions = (host: HTMLElement) => Array.from(host.querySelector<HTMLSelectElement>('[aria-label="Field"]')!.options).map(o => o.textContent);
 
   it('offers is, is not and contains, with a checkbox per value', async () => {
-    const { host, f, emitted } = await create(one({ field: 'ss', op: 'is', values: ['Yes'] }));
+    const { host, f, emitted } = await create(one({ field: 'ss', op: 'is', values: ['SS'] }));
     expect(Array.from(host.querySelector<HTMLSelectElement>('[aria-label="Comparison"]')!.options).map(o => o.textContent)).toEqual(['is', 'is not', 'contains']);
-    expect(host.querySelectorAll('input[type="checkbox"]').length).toBe(2);
-    host.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')[1].click();
-    expect((emitted()!.items[0] as WhenClause).values).toEqual(['Yes', 'No']);
+    expect(host.querySelectorAll('input[type="checkbox"]').length).toBe(3);
+    host.querySelectorAll<HTMLInputElement>('input[type="checkbox"]')[2].click();
+    expect((emitted()!.items[0] as WhenClause).values).toEqual(['SS', 'HI']);
     f.componentInstance.setComparison(0, 'contains');
     expect((emitted()!.items[0] as WhenClause)).toEqual({ field: 'ss', op: 'contains', values: [] });
   });

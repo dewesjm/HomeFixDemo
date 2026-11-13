@@ -7,7 +7,7 @@ import { PROGRESSION_ATTRIBUTE_CODES } from '../../data/attribute-codes';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { getJointDesign, jointDesignOptions } from '../../data/joint-designs';
-import { Job, MCL_POOL, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, RT_DEGREE_OPTIONS, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
+import { Job, MCL_POOL, SS_VALUES, N_IND_POOL, NDT_EACH_VALUES, NDT_REQUIREMENT_VALUES, PIPE_SIZES, RT_DEGREE_OPTIONS, WALL_THICKNESSES, WELD_TYPES } from '../../data/jobs';
 import { hasMaterialFlag, MaterialFlag } from '../../data/material-classification';
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { NDT_LABELS } from '../../data/ndt-labels';
@@ -146,7 +146,8 @@ const text = (key: keyof Job, label: string, values: string[] = []): RuleRow =>
 
 const JOINT_DETAILS: RuleEntry[] = inSection('Joint Details', [
   { key: 'nInd', label: 'N Ind.', values: N_IND_POOL, get: j => j.nInd },
-  { key: 'ss', label: 'SS', values: YES_NO, get: j => yesNo(!!j.ss) },
+  /* SS is NS (no), SS or HI; a blank SS reads as NS */
+  { key: 'ss', label: 'SS', values: SS_VALUES, get: j => j.ss || 'NS' },
   { key: 'sfff', label: 'SFFF', values: YES_NO, get: j => yesNo(!!j.sfff) },
   { key: 'dssAaa', label: 'DSS-AAA', values: YES_NO, get: j => yesNo(!!j.dssAaa) },
   { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },

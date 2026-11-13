@@ -12,6 +12,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-13',
+    changed: ['SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no; SS and HI send the joint to O63 Records Review, NS to O04 Records Review, and SS or HI needs SSWELD1 in Qualifications.'],
+  },
+  {
     date: '2026-11-12',
     added: ['Quick Links > System Map: a diagram of how the four systems (Weld Planning, Weld Dispatch, Weld Engineering, Weld Record) and the vendor file feed each other, with a short read-me for each.'],
     changed: ['Weld Dispatch menu and My Assignments say WACC instead of WICC (Active WACCs, Create WACC, WACC Date), and the Welding assignment source is EWACC.',

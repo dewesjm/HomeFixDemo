@@ -4,11 +4,11 @@ import { buildConditionContext } from './condition-context';
 import { conditionText } from './field-rules';
 
 describe('buildConditionContext jointDetail', () => {
-  const job: Job = { ...JOBS[0], ss: 'X', ndtEach: 'mt', nInd: '1' };
+  const job: Job = { ...JOBS[0], ss: 'HI', ndtEach: 'mt', nInd: '1' };
   const ctx = buildConditionContext(buildStages(job)[0], job, []);
 
   it('reads Joint Details fields as Routing Settings shows them', () => {
-    expect(ctx.jointDetail('ss')).toBe('Yes');
+    expect(ctx.jointDetail('ss')).toBe('HI');
     expect(ctx.jointDetail('ndtEach')).toBe('MT');
     expect(ctx.jointDetail('nInd')).toBe('1');
   });

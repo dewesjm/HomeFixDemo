@@ -32,7 +32,7 @@ describe('qual conditions', () => {
   it('matches joint fields always and sign-off fields once the step has them', () => {
     const job = BLANK_JOINT;
     setQualConditions([
-      { when: w('ss', job.ss === 'Yes' ? 'Yes' : 'No'), type: 'vt', require: { op: 'all', items: ['WELD412'] } },
+      { when: w('ss', job.ss || 'NS'), type: 'vt', require: { op: 'all', items: ['WELD412'] } },
       { when: w('step:weldColor', 'blue'), type: 'vt', require: { op: 'any', items: ['WELD427', 'WELD403'] } },
       { when: w('step:id', 'root-weld'), type: 'vt', require: { op: 'all', items: ['WELD458'] } },
     ]);
@@ -68,7 +68,7 @@ describe('qual conditions', () => {
     const typesFor = (text: string) => qualConditions().filter(r => conditionWhenText(r) === text).map(conditionTypeText);
     const every = signoffTypeChoices().map(o => o.label);
     expect(typesFor('User is SELF')).toEqual(['']);
-    for (const text of ['Controlled Material is Yes', 'SS is Yes', 'Either material is titanium is Yes']) expect(typesFor(text)).toEqual(every);
+    for (const text of ['Controlled Material is Yes', 'SS is SS or HI', 'Either material is titanium is Yes']) expect(typesFor(text)).toEqual(every);
     expect(typesFor('Always')).toEqual(['VT']);
   });
 

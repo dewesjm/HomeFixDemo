@@ -82,12 +82,12 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'review-o63': [
     [{ field: 'sfff', op: 'is', values: ['Yes'] }],
     [{ field: 'dssAaa', op: 'is', values: ['Yes'] }],
-    [{ field: 'ss', op: 'is', values: ['Yes'] }],
+    [{ field: 'ss', op: 'is', values: ['SS', 'HI'] }],
   ],
   'review-o04': [[
     { field: 'sfff', op: 'is', values: ['No'] },
     { field: 'dssAaa', op: 'is', values: ['No'] },
-    { field: 'ss', op: 'is', values: ['No'] },
+    { field: 'ss', op: 'is', values: ['NS'] },
   ]],
 };
 

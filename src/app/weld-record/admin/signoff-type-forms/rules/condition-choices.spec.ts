@@ -21,7 +21,8 @@ describe('condition clause list', () => {
     const start = (id: string) => clauseChoices(fields, false).find(c => c.id === id)!.clause;
     expect(start('field|weldColor')).toEqual({ source: 'field', key: 'weldColor', equals: '' });
     expect(start('field|partial')).toEqual({ source: 'field', key: 'partial', equals: 'yes' });
-    expect(start('jointDetail|ss')).toEqual({ source: 'jointDetail', key: 'ss', equals: 'Yes' });
+    expect(start('jointDetail|ss')).toEqual({ source: 'jointDetail', key: 'ss', equals: '' });
+    expect(start('jointDetail|sfff')).toEqual({ source: 'jointDetail', key: 'sfff', equals: 'Yes' });
     expect(start('jointDetail|drawing')).toEqual({ source: 'jointDetail', key: 'drawing', equals: '' });
     expect(start('rejectedUtrt')).toEqual({ source: 'rejectedUtrt', key: '', equals: 'yes' });
     expect(start('stepId')).toEqual({ source: 'stepId', key: '', equals: '' });

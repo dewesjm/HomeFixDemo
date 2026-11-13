@@ -46,7 +46,7 @@ export interface Job {
   serialNumber: string;
   refitNumber: string;
   repairNumber: string;
-  ss: string;
+  ss: string;               /* NS (no), SS or HI */
   sfff: string;
   dssAaa: string;
   er1: string;
@@ -112,6 +112,11 @@ export const JOINING_ITEMS = [
 const NDT_POOL = ['Visual only', 'VT + UT', 'VT + RT', 'VT + MT', 'VT + PT', 'VT + 5X', 'VT + UT + RT', 'VT + MT + 5X', 'UT + RT + 5X', 'PT + 5X'];
 const PWHT_POOL = ['None', 'Required - 600°C/2hr', 'Required - 620°C/1hr', 'Pending review'];
 export const N_IND_POOL = ['1', '2', '3'];
+
+/* SS: NS means no, SS and HI both mean yes */
+export const SS_VALUES = ['NS', 'SS', 'HI'];
+/* seeded SS: every 8th joint is SS or HI (alternating), the rest NS */
+export const ssFor = (i: number) => i % 8 !== 0 ? 'NS' : i % 16 === 0 ? 'SS' : 'HI';
 /* what each Nuclear Indicator code means; the raw digit alone isn't self-explanatory */
 export const N_IND_MEANINGS: Record<string, string> = {
   '1': 'N 250-1500-1',
@@ -260,7 +265,7 @@ function generateJobs(count = 480): Job[] {
       serialNumber: xrefidBlank ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,   /* 9 digits starting with 1 or 2, then A */
       refitNumber: '00',
       repairNumber: '00',
-      ss: i % 8 === 0 ? 'Yes' : '',
+      ss: ssFor(i),
       sfff: i % 9 === 0 ? 'Yes' : '',
       dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
       er1: i % 3 === 0 ? `ER-${6000 + i}` : '',
