@@ -19,15 +19,16 @@ export const SELF = 'SELF';
 const when = (field: string, value: string): WhenGroup => ({ op: 'all', items: [{ field, op: 'is', values: [value] }] });
 
 /* the starting rows; typeValues = the Signoff Types offered on forms with a Qualification Check, one
-   row each for a requirement on every Type. SELF holds the seed quals except CNTRLMTL2, so every seed
-   requirement passes (controlled material through the OR); one requirement per kind of check: joint
+   row each for a requirement on every Type. SELF holds the seed quals except CNTRLMTL2, SSWELD2 and
+   SSWELD3, so every seed requirement passes (controlled material and SS through the OR); one requirement
+   per kind of check: joint
    flags, the step's Type, the base material */
 export function defaultQualConditions(typeValues: string[]): QualCondition[] {
   const perType = (w: WhenGroup, require: QualGroup): QualCondition[] => typeValues.map(type => ({ when: w, type, require }));
   return [
     { when: when(USER_FIELD, SELF), require: { op: 'all', items: ['CNTRLMTL1', 'SSWELD1', 'VTINSP1', 'TIWELD1'] } },
     ...perType(when('controlledMaterial', 'Yes'), { op: 'any', items: ['CNTRLMTL1', 'CNTRLMTL2'] }),
-    ...perType({ op: 'all', items: [{ field: 'ss', op: 'is', values: ['SS', 'HI'] }] }, { op: 'all', items: ['SSWELD1'] }),
+    ...perType({ op: 'all', items: [{ field: 'ss', op: 'is', values: ['SS', 'HI'] }] }, { op: 'any', items: ['SSWELD1', 'SSWELD2', 'SSWELD3'] }),
     { when: { op: 'all', items: [] }, type: 'vt', require: { op: 'all', items: ['VTINSP1'] } },
     ...perType(when('material.titanium', 'Yes'), { op: 'all', items: ['TIWELD1'] }),
   ];

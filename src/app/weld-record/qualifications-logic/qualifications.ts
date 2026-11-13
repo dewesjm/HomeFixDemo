@@ -13,8 +13,8 @@ export const QUALIFICATIONS = [
 ];
 
 /* quals the seed conditions use (qual-conditions.ts): controlled material (either one will do),
-   stainless, VT inspection, titanium */
-const CONDITION_QUALS = ['CNTRLMTL1', 'CNTRLMTL2', 'SSWELD1', 'VTINSP1', 'TIWELD1'];
+   SS (any one of three will do), VT inspection, titanium */
+const CONDITION_QUALS = ['CNTRLMTL1', 'CNTRLMTL2', 'SSWELD1', 'SSWELD2', 'SSWELD3', 'VTINSP1', 'TIWELD1'];
 export const ALL_QUALS = [...CONDITION_QUALS, ...QUALIFICATIONS];
 
 export interface QualCheckResult {
