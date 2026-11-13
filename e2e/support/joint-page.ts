@@ -92,3 +92,38 @@ export async function answerConfirm(page: Page, header: string | RegExp, text: s
   await button.click();
   await expect(dialog).toHaveCount(0);
 }
+
+const PROCEDURE: Record<string, string> = { PT: 'ASTM E165', MT: 'ASTM E709', '5X': '5X Magnified Visual' };
+
+/* signs the joint's current inspection (an NDT MT/PT routing or Excavation NDT), then opens the joint again.
+   Type first, since changing it clears the form. The ID accessible question is required on Root NDT MT/PT,
+   optional on Excavation NDT and not asked on 5X. */
+export async function signInspectionOn(page: Page, j: SeededJoint, type: 'MT' | 'PT' | '5X', result: 'SAT' | 'UNSAT') {
+  const panel = signoffPanel(page);
+  await typeSelect(page).selectOption({ label: type });
+  const idAccessible = panel.getByRole('combobox', { name: /^Inner surface of the weld \/ ID is accessible\*?$/ });
+  if (await idAccessible.count()) await idAccessible.selectOption('Yes');
+  await panel.getByRole('combobox', { name: 'Procedure Used for Inspection*' }).selectOption({ label: PROCEDURE[type] });
+  await panel.getByRole('radio', { name: result, exact: true }).check();
+  await signAndConfirm(page);
+  await openJoint(page, j);
+}
+
+/* signs the joint's current Repair with this Repair Code, then opens the joint again */
+export async function signRepairOn(page: Page, j: SeededJoint, code: 'Grind Only' | 'Weld Repair' | 'Cut') {
+  await signoffPanel(page).getByRole('combobox', { name: 'Repair Code*' }).selectOption({ label: code });
+  await signAndConfirm(page);
+  await openJoint(page, j);
+}
+
+/* on History: presses the one Deprogress button and confirms with this reason */
+export async function deprogressFromHistory(page: Page, reason: string) {
+  const button = page.locator('main').getByRole('button', { name: 'Deprogress' });
+  await expect(button).toHaveCount(1);
+  await button.click();
+  await answerConfirm(page, 'Deprogress', reason, 'Deprogress');
+}
+
+/* on History: the row that offers Deprogress */
+export const deprogressRow = (page: Page) =>
+  page.locator('main tr').filter({ has: page.getByRole('button', { name: 'Deprogress' }) });

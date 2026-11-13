@@ -3,7 +3,7 @@
 import { test, expect } from '@playwright/test';
 import {
   ROOT_MTPT_JOINT, openJoint, expectRouting, signoffPanel, signAndConfirm, typeSelect, openHistory, jointDetail,
-  routingPanel, answerConfirm,
+  routingPanel, answerConfirm, fabricationInput, signInspectionOn, signRepairOn, deprogressFromHistory, deprogressRow,
 } from './support/joint-page';
 
 test('Deprogress an UNSAT NDT: the Repair goes, Repair # is back to 00 and the NDT can be signed again', async ({ page }) => {
@@ -59,4 +59,43 @@ test('Deprogress an UNSAT NDT: the Repair goes, Repair # is back to 00 and the N
   await openJoint(page, ROOT_MTPT_JOINT);
   await expectRouting(page, 'Layer');
   await expect(await jointDetail(page, 'Repair #')).toHaveText('00');
+});
+
+test('Deprogress of a Cut brings back the Repair, fit-up data and Refit # 00; a second Deprogress takes back the UNSAT', async ({ page }) => {
+  await openJoint(page, ROOT_MTPT_JOINT);
+  const thickness = await fabricationInput(page, 'Actual Thickness').inputValue();
+  expect(thickness).not.toBe('');
+
+  await signInspectionOn(page, ROOT_MTPT_JOINT, 'MT', 'UNSAT');
+  await signRepairOn(page, ROOT_MTPT_JOINT, 'Cut');
+  await expectRouting(page, 'Fit');
+  await expect(await jointDetail(page, 'Refit #')).toHaveText('01');
+  await expect(fabricationInput(page, 'Actual Thickness')).toHaveValue('');
+
+  await openHistory(page, ROOT_MTPT_JOINT);
+  await expect(deprogressRow(page)).toContainText('Repair - Signed off');
+  await deprogressFromHistory(page, 'Not a cut, grind it');
+  /* the next one back is offered now */
+  await expect(deprogressRow(page)).toContainText('Root NDT MT/PT - Signed off');
+  await expect(page.locator('main')).toContainText(/Cut . routed back to Fit/i);
+
+  await openJoint(page, ROOT_MTPT_JOINT);
+  await expectRouting(page, 'Repair');
+  await expect(await jointDetail(page, 'Refit #')).toHaveText('00');
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('01');
+  await expect(fabricationInput(page, 'Actual Thickness')).toHaveValue(thickness);
+  /* the Repair comes up blank */
+  await expect(signoffPanel(page).getByRole('combobox', { name: 'Repair Code*' })).toHaveValue('');
+
+  await page.reload();
+  await expectRouting(page, 'Repair');
+  await expect(await jointDetail(page, 'Refit #')).toHaveText('00');
+
+  await openHistory(page, ROOT_MTPT_JOINT);
+  await deprogressFromHistory(page, 'MT reading was wrong');
+  await openJoint(page, ROOT_MTPT_JOINT);
+  await expectRouting(page, 'Root NDT MT/PT');
+  await expect(routingPanel(page).getByText('Repair', { exact: true })).toHaveCount(0);
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('00');
+  await expect(fabricationInput(page, 'Actual Thickness')).toHaveValue(thickness);
 });

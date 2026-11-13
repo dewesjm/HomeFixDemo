@@ -3,29 +3,12 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
   ROOT_MTPT_JOINT, openJoint, expectRouting, signoffPanel, signAndConfirm, typeSelect, openHistory, jointDetail, routingPanel,
-  fabricationInput,
+  fabricationInput, signInspectionOn, signRepairOn,
 } from './support/joint-page';
 
-const PROCEDURE: Record<string, string> = { PT: 'ASTM E165', MT: 'ASTM E709', '5X': '5X Magnified Visual' };
-
-/* signs the current inspection (Root NDT MT/PT or Excavation NDT); Type first, since changing it clears the form.
-   The ID accessible question is required on Root NDT MT/PT, optional on Excavation NDT and not on 5X. */
-async function signInspection(page: Page, type: 'MT' | 'PT' | '5X', result: 'SAT' | 'UNSAT') {
-  const panel = signoffPanel(page);
-  await typeSelect(page).selectOption({ label: type });
-  const idAccessible = panel.getByRole('combobox', { name: /^Inner surface of the weld \/ ID is accessible\*?$/ });
-  if (await idAccessible.count()) await idAccessible.selectOption('Yes');
-  await panel.getByRole('combobox', { name: 'Procedure Used for Inspection*' }).selectOption({ label: PROCEDURE[type] });
-  await panel.getByRole('radio', { name: result, exact: true }).check();
-  await signAndConfirm(page);
-  await openJoint(page, ROOT_MTPT_JOINT);
-}
-
-async function signRepair(page: Page, code: 'Grind Only' | 'Weld Repair' | 'Cut') {
-  await signoffPanel(page).getByRole('combobox', { name: 'Repair Code*' }).selectOption({ label: code });
-  await signAndConfirm(page);
-  await openJoint(page, ROOT_MTPT_JOINT);
-}
+const signInspection = (page: Page, type: 'MT' | 'PT' | '5X', result: 'SAT' | 'UNSAT') =>
+  signInspectionOn(page, ROOT_MTPT_JOINT, type, result);
+const signRepair = (page: Page, code: 'Grind Only' | 'Weld Repair' | 'Cut') => signRepairOn(page, ROOT_MTPT_JOINT, code);
 
 const dot = (page: Page, name: string) => routingPanel(page).getByText(name, { exact: true });
 
