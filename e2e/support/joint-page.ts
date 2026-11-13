@@ -30,9 +30,9 @@ export const signoffPanel = (page: Page) => page.locator('section.signoff-panel'
 export const fabricationPanel = (page: Page) =>
   page.locator('section.panel').filter({ has: page.getByRole('heading', { name: 'Fabrication' }) });
 
-/* a Fabrication text input by its label (the panel's inputs have no accessible name of their own) */
+/* a Fabrication field by its label, with or without the required star */
 export const fabricationInput = (page: Page, label: string): Locator =>
-  fabricationPanel(page).locator('.meta', { hasText: label }).locator('xpath=following-sibling::input');
+  fabricationPanel(page).getByLabel(new RegExp('^' + label.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&') + '\\*?$'));
 
 /* Type is matched exactly so "Backing Ring Type" etc. don't match */
 export const typeSelect = (page: Page) => signoffPanel(page).getByRole('combobox', { name: /^Type\*?$/ });

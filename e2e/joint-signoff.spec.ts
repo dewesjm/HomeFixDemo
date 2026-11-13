@@ -11,6 +11,9 @@ test('Fit: a Fabrication error blocks Signoff until fixed, then the joint moves 
   await expectRouting(page, 'Fit');
 
   const thickness = fabricationInput(page, 'Actual Thickness');
+  /* each Fabrication label is linked to its field */
+  await fabricationPanel(page).locator('label', { hasText: 'Actual Thickness' }).click();
+  await expect(thickness).toBeFocused();
   await fillAndLeave(thickness, '');
   await expect(fabricationPanel(page).locator('.field-error')).toHaveText(['Actual Thickness is required']);
 
