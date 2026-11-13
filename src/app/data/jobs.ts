@@ -48,7 +48,7 @@ export interface Job {
   repairNumber: string;
   ss: string;               /* NS (no), SS or HI */
   sfff: string;
-  dssAaa: string;
+  dssAaa: string;           /* F (yes) or N (no) */
   er1: string;
   er2: string;
   er3: string;
@@ -117,6 +117,10 @@ export const N_IND_POOL = ['1', '2', '3'];
 export const SS_VALUES = ['NS', 'SS', 'HI'];
 /* seeded SS: every 8th joint is SS or HI (alternating), the rest NS */
 export const ssFor = (i: number) => i % 8 !== 0 ? 'NS' : i % 16 === 0 ? 'SS' : 'HI';
+
+/* DSS-AAA: F means yes, N means no; seeded F on every 10th joint */
+export const DSS_VALUES = ['N', 'F'];
+export const dssFor = (i: number) => i % 10 === 0 ? 'F' : 'N';
 /* what each Nuclear Indicator code means; the raw digit alone isn't self-explanatory */
 export const N_IND_MEANINGS: Record<string, string> = {
   '1': 'N 250-1500-1',
@@ -265,7 +269,7 @@ function generateJobs(count = 480): Job[] {
       repairNumber: '00',
       ss: ssFor(i),
       sfff: i % 9 === 0 ? 'Yes' : '',
-      dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
+      dssAaa: dssFor(i),
       er1: i % 3 === 0 ? `ER-${6000 + i}` : '',
       er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
       er3: i % 5 === 0 ? `ER-${8000 + i}` : '',

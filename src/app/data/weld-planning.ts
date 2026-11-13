@@ -6,7 +6,7 @@ import { STORAGE } from './storage-keys';
 import {
   jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES,
   NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_DEGREE_OPTIONS, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
-  HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS, SS_VALUES, ssFor
+  HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS, SS_VALUES, ssFor, DSS_VALUES, dssFor
 } from './jobs';
 import { ATTRIBUTE_CODES } from './attribute-codes';
 import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
@@ -84,7 +84,7 @@ export const JOINT_EXTRA_FIELDS: JointExtraField[] = [
   { key: 'serialNumber', label: 'Serial Number', group: 'Additional Data', placeholder: '112345678A' },
   { key: 'ss', label: 'SS', group: 'Additional Data', options: SS_VALUES.map(v => ({ label: v, value: v })) },
   { key: 'sfff', label: 'SFFF', group: 'Additional Data', options: [{ label: 'Yes', value: 'Yes' }] },
-  { key: 'dssAaa', label: 'DSS-AAA', group: 'Additional Data', options: [{ label: 'DSS-AAA', value: 'DSS-AAA' }] },
+  { key: 'dssAaa', label: 'DSS-AAA', group: 'Additional Data', options: DSS_VALUES.map(v => ({ label: v, value: v })) },
   { key: 'er1', label: 'ER1', group: 'Additional Data', placeholder: 'ER-6000' },
   { key: 'er2', label: 'ER2', group: 'Additional Data', placeholder: 'ER-7000' },
   { key: 'er3', label: 'ER3', group: 'Additional Data', placeholder: 'ER-8000' },
@@ -210,7 +210,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       workPermit: i % 4 === 0 ? `WP-${2000 + i}` : '',
       waff: '',
       serialNumber: i % 4 === 0 ? '' : `${(i % 2 === 0 ? 1 : 2)}${String((i * 7919 * 104729) % 100000000).padStart(8, '0')}A`,
-      ss: ssFor(i), sfff: i % 9 === 0 ? 'Yes' : '', dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
+      ss: ssFor(i), sfff: i % 9 === 0 ? 'Yes' : '', dssAaa: dssFor(i),
       er1: i % 3 === 0 ? `ER-${6000 + i}` : '', er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
       er3: i % 5 === 0 ? `ER-${8000 + i}` : '', er4: i % 6 === 0 ? `ER-${9000 + i}` : '',
       attributeCode1: codes[0], attributeCode2: codes[1], attributeCode3: codes[2], attributeCode4: codes[3],

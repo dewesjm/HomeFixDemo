@@ -10,7 +10,7 @@ import { fabricationErrors } from '../fabrication-logic/fabrication-form';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../catalogs/field-catalog';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', ...over });
+const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', sfff: '', dssAaa: 'N', ss: 'NS', ...over });
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
 const ctxFor = (j: Job, stage: WorkflowStage, fab: Record<string, string> = {}, fabErrors: Record<string, string> = {}): SignContext =>
   ({ job: j, fab, fabErrors, visibleFields: visibleStageFields(stage, { job: j, stages: buildStages(j), offListUnlocked: false }) });

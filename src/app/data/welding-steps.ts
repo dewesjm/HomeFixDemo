@@ -79,16 +79,17 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'layer-ndt-mtpt': mtptRule('ndtEach'),
   'final-ndt-mtpt': mtptRule('ndtFinal'),
   'final-ndt-utrt': utrtRule('ndtFinal', 'rtFinal'),
-  'review-o63': [
-    [{ field: 'sfff', op: 'is', values: ['Yes'] }],
-    [{ field: 'dssAaa', op: 'is', values: ['Yes'] }],
-    [{ field: 'ss', op: 'is', values: ['NS'] }],
-  ],
-  'review-o04': [[
+  /* O04 when any of SFFF, DSS-AAA or SS is positive (SS is SS or HI, DSS-AAA is F); O63 when none is */
+  'review-o63': [[
     { field: 'sfff', op: 'is', values: ['No'] },
-    { field: 'dssAaa', op: 'is', values: ['No'] },
-    { field: 'ss', op: 'is', values: ['SS', 'HI'] },
+    { field: 'dssAaa', op: 'is', values: ['N'] },
+    { field: 'ss', op: 'is', values: ['NS'] },
   ]],
+  'review-o04': [
+    [{ field: 'sfff', op: 'is', values: ['Yes'] }],
+    [{ field: 'dssAaa', op: 'is', values: ['F'] }],
+    [{ field: 'ss', op: 'is', values: ['SS', 'HI'] }],
+  ],
 };
 
 /* every rule of `rules` (or the one rule, when it has none) gets an "N Ind. is <values>" clause added */
