@@ -20,8 +20,8 @@ import { fabricationSnapshot } from '../weld-record/fabrication-logic/fabricatio
 import { seeded, seededMic } from './seed-fabrication';
 
 /* which jobs get each seeded situation: a job id hash modulo EVERY equal to AT */
-const SEEDED_REPAIR_EVERY = 19;
-const SEEDED_REPAIR_AT = 11;
+const SEEDED_REPAIR_EVERY = 18;
+const SEEDED_REPAIR_AT = 16;
 const SEEDED_PT_HOLD_EVERY = 8;
 const SEEDED_PT_HOLD_AT = 6;
 const SEEDED_HOLD_STEPS = ['tack', 'root-weld', 'root-layer', 'final-weld'];

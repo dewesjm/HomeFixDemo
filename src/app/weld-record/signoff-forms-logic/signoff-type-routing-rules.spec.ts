@@ -56,7 +56,7 @@ describe('Signoff Type to Routing', () => {
   afterEach(() => { localStorage.removeItem(STORAGE.signoffTypeRouting); localStorage.removeItem(STORAGE.signoffTypes); });
 
   it('uses editable conditions for VT versus 5X on regular and NQC routings', () => {
-    const job = { ...JOBS[0], ndtFinal: 'VT' };
+    const job = { ...JOBS[0], ndtFinal: 'VT', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' };
     for (const id of ['final-ndt-vt5x', 'nqc-final-ndt-vt5x']) {
       expect(signoffTypeOptions(id, job)?.map(o => o.value)).toEqual(['vt']);
       expect(signoffTypeOptions(id, { ...job, ndtFinal: '5X' })?.map(o => o.value)).toEqual(['5x']);

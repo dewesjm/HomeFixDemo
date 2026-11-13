@@ -16,7 +16,7 @@ describe('Inserted routing table decisions', () => {
   beforeEach(() => {
     localStorage.clear();
     setSignoffTypeRoutingRows(getSignoffTypeRoutingRows());
-    job = Object.assign({ ...JOBS[0], id: 'signoff-routing-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS' });
+    job = Object.assign({ ...JOBS[0], id: 'signoff-routing-test', _fresh: true }, { nInd: '3', ndtRoot: 'PT', ndtEach: 'PT', ndtFinal: 'PT', materialType1: '02-CS', materialType2: '02-CS', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' });
     wf = newWorkflow(job);
   });
   afterEach(() => { localStorage.clear(); setSignoffTypeRoutingRows(getSignoffTypeRoutingRows()); resetStepFieldConfig(); });

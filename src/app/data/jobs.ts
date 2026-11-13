@@ -1,6 +1,6 @@
 /* mock Job model + seeded generator, stands in for a backend */
 import { TECHNICIAN_NAMES } from './people';
-import { ATTRIBUTE_CODES } from './attribute-codes';
+import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
 import { attributeDemoJobs } from './attribute-demo-jobs';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 
@@ -142,10 +142,6 @@ export const RT_FINAL_WEIGHTS: [string, number][] = [['360', 38], ['60', 30], ['
 const COMPARTMENTS = ['FWD', 'MID', 'AFT', 'ENG', 'CGO', 'HAB'];
 const workPackageFor = (hull: string, i: number) =>
   `${hull}-${COMPARTMENTS[(i * 7) % COMPARTMENTS.length]}-D${String(1 + (i * 13) % 12).padStart(2, '0')}`;
-/* real codes from ATTRIBUTE_CODES (data/attribute-codes.ts) so Joint Details can show
-   "code description" instead of a bare code; the old ['AB','CD',...] pool never matched that
-   lookup table, so descriptions never resolved */
-const ATTR_CODES = ATTRIBUTE_CODES.filter(c => /^\d+$/.test(c.code)).map(c => c.code);
 
 function seeded(n: number) {
   let s = n * 9301 + 49297;
@@ -191,6 +187,7 @@ export const SHIP_BY_HULL = new Map(HULLS.map((h, k) => [h, makeShip(k + 1)]));
 
 function generateJobs(count = 480): Job[] {
   const rand = seeded(42);
+  const codeRand = seeded(7);   /* attribute codes and the NDT they bring, apart so other values don't shift */
   const out: Job[] = [];
   const usedIdentity = new Set<string>();
   const joints = jointNumbers(count, 7);
@@ -224,6 +221,7 @@ function generateJobs(count = 480): Job[] {
     const rtFinal = ndtFinal === 'UT' ? '' : pickWeighted(RT_FINAL_WEIGHTS);
     /* half the joints have no NDT Each Layer, so they have no layer NDT steps */
     const ndtEachBlank = i % 4 === 1 || i % 4 === 2;
+    const codes = seedAttributeCodes(codeRand);
     const engineeringNotes = i % 3 === 0
       ? Array.from({ length: 2 + Math.floor(rand() * 2) }, () => `SEE NOTE ${1000 + Math.floor(rand() * 9000)}`).join(', ')
       : '';
@@ -272,12 +270,14 @@ function generateJobs(count = 480): Job[] {
       er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
       er3: i % 5 === 0 ? `ER-${8000 + i}` : '',
       er4: i % 6 === 0 ? `ER-${9000 + i}` : '',
-      attributeCode1: pick(ATTR_CODES),
-      attributeCode2: i % 2 === 0 ? pick(ATTR_CODES) : '',
-      attributeCode3: i % 3 === 0 ? pick(ATTR_CODES) : '',
-      attributeCode4: i % 4 === 0 ? pick(ATTR_CODES) : '',
+      attributeCode1: codes[0],
+      attributeCode2: codes[1],
+      attributeCode3: codes[2],
+      attributeCode4: codes[3],
       estimatedHours,
     });
+    const job = out[out.length - 1];
+    Object.assign(job, ndtForAttributeCodes(codes, job, codeRand));
   }
   return out;
 }

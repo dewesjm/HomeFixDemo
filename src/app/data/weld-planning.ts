@@ -9,6 +9,7 @@ import {
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS, SS_VALUES, ssFor
 } from './jobs';
 import { ATTRIBUTE_CODES } from './attribute-codes';
+import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
 import { signal } from '@angular/core';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';
@@ -170,6 +171,7 @@ function seedGwp(m1: string, m2: string, i: number): string {
 
 function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
   const rand = seeded(12345);
+  const codeRand = seeded(7);   /* attribute codes and the NDT they bring, apart so other values don't shift */
   const pick = <T>(arr: T[]): T => arr[Math.floor(rand() * arr.length)];
   const pickWeighted = (weights: [string, number][]): string => {
     let r = rand() * weights.reduce((sum, [, w]) => sum + w, 0);
@@ -191,8 +193,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
     const materialType2 = pick(MATERIAL_TYPES);
 
     const hull = pick(HULLS);
-    /* informational codes only, as in jobs.ts; progression codes appear only on the AC examples */
-    const attr = () => pick(ATTRIBUTE_CODES.filter(c => /^\d+$/.test(c.code))).code;
+    const codes = seedAttributeCodes(codeRand);
     out.push({
       ...blankJointExtras(),
       id: i % 4 === 0 ? '' : makeId(i + 1),
@@ -212,8 +213,7 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       ss: ssFor(i), sfff: i % 9 === 0 ? 'Yes' : '', dssAaa: i % 10 === 0 ? 'DSS-AAA' : '',
       er1: i % 3 === 0 ? `ER-${6000 + i}` : '', er2: i % 4 === 0 ? `ER-${7000 + i}` : '',
       er3: i % 5 === 0 ? `ER-${8000 + i}` : '', er4: i % 6 === 0 ? `ER-${9000 + i}` : '',
-      attributeCode1: attr(), attributeCode2: i % 2 === 0 ? attr() : '',
-      attributeCode3: i % 3 === 0 ? attr() : '', attributeCode4: i % 4 === 0 ? attr() : '',
+      attributeCode1: codes[0], attributeCode2: codes[1], attributeCode3: codes[2], attributeCode4: codes[3],
       joint: JOINTS_POOL[i % JOINTS_POOL.length],
       description: `${jt} weld joint for ${pick(JOINT_DESIGNS)} connection`,
       status: pick(statuses),
@@ -236,6 +236,8 @@ function generateSeededJoints(count = SEED_COUNT): WeldJoint[] {
       createdAt: createdAt.toISOString(),
       updatedAt: createdAt.toISOString(),
     });
+    const joint = out[out.length - 1];
+    Object.assign(joint, ndtForAttributeCodes(codes, joint, codeRand));
   }
   return out;
 }
