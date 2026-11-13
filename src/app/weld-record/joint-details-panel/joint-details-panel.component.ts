@@ -7,7 +7,6 @@ import { TooltipDirective } from '../../shared/tooltip.directive';
 import { attributeCodeLabel } from '../../data/attribute-codes';
 import { jointDetailsUt, jointDetailsVt } from '../joint-details-logic/joint-details-values';
 import { NDT_LABELS } from '../../data/ndt-labels';
-import { jointAttributeCodes } from '../attribute-codes-logic/attribute-context';
 
 @Component({
   selector: 'app-joint-details-panel',
@@ -21,8 +20,6 @@ export class JointDetailsPanelComponent {
 
   showAudit = signal(false);
   labels = NDT_LABELS;
-  attributeCodes = () => jointAttributeCodes(this.job());
-  attributeMessage = attributeCodeLabel;
 
   nIndTooltip(): string {
     return N_IND_MEANINGS[this.job().nInd] ?? '';

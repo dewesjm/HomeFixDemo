@@ -1,12 +1,5 @@
 <section class="panel">
   <h3 class="panel-title"><svg lucideInfo class="size-4"></svg> Joint details</h3>
-  @if (attributeCodes().length) {
-    <div class="mb-sm flex flex-wrap gap-2" aria-label="Progression attributes">
-      @for (code of attributeCodes(); track code) {
-        <span class="badge badge-outline cursor-help" tabindex="0" [appTooltip]="attributeMessage(code)" [attr.aria-label]="code + ': ' + attributeMessage(code)">{{ code }}</span>
-      }
-    </div>
-  }
   <div class="detail-columns">
     <!-- Column 1: Job Info -->
     <div class="min-w-0">

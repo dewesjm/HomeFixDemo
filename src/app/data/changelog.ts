@@ -14,7 +14,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-13',
     changed: ['Joint Details, search filters, Weld Planning and condition editors say SFCC instead of SFFF and DSS-SOC instead of DSS-AAA.',
-      'SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no. DSS-SOC shows F (yes) or N (no). Records Review goes to O04 when SFCC, DSS-SOC or SS is positive, and to O63 when none is; and SS or HI needs any one of SSWELD1, SSWELD2 or SSWELD3 in Qualifications.'],
+      'SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no. DSS-SOC shows F (yes) or N (no). Records Review goes to O04 when SFCC, DSS-SOC or SS is positive, and to O63 when none is; and SS or HI needs any one of SSWELD1, SSWELD2 or SSWELD3 in Qualifications.',
+      'Joint Details no longer shows the attribute code badges above the details. The codes still show under Show more.'],
   },
   {
     date: '2026-11-12',
