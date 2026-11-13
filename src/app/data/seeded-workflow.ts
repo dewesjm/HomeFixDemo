@@ -139,7 +139,8 @@ export function seededWorkflow(job: Job): JobWorkflow {
     s = { ...s, ...typeValues(inspectionType) };
     const inputs = { ...s.inputs };
     for (const f of formInputFields(s)) inputs[f.key] = seededFieldValue(f, rand);
-    if (awaitingRelease && isFitupInspId(s.id)) inputs['releaseToWelding'] = '';
+    /* the checkbox rule above would untick Release to welding; only the joints waiting at Fit-Up Release have it unticked */
+    if (isFitupInspId(s.id)) inputs['releaseToWelding'] = awaitingRelease ? '' : 'yes';
     if (ptHoldAt >= 0 && s.id === ptWeldId) inputs['weldProcess'] = 'gtaw';
     if (i === holdAt) {
       const [lo, hi] = [Number(inputs['phMin']), Number(inputs['phMax'])].sort((a, b) => a - b);

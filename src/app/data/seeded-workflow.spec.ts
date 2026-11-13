@@ -15,6 +15,20 @@ describe('seeded joints', () => {
     expect(empty.some(wf => activeStageId(wf.stages) === 'fit')).toBeTrue();
   });
 
+  it('Fit-Up Insp is released to welding, except on the few joints waiting at Fit-Up Release', () => {
+    const signed = seededJobs().map(j => seededWorkflow(j))
+      .map(wf => ({ wf, insp: wf.stages.find(s => /fitup-insp$/.test(s.id) && s.signed) }))
+      .filter(x => x.insp);
+    const waiting = signed.filter(x => activeStageId(x.wf.stages) === 'fitup-release');
+    expect(signed.length).toBeGreaterThan(100);
+    expect(waiting.length).toBeGreaterThan(0);
+    expect(waiting.length).toBeLessThan(20);
+    for (const { wf, insp } of signed) {
+      const released = waiting.every(x => x.wf !== wf);
+      expect(insp!.inputs['releaseToWelding']).withContext(wf.jobId).toBe(released ? 'yes' : '');
+    }
+  });
+
   it('a handful wait on Repair after an NDT UNSAT, and a couple on Excavation NDT after a Weld Repair', () => {
     const at = (id: RegExp) => seededJobs().map(j => seededWorkflow(j)).filter(wf => id.test(activeStageId(wf.stages) ?? ''));
     const onRepair = at(/^repair$/);

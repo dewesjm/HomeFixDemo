@@ -12,6 +12,9 @@ export const TACK_JOINT: SeededJoint = { xrefid: 'G272M', hull: 'N1426', drawing
 /* at Root NDT MT/PT (Types PT and MT); blank XREFID, so it is found by hull, drawing and joint */
 export const ROOT_MTPT_JOINT: SeededJoint = { xrefid: '', hull: 'S8371', drawing: 'S720-4518', joint: 'LO-10652' };
 
+/* at Tack; the external system sends nothing, so GWP, WTN, Weld Process and PH/IP limits are typed in (engineering override) */
+export const ENGINEERING_ENTRY_JOINT: SeededJoint = { xrefid: '8N43U', hull: 'S1622', drawing: 'H711-1234', joint: 'ST-10687' };
+
 export const jointUrl = (j: SeededJoint) => `/jobs/${j.hull}/${j.drawing}/${j.joint}`;
 
 export async function openJoint(page: Page, j: SeededJoint) {
@@ -77,4 +80,15 @@ export async function jointDetail(page: Page, label: string): Promise<Locator> {
   const more = details.getByRole('button', { name: 'Show more' });
   if (await more.isVisible()) await more.click();
   return details.locator('.detail-row').filter({ has: page.locator('.meta', { hasText: new RegExp(`^${label.replace(/[#]/g, '\\$&')}$`) }) }).locator('span').nth(1);
+}
+
+/* the shared confirm dialog (Deprogress, Engineering Override reason, ...): types the text and presses the accept button */
+export async function answerConfirm(page: Page, header: string | RegExp, text: string, accept: string) {
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading', { name: header })).toBeVisible();
+  const button = dialog.getByRole('button', { name: accept, exact: true });
+  await expect(button).toBeDisabled();
+  await dialog.getByRole('textbox').fill(text);
+  await button.click();
+  await expect(dialog).toHaveCount(0);
 }
