@@ -79,7 +79,7 @@ const BUILT_IN_CONDITIONS: Record<string, ConditionRule[]> = {
   'layer-ndt-mtpt': mtptRule('ndtEach'),
   'final-ndt-mtpt': mtptRule('ndtFinal'),
   'final-ndt-utrt': utrtRule('ndtFinal', 'rtFinal'),
-  /* O04 when any of SFFF, DSS-AAA or SS is positive (SS is SS or HI, DSS-AAA is F); O63 when none is */
+  /* O04 when any of SFCC, DSS-SOC or SS is positive (SS is SS or HI, DSS-SOC is F); O63 when none is */
   'review-o63': [[
     { field: 'sfff', op: 'is', values: ['No'] },
     { field: 'dssAaa', op: 'is', values: ['N'] },

@@ -148,9 +148,9 @@ const JOINT_DETAILS: RuleEntry[] = inSection('Joint Details', [
   { key: 'nInd', label: 'N Ind.', values: N_IND_POOL, get: j => j.nInd },
   /* SS is NS (no), SS or HI; a blank SS reads as NS */
   { key: 'ss', label: 'SS', values: SS_VALUES, get: j => j.ss || 'NS' },
-  { key: 'sfff', label: 'SFFF', values: YES_NO, get: j => yesNo(!!j.sfff) },
-  /* DSS-AAA is F (yes) or N (no); a blank reads as N */
-  { key: 'dssAaa', label: 'DSS-AAA', values: DSS_VALUES, get: j => j.dssAaa || 'N' },
+  { key: 'sfff', label: 'SFCC', values: YES_NO, get: j => yesNo(!!j.sfff) },
+  /* DSS-SOC is F (yes) or N (no); a blank reads as N */
+  { key: 'dssAaa', label: 'DSS-SOC', values: DSS_VALUES, get: j => j.dssAaa || 'N' },
   { key: 'weldType', label: 'Weld Type', values: WELD_TYPES, get: j => j.weldType },
   { key: 'ndtRoot', label: NDT_LABELS.ndtRoot, values: NDT_REQUIREMENT_VALUES, get: j => upper(j.ndtRoot) },
   { key: 'rtRoot', label: NDT_LABELS.rtRoot, values: RT_DEGREES, get: j => j.rtRoot },

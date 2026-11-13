@@ -118,7 +118,7 @@ export const SS_VALUES = ['NS', 'SS', 'HI'];
 /* seeded SS: every 8th joint is SS or HI (alternating), the rest NS */
 export const ssFor = (i: number) => i % 8 !== 0 ? 'NS' : i % 16 === 0 ? 'SS' : 'HI';
 
-/* DSS-AAA: F means yes, N means no; seeded F on every 10th joint */
+/* DSS-SOC: F means yes, N means no; seeded F on every 10th joint */
 export const DSS_VALUES = ['N', 'F'];
 export const dssFor = (i: number) => i % 10 === 0 ? 'F' : 'N';
 /* what each Nuclear Indicator code means; the raw digit alone isn't self-explanatory */
