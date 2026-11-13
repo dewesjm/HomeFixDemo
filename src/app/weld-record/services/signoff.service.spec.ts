@@ -16,10 +16,10 @@ import { typeValues } from '../signoff-forms-logic/stage-rules';
 /* a fresh copy of a seeded joint with these overrides yields a minimal, deterministic Welding pipeline:
    N Ind. 3 (regular rows, not the NQC ones) with a consumable insert joint design: pre-fit, fit, tack, fitup-insp, fitup-release (not required), deferred-tack (not required),
    root-weld, root-layer, final-weld, review-o04, sold — plus a VT step per phase (NDT Root/Each/Final blank counts as VT only) unless noted.
-   No attribute codes, so none of their exceptions apply. */
+   SS is SS (O04 Records Review); no attribute codes, so none of their exceptions apply. */
 function weldingJob(overrides: Partial<Job> = {}): Job {
   const job = { ...JOBS[0], id: 'signoff-test', _fresh: true, nInd: '1', refitNumber: '', repairNumber: '' };
-  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', rtRoot: '', rtFinal: '', ut: '', jointDesign: 'C-18', sfff: '', dssAaa: '', ss: '', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '', ...overrides });
+  Object.assign(job, { nInd: '3', ndt: '', ndtRoot: '', ndtEach: '', ndtFinal: '', rtRoot: '', rtFinal: '', ut: '', jointDesign: 'C-18', sfff: '', dssAaa: '', ss: 'SS', attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '', ...overrides });
   return job;
 }
 

@@ -42,7 +42,7 @@ describe('Ordinary insertion execution and preview', () => {
     TestBed.configureTestingModule({ imports: [JointPageComponent], providers: [provideRouter([]), { provide: ActivatedRoute, useFactory: () => ({ snapshot: { paramMap: convertToParamMap({ hull: job.hull, drawing: job.drawing, joint: job.joint }), queryParamMap: convertToParamMap({}) } }) }] });
     store = TestBed.inject(WorkflowStore);
     signoff = TestBed.inject(SignoffService);
-    job = Object.assign({ ...JOBS[0], id: 'insertion-test', joint: 'IN-00001', _fresh: true }, { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', sfff: '', dssAaa: '', ss: '', refitNumber: '', repairNumber: '' });
+    job = Object.assign({ ...JOBS[0], id: 'insertion-test', joint: 'IN-00001', _fresh: true }, { jointDesign: 'C-18', nInd: '3', ndtRoot: 'VT', ndtEach: '', ndtFinal: 'VT', rtRoot: '', rtFinal: '', sfff: '', dssAaa: '', ss: 'SS', refitNumber: '', repairNumber: '' });
     JOBS.push(job);
     setSignoffTypes([...getSignoffTypes(), { value: 'extra-type', label: 'Extra check' }]);
     setStepFieldConfig([...getStepFieldConfig(), { typeId: 'extra-type', fields: [{ key: 'comments' }] }]);

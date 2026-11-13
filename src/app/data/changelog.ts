@@ -13,7 +13,7 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-13',
-    changed: ['SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no; SS and HI send the joint to O63 Records Review, NS to O04 Records Review, and SS or HI needs any one of SSWELD1, SSWELD2 or SSWELD3 in Qualifications.'],
+    changed: ['SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no; NS sends the joint to O63 Records Review, SS and HI to O04 Records Review, and SS or HI needs any one of SSWELD1, SSWELD2 or SSWELD3 in Qualifications.'],
   },
   {
     date: '2026-11-12',

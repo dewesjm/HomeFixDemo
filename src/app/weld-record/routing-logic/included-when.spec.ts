@@ -14,7 +14,7 @@ import { stepAnswerFieldsBefore } from '../catalogs/field-choices';
 /* the step list buildStages() produced before the rules moved to Admin > Routing Settings */
 function oldStepIds(job: Job, ids: string[]): string[] {
 
-  const hasO63 = Boolean(job.sfff || job.dssAaa || ['SS', 'HI'].includes(job.ss));
+  const hasO63 = Boolean(job.sfff || job.dssAaa || !['SS', 'HI'].includes(job.ss));
   return ids.filter(id => {
     const m = /^(root|layer|final)-ndt-(\w+)$/.exec(id);
     if (m) {
