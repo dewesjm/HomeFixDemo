@@ -43,7 +43,10 @@ describe('step conditions', () => {
   afterEach(() => updateStageTemplate('pre-fit', { includeWhen: DEFAULT_STEP_CONDITIONS['pre-fit'] }));
 
   it('built-in rules preserve the baseline for seeded joints without progression attributes', () => {
-    for (const job of JOBS.filter(j => !jointAttributeCodes(j).length)) {
+    /* every seeded joint now carries attribute codes, so compare each one with its codes taken off */
+    const plain = JOBS.map(j => ({ ...j, attributeCode1: '', attributeCode2: '', attributeCode3: '', attributeCode4: '' }));
+    expect(plain.filter(j => !jointAttributeCodes(j).length).length).toBe(JOBS.length);
+    for (const job of plain) {
       /* N Ind 1 or 2 joints get the NQC row of each split step instead */
       const nuclear = job.nInd === '1' || job.nInd === '2';
       const expected = oldStepIds(job, ALL_IDS).map(id => nuclear && NQC_SPLIT_STEP_IDS.includes(id) ? nqcStepId(id) : id);

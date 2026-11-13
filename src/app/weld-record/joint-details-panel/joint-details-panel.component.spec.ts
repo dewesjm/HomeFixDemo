@@ -1,18 +1,18 @@
 import { TestBed } from '@angular/core/testing';
-import { JOBS } from '../../data/jobs';
+import { testJob } from '../../testing/test-job';
 import { JointDetailsPanelComponent } from './joint-details-panel.component';
 
-describe('Joint details attribute messages', () => {
-  it('exposes supplied messages on focusable badges and expanded details', () => {
+describe('Joint details attribute codes', () => {
+  it('shows no attribute badges above the details; Show more lists each code with its message', () => {
     const fixture = TestBed.createComponent(JointDetailsPanelComponent);
-    fixture.componentRef.setInput('job', { ...JOBS[0], attributeCode1: 'LR', attributeCode2: 'SI', attributeCode3: '', attributeCode4: '' });
+    fixture.componentRef.setInput('job', testJob({ attributeCode1: 'LR', attributeCode2: 'SI' }));
     fixture.componentRef.setInput('currentRouting', 'Fit');
     fixture.detectChanges();
-    const badge = fixture.nativeElement.querySelector('[aria-label="Progression attributes"] [data-tip]') as HTMLElement;
-    expect(badge.tabIndex).toBe(0);
-    expect(badge.getAttribute('aria-label')).toContain(badge.getAttribute('data-tip')!);
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[aria-label="Progression attributes"]')).toBeNull();
+    expect(el.textContent).not.toContain('ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT');
     fixture.componentInstance.showAudit.set(true);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT');
+    expect(el.textContent).toContain('LR ALLOW 60 DEG RT IN LIEU OF INTERMEDIATE LAYER PT');
   });
 });

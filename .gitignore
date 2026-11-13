@@ -47,3 +47,10 @@ AGENTS.md
 CLAUDE.md
 docs/
 .codex/
+
+# Temporary spec written by scripts/test-coverage.mjs
+/src/coverage-all-files.spec.ts
+
+# Playwright output
+/test-results
+/playwright-report

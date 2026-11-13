@@ -9,8 +9,10 @@ import { visibleSignoffFields } from '../signoff-forms-logic/shown-fields';
 import { fabricationErrors } from '../fabrication-logic/fabrication-form';
 import { visibleStageFields } from './stage-form';
 import { isVerifyRow } from '../catalogs/field-catalog';
+import { testJob } from '../../testing/test-job';
 
-const job = (over: Partial<Job> = {}): Job => ({ ...JOBS[0], mcl1: 'STD', mcl2: 'STD', nInd: '3', jointDesign: 'C-24', sfff: '', dssAaa: 'N', ss: 'NS', ...over });
+/* fixed fixture, not a seeded joint, so the routings each test reads always exist */
+const job = (over: Partial<Job> = {}): Job => testJob(over);
 const stageOf = (j: Job, id: string, change: Partial<WorkflowStage> = {}): WorkflowStage => ({ ...buildStages(j).find(s => s.id === id)!, ...change });
 const ctxFor = (j: Job, stage: WorkflowStage, fab: Record<string, string> = {}, fabErrors: Record<string, string> = {}): SignContext =>
   ({ job: j, fab, fabErrors, visibleFields: visibleStageFields(stage, { job: j, stages: buildStages(j), offListUnlocked: false }) });
@@ -81,9 +83,9 @@ describe('joint-form sign-validation', () => {
   });
 
   it('RT NDT must record at least the job\'s required degree', () => {
-    const j = job({ ndt: 'UT', rtRoot: '360' });
-    const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');
-    if (!rt) { pending('seed job has no Root RT/UT step'); return; }
+    const j = job({ ndtRoot: 'UT', rtRoot: '360' });
+    const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt')!;
+    expect(rt).withContext('fixture joint has a Root RT/UT routing').toBeDefined();
     const stage = { ...rt, inspectionType: 'rt', signoffType: 'rt', inputs: { degreeRt: '60' } };
     expect(stageFieldErrors(stage, ctxFor(j, stage))['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
     expect(errorsAfterSelect({}, stage, j, 'root-ndt-utrt', 'degreeRt')['root-ndt-utrt:degreeRt']).toBe('Degree of RT Performed must be at least 360');
@@ -94,9 +96,9 @@ describe('joint-form sign-validation', () => {
   });
 
   it('RT NDT accepts more than the required degree', () => {
-    const j = job({ ndt: 'UT', rtRoot: '60' });
-    const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt');
-    if (!rt) { pending('seed job has no Root RT/UT step'); return; }
+    const j = job({ ndtRoot: 'UT', rtRoot: '60' });
+    const rt = buildStages(j).find(s => s.id === 'root-ndt-utrt')!;
+    expect(rt).withContext('fixture joint has a Root RT/UT routing').toBeDefined();
     const more = { ...rt, inspectionType: 'rt', signoffType: 'rt', inputs: { degreeRt: '75' } };
     expect(stageFieldErrors(more, ctxFor(j, more))['root-ndt-utrt:degreeRt']).toBeUndefined();
     const less = { ...rt, inspectionType: 'rt', signoffType: 'rt', inputs: { degreeRt: '10' } };

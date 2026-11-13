@@ -12,10 +12,15 @@ npm start        # dev server at http://localhost:4200
 ## Build and checks
 
 ```bash
-npx ng build
-npx tsc --noEmit --noUnusedLocals -p tsconfig.app.json   # catches unused code
-npx ng test --watch=false --browsers=ChromeHeadless
+npm run build
+npm run typecheck        # catches unused code
+npm run test:once        # unit tests, one headless run
+npm run test:coverage    # unit tests with coverage of every app file; fails below the minimums in karma.conf.js
+npx playwright install chromium   # once per machine, for the browser tests
+npm run e2e              # browser tests (Playwright); starts its own dev server on port 4321
 ```
+
+The coverage report is written to `coverage/welding/index.html`. CI (`.github/workflows/ci.yml`) runs all of these on every push and pull request.
 
 ## Key facts
 

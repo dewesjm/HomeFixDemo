@@ -6,7 +6,11 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "test:once": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:coverage": "node scripts/test-coverage.mjs",
+    "typecheck": "tsc --noEmit --noUnusedLocals -p tsconfig.app.json",
+    "e2e": "playwright test"
   },
   "private": true,
   "dependencies": {
@@ -33,6 +37,7 @@
     "@angular-devkit/build-angular": "^19.2.27",
     "@angular/cli": "^19.2.27",
     "@angular/compiler-cli": "^19.2.0",
+    "@playwright/test": "1.64.1",
     "@types/jasmine": "~5.1.0",
     "@types/pdfmake": "^0.3.3",
     "jasmine-core": "~5.6.0",
