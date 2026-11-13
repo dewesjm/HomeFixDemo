@@ -4,7 +4,7 @@
    sign-off form is SignoffFormEditsService, its red field messages SignoffFormErrorsService, the
    override state JointOverridesService; the form rules live in rules/. */
 import { FormField } from '../catalogs/field-catalog';
-import { Component, computed, inject, signal, OnDestroy } from '@angular/core';
+import { Component, HostListener, computed, inject, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -106,6 +106,15 @@ export class JointPageComponent implements OnDestroy {
   canDeactivate(): boolean {
     if (!this.wf || !this.loadSnapshot) return true;
     return !this.overrides.hasReported() && !hasUnsavedEdits(this.wf(), this.loadSnapshot, s => this.overrides.engineeringEdits(s));
+  }
+
+  /* reloading or closing the tab with unsigned edits: the browser's own leave-page warning (its wording
+     can't be changed). The edits are already saved, so going ahead keeps them. */
+  @HostListener('window:beforeunload', ['$event'])
+  warnBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.canDeactivate()) return;
+    event.preventDefault();
+    event.returnValue = '';   /* older browsers show the warning only when this is set */
   }
 
   /* Discard any unsigned/unsaved Fab and sign-off edits made this visit, so re-entering the

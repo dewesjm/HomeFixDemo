@@ -8,7 +8,7 @@ import { HistoryRow, historyRowHasDetail } from './rules/history-rows';
 export class HistoryTableState extends TableState<HistoryRow> {
   constructor() {
     super(
-      ['jobId', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
+      ['xrefid', 'hull', 'drawing', 'joint', 'order', 'who', 'whoTitle', 'action', 'from', 'to', 'routing', 'inputsText'],
       {
         /* match the formatted date shown in the column, not the raw ISO timestamp */
         when: (rowValue, val) =>

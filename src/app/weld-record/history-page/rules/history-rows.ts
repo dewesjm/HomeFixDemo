@@ -8,7 +8,10 @@ import { fabricationChanges } from '../../fabrication-logic/fabrication-fields';
 /* one History entry with its joint's identifiers; sign-offs carry inputs (every editable field and its value at that moment) */
 export interface HistoryRow extends HistoryEntry {
   key: string;
+  /* the joint's internal key, for opening it and deep links; never shown */
   jobId: string;
+  /* the joint's XREFID as shown; blank when the source system has none */
+  xrefid: string;
   hull: string;
   drawing: string;
   joint: string;
@@ -30,6 +33,7 @@ export function historyRows(wf: JobWorkflow, job: Job | undefined): HistoryRow[]
       fabChanges: fabChanges.get(e),
       key: `${wf.jobId}|${e.when}|${e.action}`,
       jobId: wf.jobId,
+      xrefid: job?.xrefid ?? '',
       hull: job?.hull ?? `#${wf.jobId}`,
       drawing: job?.drawing ?? '',
       joint: job?.joint ?? '',

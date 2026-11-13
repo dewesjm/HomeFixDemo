@@ -2,6 +2,7 @@ import { HistoryEntry } from '../../model/history';
 import { JobWorkflow, WorkflowStage } from '../../model/workflow-types';
 import { correctableKeys, deprogressableKey, historyRows } from './history-rows';
 import { JOBS } from '../../../data/jobs';
+import { testJob } from '../../../testing/test-job';
 
 const job = JOBS[1];
 
@@ -19,6 +20,14 @@ function workflow(history: HistoryEntry[], signed: string[], undoWhen?: string):
 }
 
 describe('historyRows', () => {
+  it('shows the joint XREFID, blank when it has none, never the internal key', () => {
+    const wf = workflow([entry('2026-01-01T08:00:00Z', 'Sign-off', 'pre-fit - Signed off', 'pre-fit')], ['pre-fit']);
+    expect(historyRows(wf, testJob({ id: 'INTERNAL-1', xrefid: 'X1234' }))[0].xrefid).toBe('X1234');
+    const blank = historyRows(wf, testJob({ id: 'INTERNAL-1', xrefid: '' }))[0];
+    expect(blank.xrefid).toBe('');
+    expect(blank.jobId).toBe(job.id);
+  });
+
   it('leaves out per-field edits, sorts newest first and carries the joint\'s identifiers', () => {
     const wf = workflow([
       entry('2026-01-01T08:00:00Z', 'Sign-off', 'pre-fit - Signed off', 'pre-fit'),

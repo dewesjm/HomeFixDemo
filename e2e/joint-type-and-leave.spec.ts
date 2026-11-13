@@ -46,3 +46,18 @@ test('leaving without edits asks nothing', async ({ page }) => {
   await expect(page).toHaveURL(/\/pipe-welding$/);
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
+
+test('reloading with unsigned edits shows the browser leave warning; without edits there is none', async ({ page }) => {
+  const warnings: string[] = [];
+  page.on('dialog', d => { warnings.push(d.type()); void d.accept(); });
+
+  await openJoint(page, FIT_JOINT);
+  await page.reload();
+  expect(warnings).toEqual([]);
+
+  await fillAndLeave(signoffPanel(page).getByRole('textbox', { name: 'Backing Ring MIC*' }), '123A-4567-890-1');
+  await page.reload();
+  expect(warnings).toEqual(['beforeunload']);
+  /* going ahead keeps the edit: it was saved as it was typed */
+  await expect(signoffPanel(page).getByRole('textbox', { name: 'Backing Ring MIC*' })).toHaveValue('123A-4567-890-1');
+});

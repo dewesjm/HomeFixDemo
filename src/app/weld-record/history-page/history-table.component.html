@@ -4,7 +4,7 @@
 
 <!-- the joint's identifier cells; detail rows show them dimmed -->
 <ng-template #ids let-r let-dim="dim">
-  <td [class.hist-old]="dim">{{ r.jobId }}</td>
+  <td [class.hist-old]="dim">{{ r.xrefid }}</td>
   <td [class.hist-old]="dim">{{ r.hull }}</td>
   <td class="whitespace-nowrap" [class.hist-old]="dim">{{ r.drawing }}</td>
   <td class="whitespace-nowrap" [class.hist-old]="dim">{{ r.joint }}</td>
@@ -21,7 +21,7 @@
       <th appSortHeader class="min-w-11" [table]="t" field="who" label="Who" filter="text"></th>
       <th appSortHeader class="min-w-12" [table]="t" field="to" label="Value" filter="text"></th>
       @if (all) {
-        <th appSortHeader style="min-width: 6ch" [table]="t" field="jobId" label="XREFID" filter="text"></th>
+        <th appSortHeader style="min-width: 6ch" [table]="t" field="xrefid" label="XREFID" filter="text"></th>
         <th appSortHeader style="min-width: 6ch" [table]="t" field="hull" label="Hull" filter="text"></th>
         <th appSortHeader class="min-w-24" [table]="t" field="drawing" label="Drawing" filter="text"></th>
         <th appSortHeader class="min-w-20" [table]="t" field="joint" label="Joint" filter="text"></th>

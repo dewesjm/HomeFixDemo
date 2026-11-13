@@ -41,7 +41,7 @@ export class HistoryPageComponent {
 
   /* person filter: the chosen person (search assist itself is app-person-search-input) */
   person = signal<Person | null>(null);
-  /* job filter: matches XREFID, drawing, joint or order */
+  /* job filter: matches XREFID, drawing, joint or order (and the internal key Pipe Welding's History link passes) */
   jobQuery = signal<string>('');
 
   table = new HistoryTableState();
@@ -93,7 +93,8 @@ export class HistoryPageComponent {
     const jq = this.jobQuery().trim();
     if (jq) {
       const exact = JOBS.find(j => j.id.toLowerCase() === jq.toLowerCase());
-      parts.push(exact ? `XREFID ${exact.id}` : `matching "${jq}"`);
+      /* a joint with no XREFID is named by hull, drawing and joint */
+      parts.push(!exact ? `matching "${jq}"` : exact.xrefid ? `XREFID ${exact.xrefid}` : `${exact.hull} · ${exact.drawing} · ${exact.joint}`);
     }
     return parts.length ? parts.join(' · ') : '(all people)';
   });
@@ -109,7 +110,7 @@ export class HistoryPageComponent {
     const p = this.person();
     const jq = this.jobQuery().trim().toLowerCase();
     return this.allActivity().filter(r =>
-      (!jq || [r.jobId, r.drawing, r.joint, r.order].some(v => v.toLowerCase().includes(jq))) &&
+      (!jq || [r.jobId, r.xrefid, r.drawing, r.joint, r.order].some(v => v.toLowerCase().includes(jq))) &&
       (!p || r.whoId === p.id || r.who === fullName(p))
     );
   });
@@ -145,7 +146,7 @@ export class HistoryPageComponent {
       { header: 'Field',      value: (l: Line) => l.field },
       { header: 'Value',      value: (l: Line) => l.value },
       { header: 'Routing',    value: (l: Line) => l.row.routing },
-      { header: 'XREFID',     value: (l: Line) => l.row.jobId },
+      { header: 'XREFID',     value: (l: Line) => l.row.xrefid },
       { header: 'Hull',       value: (l: Line) => l.row.hull },
       { header: 'Drawing',    value: (l: Line) => l.row.drawing },
       { header: 'Joint',      value: (l: Line) => l.row.joint },
