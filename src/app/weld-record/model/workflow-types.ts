@@ -72,4 +72,5 @@ export interface JobWorkflow {
   repairNumber?: string;     /* set by each new Repair round; copied onto the job on load the same way */
   deviations?: Deviation[];  /* accepted at sign-off */
   undo?: SignoffUndo[];      /* one per sign-off, newest last: what Deprogress restores */
+  routingSetByHand?: boolean; /* Admin > Routing Override or Engineering's release moved the routing: Deprogress reaches back only through undo entries made since */
 }

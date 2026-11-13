@@ -68,10 +68,13 @@ export function historyRowHasDetail(r: HistoryRow): boolean {
    entries (signed in this app) offers it on the sign-off its newest undo entry belongs to. Otherwise
    (seeded demo signoffs) it's worked out from the joint's whole history: a deprogress cancels the
    sign-off before it, and the entry must also be the workflow's last signed stage, since that is
-   what deprogress reverses. `rows` is historyRows() for this joint, unfiltered. */
+   what deprogress reverses. After the routing was set by hand (Routing Override, Engineering's release)
+   only sign-offs with undo entries count. `rows` is historyRows() for this joint, unfiltered. */
 export function deprogressableKey(wf: JobWorkflow, rows: HistoryRow[]): string | undefined {
   const top = wf.undo?.at(-1);
   if (top) return rows.find(r => r.when === top.historyWhen && (r.section === 'Sign-off' || r.section === 'Release'))?.key;
+  /* the routing was set by hand (Routing Override, Engineering's release) and nothing signed since */
+  if (wf.routingSetByHand) return undefined;
   const inEffect: HistoryRow[] = [];
   for (const r of rows.filter(r => r.section === 'Sign-off').sort((a, b) => a.when.localeCompare(b.when))) {
     if (/deprogressed/i.test(r.action)) inEffect.pop();

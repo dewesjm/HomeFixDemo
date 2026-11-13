@@ -115,9 +115,11 @@ export function signoffUndo(wf: JobWorkflow, job: Job, stageId: string): Signoff
 
 /* Deprogress: undo the joint's most recent sign-off and everything it triggered (an inserted Repair,
    a route-back, a Cut, Defer Tack...). The deprogressed step and everything after it comes up blank.
-   Without an undo entry (seeded demo signoffs) it falls back to the last signed step in routing order. */
+   Without an undo entry (seeded demo signoffs) it falls back to the last signed step in routing order, unless
+   the routing was set by hand since (Routing Override, Engineering's release): then there is nothing to undo. */
 export function deprogressWorkflow(wf: JobWorkflow, job: Job): { wf: JobWorkflow; stage: WorkflowStage } | null {
   const top = wf.undo?.at(-1);
+  if (!top && wf.routingSetByHand) return null;
   let stages: WorkflowStage[];
   let stageId: string;
   let rest: Partial<JobWorkflow> = {};

@@ -44,7 +44,7 @@ export class RoutingService {
   /* Admin > Routing Override: changes the joint's current routing to any step. Nothing is marked
      signed. Going back works like any route-back (that step and every step after it come up
      blank); going forward only moves the current routing, and the steps passed stay as they are.
-     Deprogress can't reach past this, so the undo entries are dropped. */
+     Deprogress can't reach past this (see moveWithHistory). */
   setRouting(job: Job, targetId: string, reason: string) {
     let label = '';
     this.store.update(job, wf => {
@@ -57,12 +57,14 @@ export class RoutingService {
   }
 
   /* moveRouting() plus its History entry ("Routing set to X (<by>)" / "Routed back to X (<by>)", with the
-     reason when given); Deprogress can't reach past a routing set by hand, so the undo entries are dropped */
+     reason when given). Admin > Routing Override and Engineering's release both use it. Deprogress can't reach
+     past a routing set by hand: the undo entries are dropped and the joint is marked routingSetByHand, so only
+     signoffs made after it can be deprogressed. */
   moveWithHistory(wf: JobWorkflow, job: Job, targetId: string, who: string, by: string, routingAt?: string, reason?: string): JobWorkflow {
     const target = wf.stages.find(s => s.id === targetId);
     if (!target) return wf;
     const r = moveRouting(wf, job, targetId);
-    return this.store.withHistory(wf, { ...r.wf, undo: [] }, {
+    return this.store.withHistory(wf, { ...r.wf, undo: [], routingSetByHand: true }, {
       section: 'Routing', who,
       action: `${r.back ? 'Routed back to' : 'Routing set to'} ${target.label} (${by})`,
       to: target.label,

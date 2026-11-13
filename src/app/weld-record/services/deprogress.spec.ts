@@ -225,17 +225,55 @@ describe('Deprogress', () => {
     expect(reloaded.history.some(h => h.action === 'Fit - Deprogressed: wrong Fit')).toBeTrue();
   });
 
-  it('after Engineering releases a hold, History offers no Deprogress', () => {
-    const job = weldingJob();
-    const deviations = TestBed.inject(DeviationService);
-    signUpTo(job, 'tack');
-    later();
-    deviations.record(job, 'tack', [{ kind: 'out-of-range', label: 'Actual PH Max', entered: '140', required: '50 to 125' }], 'late');
-    signoff.signStage(job, 'tack', undefined, true);
-    later();
-    deviations.disposition(job, 'Accepted as is', 'fitup-insp');
-    expect(wf(job).undo).toEqual([]);
-    expect(current(job)).toBe('fitup-insp');
-    expect(offeredOn(job)).toBeUndefined();
+  describe('a routing set by hand (Admin > Routing Override, Engineering release) is as far back as it goes', () => {
+    /* nothing offered and nothing undone; a signoff made after it can be deprogressed, back to the routing set by hand */
+    const expectFloorAt = (job: Job, routingId: string) => {
+      expect(wf(job).undo).toEqual([]);
+      expect(current(job)).toBe(routingId);
+      expect(offeredOn(job)).toBeUndefined();
+      const before = JSON.stringify(wf(job));
+      deprogress(job, 'reach past it');
+      expect(JSON.stringify(wf(job))).toBe(before);
+
+      const signed = signCurrent(job);
+      expect(offeredOn(job)).toBe(signed);
+      deprogress(job, 'undo the new signoff');
+      expect(stage(job, signed).signed).toBeFalse();
+      expect(current(job)).toBe(routingId);
+      expect(offeredOn(job)).toBeUndefined();
+    };
+
+    it('Routing Override forward: the signoffs before it stay signed', () => {
+      const job = weldingJob();
+      signUpTo(job, 'tack');
+      later();
+      routing.setRouting(job, 'root-weld', 'signed on paper');
+      expectFloorAt(job, 'root-weld');
+      expect(stage(job, 'fit').signed).toBeTrue();
+    });
+
+    it('Routing Override back', () => {
+      const job = weldingJob();
+      signUpTo(job, 'fitup-insp');
+      later();
+      routing.setRouting(job, 'fit', 'Fit redone');
+      expectFloorAt(job, 'fit');
+      expect(stage(job, 'pre-fit').signed).toBeTrue();
+    });
+
+    it('Engineering release of a deviation hold: the signoff that accepted the deviation stays signed', () => {
+      const job = weldingJob();
+      const deviations = TestBed.inject(DeviationService);
+      signUpTo(job, 'tack');
+      later();
+      deviations.record(job, 'tack', [{ kind: 'out-of-range', label: 'Actual PH Max', entered: '140', required: '50 to 125' }], 'late');
+      signoff.signStage(job, 'tack', undefined, true);
+      later();
+      deviations.disposition(job, 'Accepted as is', 'fitup-insp');
+      expectFloorAt(job, 'fitup-insp');
+      expect(stage(job, 'tack').signed).toBeTrue();
+      expect(stage(job, 'engineering-hold').signed).toBeTrue();
+      expect(wf(job).deviations![0].status).toBe('dispositioned');
+    });
   });
 });
