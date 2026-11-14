@@ -1,5 +1,4 @@
-/* Weld Record's joint service: the reads another system (or Admin > Services) makes to Weld Record about
-   one joint. Read-only for now; which writes belong here is still open (Tasks.md, Weld Record services).
+/* Weld Record's joint service: the reads and writes used by application screens and Admin > Services.
    A joint is named by hull + drawing + joint (unique, as in the joint page's URL) or by its XREFID
    (can be blank; when given it wins). The internal id is never used. Every joint answered carries
    url, the full Joint Details link, so other systems never build it themselves (jointUrl()). Every call answers { ok: true, data } or { ok: false, error, title }, never throws.
@@ -12,12 +11,16 @@
                                 (choices) for fields picked from a list;
      getRouting(key)          = every routing on its path in order, signed or not, and which is current;
      getHistory(key, options) = its History entries, newest first, optionally one section only.
-   In real life these are Weld Record's OData service; here they read the demo's joints and the saved
+   In real life these are Weld Record's OData service; here they use the demo's joints and the saved
    workflows (WorkflowStore). */
 import { Injectable, inject } from '@angular/core';
 import { JOBS, type Job } from '../../data/jobs';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { activeStageId, closesJoint, currentRoutingLabel } from '../routing-logic/current-routing';
+import { activeStageId, closesJoint, currentRoutingLabel, fabricationEditable } from '../routing-logic/current-routing';
+import { ViewerService } from '../access-logic/viewer.service';
+import { SignoffService } from '../services/signoff.service';
+import { FabricationDataService } from '../services/fabrication-data.service';
+import { fabricationFieldsShown } from '../fabrication-logic/fabrication-form';
 import type { HistoryEntry } from '../model/history';
 import { jointUrl } from '../joint-page/joint-route';
 import { JOINT_FIELD_CATALOG } from '../catalogs/joint-fields';
@@ -93,6 +96,49 @@ export function findJoint(key: JointKey, jobs: Job[] = JOBS): JointResult<Job> {
 @Injectable({ providedIn: 'root' })
 export class JointService {
   private store = inject(WorkflowStore);
+  private viewer = inject(ViewerService);
+  private signoff = inject(SignoffService);
+  private fabrication = inject(FabricationDataService);
+
+  releaseToWelding(key: JointKey): JointResult<{ routing: string }> {
+    if (!this.viewer.canSignType('fitup-release') || !this.viewer.roles().includes('Foreman')) {
+      return fail('Release to Welding requires Fit-Up Release permission and the Foreman persona.', 'Access denied');
+    }
+    const found = findJoint(key);
+    if (!found.ok) return found;
+    const job = found.data;
+    const workflow = this.store.workflowFor(job);
+    if (activeStageId(workflow().stages) !== 'fitup-release') {
+      return fail('The joint must be at Fit-Up Release.', 'Wrong routing');
+    }
+    this.signoff.releaseFitUp(job);
+    return { ok: true, data: { routing: currentRoutingLabel(workflow().stages) } };
+  }
+
+  setFabricationData(key: JointKey, field: string, value: string): JointResult<{ fabricationData: Record<string, string> }> {
+    if (!this.viewer.canEditFabrication()) {
+      return fail('Editing fabrication data requires the Edit fabrication fields permission.', 'Access denied');
+    }
+    const found = findJoint(key);
+    if (!found.ok) return found;
+    const job = found.data;
+    const workflow = this.store.workflowFor(job);
+    const current = workflow();
+    if (!fabricationEditable(current.stages)) {
+      return fail('Fabrication is locked at the current routing.', 'Wrong routing');
+    }
+    const input = fabricationFieldsShown(job, current.fabricationData).find(f => f.key === field);
+    if (!input || input.notApplicable) {
+      return fail('Choose a fabrication field that applies to this joint.', 'Wrong field');
+    }
+    if (typeof value !== 'string' || (value && input.type === 'select' && !input.options?.some(o => o.value === value))) {
+      return fail('Enter text or a stored option value for the selected field.', 'Wrong value');
+    }
+    if (value !== (current.fabricationData[field] ?? '')) {
+      this.fabrication.setFabricationData(job, field, value);
+    }
+    return { ok: true, data: { fabricationData: { ...workflow().fabricationData } } };
+  }
 
   private record(job: Job): JointRecord {
     const { id: _id, _fresh, ...fields } = job;

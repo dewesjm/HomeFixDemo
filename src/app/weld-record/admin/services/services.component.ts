@@ -18,7 +18,7 @@ import { referenceDataServiceOperations } from './rules/reference-data-service-o
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
         Every call made to Weld Record, both the ones this application uses internally and the ones other
-        systems can call: joints, their fields, routing, History, Weld Positions, and Qualifications.
+        systems can call. Read joint and reference data, edit Fabrication fields, or release a joint to welding.
         Run one to see its exact response.
       </p>
       @if (canAccessApi()) {

@@ -35,7 +35,7 @@ import {
 } from '../../shared/filter-engine';
 import { allStepAnswerFields } from '../catalogs/field-choices';
 import { WorkflowStore } from '../services/workflow-store.service';
-import { SignoffService } from '../services/signoff.service';
+import { JointService } from '../joint-service/joint-service';
 import { activeStage } from '../routing-logic/current-routing';
 import { DEFAULT_DEMO_PERSON } from '../../data/demo-people';
 import { ViewerService } from '../access-logic/viewer.service';
@@ -96,7 +96,7 @@ export class PipeWeldingPageComponent {
   filtersHidden = signal(false);
   colDrag = new ColumnDrag(this.columnKeys);
 
-  constructor(private router: Router, private store: WorkflowStore, private signoffService: SignoffService,
+  constructor(private router: Router, private store: WorkflowStore, private jointService: JointService,
               private confirm: ConfirmService) {
     /* this tab's state (refresh, back from a joint), else a new visit: the default variant */
     const saved = loadTabSearchState();
@@ -385,14 +385,16 @@ export class PipeWeldingPageComponent {
     if (!this.viewer.canSignType('fitup-release') || this.selectedRole() !== 'Foreman') return false;
     const ids = this.selectedIds();
     if (ids.size === 0) return false;
-    return this.table.paged().filter(r => ids.has(r.id)).every(r => r.currentRouting === 'Fit-Up Release');
+    return this.table.paged().filter(r => ids.has(r.id))
+      .every(r => activeStage(this.store.workflowFor(r)().stages)?.id === 'fitup-release');
   });
 
   releaseSelected() {
     if (!this.canReleaseSelected()) return;
     const ids = this.selectedIds();
     for (const row of this.table.paged()) {
-      if (ids.has(row.id)) this.signoffService.releaseFitUp(row);
+      const { id, hull, drawing, joint } = row;
+      if (ids.has(id)) this.jointService.releaseToWelding({ hull, drawing, joint });
     }
     this.selectedIds.set(new Set());
   }

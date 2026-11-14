@@ -2,6 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { JOBS, type Job } from '../../data/jobs';
 import { JOINT_FIELDS, JointService, findJoint } from './joint-service';
 import { jointUrl } from '../joint-page/joint-route';
+import { ViewerService } from '../access-logic/viewer.service';
+import { WorkflowStore } from '../services/workflow-store.service';
+import { setRoutingFrom } from '../routing-logic/current-routing';
 
 const job = (o: Partial<Job>): Job => ({ ...JOBS[0], ...o });
 
@@ -16,6 +19,45 @@ describe('JointService', () => {
   });
 
   afterEach(() => localStorage.clear());
+
+  it('releases only at Fit-Up Release and records one release when retried', () => {
+    const key = { xrefid: withXref.xrefid };
+    const workflow = TestBed.inject(WorkflowStore).workflowFor(withXref);
+    workflow.update(wf => ({
+      ...wf,
+      stages: setRoutingFrom(wf.stages.map(s => s.id === 'fitup-release'
+        ? { ...s, required: true, signed: false } : s), 'fitup-release'),
+    }));
+    const viewer = TestBed.inject(ViewerService);
+    viewer.select('view');
+    expect(svc.releaseToWelding(key)).toEqual(jasmine.objectContaining({ ok: false, title: 'Access denied' }));
+    viewer.select('foreman');
+    const before = workflow().history.length;
+    expect(svc.releaseToWelding(key).ok).toBeTrue();
+    expect(svc.releaseToWelding(key)).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong routing' }));
+    expect(workflow().history.slice(before).map(entry => entry.section)).toEqual(['Release']);
+  });
+
+  it('validates fabrication writes and treats an unchanged value as a no-op', () => {
+    const key = { xrefid: withXref.xrefid };
+    const workflow = TestBed.inject(WorkflowStore).workflowFor(withXref);
+    workflow.update(wf => ({
+      ...wf,
+      stages: setRoutingFrom(wf.stages.map(s => s.id === 'fit'
+        ? { ...s, required: true, signed: false } : s), 'fit'),
+    }));
+    const viewer = TestBed.inject(ViewerService);
+    viewer.select('view');
+    expect(svc.setFabricationData(key, 'weldMemo', 'M-42')).toEqual(jasmine.objectContaining({ ok: false, title: 'Access denied' }));
+    viewer.select('fitter');
+    const before = workflow().history.length;
+    expect(svc.setFabricationData(key, 'unknown', 'M-42')).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong field' }));
+    expect(svc.setFabricationData(key, 'location', 'unknown')).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+    expect(svc.setFabricationData(key, 'weldMemo', 'M-42').ok).toBeTrue();
+    expect(svc.setFabricationData(key, 'weldMemo', 'M-42').ok).toBeTrue();
+    expect(workflow().fabricationData['weldMemo']).toBe('M-42');
+    expect(workflow().history.slice(before).map(entry => entry.section)).toEqual(['Fabrication']);
+  });
 
   describe('findJoint', () => {
     const jobs = [

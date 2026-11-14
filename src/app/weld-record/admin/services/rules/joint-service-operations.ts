@@ -5,6 +5,7 @@ import { sent, type OperationParam, type ServiceOperation } from '../../../../sh
 import { HISTORY_SECTIONS, type JointFieldDefinition, type JointFilter, type JointKey, type JointSearch, type JointService } from '../../../joint-service/joint-service';
 import { SEARCH_COLUMNS } from '../../../joint-service/joint-search';
 import type { HistoryEntry } from '../../../model/history';
+import { FABRICATION_FIELDS } from '../../../fabrication-logic/fabrication-fields';
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 /* a field as a droplist entry, under its group */
@@ -100,6 +101,28 @@ export function jointServiceOperations(svc: JointService, example: JointKey, fie
       ],
       call: a => [keyOf(a), sent({ section: (str(a['section']) || undefined) as HistoryEntry['section'] | undefined })],
       fn: (k, o) => svc.getHistory(k, o),
+    },
+    {
+      name: 'releaseToWelding',
+      signature: 'releaseToWelding(key)',
+      description: 'Releases a joint at Fit-Up Release and returns its next routing. Requires the Foreman persona and Fit-Up Release permission.',
+      writes: true,
+      params: keyParams(example),
+      call: a => [keyOf(a)],
+      fn: k => svc.releaseToWelding(k),
+    },
+    {
+      name: 'setFabricationData',
+      signature: 'setFabricationData(key, field, value)',
+      description: 'Updates one editable Fabrication field and returns the current Fabrication values, including any dependent fields cleared by the change.',
+      writes: true,
+      params: [
+        ...keyParams(example),
+        { name: 'field', label: 'Field', type: 'select', required: true, options: FABRICATION_FIELDS.map(f => f.key), example: 'weldMemo' },
+        { name: 'value', label: 'Value', type: 'text', help: 'Enter the stored value for a dropdown field. Leave blank to clear the field.' },
+      ],
+      call: a => [keyOf(a), str(a['field']), str(a['value'])],
+      fn: (k, f, v) => svc.setFabricationData(k, f, v),
     },
   ];
 }
