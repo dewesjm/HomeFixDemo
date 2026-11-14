@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.',
+    added: ['Weld Record > Admin > Services: try the calls made to Weld Record and see each exact response: get one joint, its routing path, or its History (all of it or one section). Read-only so far.',
+      'Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.',
       'Weld Engineering > Admin > Services also creates, updates and deletes procedures, marks each call (Read) or (Write), and shows the full call it makes, with Copy, as you fill in the inputs.',
       'Weld Engineering > Admin > Services can also load many procedures in one call, each saved or refused on its own like Load Procedures, and add, rename, reorder, move, size and remove procedure sections and fields, with the same checks as Admin > Procedure Sections.',
       'Weld Engineering > Admin > Services can also search procedures the way Procedure Lookup does: search text, column filters, sort and optional paging.',
