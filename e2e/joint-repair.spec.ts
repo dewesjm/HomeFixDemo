@@ -52,6 +52,41 @@ test('an UNSAT NDT adds a Repair (Repair # 01); Grind Only sends the joint back 
   await expect(await jointDetail(page, 'Repair #')).toHaveText('01');
 });
 
+test('a second UNSAT after a Repair starts Repair # 02; SAT then moves the joint on with no Repair left', async ({ page }) => {
+  await openJoint(page, ROOT_MTPT_JOINT);
+  await signInspection(page, 'MT', 'UNSAT');
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('01');
+  await signRepair(page, 'Grind Only');
+  await expectRouting(page, 'Root NDT MT/PT');
+
+  await signInspection(page, 'MT', 'UNSAT');
+  await expectRouting(page, 'Repair');
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('02');
+  /* the new round's Repair starts blank */
+  const code = signoffPanel(page).getByRole('combobox', { name: 'Repair Code*' });
+  await expect.poll(() => code.evaluate((e: HTMLSelectElement) => e.selectedOptions[0]?.text ?? '')).toBe('');
+  await signRepair(page, 'Grind Only');
+
+  await expectRouting(page, 'Root NDT MT/PT');
+  await signInspection(page, 'MT', 'SAT');
+  await expectRouting(page, 'Layer');
+  await expect(dot(page, 'Repair')).toHaveCount(0);
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('02');
+
+  await openHistory(page, ROOT_MTPT_JOINT);
+  const history = page.locator('main');
+  /* History names the second round Repair 2 */
+  await expect(history.locator('tr').filter({ hasText: 'Repair - Signed off' })).toHaveCount(1);
+  await expect(history.locator('tr').filter({ hasText: 'Repair 2 - Signed off' })).toHaveCount(1);
+  await expect(history).toContainText('Repair 2 - Routed back to Root NDT MT/PT');
+  await expect(history.locator('tr').filter({ hasText: 'Root NDT MT/PT - Signed off' })).toHaveCount(3);
+
+  await page.reload();
+  await openJoint(page, ROOT_MTPT_JOINT);
+  await expectRouting(page, 'Layer');
+  await expect(await jointDetail(page, 'Repair #')).toHaveText('02');
+});
+
 test('Weld Repair adds Excavation NDT for the failed method; UNSAT goes back to the same Repair, SAT to the failed NDT', async ({ page }) => {
   await openJoint(page, ROOT_MTPT_JOINT);
   await signInspection(page, 'MT', 'UNSAT');

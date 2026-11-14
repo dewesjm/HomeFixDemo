@@ -15,7 +15,14 @@ export const ROOT_MTPT_JOINT: SeededJoint = { xrefid: '', hull: 'S8371', drawing
 /* at Tack; the external system sends nothing, so GWP, WTN, Weld Process and PH/IP limits are typed in (engineering override) */
 export const ENGINEERING_ENTRY_JOINT: SeededJoint = { xrefid: '8N43U', hull: 'S1622', drawing: 'H711-1234', joint: 'ST-10687' };
 
-export const jointUrl = (j: SeededJoint) => `/jobs/${j.hull}/${j.drawing}/${j.joint}`;
+/* at Root; NDT Root 5X, RT Degree Root NA, so Root NDT 5X/VT is its only Root inspection; engineering-entry (GWP etc. typed in) */
+export const ROOT_5X_JOINT: SeededJoint = { xrefid: 'FY636', hull: 'S5145', drawing: 'H711-1235', joint: 'ST-11464' };
+/* at Root; NDT Root VT, Nuclear Indicator 1 (NQC rows) */
+export const ROOT_VT_JOINT: SeededJoint = { xrefid: 'FTERM', hull: 'S4949', drawing: 'S720-4518', joint: 'LO-10386' };
+/* at Root NDT RT/UT offering RT (RT Degree Root 60); Root NDT 5X/VT and Fit-Up Insp signed by the seed */
+export const ROOT_RT_JOINT: SeededJoint = { xrefid: '4T535', hull: 'N7099', drawing: 'H711-1235', joint: 'FO-11268' };
+
+export const jointUrl =(j: SeededJoint) => `/jobs/${j.hull}/${j.drawing}/${j.joint}`;
 
 export async function openJoint(page: Page, j: SeededJoint) {
   await page.goto(jointUrl(j));
