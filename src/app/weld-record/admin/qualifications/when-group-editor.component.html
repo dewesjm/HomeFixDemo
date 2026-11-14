@@ -24,7 +24,7 @@
         </select>
         @if (c.field === userField) {
           <span>is</span>
-          <select class="select select-bordered select-sm w-44" [ngModel]="c.values[0] ?? ''" (ngModelChange)="setUser(i, $event)"
+          <select class="select select-bordered select-sm w-44" [ngModel]="c.values.at(0) ?? ''" (ngModelChange)="setUser(i, $event)"
                   aria-label="Value">
             @for (o of options(c.field); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
           </select>
@@ -38,7 +38,7 @@
           @if (typed(c)) {
             <input type="text" class="input input-bordered input-sm w-44" aria-label="Value"
                    [placeholder]="c.op === 'contains' ? 'Text to look for' : 'Value'"
-                   [ngModel]="c.values[0] ?? ''" (change)="setText(i, $any($event.target).value)" />
+                   [ngModel]="c.values.at(0) ?? ''" (change)="setText(i, $any($event.target).value)" />
           }
         }
         @if (group().items.length > 1 || nested()) {
