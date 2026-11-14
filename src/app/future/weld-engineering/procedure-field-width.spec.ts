@@ -1,5 +1,6 @@
 import { formFlex, parseWidth, widthText, hasFixedFullWidth } from './procedure-field-width';
-import { withFieldWidth, procedureSections, setFieldWidth, findField, type ExtraField, type ProcedureSection } from './procedure-sections';
+import { withFieldWidth, procedureSections, findField, type ExtraField, type ProcedureSection } from './procedure-sections';
+import { setFieldWidth } from './procedure-service/section-service';
 import { keepProcedureStores } from './testing/procedure-test-state';
 
 const field = (over: Partial<ExtraField> = {}): ExtraField =>

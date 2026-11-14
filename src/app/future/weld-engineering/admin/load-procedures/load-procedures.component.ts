@@ -8,10 +8,11 @@ import { LucideArrowLeft } from '@lucide/angular';
 import { BulkImport } from '../../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../../shared/import-grid.component';
 import { getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus } from '../../../../data/procedures';
-import { createProcedure, updateProcedure, type ProcedureChanges } from '../../procedure-service/procedure-service';
+import { importProcedures, type ProcedureChanges } from '../../procedure-service/procedure-service';
+import type { ProcedureKey } from '../../procedure-service/procedure-record';
 import { parseCsvRows, parseXlsxRows } from '../../../../shared/spreadsheet-import';
 import { downloadProcedureXlsxTemplate, sectionColumns } from '../../procedure-files';
-import { procedureSections } from '../../procedure-sections';
+import { procedureSections, type ExtraFields } from '../../procedure-sections';
 import { applyCells, cellProblems } from './rules/procedure-import';
 
 type EditableRow = {
@@ -104,28 +105,37 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
     downloadProcedureXlsxTemplate(procedureSections());
   }
 
-  /* A blank cell keeps an existing procedure's value; a new procedure gets every section ticked.
-     Saved through the procedure service, so a row gets the edit form's checks; a changed Active
-     procedure gets an automatic revision note. A refused row shows the reason and stays unsaved. */
-  protected saveRow(row: EditableRow) {
-    const existing = getProcedure(row.gwp, row.wtn);
-    const changes: ProcedureChanges = {
-      title: row.title,
-      status: row.status as ProcedureStatus,
-      wtn: row.wtn,
-      weldProcess: row.weldProcess,
-      gwp: row.gwp, revision: row.revision, effectiveDate: row.effectiveDate,
-      processType: row.processType, application: row.application,
-      rules: splitList(row.rules),
-      conditions: splitList(row.conditions),
-      extraFields: applyCells(this.columns, row.cells, existing?.extraFields ?? {}),
-    };
-    const result = existing
-      ? updateProcedure(existing, changes, LOAD_REVISION_NOTE, 'Import')
-      : createProcedure({ ...changes, gwp: row.gwp, wtn: row.wtn }, 'Import');
+  /* All rows go to the procedure service in one importProcedures call; each row saves or is refused on its
+     own, with the edit form's checks, and a changed Active procedure gets an automatic revision note. A
+     blank cell keeps the procedure's value (the one an earlier row in this file gives it, if any); a new
+     procedure gets every section ticked. A refused row shows the reason and stays unsaved. */
+  protected override saveRows(rows: EditableRow[]) {
+    const fileValues = new Map<string, ExtraFields>();
+    const sent = rows.map((row): ProcedureChanges & ProcedureKey => {
+      const id = `${row.gwp}
+${row.wtn}`;
+      const extraFields = applyCells(this.columns, row.cells, fileValues.get(id) ?? getProcedure(row.gwp, row.wtn)?.extraFields ?? {});
+      fileValues.set(id, extraFields);
+      return {
+        title: row.title,
+        status: row.status as ProcedureStatus,
+        wtn: row.wtn,
+        weldProcess: row.weldProcess,
+        gwp: row.gwp, revision: row.revision, effectiveDate: row.effectiveDate,
+        processType: row.processType, application: row.application,
+        rules: splitList(row.rules),
+        conditions: splitList(row.conditions),
+        extraFields,
+      };
+    });
+    const result = importProcedures(sent, LOAD_REVISION_NOTE, 'Import');
     if (!result.ok) {
-      row._errors = [result.error];
-      throw new Error(result.error);
+      rows.forEach(r => r._errors = [result.error]);
+      return;
     }
+    result.data.rows.forEach((r, i) => {
+      if (r.ok) rows[i]._saved = true;
+      else rows[i]._errors = [r.error];
+    });
   }
 }

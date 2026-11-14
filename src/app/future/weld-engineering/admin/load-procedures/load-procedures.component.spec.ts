@@ -99,6 +99,18 @@ describe('Load Procedures', () => {
     expect(p.revisionHistory.length).toBe(1);
   });
 
+  it('a later row for the same procedure keeps what an earlier row in the file set', async () => {
+    load([
+      { gwp: 'GWP-OLD', wtn: '01.1-1', jointType: 'Fillet' },
+      { gwp: 'GWP-OLD', wtn: '01.1-1', phMin: '150' },
+    ]);
+    await page.saveAll();
+    const p = getProcedure('GWP-OLD', '01.1-1')!;
+    expect(p.extraFields['jointType']).toBe('Fillet');
+    expect(p.extraFields['phMin']).toBe('150');
+    expect(page.savedCount()).toBe(2);
+  });
+
   it('gives a changed Active procedure the automatic revision note', async () => {
     procedures.update(list => list.map(p => ({ ...p, status: 'active' as const })));
     load([{ gwp: 'GWP-OLD', wtn: '01.1-1', status: 'active', title: 'New title' }]);

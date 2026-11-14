@@ -1,6 +1,7 @@
 /* Shared logic for the spreadsheet import pages (Import Joints, Load Procedures): load rows from a
    file or a sample, validate them, save the valid ones. Pages extend this and render with
-   app-import-grid; each supplies only its own parsing, validation, sample and save. */
+   app-import-grid; each supplies only its own parsing, validation, sample and save (one row at a time,
+   saveRow, or the whole batch in one call, saveRows). */
 import { inject, signal } from '@angular/core';
 
 import { ToastService } from './toast.service';
@@ -24,8 +25,22 @@ export abstract class BulkImport<R extends ImportRowState> {
   protected abstract parseFile(file: File): Promise<Record<string, string>[]>;
   protected abstract fromRaw(raw: Record<string, string>): R;
   abstract validateRow(row: R): void;
-  /* add or update one row; throw to count it as failed */
-  protected abstract saveRow(row: R): void;
+  /* add or update one row; throw to count it as failed. Not needed when saveRows is overridden. */
+  protected saveRow(_row: R): void {
+    throw new Error(`${this.noun}: override saveRow or saveRows`);
+  }
+
+  /* save the valid unsaved rows, setting _saved on each one saved; by default one at a time through
+     saveRow. A page whose backend takes the whole batch in one call overrides this. */
+  protected saveRows(rows: R[]): void {
+    for (const row of rows) {
+      try {
+        this.saveRow(row);
+        row._saved = true;
+      } catch { /* counted as failed */ }
+    }
+  }
+
   protected abstract sampleRows(): R[];
   abstract downloadTemplate(): void | Promise<void>;
   /* 'saved', 'created', 'updated' */
@@ -66,18 +81,9 @@ export abstract class BulkImport<R extends ImportRowState> {
   async saveAll() {
     this.saving.set(true);
     const pending = this.rows().filter(r => !r._saved && r._errors.length === 0);
-    let saved = 0;
-    let failed = 0;
-
-    for (const row of pending) {
-      try {
-        this.saveRow(row);
-        row._saved = true;
-        saved++;
-      } catch {
-        failed++;
-      }
-    }
+    this.saveRows(pending);
+    const saved = pending.filter(r => r._saved).length;
+    const failed = pending.length - saved;
 
     this.savedCount.set(this.rows().filter(r => r._saved).length);
     this.errorCount.set(this.rows().filter(r => !r._saved && r._errors.length > 0).length);

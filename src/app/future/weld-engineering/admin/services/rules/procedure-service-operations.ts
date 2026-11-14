@@ -3,7 +3,7 @@
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
 import { sent, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
 import {
-  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure,
+  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
 } from '../../../procedure-service/procedure-service';
 import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
@@ -101,6 +101,22 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
       }],
       call: a => [a['procedure'] ?? {}, BY],
       fn: createProcedure,
+    },
+    {
+      name: 'importProcedures',
+      signature: 'importProcedures(rows, revisionNote?, by?)',
+      description: 'Many procedures at once (Load Procedures). Each row saves or is refused on its own: an existing GWP + WTN is updated, any other is created. Answers how each row went.',
+      writes: true,
+      params: [
+        {
+          name: 'rows', label: 'Rows', type: 'json', required: true,
+          example: '[{ "gwp": "W-999", "wtn": "01.1-1", "title": "Test procedure" }, { "gwp": "W-999", "wtn": "01.1-2", "title": "Second" }]',
+          help: 'A list of procedures, each with gwp and wtn and the same properties as createProcedure.',
+        },
+        { ...revisionNoteParam, help: 'Added to each updated Active procedure. Load Procedures sends "Loaded from file".' },
+      ],
+      call: a => [a['rows'] ?? [], str(a['revisionNote']), BY],
+      fn: importProcedures,
     },
     {
       name: 'deleteProcedure',

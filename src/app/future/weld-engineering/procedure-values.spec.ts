@@ -6,7 +6,8 @@ import {
   fillerMetalTypeOptions, fillerMetalSizeOptions, hasProcedure, procedureOverride, procedureRequiredQuals,
   wtnFillValue, gwpDetails, wtnDescription,
 } from './procedure-values';
-import { SEEDED_SECTION_IDS, procedureSections, moveField, renameField, renameSection, shiftField, addSection } from './procedure-sections';
+import { SEEDED_SECTION_IDS, procedureSections, changeSections, withFieldMoved } from './procedure-sections';
+import { moveField, renameField, renameSection, shiftField, addSection } from './procedure-service/section-service';
 import { deleteProcedure } from '../../data/procedures';
 import { keepProcedureStores } from './testing/procedure-test-state';
 import { textValue } from './procedure-field-values';
@@ -227,7 +228,8 @@ describe('procedure values', () => {
     it('a locked field moved into a section the procedure has not ticked reads as blank', () => {
       addSection('Extra');
       const extra = procedureSections().at(-1)!;
-      moveField('phMin', extra.id);
+      /* straight to the store: the section service refuses a move that hides a value */
+      changeSections(l => withFieldMoved(l, 'phMin', extra.id));
       expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('');
       updateProcedure('TEST-GWP-CHG', '20.1-1', { sectionIds: [...SEEDED_SECTION_IDS, extra.id] });
       expect(wtnFillValue('TEST-GWP-CHG', '20.1-1', 'phMin')).toBe('100');

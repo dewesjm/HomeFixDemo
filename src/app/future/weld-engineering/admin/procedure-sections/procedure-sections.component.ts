@@ -1,7 +1,8 @@
 /* Weld Engineering Admin - Procedure Sections: every procedure section and its fields, numbered by
    list order; add, rename, reorder, move and remove them. Which procedures have a section is ticked
-   on each procedure's edit form. Definitions are in weld-engineering/procedure-sections.ts, what
-   blocks a removal or move in weld-engineering/procedure-section-usage.ts. */
+   on each procedure's edit form. Definitions are in weld-engineering/procedure-sections.ts; every change
+   goes through the section service (procedure-service/section-service.ts), which runs the checks,
+   including what procedure-section-usage.ts blocks. */
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,11 +12,11 @@ import { ToastService } from '../../../../shared/toast.service';
 import { ConfirmService } from '../../../../shared/confirm.service';
 import { procedures } from '../../../../data/procedures';
 import {
-  procedureSections, addSection, addField, sectionNameProblem, fieldDraftProblem, fieldLabelProblem, fieldTypeLabel,
-  shiftSection, shiftField, moveField, renameSection, renameField, removeField, removeSection, setFieldWidth,
-  EXTRA_FIELD_TYPE_OPTIONS, type ExtraField, type ExtraFieldType, type ProcedureSection
+  procedureSections, fieldTypeLabel, EXTRA_FIELD_TYPE_OPTIONS, type ExtraField, type ExtraFieldType, type ProcedureSection
 } from '../../procedure-sections';
-import { sectionRemoveBlock, fieldRemoveBlock, fieldMoveBlock, type UsageBlock } from '../../procedure-section-usage';
+import { sectionRemoveBlock, fieldRemoveBlock, type UsageBlock } from '../../procedure-section-usage';
+import * as sectionService from '../../procedure-service/section-service';
+import type { ServiceFailure, ServiceResult } from '../../procedure-service/service-result';
 import { ADMIN_TABLE_SOURCES, sourceLabel, type OptionSourceId } from '../../procedure-option-sources';
 import { hasFixedFullWidth, parseWidth, widthText, PDF_PAGE_WIDTH_PX } from '../../procedure-field-width';
 
@@ -71,13 +72,23 @@ export class ProcedureSectionsComponent {
     return f.options.join(', ') || '-';
   }
 
-  addSection() {
-    const problem = sectionNameProblem(this.newSectionName, this.sections());
-    if (problem) {
-      this.toast.add({ severity: 'warn', summary: 'Section not added', detail: problem });
-      return;
+  /* a refused change: the procedures blocking it under the section, anything else as a toast */
+  private refused(result: ServiceFailure, sectionId: string) {
+    if (result.procedures) {
+      this.blocked.set({ problem: result.error, procedures: result.procedures, sectionId, heading: `${result.title}.` });
+    } else {
+      this.toast.add({ severity: 'warn', summary: result.title, detail: result.error });
     }
-    addSection(this.newSectionName);
+  }
+
+  /* true when the change was made */
+  private done(result: ServiceResult<unknown>, sectionId = ''): boolean {
+    if (!result.ok) this.refused(result, sectionId);
+    return result.ok;
+  }
+
+  addSection() {
+    if (!this.done(sectionService.addSection(this.newSectionName))) return;
     this.toast.add({ severity: 'success', summary: 'Section added', detail: this.newSectionName.trim() });
     this.newSectionName = '';
   }
@@ -89,12 +100,7 @@ export class ProcedureSectionsComponent {
       options: form.optionsText.split(',').map(o => o.trim()).filter(Boolean),
       source: form.source || undefined,
     };
-    const problem = fieldDraftProblem(draft, section);
-    if (problem) {
-      this.toast.add({ severity: 'warn', summary: 'Field not added', detail: problem });
-      return;
-    }
-    addField(section.id, draft, [...new Set(procedures().flatMap(p => Object.keys(p.extraFields)))]);
+    if (!this.done(sectionService.addField(section.id, draft))) return;
     this.toast.add({ severity: 'success', summary: 'Field added', detail: `${section.name}: ${draft.label.trim()}` });
     delete this.drafts[section.id];
   }
@@ -107,12 +113,7 @@ export class ProcedureSectionsComponent {
   }
 
   saveSectionRename(s: ProcedureSection) {
-    const problem = sectionNameProblem(this.nameDraft, this.sections(), s.id);
-    if (problem) {
-      this.toast.add({ severity: 'warn', summary: 'Section not renamed', detail: problem });
-      return;
-    }
-    renameSection(s.id, this.nameDraft);
+    if (!this.done(sectionService.renameSection(s.id, this.nameDraft))) return;
     this.renamingSection.set(null);
   }
 
@@ -122,13 +123,8 @@ export class ProcedureSectionsComponent {
     this.nameDraft = f.label;
   }
 
-  saveFieldRename(section: ProcedureSection, f: ExtraField) {
-    const problem = fieldLabelProblem(this.nameDraft, section, f.key);
-    if (problem) {
-      this.toast.add({ severity: 'warn', summary: 'Field not renamed', detail: problem });
-      return;
-    }
-    renameField(f.key, this.nameDraft);
+  saveFieldRename(f: ExtraField) {
+    if (!this.done(sectionService.renameField(f.key, this.nameDraft))) return;
     this.renamingField.set(null);
   }
 
@@ -155,7 +151,7 @@ export class ProcedureSectionsComponent {
       return;
     }
     this.sizingField.set(null);
-    setFieldWidth(f.key, mode === 'full' ? 'full' : undefined);
+    this.done(sectionService.setFieldWidth(f.key, mode === 'full' ? 'full' : null));
   }
 
   startWidthEdit(f: ExtraField) {
@@ -168,7 +164,7 @@ export class ProcedureSectionsComponent {
       this.toast.add({ severity: 'warn', summary: 'Width not set', detail: parsed.problem });
       return;
     }
-    setFieldWidth(f.key, parsed.width);
+    if (!this.done(sectionService.setFieldWidth(f.key, parsed.width))) return;
     this.sizingField.set(null);
   }
 
@@ -179,11 +175,11 @@ export class ProcedureSectionsComponent {
 
   /* ── Reorder and move ── */
   shiftSection(s: ProcedureSection, delta: number) {
-    shiftSection(s.id, delta);
+    this.done(sectionService.shiftSection(s.id, delta));
   }
 
   shiftField(f: ExtraField, delta: number) {
-    shiftField(f.key, delta);
+    this.done(sectionService.shiftField(f.key, delta));
   }
 
   /* other sections a field can move to */
@@ -195,18 +191,15 @@ export class ProcedureSectionsComponent {
     const targetId = select.value;
     select.value = '';
     if (!targetId) return;
-    const block = fieldMoveBlock(f.key, targetId, this.sections(), procedures());
-    if (block) {
-      this.blocked.set({ ...block, sectionId: section.id, heading: `${f.label} can't be moved.` });
-      return;
-    }
-    moveField(f.key, targetId);
+    if (!this.done(sectionService.moveField(f.key, targetId), section.id)) return;
     this.blocked.set(null);
     const target = this.sections().find(s => s.id === targetId);
     this.toast.add({ severity: 'success', summary: 'Field moved', detail: `${f.label} to ${target?.name}` });
   }
 
-  /* ── Remove ── */
+  /* ── Remove ──
+     The blocks are checked before asking to confirm, so nobody confirms a removal that would be refused;
+     the service checks them again. */
   removeSection(s: ProcedureSection) {
     const block = sectionRemoveBlock(s, procedures());
     if (block) {
@@ -215,7 +208,7 @@ export class ProcedureSectionsComponent {
     }
     this.blocked.set(null);
     this.confirm.confirmDelete(`section ${s.name}`, () => {
-      removeSection(s.id);
+      if (!this.done(sectionService.removeSection(s.id), s.id)) return;
       this.toast.add({ severity: 'success', summary: 'Section removed', detail: s.name });
     });
   }
@@ -228,7 +221,7 @@ export class ProcedureSectionsComponent {
     }
     this.blocked.set(null);
     this.confirm.confirmDelete(`field ${f.label}`, () => {
-      removeField(f.key);
+      if (!this.done(sectionService.removeField(f.key), section.id)) return;
       this.toast.add({ severity: 'success', summary: 'Field removed', detail: `${section.name}: ${f.label}` });
     });
   }

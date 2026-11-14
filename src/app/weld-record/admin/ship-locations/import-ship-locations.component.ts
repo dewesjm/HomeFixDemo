@@ -82,7 +82,7 @@ export class ImportShipLocationsComponent extends BulkImport<ImportRow> {
     downloadCsv('ship-locations-template', ['Hull', 'Level/Deck', 'Frame', 'P/S/CL', 'Usage'].map(h => ({ header: h, value: () => '' })), []);
   }
 
-  protected saveRow(row: ImportRow) {
+  protected override saveRow(row: ImportRow) {
     const entries = getShipLocations();
     const entry = entryOf(row);
     if (entries.some(e => keyOf(e) === keyOf(entry))) throw new Error('duplicate');

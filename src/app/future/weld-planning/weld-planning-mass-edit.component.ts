@@ -226,7 +226,7 @@ export class WeldPlanningMassEditComponent extends BulkImport<EditableRow> imple
     return this.isEditMode() ? 'updated' : 'created';
   }
 
-  protected saveRow(row: EditableRow) {
+  protected override saveRow(row: EditableRow) {
     const fields = {
       hull: row.hull,
       joint: row.joint,

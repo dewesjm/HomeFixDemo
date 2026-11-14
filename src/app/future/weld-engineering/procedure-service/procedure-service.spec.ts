@@ -2,7 +2,7 @@ import { procedures, getProcedure as procedureRow } from '../../../data/procedur
 import { SEEDED_SECTION_IDS } from '../procedure-sections';
 import { keepProcedureStores, testProcedure, TEST_WTN } from '../testing/procedure-test-state';
 import {
-  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, REVISION_NOTE_REQUIRED,
+  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures, REVISION_NOTE_REQUIRED,
 } from './procedure-service';
 
 const GWP = 'SVC-1';
@@ -202,6 +202,27 @@ describe('procedure service', () => {
       expect(deleteProcedure(key)).toEqual({ ok: true, data: { deleted: key } });
       expect(procedureRow(GWP, TEST_WTN)).toBeUndefined();
       expect(deleteProcedure(key).ok).toBeFalse();
+    });
+
+    it('importProcedures saves or refuses each row on its own, in order, and answers each outcome', () => {
+      const r = importProcedures([
+        { gwp: 'IMP-1', wtn: '01.1-1', title: 'New' },
+        { gwp: GWP, wtn: TEST_WTN, title: 'Changed' },
+        { gwp: '', wtn: '9' },
+        { gwp: 'IMP-1', wtn: '01.1-1', title: 'Again' },
+      ], 'From file', 'Import');
+      if (!r.ok) return fail(r.error);
+      expect(r.data.created).toBe(1);
+      expect(r.data.updated).toBe(2);
+      expect(r.data.refused).toBe(1);
+      expect(r.data.rows.map(row => row.ok ? row.action : row.title)).toEqual(['created', 'updated', jasmine.any(String), 'updated']);
+      expect(procedureRow('IMP-1', '01.1-1')!.title).toBe('Again');
+      expect(procedureRow(GWP, TEST_WTN)!.revisionHistory.at(-1)).toEqual(jasmine.objectContaining({ note: 'From file', by: 'Import' }));
+    });
+
+    it('importProcedures needs at least one row', () => {
+      expect(importProcedures([])).toEqual(jasmine.objectContaining({ ok: false, error: 'Send at least one procedure row.' }));
+      expect(importProcedures('x' as never).ok).toBeFalse();
     });
   });
 });

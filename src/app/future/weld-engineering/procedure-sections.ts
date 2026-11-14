@@ -165,7 +165,7 @@ export function fieldLabelProblem(label: string, section: ProcedureSection, exce
   return '';
 }
 
-interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; source?: OptionSourceId; }
+export interface ExtraFieldDraft { label: string; type: ExtraFieldType; required: boolean; options: string[]; source?: OptionSourceId; }
 
 export function fieldDraftProblem(draft: ExtraFieldDraft, section: ProcedureSection): string {
   const labelProblem = fieldLabelProblem(draft.label, section);
@@ -199,36 +199,40 @@ function persist(list: ProcedureSection[]) {
 
 export const procedureSections = signal<ProcedureSection[]>(loadSections());
 
-export function addSection(name: string): void {
+/* every change to the definitions; only the section service (procedure-service/section-service.ts)
+   calls it, after its checks */
+export function changeSections(edit: (list: ProcedureSection[]) => ProcedureSection[]): void {
   procedureSections.update(list => {
-    const next = [...list, { id: `sec-${Date.now()}`, name: name.trim(), fields: [] }];
-    persist(next);
-    return next;
-  });
-}
-
-/* savedKeys: every key any procedure still has a value under, so a new field never picks up a
-   removed field's leftover hidden values */
-export function addField(sectionId: string, draft: ExtraFieldDraft, savedKeys: string[] = []): void {
-  procedureSections.update(list => {
-    const taken = [...list.flatMap(s => s.fields.map(f => f.key)), ...savedKeys];
-    const field: ExtraField = {
-      key: fieldKey(draft.label, taken),
-      label: draft.label.trim(),
-      type: draft.type,
-      required: draft.required,
-      options: draft.type === 'list' || draft.type === 'multi' ? draft.options : [],
-      ...(draft.type === 'table' && draft.source ? { source: draft.source } : {}),
-    };
-    const next = list.map(s => s.id === sectionId ? { ...s, fields: [...s.fields, field] } : s);
+    const next = edit(list);
     persist(next);
     return next;
   });
 }
 
 /* ── Editing (Admin > Procedure Sections) ──
-   Pure list changes, then persisted wrappers below. Removal and move checks against procedures are
-   the caller's job (procedure-section-usage.ts). */
+   Pure list changes. The section service checks each one (names, locked fields, and what
+   procedure-section-usage.ts blocks) and saves it with changeSections(). */
+
+export function withSectionAdded(list: ProcedureSection[], id: string, name: string): ProcedureSection[] {
+  return [...list, { id, name: name.trim(), fields: [] }];
+}
+
+/* takenKeys: every key any procedure still has a value under, so a new field never picks up a
+   removed field's leftover hidden values */
+export function newField(draft: ExtraFieldDraft, list: ProcedureSection[], takenKeys: string[] = []): ExtraField {
+  return {
+    key: fieldKey(draft.label, [...list.flatMap(s => s.fields.map(f => f.key)), ...takenKeys]),
+    label: draft.label.trim(),
+    type: draft.type,
+    required: draft.required,
+    options: draft.type === 'list' || draft.type === 'multi' ? draft.options : [],
+    ...(draft.type === 'table' && draft.source ? { source: draft.source } : {}),
+  };
+}
+
+export function withFieldAdded(list: ProcedureSection[], sectionId: string, field: ExtraField): ProcedureSection[] {
+  return list.map(s => s.id === sectionId ? { ...s, fields: [...s.fields, field] } : s);
+}
 
 /* moves the item at `index` by `delta` places; out-of-range moves return the list unchanged */
 function shifted<T>(items: T[], index: number, delta: number): T[] {
@@ -288,20 +292,3 @@ export function withFieldRemoved(list: ProcedureSection[], key: string): Procedu
 export function withSectionRemoved(list: ProcedureSection[], id: string): ProcedureSection[] {
   return list.filter(s => s.id !== id || s.fields.some(f => f.locked));
 }
-
-function change(edit: (list: ProcedureSection[]) => ProcedureSection[]): void {
-  procedureSections.update(list => {
-    const next = edit(list);
-    persist(next);
-    return next;
-  });
-}
-
-export const shiftSection = (id: string, delta: number) => change(l => withSectionShifted(l, id, delta));
-export const shiftField = (key: string, delta: number) => change(l => withFieldShifted(l, key, delta));
-export const moveField = (key: string, targetId: string) => change(l => withFieldMoved(l, key, targetId));
-export const renameSection = (id: string, name: string) => change(l => withSectionRenamed(l, id, name));
-export const renameField = (key: string, label: string) => change(l => withFieldRenamed(l, key, label));
-export const setFieldWidth = (key: string, width: FieldWidth | undefined) => change(l => withFieldWidth(l, key, width));
-export const removeField = (key: string) => change(l => withFieldRemoved(l, key));
-export const removeSection = (id: string) => change(l => withSectionRemoved(l, id));

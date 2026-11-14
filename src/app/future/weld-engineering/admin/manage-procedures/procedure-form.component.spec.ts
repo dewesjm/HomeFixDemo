@@ -5,7 +5,8 @@ import { ProcedureFormComponent } from './procedure-form.component';
 import { procedures, getProcedure } from '../../../../data/procedures';
 import { STORAGE } from '../../../../data/storage-keys';
 import { ToastService } from '../../../../shared/toast.service';
-import { procedureSections, addSection, addField, SEEDED_SECTION_IDS } from '../../procedure-sections';
+import { procedureSections, SEEDED_SECTION_IDS } from '../../procedure-sections';
+import { addSection, addField } from '../../procedure-service/section-service';
 import { keepProcedureStores, testProcedure, fakeRouter, fakeRoute } from '../../testing/procedure-test-state';
 
 describe('Procedure form', () => {

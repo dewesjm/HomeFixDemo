@@ -86,7 +86,7 @@ describe('Procedure Sections admin', () => {
 
     page.startFieldRename(field);
     page.nameDraft = gas.fields[1].label;
-    page.saveFieldRename(gas, field);
+    page.saveFieldRename(field);
     expect(lastToast().summary).toBe('Field not renamed');
     expect(page.renamingField()).toBe(field.key);
   });

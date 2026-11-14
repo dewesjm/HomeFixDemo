@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 
 import { ProcedureLookupComponent } from './procedure-lookup.component';
 import { procedures } from '../../../data/procedures';
-import { renameField } from '../procedure-sections';
+import { renameField } from '../procedure-service/section-service';
 import { keepProcedureStores, testProcedure, fakeRouter } from '../testing/procedure-test-state';
 
 const steel = testProcedure('LK-1', {

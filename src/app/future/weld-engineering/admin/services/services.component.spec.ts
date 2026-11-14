@@ -39,5 +39,7 @@ describe('Weld Engineering Services page', () => {
     const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());
     expect(options).toContain('updateProcedureFields (Write)');
     expect(options).toContain('getProcedure (Read)');
+    expect(options).toContain('importProcedures (Write)');
+    expect(options).toContain('removeField (Write)');
   });
 });

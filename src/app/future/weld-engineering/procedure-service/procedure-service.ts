@@ -5,7 +5,9 @@
    Reads:  getProcedure(key, options) = everything on a WTN, or only the fields asked for;
            findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for.
    Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
-           values, revisionNote) (section values only), deleteProcedure(key).
+           values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
+           (many at once, each row saved or refused on its own).
+   The section and field definitions have their own service, section-service.ts.
    Reads ask for fields by key (procedure-sections.ts), never by section name or number, since sections
    can be renamed and fields moved. Status defaults to Active. The demo keeps only each procedure's
    current values, so asking for an older revision is answered with an error.
@@ -25,8 +27,10 @@ import { parseFieldInput } from './procedure-field-input';
 import { choiceProblem, procedureSaveProblem } from './procedure-save-checks';
 import { changesProblem, type ProcedureChanges } from './procedure-changes';
 
+import { fail, type ServiceResult } from './service-result';
+
 export type { ProcedureChanges } from './procedure-changes';
-export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string; title: string };
+export type { ServiceResult } from './service-result';
 
 export interface ReadOptions {
   /* field keys to return; all of the procedure's sections when left out */
@@ -56,10 +60,10 @@ export interface FoundProcedure {
 /* the revision note error, as the edit form shows it */
 export const REVISION_NOTE_REQUIRED = 'This procedure is Active -- describe the change before saving';
 
-const fail = (error: string, title = 'Not done') => ({ ok: false as const, error, title });
 const statusLabel = (s: ProcedureStatus) => PROCEDURE_STATUS_OPTIONS.find(o => o.value === s)?.label ?? s;
 const noSuchProcedure = (key: ProcedureKey) =>
   fail(`There is no procedure GWP ${key.gwp || '(blank)'} / WTN ${key.wtn || '(blank)'}.`, 'Not found');
+const text = (v: unknown) => (typeof v === 'string' ? v : '');
 const rowFor = (key: ProcedureKey) => procedureRow(key.gwp?.trim(), key.wtn?.trim());
 
 function statusProblem(status: unknown): string {
@@ -194,4 +198,32 @@ export function deleteProcedure(key: ProcedureKey): ServiceResult<{ deleted: Pro
   if (!p) return noSuchProcedure(key);
   storeDelete(p.gwp, p.wtn);
   return { ok: true, data: { deleted: { gwp: p.gwp, wtn: p.wtn } } };
+}
+
+/* one row of importProcedures' answer, in the order sent */
+export type ImportedRow = ProcedureKey & ({ ok: true; action: 'created' | 'updated' } | { ok: false; error: string; title: string });
+
+/* Many procedures in one call (Load Procedures). Each row saves or is refused on its own, in order: a row
+   whose GWP + WTN exists updates it (with revisionNote when it's Active), any other row creates one.
+   Each row runs the same checks as createProcedure / updateProcedure. Answers every row's outcome. */
+export function importProcedures(
+  rows: (ProcedureChanges & ProcedureKey)[], revisionNote = '', by = 'Service'
+): ServiceResult<{ created: number; updated: number; refused: number; rows: ImportedRow[] }> {
+  if (!Array.isArray(rows) || !rows.length) return fail('Send at least one procedure row.');
+  const out: ImportedRow[] = rows.map(row => {
+    const key = { gwp: text(row?.gwp).trim(), wtn: text(row?.wtn).trim() };
+    const existing = rowFor(key);
+    const result = existing ? updateProcedure(existing, row, revisionNote, by) : createProcedure(row, by);
+    return result.ok
+      ? { ...key, ok: true, action: existing ? 'updated' : 'created' }
+      : { ...key, ok: false, error: result.error, title: result.title };
+  });
+  const count = (f: (r: ImportedRow) => boolean) => out.filter(f).length;
+  return {
+    ok: true,
+    data: {
+      created: count(r => r.ok && r.action === 'created'), updated: count(r => r.ok && r.action === 'updated'),
+      refused: count(r => !r.ok), rows: out,
+    },
+  };
 }
