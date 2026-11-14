@@ -91,6 +91,13 @@ export const VIEW_GROUP_ID = 'g10';
 export const FITTING_GROUP_ID = 'g2';
 export const WELDING_GROUP_ID = 'g3';
 export const FOREMAN_GROUP_ID = 'g4';
+export const INSPECTOR_GROUP_ID = 'g5';
+export const NQC_INSPECTOR_GROUP_ID = 'g6';
+
+const INSPECTOR_PERMISSIONS = [
+  ...VIEW_PERMISSIONS, EDIT_FABRICATION_PERMISSION, SIGN_EXCAVATION_NDT_PERMISSION,
+  ...['fitup-insp', 'vt', '5x', 'mt', 'pt', 'ut', 'rt'].map(signoffPermission),
+];
 
 const SAMPLE_GROUPS: AdminGroup[] = [
   { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
@@ -108,10 +115,10 @@ const SAMPLE_GROUPS: AdminGroup[] = [
     personas: ['Foreman'], allowed: [
       ...VIEW_PERMISSIONS, ...['fitup-insp', 'fitup-release', 'repair'].map(signoffPermission),
     ] },
-  { id: 'g5', name: 'Inspector', description: 'Inspectors who handle inspection routings.',
-    personas: ['Inspector'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
-  { id: 'g6', name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',
-    personas: ['NQC Inspector'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
+  { id: INSPECTOR_GROUP_ID, name: 'Inspector', description: 'Inspectors who handle inspection routings.',
+    personas: ['Inspector'], allowed: INSPECTOR_PERMISSIONS },
+  { id: NQC_INSPECTOR_GROUP_ID, name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',
+    personas: ['NQC Inspector'], allowed: INSPECTOR_PERMISSIONS },
   { id: 'g7', name: 'O63 Records', description: 'O63 records reviewers.',
     personas: ['O63 Records'], allowed: EXISTING_SIGNOFF_PERMISSIONS },
   { id: 'g8', name: 'O04 Records', description: 'O04 records reviewers.',

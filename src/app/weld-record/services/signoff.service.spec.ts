@@ -619,9 +619,34 @@ describe('SignoffService', () => {
 
     viewer.select('inspector');
     expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeTrue();
-    expect(viewer.canSignRouting('nqc-excavation-ndt-2', '5x')).toBeTrue();
+    expect(viewer.canSignRouting('nqc-excavation-ndt-2', '5x')).toBeFalse();
     viewer.select('foreman');
     expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeFalse();
+  });
+
+  it('grants each inspector their inspection routings and shared record access', () => {
+    const viewer = TestBed.inject(ViewerService);
+    for (const [person, ownPrefix, otherPrefix] of [
+      ['inspector', '', 'nqc-'], ['nqc-inspector', 'nqc-', ''],
+    ]) {
+      viewer.select(person);
+      expect(viewer.canSearch()).toBeTrue();
+      expect(viewer.canViewJoint()).toBeTrue();
+      expect(viewer.canViewJointHistory()).toBeTrue();
+      expect(viewer.canViewHistoryPage()).toBeTrue();
+      expect(viewer.canEditFabrication()).toBeTrue();
+      expect(viewer.canAccessAdmin()).toBeFalse();
+      expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
+      expect(viewer.canSignRouting('repair', 'repair')).toBeFalse();
+
+      for (const [id, type] of [
+        ['fitup-insp', 'fitup-insp'], ['root-ndt-vt5x', 'vt'], ['layer-ndt-mtpt', 'mt'],
+        ['final-ndt-utrt', 'rt'], ['excavation-ndt-2', '5x'],
+      ]) {
+        expect(viewer.canSignRouting(ownPrefix + id, type)).toBeTrue();
+        expect(viewer.canSignRouting(otherPrefix + id, type)).toBeFalse();
+      }
+    }
   });
 
   it('limits Foreman signoffs to regular Fit-Up Insp, Fit-Up Release and Repair', () => {
