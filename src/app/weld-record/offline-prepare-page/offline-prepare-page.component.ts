@@ -1,5 +1,6 @@
-import { Component, OnDestroy, signal } from '@angular/core';
-import { isMwqOfflineRequest, MWQ_SIMULATOR_ORIGIN, type MwqOfflineRequest } from './rules/mwq-offline-request';
+import { Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { getMwqOfflineOrigins } from './rules/mwq-offline-origins';
+import { isMwqOfflineRequest, type MwqOfflineRequest } from './rules/mwq-offline-request';
 
 @Component({
   selector: 'app-offline-prepare-page',
@@ -18,24 +19,35 @@ import { isMwqOfflineRequest, MWQ_SIMULATOR_ORIGIN, type MwqOfflineRequest } fro
     </section>
   `,
 })
-export class OfflinePreparePageComponent implements OnDestroy {
+export class OfflinePreparePageComponent implements OnInit, OnDestroy {
   protected readonly request = signal<MwqOfflineRequest | null>(null);
   protected readonly status = signal('Open this page using Get ready for offline in the MWQ simulator.');
   private readonly mwqWindow: Window | null = window.opener;
+  private readonly setup = new AbortController();
+  private allowedOrigins: string[] = [];
 
-  constructor() {
+  ngOnInit(): void {
     if (!this.mwqWindow) return;
     this.status.set('Waiting for the MWQ simulator to send joints.');
-    window.addEventListener('message', this.receiveRequest);
-    this.mwqWindow.postMessage({ type: 'ewr-offline-listening' }, MWQ_SIMULATOR_ORIGIN);
+    void this.listenForRequest(this.mwqWindow);
   }
 
   ngOnDestroy(): void {
+    this.setup.abort();
     window.removeEventListener('message', this.receiveRequest);
   }
 
+  private async listenForRequest(mwqWindow: Window): Promise<void> {
+    this.allowedOrigins = await getMwqOfflineOrigins(this.setup.signal);
+    if (this.setup.signal.aborted) return;
+    window.addEventListener('message', this.receiveRequest);
+    for (const origin of this.allowedOrigins) {
+      mwqWindow.postMessage({ type: 'ewr-offline-listening' }, origin);
+    }
+  }
+
   private readonly receiveRequest = (event: MessageEvent<unknown>): void => {
-    if (event.origin !== MWQ_SIMULATOR_ORIGIN || event.source !== this.mwqWindow) return;
+    if (!this.allowedOrigins.includes(event.origin) || event.source !== this.mwqWindow) return;
     if (!isMwqOfflineRequest(event.data) || this.request()) return;
 
     this.request.set(event.data);
@@ -44,6 +56,6 @@ export class OfflinePreparePageComponent implements OnDestroy {
       type: 'ewr-offline-request-received',
       requestId: event.data.requestId,
       joints: event.data.joints,
-    }, MWQ_SIMULATOR_ORIGIN);
+    }, event.origin);
   };
 }

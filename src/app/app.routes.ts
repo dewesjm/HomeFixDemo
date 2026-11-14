@@ -63,8 +63,7 @@ const requireAdminTablesAccess = requireWeldRecordAccess(viewer => viewer.canMai
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'pipe-welding' },
   { path: 'offline/prepare', title: 'EWR - Prepare for offline use',
-    loadComponent: () => import('./weld-record/offline-prepare-page/offline-prepare-page.component').then(m => m.OfflinePreparePageComponent),
-    canMatch: [() => window.location.hostname === 'localhost'] },
+    loadComponent: () => import('./weld-record/offline-prepare-page/offline-prepare-page.component').then(m => m.OfflinePreparePageComponent) },
   /* Pipe Welding is the Advanced Search page */
   { path: 'pipe-welding', component: PipeWeldingPageComponent, title: 'EWR - Pipe Welding' },
   /* the old Pipe Welding table, switched off unless Admin > Feature Toggles > Classic Pipe Welding page

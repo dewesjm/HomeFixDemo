@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 
-const page = await readFile(new URL('./mwq-offline-simulator.html', import.meta.url));
+const page = await readFile(new URL('../public/mwq-offline-simulator.html', import.meta.url));
 createServer((request, response) => {
   if (request.url !== '/') {
     response.writeHead(404).end();

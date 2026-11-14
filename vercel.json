@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && node scripts/write-mwq-offline-config.mjs",
   "outputDirectory": "dist/welding/browser",
   "rewrites": [
     { "source": "/((?!api(?:/|$)|.*\\.[a-zA-Z0-9]+$).*)", "destination": "/index.html" }

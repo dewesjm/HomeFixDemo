@@ -1,5 +1,3 @@
-export const MWQ_SIMULATOR_ORIGIN = 'http://localhost:4322';
-
 interface OfflineJointKey {
   hull: string;
   drawing: string;
