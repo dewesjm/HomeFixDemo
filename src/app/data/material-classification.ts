@@ -13,7 +13,7 @@ export type MaterialFlag = 'nonFerrous' | 'austenitic' | 'titanium';
 
 const LS_KEY = STORAGE.materialClassification;
 
-/* Best-guess seed, UNREVIEWED -- same caveat as jobs.ts's MATERIAL_TYPES codes (an invented NN-LETTERS
+/* Best-guess seed, UNREVIEWED -- same caveat as the shared MATERIAL_TYPES codes (an invented NN-LETTERS
    numbering scheme, see jobs.ts). Duplex stainless (25-DS2205) is a
    mixed austenitic/ferritic structure, defaulted to false here since it isn't purely austenitic;
    the admin table is exactly how this gets corrected without a code change. */

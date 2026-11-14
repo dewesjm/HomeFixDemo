@@ -4,7 +4,7 @@
 import { OVERRIDE_PARTS, type ExtraFields, type ExtraFieldValue, type OverrideValue } from '../../../procedure-sections';
 import { fieldChoices, isOverride } from '../../../procedure-field-values';
 import type { SectionColumn } from '../../../procedure-files';
-import { parseRequirementText, qualsIn } from '../../../../../weld-record/qualifications-logic/qual-requirements';
+import { parseRequirementText, qualsIn } from '../../../../../shared/qualifications-logic/qual-requirements';
 import { getQualifications } from '../../../../../weld-record/reference-data-service/reference-data-service';
 
 type CellResult = { value: ExtraFieldValue } | { problem: string };

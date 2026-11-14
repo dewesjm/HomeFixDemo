@@ -18,9 +18,9 @@ import {
   conditionFields, conditionTypeText, conditionWhenText, distinctRequirements, heldBy, notOnCheckForm, qualConditions, setQualConditions,
   signoffTypeChoices, signoffTypeLabel, userOf,
 } from '../../qualifications-logic/qual-conditions';
-import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../qualifications-logic/qual-requirements';
+import { QualGroup, cloneGroup, pruneGroup, qualsIn, requirementText, termMet } from '../../../shared/qualifications-logic/qual-requirements';
 import { WhenGroup, cloneWhen, newWhenClause, pruneWhen, whenComplete } from '../../qualifications-logic/qual-when';
-import { QualGroupEditorComponent } from '../../qual-group-editor/qual-group-editor.component';
+import { QualGroupEditorComponent } from '../../../shared/qual-group-editor/qual-group-editor.component';
 import { WhenGroupEditorComponent } from './when-group-editor.component';
 
 interface StoredRow { uid: string; c: QualCondition; isNew: boolean; }

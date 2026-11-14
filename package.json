@@ -11,7 +11,8 @@
     "test:joint-url": "tsc -p tsconfig.api.json && node --test scripts/joint-url.test.mjs",
     "test:coverage": "node scripts/test-coverage.mjs",
     "typecheck": "tsc --noEmit --noUnusedLocals -p tsconfig.app.json",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "check:boundaries": "node scripts/check-system-boundaries.mjs"
   },
   "private": true,
   "dependencies": {

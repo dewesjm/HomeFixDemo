@@ -6,7 +6,8 @@ import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { LucideSave, LucideX, LucideArrowLeft } from '@lucide/angular';
 
 import { ToastService } from '../../shared/toast.service';
-import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES, HULLS } from '../../data/jobs';
+import { WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, HULLS } from '../../data/jobs';
+import { MATERIAL_TYPES } from '../../shared/material-types';
 import {
   addWeldJoint, updateWeldJoint, getWeldJoint, NDT_FIELDS,
   JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS,

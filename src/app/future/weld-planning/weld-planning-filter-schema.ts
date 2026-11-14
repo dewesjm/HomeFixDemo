@@ -6,7 +6,7 @@ import { FieldKind, FilterValues, MatchField } from '../../shared/filter-engine'
 import {
   NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, type WeldJoint
 } from '../../data/weld-planning';
-import { FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { getGwpDetails } from '../weld-engineering/procedure-service/procedure-usage';
 
 export interface SearchField extends MatchField {

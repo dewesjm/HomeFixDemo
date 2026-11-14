@@ -4,7 +4,7 @@ import { seededWorkflow } from './seeded-workflow';
 import { currentRoutingLabel } from '../weld-record/routing-logic/current-routing';
 import { seedFabricationData } from './seed-fabrication';
 import { getLocations, isShipboardLocation } from './locations';
-import { allWtns } from './procedures';
+import { allWtns } from '../future/weld-engineering/procedure-service/procedure-usage';
 
 export interface Assignment {
   id: string;
@@ -47,7 +47,7 @@ const SOURCES_BY_ROLE: Record<string, string[]> = {
 const ASSIGNEES = ['J. Carter', 'M. Nguyen', 'R. Patel', 'S. Williams', 'T. Garcia', 'A. Singh', 'K. Brown', 'L. Chen'];
 
 /* demo only, standing in for what eWACC would send over -- same MIL-spec designations as Weld
-   Record's own Filler Metal Type/Size (FILLER_METAL_TYPE_OPTIONS/FILLER_METAL_SIZE_OPTIONS in data/procedures.ts),
+   Record's own Filler Metal Type/Size (FILLER_METAL_TYPE_OPTIONS/FILLER_METAL_SIZE_OPTIONS in shared/filler-metal-options.ts),
    not duplicated as options here since this is just a random pick, not a real cascade */
 const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
 const FILLER_METAL_SIZES = ['1/16"', '3/32"', '1/8"', '5/32"', '3/16"', '1/4"'];

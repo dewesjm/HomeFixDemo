@@ -3,7 +3,7 @@
    (localStorage). The live rows and the rules that read them are in
    weld-record/qualifications-logic/qual-conditions.ts. */
 import { STORAGE } from './storage-keys';
-import type { QualGroup } from '../weld-record/qualifications-logic/qual-requirements';
+import type { QualGroup } from '../shared/qualifications-logic/qual-requirements';
 import type { WhenGroup } from '../weld-record/qualifications-logic/qual-when';
 
 export interface QualCondition {

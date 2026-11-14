@@ -10,8 +10,8 @@ import { DeviationItem } from '../model/deviation';
 import { ACTUAL_REQUIREMENT } from '../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
 import { labelFor } from '../signoff-forms-logic/stage-display';
-import { QualGroup, missingText, requirementText } from '../qualifications-logic/qual-requirements';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { QualGroup, missingText, requirementText } from '../../shared/qualifications-logic/qual-requirements';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
 import {
   getFillerMetalTypeOptions, getFillerMetalSizeOptions, getGwpOptions, hasProcedure,
 } from '../../future/weld-engineering/procedure-service/procedure-usage';

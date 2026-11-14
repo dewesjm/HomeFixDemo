@@ -12,8 +12,8 @@ import {
   getProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
 import { getQualifications } from '../../../../weld-record/reference-data-service/reference-data-service';
-import type { QualGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
-import { QualGroupEditorComponent } from '../../../../weld-record/qual-group-editor/qual-group-editor.component';
+import type { QualGroup } from '../../../../shared/qualifications-logic/qual-requirements';
+import { QualGroupEditorComponent } from '../../../../shared/qual-group-editor/qual-group-editor.component';
 import {
   procedureSections, sectionsOnProcedure, OVERRIDE_PARTS,
   type ExtraField, type OverrideValue, type RangeValue

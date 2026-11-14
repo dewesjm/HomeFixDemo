@@ -17,6 +17,7 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run typecheck
+      - run: npm run check:boundaries
       # every app file counted; fails below the minimums in karma.conf.js
       - run: npm run test:coverage
       - uses: actions/upload-artifact@v4

@@ -9,13 +9,14 @@
    docs/ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
-import { getWeldPositions } from './weld-positions';
-import { MATERIAL_TYPES } from './jobs';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../shared/filler-metal-options';
+import { getWeldPositions } from '../weld-record/reference-data-service/reference-data-service';
+import { MATERIAL_TYPES } from '../shared/material-types';
 import {
   SEEDED_SECTION_IDS, JOINT_TYPES, BACKING_OPTIONS, WELD_PROGRESSIONS, CURRENT_TYPES,
   type ExtraFields, type OverrideValue
 } from '../future/weld-engineering/procedure-sections';
-import type { QualGroup } from '../weld-record/qualifications-logic/qual-requirements';
+import type { QualGroup } from '../shared/qualifications-logic/qual-requirements';
 
 export type ProcedureStatus = 'active' | 'draft' | 'retired';
 
@@ -35,20 +36,10 @@ const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping',
 export const BASE_METAL_1_TYPES = MATERIAL_TYPES;
 export const BASE_METAL_2_TYPES = MATERIAL_TYPES;
 /* MIL-spec filler metal designations, e.g. MIL-80S-50 -- the choices of the Classification field.
-   Distinct from FILLER_METAL_TYPE_OPTIONS below, which are the same designations in Weld Record's
+   Distinct from the shared FILLER_METAL_TYPE_OPTIONS, which are the same designations in Weld Record's
    AWS-style {label, value} shape, also used for Pre-Fit/Fit's Consumable Insert -- a WTN's
    fillerMetalTypes/fillerMetalSizes section fields list which of those option VALUES are valid for it. */
 export const FILLER_METAL_TYPES = ['MIL-70S-3', 'MIL-70S-6', 'MIL-80S-50', 'MIL-80S-D2', 'MIL-90S-B3', 'MIL-100S-1'];
-export const FILLER_METAL_TYPE_OPTIONS: { label: string; value: string }[] = [
-  { label: 'MIL-70S-3', value: 'mil-70s-3' }, { label: 'MIL-70S-6', value: 'mil-70s-6' },
-  { label: 'MIL-80S-50', value: 'mil-80s-50' }, { label: 'MIL-80S-D2', value: 'mil-80s-d2' },
-  { label: 'MIL-90S-B3', value: 'mil-90s-b3' }, { label: 'MIL-100S-1', value: 'mil-100s-1' },
-];
-export const FILLER_METAL_SIZE_OPTIONS: { label: string; value: string }[] = [
-  { label: '1/16"', value: '1/16' }, { label: '3/32"', value: '3/32' }, { label: '1/8"', value: '1/8' },
-  { label: '5/32"', value: '5/32' }, { label: '3/16"', value: '3/16' }, { label: '1/4"', value: '1/4' },
-];
-
 interface RevisionNote {
   revision: string;
   date: string;    /* ISO date */
@@ -242,7 +233,7 @@ function generateProcedures(): Procedure[] {
             grooveAngle: `${30 + Math.floor(rand() * 45)}°`,
             rootOpening: `${(rand() * 0.1875).toFixed(3)}"`,
             backing: pick(BACKING_OPTIONS),
-            weldPosition: pick(getWeldPositions()).code,
+            weldPosition: pick(getWeldPositions().data.positions).code,
             weldProgression: pick(WELD_PROGRESSIONS),
             fillerMetalTypes,
             /* matches the first allowed filler type, so the description names a filler this WTN allows */

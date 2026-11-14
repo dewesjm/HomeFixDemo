@@ -3,10 +3,9 @@
    admin table" field in Admin > Procedure Sections; the code lists are only used by the seeded locked
    fields, whose values other systems match against those same lists. */
 import { getWeldPositions } from '../../weld-record/reference-data-service/reference-data-service';
-import { MATERIAL_TYPES } from '../../data/jobs';
-import {
-  FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
-} from '../../data/procedures';
+import { MATERIAL_TYPES } from '../../shared/material-types';
+import { FILLER_METAL_TYPES } from '../../data/procedures';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
 
 export type OptionSourceId = 'weldPositions' | 'materialTypes' | 'fillerMetalTypes' | 'fillerMetalSizes' | 'fillerClassifications';
 

@@ -2,9 +2,10 @@
    Self-contained data module for the Weld Planning system.
    All data is persisted to localStorage (no backend).
    Storage keys live in data/storage-keys.ts. */
+import { MATERIAL_TYPES } from '../shared/material-types';
 import { STORAGE } from './storage-keys';
 import {
-  jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES, MATERIAL_TYPES,
+  jointNumbers, WELD_TYPES, PIPE_SIZES, WALL_THICKNESSES,
   NDT_REQUIREMENT_VALUES, NDT_EACH_VALUES, RT_DEGREE_OPTIONS, RT_ROOT_WEIGHTS, RT_FINAL_WEIGHTS,
   HULLS, SHIP_BY_HULL, MCL_POOL, N_IND_POOL, N_IND_MEANINGS, JOINING_ITEMS, SS_VALUES, ssFor, DSS_VALUES, dssFor
 } from './jobs';
@@ -142,7 +143,7 @@ export interface WeldJoint extends Record<JointExtraKey, string> {
 
 /* ── Seed data pools ── */
 const JOINT_DESIGNS = JOINT_DESIGN_LABELS;
-/* pipe size, wall thickness and material pools are the weld record's (data/jobs.ts) */
+/* Pipe size and wall thickness use Weld Record's demo choices. */
 /* joint = system-joint, e.g. ST-10005; each number repeats only 1-3 times, same generator as Weld Record's jobs */
 const SEED_COUNT = 160;
 const JOINTS_POOL = jointNumbers(SEED_COUNT, 11);

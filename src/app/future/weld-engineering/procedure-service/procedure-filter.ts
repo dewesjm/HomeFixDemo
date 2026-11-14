@@ -5,7 +5,7 @@
 import type { Procedure } from '../../../data/procedures';
 import { findField, type ExtraField, type ProcedureSection } from '../procedure-sections';
 import { sectionValue, isQuals, isRange } from '../procedure-field-values';
-import { qualsIn } from '../../../weld-record/qualifications-logic/qual-requirements';
+import { qualsIn } from '../../../shared/qualifications-logic/qual-requirements';
 import type { ProcedureHeader } from './procedure-record';
 
 export type ProcedureFilter = Record<string, string>;

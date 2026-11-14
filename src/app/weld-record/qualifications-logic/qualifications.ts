@@ -3,7 +3,7 @@
    Qualifications (qual-conditions.ts); the quals welding to a WTN needs are on the WTN itself
    (Procedure.requiredQuals).
    In the real system held quals come from each person's certification record, not a list in the app. */
-import { QualGroup, missingText, qualsIn, termMet } from './qual-requirements';
+import { QualGroup, missingText, qualsIn, termMet } from '../../shared/qualifications-logic/qual-requirements';
 
 /* WELD4xx quals, offered when building a condition */
 export const QUALIFICATIONS = [

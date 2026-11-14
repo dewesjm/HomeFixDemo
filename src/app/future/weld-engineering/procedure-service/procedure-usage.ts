@@ -1,12 +1,13 @@
 /* Weld Engineering's GWP/WTN reads used by Weld Record and Weld Planning. These calls preserve
    the workflow's lookup behavior across procedure statuses. Section values read as blank when the
    procedure has not selected that section. */
-import {
-  Procedure, procedures, getProcedure, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS,
-} from '../../../data/procedures';
-import type { QualGroup } from '../../../weld-record/qualifications-logic/qual-requirements';
+import { Procedure, procedures, getProcedure } from '../../../data/procedures';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../shared/filler-metal-options';
+import type { QualGroup } from '../../../shared/qualifications-logic/qual-requirements';
 import { procedureSections } from '../procedure-sections';
 import { sectionValue, textValue, listValue, isOverride, isQuals, isBlank } from '../procedure-field-values';
+
+export { allWtns } from '../../../data/procedures';
 
 const text = (p: Procedure, key: string) => textValue(p, key, procedureSections());
 const list = (p: Procedure, key: string) => listValue(p, key, procedureSections());

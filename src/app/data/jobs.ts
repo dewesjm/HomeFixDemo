@@ -1,3 +1,4 @@
+import { MATERIAL_TYPES } from '../shared/material-types';
 /* mock Job model + seeded generator, stands in for a backend */
 import { TECHNICIAN_NAMES } from './people';
 import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes';
@@ -90,15 +91,6 @@ export const WELD_TYPES = ['Attachment', 'Butt', 'Build-up', 'Fillet', 'Seal', '
 /* exported so Weld Planning's Create Joint offers the same options */
 export const PIPE_SIZES = ['0.5"', '0.75"', '1"', '1.25"', '1.5"', '2"', '2.5"', '3"', '4"', '6"', '8"', '10"', '12"', '14"', '16"'];
 export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"', '0.154"', '0.188"', '0.219"', '0.250"', '0.280"', '0.322"', '0.375"'];
-/* Base material codes, the one list both Material Type 1 and Material Type 2 pick from (the two
-   sides of a joint, same or different). Filler metal is a separate list (procedures.ts). An internal
-   NN-LETTERS numbering scheme, not real designations: NN groups by family (1x = stainless,
-   6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
-   Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
-   metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
-   future/weld-engineering/procedure-service/procedure-usage.ts getGwpOptions, weld-record/signoff-validation-logic/stage-form.ts). */
-export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
-  '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */
 export const MCL_POOL = ['STD', 'MC-I'];
 /* item codes: 1 letter + 8 digits + hyphen + 2 digits, e.g. S12341001-14. The leading letter

@@ -12,7 +12,7 @@ import { hasMaterialFlag, MaterialFlag } from '../../data/material-classificatio
 import { requiresTraceability } from '../../data/mcl-traceability';
 import { NDT_LABELS } from '../../data/ndt-labels';
 import { penetrantManufacturerOptions, penetrantTypeOptions } from '../../data/penetrants';
-import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
+import { FILLER_METAL_SIZE_OPTIONS, FILLER_METAL_TYPE_OPTIONS } from '../../shared/filler-metal-options';
 import { isShipboardLocation, locationOptions } from '../../data/locations';
 import { weldColorOptions } from '../../data/weld-colors';
 import { weldPositionOptions } from '../../data/weld-positions';

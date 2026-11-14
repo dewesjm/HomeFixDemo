@@ -16,7 +16,7 @@ import { definedFields } from '../signoff-forms-logic/shown-fields';
 import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
-import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
+import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../shared/filler-metal-options';
 import {
   getGwpOptions, getAllGwpOptions, getWtnOptions, getGwpDescription,
   getWtnDescription, getProcedureOverride, getFillerMetalTypeOptions, getFillerMetalSizeOptions,

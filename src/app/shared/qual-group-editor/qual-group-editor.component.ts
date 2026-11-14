@@ -1,4 +1,4 @@
-/* Edits one AND/OR group of quals (weld-record/qualifications-logic/qual-requirements.ts): a qual
+/* Edits one AND/OR group of quals (shared/qualifications-logic/qual-requirements.ts): a qual
    condition's requirement in Admin > Qualifications, and a WTN's Welder Qualifications in Weld
    Engineering. Items are quals or nested groups, which render this same editor. On a User row (holds)
    it's a plain list of the quals that person holds: no AND/OR and no groups. Edits are emitted as a new group. */
