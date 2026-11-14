@@ -40,6 +40,9 @@ export class WorkflowStore {
   /* the workflow object each signal started with; a signal whose value differs has been edited */
   private baseline = new Map<string, JobWorkflow>();
   private persistTimer: ReturnType<typeof setTimeout> | null = null;
+  /* per job: what is saved instead of the live workflow. The joint page sets one so unsigned edits stay
+     in memory only and a reload drops them; nothing typed is saved until it is signed. */
+  private saveFilters = new Map<string, (wf: JobWorkflow) => JobWorkflow>();
 
   constructor() {
     /* a save may still be pending when the tab is hidden or closed */
@@ -74,6 +77,12 @@ export class WorkflowStore {
     return this.allWorkflows();
   }
 
+  /* set (or clear, with null) what is saved for a job in place of its live workflow; see saveFilters */
+  setSaveFilter(jobId: string, filter: ((wf: JobWorkflow) => JobWorkflow) | null) {
+    if (filter) this.saveFilters.set(jobId, filter);
+    else this.saveFilters.delete(jobId);
+  }
+
   /* apply a mutation to a job's workflow signal and schedule a save */
   update(job: Job, mutator: (wf: JobWorkflow) => JobWorkflow) {
     this.workflowFor(job).update(mutator);
@@ -105,7 +114,11 @@ export class WorkflowStore {
   private flushPersist() {
     if (this.persistTimer !== null) { clearTimeout(this.persistTimer); this.persistTimer = null; }
     const out: Record<string, JobWorkflow> = { ...this.persisted };
-    for (const [id, sig] of this.store) if (sig() !== this.baseline.get(id)) out[id] = sig();
+    for (const [id, sig] of this.store) {
+      if (sig() === this.baseline.get(id)) continue;
+      const filter = this.saveFilters.get(id);
+      out[id] = filter ? filter(sig()) : sig();
+    }
     try { localStorage.setItem(LS_KEY, JSON.stringify(out)); } catch { /* ignore */ }
   }
 

@@ -1,6 +1,6 @@
 /* Type changes and leaving the joint page with edits that were never signed. */
 import { test, expect } from '@playwright/test';
-import { FIT_JOINT, openJoint, expectRouting, fillAndLeave, signoffPanel, typeSelect } from './support/joint-page';
+import { FIT_JOINT, openJoint, expectRouting, fillAndLeave, signoffPanel, typeSelect, fabricationInput } from './support/joint-page';
 
 test('changing Type clears what was entered and loads the new Type\'s form', async ({ page }) => {
   await openJoint(page, FIT_JOINT);
@@ -47,7 +47,7 @@ test('leaving without edits asks nothing', async ({ page }) => {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
-test('reloading with unsigned edits shows the browser leave warning; without edits there is none', async ({ page }) => {
+test('reloading with unsigned edits shows the browser leave warning and loses them; without edits there is none', async ({ page }) => {
   const warnings: string[] = [];
   page.on('dialog', d => { warnings.push(d.type()); void d.accept(); });
 
@@ -56,8 +56,10 @@ test('reloading with unsigned edits shows the browser leave warning; without edi
   expect(warnings).toEqual([]);
 
   await fillAndLeave(signoffPanel(page).getByRole('textbox', { name: 'Backing Ring MIC*' }), '123A-4567-890-1');
+  await fillAndLeave(fabricationInput(page, 'Actual Thickness'), '0.5');
   await page.reload();
   expect(warnings).toEqual(['beforeunload']);
-  /* going ahead keeps the edit: it was saved as it was typed */
-  await expect(signoffPanel(page).getByRole('textbox', { name: 'Backing Ring MIC*' })).toHaveValue('123A-4567-890-1');
+  /* going ahead loses the edits: nothing is saved until it is signed */
+  await expect(signoffPanel(page).getByRole('textbox', { name: 'Backing Ring MIC*' })).toHaveValue('');
+  await expect(fabricationInput(page, 'Actual Thickness')).not.toHaveValue('0.5');
 });

@@ -93,6 +93,9 @@ export class JointPageComponent implements OnDestroy {
       this.overrides.init({ job: this.job, wf: () => wf(), loaded: this.loadSnapshot, visibleFields: s => this.visibleFields(s) });
       this.formEdits.init({ job: this.job, wf });
       this.formErrors.init({ job: this.job, wf: () => wf() });
+      /* nothing typed is saved until it is signed: the saved copy always has this visit's unsigned edits taken out */
+      const snapshot = this.loadSnapshot;
+      this.store.setSaveFilter(this.job.id, w => discardUnsignedEdits(w, snapshot));
     }
   }
 
@@ -109,7 +112,7 @@ export class JointPageComponent implements OnDestroy {
   }
 
   /* reloading or closing the tab with unsigned edits: the browser's own leave-page warning (its wording
-     can't be changed). The edits are already saved, so going ahead keeps them. */
+     can't be changed). Unsigned edits are never saved, so going ahead loses them. */
   @HostListener('window:beforeunload', ['$event'])
   warnBeforeUnload(event: BeforeUnloadEvent) {
     if (this.canDeactivate()) return;
@@ -123,6 +126,7 @@ export class JointPageComponent implements OnDestroy {
     if (!this.job || !this.wf || !this.loadSnapshot) return;
     const snapshot = this.loadSnapshot;
     const pending = this.overrides.pendingEngineering(this.wf().stages);
+    this.store.setSaveFilter(this.job.id, null);
     this.wf.update(wf => discardUnsignedEdits(wf, snapshot));
     /* engineering doesn't sign: its override is kept, not discarded */
     for (const p of pending) this.overrides.recordEngineering(p.stage, p.values);
