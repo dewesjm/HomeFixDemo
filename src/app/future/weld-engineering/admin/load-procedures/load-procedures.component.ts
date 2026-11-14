@@ -7,9 +7,8 @@ import { LucideArrowLeft } from '@lucide/angular';
 
 import { BulkImport } from '../../../../shared/bulk-import';
 import { ImportGridComponent } from '../../../../shared/import-grid.component';
-import {
-  addProcedure, updateProcedure, getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus
-} from '../../../../data/procedures';
+import { getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureStatus } from '../../../../data/procedures';
+import { createProcedure, updateProcedure, type ProcedureChanges } from '../../procedure-service/procedure-service';
 import { parseCsvRows, parseXlsxRows } from '../../../../shared/spreadsheet-import';
 import { downloadProcedureXlsxTemplate, sectionColumns } from '../../procedure-files';
 import { procedureSections } from '../../procedure-sections';
@@ -35,6 +34,8 @@ type EditableRow = {
 };
 
 const VALID_STATUSES = new Set(['active', 'draft', 'retired']);
+/* the revision note a loaded change to an Active procedure gets */
+export const LOAD_REVISION_NOTE = 'Loaded from file';
 const splitList = (s: string) => s.split(';').map(v => v.trim()).filter(Boolean);
 
 @Component({
@@ -103,10 +104,12 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
     downloadProcedureXlsxTemplate(procedureSections());
   }
 
-  /* a blank cell keeps an existing procedure's value; a new procedure gets every section ticked */
+  /* A blank cell keeps an existing procedure's value; a new procedure gets every section ticked.
+     Saved through the procedure service, so a row gets the edit form's checks; a changed Active
+     procedure gets an automatic revision note. A refused row shows the reason and stays unsaved. */
   protected saveRow(row: EditableRow) {
     const existing = getProcedure(row.gwp, row.wtn);
-    const payload = {
+    const changes: ProcedureChanges = {
       title: row.title,
       status: row.status as ProcedureStatus,
       wtn: row.wtn,
@@ -116,14 +119,13 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
       rules: splitList(row.rules),
       conditions: splitList(row.conditions),
       extraFields: applyCells(this.columns, row.cells, existing?.extraFields ?? {}),
-      sectionIds: existing?.sectionIds ?? procedureSections().map(s => s.id),
-      revisionHistory: existing?.revisionHistory ?? [],
-      createdBy: 'Import',
     };
-    if (existing) {
-      updateProcedure(row.gwp, row.wtn, payload);
-    } else {
-      addProcedure(payload);
+    const result = existing
+      ? updateProcedure(existing, changes, LOAD_REVISION_NOTE, 'Import')
+      : createProcedure({ ...changes, gwp: row.gwp, wtn: row.wtn }, 'Import');
+    if (!result.ok) {
+      row._errors = [result.error];
+      throw new Error(result.error);
     }
   }
 }

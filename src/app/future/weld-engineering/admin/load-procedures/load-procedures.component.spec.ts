@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { LoadProceduresComponent } from './load-procedures.component';
+import { LoadProceduresComponent, LOAD_REVISION_NOTE } from './load-procedures.component';
 import { procedures, getProcedure } from '../../../../data/procedures';
 import { STORAGE } from '../../../../data/storage-keys';
 import { ToastService } from '../../../../shared/toast.service';
@@ -97,6 +97,23 @@ describe('Load Procedures', () => {
     expect(p.extraFields['jointType']).toBe('Fillet');
     expect(p.sectionIds).toEqual(['sec-preheat-interpass']);
     expect(p.revisionHistory.length).toBe(1);
+  });
+
+  it('gives a changed Active procedure the automatic revision note', async () => {
+    procedures.update(list => list.map(p => ({ ...p, status: 'active' as const })));
+    load([{ gwp: 'GWP-OLD', wtn: '01.1-1', status: 'active', title: 'New title' }]);
+    await page.saveAll();
+    expect(getProcedure('GWP-OLD', '01.1-1')!.revisionHistory.at(-1))
+      .toEqual(jasmine.objectContaining({ note: LOAD_REVISION_NOTE, by: 'Import' }));
+  });
+
+  it('shows why the procedure service refused a row and leaves it unsaved', async () => {
+    procedures.update(list => [...list, testProcedure('GWP-MET', { wtn: '1', extraFields: { baseMetal1Type: '02-CS' } })]);
+    load([{ gwp: 'GWP-MET', wtn: '2', baseMetal1Type: '04-AS' }]);
+    await page.saveAll();
+    expect(getProcedure('GWP-MET', '2')).toBeUndefined();
+    expect(page.rows()[0]._errors).toEqual(['GWP GWP-MET is already 02-CS / - (see WTN 1)']);
+    expect(page.errorCount()).toBe(1);
   });
 
   it('loads a valid sample set', () => {

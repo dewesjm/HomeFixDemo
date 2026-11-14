@@ -4,7 +4,7 @@
     <select class="select select-sm select-bordered" style="max-width: 24rem"
             [ngModel]="selected()?.name" (ngModelChange)="selectedName.set($event)">
       @for (op of operations(); track op.name) {
-        <option [value]="op.name">{{ op.name }}{{ op.writes ? ' (changes data)' : '' }}</option>
+        <option [value]="op.name">{{ op.name }} ({{ op.writes ? 'Write' : 'Read' }})</option>
       }
     </select>
   </label>
@@ -43,6 +43,19 @@
         </div>
       }
 
+      <div>
+        <div class="flex items-center gap-2">
+          <h3 class="form-section-title">Full call</h3>
+          <button type="button" class="btn btn-ghost btn-xs" (click)="copyCall()" aria-label="Copy the full call">
+            <svg lucideCopy class="size-4"></svg> {{ copied() ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+        @if (fullCall(); as c) {
+          @if (c.text) { <pre class="json-block">{{ c.text }}</pre> }
+          @else { <p class="text-sm">{{ c.problem }}</p> }
+        }
+      </div>
+
       @if (problem()) { <div role="alert" class="alert alert-warning text-sm">{{ problem() }}</div> }
 
       <div class="flex gap-2">
@@ -53,8 +66,8 @@
 
     @if (last(); as r) {
       <div>
-        <h3 class="form-section-title">Request</h3>
-        <pre class="json-block">{{ r.operation }}({{ r.args | json }})</pre>
+        <h3 class="form-section-title">Call run</h3>
+        <pre class="json-block">{{ r.call }}</pre>
         <h3 class="form-section-title">Response</h3>
         <pre class="json-block">{{ r.response | json }}</pre>
       </div>

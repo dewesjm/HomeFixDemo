@@ -11,10 +11,11 @@ import { ConfirmService } from '../../../../shared/confirm.service';
 import { ToastService } from '../../../../shared/toast.service';
 import { downloadCsv } from '../../../../shared/export-csv';
 import {
-  procedures, deleteProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure
+  procedures, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure
 } from '../../../../data/procedures';
 import { procedureCsvColumns } from '../../procedure-files';
 import { procedureSections } from '../../procedure-sections';
+import { deleteProcedure } from '../../procedure-service/procedure-service';
 import { TableToolbarComponent } from '../../../../shared/table-toolbar.component';
 
 @Component({
@@ -48,8 +49,10 @@ export class ManageProceduresComponent {
       message: `Delete ${procedureName(row)}?`,
       acceptLabel: 'Delete',
       accept: () => {
-        deleteProcedure(row.gwp, row.wtn);
-        this.toast.add({ severity: 'success', summary: 'Deleted', detail: `${procedureName(row)} deleted` });
+        const result = deleteProcedure(row);
+        this.toast.add(result.ok
+          ? { severity: 'success', summary: 'Deleted', detail: `${procedureName(row)} deleted` }
+          : { severity: 'warn', summary: result.title, detail: result.error });
       }
     });
   }

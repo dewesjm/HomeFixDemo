@@ -1,27 +1,32 @@
-/* Weld Engineering's procedure service: the calls another system would make to read or change a
-   procedure (one WTN), named by its GWP + WTN. Every call answers { ok: true, data } or
-   { ok: false, error } with a message saying what's wrong, never throws.
-   - getProcedure(key, options): everything on a WTN, or only the fields asked for.
-   - findProcedures(filter, options): every procedure matching a condition, header only unless fields are asked for.
-   - updateProcedureFields(key, values, revisionNote): change section values, with the same checks as the edit form.
+/* Weld Engineering's procedure service: the calls that read or change a procedure (one WTN), named by
+   its GWP + WTN. Every write goes through here, from the edit form, Load Procedures, Delete and Admin >
+   Services alike, so they all run the same checks. Every call answers { ok: true, data } or
+   { ok: false, error, title } with a message saying what's wrong, never throws.
+   Reads:  getProcedure(key, options) = everything on a WTN, or only the fields asked for;
+           findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for.
+   Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
+           values, revisionNote) (section values only), deleteProcedure(key).
    Reads ask for fields by key (procedure-sections.ts), never by section name or number, since sections
    can be renamed and fields moved. Status defaults to Active. The demo keeps only each procedure's
    current values, so asking for an older revision is answered with an error.
    In real life this would be Weld Engineering's own backend and writes would need restricted access. */
 import {
-  procedures, getProcedure as procedureRow, updateProcedure, procedureName, PROCEDURE_STATUS_OPTIONS,
-  type Procedure, type ProcedureStatus,
+  procedures, getProcedure as procedureRow, addProcedure, updateProcedure as storeUpdate, deleteProcedure as storeDelete,
+  isProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure, type ProcedureStatus,
 } from '../../../data/procedures';
-import { procedureSections, sectionsOnProcedure, findField, type ExtraFields } from '../procedure-sections';
-import { compactExtras, extraFieldProblems } from '../procedure-field-values';
+import { procedureSections, findField, type ExtraFields } from '../procedure-sections';
+import { compactExtras } from '../procedure-field-values';
 import {
   procedureHeader, procedureRecord, procedureSubset, missingReason,
   type MissingField, type ProcedureHeader, type ProcedureKey, type ProcedureRecord,
 } from './procedure-record';
 import { filterProblem, matchesFilter, type ProcedureFilter } from './procedure-filter';
 import { parseFieldInput } from './procedure-field-input';
+import { choiceProblem, procedureSaveProblem } from './procedure-save-checks';
+import { changesProblem, type ProcedureChanges } from './procedure-changes';
 
-export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string };
+export type { ProcedureChanges } from './procedure-changes';
+export type ServiceResult<T> = { ok: true; data: T } | { ok: false; error: string; title: string };
 
 export interface ReadOptions {
   /* field keys to return; all of the procedure's sections when left out */
@@ -48,29 +53,36 @@ export interface FoundProcedure {
   missing?: MissingField[];
 }
 
-const fail = (error: string) => ({ ok: false as const, error });
+/* the revision note error, as the edit form shows it */
+export const REVISION_NOTE_REQUIRED = 'This procedure is Active -- describe the change before saving';
+
+const fail = (error: string, title = 'Not done') => ({ ok: false as const, error, title });
 const statusLabel = (s: ProcedureStatus) => PROCEDURE_STATUS_OPTIONS.find(o => o.value === s)?.label ?? s;
+const noSuchProcedure = (key: ProcedureKey) =>
+  fail(`There is no procedure GWP ${key.gwp || '(blank)'} / WTN ${key.wtn || '(blank)'}.`, 'Not found');
+const rowFor = (key: ProcedureKey) => procedureRow(key.gwp?.trim(), key.wtn?.trim());
 
 function statusProblem(status: unknown): string {
   return PROCEDURE_STATUS_OPTIONS.some(o => o.value === status) ? '' : `Status must be one of ${PROCEDURE_STATUS_OPTIONS.map(o => o.value).join(', ')}.`;
 }
 
-function answer(p: Procedure, fields: string[] | undefined): ProcedureAnswer {
+function answer(p: Procedure, fields?: string[]): ProcedureAnswer {
   const sections = procedureSections();
   if (!fields?.length) return { procedure: procedureRecord(p, sections), missing: [] };
   const { record, missing } = procedureSubset(p, fields, sections);
   return { procedure: record, missing };
 }
 
+/* ── Reads ── */
 export function getProcedure(key: ProcedureKey, options: GetOptions = {}): ServiceResult<ProcedureAnswer> {
   const status = options.status ?? 'active';
   if (statusProblem(status)) return fail(statusProblem(status));
-  const p = procedureRow(key.gwp?.trim(), key.wtn?.trim());
-  if (!p) return fail(`There is no procedure GWP ${key.gwp || '(blank)'} / WTN ${key.wtn || '(blank)'}.`);
-  if (p.status !== status) return fail(`${procedureName(p)} is ${statusLabel(p.status)}, not ${statusLabel(status)}.`);
+  const p = rowFor(key);
+  if (!p) return noSuchProcedure(key);
+  if (p.status !== status) return fail(`${procedureName(p)} is ${statusLabel(p.status)}, not ${statusLabel(status)}.`, 'Not found');
   const revision = options.revision?.trim();
   if (revision && revision !== p.revision) {
-    return fail(`Revision ${revision} of ${procedureName(p)} isn't stored. This demo keeps only the current revision (${p.revision}).`);
+    return fail(`Revision ${revision} of ${procedureName(p)} isn't stored. This demo keeps only the current revision (${p.revision}).`, 'Not found');
   }
   return { ok: true, data: answer(p, options.fields) };
 }
@@ -91,16 +103,76 @@ export function findProcedures(filter: ProcedureFilter = {}, options: ReadOption
   return { ok: true, data: { count: found.length, procedures: found } };
 }
 
-/* Changes section values; header fields and section ticks are changed on the edit form only. A key
-   with null or an empty value clears that field. Checks, in order: the procedure exists, each key is a
-   field on a section this procedure has, each value has the right shape and allowed choices, the
-   result passes the edit form's value checks, and an Active procedure gets a revision note (added to
-   its Revision Record). Answers with the changed fields as they now read. */
+/* ── Writes ── */
+/* Every write ends here. Checks, in order: the changed section values have the right shape, the edit
+   form's save checks (GWP and WTN set, no duplicate pair, base metals agree across the GWP, section
+   values), changed choices are allowed, and an Active procedure gets a revision note, added to its
+   Revision Record. Blank values aren't stored. */
+function save(original: Procedure | undefined, next: Procedure, revisionNote: string, by: string): ServiceResult<Procedure> {
+  const sections = procedureSections();
+  const before = original?.extraFields ?? {};
+  for (const [k, v] of Object.entries(next.extraFields)) {
+    const field = findField(k, sections);
+    if (!field || JSON.stringify(v) === JSON.stringify(before[k])) continue;
+    const parsed = parseFieldInput(field, v);
+    if ('problem' in parsed) return fail(parsed.problem, 'Wrong value');
+  }
+  const form: Procedure = { ...next, extraFields: compactExtras(next.extraFields) };
+  const others = procedures().filter(p => !(original && isProcedure(p, original.gwp, original.wtn)));
+  const problem = procedureSaveProblem(form, others, sections) ?? choiceProblem(form, before, sections);
+  if (problem) return fail(problem.detail, problem.summary);
+
+  const note = revisionNote.trim();
+  const wasActive = original?.status === 'active';
+  if (wasActive && !note) return fail(REVISION_NOTE_REQUIRED, 'Revision note required');
+  if (wasActive) {
+    form.revisionHistory = [...form.revisionHistory, { revision: form.revision, date: new Date().toISOString().slice(0, 10), note, by }];
+  }
+
+  if (original) {
+    const { createdAt, updatedAt, createdBy, ...rest } = form;
+    storeUpdate(original.gwp, original.wtn, rest);
+  } else {
+    const { createdAt, updatedAt, ...rest } = form;
+    addProcedure(rest);
+  }
+  return { ok: true, data: procedureRow(form.gwp, form.wtn)! };
+}
+
+/* a new procedure; anything not sent starts blank (Draft), with every section ticked */
+export function createProcedure(input: ProcedureChanges & ProcedureKey, by = 'Service'): ServiceResult<ProcedureAnswer> {
+  const problem = changesProblem(input ?? {}, procedureSections());
+  if (problem) return fail(problem, 'Wrong value');
+  const next: Procedure = {
+    title: '', status: 'draft', weldProcess: '', revision: '', effectiveDate: '', processType: '', application: '',
+    rules: [], conditions: [], extraFields: {}, sectionIds: procedureSections().map(s => s.id),
+    ...input, gwp: input.gwp?.trim() ?? '', wtn: input.wtn?.trim() ?? '',
+    revisionHistory: [], createdBy: by, createdAt: '', updatedAt: '',
+  };
+  const saved = save(undefined, next, '', by);
+  return saved.ok ? { ok: true, data: answer(saved.data) } : saved;
+}
+
+/* changes header fields, section ticks, rules, conditions and section values (extraFields replaces
+   the whole set); GWP and WTN can be changed too */
+export function updateProcedure(
+  key: ProcedureKey, changes: ProcedureChanges, revisionNote = '', by = 'Service'
+): ServiceResult<ProcedureAnswer> {
+  const p = rowFor(key);
+  if (!p) return noSuchProcedure(key);
+  const problem = changesProblem(changes ?? {}, procedureSections());
+  if (problem) return fail(problem, 'Wrong value');
+  const saved = save(p, { ...p, ...changes }, revisionNote, by);
+  return saved.ok ? { ok: true, data: answer(saved.data) } : saved;
+}
+
+/* Changes only the section values sent, by field key; null or an empty value clears one. Each key
+   must be a field on a section this procedure has. Answers with the changed fields as they now read. */
 export function updateProcedureFields(
   key: ProcedureKey, values: Record<string, unknown>, revisionNote = '', by = 'Service'
 ): ServiceResult<ProcedureAnswer> {
-  const p = procedureRow(key.gwp?.trim(), key.wtn?.trim());
-  if (!p) return fail(`There is no procedure GWP ${key.gwp || '(blank)'} / WTN ${key.wtn || '(blank)'}.`);
+  const p = rowFor(key);
+  if (!p) return noSuchProcedure(key);
   const keys = Object.keys(values ?? {});
   if (!keys.length) return fail('Send at least one field value to change.');
 
@@ -108,22 +180,18 @@ export function updateProcedureFields(
   const extraFields: ExtraFields = { ...p.extraFields };
   for (const k of keys) {
     const reason = missingReason(k, p, sections);
-    if (reason) return fail(`${k}: ${reason}`);
+    if (reason) return fail(`${k}: ${reason}`, 'Wrong value');
     const parsed = parseFieldInput(findField(k, sections)!, values[k]);
-    if ('problem' in parsed) return fail(parsed.problem);
+    if ('problem' in parsed) return fail(parsed.problem, 'Wrong value');
     extraFields[k] = parsed.value;
   }
+  const saved = save(p, { ...p, extraFields }, revisionNote, by);
+  return saved.ok ? { ok: true, data: answer(saved.data, keys) } : saved;
+}
 
-  const compact = compactExtras(extraFields);
-  const problems = extraFieldProblems(sectionsOnProcedure(p.sectionIds, sections).map(s => s.section), compact);
-  if (problems.length) return fail(problems.join(' '));
-
-  const note = revisionNote.trim();
-  if (p.status === 'active' && !note) return fail(`${procedureName(p)} is Active: send a revision note describing the change.`);
-  const revisionHistory = p.status === 'active'
-    ? [...p.revisionHistory, { revision: p.revision, date: new Date().toISOString().slice(0, 10), note, by }]
-    : p.revisionHistory;
-
-  updateProcedure(p.gwp, p.wtn, { extraFields: compact, revisionHistory });
-  return { ok: true, data: answer(procedureRow(p.gwp, p.wtn)!, keys) };
+export function deleteProcedure(key: ProcedureKey): ServiceResult<{ deleted: ProcedureKey }> {
+  const p = rowFor(key);
+  if (!p) return noSuchProcedure(key);
+  storeDelete(p.gwp, p.wtn);
+  return { ok: true, data: { deleted: { gwp: p.gwp, wtn: p.wtn } } };
 }

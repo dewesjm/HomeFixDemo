@@ -1,7 +1,9 @@
 import { procedures, getProcedure as procedureRow } from '../../../data/procedures';
 import { SEEDED_SECTION_IDS } from '../procedure-sections';
 import { keepProcedureStores, testProcedure, TEST_WTN } from '../testing/procedure-test-state';
-import { getProcedure, findProcedures, updateProcedureFields } from './procedure-service';
+import {
+  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, REVISION_NOTE_REQUIRED,
+} from './procedure-service';
 
 const GWP = 'SVC-1';
 const key = { gwp: GWP, wtn: TEST_WTN };
@@ -61,7 +63,7 @@ describe('procedure service', () => {
     it('defaults to Active and refuses another status unless asked for', () => {
       seed({ status: 'draft' });
       const r = getProcedure(key);
-      expect(r).toEqual({ ok: false, error: `GWP ${GWP} / WTN ${TEST_WTN} is Draft, not Active.` });
+      expect(r).toEqual({ ok: false, error: `GWP ${GWP} / WTN ${TEST_WTN} is Draft, not Active.`, title: 'Not found' });
       expect(getProcedure(key, { status: 'draft' }).ok).toBeTrue();
     });
 
@@ -73,7 +75,7 @@ describe('procedure service', () => {
     });
 
     it('says when there is no such procedure', () => {
-      expect(getProcedure({ gwp: 'X', wtn: 'Y' })).toEqual({ ok: false, error: 'There is no procedure GWP X / WTN Y.' });
+      expect(getProcedure({ gwp: 'X', wtn: 'Y' })).toEqual({ ok: false, error: 'There is no procedure GWP X / WTN Y.', title: 'Not found' });
     });
   });
 
@@ -150,6 +152,56 @@ describe('procedure service', () => {
       expect(error({ requiredQuals: { op: 'both', items: [] } })).toContain('"op": "all" or "any"');
       expect(error({})).toBe('Send at least one field value to change.');
       expect(procedureRow(GWP, TEST_WTN)).toEqual(before);
+    });
+  });
+
+  describe('every write runs the same checks', () => {
+    const sibling = () => testProcedure(GWP, { wtn: '99.9-2', status: 'draft', extraFields: { baseMetal1Type: '02-CS' } });
+
+    it('updateProcedureFields refuses base metals that disagree with the rest of the GWP', () => {
+      procedures.update(list => [...list, sibling()]);
+      const r = updateProcedureFields(key, { baseMetal1Type: '04-AS' }, 'note');
+      expect(r).toEqual({ ok: false, error: `GWP ${GWP} is already 02-CS / - (see WTN 99.9-2)`, title: 'Base metal mismatch' });
+    });
+
+    it('createProcedure fills in defaults, ticks every section and refuses a duplicate pair', () => {
+      const r = createProcedure({ gwp: 'NEW-1', wtn: '1', title: 'New' }, 'Tester');
+      if (!r.ok) return fail(r.error);
+      const p = procedureRow('NEW-1', '1')!;
+      expect(p.status).toBe('draft');
+      expect(p.createdBy).toBe('Tester');
+      expect(p.sectionIds).toEqual(SEEDED_SECTION_IDS);
+      expect(createProcedure({ gwp: 'NEW-1', wtn: '1' })).toEqual(jasmine.objectContaining({ ok: false, title: 'Duplicate GWP/WTN' }));
+    });
+
+    it('updateProcedure changes the header, can rename the pair, and needs a note on an Active procedure', () => {
+      expect(updateProcedure(key, { title: 'Renamed' })).toEqual({ ok: false, error: REVISION_NOTE_REQUIRED, title: 'Revision note required' });
+      const r = updateProcedure(key, { title: 'Renamed', wtn: '99.9-7', revision: '3' }, 'Retitled', 'Tester');
+      if (!r.ok) return fail(r.error);
+      const p = procedureRow(GWP, '99.9-7')!;
+      expect(p.title).toBe('Renamed');
+      expect(procedureRow(GWP, TEST_WTN)).toBeUndefined();
+      expect(p.revisionHistory.at(-1)).toEqual(jasmine.objectContaining({ revision: '3', note: 'Retitled', by: 'Tester' }));
+    });
+
+    it('updateProcedure refuses properties it does not take and values of the wrong kind', () => {
+      expect(updateProcedure(key, { createdBy: 'x' } as never, 'n')).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+      expect(updateProcedure(key, { status: 'gone' } as never, 'n'))
+        .toEqual({ ok: false, error: 'status must be one of active, draft, retired.', title: 'Wrong value' });
+      expect(updateProcedure(key, { extraFields: { fillerMetalTypes: 'mil-70s-6' } }, 'n'))
+        .toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+    });
+
+    it('updateProcedure keeps a stored value whose choice is no longer offered until it is changed', () => {
+      seed({ status: 'draft', extraFields: { jointType: 'Retired choice' } });
+      expect(updateProcedure(key, { title: 'Still saves' }).ok).toBeTrue();
+      expect(updateProcedure(key, { extraFields: { jointType: 'Other bogus' } }).ok).toBeFalse();
+    });
+
+    it('deleteProcedure removes the pair, or says it does not exist', () => {
+      expect(deleteProcedure(key)).toEqual({ ok: true, data: { deleted: key } });
+      expect(procedureRow(GWP, TEST_WTN)).toBeUndefined();
+      expect(deleteProcedure(key).ok).toBeFalse();
     });
   });
 });

@@ -1,8 +1,10 @@
 /* Weld Engineering's procedure service calls as service tester operations. example: a procedure the
    inputs start filled in with, so each call answers something the first time it's run. */
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
-import type { ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
-import { getProcedure, findProcedures, updateProcedureFields } from '../../../procedure-service/procedure-service';
+import { sent, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
+import {
+  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure,
+} from '../../../procedure-service/procedure-service';
 import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
 
@@ -21,6 +23,9 @@ const fieldsParam = (example = '') => ({
   placeholder: 'e.g. phMin, phMax, requiredQuals',
   help: 'Field keys, comma separated (Admin > Procedure Sections, Key column). Leave blank for every field.',
 });
+const revisionNoteParam = { name: 'revisionNote', label: 'Revision note', type: 'text' as const, placeholder: 'What changed and why' };
+/* by: who the Revision Record names for a change made here */
+const BY = 'Services page';
 const statusParam = { name: 'status', label: 'Status', type: 'select' as const, options: STATUSES, help: 'Default: active.' };
 
 export function procedureServiceOperations(example: ProcedureKey): ServiceOperation[] {
@@ -34,7 +39,8 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
         ...keyParams(example), fieldsParam(), statusParam,
         { name: 'revision', label: 'Revision', type: 'text', help: 'Default: the current revision. Older revisions aren\'t stored in this demo.' },
       ],
-      run: a => getProcedure(keyOf(a), { fields: fieldsOf(a), status: statusOf(a), revision: str(a['revision']) || undefined }),
+      call: a => [keyOf(a), sent({ fields: fieldsOf(a), status: statusOf(a), revision: str(a['revision']) || undefined })],
+      fn: getProcedure,
     },
     {
       name: 'findProcedures',
@@ -48,11 +54,12 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
         },
         fieldsParam(), statusParam,
       ],
-      run: a => findProcedures((a['filter'] ?? {}) as ProcedureFilter, { fields: fieldsOf(a), status: statusOf(a) }),
+      call: a => [(a['filter'] ?? {}) as ProcedureFilter, sent({ fields: fieldsOf(a), status: statusOf(a) })],
+      fn: findProcedures,
     },
     {
       name: 'updateProcedureFields',
-      signature: 'updateProcedureFields({ gwp, wtn }, values, revisionNote?)',
+      signature: 'updateProcedureFields({ gwp, wtn }, values, revisionNote?, by?)',
       description: 'Changes section values with the edit form\'s checks. An Active procedure needs a revision note, added to its Revision Record. In real life only people with access could call it.',
       writes: true,
       params: [
@@ -61,9 +68,48 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
           name: 'values', label: 'Values', type: 'json', required: true, example: '{ "phMin": "100", "gasFlowRate": "30 CFH" }',
           help: 'Field key: new value. null clears a field. Lists are ["a", "b"], ranges { "min": 1, "max": 2 }.',
         },
-        { name: 'revisionNote', label: 'Revision note', type: 'text', placeholder: 'What changed and why' },
+        revisionNoteParam,
       ],
-      run: a => updateProcedureFields(keyOf(a), (a['values'] ?? {}) as Record<string, unknown>, str(a['revisionNote']), 'Services page'),
+      call: a => [keyOf(a), a['values'] ?? {}, str(a['revisionNote']), BY],
+      fn: updateProcedureFields,
+    },
+    {
+      name: 'updateProcedure',
+      signature: 'updateProcedure({ gwp, wtn }, changes, revisionNote?, by?)',
+      description: 'Changes the header, section ticks, rules, conditions or section values (extraFields replaces them all), with the edit form\'s checks. GWP and WTN can be changed too. An Active procedure needs a revision note.',
+      writes: true,
+      params: [
+        ...keyParams(example),
+        {
+          name: 'changes', label: 'Changes', type: 'json', required: true, example: '{ "title": "GTAW procedure for process piping" }',
+          help: 'Property: new value. Allowed: gwp, wtn, title, status, revision, effectiveDate, weldProcess, processType, application, rules, conditions, sectionIds, extraFields.',
+        },
+        revisionNoteParam,
+      ],
+      call: a => [keyOf(a), a['changes'] ?? {}, str(a['revisionNote']), BY],
+      fn: updateProcedure,
+    },
+    {
+      name: 'createProcedure',
+      signature: 'createProcedure(procedure, by?)',
+      description: 'A new procedure. Anything not sent starts blank (Draft) with every section ticked. Runs the edit form\'s checks.',
+      writes: true,
+      params: [{
+        name: 'procedure', label: 'Procedure', type: 'json', required: true,
+        example: '{ "gwp": "W-999", "wtn": "01.1-1", "title": "Test procedure", "extraFields": { "baseMetal1Type": "02-CS", "baseMetal2Type": "02-CS" } }',
+        help: 'gwp and wtn are required; the other properties are the same as updateProcedure\'s.',
+      }],
+      call: a => [a['procedure'] ?? {}, BY],
+      fn: createProcedure,
+    },
+    {
+      name: 'deleteProcedure',
+      signature: 'deleteProcedure({ gwp, wtn })',
+      description: 'Deletes the procedure. It can\'t be undone.',
+      writes: true,
+      params: keyParams(example),
+      call: a => [keyOf(a)],
+      fn: deleteProcedure,
     },
   ];
 }

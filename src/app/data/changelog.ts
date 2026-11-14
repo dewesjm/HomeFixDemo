@@ -13,7 +13,9 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.'],
+    added: ['Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.',
+      'Weld Engineering > Admin > Services also creates, updates and deletes procedures, marks each call (Read) or (Write), and shows the full call it makes, with Copy, as you fill in the inputs.'],
+    changed: ['Saving a procedure on its edit form, Load Procedures, Delete and the Services page all run the same checks. Load Procedures now refuses a row whose base metals disagree with the other WTNs on its GWP and shows why in the grid, and a loaded change to an Active procedure adds "Loaded from file" to its Revision Record.'],
   },
   {
     date: '2026-11-13',

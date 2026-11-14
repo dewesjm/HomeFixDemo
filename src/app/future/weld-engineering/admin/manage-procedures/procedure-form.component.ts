@@ -1,6 +1,6 @@
 /* Weld Engineering Admin - create/edit a Procedure: the fixed header fields, then a tick for each
-   section in Admin > Procedure Sections and the fields of the ticked ones. Save checks are
-   rules/procedure-save-rules.ts. */
+   section in Admin > Procedure Sections and the fields of the ticked ones. Saving goes through the
+   procedure service (procedure-service/procedure-service.ts), which runs every save check. */
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,8 +9,7 @@ import { LucideSave, LucideArrowLeft, LucidePlus, LucideX } from '@lucide/angula
 
 import { ToastService } from '../../../../shared/toast.service';
 import {
-  addProcedure, updateProcedure, getProcedure, procedures, isProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES,
-  PROCESS_TYPES, type Procedure
+  getProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
 import { ALL_QUALS } from '../../../../weld-record/qualifications-logic/qualifications';
 import type { QualGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
@@ -19,8 +18,8 @@ import {
   procedureSections, sectionsOnProcedure, OVERRIDE_PARTS,
   type ExtraField, type OverrideValue, type RangeValue
 } from '../../procedure-sections';
-import { withAllFields, compactExtras, fieldChoices } from '../../procedure-field-values';
-import { procedureSaveProblem } from './rules/procedure-save-rules';
+import { withAllFields, fieldChoices } from '../../procedure-field-values';
+import { createProcedure, updateProcedure } from '../../procedure-service/procedure-service';
 import { formFlex } from '../../procedure-field-width';
 import { AppDatePipe } from '../../../../shared/date-format';
 
@@ -133,32 +132,17 @@ export class ProcedureFormComponent implements OnInit {
   }
 
   save() {
-    const others = procedures().filter(p => !(this.isEdit() && isProcedure(p, this.original.gwp, this.original.wtn)));
-    const problem = procedureSaveProblem(this.form, others, this.sections());
-    if (problem) {
-      this.toast.add({ severity: 'warn', ...problem });
+    const { createdAt, updatedAt, createdBy, revisionHistory, ...changes } = this.form;
+    const result = this.isEdit()
+      ? updateProcedure(this.original, changes, this.revisionNote, 'User')
+      : createProcedure(changes, 'User');
+    if (!result.ok) {
+      this.toast.add({ severity: 'warn', summary: result.title, detail: result.error });
       return;
     }
-    if (this.isEdit() && this.wasActive && !this.revisionNote.trim()) {
-      this.toast.add({ severity: 'warn', summary: 'Revision note required', detail: 'This procedure is Active -- describe the change before saving' });
-      return;
-    }
-    const extraFields = compactExtras(this.form.extraFields);
-    if (this.isEdit()) {
-      if (this.wasActive) {
-        this.form.revisionHistory = [
-          ...this.form.revisionHistory,
-          { revision: this.form.revision, date: new Date().toISOString().slice(0, 10), note: this.revisionNote.trim(), by: 'User' }
-        ];
-      }
-      const { createdAt, updatedAt, ...rest } = this.form;
-      updateProcedure(this.original.gwp, this.original.wtn, { ...rest, extraFields });
-      this.toast.add({ severity: 'success', summary: 'Updated', detail: `${procedureName(this.form)} updated` });
-    } else {
-      const { createdAt, updatedAt, ...rest } = this.form;
-      addProcedure({ ...rest, extraFields });
-      this.toast.add({ severity: 'success', summary: 'Created', detail: `${procedureName(this.form)} created` });
-    }
+    this.toast.add(this.isEdit()
+      ? { severity: 'success', summary: 'Updated', detail: `${procedureName(this.form)} updated` }
+      : { severity: 'success', summary: 'Created', detail: `${procedureName(this.form)} created` });
     this.router.navigate(['/weld-engineering/admin']);
   }
 

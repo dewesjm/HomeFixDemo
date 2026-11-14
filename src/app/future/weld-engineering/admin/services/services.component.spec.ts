@@ -22,17 +22,22 @@ describe('Weld Engineering Services page', () => {
     expect((el.querySelector('#param-gwp') as HTMLInputElement).value).toBe('SVC-PAGE');
     expect((el.querySelector('#param-wtn') as HTMLInputElement).value).toBe(TEST_WTN);
 
+    const fullCall = el.querySelector('pre.json-block')!.textContent!;
+    expect(fullCall).toContain('getProcedure({');
+    expect(fullCall).toContain('"gwp": "SVC-PAGE"');
+
     (el.querySelector('button[type=submit]') as HTMLButtonElement).click();
     fixture.detectChanges();
     const blocks = el.querySelectorAll('pre.json-block');
-    expect(blocks.length).toBe(2);
-    expect(blocks[1].textContent).toContain('"ok": true');
-    expect(blocks[1].textContent).toContain('"gwp": "SVC-PAGE"');
+    expect(blocks.length).toBe(3);
+    expect(blocks[1].textContent).toBe(fullCall);
+    expect(blocks[2].textContent).toContain('"ok": true');
   });
 
   it('marks the write call as changing data', async () => {
     const fixture = await render();
     const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());
-    expect(options).toContain('updateProcedureFields (changes data)');
+    expect(options).toContain('updateProcedureFields (Write)');
+    expect(options).toContain('getProcedure (Read)');
   });
 });

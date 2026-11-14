@@ -1,7 +1,8 @@
 /* What a system's service operation looks like to the service tester (each system's Admin > Services):
-   a name, what it does, whether it changes data, its parameters, and how to run it. A system lists its
-   operations; the tester builds the input form from the parameters and shows the response.
-   readArgs() turns the typed-in text into the arguments run() gets. */
+   a name, what it does, whether it changes data, its parameters, how the typed-in inputs become the
+   call's arguments, and the call itself. The tester builds the input form from the parameters, shows
+   the full call, and runs fn(...call(inputs)), so the call shown is exactly the call run.
+   readArgs() turns the typed-in text into named inputs; callText() writes the full call. */
 export type ParamType = 'text' | 'list' | 'select' | 'json';
 
 export interface OperationParam {
@@ -20,16 +21,19 @@ export interface OperationParam {
 
 export interface ServiceOperation {
   name: string;
-  /* the call as code, e.g. 'getProcedure({ gwp, wtn }, { fields, status, revision })' */
+  /* the call's shape, e.g. 'getProcedure({ gwp, wtn }, { fields?, status?, revision? })'; ? = optional */
   signature: string;
   description: string;
   /* true when running it changes the system's data */
   writes: boolean;
   params: OperationParam[];
-  run(args: Record<string, unknown>): unknown;
+  /* the named inputs as the call's arguments, in order */
+  call(inputs: Record<string, unknown>): unknown[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fn(...args: any[]): unknown;
 }
 
-/* blank inputs are left out of the arguments */
+/* blank inputs are left out */
 export function readArgs(
   op: ServiceOperation, raw: Record<string, string>
 ): { args: Record<string, unknown> } | { problem: string } {
@@ -46,6 +50,19 @@ export function readArgs(
     } else args[p.name] = text;
   }
   return { args };
+}
+
+/* an object without its undefined properties, so an optional value left blank isn't sent */
+export function sent<T extends object>(o: T): Partial<T> {
+  return Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
+}
+
+/* the call as code, each argument as JSON; trailing arguments left out are dropped */
+export function callText(name: string, args: unknown[]): string {
+  const list = [...args];
+  while (list.length && list[list.length - 1] === undefined) list.pop();
+  const parts = list.map(a => a === undefined ? 'undefined' : JSON.stringify(a, null, 2));
+  return `${name}(${parts.join(', ')})`;
 }
 
 /* each parameter's starting text */
