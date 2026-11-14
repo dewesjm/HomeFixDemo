@@ -69,3 +69,20 @@ export function callText(name: string, args: unknown[]): string {
 export function startingInputs(op: ServiceOperation): Record<string, string> {
   return Object.fromEntries(op.params.map(p => [p.name, p.example ?? '']));
 }
+
+/* a file in a response ({ ok: true, data: { fileName, contentType, base64 } }), to offer for download */
+export interface ResponseFile { fileName: string; contentType: string; base64: string; }
+
+export function responseFile(response: unknown): ResponseFile | null {
+  const d = (response as { data?: Record<string, unknown> } | null)?.data;
+  const ok = d && typeof d['fileName'] === 'string' && typeof d['contentType'] === 'string' && typeof d['base64'] === 'string';
+  return ok ? { fileName: d['fileName'] as string, contentType: d['contentType'] as string, base64: d['base64'] as string } : null;
+}
+
+/* the response as shown: a file's base64 is cut to its start and length, the rest is as answered */
+export function shownResponse(response: unknown): unknown {
+  const file = responseFile(response);
+  if (!file) return response;
+  const r = response as { data: Record<string, unknown> };
+  return { ...r, data: { ...r.data, base64: `${file.base64.slice(0, 40)}... (${file.base64.length} characters)` } };
+}

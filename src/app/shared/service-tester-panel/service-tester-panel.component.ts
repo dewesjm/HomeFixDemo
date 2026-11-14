@@ -1,19 +1,20 @@
 /* Service tester: pick one of a system's service operations, fill in its parameters, see the full call
-   it makes and run it to see the exact response. The page around it passes the operations
+   it makes and run it to see the exact response. A call that answers later (a Promise) is waited for;
+   a file in the response is offered for download. The page around it passes the operations
    (service-operation.ts). */
 import { Component, computed, input, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideCopy, LucidePlay, LucideRotateCcw } from '@lucide/angular';
+import { LucideCopy, LucideDownload, LucidePlay, LucideRotateCcw } from '@lucide/angular';
 
-import { callText, readArgs, startingInputs, type ServiceOperation } from './service-operation';
+import { callText, readArgs, responseFile, shownResponse, startingInputs, type ResponseFile, type ServiceOperation } from './service-operation';
 
-interface Run { call: string; response: unknown; }
+interface Run { call: string; response: unknown; file: ResponseFile | null; }
 
 @Component({
   selector: 'app-service-tester-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideCopy, LucidePlay, LucideRotateCcw],
+  imports: [CommonModule, FormsModule, LucideCopy, LucideDownload, LucidePlay, LucideRotateCcw],
   templateUrl: './service-tester-panel.component.html'
 })
 export class ServiceTesterPanelComponent {
@@ -25,6 +26,7 @@ export class ServiceTesterPanelComponent {
   problem = signal('');
   last = signal<Run | null>(null);
   copied = signal(false);
+  running = signal(false);
 
   constructor() {
     /* a different operation starts from its own example inputs and clears the last response */
@@ -44,9 +46,9 @@ export class ServiceTesterPanelComponent {
     return 'problem' in read ? { text: '', problem: read.problem } : { text: callText(op.name, op.call(read.args)), problem: '' };
   }
 
-  run() {
+  async run() {
     const op = this.selected();
-    if (!op) return;
+    if (!op || this.running()) return;
     const read = readArgs(op, this.inputs);
     if ('problem' in read) {
       this.problem.set(read.problem);
@@ -56,7 +58,21 @@ export class ServiceTesterPanelComponent {
     const args = op.call(read.args);
     let response: unknown;
     try { response = op.fn(...args); } catch (e) { response = { error: String(e) }; }
-    this.last.set({ call: callText(op.name, args), response });
+    if (response instanceof Promise) {
+      this.running.set(true);
+      try { response = await response; } catch (e) { response = { error: String(e) }; }
+      this.running.set(false);
+      /* the operation was changed while it ran: its answer isn't for the inputs on screen */
+      if (this.selected() !== op) return;
+    }
+    this.last.set({ call: callText(op.name, args), response: shownResponse(response), file: responseFile(response) });
+  }
+
+  download(file: ResponseFile) {
+    const a = document.createElement('a');
+    a.href = `data:${file.contentType};base64,${file.base64}`;
+    a.download = file.fileName;
+    a.click();
   }
 
   async copyCall() {

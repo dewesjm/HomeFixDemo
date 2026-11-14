@@ -6,7 +6,7 @@
     @if (procedure(); as p) {
       <h2 class="section-title m-0">GWP {{ p.gwp }} / WTN {{ p.wtn }}</h2>
       <span class="spacer"></span>
-      <button type="button" class="btn btn-sm btn-primary" (click)="download()">
+      <button type="button" class="btn btn-sm btn-primary" [disabled]="!pdf()" (click)="download()">
         <svg lucideDownload class="size-4"></svg> Download
       </button>
     }
@@ -14,6 +14,8 @@
 
   @if (pdfUrl(); as url) {
     <iframe [src]="url" style="width: 100%; height: calc(100vh - 8rem); border: 1px solid var(--app-border); border-radius: 0.5rem"></iframe>
+  } @else if (error()) {
+    <div role="alert" class="alert alert-warning text-sm">{{ error() }}</div>
   } @else {
     <p style="color: var(--app-text-muted)">Generating document…</p>
   }

@@ -2,7 +2,7 @@ import { procedures, getProcedure as procedureRow } from '../../../data/procedur
 import { SEEDED_SECTION_IDS } from '../procedure-sections';
 import { keepProcedureStores, testProcedure, TEST_WTN } from '../testing/procedure-test-state';
 import {
-  getProcedure, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures, REVISION_NOTE_REQUIRED,
+  getProcedure, getProcedurePdf, findProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures, REVISION_NOTE_REQUIRED,
 } from './procedure-service';
 
 const GWP = 'SVC-1';
@@ -23,6 +23,23 @@ function seed(overrides: Parameters<typeof testProcedure>[1] = {}) {
 describe('procedure service', () => {
   keepProcedureStores();
   beforeEach(() => seed());
+
+  describe('getProcedurePdf', () => {
+    it('answers the PDF file', async () => {
+      const r = await getProcedurePdf(key);
+      if (!r.ok) return fail(r.error);
+      expect(r.data.fileName).toBe(`${GWP}-${TEST_WTN}.pdf`);
+      expect(r.data.contentType).toBe('application/pdf');
+      expect(atob(r.data.base64).startsWith('%PDF')).toBeTrue();
+    }, 20000);
+
+    it('refuses like getProcedure: another status, an old revision, no such procedure', async () => {
+      expect((await getProcedurePdf(key, { status: 'draft' })).ok).toBeFalse();
+      expect((await getProcedurePdf(key, { revision: '1' })).ok).toBeFalse();
+      const r = await getProcedurePdf({ gwp: 'NONE', wtn: TEST_WTN });
+      expect(r.ok ? '' : r.title).toBe('Not found');
+    });
+  });
 
   describe('getProcedure', () => {
     it('answers the header and every section the procedure has', () => {

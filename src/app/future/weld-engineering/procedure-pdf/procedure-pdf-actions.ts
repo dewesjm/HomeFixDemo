@@ -1,5 +1,6 @@
 /* The only file that touches the actual pdfmake renderer -- keeps procedure-pdf.ts's document-
-   definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency. */
+   definition logic (the part worth unit testing) free of any pdfmake runtime/DOM dependency.
+   Called only by the procedure service's getProcedurePdf (procedure-service/procedure-service.ts). */
 import { Procedure } from '../../../data/procedures';
 import { procedureSections } from '../procedure-sections';
 import { procedureDocDefinition } from './procedure-pdf';
@@ -18,13 +19,8 @@ async function pdfMake() {
   return pm;
 }
 
-export async function downloadProcedurePdf(p: Procedure): Promise<void> {
+/* the procedure's PDF file, base64 encoded */
+export async function procedurePdfBase64(p: Procedure): Promise<string> {
   const pm = await pdfMake();
-  pm.createPdf(procedureDocDefinition(p, procedureSections())).download(`${p.gwp}-${p.wtn}.pdf`);
-}
-
-/* data: URL for embedding in an <iframe> preview */
-export async function procedurePdfDataUrl(p: Procedure): Promise<string> {
-  const pm = await pdfMake();
-  return pm.createPdf(procedureDocDefinition(p, procedureSections())).getDataUrl();
+  return pm.createPdf(procedureDocDefinition(p, procedureSections())).getBase64();
 }

@@ -4,7 +4,8 @@
    { ok: false, error, title } with a message saying what's wrong, never throws.
    Reads:  getProcedure(key, options) = everything on a WTN, or only the fields asked for;
            findProcedures(filter, options) = every procedure matching a condition, header only unless fields are asked for;
-           searchProcedures(query) = a list screen's rows: search text, column filters, sort, optional paging.
+           searchProcedures(query) = a list screen's rows: search text, column filters, sort, optional paging;
+           getProcedurePdf(key, options) = the procedure's official PDF (answers asynchronously).
    Writes: createProcedure(procedure), updateProcedure(key, changes, revisionNote), updateProcedureFields(key,
            values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
            (many at once, each row saved or refused on its own).
@@ -28,6 +29,7 @@ import { searchProblem, searchRow, searchRows, type ProcedureSearch, type Proced
 import { parseFieldInput } from './procedure-field-input';
 import { choiceProblem, procedureSaveProblem } from './procedure-save-checks';
 import { changesProblem, type ProcedureChanges } from './procedure-changes';
+import { procedurePdfBase64 } from '../procedure-pdf/procedure-pdf-actions';
 
 import { fail, type ServiceResult } from './service-result';
 
@@ -80,7 +82,8 @@ function answer(p: Procedure, fields?: string[]): ProcedureAnswer {
 }
 
 /* ── Reads ── */
-export function getProcedure(key: ProcedureKey, options: GetOptions = {}): ServiceResult<ProcedureAnswer> {
+/* the stored procedure a read names, with the status and revision asked for */
+function readable(key: ProcedureKey, options: { status?: ProcedureStatus; revision?: string }): ServiceResult<Procedure> {
   const status = options.status ?? 'active';
   if (statusProblem(status)) return fail(statusProblem(status));
   const p = rowFor(key);
@@ -90,7 +93,35 @@ export function getProcedure(key: ProcedureKey, options: GetOptions = {}): Servi
   if (revision && revision !== p.revision) {
     return fail(`Revision ${revision} of ${procedureName(p)} isn't stored. This demo keeps only the current revision (${p.revision}).`, 'Not found');
   }
-  return { ok: true, data: answer(p, options.fields) };
+  return { ok: true, data: p };
+}
+
+export function getProcedure(key: ProcedureKey, options: GetOptions = {}): ServiceResult<ProcedureAnswer> {
+  const found = readable(key, options);
+  return found.ok ? { ok: true, data: answer(found.data, options.fields) } : found;
+}
+
+export interface ProcedurePdf {
+  fileName: string;
+  contentType: 'application/pdf';
+  /* the PDF file, base64 encoded */
+  base64: string;
+}
+
+/* The procedure's official PDF, the same document every system gets (procedure-pdf/). Same status and
+   revision rules as getProcedure. Answers later (the PDF is built asynchronously); never rejects. */
+export async function getProcedurePdf(
+  key: ProcedureKey, options: { status?: ProcedureStatus; revision?: string } = {}
+): Promise<ServiceResult<ProcedurePdf>> {
+  const found = readable(key, options);
+  if (!found.ok) return found;
+  const p = found.data;
+  try {
+    const base64 = await procedurePdfBase64(p);
+    return { ok: true, data: { fileName: `${p.gwp}-${p.wtn}.pdf`, contentType: 'application/pdf', base64 } };
+  } catch {
+    return fail(`The PDF for ${procedureName(p)} couldn't be made.`, 'PDF not made');
+  }
 }
 
 export function findProcedures(filter: ProcedureFilter = {}, options: ReadOptions = {}): ServiceResult<{ count: number; procedures: FoundProcedure[] }> {

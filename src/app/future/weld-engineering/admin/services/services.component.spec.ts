@@ -34,6 +34,26 @@ describe('Weld Engineering Services page', () => {
     expect(blocks[2].textContent).toContain('"ok": true');
   });
 
+  it('runs getProcedurePdf, shows the base64 cut short and offers the file', async () => {
+    const fixture = await render();
+    const el: HTMLElement = fixture.nativeElement;
+    const select = el.querySelector('select') as HTMLSelectElement;
+    select.value = 'getProcedurePdf';
+    select.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    (el.querySelector('button[type=submit]') as HTMLButtonElement).click();
+    await new Promise<void>(resolve => {
+      const wait = () => (el.textContent?.includes('Download SVC-PAGE') ? resolve() : (fixture.detectChanges(), setTimeout(wait, 50)));
+      wait();
+    });
+    const blocks = el.querySelectorAll('pre.json-block');
+    expect(blocks[2].textContent).toContain('"contentType": "application/pdf"');
+    expect(blocks[2].textContent).toContain('characters)');
+  }, 20000);
+
   it('marks the write call as changing data', async () => {
     const fixture = await render();
     const options = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('option')).map(o => o.textContent?.trim());

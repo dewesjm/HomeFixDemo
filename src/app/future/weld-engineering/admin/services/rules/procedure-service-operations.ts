@@ -3,7 +3,7 @@
 import { PROCEDURE_STATUS_OPTIONS, type ProcedureStatus } from '../../../../../data/procedures';
 import { sent, type ServiceOperation } from '../../../../../shared/service-tester-panel/service-operation';
 import {
-  getProcedure, findProcedures, searchProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
+  getProcedure, getProcedurePdf, findProcedures, searchProcedures, updateProcedureFields, createProcedure, updateProcedure, deleteProcedure, importProcedures,
 } from '../../../procedure-service/procedure-service';
 import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
@@ -70,6 +70,18 @@ export function procedureServiceOperations(example: ProcedureKey): ServiceOperat
       }],
       call: a => [(a['query'] ?? {}) as ProcedureSearch],
       fn: searchProcedures,
+    },
+    {
+      name: 'getProcedurePdf',
+      signature: 'getProcedurePdf({ gwp, wtn }, { status?, revision? })',
+      description: 'One procedure\'s official PDF, the same document every system gets. Answers the file name, type and the file base64 encoded.',
+      writes: false,
+      params: [
+        ...keyParams(example), statusParam,
+        { name: 'revision', label: 'Revision', type: 'text', help: 'Default: the current revision. Older revisions aren\'t stored in this demo.' },
+      ],
+      call: a => [keyOf(a), sent({ status: statusOf(a), revision: str(a['revision']) || undefined })],
+      fn: getProcedurePdf,
     },
     {
       name: 'updateProcedureFields',

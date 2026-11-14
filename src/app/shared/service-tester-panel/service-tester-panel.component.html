@@ -59,7 +59,7 @@
       @if (problem()) { <div role="alert" class="alert alert-warning text-sm">{{ problem() }}</div> }
 
       <div class="flex gap-2">
-        <button type="submit" class="btn btn-primary btn-sm"><svg lucidePlay class="size-4"></svg> Run</button>
+        <button type="submit" class="btn btn-primary btn-sm" [disabled]="running()"><svg lucidePlay class="size-4"></svg> {{ running() ? 'Running...' : 'Run' }}</button>
         <button type="button" class="btn btn-ghost btn-sm" (click)="reset()"><svg lucideRotateCcw class="size-4"></svg> Reset</button>
       </div>
     </form>
@@ -69,6 +69,11 @@
         <h3 class="form-section-title">Call run</h3>
         <pre class="json-block">{{ r.call }}</pre>
         <h3 class="form-section-title">Response</h3>
+        @if (r.file; as f) {
+          <button type="button" class="btn btn-sm mb-sm" (click)="download(f)">
+            <svg lucideDownload class="size-4"></svg> Download {{ f.fileName }}
+          </button>
+        }
         <pre class="json-block">{{ r.response | json }}</pre>
       </div>
     }

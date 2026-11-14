@@ -1,4 +1,4 @@
-import { callText, readArgs, sent, startingInputs, type ServiceOperation } from './service-operation';
+import { callText, readArgs, responseFile, sent, shownResponse, startingInputs, type ServiceOperation } from './service-operation';
 
 const op: ServiceOperation = {
   name: 'demo', signature: 'demo()', description: '', writes: false, call: a => [a], fn: a => a,
@@ -29,5 +29,21 @@ describe('service operation inputs', () => {
     expect(callText('demo', [{ gwp: 'W-1' }, 'note', undefined])).toBe('demo({\n  "gwp": "W-1"\n}, "note")');
     expect(callText('demo', [undefined, 'x'])).toBe('demo(undefined, "x")');
     expect(sent({ a: 1, b: undefined })).toEqual({ a: 1 });
+  });
+});
+
+describe('service operation file responses', () => {
+  const answer = { ok: true, data: { fileName: 'a.pdf', contentType: 'application/pdf', base64: 'x'.repeat(100) } };
+
+  it('finds a file in the response', () => {
+    expect(responseFile(answer)?.fileName).toBe('a.pdf');
+    expect(responseFile({ ok: true, data: { count: 1 } })).toBeNull();
+    expect(responseFile(null)).toBeNull();
+  });
+
+  it('shows a file\'s base64 cut short with its length', () => {
+    const shown = shownResponse(answer) as typeof answer;
+    expect(shown.data.base64).toBe(`${'x'.repeat(40)}... (100 characters)`);
+    expect(answer.data.base64.length).toBe(100);
   });
 });
