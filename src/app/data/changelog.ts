@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Record can provide MWQ with a Joint Details link by hull, drawing, and joint number.',
+    added: ['A local MWQ simulator can send an offline preparation request to Weld Record and confirm receipt.',
+      'Weld Record can provide MWQ with a Joint Details link by hull, drawing, and joint number.',
       'Weld Record Admin > Services demonstrates signoff, corrections, Deprogress, Routing Override, reference changes, and configuration reads for developers.',
       'Weld Record Admin > Services can edit Fabrication fields and release joints to welding using the same calls as Joint Details and Pipe Welding.',
       'Weld Engineering Admin > Services can show the base-material codes and filler-metal types and sizes used by the apps.',

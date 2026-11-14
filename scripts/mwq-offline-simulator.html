@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MWQ offline handoff simulator</title>
+<main>
+  <h1>MWQ offline handoff simulator</h1>
+  <form id="prepare">
+    <label>Hull <input name="hull" value="D1034" required></label>
+    <label>Drawing <input name="drawing" value="S731-5003" required></label>
+    <label>Joint <input name="joint" value="FO-10939" required></label>
+    <button>Get ready for offline</button>
+  </form>
+  <p id="status" role="status"></p>
+  <pre id="reply"></pre>
+</main>
+<script type="module">
+  const ewrOrigin = 'http://localhost:4321';
+  const form = document.querySelector('#prepare');
+  const status = document.querySelector('#status');
+  const reply = document.querySelector('#reply');
+  let handoff;
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    clearTimeout(handoff?.timeout);
+    reply.textContent = '';
+    const setup = window.open(new URL('/offline/prepare', ewrOrigin), '_blank');
+    if (!setup) {
+      handoff = undefined;
+      status.textContent = 'Allow the Weld Record window to open, then retry.';
+      return;
+    }
+
+    handoff = {
+      setup,
+      request: {
+        type: 'ewr-offline-prepare',
+        requestId: crypto.randomUUID(),
+        joints: [Object.fromEntries(new FormData(form))],
+      },
+      timeout: setTimeout(() => {
+        status.textContent = 'Weld Record did not confirm receipt. Check the setup window and retry.';
+      }, 15000),
+    };
+    status.textContent = 'Waiting for Weld Record to confirm receipt.';
+  });
+
+  window.addEventListener('message', event => {
+    if (!handoff || event.origin !== ewrOrigin || event.source !== handoff.setup) return;
+    if (event.data?.type === 'ewr-offline-listening') {
+      handoff.setup.postMessage(handoff.request, ewrOrigin);
+    }
+    if (event.data?.type === 'ewr-offline-request-received' && event.data.requestId === handoff.request.requestId) {
+      clearTimeout(handoff.timeout);
+      status.textContent = 'Weld Record received the request.';
+      reply.textContent = JSON.stringify(event.data, null, 2);
+    }
+  });
+</script>
+</html>
