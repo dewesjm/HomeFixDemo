@@ -7,6 +7,7 @@
           Fixes the values already recorded for this sign-off. It does not deprogress the routing or change where the joint is.
         </p>
 
+        <!-- each label is linked to its field (correct-<key>; correct-signoff-<key> for signoff fields) -->
         <div class="flex flex-col gap-3 my-3">
           @for (f of fields(); track f.key) {
             <div class="w-full">
@@ -26,14 +27,14 @@
                   <span>{{ f.label }}</span>
                 </label>
               } @else if (f.type === 'select') {
-                <div class="meta mb-1">{{ f.label }}</div>
-                <select class="select select-bordered w-full" [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)">
+                <label class="meta mb-1 block" [for]="'correct-' + f.key">{{ f.label }}</label>
+                <select [id]="'correct-' + f.key" class="select select-bordered w-full" [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)">
                   @if (!value(f.key)) { <option [ngValue]="''">Select</option> }
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else if (f.type === 'radio') {
-                <div class="meta mb-1">{{ f.label }}</div>
-                <div class="flex gap-4">
+                <div class="meta mb-1" [id]="'correct-' + f.key + '-label'">{{ f.label }}</div>
+                <div class="flex gap-4" role="radiogroup" [attr.aria-labelledby]="'correct-' + f.key + '-label'">
                   @for (o of f.options || []; track o.value) {
                     <label class="flex items-center gap-2 cursor-pointer">
                       <input type="radio" class="radio radio-sm" [name]="'correct-' + st.id + '-' + f.key"
@@ -43,11 +44,11 @@
                   }
                 </div>
               } @else if (isPersonField(f.key)) {
-                <div class="meta mb-1">{{ f.label }}</div>
-                <app-person-search-input [value]="value(f.key)" (commit)="setValue(f.key, $event)" />
+                <label class="meta mb-1 block" [for]="'correct-' + f.key">{{ f.label }}</label>
+                <app-person-search-input [inputId]="'correct-' + f.key" [value]="value(f.key)" (commit)="setValue(f.key, $event)" />
               } @else {
-                <div class="meta mb-1">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</div>
-                <input [type]="f.type === 'number' ? 'number' : 'text'" class="input input-bordered w-full"
+                <label class="meta mb-1 block" [for]="'correct-' + f.key">{{ f.label }}{{ f.unit ? ' (' + f.unit + ')' : '' }}</label>
+                <input [id]="'correct-' + f.key" [type]="f.type === 'number' ? 'number' : 'text'" class="input input-bordered w-full"
                        [ngModel]="value(f.key)" (ngModelChange)="setValue(f.key, $event)" />
               }
             </div>
@@ -70,14 +71,14 @@
                   <span>{{ f.label }}</span>
                 </label>
               } @else if (f.type === 'select') {
-                <div class="meta mb-1">{{ f.label }}</div>
-                <select class="select select-bordered w-full" [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)">
+                <label class="meta mb-1 block" [for]="'correct-signoff-' + f.key">{{ f.label }}</label>
+                <select [id]="'correct-signoff-' + f.key" class="select select-bordered w-full" [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)">
                   @if (!value(f.key, true)) { <option [ngValue]="''">Select</option> }
                   @for (o of f.options || []; track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
                 </select>
               } @else {
-                <div class="meta mb-1">{{ f.label }}</div>
-                <input type="text" class="input input-bordered w-full"
+                <label class="meta mb-1 block" [for]="'correct-signoff-' + f.key">{{ f.label }}</label>
+                <input [id]="'correct-signoff-' + f.key" type="text" class="input input-bordered w-full"
                        [ngModel]="value(f.key, true)" (ngModelChange)="setValue(f.key, $event)" />
               }
             </div>
@@ -90,8 +91,8 @@
         <app-references-panel [references]="references()" (add)="addReferences($event)" (remove)="removeReference($event)" />
 
         <div class="mt-4">
-          <label class="meta mb-1 block">Reason for correction<span class="text-error">*</span></label>
-          <textarea class="textarea textarea-bordered w-full" rows="2" placeholder="Why this is being corrected…"
+          <label class="meta mb-1 block" for="correct-reason">Reason for correction<span class="text-error">*</span></label>
+          <textarea id="correct-reason" class="textarea textarea-bordered w-full" rows="2" placeholder="Why this is being corrected…"
                     [ngModel]="reason()" (ngModelChange)="reason.set($event)"></textarea>
         </div>
 

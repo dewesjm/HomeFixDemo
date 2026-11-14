@@ -30,7 +30,7 @@
   </div>
 } @else {
   <div class="relative">
-    <input type="text" class="input input-bordered w-full" [class]="inputSizeClass()" [class.input-error]="hasError()"
+    <input type="text" [attr.id]="inputId()" class="input input-bordered w-full" [class]="inputSizeClass()" [class.input-error]="hasError()"
            [disabled]="disabled()" [placeholder]="placeholder()"
            [ngModel]="text()" (ngModelChange)="onTextInput($event)"
            (focus)="suggestOpen.set(true)" (blur)="onTextBlur()" />

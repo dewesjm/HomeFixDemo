@@ -14,8 +14,8 @@ async function openCorrect(page: Page, routing: string): Promise<Locator> {
   return dialog;
 }
 
-/* a Correct window field by its label (the labels there aren't linked to their fields) */
-const correctField = (dialog: Locator, label: string) =>
+/* a locked Correct window value (shown as text, not a field) with its label and Locked note */
+const lockedField = (dialog: Locator, label: string) =>
   dialog.locator('div.w-full').filter({ has: dialog.page().getByText(label, { exact: true }) });
 
 const referencesPanel = (scope: Locator) => scope.locator('section').filter({ has: scope.page().getByRole('heading', { name: 'References' }) });
@@ -32,14 +32,18 @@ test('Correct changes a recorded Weld Color with a reason, leaves the routing al
   await openHistory(page, ROOT_RT_JOINT);
   const dialog = await openCorrect(page, 'Root NDT 5X/VT');
   const save = dialog.getByRole('button', { name: 'Save correction' });
-  const color = correctField(dialog, 'Weld Color').getByRole('combobox');
+  const color = dialog.getByLabel('Weld Color', { exact: true });
   await expect(color.locator('option:checked')).toHaveText('Shiny Silver');
   await expect(save).toBeDisabled();
+
+  /* each Correct label is linked to its field */
+  await dialog.locator('label', { hasText: 'Weld Color' }).click();
+  await expect(color).toBeFocused();
 
   await color.selectOption({ label: 'Straw' });
   /* a reason is required */
   await expect(save).toBeDisabled();
-  await dialog.getByPlaceholder('Why this is being corrected…').fill('Wrong color picked');
+  await dialog.getByLabel('Reason for correction').fill('Wrong color picked');
   await save.click();
   await expect(dialog).toHaveCount(0);
 
@@ -57,13 +61,13 @@ test('Correct changes a recorded Weld Color with a reason, leaves the routing al
   await expect(history).toContainText('Wrong color picked');
   await expect(history).toContainText('Shiny Silver → Straw');
   const again = await openCorrect(page, 'Root NDT 5X/VT');
-  await expect(correctField(again, 'Weld Color').getByRole('combobox').locator('option:checked')).toHaveText('Straw');
+  await expect(again.getByLabel('Weld Color', { exact: true }).locator('option:checked')).toHaveText('Straw');
 });
 
 test('Correct shows a value that drove routing as locked: Fit-Up Insp\'s Release to welding', async ({ page }) => {
   await openHistory(page, ROOT_RT_JOINT);
   const dialog = await openCorrect(page, 'Fit-Up Insp');
-  const release = correctField(dialog, 'Release to welding upon inspection');
+  const release = lockedField(dialog, 'Release to welding upon inspection');
   await expect(release).toContainText('yes');
   await expect(release).toContainText('Locked - this value drove routing when the routing was signed.');
   await expect(release.locator('input, select')).toHaveCount(0);
@@ -79,7 +83,7 @@ test('References: added and removed on the RT form, kept through signoff and rel
 
   await addReference(panel, 'rt-film-01.pdf');
   await addReference(panel, 'rt-film-02.pdf');
-  await referencesPanel(panel).locator('tbody tr').filter({ hasText: 'rt-film-01.pdf' }).getByRole('button').click();
+  await referencesPanel(panel).getByRole('button', { name: 'Remove rt-film-01.pdf' }).click();
   await expect(referencesPanel(panel).locator('tbody tr')).toHaveCount(1);
   await expect(referencesPanel(panel)).toContainText('rt-film-02.pdf');
 

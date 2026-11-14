@@ -14,7 +14,7 @@
             <td>{{ a.addedAt | appDateTime }}</td>
             <td>
               <button type="button" class="btn btn-ghost btn-xs text-error" [disabled]="disabled()"
-                      (click)="remove.emit(a.id)">
+                      [attr.aria-label]="'Remove ' + a.name" (click)="remove.emit(a.id)">
                 <svg lucideTrash2 class="size-4"></svg>
               </button>
             </td>

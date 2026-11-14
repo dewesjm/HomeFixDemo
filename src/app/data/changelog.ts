@@ -18,6 +18,7 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Joint Details no longer shows the attribute code badges above the details. The codes still show under Show more.',
       'Reloading or closing the tab on a joint with unsigned edits now shows the browser\'s leave-page warning first.',
       'Clicking a Fabrication field\'s label puts the cursor in that field.',
+      'The same now goes for the Correct window\'s fields, and each References remove button is named for its file for screen readers.',
       'Deprogress can\'t reach back past Admin > Routing Override or Engineering\'s release of a hold: History offers it only on signoffs made since.'],
     fixed: ['History showed an XREFID for joints that have none. The XREFID column, its export and the joint name above the table are now blank or, for a joint with no XREFID, use hull, drawing and joint.'],
   },

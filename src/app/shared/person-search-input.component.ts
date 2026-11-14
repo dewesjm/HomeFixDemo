@@ -33,6 +33,8 @@ export class PersonSearchInputComponent {
 
   /* text mode */
   value = input<string>('');
+  /* id for the text box, so a caller's <label for> can point at it */
+  inputId = input<string | null>(null);
   commit = output<string>();
 
   /* picker mode */
