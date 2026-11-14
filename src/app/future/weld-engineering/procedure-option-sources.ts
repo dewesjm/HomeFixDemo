@@ -2,7 +2,7 @@
    (ExtraField.source, procedure-sections.ts). Admin tables can be picked for a new "Pick from another
    admin table" field in Admin > Procedure Sections; the code lists are only used by the seeded locked
    fields, whose values other systems match against those same lists. */
-import { getWeldPositions } from '../../data/weld-positions';
+import { getWeldPositions } from '../../weld-record/reference-data-service/reference-data-service';
 import { MATERIAL_TYPES } from '../../data/jobs';
 import {
   FILLER_METAL_TYPES, FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS
@@ -25,7 +25,7 @@ const plain = (list: string[]): Option[] => list.map(v => ({ label: v, value: v 
 const SOURCES: Record<OptionSourceId, OptionSource> = {
   weldPositions: {
     label: 'Admin > Weld Positions', adminTable: true,
-    options: picked => getWeldPositions()
+    options: picked => getWeldPositions().data.positions
       .filter(p => p.active !== false || picked.includes(p.code))
       .map(p => ({ label: `${p.code} - ${p.description}${p.active === false ? ' (inactive)' : ''}`, value: p.code })),
   },

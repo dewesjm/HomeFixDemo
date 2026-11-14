@@ -11,7 +11,7 @@ import { ToastService } from '../../../../shared/toast.service';
 import {
   getProcedure, procedureName, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, PROCESS_TYPES, type Procedure
 } from '../../../../data/procedures';
-import { ALL_QUALS } from '../../../../weld-record/qualifications-logic/qualifications';
+import { getQualifications } from '../../../../weld-record/reference-data-service/reference-data-service';
 import type { QualGroup } from '../../../../weld-record/qualifications-logic/qual-requirements';
 import { QualGroupEditorComponent } from '../../../../weld-record/qual-group-editor/qual-group-editor.component';
 import {
@@ -57,7 +57,7 @@ export class ProcedureFormComponent implements OnInit {
   statusOptions = PROCEDURE_STATUS_OPTIONS;
   weldProcesses = WELD_PROCESSES;
   processTypes = PROCESS_TYPES;
-  allQuals = ALL_QUALS;
+  allQuals = getQualifications().data.qualifications;
   sections = procedureSections;
   overrideParts = OVERRIDE_PARTS;
   /* each field's width (Admin > Procedure Sections) */

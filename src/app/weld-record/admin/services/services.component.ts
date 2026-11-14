@@ -1,6 +1,5 @@
 /* Admin > Services: try the calls made to Weld Record and see each response. The calls are
-   weld-record/joint-service/joint-service.ts; rules/ lists them for the shared service tester. Reads
-   only for now; which writes Weld Record offers is still open (Tasks.md). */
+   defined in joint-service/ and reference-data-service/. The rules/ folder lists them for the shared tester. */
 import { Component, inject } from '@angular/core';
 
 import { ViewerService } from '../../access-logic/viewer.service';
@@ -8,6 +7,7 @@ import { JOBS } from '../../../data/jobs';
 import { ServiceTesterPanelComponent } from '../../../shared/service-tester-panel/service-tester-panel.component';
 import { JointService } from '../../joint-service/joint-service';
 import { jointServiceOperations } from './rules/joint-service-operations';
+import { referenceDataServiceOperations } from './rules/reference-data-service-operations';
 
 @Component({
   selector: 'app-admin-services',
@@ -18,7 +18,8 @@ import { jointServiceOperations } from './rules/joint-service-operations';
       <h2 class="section-title">Services</h2>
       <p class="text-sm mb-sm">
         Every call made to Weld Record, both the ones this application uses internally and the ones other
-        systems can call: joints, their fields, routing and History. Run one to see its exact response.
+        systems can call: joints, their fields, routing, History, Weld Positions, and Qualifications.
+        Run one to see its exact response.
       </p>
       @if (canAccessApi()) {
         <app-service-tester-panel [operations]="operations" />
@@ -35,5 +36,8 @@ export class AdminServicesComponent {
   private svc = inject(JointService);
   /* the Filter droplist comes from getJointFields, as another system would get it */
   private fields = (r => (r.ok ? r.data.fields : []))(this.svc.getJointFields());
-  operations = jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields);
+  operations = [
+    ...jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields),
+    ...referenceDataServiceOperations,
+  ];
 }

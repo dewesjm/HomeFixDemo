@@ -5,7 +5,7 @@ import { OVERRIDE_PARTS, type ExtraFields, type ExtraFieldValue, type OverrideVa
 import { fieldChoices, isOverride } from '../../../procedure-field-values';
 import type { SectionColumn } from '../../../procedure-files';
 import { parseRequirementText, qualsIn } from '../../../../../weld-record/qualifications-logic/qual-requirements';
-import { ALL_QUALS } from '../../../../../weld-record/qualifications-logic/qualifications';
+import { getQualifications } from '../../../../../weld-record/reference-data-service/reference-data-service';
 
 type CellResult = { value: ExtraFieldValue } | { problem: string };
 
@@ -53,7 +53,8 @@ export function parseCell(col: SectionColumn, text: string): CellResult {
     case 'quals': {
       const g = parseRequirementText(t);
       if (typeof g === 'string') return { problem: `${name}: ${g}` };
-      const unknown = qualsIn(g).filter(q => !ALL_QUALS.includes(q));
+      const { qualifications } = getQualifications().data;
+      const unknown = qualsIn(g).filter(q => !qualifications.includes(q));
       return unknown.length ? { problem: `${name}: unknown qual ${unknown.join(', ')}.` } : { value: g };
     }
     default:

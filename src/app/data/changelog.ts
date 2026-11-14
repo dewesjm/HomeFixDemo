@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['NQC Inspectors can sign Pre-Fit.',
+    added: ['Weld Record Admin > Services can show the Weld Positions and Qualifications lists used by Weld Engineering.',
+      'NQC Inspectors can sign Pre-Fit.',
       'Weld Record uses separate grants for Groups and the other admin tables. The built-in Administrators group always keeps permission to manage Groups.',
       'Weld Record hides Admin, Makeup, and History navigation when you lack access. A record’s History button opens History locked to that joint in both Pipe Welding tables.',
       'Foremen can open Makeup from the Weld Record menu. Groups has a Manage Makeup permission, and the Weld Record Admin menu is hidden for Foremen.',
