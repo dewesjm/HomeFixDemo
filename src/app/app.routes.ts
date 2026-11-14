@@ -48,6 +48,7 @@ import { ManageProceduresComponent } from './future/weld-engineering/admin/manag
 import { ProcedureFormComponent } from './future/weld-engineering/admin/manage-procedures/procedure-form.component';
 import { LoadProceduresComponent } from './future/weld-engineering/admin/load-procedures/load-procedures.component';
 import { ProcedureSectionsComponent } from './future/weld-engineering/admin/procedure-sections/procedure-sections.component';
+import { ServicesComponent } from './future/weld-engineering/admin/services/services.component';
 
 
 export const routes: Routes = [
@@ -111,6 +112,7 @@ export const routes: Routes = [
   { path: 'weld-engineering/admin/new', component: ProcedureFormComponent, title: 'EWE - New Procedure' },
   { path: 'weld-engineering/admin/import', component: LoadProceduresComponent, title: 'EWE - Load Procedures' },
   { path: 'weld-engineering/admin/sections', component: ProcedureSectionsComponent, title: 'EWE - Procedure Sections' },
+  { path: 'weld-engineering/admin/services', component: ServicesComponent, title: 'EWE - Services' },
   { path: 'weld-engineering/admin/:gwp/:wtn/edit', component: ProcedureFormComponent, title: 'EWE - Edit Procedure' },
 
   { path: '**', redirectTo: 'pipe-welding' }

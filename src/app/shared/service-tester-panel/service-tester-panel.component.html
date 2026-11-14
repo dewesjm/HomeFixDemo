@@ -1,0 +1,63 @@
+<div class="flex flex-col gap-3" style="max-width: 60rem">
+  <label class="form-control">
+    <span class="label-text font-semibold">Operation</span>
+    <select class="select select-sm select-bordered" style="max-width: 24rem"
+            [ngModel]="selected()?.name" (ngModelChange)="selectedName.set($event)">
+      @for (op of operations(); track op.name) {
+        <option [value]="op.name">{{ op.name }}{{ op.writes ? ' (changes data)' : '' }}</option>
+      }
+    </select>
+  </label>
+
+  @if (selected(); as op) {
+    <div>
+      <code class="text-sm">{{ op.signature }}</code>
+      @if (op.writes) { <span class="badge badge-warning badge-sm" style="margin-left: 0.5rem">Changes data</span> }
+      <p class="text-sm" style="margin-top: 0.25rem">{{ op.description }}</p>
+    </div>
+
+    <form class="flex flex-col gap-2" (ngSubmit)="run()">
+      @for (p of op.params; track p.name) {
+        <div class="form-control">
+          <label class="label-text font-semibold" [for]="'param-' + p.name">
+            {{ p.label }}@if (p.required) { <span class="text-error"> *</span> }
+          </label>
+          @switch (p.type) {
+            @case ('select') {
+              <select class="select select-sm select-bordered" style="max-width: 24rem" [id]="'param-' + p.name"
+                      [name]="p.name" [(ngModel)]="inputs[p.name]">
+                <option value="">(default)</option>
+                @for (o of p.options ?? []; track o) { <option [value]="o">{{ o }}</option> }
+              </select>
+            }
+            @case ('json') {
+              <textarea class="textarea textarea-bordered font-mono text-sm" rows="5" [id]="'param-' + p.name"
+                        [name]="p.name" [(ngModel)]="inputs[p.name]" [placeholder]="p.placeholder ?? ''"></textarea>
+            }
+            @default {
+              <input type="text" class="input input-sm input-bordered" style="max-width: 32rem" [id]="'param-' + p.name"
+                     [name]="p.name" [(ngModel)]="inputs[p.name]" [placeholder]="p.placeholder ?? ''" />
+            }
+          }
+          @if (p.help) { <p class="text-sm">{{ p.help }}</p> }
+        </div>
+      }
+
+      @if (problem()) { <div role="alert" class="alert alert-warning text-sm">{{ problem() }}</div> }
+
+      <div class="flex gap-2">
+        <button type="submit" class="btn btn-primary btn-sm"><svg lucidePlay class="size-4"></svg> Run</button>
+        <button type="button" class="btn btn-ghost btn-sm" (click)="reset()"><svg lucideRotateCcw class="size-4"></svg> Reset</button>
+      </div>
+    </form>
+
+    @if (last(); as r) {
+      <div>
+        <h3 class="form-section-title">Request</h3>
+        <pre class="json-block">{{ r.operation }}({{ r.args | json }})</pre>
+        <h3 class="form-section-title">Response</h3>
+        <pre class="json-block">{{ r.response | json }}</pre>
+      </div>
+    }
+  }
+</div>

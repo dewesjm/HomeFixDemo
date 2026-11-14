@@ -12,6 +12,10 @@ interface ChangeLogDay {
 
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
+    date: '2026-11-14',
+    added: ['Weld Engineering > Admin > Services: try the calls other systems make to Weld Engineering and see each exact response. Get one procedure (all of it or only some fields), find procedures matching a filter, or change a procedure\'s section values. Changing values really changes the procedure; an Active one needs a revision note.'],
+  },
+  {
     date: '2026-11-13',
     changed: ['Joint Details, search filters, Weld Planning and condition editors say SFCC instead of SFFF and DSS-SOC instead of DSS-AAA.',
       'SS shows its real value, NS, SS or HI, instead of Yes/No, on Joint Details, in Weld Planning and in every condition editor. NS means no. DSS-SOC shows F (yes) or N (no). Records Review goes to O04 when SFCC, DSS-SOC or SS is positive, and to O63 when none is; and SS or HI needs any one of SSWELD1, SSWELD2 or SSWELD3 in Qualifications.',
