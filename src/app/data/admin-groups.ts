@@ -41,6 +41,8 @@ const EXISTING_SIGNOFF_PERMISSIONS = [
 
 export const MANAGE_MAKEUP_PERMISSION = 'manage-makeup';
 export const API_ACCESS_PERMISSION = 'api-access';
+export const MANAGE_GROUPS_PERMISSION = 'admin-groups';
+export const MAINTAIN_ADMIN_TABLES_PERMISSION = 'admin-tables';
 
 const PERMISSIONS: Permission[] = [
   { key: API_ACCESS_PERMISSION, label: 'API access', category: 'Access' },
@@ -51,8 +53,8 @@ const PERMISSIONS: Permission[] = [
   { key: MANAGE_MAKEUP_PERMISSION, label: 'Manage Makeup', category: 'Access' },
   { key: 'force-routing', label: 'Routing Override', category: 'Routing' },
   { key: EDIT_FABRICATION_PERMISSION, label: 'Edit fabrication fields', category: 'Data Entry' },
-  { key: 'admin-groups', label: 'Manage groups and permissions', category: 'Administration' },
-  { key: 'admin-tables', label: 'Maintain other admin tables', category: 'Administration' },
+  { key: MANAGE_GROUPS_PERMISSION, label: 'Manage groups and permissions', category: 'Administration' },
+  { key: MAINTAIN_ADMIN_TABLES_PERMISSION, label: 'Maintain other admin tables', category: 'Administration' },
 ];
 
 function allPermissions(): string[] {
@@ -121,7 +123,7 @@ const SAMPLE_GROUPS: AdminGroup[] = [
   { id: INSPECTOR_GROUP_ID, name: 'Inspector', description: 'Inspectors who handle inspection routings.',
     personas: ['Inspector'], allowed: INSPECTOR_PERMISSIONS },
   { id: NQC_INSPECTOR_GROUP_ID, name: 'NQC Inspector', description: 'Inspectors who handle NQC inspection routings.',
-    personas: ['NQC Inspector'], allowed: INSPECTOR_PERMISSIONS },
+    personas: ['NQC Inspector'], allowed: [...INSPECTOR_PERMISSIONS, signoffPermission('pre-fit')] },
   { id: O63_RECORDS_GROUP_ID, name: 'O63 Records', description: 'O63 records reviewers.',
     personas: ['O63 Records'], allowed: [...VIEW_PERMISSIONS, signoffPermission('review-o63')] },
   { id: O04_RECORDS_GROUP_ID, name: 'O04 Records', description: 'O04 records reviewers.',

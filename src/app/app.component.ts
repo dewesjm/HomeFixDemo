@@ -115,7 +115,11 @@ export class AppComponent {
   constructor() {
     effect(() => {
       const url = this.router.url;
-      if ((!this.viewer.canAccessAdmin() && url.startsWith('/admin/')) ||
+      const adminPage = url.split(/[?#]/, 1)[0];
+      const adminAccess = adminPage === '/admin/groups' ? this.viewer.canManageGroups()
+        : adminPage === '/admin/services' ? this.viewer.canAccessApi()
+        : this.viewer.canMaintainAdminTables();
+      if ((!adminAccess && adminPage.startsWith('/admin/')) ||
           (!this.viewer.canManageMakeup() && /^\/makeup(?:[/?#]|$)/.test(url)) ||
           (!this.viewer.canUseLegacyWorkflowActions() && /^\/(assignments|pipe-welding-classic)(?:[/?#]|$)/.test(url))) {
         void this.router.navigateByUrl('/pipe-welding');

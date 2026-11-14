@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, FOREMAN_GROUP_ID, HISTORY_PAGE_PERMISSION, INSPECTOR_GROUP_ID, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, MANAGE_MAKEUP_PERMISSION, NQC_INSPECTOR_GROUP_ID, O04_RECORDS_GROUP_ID, O63_RECORDS_GROUP_ID, SIGN_EXCAVATION_NDT_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
@@ -31,13 +31,15 @@ export class ViewerService {
     this.memberships().some(group => !GROUPS_WITHOUT_LEGACY_ACTIONS.includes(group.id)));
   readonly canManageMakeup = computed(() => this.permissions().has(MANAGE_MAKEUP_PERMISSION));
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
-  readonly canAccessAdmin = computed(() => this.isAdmin() || this.canUseLegacyWorkflowActions());
+  readonly canManageGroups = computed(() => this.permissions().has(MANAGE_GROUPS_PERMISSION));
+  readonly canMaintainAdminTables = computed(() =>
+    this.permissions().has(MAINTAIN_ADMIN_TABLES_PERMISSION) || this.canUseLegacyWorkflowActions());
+  readonly canAccessAdmin = computed(() => this.canManageGroups() || this.canMaintainAdminTables() || this.canAccessApi());
   readonly canSearch = computed(() => this.permissions().has(VIEW_PERMISSION));
   readonly canViewJoint = computed(() => this.permissions().has(JOINT_DETAILS_PERMISSION));
   readonly canViewJointHistory = computed(() => this.permissions().has(JOINT_HISTORY_PERMISSION));
   readonly canViewHistoryPage = computed(() => this.permissions().has(HISTORY_PAGE_PERMISSION));
   readonly canAccessApi = computed(() => this.permissions().has(API_ACCESS_PERMISSION));
-  readonly isAdmin = computed(() => this.permissions().has('admin-tables') || this.permissions().has('admin-groups'));
   readonly roles = computed(() => {
     const personas = new Set(this.memberships().flatMap(group => group.personas));
     return ROLES.filter(role => role === 'View' ? this.permissions().has(VIEW_PERMISSION) : personas.has(role));
@@ -65,7 +67,7 @@ export class ViewerService {
     return this.memberships().some(group => {
       if (!group.allowed.includes(permission)) return false;
       if (group.id === INSPECTOR_GROUP_ID) return inspection && !nqc;
-      if (group.id === NQC_INSPECTOR_GROUP_ID) return inspection && nqc;
+      if (group.id === NQC_INSPECTOR_GROUP_ID) return stageId === 'pre-fit' || (inspection && nqc);
       if (group.id === O63_RECORDS_GROUP_ID) return stageId === 'review-o63';
       if (group.id === O04_RECORDS_GROUP_ID) return stageId === 'review-o04';
       return group.id !== FOREMAN_GROUP_ID || stageId !== nqcStepId('fitup-insp');

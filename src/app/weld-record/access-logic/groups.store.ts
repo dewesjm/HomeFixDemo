@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { loadGroups, saveGroups, withPrivilegedPermissions, type AdminGroup } from '../../data/admin-groups';
+import { isPrivilegedGroup, loadGroups, saveGroups, withPrivilegedPermissions, type AdminGroup } from '../../data/admin-groups';
 
 @Injectable({ providedIn: 'root' })
 export class GroupsStore {
@@ -14,6 +14,7 @@ export class GroupsStore {
   }
 
   remove(id: string) {
+    if (isPrivilegedGroup(id)) return;
     this.commit(this.groups().filter(row => row.id !== id));
   }
 

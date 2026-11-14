@@ -1,4 +1,5 @@
-import { permissionsIn } from '../../data/admin-groups';
+import { ADMINISTRATORS_GROUP_ID, FITTING_GROUP_ID, MAINTAIN_ADMIN_TABLES_PERMISSION, MANAGE_GROUPS_PERMISSION, permissionsIn } from '../../data/admin-groups';
+import { GroupsStore } from '../access-logic/groups.store';
 import { ViewerService } from '../access-logic/viewer.service';
 import { TestBed } from '@angular/core/testing';
 import { Job, JOBS } from '../../data/jobs';
@@ -624,6 +625,30 @@ describe('SignoffService', () => {
     expect(viewer.canSignRouting('excavation-ndt', 'pt')).toBeFalse();
   });
 
+  it('keeps group administration separate from other admin tables', () => {
+    const viewer = TestBed.inject(ViewerService);
+    const groups = TestBed.inject(GroupsStore);
+    const fitting = groups.groups().find(group => group.id === FITTING_GROUP_ID)!;
+    viewer.select('fitter');
+
+    groups.save({ ...fitting, allowed: [MAINTAIN_ADMIN_TABLES_PERMISSION] });
+    expect(viewer.canMaintainAdminTables()).toBeTrue();
+    expect(viewer.canManageGroups()).toBeFalse();
+
+    groups.save({ ...fitting, allowed: [MANAGE_GROUPS_PERMISSION] });
+    expect(viewer.canManageGroups()).toBeTrue();
+    expect(viewer.canMaintainAdminTables()).toBeFalse();
+  });
+
+  it('protects the built-in Administrators group and its Groups grant', () => {
+    const groups = TestBed.inject(GroupsStore);
+    const administrators = groups.groups().find(group => group.id === ADMINISTRATORS_GROUP_ID)!;
+    groups.save({ ...administrators, allowed: [] });
+    groups.remove(ADMINISTRATORS_GROUP_ID);
+    expect(groups.groups().find(group => group.id === ADMINISTRATORS_GROUP_ID)?.allowed)
+      .toContain(MANAGE_GROUPS_PERMISSION);
+  });
+
   it('grants each inspector their inspection routings and shared record access', () => {
     const viewer = TestBed.inject(ViewerService);
     for (const [person, ownPrefix, otherPrefix] of [
@@ -638,6 +663,7 @@ describe('SignoffService', () => {
       expect(viewer.canAccessAdmin()).toBeFalse();
       expect(viewer.canUseLegacyWorkflowActions()).toBeFalse();
       expect(viewer.canSignRouting('repair', 'repair')).toBeFalse();
+      expect(viewer.canSignRouting('pre-fit', 'pre-fit')).toBe(person === 'nqc-inspector');
 
       for (const [id, type] of [
         ['fitup-insp', 'fitup-insp'], ['root-ndt-vt5x', 'vt'], ['layer-ndt-mtpt', 'mt'],
