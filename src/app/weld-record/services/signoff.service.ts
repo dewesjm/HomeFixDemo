@@ -172,15 +172,17 @@ export class SignoffService {
         const fd = fieldDefFor(c.key);
         return fd ? { ...c, from: displayValue(fd, c.from), to: displayValue(fd, c.to) } : c;
       });
+      /* its own History type, so Deprogress and Correct stay on the sign-off row; the routing
+         recorded is the stage corrected, not where the joint is now */
       return this.store.withHistory(wf, { ...wf, stages }, {
-        section: 'Sign-off',
+        section: 'Correction',
         who,
         action: `${updated.label} - Corrected ${changes.map(c => c.label).join(', ')}`,
         stageId,
         inputs: inputsSnapshot,
         changes: historyChanges,
         reason
-      });
+      }, updated.label);
     });
     this.messages.add({ severity: 'success', summary: 'Sign-off corrected', life: 3000 });
   }

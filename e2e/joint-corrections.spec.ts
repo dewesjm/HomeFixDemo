@@ -48,7 +48,15 @@ test('Correct changes a recorded Weld Color with a reason, leaves the routing al
   await expect(dialog).toHaveCount(0);
 
   /* the new entry comes in collapsed; its details are checked after the reload, where every entry is expanded */
-  await expect(page.locator('main tr').filter({ hasText: 'Root NDT 5X/VT - Corrected Weld Color' })).toHaveCount(1);
+  const correction = page.locator('main tr').filter({ hasText: 'Root NDT 5X/VT - Corrected Weld Color' });
+  await expect(correction).toHaveCount(1);
+  /* a correction is its own entry: Deprogress and Correct stay on the signoff row */
+  await expect(correction.getByRole('button', { name: 'Deprogress' })).toHaveCount(0);
+  await expect(correction.getByRole('button', { name: 'Correct' })).toHaveCount(0);
+  const deprogressRow = page.locator('main tr').filter({ has: page.getByRole('button', { name: 'Deprogress' }) });
+  await expect(deprogressRow).toHaveCount(1);
+  await expect(deprogressRow).toContainText('Root NDT 5X/VT');
+  await expect(deprogressRow).not.toContainText('Corrected');
 
   /* the correction doesn't move the joint */
   await openJoint(page, ROOT_RT_JOINT);

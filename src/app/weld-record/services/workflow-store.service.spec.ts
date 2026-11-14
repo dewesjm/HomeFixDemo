@@ -30,6 +30,25 @@ describe('WorkflowStore', () => {
       expect(reloaded.inputs['verifyMic1']).toBe('yes');
     });
 
+    it('a reload turns a correction saved as a Sign-off entry into a Correction for the stage corrected', () => {
+      const wf = store.workflowFor(job)();
+      const fab = [{ label: 'Location', value: 'X' }];
+      const older = { when: '2026-01-01T08:00:00Z', who: 'A', routing: 'Fit', inputs: [], fabInputs: fab, stageId: 'pre-fit' };
+      store.update(job, w => ({ ...w, history: [
+        { ...older, section: 'Sign-off', action: 'Pre-Fit - Signed off' },
+        { ...older, when: '2026-01-01T09:00:00Z', section: 'Sign-off', action: 'Pre-Fit - Corrected PPE', reason: 'typo' },
+      ] }));
+      jasmine.clock().tick(300);
+      TestBed.resetTestingModule();
+      const [signed, corrected] = TestBed.inject(WorkflowStore).workflowFor(job)().history;
+      expect(signed.section).toBe('Sign-off');
+      expect(signed.fabInputs).toEqual(fab);
+      expect(corrected.section).toBe('Correction');
+      expect(corrected.routing).toBe(wf.stages.find(s => s.id === 'pre-fit')!.label);
+      expect(corrected.fabInputs).toBeUndefined();
+      expect(corrected.reason).toBe('typo');
+    });
+
     it('debounces persistence: an update is written to localStorage once the 250 ms window ends', () => {
       store.update(job, wf => ({ ...wf, technician: 'Persisted Tech' }));
       jasmine.clock().tick(249);

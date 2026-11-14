@@ -20,7 +20,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Clicking a Fabrication field\'s label puts the cursor in that field.',
       'The same now goes for the Correct window\'s fields, and each References remove button is named for its file for screen readers.',
       'Deprogress can\'t reach back past Admin > Routing Override or Engineering\'s release of a hold: History offers it only on signoffs made since.'],
-    fixed: ['History showed an XREFID for joints that have none. The XREFID column, its export and the joint name above the table are now blank or, for a joint with no XREFID, use hull, drawing and joint.'],
+    fixed: ['A Correct in History is now its own entry type. Deprogress stays on the signoff row instead of moving to the correction, and the correction\'s Routing column shows the routing corrected, not where the joint is now.',
+      'History showed an XREFID for joints that have none. The XREFID column, its export and the joint name above the table are now blank or, for a joint with no XREFID, use hull, drawing and joint.'],
   },
   {
     date: '2026-11-12',

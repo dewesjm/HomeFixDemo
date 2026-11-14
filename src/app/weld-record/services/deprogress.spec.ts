@@ -10,7 +10,7 @@ import { DeviationService } from './deviation.service';
 import { WorkflowStore } from './workflow-store.service';
 import { JobWorkflow, WorkflowStage } from '../model/workflow-types';
 import { activeStageId } from '../routing-logic/current-routing';
-import { deprogressableKey, historyRows } from '../history-page/rules/history-rows';
+import { correctableKeys, deprogressableKey, historyRows } from '../history-page/rules/history-rows';
 import { getSignoffTypes, setSignoffTypes } from '../../data/signoff-types';
 import { typeValues } from '../signoff-forms-logic/stage-rules';
 import { useFixedClock } from '../../testing/test-job';
@@ -124,6 +124,25 @@ describe('Deprogress', () => {
     expect(stage(job, 'pre-fit').signed).toBeTrue();
     expect(stage(job, 'pre-fit').inputs['ppe']).toBe('boots');
     expect(offeredOn(job)).toBe('pre-fit');
+  });
+
+  it('a Correction is its own History type: Deprogress and Correct stay on the signoff row, with or without undo entries', () => {
+    const job = weldingJob();
+    signCurrent(job);
+    later();
+    signoff.correctStage(job, 'pre-fit', { inputs: { ppe: 'boots' } }, 'typo');
+    const correction = wf(job).history.at(-1)!;
+    expect(correction.section).toBe('Correction');
+    /* the routing corrected, not where the joint is now */
+    expect(correction.routing).toBe(stage(job, 'pre-fit').label);
+    expect(current(job)).not.toBe('pre-fit');
+    expect(correction.fabInputs).toBeUndefined();
+    /* with undo entries (signed here) and without (seeded signoffs) */
+    for (const w of [wf(job), { ...wf(job), undo: [] }]) {
+      const rows = historyRows(w, job);
+      expect(rows.find(r => r.key === deprogressableKey(w, rows))?.section).toBe('Sign-off');
+      expect(correctableKeys(w, rows).map(k => rows.find(r => r.key === k)?.section)).toEqual(['Sign-off']);
+    }
   });
 
   it('Defer Tack: deprogressing Fit puts regular Tack back and drops Deferred Tack', () => {

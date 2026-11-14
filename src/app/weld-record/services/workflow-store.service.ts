@@ -128,6 +128,7 @@ export class WorkflowStore {
       const raw = localStorage.getItem(LS_KEY);
       const parsed = raw ? (JSON.parse(raw) as Record<string, JobWorkflow>) : {};
       for (const wf of Object.values(parsed)) {
+        wf.history = wf.history.map(e => olderCorrection(e, wf));
         const job = JOBS.find(j => j.id === wf.jobId);
         if (job && wf.refitNumber) job.refitNumber = wf.refitNumber;
         if (job && wf.repairNumber) job.repairNumber = wf.repairNumber;
@@ -164,4 +165,14 @@ export class WorkflowStore {
       return {};
     }
   }
+}
+
+/* migration (temporary, see Tasks.md Cleanup): corrections saved before they had their own History
+   type were 'Sign-off' entries. Converts one to a Correction recording the corrected stage's routing,
+   without the Fabrication snapshot a sign-off takes. */
+function olderCorrection(e: HistoryEntry, wf: JobWorkflow): HistoryEntry {
+  if (e.section !== 'Sign-off' || !/ - Corrected /.test(e.action)) return e;
+  const { fabInputs: _dropped, ...rest } = e;
+  const label = wf.stages.find(s => s.id === e.stageId)?.label ?? e.action.split(' - Corrected ')[0];
+  return { ...rest, section: 'Correction', routing: label };
 }
