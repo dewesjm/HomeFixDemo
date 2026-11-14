@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { JOBS, type Job } from '../../data/jobs';
 import { JointService, findJoint } from './joint-service';
+import { jointUrl } from '../joint-page/joint-route';
 
 const job = (o: Partial<Job>): Job => ({ ...JOBS[0], ...o });
 
@@ -72,5 +73,68 @@ describe('JointService', () => {
   it('getHistory refuses an unknown section', () => {
     const r = svc.getHistory({ xrefid: withXref.xrefid }, { section: 'Nope' as never });
     expect(r).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+  });
+
+  it('jointUrl builds the full Joint Details link with each part encoded', () => {
+    expect(jointUrl({ hull: 'S1', drawing: 'H 1/2', joint: 'ST-1' }, 'https://example.test/app/'))
+      .toBe('https://example.test/app/jobs/S1/H%201%2F2/ST-1');
+  });
+
+  it('getJoint carries its Joint Details link', () => {
+    const r = svc.getJoint({ hull: withXref.hull, drawing: withXref.drawing, joint: withXref.joint });
+    expect(r.ok && r.data.url).toBe(jointUrl(withXref));
+  });
+
+  describe('findJoints', () => {
+    it('matches every condition exactly, ignoring case', () => {
+      const r = svc.findJoints({ hull: withXref.hull.toLowerCase(), drawing: withXref.drawing });
+      expect(r.ok).toBeTrue();
+      if (!r.ok) return;
+      const expected = JOBS.filter(j => j.hull === withXref.hull && j.drawing === withXref.drawing).length;
+      expect(r.data.count).toBe(expected);
+      expect(r.data.joints.every(j => j.hull === withXref.hull && !!j.url)).toBeTrue();
+    });
+    it('filters on the current routing', () => {
+      const routing = (svc.getJoint({ xrefid: withXref.xrefid }) as { ok: true; data: { routing: string } }).data.routing;
+      const r = svc.findJoints({ routing });
+      expect(r.ok && r.data.joints.every(j => j.routing === routing) && r.data.count > 0).toBeTrue();
+    });
+    it('refuses an unknown field and never offers the internal id', () => {
+      expect(svc.findJoints({ id: 'x' } as never)).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+      expect(svc.findJoints({ nope: 'x' } as never)).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+    });
+    it('openOnly leaves out joints at Sold', () => {
+      const all = svc.findJoints();
+      const open = svc.findJoints({}, { openOnly: true });
+      expect(all.ok && open.ok).toBeTrue();
+      if (!all.ok || !open.ok) return;
+      expect(open.data.joints.some(j => j.routing === 'Sold')).toBeFalse();
+      expect(open.data.count).toBeLessThanOrEqual(all.data.count);
+    });
+  });
+
+  describe('searchJoints', () => {
+    it('answers every joint with a total when nothing is sent', () => {
+      const r = svc.searchJoints();
+      expect(r.ok && r.data.total).toBe(JOBS.length);
+    });
+    it('pages, sorts and filters by a list of values', () => {
+      const r = svc.searchJoints({ filters: { weldType: ['butt'] }, sort: { by: 'joint', order: 'desc' }, page: 2, pageSize: 5 });
+      expect(r.ok).toBeTrue();
+      if (!r.ok) return;
+      expect(r.data.page).toBe(2);
+      expect(r.data.joints.length).toBeLessThanOrEqual(5);
+      expect(r.data.joints.every(j => j.weldType === 'Butt' && !!j.url)).toBeTrue();
+      const joints = r.data.joints.map(j => j.joint);
+      expect(joints).toEqual([...joints].sort().reverse());
+    });
+    it('search text looks in the drawing', () => {
+      const r = svc.searchJoints({ text: withXref.drawing });
+      expect(r.ok && r.data.joints.every(j => j.drawing === withXref.drawing || j.xrefid.includes(withXref.drawing) || j.joint.includes(withXref.drawing) || j.routing.includes(withXref.drawing) || j.technician.includes(withXref.drawing) || j.hull.includes(withXref.drawing))).toBeTrue();
+    });
+    it('refuses a bad query', () => {
+      expect(svc.searchJoints({ page: 1 })).toEqual({ ok: false, error: 'Send pageSize with page.', title: 'Wrong value' });
+      expect(svc.searchJoints({ filters: { nope: 'x' } as never })).toEqual(jasmine.objectContaining({ ok: false, title: 'Wrong value' }));
+    });
   });
 });

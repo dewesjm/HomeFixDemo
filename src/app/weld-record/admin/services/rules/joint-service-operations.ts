@@ -2,7 +2,8 @@
    operations. example: a joint the inputs start filled in with, so each call answers something the
    first time it's run. */
 import { sent, type OperationParam, type ServiceOperation } from '../../../../shared/service-tester-panel/service-operation';
-import { HISTORY_SECTIONS, type JointKey, type JointService } from '../../../joint-service/joint-service';
+import { HISTORY_SECTIONS, JOINT_FIELDS, type JointFilter, type JointKey, type JointSearch, type JointService } from '../../../joint-service/joint-service';
+import { SEARCH_COLUMNS } from '../../../joint-service/joint-search';
 import type { HistoryEntry } from '../../../model/history';
 
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
@@ -17,16 +18,51 @@ const keyParams = (example: JointKey): OperationParam[] => [
   { name: 'xrefid', label: 'XREFID', type: 'text', help: 'Or give the XREFID instead (it wins when both are given).' },
 ];
 
+const openOnlyParam: OperationParam = {
+  name: 'openOnly', label: 'Open only', type: 'select', options: ['true', 'false'], help: 'Default: false (closed joints, at Sold, included).',
+};
+const openOnlyOf = (a: Record<string, unknown>) => (a['openOnly'] === 'true' ? true : a['openOnly'] === 'false' ? false : undefined);
+
 export function jointServiceOperations(svc: JointService, example: JointKey): ServiceOperation[] {
   return [
     {
       name: 'getJoint',
       signature: 'getJoint({ hull, drawing, joint } | { xrefid })',
-      description: 'One joint: its record fields, current routing, Refit # and Repair #.',
+      description: 'One joint: its record fields, current routing, Refit # and Repair #, and url, its Joint Details link.',
       writes: false,
       params: keyParams(example),
       call: a => [keyOf(a)],
       fn: k => svc.getJoint(k),
+    },
+    {
+      name: 'findJoints',
+      signature: 'findJoints(filter, { openOnly? })',
+      description: 'For another system\'s logic: every joint matching all the filter\'s conditions, each an exact value (any case) on a joint field or its current routing. Answers whole joints, each with url, its Joint Details link. No search text, sort or paging (that\'s searchJoints).',
+      writes: false,
+      params: [
+        {
+          name: 'filter', label: 'Filter', type: 'conditions',
+          example: JSON.stringify({ hull: example.hull ?? '', drawing: example.drawing ?? '' }),
+          choices: JOINT_FIELDS.map(f => ({ value: f, label: f })),
+          help: 'Every condition must hold.',
+        },
+        openOnlyParam,
+      ],
+      call: a => [(a['filter'] ?? {}) as JointFilter, sent({ openOnly: openOnlyOf(a) })],
+      fn: (f, o) => svc.findJoints(f, o),
+    },
+    {
+      name: 'searchJoints',
+      signature: 'searchJoints({ text?, filters?, sort?, page?, pageSize?, openOnly? })',
+      description: 'For a list screen: search text (XREFID, hull, drawing, joint, routing, technician), column filters, sort and optional paging, with the total. Answers flat rows, each with url, its Joint Details link.',
+      writes: false,
+      params: [{
+        name: 'query', label: 'Query', type: 'json',
+        example: JSON.stringify({ text: example.drawing ?? '', filters: { weldType: ['Butt', 'Socket'] }, sort: { by: 'joint', order: 'asc' }, page: 1, pageSize: 10 }),
+        help: `Columns: ${SEARCH_COLUMNS.join(', ')}. A filter's text = contains; a list = any of those values exactly. Add "openOnly": true to leave out closed joints.`,
+      }],
+      call: a => [(a['query'] ?? {}) as JointSearch],
+      fn: q => svc.searchJoints(q),
     },
     {
       name: 'getRouting',
