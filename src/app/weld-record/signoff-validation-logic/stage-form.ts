@@ -17,7 +17,10 @@ import { inspectionProcedureOptions } from '../../data/inspection-procedures';
 import { defectCodeOptions } from '../../data/defect-codes';
 import { ASSIGNED_KEYS } from '../weld-assignment-logic/weld-assignment-rules';
 import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../data/procedures';
-import { gwpOptionsForMaterials, allGwpOptions, wtnOptionsForGwp, gwpDescription, wtnDescription, procedureOverride, fillerMetalTypeOptions, fillerMetalSizeOptions } from '../../future/weld-engineering/procedure-values';
+import {
+  getGwpOptions, getAllGwpOptions, getWtnOptions, getGwpDescription,
+  getWtnDescription, getProcedureOverride, getFillerMetalTypeOptions, getFillerMetalSizeOptions,
+} from '../../future/weld-engineering/procedure-service/procedure-usage';
 
 /* what the field rules need besides the step itself */
 export interface StageFormContext {
@@ -44,7 +47,7 @@ export function visibleStageFields(stage: WorkflowStage, ctx: StageFormContext):
   const condCtx = buildConditionContext(stage, ctx.job, ctx.stages, ctx.fab);
   return definedFields(stage, condCtx).map(f => stageFieldOptions(f, stage, ctx)).filter(f => {
     if (!f.key.startsWith('override')) return true;
-    return SHOW_WELD_OVERRIDES && !!procedureOverride(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
+    return SHOW_WELD_OVERRIDES && !!getProcedureOverride(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '');
   });
 }
 
@@ -92,15 +95,15 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
   if (f.key === 'weldProcedure') {
     /* a Foreman Override opens every GWP; otherwise an off-list GWP left from one (e.g. in
        seeded data) is kept as an option so the droplist doesn't show blank */
-    const qualified = gwpOptionsForMaterials(job?.materialType1 ?? '', job?.materialType2 ?? '');
-    const options = ctx.offListUnlocked ? allGwpOptions()
-      : gwp && !qualified.some(o => o.value === gwp) ? [...qualified, { label: gwp, value: gwp, detail: gwpDescription(gwp) }]
+    const qualified = getGwpOptions(job?.materialType1 ?? '', job?.materialType2 ?? '');
+    const options = ctx.offListUnlocked ? getAllGwpOptions()
+      : gwp && !qualified.some(o => o.value === gwp) ? [...qualified, { label: gwp, value: gwp, detail: getGwpDescription(gwp) }]
       : qualified;
-    return { ...f, options, description: gwp ? gwpDescription(gwp) : '' };
+    return { ...f, options, description: gwp ? getGwpDescription(gwp) : '' };
   }
   if (f.key === 'wtn') {
     const wtn = stage.inputs?.['wtn'] ?? '';
-    return { ...f, options: wtnOptionsForGwp(gwp), description: wtn ? wtnDescription(gwp, wtn) : '' };
+    return { ...f, options: getWtnOptions(gwp), description: wtn ? getWtnDescription(gwp, wtn) : '' };
   }
   if (f.key === 'fillerMetalType' || f.key === 'fillerMetalSize') {
     /* Prepopulated (e.g. from Fit's Consumable Insert) or opened by a Foreman Override: the full
@@ -109,7 +112,7 @@ export function stageFieldOptions(f: FormField, stage: WorkflowStage, ctx: Stage
       return { ...f, options: f.key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS };
     }
     const wtn = stage.inputs?.['wtn'] ?? '';
-    return { ...f, options: f.key === 'fillerMetalType' ? fillerMetalTypeOptions(gwp, wtn) : fillerMetalSizeOptions(gwp, wtn) };
+    return { ...f, options: f.key === 'fillerMetalType' ? getFillerMetalTypeOptions(gwp, wtn) : getFillerMetalSizeOptions(gwp, wtn) };
   }
   return f;
 }

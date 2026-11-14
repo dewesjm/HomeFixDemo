@@ -1,5 +1,5 @@
 import { weldJoints } from '../../data/weld-planning';
-import { gwpDetails } from '../weld-engineering/procedure-values';
+import { getGwpDetails } from '../weld-engineering/procedure-service/procedure-usage';
 import { Condition, applyFilters } from '../../shared/filter-engine';
 import { SEARCH_FIELDS, buildRow, standardLayout } from './weld-planning-filter-schema';
 
@@ -10,7 +10,7 @@ describe('weld-planning search schema', () => {
   const withGwp = rows.find(r => r.gwp)!;
 
   it('a joint\'s row carries what its GWP stands for', () => {
-    const d = gwpDetails(withGwp.gwp)!;
+    const d = getGwpDetails(withGwp.gwp)!;
     expect(withGwp.weldProcess).toBe(d.weldProcess);
     expect(withGwp.processType).toBe(d.processType);
     expect(withGwp.baseMetal1Type).toBe(withGwp.materialType1);

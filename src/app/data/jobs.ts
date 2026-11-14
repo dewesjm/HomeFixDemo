@@ -96,7 +96,7 @@ export const WALL_THICKNESSES = ['0.065"', '0.083"', '0.109"', '0.120"', '0.134"
    6x = nonferrous, 60-62 = titanium) and the letters stay recognizable. Exported so Weld
    Engineering's procedures (baseMetal1Type/baseMetal2Type) use the same vocabulary -- a GWP's base
    metal pair is matched against a job's Material Type 1/2 to filter the GWP droplist (see
-   future/weld-engineering/procedure-values.ts gwpOptionsForMaterials, weld-record/signoff-validation-logic/stage-form.ts). */
+   future/weld-engineering/procedure-service/procedure-usage.ts getGwpOptions, weld-record/signoff-validation-logic/stage-form.ts). */
 export const MATERIAL_TYPES = ['02-CS', '04-AS', '06-CI', '12-SS304', '13-SS316', '25-DS2205',
   '60-TICP', '61-TI64', '62-TI12', '63-AL10', '65-CUNI', '67-IN625'];
 /* valid MCL 1 / MCL 2 values; MC-I requires traceability, STD doesn't (mcl-traceability.ts) */

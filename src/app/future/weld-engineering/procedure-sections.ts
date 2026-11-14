@@ -5,7 +5,7 @@
    that bag, never a new property on Procedure -- in a real database the definitions are two tables
    and the bag is one JSON column on the procedure row.
    Each procedure ticks which sections it has (Procedure.sectionIds). Locked fields have fixed keys
-   because other systems read them (only through procedure-values.ts); they can be renamed and moved
+   because other systems read them (only through procedure-usage.ts); they can be renamed and moved
    to another section but never removed or change type. Sections and fields can be added, renamed,
    reordered and removed; what blocks a removal or move is in procedure-section-usage.ts.
    Value rules (blank, text, validation) are in procedure-field-values.ts. */

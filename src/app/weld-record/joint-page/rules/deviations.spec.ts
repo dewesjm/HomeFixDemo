@@ -3,9 +3,9 @@ import { WorkflowStage } from '../../model/workflow-types';
 import { JOBS } from '../../../data/jobs';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../../data/procedures';
 import { detectDeviations, isActualOutOfRange } from './deviations';
-import { fillerMetalTypeOptions, gwpDetails } from '../../../future/weld-engineering/procedure-values';
+import { getFillerMetalTypeOptions, getGwpDetails } from '../../../future/weld-engineering/procedure-service/procedure-usage';
 
-const allowedFillers = (gwp: string, wtn: string) => fillerMetalTypeOptions(gwp, wtn).map(o => o.value);
+const allowedFillers = (gwp: string, wtn: string) => getFillerMetalTypeOptions(gwp, wtn).map(o => o.value);
 
 /* a Tack stage on the first seeded WTN that doesn't allow every filler type */
 function tackOnWps(extra: Record<string, string> = {}): { stage: WorkflowStage; offListType: string; quals: string[] } {
@@ -64,7 +64,7 @@ describe('deviations', () => {
 
   it('flags a GWP not qualified for the base metals, and passes one that is', () => {
     const { stage, quals } = tackOnWps();
-    const gwp = gwpDetails(stage.inputs['weldProcedure'])!;
+    const gwp = getGwpDetails(stage.inputs['weldProcedure'])!;
     const vis = new Set(['weldProcedure']);
     expect(detectDeviations(stage, vis, quals, { type1: gwp.baseMetal1Type, type2: gwp.baseMetal2Type })).toEqual([]);
     const items = detectDeviations(stage, vis, quals, { type1: 'none', type2: 'none' });

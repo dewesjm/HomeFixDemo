@@ -14,7 +14,7 @@ import {
   type JointExtraGroup,
   type WeldJoint
 } from '../../data/weld-planning';
-import { gwpOptionsForMaterials } from '../weld-engineering/procedure-values';
+import { getGwpOptions } from '../weld-engineering/procedure-service/procedure-usage';
 
 
 @Component({
@@ -68,7 +68,7 @@ export class WeldPlanningFormComponent implements OnInit {
 
   /* GWPs qualified for the joint's Material 1/2, same list as the weld record's GWP droplist */
   gwpOptions() {
-    return gwpOptionsForMaterials(this.form.materialType1, this.form.materialType2);
+    return getGwpOptions(this.form.materialType1, this.form.materialType2);
   }
 
   /* a GWP no longer qualified for the new base metals is cleared */

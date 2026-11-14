@@ -10,7 +10,7 @@ import { stepOnlyContext } from './condition-context';
 import { isDisabledByOwnRule } from './field-locks';
 import { fieldActivation } from './signoff-type-form-rules';
 import { effectiveFill } from './field-rules';
-import { wtnFillValue } from '../../future/weld-engineering/procedure-values';
+import { getWtnFillValue } from '../../future/weld-engineering/procedure-service/procedure-usage';
 
 /* the field's fill rule when it holds right now on this step */
 function activeFill(stage: WorkflowStage, key: string): FieldFill | undefined {
@@ -31,7 +31,7 @@ function filledKeys(stage: WorkflowStage): string[] {
 /* the value a fill brings in; undefined leaves the field alone (a step or field with nothing
    recorded). The WTN always sets its values, blank when GWP+WTN matches no procedure. */
 function fillValue(fill: FieldFill, stage: WorkflowStage, stages: WorkflowStage[]): string | undefined {
-  if (fill.from === 'wtn') return wtnFillValue(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '', fill.fieldKey);
+  if (fill.from === 'wtn') return getWtnFillValue(stage.inputs['weldProcedure'] ?? '', stage.inputs['wtn'] ?? '', fill.fieldKey);
   if (fill.from === 'thisStep') return stage.inputs[fill.fieldKey] || undefined;
   const src = stages.find(s => s.id === fill.stepId);
   return src?.signoffInputs[fill.fieldKey] || src?.inputs[fill.fieldKey] || undefined;

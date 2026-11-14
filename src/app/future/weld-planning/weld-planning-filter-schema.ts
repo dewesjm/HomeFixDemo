@@ -7,7 +7,7 @@ import {
   NDT_FIELDS, JOINT_EXTRA_FIELDS, JOINT_STATUS_OPTIONS, JOINT_TYPE_OPTIONS, type WeldJoint
 } from '../../data/weld-planning';
 import { FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { gwpDetails } from '../weld-engineering/procedure-values';
+import { getGwpDetails } from '../weld-engineering/procedure-service/procedure-usage';
 
 export interface SearchField extends MatchField {
   key: string;            /* row key: a WeldJoint field or one of the GWP's procedure fields */
@@ -64,7 +64,7 @@ const PRIORITY_LABELS: Record<string, string> = { low: 'Low', medium: 'Medium', 
 const label = (opts: { label: string; value: string }[], v: string) => opts.find(o => o.value === v)?.label ?? v;
 
 export function buildRow(j: WeldJoint): SearchRow {
-  const gwp = gwpDetails(j.gwp ?? '');
+  const gwp = getGwpDetails(j.gwp ?? '');
   return {
     ...j,
     status: label(JOINT_STATUS_OPTIONS, j.status),

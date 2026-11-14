@@ -9,7 +9,10 @@ import { WorkflowStage } from '../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
 import { requirementsMet } from '../qualifications-logic/qualifications';
-import { gwpOptionsForMaterials, wtnOptionsForGwp, fillerMetalTypeOptions, fillerMetalSizeOptions, procedureOverride, procedureRequiredQuals } from '../../future/weld-engineering/procedure-values';
+import {
+  getGwpOptions, getWtnOptions, getFillerMetalTypeOptions, getFillerMetalSizeOptions,
+  getProcedureOverride, getRequiredQuals,
+} from '../../future/weld-engineering/procedure-service/procedure-usage';
 
 function hash(s: string): number {
   let h = 0;
@@ -25,16 +28,16 @@ function pick<T>(list: T[], key: string): T | undefined {
    (stand-in pick), plus any joint with no GWP qualified for its base metals */
 export function isEngineeringEntryJoint(job: Job): boolean {
   return hash(`${job.id}:engineering`) % 5 === 0
-    || !gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? '').length;
+    || !getGwpOptions(job.materialType1 ?? '', job.materialType2 ?? '').length;
 }
 
 /* one GWP per joint (qualified for its base metals); WTN and filler per step, preferring a WTN
    whose Welder Qualifications the welder holds. undefined when no GWP is qualified for the base metals. */
 function assignedProcedure(job: Job, stageId: string, heldQuals: string[]): { gwp: string; wtn: string } | undefined {
-  const gwp = pick(gwpOptionsForMaterials(job.materialType1 ?? '', job.materialType2 ?? ''), job.id)?.value;
+  const gwp = pick(getGwpOptions(job.materialType1 ?? '', job.materialType2 ?? ''), job.id)?.value;
   if (!gwp) return undefined;
-  const wtns = wtnOptionsForGwp(gwp).map(o => o.value);
-  const qualified = wtns.filter(wtn => requirementsMet(heldQuals, [procedureRequiredQuals(gwp, wtn)]));
+  const wtns = getWtnOptions(gwp).map(o => o.value);
+  const qualified = wtns.filter(wtn => requirementsMet(heldQuals, [getRequiredQuals(gwp, wtn)]));
   const wtn = pick(qualified.length ? qualified : wtns, `${job.id}:${stageId}`);
   return wtn ? { gwp, wtn } : undefined;
 }
@@ -49,13 +52,13 @@ export function assignedInputs(job: Job, stage: WorkflowStage, heldQuals: string
   const has = (k: string) => formInputFields(stage).some(f => f.key === k);
   const { gwp, wtn } = proc;
   const out: Record<string, string> = { weldProcedure: gwp, wtn };
-  const ov = SHOW_WELD_OVERRIDES ? procedureOverride(gwp, wtn) : undefined;
+  const ov = SHOW_WELD_OVERRIDES ? getProcedureOverride(gwp, wtn) : undefined;
   out['overridePhMin'] = ov?.overridePhMin ?? '';
   out['overridePhMax'] = ov?.overridePhMax ?? '';
   out['overrideIpMin'] = ov?.overrideIpMin ?? '';
   out['overrideIpMax'] = ov?.overrideIpMax ?? '';
   out['overrideNote'] = ov?.overrideNote ?? '';
-  out['fillerMetalType'] = pick(fillerMetalTypeOptions(gwp, wtn), `${job.id}:${stage.id}:type`)?.value ?? '';
-  out['fillerMetalSize'] = pick(fillerMetalSizeOptions(gwp, wtn), `${job.id}:${stage.id}:size`)?.value ?? '';
+  out['fillerMetalType'] = pick(getFillerMetalTypeOptions(gwp, wtn), `${job.id}:${stage.id}:type`)?.value ?? '';
+  out['fillerMetalSize'] = pick(getFillerMetalSizeOptions(gwp, wtn), `${job.id}:${stage.id}:size`)?.value ?? '';
   return Object.fromEntries(Object.entries(out).filter(([k]) => has(k) && !isFilledByRule(stage, k)));
 }

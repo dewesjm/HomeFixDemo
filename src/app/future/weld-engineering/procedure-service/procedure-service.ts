@@ -17,6 +17,7 @@
            values, revisionNote) (section values only), deleteProcedure(key), importProcedures(rows, revisionNote)
            (many at once, each row saved or refused on its own).
    The section and field definitions have their own service, section-service.ts.
+   Workflow-specific reads for Weld Record and Weld Planning live in procedure-usage.ts.
    Reads ask for fields by key (procedure-sections.ts), never by section name or number, since sections
    can be renamed and fields moved. Status defaults to Active. The demo keeps only each procedure's
    current values, so asking for an older revision is answered with an error.

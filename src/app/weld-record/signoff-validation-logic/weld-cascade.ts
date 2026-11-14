@@ -7,7 +7,9 @@ import { FormField } from '../catalogs/field-catalog';
 import { WorkflowStage } from '../model/workflow-types';
 import { SHOW_WELD_OVERRIDES } from '../signoff-forms-logic/weld-fields';
 import { isFilledByRule } from '../signoff-forms-logic/field-fill';
-import { hasProcedure, procedureOverride, fillerMetalTypeOptions, fillerMetalSizeOptions } from '../../future/weld-engineering/procedure-values';
+import {
+  hasProcedure, getProcedureOverride, getFillerMetalTypeOptions, getFillerMetalSizeOptions,
+} from '../../future/weld-engineering/procedure-service/procedure-usage';
 
 export interface FieldChange { field: FormField; value: string }
 
@@ -34,7 +36,7 @@ export function selectChangeCascade(stage: WorkflowStage, field: FormField, valu
        so only a choice no longer valid is cleared. */
     const gwp = stage.inputs?.['weldProcedure'] ?? '';
     matchedProc = hasProcedure(gwp, value);
-    const ov = SHOW_WELD_OVERRIDES ? procedureOverride(gwp, value) : undefined;
+    const ov = SHOW_WELD_OVERRIDES ? getProcedureOverride(gwp, value) : undefined;
     setIfPresent('overridePhMin', ov?.overridePhMin ?? '');
     setIfPresent('overridePhMax', ov?.overridePhMax ?? '');
     setIfPresent('overrideIpMin', ov?.overrideIpMin ?? '');
@@ -43,10 +45,10 @@ export function selectChangeCascade(stage: WorkflowStage, field: FormField, valu
     if (!offListUnlocked) {
       const currentType = stage.inputs['fillerMetalType'] ?? '';
       const currentSize = stage.inputs['fillerMetalSize'] ?? '';
-      if (currentType && !fillerMetalTypeOptions(gwp, value).some(o => o.value === currentType)) {
+      if (currentType && !getFillerMetalTypeOptions(gwp, value).some(o => o.value === currentType)) {
         setIfPresent('fillerMetalType', '');
       }
-      if (currentSize && !fillerMetalSizeOptions(gwp, value).some(o => o.value === currentSize)) {
+      if (currentSize && !getFillerMetalSizeOptions(gwp, value).some(o => o.value === currentSize)) {
         setIfPresent('fillerMetalSize', '');
       }
     }

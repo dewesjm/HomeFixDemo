@@ -12,7 +12,9 @@ import { isFilledByRule } from '../../signoff-forms-logic/field-fill';
 import { labelFor } from '../../signoff-forms-logic/stage-display';
 import { QualGroup, missingText, requirementText } from '../../qualifications-logic/qual-requirements';
 import { FILLER_METAL_TYPE_OPTIONS, FILLER_METAL_SIZE_OPTIONS } from '../../../data/procedures';
-import { fillerMetalTypeOptions, fillerMetalSizeOptions, gwpOptionsForMaterials, hasProcedure } from '../../../future/weld-engineering/procedure-values';
+import {
+  getFillerMetalTypeOptions, getFillerMetalSizeOptions, getGwpOptions, hasProcedure,
+} from '../../../future/weld-engineering/procedure-service/procedure-usage';
 
 export interface BaseMetals { type1: string; type2: string }
 
@@ -57,7 +59,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
   const gwp = stage.inputs['weldProcedure'] ?? '';
   const gwpField = formInputFields(stage).find(ff => ff.key === 'weldProcedure');
   if (gwp && gwpField && baseMetals && visibleKeys.has('weldProcedure') && !stage.engineeringEntry) {
-    const allowed = gwpOptionsForMaterials(baseMetals.type1, baseMetals.type2);
+    const allowed = getGwpOptions(baseMetals.type1, baseMetals.type2);
     if (!allowed.some(o => o.value === gwp)) {
       items.push({
         kind: 'off-list', label: gwpField.label, entered: gwp,
@@ -79,7 +81,7 @@ export function detectDeviations(stage: WorkflowStage, visibleKeys: ReadonlySet<
     const value = stage.inputs[key] ?? '';
     const f = formInputFields(stage).find(ff => ff.key === key);
     if (!value || !f || !visibleKeys.has(key) || isFilledByRule(stage, key)) continue;
-    const allowed = key === 'fillerMetalType' ? fillerMetalTypeOptions(gwp, wtn) : fillerMetalSizeOptions(gwp, wtn);
+    const allowed = key === 'fillerMetalType' ? getFillerMetalTypeOptions(gwp, wtn) : getFillerMetalSizeOptions(gwp, wtn);
     if (allowed.some(o => o.value === value)) continue;
     const all = key === 'fillerMetalType' ? FILLER_METAL_TYPE_OPTIONS : FILLER_METAL_SIZE_OPTIONS;
     items.push({

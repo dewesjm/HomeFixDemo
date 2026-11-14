@@ -13,7 +13,7 @@ import { ndtForAttributeCodes, seedAttributeCodes } from './seed-attribute-codes
 import { signal } from '@angular/core';
 import { JOINT_DESIGN_LABELS } from './joint-designs';
 import { NDT_LABELS } from './ndt-labels';
-import { gwpOptionsForMaterials } from '../future/weld-engineering/procedure-values';
+import { getGwpOptions } from '../future/weld-engineering/procedure-service/procedure-usage';
 
 /* ── Joints ── */
 export type JointStatus = 'development' | 'locked' | 'unlocked';
@@ -165,7 +165,7 @@ function makeId(seed: number): string {
 
 /* a GWP qualified for the joint's base metals (by index, so it doesn't shift the other seeded values) */
 function seedGwp(m1: string, m2: string, i: number): string {
-  const gwps = gwpOptionsForMaterials(m1, m2).map(o => o.value);
+  const gwps = getGwpOptions(m1, m2).map(o => o.value);
   return gwps.length ? gwps[i % gwps.length] : '';
 }
 

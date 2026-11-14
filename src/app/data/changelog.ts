@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['Weld Record Admin > Services can show the Weld Positions and Qualifications lists used by Weld Engineering.',
+    added: ['Weld Engineering Admin > Services can run the procedure reads used by Weld Record and Weld Planning, including GWP and WTN options, filler choices, routing field values, and required welder qualifications.',
+      'Weld Record Admin > Services can show the Weld Positions and Qualifications lists used by Weld Engineering.',
       'NQC Inspectors can sign Pre-Fit.',
       'Weld Record uses separate grants for Groups and the other admin tables. The built-in Administrators group always keeps permission to manage Groups.',
       'Weld Record hides Admin, Makeup, and History navigation when you lack access. A record’s History button opens History locked to that joint in both Pipe Welding tables.',

@@ -10,8 +10,8 @@ import { stageFromTemplate, nextRepairStage, excavationNdtStage } from '../routi
 import { WorkflowStage } from '../model/workflow-types';
 import { setStepFieldConfig, resetStepFieldConfig, DEFAULT_TYPE_DEFINITIONS } from '../../data/signoff-type-forms';
 import { procedures, FILLER_METAL_TYPE_OPTIONS } from '../../data/procedures';
-import { fillerMetalTypeOptions } from '../../future/weld-engineering/procedure-values';
-import { gwpOptionsForMaterials } from '../../future/weld-engineering/procedure-values';
+import { getFillerMetalTypeOptions } from '../../future/weld-engineering/procedure-service/procedure-usage';
+import { getGwpOptions } from '../../future/weld-engineering/procedure-service/procedure-usage';
 import {
   typedRequirementError, visibleStageFields, stageFieldOptions, hiddenFieldsWithValues,
   StageFormContext,
@@ -189,7 +189,7 @@ describe('joint-form stage-form', () => {
   it('GWP lists the GWPs for the job\'s materials, keeps an off-list value, and opens fully under a Foreman Override', () => {
     const j = job();
     const tack = stageOf(j, 'tack');
-    const qualified = gwpOptionsForMaterials(j.materialType1, j.materialType2).map(o => o.value);
+    const qualified = getGwpOptions(j.materialType1, j.materialType2).map(o => o.value);
     expect(stageFieldOptions(field(tack, 'weldProcedure'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(qualified);
     const offList = { ...tack, inputs: { weldProcedure: 'W-OFF' } };
     expect(stageFieldOptions(field(tack, 'weldProcedure'), offList, ctxFor(j)).options!.map(o => o.value)).toEqual([...qualified, 'W-OFF']);
@@ -202,7 +202,7 @@ describe('joint-form stage-form', () => {
     const proc = procedures()[0];
     const tack = stageOf(j, 'tack', { inputs: { weldProcedure: proc.gwp, wtn: proc.wtn } });
     expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j)).options!.map(o => o.value)).toEqual(
-      fillerMetalTypeOptions(proc.gwp, proc.wtn).map(o => o.value));
+      getFillerMetalTypeOptions(proc.gwp, proc.wtn).map(o => o.value));
     expect(stageFieldOptions(field(tack, 'fillerMetalType'), tack, ctxFor(j, true)).options).toBe(FILLER_METAL_TYPE_OPTIONS);
   });
 

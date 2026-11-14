@@ -9,7 +9,7 @@ import {
   type WeldJoint, type JointExtraField, type JointExtraGroup
 } from '../../data/weld-planning';
 import { formatDateTime } from '../../shared/date-format';
-import { gwpDescription } from '../weld-engineering/procedure-values';
+import { getGwpDescription } from '../weld-engineering/procedure-service/procedure-usage';
 
 @Component({
   selector: 'app-weld-planning-detail',
@@ -22,7 +22,7 @@ export class WeldPlanningDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   ndtFields = NDT_FIELDS;
-  gwpDescription = gwpDescription;
+  getGwpDescription = getGwpDescription;
   extraGroups = JOINT_EXTRA_GROUPS;
 
   extraFields(group: JointExtraGroup) {

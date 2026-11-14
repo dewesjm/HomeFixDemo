@@ -5,7 +5,7 @@
    A GWP (General Weld Procedure) is the overarching procedure; its WTNs are specific branches of it,
    one Procedure row / PDF each -- e.g. GWP W-101 covers WTN 05.5-1, 05.5-2 and 05.5A-3. GWP+WTN
    identifies a row. Other systems (Weld Record, Weld
-   Planning) read these rows only through future/weld-engineering/procedure-values.ts -- see
+   Planning) read these rows only through future/weld-engineering/procedure-service/procedure-usage.ts -- see
    docs/ARCHITECTURE.md. */
 import { STORAGE } from './storage-keys';
 import { signal } from '@angular/core';
@@ -27,7 +27,7 @@ export const PROCEDURE_STATUS_OPTIONS: { label: string; value: ProcedureStatus }
 
 export const WELD_PROCESSES = ['SMAW', 'GTAW', 'GMAW', 'FCAW'];
 export const PROCESS_TYPES = ['Manual', 'Semiautomatic', 'Machine', 'Automatic'];
-/* free-text "for ..." that ends the plain-text description (procedureDescription below); these are
+/* free-text "for ..." that ends the plain-text description in the procedure usage service; these are
    only placeholder values for the seed data */
 const APPLICATIONS = ['Surface Structure', 'Structural Steel', 'Process Piping', 'Pressure Piping', 'Storage Tanks', 'Equipment Supports', 'Heat Exchangers'];
 /* same base material codes as Job.materialType1/materialType2 (jobs.ts) -- a GWP's base metal
