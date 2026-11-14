@@ -12,6 +12,8 @@ import {
   type ConditionRow, type OperationParam, type ParamChoice, type ParamInput, type ResponseFile, type ServiceOperation,
 } from './service-operation';
 
+import { downloadFile } from '../download-file';
+
 interface Run { call: string; response: unknown; file: ResponseFile | null; }
 
 @Component({
@@ -101,10 +103,7 @@ export class ServiceTesterPanelComponent {
   }
 
   download(file: ResponseFile) {
-    const a = document.createElement('a');
-    a.href = `data:${file.contentType};base64,${file.base64}`;
-    a.download = file.fileName;
-    a.click();
+    downloadFile(file);
   }
 
   async copyCall() {

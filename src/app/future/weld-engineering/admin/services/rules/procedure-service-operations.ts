@@ -12,6 +12,8 @@ import type { ProcedureKey } from '../../../procedure-service/procedure-record';
 import type { ProcedureFilter } from '../../../procedure-service/procedure-filter';
 import { SEARCH_COLUMNS, type ProcedureSearch } from '../../../procedure-service/procedure-search';
 
+import { exportProcedures, getLoadTemplate, type ProcedureExportFilter } from '../../../procedure-service/procedure-file-service';
+
 const STATUSES = PROCEDURE_STATUS_OPTIONS.map(o => o.value);
 const str = (v: unknown) => (typeof v === 'string' ? v : '');
 const keyOf = (a: Record<string, unknown>): ProcedureKey => ({ gwp: str(a['gwp']), wtn: str(a['wtn']) });
@@ -58,6 +60,28 @@ export function procedureServiceOperations(example: ProcedureKey, fields: FieldD
       ],
       call: a => [keyOf(a), sent({ fields: fieldsOf(a), status: statusOf(a), revision: str(a['revision']) || undefined })],
       fn: getProcedure,
+    },
+    {
+      name: 'exportProcedures',
+      signature: 'exportProcedures({ text?, columns?, sort?, order? })',
+      description: 'Downloads the Manage Procedures CSV for all matching rows in the requested order.',
+      writes: false,
+      params: [{
+        name: 'filter', label: 'Filter and sort', type: 'json',
+        help: 'Optional search text, column filters (gwp, wtn, title, status), sort column, and order (1 or -1).',
+        example: '{ "columns": { "status": ["active"] }, "sort": "gwp", "order": 1 }',
+      }],
+      call: a => [a['filter'] as ProcedureExportFilter | undefined],
+      fn: exportProcedures,
+    },
+    {
+      name: 'getLoadTemplate',
+      signature: 'getLoadTemplate()',
+      description: 'Downloads the blank Load Procedures Excel template with columns for the current section fields.',
+      writes: false,
+      params: [],
+      call: () => [],
+      fn: getLoadTemplate,
     },
     {
       name: 'findProcedures',

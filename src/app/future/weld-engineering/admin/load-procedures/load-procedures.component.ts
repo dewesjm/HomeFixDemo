@@ -11,7 +11,9 @@ import { getProcedure, PROCEDURE_STATUS_OPTIONS, WELD_PROCESSES, type ProcedureS
 import { importProcedures, type ProcedureChanges } from '../../procedure-service/procedure-service';
 import type { ProcedureKey } from '../../procedure-service/procedure-record';
 import { parseCsvRows, parseXlsxRows } from '../../../../shared/spreadsheet-import';
-import { downloadProcedureXlsxTemplate, sectionColumns } from '../../procedure-files';
+import { downloadFile } from '../../../../shared/download-file';
+import { getLoadTemplate } from '../../procedure-service/procedure-file-service';
+import { sectionColumns } from '../../procedure-files';
 import { procedureSections, type ExtraFields } from '../../procedure-sections';
 import { applyCells, cellProblems } from './rules/procedure-import';
 
@@ -101,8 +103,10 @@ export class LoadProceduresComponent extends BulkImport<EditableRow> {
     ];
   }
 
-  downloadTemplate() {
-    downloadProcedureXlsxTemplate(procedureSections());
+  async downloadTemplate() {
+    const result = await getLoadTemplate();
+    if (result.ok) downloadFile(result.data);
+    else this.toast.add({ severity: 'warn', summary: result.title, detail: result.error });
   }
 
   /* All rows go to the procedure service in one importProcedures call; each row saves or is refused on its

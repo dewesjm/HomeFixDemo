@@ -1,3 +1,5 @@
+import type { DownloadFile } from '../download-file';
+
 /* What a system's service operation looks like to the service tester (each system's Admin > Services):
    a name, what it does, whether it changes data, its parameters, how the typed-in inputs become the
    call's arguments, and the call itself. The tester builds the input form from the parameters, shows
@@ -126,7 +128,7 @@ export function choiceGroups(choices: ParamChoice[]): { group: string; choices: 
 }
 
 /* a file in a response ({ ok: true, data: { fileName, contentType, base64 } }), to offer for download */
-export interface ResponseFile { fileName: string; contentType: string; base64: string; }
+export type ResponseFile = DownloadFile;
 
 export function responseFile(response: unknown): ResponseFile | null {
   const d = (response as { data?: Record<string, unknown> } | null)?.data;

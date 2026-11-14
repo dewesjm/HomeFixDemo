@@ -6,15 +6,14 @@ import { Router, RouterLink } from '@angular/router';
 import { LucidePencil, LucideTrash2, LucideUpload } from '@lucide/angular';
 
 import { SortHeaderComponent } from '../../../../shared/sort-header.component';
-import { TableState, inArray } from '../../../../shared/table-state';
+import { downloadFile } from '../../../../shared/download-file';
 import { ConfirmService } from '../../../../shared/confirm.service';
 import { ToastService } from '../../../../shared/toast.service';
-import { downloadCsv } from '../../../../shared/export-csv';
 import {
   procedures, procedureName, PROCEDURE_STATUS_OPTIONS, type Procedure
 } from '../../../../data/procedures';
-import { procedureCsvColumns } from '../../procedure-files';
-import { procedureSections } from '../../procedure-sections';
+import { createManageProceduresTable } from '../../procedure-service/manage-procedures-table';
+import { exportProcedures } from '../../procedure-service/procedure-file-service';
 import { deleteProcedure } from '../../procedure-service/procedure-service';
 import { TableToolbarComponent } from '../../../../shared/table-toolbar.component';
 
@@ -28,7 +27,7 @@ import { TableToolbarComponent } from '../../../../shared/table-toolbar.componen
   templateUrl: './manage-procedures.component.html'
 })
 export class ManageProceduresComponent {
-  table = new TableState<Procedure>(['title', 'wtn', 'gwp'], { status: inArray });
+  table = createManageProceduresTable();
   statusOptions = PROCEDURE_STATUS_OPTIONS;
 
   constructor(private router: Router, private confirm: ConfirmService, private toast: ToastService) {
@@ -58,6 +57,13 @@ export class ManageProceduresComponent {
   }
 
   exportCsv() {
-    downloadCsv('procedures-export', procedureCsvColumns(procedureSections()), this.table.sorted());
+    const result = exportProcedures({
+      text: this.table.globalFilter(),
+      columns: this.table.columnFilters(),
+      sort: this.table.sortField(),
+      order: this.table.sortOrder(),
+    });
+    if (result.ok) downloadFile(result.data);
+    else this.toast.add({ severity: 'warn', summary: result.title, detail: result.error });
   }
 }

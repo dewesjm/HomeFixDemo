@@ -1,7 +1,6 @@
 /* Procedure spreadsheets: the CSV export's columns (Admin > Manage Procedures) and the import
    template (Admin > Load Procedures) */
 import { CsvColumn } from '../../shared/export-csv';
-import { downloadXlsxTemplate } from '../../shared/spreadsheet-import';
 import { Procedure } from '../../data/procedures';
 import { OVERRIDE_PARTS, type ExtraField, type ExtraFieldValue, type OverrideValue, type ProcedureSection } from './procedure-sections';
 import { extraValueText, fieldChoices, isOverride } from './procedure-field-values';
@@ -68,13 +67,10 @@ export function procedureCsvColumns(sections: ProcedureSection[]): CsvColumn<Pro
   ];
 }
 
-export const PROCEDURE_HEADER_TEMPLATE_COLUMNS = [
+const PROCEDURE_HEADER_TEMPLATE_COLUMNS = [
   'gwp', 'wtn', 'title', 'status', 'weldProcess', 'revision', 'effectiveDate', 'processType', 'application',
 ];
 
-export function downloadProcedureXlsxTemplate(sections: ProcedureSection[]): Promise<void> {
-  return downloadXlsxTemplate(
-    [...PROCEDURE_HEADER_TEMPLATE_COLUMNS, ...sectionColumns(sections).map(c => c.id), 'rules', 'conditions'],
-    'procedures-import-template.xlsx'
-  );
+export function procedureTemplateHeaders(sections: ProcedureSection[]): string[] {
+  return [...PROCEDURE_HEADER_TEMPLATE_COLUMNS, ...sectionColumns(sections).map(c => c.id), 'rules', 'conditions'];
 }

@@ -25,8 +25,17 @@ export async function parseXlsxRows(file: File): Promise<Record<string, string>[
 /* an .xlsx with one header row, for people to fill in and import */
 export async function downloadXlsxTemplate(headers: string[], fileName: string): Promise<void> {
   const XLSX = await import('xlsx');
+  XLSX.writeFile(templateWorkbook(XLSX, headers), fileName);
+}
+
+export async function xlsxTemplateBase64(headers: string[]): Promise<string> {
+  const XLSX = await import('xlsx');
+  return XLSX.write(templateWorkbook(XLSX, headers), { bookType: 'xlsx', type: 'base64' });
+}
+
+function templateWorkbook(XLSX: typeof import('xlsx'), headers: string[]) {
   const ws = XLSX.utils.aoa_to_sheet([headers]);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Import Template');
-  XLSX.writeFile(wb, fileName);
+  return wb;
 }
