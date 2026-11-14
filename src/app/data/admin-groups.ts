@@ -80,16 +80,21 @@ export function permissionSummary(allowed: readonly string[]): { category: strin
 export const DEVELOPER_GROUP_ID = 'developer';
 export const ADMINISTRATORS_GROUP_ID = 'g1';
 export const VIEW_GROUP_ID = 'g10';
+export const FITTING_GROUP_ID = 'g2';
+export const WELDING_GROUP_ID = 'g3';
 
 const SAMPLE_GROUPS: AdminGroup[] = [
   { id: DEVELOPER_GROUP_ID, name: 'Developer', description: 'Full access to the demo.',
     personas: ROUTING_PERSONAS, allowed: [] },
   { id: ADMINISTRATORS_GROUP_ID, name: 'Administrators', description: 'Full Weld Record workflow and administration access.',
     personas: ROUTING_PERSONAS, allowed: [] },
-  { id: 'g2', name: 'Fitting', description: 'Fitters who handle Fit.',
+  { id: FITTING_GROUP_ID, name: 'Fitting', description: 'Fitters who handle Fit.',
     personas: ['Fitting'], allowed: [...JOINT_READ_PERMISSIONS, EDIT_FABRICATION_PERMISSION, signoffPermission('fit')] },
-  { id: 'g3', name: 'Welding', description: 'Welders who handle welding routings.',
-    personas: ['Welding'], allowed: [EDIT_FABRICATION_PERMISSION, ...EXISTING_SIGNOFF_PERMISSIONS] },
+  { id: WELDING_GROUP_ID, name: 'Welding', description: 'Welders who handle welding routings.',
+    personas: ['Welding'], allowed: [
+      ...VIEW_PERMISSIONS, EDIT_FABRICATION_PERMISSION,
+      ...[WELD_BUILDUP_TYPE, 'tack', 'deferred-tack', 'root', 'interim', 'final-weld'].map(signoffPermission),
+    ] },
   { id: 'g4', name: 'Foreman', description: 'Foremen who handle fit-up and repair routings.',
     personas: ['Foreman'], allowed: [EDIT_FABRICATION_PERMISSION, ...EXISTING_SIGNOFF_PERMISSIONS] },
   { id: 'g5', name: 'Inspector', description: 'Inspectors who handle inspection routings.',

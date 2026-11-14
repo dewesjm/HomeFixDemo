@@ -80,14 +80,15 @@ export class HistoryTableComponent {
   });
 
   isDeprogressable(r: HistoryRow): boolean {
-    return this.viewer.canUseLegacyWorkflowActions() && this.actionKeys().deprogress.has(r.key);
+    return (this.viewer.canUseLegacyWorkflowActions() || this.viewer.showRestrictedWorkflowActions()) && this.actionKeys().deprogress.has(r.key);
   }
 
   isCorrectable(r: HistoryRow): boolean {
-    return this.viewer.canUseLegacyWorkflowActions() && this.actionKeys().correct.has(r.key);
+    return (this.viewer.canUseLegacyWorkflowActions() || this.viewer.showRestrictedWorkflowActions()) && this.actionKeys().correct.has(r.key);
   }
 
   confirmDeprogress(jobId: string) {
+    if (!this.viewer.canUseLegacyWorkflowActions()) return;
     this.confirmSvc.confirm({
       header: 'Deprogress',
       message: 'This reverses the job\'s most recent sign-off. Enter a reason for the record.',

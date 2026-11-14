@@ -50,16 +50,22 @@
         @if (all) { <ng-container *ngTemplateOutlet="ids; context: { $implicit: r, dim: false }" /> }
         <td>
           @if (isDeprogressable(r)) {
-            <button type="button" class="btn btn-ghost btn-xs" (click)="confirmDeprogress(r.jobId)" title="Reverse to previous routing">
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="!viewer.canUseLegacyWorkflowActions()" (click)="confirmDeprogress(r.jobId)" title="Reverse to previous routing">
               <svg lucideRotateCcw class="size-4 text-error"></svg> <span class="text-error">Deprogress</span>
             </button>
+            @if (!viewer.canUseLegacyWorkflowActions()) {
+              <span class="block text-xs">Requires Deprogress access.</span>
+            }
           }
         </td>
         <td>
           @if (isCorrectable(r)) {
-            <button type="button" class="btn btn-ghost btn-xs" (click)="openCorrect(r)" title="Fix a field recorded at this sign-off">
+            <button type="button" class="btn btn-ghost btn-xs" [disabled]="!viewer.canUseLegacyWorkflowActions()" (click)="openCorrect(r)" title="Fix a field recorded at this sign-off">
               <svg lucidePencil class="size-4"></svg> Correct
             </button>
+            @if (!viewer.canUseLegacyWorkflowActions()) {
+              <span class="block text-xs">Requires correction access.</span>
+            }
           }
         </td>
         @if (all) {

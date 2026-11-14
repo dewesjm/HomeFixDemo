@@ -41,20 +41,31 @@
         @if (closesJoint(st.id)) {
           <span class="badge badge-success">SOLD</span>
           <span class="meta">Job closed - deprogress to reverse</span>
-        } @else if (!st.signed && isEngineeringHold(st.id) && ctx().canUseWorkflowActions()) {
-          <div class="w-full"><app-engineering-release-panel [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
-        } @else if (!st.signed && !isEngineeringHold(st.id) && (ctx().canSign(st) || ctx().inspectionTypeRequired(st))) {
+        } @else if (!st.signed && isEngineeringHold(st.id)) {
+          @if (ctx().canUseWorkflowActions()) {
+            <div class="w-full"><app-engineering-release-panel [job]="ctx().job" (signedOff)="ctx().leaveAfterSignoff()" /></div>
+          } @else if (ctx().showRestrictedWorkflowActions()) {
+            <button type="button" class="btn btn-primary" disabled>Release Engineering Hold</button>
+            <span class="meta">Releasing Engineering Hold requires workflow permission.</span>
+          }
+        } @else if (!st.signed && (ctx().canSign(st) || ctx().inspectionTypeRequired(st) || ctx().showRestrictedWorkflowActions())) {
           <!-- Enabled except on a joint held by a deviation (the banner above says why): it's the only way
                to trigger validation and see what's missing. signStage() shows what stops it. -->
-          <button type="button" class="btn btn-primary" [disabled]="!ctx().canSign(st) && !!st.inspectionType || !!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
+          <button type="button" class="btn btn-primary" [disabled]="lacksSignoffPermission(st) || !!ctx().holdNote() && !ctx().inputsEditable(st, ctx().selectedRouting())" (click)="ctx().signStage(st)">
             <svg lucideCheck class="size-4"></svg> Signoff
           </button>
+          @if (ctx().showRestrictedWorkflowActions() && lacksSignoffPermission(st)) {
+            <span class="meta">Signing requires permission for the selected or available Type.</span>
+          }
           @if (ctx().editable(st) && ctx().engineeringOverrideAvailable(st)) {
             <!-- Saved engineering values are locked; this asks for a reason and opens them again -->
             <span class="spacer"></span>
-            <button type="button" class="btn btn-outline" (click)="ctx().engineeringOverride(st)">
+            <button type="button" class="btn btn-outline" [disabled]="!ctx().canUseWorkflowActions()" (click)="ctx().engineeringOverride(st)">
               <svg lucideTriangleAlert class="size-4"></svg> Engineering Override
             </button>
+            @if (!ctx().canUseWorkflowActions()) {
+              <span class="meta">Engineering Override requires workflow permission.</span>
+            }
           }
           @if (ctx().canUseWorkflowActions() && foremanOverrideEnabled && ctx().editable(st) && (st.role === 'Welding' || recordsWtn(st))) {
             <!-- Pushed right, away from Signoff, so it isn't clicked by accident -->

@@ -259,6 +259,8 @@ export class JointPageComponent implements OnDestroy {
       rejectedCount: () => this.rejectedCount(),
       resultOptions: STAGE_RESULT_OPTIONS,
       canSign: (s) => this.canSign(s),
+      canSignType: (type) => this.viewer.canSignType(type),
+      showRestrictedWorkflowActions: () => this.viewer.showRestrictedWorkflowActions(),
       canChooseType: (s, type) => this.canSelectType(s, this.selectedRouting()) && this.viewer.canSignType(type),
       canUseWorkflowActions: () => this.viewer.canUseLegacyWorkflowActions(),
       editable: (s) => this.editable(s),
@@ -274,8 +276,11 @@ export class JointPageComponent implements OnDestroy {
       fieldWarning: (s, k) => ov.fieldWarning(s, k),
       reportedDeviations: (s) => ov.reported()[s.id] ?? [],
       foremanOverride: (s) => ov.foremanOverride(s),
-      engineeringOverrideAvailable: (s) => this.viewer.canUseLegacyWorkflowActions() && ov.engineeringOverrideAvailable(s),
-      engineeringOverride: (s) => ov.engineeringOverrideClick(s),
+      engineeringOverrideAvailable: (s) =>
+        (this.viewer.canUseLegacyWorkflowActions() || this.viewer.showRestrictedWorkflowActions()) && ov.engineeringOverrideAvailable(s),
+      engineeringOverride: (s) => {
+        if (this.viewer.canUseLegacyWorkflowActions()) ov.engineeringOverrideClick(s);
+      },
       removeForemanOverride: (s, i) => ov.removeForemanOverride(s, i),
       assignedLocked: (s, k) => ov.assignedLocked(s, k),
       stageInputBlur: (s, f, v) => edits.stageInputBlur(s, f, v),

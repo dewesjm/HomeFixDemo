@@ -19,6 +19,8 @@ export interface SignoffContext {
 
   // Methods
   canSign: (stage: WorkflowStage) => boolean;
+  canSignType: (type: string) => boolean;
+  showRestrictedWorkflowActions: () => boolean;
   canChooseType: (stage: WorkflowStage, type: string) => boolean;
   canUseWorkflowActions: () => boolean;
   editable: (stage: WorkflowStage) => boolean;

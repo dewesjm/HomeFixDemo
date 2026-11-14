@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, HISTORY_PAGE_PERMISSION, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, signoffPermission } from '../../data/admin-groups';
+import { API_ACCESS_PERMISSION, EDIT_FABRICATION_PERMISSION, FITTING_GROUP_ID, HISTORY_PAGE_PERMISSION, isPrivilegedGroup, JOINT_DETAILS_PERMISSION, JOINT_HISTORY_PERMISSION, VIEW_PERMISSION, VIEW_GROUP_ID, WELDING_GROUP_ID, signoffPermission } from '../../data/admin-groups';
 import { DEFAULT_DEMO_PERSON, DEMO_PEOPLE } from '../../data/demo-people';
 import { ROLES, type Role } from '../../data/roles';
 import { findSignoffType } from '../../data/signoff-types';
@@ -17,10 +17,10 @@ export class ViewerService {
   readonly hasFullWorkflowAccess = computed(() => this.memberships().some(group => isPrivilegedGroup(group.id)));
   readonly permissions = computed(() => new Set(this.memberships().flatMap(group => group.allowed)));
   readonly isViewOnly = computed(() => this.memberships().every(group => group.id === VIEW_GROUP_ID));
-  private readonly hasFittingMembership = computed(() => this.memberships().some(group => group.id === 'g2'));
+  readonly showRestrictedWorkflowActions = computed(() => this.memberships().some(group => group.id === WELDING_GROUP_ID));
   // Other workflow actions keep their current access until their roles are reviewed.
   readonly canUseLegacyWorkflowActions = computed(() =>
-    this.hasFullWorkflowAccess() || (!this.isViewOnly() && !this.hasFittingMembership()));
+    this.memberships().some(group => ![VIEW_GROUP_ID, FITTING_GROUP_ID, WELDING_GROUP_ID].includes(group.id)));
   readonly canEditFabrication = computed(() => this.permissions().has(EDIT_FABRICATION_PERMISSION));
   readonly canAccessAdmin = computed(() => this.isAdmin() || this.canUseLegacyWorkflowActions());
   readonly canSearch = computed(() => this.permissions().has(VIEW_PERMISSION));

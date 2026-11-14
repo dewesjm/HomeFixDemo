@@ -28,7 +28,8 @@ export const CHANGE_LOG: ChangeLogDay[] = [
       'Weld Engineering > Admin > Services can also search procedures the way Procedure Lookup does: search text, column filters, sort and optional paging.',
       'Weld Engineering > Admin > Services can also get a procedure\'s PDF, the same one the procedure page shows, and download it.',
       'Weld Engineering > Admin > Services: pick the filter\'s fields and the fields to answer with from droplists instead of typing field keys, and list every field key a caller can use.'],
-    changed: ['Saving a procedure on its edit form, Load Procedures, Delete and the Services page all run the same checks. Load Procedures now refuses a row whose base metals disagree with the other WTNs on its GWP and shows why in the grid, and a loaded change to an Active procedure adds "Loaded from file" to its Revision Record.',
+    changed: ['Welders can read Weld Record and History, edit Fabrication when routing allows, and sign Weld Build-Up, Tack, Deferred Tack, Root, Interim Layer and Final Weld. Restricted signoff and History actions show why they are disabled.',
+      'Saving a procedure on its edit form, Load Procedures, Delete and the Services page all run the same checks. Load Procedures now refuses a row whose base metals disagree with the other WTNs on its GWP and shows why in the grid, and a loaded change to an Active procedure adds "Loaded from file" to its Revision Record.',
       'Procedure Lookup gets its rows from the Weld Engineering search call. The Effective Date filter now also matches a date typed as stored, e.g. 2026-03-01.'],
   },
   {

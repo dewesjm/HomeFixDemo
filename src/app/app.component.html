@@ -76,6 +76,8 @@
             }
             @if (viewer.canUseLegacyWorkflowActions()) {
               <li><a title="Makeup" routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup</span></a></li>
+            } @else if (viewer.showRestrictedWorkflowActions()) {
+              <li><a class="menu-disabled" aria-disabled="true" title="Requires Makeup access"><svg lucideUserCog class="size-4"></svg><span class="nav-label"> Makeup (access required)</span></a></li>
             }
             @if (viewer.canAccessAdmin()) {
               <li class="dropdown-wrapper">
@@ -111,7 +113,9 @@
                     <li><a routerLink="/admin/weld-colors" routerLinkActive="menu-active"><svg lucideTarget class="size-4"></svg> Weld Colors</a></li>
                   </ul>
                 </details>
-              </li>
+            </li>
+            } @else if (viewer.showRestrictedWorkflowActions()) {
+              <li><a class="menu-disabled" aria-disabled="true" title="Requires Weld Record administration access"><svg lucideSettings class="size-4"></svg><span class="nav-label"> Admin (access required)</span></a></li>
             }
           }
           }
@@ -203,6 +207,8 @@
               }
               @if (viewer.canUseLegacyWorkflowActions()) {
                 <li><a routerLink="/makeup" routerLinkActive="menu-active"><svg lucideUserCog class="size-4"></svg> Makeup</a></li>
+              } @else if (viewer.showRestrictedWorkflowActions()) {
+                <li><a class="menu-disabled" aria-disabled="true"><svg lucideUserCog class="size-4"></svg> Makeup (access required)</a></li>
               }
               @if (viewer.canAccessAdmin()) {
                 <li class="dropdown-divider"></li>
@@ -240,6 +246,8 @@
                     </ul>
                   </details>
                 </li>
+              } @else if (viewer.showRestrictedWorkflowActions()) {
+                <li><a class="menu-disabled" aria-disabled="true"><svg lucideSettings class="size-4"></svg> Admin (access required)</a></li>
               }
             </ul>
           </details>

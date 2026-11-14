@@ -21,7 +21,7 @@ import { typesForAccessibleAnswer } from '../attribute-codes-logic/exception-eff
           <option [ngValue]="''">Select the inspection performed…</option>
         }
         @for (opt of options(); track opt.value) {
-          <option [ngValue]="opt.value" [disabled]="!ctx().canChooseType(st, opt.value)">{{ opt.label }}</option>
+          <option [ngValue]="opt.value" [disabled]="!ctx().canChooseType(st, opt.value)">{{ opt.label }}{{ ctx().showRestrictedWorkflowActions() && !ctx().canSignType(opt.value) ? ' (permission required)' : '' }}</option>
         }
       </select>
     </label>

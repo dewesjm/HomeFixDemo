@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { FIT_JOINT, jointUrl, fabricationInput, fillAndLeave, pipeWeldingRow, signAndConfirm, signoffPanel, typeSelect } from './support/joint-page';
+import { FIT_JOINT, TACK_JOINT, jointUrl, fabricationInput, fillAndLeave, pipeWeldingRow, signAndConfirm, signoffPanel, typeSelect } from './support/joint-page';
 
 test('View as and saved group personas determine Pipe Welding queues', async ({ page }) => {
   await page.goto('/pipe-welding');
@@ -69,7 +69,7 @@ test('View can read joints and use each History permission independently', async
   await expect(page.getByRole('heading', { name: 'History' })).toBeVisible();
   // Use the same persisted group rows that the in-app editor writes.
   await page.evaluate(() => {
-    localStorage.setItem('welding:admin-groups:v3', JSON.stringify([
+    localStorage.setItem('welding:admin-groups:v4', JSON.stringify([
       { id: 'g10', name: 'View', description: '', personas: [], allowed: ['view', 'joint-details', 'joint-history'] },
     ]));
   });
@@ -110,6 +110,39 @@ test('Fitter can sign Fit and read joint History, with separate Weld Build-Up ac
   await expect(page).toHaveURL(/jointHistory=/);
   await expect(page.locator('main')).toContainText('Fit - Signed off');
   await expect(page.getByRole('button', { name: 'Deprogress' })).toHaveCount(0);
+});
+
+test('Welding can sign Weld Build-Up and Tack, with read-only History', async ({ page }) => {
+  await page.goto('/pipe-welding');
+  await page.getByRole('button', { name: 'User menu' }).click();
+  await page.getByLabel('View as').selectOption({ label: 'Jordan (Welder)' });
+  await expect(page.getByRole('combobox', { name: 'Role', exact: true }).locator('option:checked')).toHaveText('Welding');
+
+  await page.goto(jointUrl(FIT_JOINT));
+  const panel = signoffPanel(page);
+  const signoff = panel.getByRole('button', { name: 'Signoff', exact: true });
+  await expect(signoff).toBeDisabled();
+  await expect(typeSelect(page).getByRole('option', { name: 'Fit (permission required)', exact: true })).toHaveAttribute('disabled', '');
+  await expect(fabricationInput(page, 'Actual Thickness')).toBeEditable();
+  await typeSelect(page).selectOption({ label: 'Weld Build-Up' });
+  await expect(signoff).toBeEnabled();
+
+  await page.goto(jointUrl(TACK_JOINT));
+  for (const [field, value] of [['Actual PH Min', '100'], ['Actual PH Max', '200'], ['Actual IP Min', '100'], ['Actual IP Max', '200']]) {
+    await fillAndLeave(panel.getByRole('spinbutton', { name: `${field}*` }), value);
+  }
+  await signAndConfirm(page);
+  await page.goto('/pipe-welding');
+  await page.getByRole('combobox', { name: 'Role', exact: true }).selectOption({ label: 'View All' });
+  await (await pipeWeldingRow(page, TACK_JOINT)).getByRole('button', { name: 'History' }).click();
+  await expect(page.getByRole('button', { name: 'Deprogress', exact: true })).toBeDisabled();
+  await expect(page.getByText('Requires Deprogress access.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Correct', exact: true }).first()).toBeDisabled();
+
+  await page.goto('/admin/groups');
+  await expect(page).toHaveURL(/\/pipe-welding$/);
+  await page.goto('/makeup');
+  await expect(page).toHaveURL(/\/pipe-welding$/);
 });
 
 test('a new Signoff Type generates a grant that can be saved and renamed', async ({ page }) => {
