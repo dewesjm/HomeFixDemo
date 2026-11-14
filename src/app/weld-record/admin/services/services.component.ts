@@ -11,6 +11,8 @@ import { JointRecordEditsService } from '../../joint-service/joint-record-edits.
 import { JointRoutingWritesService } from '../../joint-service/joint-routing-writes.service';
 import { JointSignoffService } from '../../joint-service/joint-signoff.service';
 import { referenceDataServiceOperations } from './rules/reference-data-service-operations';
+import { offlineServiceOperations } from './rules/offline-service-operations';
+import { OfflinePreparationService } from '../../offline-logic/offline-preparation.service';
 
 @Component({
   selector: 'app-admin-services',
@@ -39,12 +41,14 @@ export class AdminServicesComponent {
   private routing = inject(JointRoutingWritesService);
   private signoff = inject(JointSignoffService);
   private edits = inject(JointRecordEditsService);
+  private offline = inject(OfflinePreparationService);
   /* the Filter droplist comes from getJointFields, as another system would get it */
   private fields = (r => (r.ok ? r.data.fields : []))(this.svc.getJointFields());
   operations = [
     ...jointServiceOperations(this.svc, { hull: this.example?.hull, drawing: this.example?.drawing, joint: this.example?.joint }, this.fields),
     ...jointRoutingOperations(this.routing, this.signoff, this.example),
     ...jointRecordOperations(this.edits, this.example),
+    ...offlineServiceOperations(this.offline, this.example),
     ...referenceDataServiceOperations,
   ];
 }

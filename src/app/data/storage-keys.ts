@@ -2,6 +2,7 @@
 export const STORAGE = {
   appVersion: 'welding:app-version',
   workflows: 'welding:workflows:v5',
+  offlineJointPrefix: 'welding:offline-joint:v1:',
   stageTemplates: 'welding:stage-templates:v7',
   signoffTypeRouting: 'welding:signoff-type-routing:v1',
   signoffTypes: 'welding:signoff-types:v5',

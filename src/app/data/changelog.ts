@@ -13,7 +13,8 @@ interface ChangeLogDay {
 export const CHANGE_LOG: ChangeLogDay[] = [
   {
     date: '2026-11-14',
-    added: ['The MWQ simulator can send an offline preparation request and confirm receipt on a deployed Weld Record preview or locally.',
+    added: ['The MWQ simulator and Weld Record Admin > Services can save read-only Joint Details for offline use.',
+      'The MWQ simulator can send an offline preparation request and confirm receipt on a deployed Weld Record preview or locally.',
       'Weld Record can provide MWQ with a Joint Details link by hull, drawing, and joint number.',
       'Weld Record Admin > Services demonstrates signoff, corrections, Deprogress, Routing Override, reference changes, and configuration reads for developers.',
       'Weld Record Admin > Services can edit Fabrication fields and release joints to welding using the same calls as Joint Details and Pipe Welding.',
